@@ -1,0 +1,17 @@
+--disable blankLinesAtStartOfScope
+--disable wrapMultilineStatementBraces
+--disable yodaConditions
+--disable fileHeader
+--disable unusedArguments
+--binarygrouping none
+--hexgrouping none
+--indent 2
+--octalgrouping none
+--patternlet inline
+--semicolons never
+--wraparguments before-first
+--wrapcollections before-first
+--wrapparameters before-first
+--wraparguments before-first
+--maxwidth 100
+--enable redundantReturn
