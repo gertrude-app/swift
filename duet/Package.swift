@@ -12,7 +12,7 @@ let package = Package(
     .library(name: "DuetMock", targets: ["DuetMock"]),
   ],
   dependencies: [
-    .package("jaredh159/x-kit@1.1.1"),
+    .package(path: "../x-kit"),
     .package("vapor/fluent-kit@1.16.0"),
     .package("pointfreeco/swift-tagged@0.6.0"),
     .package("wickwirew/Runtime@2.2.4"),
@@ -40,6 +40,8 @@ let package = Package(
     .testTarget(name: "DuetTests", dependencies: ["Duet"]),
   ]
 )
+
+// helpers
 
 extension PackageDescription.Package.Dependency {
   static func package(_ commitish: String, _ name: String? = nil) -> Package.Dependency {
