@@ -6,6 +6,15 @@ public protocol PostgresEnum {
   var rawValue: String { get }
 }
 
+public extension PostgresEnum where Self: CaseIterable {
+  static var typeName: String {
+    guard let first = allCases.first else {
+      fatalError("PostgresEnum \(Self.self) has no cases")
+    }
+    return first.typeName
+  }
+}
+
 public protocol PostgresJsonable: Codable {}
 
 public extension PostgresJsonable {

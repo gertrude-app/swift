@@ -7,12 +7,12 @@ protocol GertieMigration: AsyncMigration {
   func revert(sql: SQLDatabase) async throws
 }
 
-public enum MigrationDirection: String {
+enum MigrationDirection: String {
   case up
   case down
 }
 
-public protocol TableNamingMigration {
+protocol TableNamingMigration {
   static var tableName: String { get }
 }
 
@@ -33,7 +33,7 @@ extension GertieMigration {
   }
 }
 
-public extension Migration {
+extension Migration {
   func log(_ direction: MigrationDirection) {
     // let dir = direction == .up ? "UP".green : "DOWN".yellow
     // Current.logger.info("Running migration: \(String(describing: Self.self).magenta) \(dir)")
@@ -69,42 +69,3 @@ public extension Migration {
   }
 }
 
-public struct UniqueConstraint {
-  public let table: TableNamingMigration.Type
-  public let columns: Set<FieldKey>
-
-  var name: String {
-    "unique_\(columns.map(\.description).joined(separator: "_"))"
-  }
-
-  public init(table: TableNamingMigration.Type, columns: Set<FieldKey>) {
-    self.table = table
-    self.columns = columns
-    if name.count > 63 {
-      fatalError("unique constraint name exceeds pg max identifier length: `\(name)`")
-    }
-  }
-}
-
-public struct ForeignKey {
-  public let table: TableNamingMigration.Type
-  public let referencedTable: TableNamingMigration.Type
-  public let column: FieldKey
-
-  public var name: String {
-    "fk_\(table.tableName.singular)_\(column.description)"
-  }
-
-  public init(
-    from table: TableNamingMigration.Type,
-    to referencedTable: TableNamingMigration.Type,
-    thru column: FieldKey
-  ) {
-    self.table = table
-    self.referencedTable = referencedTable
-    self.column = column
-    if name.count > 63 {
-      fatalError("foreign key name exceeds pg max identifier length: `\(name)`")
-    }
-  }
-}
