@@ -6,10 +6,10 @@ struct AdminTables: GertieMigration {
 
     try await sql.create(
       table: Admin.M1.self,
-      Column(Admin.M1.id, .uuid),
-      Column(Admin.M1.email, .text),
+      Column(Admin.M1.id, .uuid, .primaryKey),
+      Column(Admin.M1.email, .text, .unique),
       Column(Admin.M1.password, .text),
-      Column(Admin.M1.subscriptionId, .text),
+      Column(Admin.M1.subscriptionId, .text, .nullable),
       Column(
         Admin.M1.subscriptionStatus,
         .enum(Admin.SubscriptionStatus.self),
@@ -19,14 +19,9 @@ struct AdminTables: GertieMigration {
       Column(.updatedAt, .timestampWithTimezone),
       Column(.deletedAt, .timestampWithTimezone, .nullable)
     )
-
-    try await sql.add(constraint: .primaryKeyId(Admin.M1.self))
-    try await sql.add(constraint: .unique(Admin.M1.self, Admin.M1.email))
   }
 
   func revert(sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: .primaryKeyId(Admin.M1.self))
-    try await sql.drop(constraint: .unique(Admin.M1.self, Admin.M1.email))
     try await sql.drop(table: Admin.M1.self)
     try await sql.drop(enum: Admin.SubscriptionStatus.self)
   }

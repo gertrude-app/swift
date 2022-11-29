@@ -47,29 +47,40 @@ struct Column {
     }
   }
 
-  enum NullConstraint {
+  enum Constraint {
     case notNull
     case nullable
+    case unique
+    case primaryKey
 
     var sql: String {
       switch self {
       case .notNull:
         return "NOT NULL"
       case .nullable:
-        return "NULL"
+        return ""
+      case .primaryKey:
+        return "PRIMARY KEY"
+      case .unique:
+        return "UNIQUE"
       }
     }
   }
 
   var name: FieldKey
   var type: ColumnType
-  var nullConstraint: NullConstraint
+  var constraints: [Constraint]
   var defaultValue: Default?
 
   var sql: String {
     var sql = "\(name) \(type.sql)"
-    if nullConstraint == .notNull {
+    // all columns are NOT NULL by default, unless explicitly set to nullable
+    if !constraints.contains(.nullable) {
       sql += " NOT NULL"
+    }
+    let withoutNull = constraints.filter { $0 != .nullable && $0 != .notNull }
+    if !withoutNull.isEmpty {
+      sql += " \(constraints.map(\.sql).joined(separator: " "))"
     }
     if let defaultValue = defaultValue {
       sql += " DEFAULT \(defaultValue.sql)"
@@ -82,12 +93,24 @@ extension Column {
   init(
     _ name: FieldKey,
     _ type: ColumnType,
-    _ nullConstraint: Column.NullConstraint = .notNull,
-    default: Column.Default? = nil
+    _ constraint: Constraint = .notNull,
+    default: Default? = nil
   ) {
     self.name = name
     self.type = type
-    self.nullConstraint = nullConstraint
+    constraints = [constraint]
+    defaultValue = `default`
+  }
+
+  init(
+    _ name: FieldKey,
+    _ type: ColumnType,
+    _ constraints: [Constraint],
+    default: Default? = nil
+  ) {
+    self.name = name
+    self.type = type
+    self.constraints = constraints
     defaultValue = `default`
   }
 }
