@@ -5,7 +5,7 @@ import XCTest
 final class ThingStore: MemoryStore {
   public var things: [Thing.Id: Thing] = [:]
   func keyPath<M: Model>(to: M.Type) -> Models<M> {
-    return \ThingStore.things as! Models<M>
+    \ThingStore.things as! Models<M>
   }
 }
 

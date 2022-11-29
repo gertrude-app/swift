@@ -8,7 +8,7 @@ extension SQLDatabase {
     if ProcessInfo.processInfo.environment["MIGRATE_LOG_SQL"] != nil {
       var serializer = SQLSerializer(database: self)
       sql.serialize(to: &serializer)
-      print("\n\(serializer.sql)\n")
+      print("\n\(serializer.sql)")
     }
     return try await raw(sql).all()
   }

@@ -2,10 +2,10 @@ import DuetSQL
 import Tagged
 
 extension Admin: Duet.Identifiable {
-  public typealias Id = Tagged<Admin, UUID>
+  typealias Id = Tagged<Admin, UUID>
 }
 
-public extension Admin {
+extension Admin {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
     case email
@@ -19,55 +19,59 @@ public extension Admin {
 }
 
 extension Admin.SubscriptionStatus: PostgresEnum {
-  public var typeName: String { "admin_user_subscription_status" }
+  var typeName: String { Admin.M1.subscriptionStatusTypeName }
 }
 
-// extension AdminNotification: Duet.Identifiable {
-//   public typealias Id = Tagged<AdminNotification, UUID>
-// }
+extension AdminNotification: Duet.Identifiable {
+  typealias Id = Tagged<AdminNotification, UUID>
+}
 
-// public extension AdminNotification {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case adminId
-//     case methodId
-//     case trigger
-//     case createdAt
-//   }
-// }
+extension AdminNotification {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case adminId
+    case methodId
+    case trigger
+    case createdAt
+  }
+}
 
-// extension AdminToken: Duet.Identifiable {
-//   public typealias Id = Tagged<AdminToken, UUID>
-// }
+extension AdminNotification.Trigger: PostgresEnum {
+  var typeName: String { AdminNotification.M1.triggerTypeName }
+}
 
-// public extension AdminToken {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case adminId
-//     case value
-//     case createdAt
-//     case deletedAt
-//   }
-// }
+extension AdminToken: Duet.Identifiable {
+  typealias Id = Tagged<AdminToken, UUID>
+}
 
-// extension AdminVerifiedNotificationMethod: Duet.Identifiable {
-//   public typealias Id = Tagged<AdminVerifiedNotificationMethod, UUID>
-// }
+extension AdminToken {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case adminId
+    case value
+    case createdAt
+    case deletedAt
+  }
+}
 
-// public extension AdminVerifiedNotificationMethod {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case adminId
-//     case method
-//     case createdAt
-//   }
-// }
+extension AdminVerifiedNotificationMethod: Duet.Identifiable {
+  typealias Id = Tagged<AdminVerifiedNotificationMethod, UUID>
+}
+
+extension AdminVerifiedNotificationMethod {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case adminId
+    case method
+    case createdAt
+  }
+}
 
 // extension AppCategory: Duet.Identifiable {
-//   public typealias Id = Tagged<AppCategory, UUID>
+//   typealias Id = Tagged<AppCategory, UUID>
 // }
 
-// public extension AppCategory {
+// extension AppCategory {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case name
@@ -79,10 +83,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension BundleId: Duet.Identifiable {
-//   public typealias Id = Tagged<BundleId, UUID>
+//   typealias Id = Tagged<BundleId, UUID>
 // }
 
-// public extension BundleId {
+// extension BundleId {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case bundleId
@@ -93,10 +97,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension Device: Duet.Identifiable {
-//   public typealias Id = Tagged<Device, UUID>
+//   typealias Id = Tagged<Device, UUID>
 // }
 
-// public extension Device {
+// extension Device {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case userId
@@ -114,10 +118,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension IdentifiedApp: Duet.Identifiable {
-//   public typealias Id = Tagged<IdentifiedApp, UUID>
+//   typealias Id = Tagged<IdentifiedApp, UUID>
 // }
 
-// public extension IdentifiedApp {
+// extension IdentifiedApp {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case categoryId
@@ -131,10 +135,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension Keychain: Duet.Identifiable {
-//   public typealias Id = Tagged<Keychain, UUID>
+//   typealias Id = Tagged<Keychain, UUID>
 // }
 
-// public extension Keychain {
+// extension Keychain {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case authorId
@@ -148,10 +152,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension KeyRecord: Duet.Identifiable {
-//   public typealias Id = Tagged<KeyRecord, UUID>
+//   typealias Id = Tagged<KeyRecord, UUID>
 // }
 
-// public extension KeyRecord {
+// extension KeyRecord {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case keychainId
@@ -164,10 +168,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension KeystrokeLine: Duet.Identifiable {
-//   public typealias Id = Tagged<KeystrokeLine, UUID>
+//   typealias Id = Tagged<KeystrokeLine, UUID>
 // }
 
-// public extension KeystrokeLine {
+// extension KeystrokeLine {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case deviceId
@@ -179,10 +183,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension NetworkDecision: Duet.Identifiable {
-//   public typealias Id = Tagged<NetworkDecision, UUID>
+//   typealias Id = Tagged<NetworkDecision, UUID>
 // }
 
-// public extension NetworkDecision {
+// extension NetworkDecision {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case deviceId
@@ -201,10 +205,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension Release: Duet.Identifiable {
-//   public typealias Id = Tagged<Release, UUID>
+//   typealias Id = Tagged<Release, UUID>
 // }
 
-// public extension Release {
+// extension Release {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case semver
@@ -219,10 +223,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension Screenshot: Duet.Identifiable {
-//   public typealias Id = Tagged<Screenshot, UUID>
+//   typealias Id = Tagged<Screenshot, UUID>
 // }
 
-// public extension Screenshot {
+// extension Screenshot {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case deviceId
@@ -235,10 +239,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension SuspendFilterRequest: Duet.Identifiable {
-//   public typealias Id = Tagged<SuspendFilterRequest, UUID>
+//   typealias Id = Tagged<SuspendFilterRequest, UUID>
 // }
 
-// public extension SuspendFilterRequest {
+// extension SuspendFilterRequest {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case deviceId
@@ -253,10 +257,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension UnlockRequest: Duet.Identifiable {
-//   public typealias Id = Tagged<UnlockRequest, UUID>
+//   typealias Id = Tagged<UnlockRequest, UUID>
 // }
 
-// public extension UnlockRequest {
+// extension UnlockRequest {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case networkDecisionId
@@ -270,10 +274,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension User: Duet.Identifiable {
-//   public typealias Id = Tagged<User, UUID>
+//   typealias Id = Tagged<User, UUID>
 // }
 
-// public extension User {
+// extension User {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case adminId
@@ -289,10 +293,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension UserKeychain: Duet.Identifiable {
-//   public typealias Id = Tagged<UserKeychain, UUID>
+//   typealias Id = Tagged<UserKeychain, UUID>
 // }
 
-// public extension UserKeychain {
+// extension UserKeychain {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case userId
@@ -302,10 +306,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension UserToken: Duet.Identifiable {
-//   public typealias Id = Tagged<UserToken, UUID>
+//   typealias Id = Tagged<UserToken, UUID>
 // }
 
-// public extension UserToken {
+// extension UserToken {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case userId
@@ -318,10 +322,10 @@ extension Admin.SubscriptionStatus: PostgresEnum {
 // }
 
 // extension WaitlistedUser: Duet.Identifiable {
-//   public typealias Id = Tagged<WaitlistedUser, UUID>
+//   typealias Id = Tagged<WaitlistedUser, UUID>
 // }
 
-// public extension WaitlistedUser {
+// extension WaitlistedUser {
 //   enum CodingKeys: String, CodingKey, CaseIterable {
 //     case id
 //     case email

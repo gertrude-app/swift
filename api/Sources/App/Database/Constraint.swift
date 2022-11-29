@@ -1,10 +1,32 @@
 import FluentSQL
 
 enum Constraint {
+  enum OnDelete {
+    case cascade
+    case noAction
+    case setNull
+
+    var sql: String {
+      switch self {
+      case .cascade:
+        return "CASCADE"
+      case .noAction:
+        return "NO ACTION"
+      case .setNull:
+        return "SET NULL"
+      }
+    }
+  }
+
   case notNull(TableNamingMigration.Type, FieldKey)
   case unique(TableNamingMigration.Type, Set<FieldKey>)
   case primaryKey(TableNamingMigration.Type, Set<FieldKey>)
-  case foreignKey(from: TableNamingMigration.Type, to: TableNamingMigration.Type, thru: FieldKey)
+  case foreignKey(
+    from: TableNamingMigration.Type,
+    to: TableNamingMigration.Type,
+    thru: FieldKey,
+    onDelete: OnDelete
+  )
 
   static func primaryKey(_ table: TableNamingMigration.Type, _ column: FieldKey) -> Self {
     .primaryKey(table, [column])
@@ -24,7 +46,7 @@ enum Constraint {
       return invariant("uq:\(Migration.tableName).\(columns.psv)")
     case .primaryKey(let Migration, _):
       return invariant("pk:\(Migration.tableName)")
-    case .foreignKey(let Table, _, let column):
+    case .foreignKey(let Table, _, let column, _):
       return invariant("fk:\(Table.tableName).\(column.description)")
     default:
       assertionFailure("Constraint \(self) has no name")
@@ -49,12 +71,13 @@ enum Constraint {
         ALTER TABLE \(table: Migration)
         ADD CONSTRAINT \(constraint: self) PRIMARY KEY (\(raw: columns.csv))
       """
-    case .foreignKey(let Table, let ReferencedTable, let column):
+    case .foreignKey(let Table, let ReferencedTable, let column, let onDelete):
       return """
         ALTER TABLE \(table: Table)
         ADD CONSTRAINT \(constraint: self)
           FOREIGN KEY (\(col: column))
           REFERENCES \(table: ReferencedTable) (\(col: .id))
+          ON DELETE \(raw: onDelete.sql)
       """
     }
   }
@@ -67,7 +90,7 @@ enum Constraint {
         ALTER COLUMN \(col: column) DROP NOT NULL
       """
     case .unique(let Migration, _),
-         .foreignKey(let Migration, _, _),
+         .foreignKey(let Migration, _, _, _),
          .primaryKey(let Migration, _):
       return """
         ALTER TABLE \(table: Migration)

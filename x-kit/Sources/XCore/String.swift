@@ -2,7 +2,7 @@ import Foundation
 
 public extension String {
   var snakeCased: String {
-    return processCamelCaseRegex(pattern: acronymPattern)?
+    processCamelCaseRegex(pattern: acronymPattern)?
       .processCamelCaseRegex(pattern: normalPattern)?.lowercased() ?? lowercased()
   }
 

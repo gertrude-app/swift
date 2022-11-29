@@ -24,9 +24,14 @@ exclude:
 	find . -path '**/.build/**/swift-nio*/**/*_llhttp.sh' -delete
 	find . -path '**/.build/**/swift-nio*/**/LICENSE-MIT' -delete
 
+clean:
+	rm -rf api/.build
+	rm -rf duet/.build
+	rm -rf x-kit/.build
+
 # helpers
 
-ALL_CMDS = api build-api run-api migrate-up migrate-down exclude
+ALL_CMDS = api build-api run-api migrate-up migrate-down exclude clean
 API_RUN = cd api && ./.build/debug/Run
 
 .PHONY: $(ALL_CMDS)

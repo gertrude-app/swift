@@ -107,7 +107,7 @@ public struct MemoryClient<Store: MemoryStore>: Client {
   }
 
   public func update<M: Model>(_ model: M) async throws -> M {
-    return await store.set(model)
+    await store.set(model)
   }
 
   public func forceDelete<M: Model>(

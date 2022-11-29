@@ -1,10 +1,9 @@
 import FluentSQL
-import Rainbow
 import Vapor
 
 protocol GertieMigration: AsyncMigration {
-  func prepare(sql: SQLDatabase) async throws
-  func revert(sql: SQLDatabase) async throws
+  func up(sql: SQLDatabase) async throws
+  func down(sql: SQLDatabase) async throws
 }
 
 enum MigrationDirection: String {
@@ -18,13 +17,11 @@ protocol TableNamingMigration {
 
 extension GertieMigration {
   func prepare(on database: Database) async throws {
-    log(.up)
-    try await prepare(sql: database as! SQLDatabase)
+    try await up(sql: database as! SQLDatabase)
   }
 
   func revert(on database: Database) async throws {
-    log(.down)
-    try await revert(sql: database as! SQLDatabase)
+    try await down(sql: database as! SQLDatabase)
   }
 
   func debugPause(seconds: Int = 20, _ message: String) async throws {
@@ -68,4 +65,3 @@ extension Migration {
     ).all()
   }
 }
-

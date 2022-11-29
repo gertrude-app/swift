@@ -22,6 +22,7 @@ let package = Package(
         .product(name: "DuetSQL", package: "duet"),
         "Rainbow",
       ],
+      exclude: ["Database/Migrations/foo.sql"], // temp
       swiftSettings: [
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
       ]
