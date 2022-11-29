@@ -1,4 +1,11 @@
--- enums
+-- users, user_tokens, user_keychain, devices
+-- screenshots, keystroke_lines
+-- network_decisions, unlock_requests, suspend_filter_requests
+-- app_bundle_ids, app_categories, identified_apps
+-- releases, stripe_events
+
+
+--
 
 CREATE TYPE admin_user_notification_trigger AS ENUM (
     'unlockRequestSubmitted',
@@ -175,27 +182,6 @@ CREATE TABLE identified_apps (
     updated_at timestamp with time zone NOT NULL
 );
 
-CREATE TABLE keychains (
-    id uuid NOT NULL,
-    author_id uuid NOT NULL,
-    name text NOT NULL,
-    description text,
-    is_public boolean NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
-);
-
-CREATE TABLE keys (
-    id uuid NOT NULL,
-    keychain_id uuid NOT NULL,
-    key jsonb,
-    comment text,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
-);
-
 CREATE TABLE keystroke_lines (
     id uuid NOT NULL,
     device_id uuid NOT NULL,
@@ -301,14 +287,6 @@ CREATE TABLE users (
     deleted_at timestamp with time zone
 );
 
-CREATE TABLE waitlisted_users (
-    id uuid NOT NULL,
-    email text NOT NULL,
-    signup_token uuid,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
-);
-
 -- constraints
 
 ALTER TABLE ONLY _jobs
@@ -343,12 +321,6 @@ ALTER TABLE ONLY users
 
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT identified_apps_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY keychains
-    ADD CONSTRAINT keychains_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY keys
-    ADD CONSTRAINT keys_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY keystroke_lines
     ADD CONSTRAINT keystroke_lines_pkey PRIMARY KEY (id);
@@ -413,15 +385,6 @@ ALTER TABLE ONLY identified_apps
 ALTER TABLE ONLY devices
     ADD CONSTRAINT "uq:protected_users.device_serial_number+protected_users.device_" UNIQUE (serial_number, numeric_id);
 
-ALTER TABLE ONLY waitlisted_users
-    ADD CONSTRAINT waitlisted_users_email_key UNIQUE (email);
-
-ALTER TABLE ONLY waitlisted_users
-    ADD CONSTRAINT waitlisted_users_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY waitlisted_users
-    ADD CONSTRAINT waitlisted_users_signup_token_key UNIQUE (signup_token);
-
 ALTER TABLE ONLY admin_notifications
     ADD CONSTRAINT admin_user_notifications_admin_user_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE;
 
@@ -454,12 +417,6 @@ ALTER TABLE ONLY users
 
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT identified_apps_app_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_categories(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY keychains
-    ADD CONSTRAINT keychains_author_id_fkey FOREIGN KEY (author_id) REFERENCES admins(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY keys
-    ADD CONSTRAINT keys_keychain_id_fkey FOREIGN KEY (keychain_id) REFERENCES keychains(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY keystroke_lines
     ADD CONSTRAINT keystroke_lines_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;

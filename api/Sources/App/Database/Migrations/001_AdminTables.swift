@@ -6,9 +6,11 @@ struct AdminTables: GertieMigration {
     try await upAdminTokens(sql)
     try await upAdminVerifiedNotificationMethods(sql)
     try await upAdminNotifications(sql)
+    try await upWaitlistedAdmins(sql)
   }
 
   func down(sql: SQLDatabase) async throws {
+    try await downWaitlistedAdmins(sql)
     try await downAdminNotifications(sql)
     try await downAdminVerifiedNotificationMethods(sql)
     try await downAdminTokens(sql)
@@ -132,6 +134,23 @@ struct AdminTables: GertieMigration {
     try await sql.drop(table: AdminNotification.M1.self)
     try await sql.drop(enum: AdminNotification.Trigger.self)
   }
+
+  // table: waitlisted_admins
+
+  func upWaitlistedAdmins(_ sql: SQLDatabase) async throws {
+    try await sql.create(
+      table: WaitlistedAdmin.M1.self,
+      Column(.id, .uuid, .primaryKey),
+      Column(WaitlistedAdmin.M1.email, .text, .unique),
+      Column(WaitlistedAdmin.M1.signupToken, .uuid, [.nullable, .unique]),
+      Column(.createdAt, .timestampWithTimezone),
+      Column(.updatedAt, .timestampWithTimezone)
+    )
+  }
+
+  func downWaitlistedAdmins(_ sql: SQLDatabase) async throws {
+    try await sql.drop(table: WaitlistedAdmin.M1.self)
+  }
 }
 
 // migration extensions
@@ -170,5 +189,13 @@ extension AdminVerifiedNotificationMethod {
     static let tableName = "admin_verified_notification_methods"
     static let adminId = FieldKey("admin_id")
     static let method = FieldKey("method")
+  }
+}
+
+extension WaitlistedAdmin {
+  enum M1: TableNamingMigration {
+    static let tableName = "waitlisted_admins"
+    static let email = FieldKey("email")
+    static let signupToken = FieldKey("signup_token")
   }
 }

@@ -134,38 +134,38 @@ extension AdminVerifiedNotificationMethod {
 //   }
 // }
 
-// extension Keychain: Duet.Identifiable {
-//   typealias Id = Tagged<Keychain, UUID>
-// }
+extension Keychain: Duet.Identifiable {
+  typealias Id = Tagged<Keychain, UUID>
+}
 
-// extension Keychain {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case authorId
-//     case name
-//     case description
-//     case isPublic
-//     case createdAt
-//     case updatedAt
-//     case deletedAt
-//   }
-// }
+extension Keychain {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case authorId
+    case name
+    case description
+    case isPublic
+    case createdAt
+    case updatedAt
+    case deletedAt
+  }
+}
 
-// extension KeyRecord: Duet.Identifiable {
-//   typealias Id = Tagged<KeyRecord, UUID>
-// }
+extension Key: Duet.Identifiable {
+  typealias Id = Tagged<Key, UUID>
+}
 
-// extension KeyRecord {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case keychainId
-//     case key
-//     case comment
-//     case createdAt
-//     case updatedAt
-//     case deletedAt
-//   }
-// }
+extension Key {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case keychainId
+    case key
+    case comment
+    case createdAt
+    case updatedAt
+    case deletedAt
+  }
+}
 
 // extension KeystrokeLine: Duet.Identifiable {
 //   typealias Id = Tagged<KeystrokeLine, UUID>
@@ -321,16 +321,16 @@ extension AdminVerifiedNotificationMethod {
 //   }
 // }
 
-// extension WaitlistedUser: Duet.Identifiable {
-//   typealias Id = Tagged<WaitlistedUser, UUID>
-// }
+extension WaitlistedAdmin: Duet.Identifiable {
+  typealias Id = Tagged<WaitlistedAdmin, UUID>
+}
 
-// extension WaitlistedUser {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case email
-//     case signupToken
-//     case createdAt
-//     case updatedAt
-//   }
-// }
+extension WaitlistedAdmin {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case email
+    case signupToken
+    case createdAt
+    case updatedAt
+  }
+}
