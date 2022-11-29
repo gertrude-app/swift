@@ -10,6 +10,7 @@ let package = Package(
     .package("vapor/fluent-postgres-driver@2.4.0"),
     .package("onevcat/Rainbow@4.0.1"),
     .package(path: "../duet"),
+    .package(path: "../shared"),
   ],
   targets: [
     .target(
@@ -20,6 +21,7 @@ let package = Package(
         .product(name: "Fluent", package: "fluent"),
         .product(name: "Duet", package: "duet"),
         .product(name: "DuetSQL", package: "duet"),
+        .product(name: "Shared", package: "shared"),
         "Rainbow",
       ],
       exclude: ["Database/Migrations/foo.sql"], // temp
