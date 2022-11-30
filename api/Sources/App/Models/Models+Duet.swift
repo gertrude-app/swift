@@ -167,20 +167,20 @@ extension Key {
   }
 }
 
-// extension KeystrokeLine: Duet.Identifiable {
-//   typealias Id = Tagged<KeystrokeLine, UUID>
-// }
+extension KeystrokeLine: Duet.Identifiable {
+  typealias Id = Tagged<KeystrokeLine, UUID>
+}
 
-// extension KeystrokeLine {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case deviceId
-//     case appName
-//     case line
-//     case createdAt
-//     case deletedAt
-//   }
-// }
+extension KeystrokeLine {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case deviceId
+    case appName
+    case line
+    case createdAt
+    case deletedAt
+  }
+}
 
 // extension NetworkDecision: Duet.Identifiable {
 //   typealias Id = Tagged<NetworkDecision, UUID>
@@ -222,21 +222,21 @@ extension Key {
 //   }
 // }
 
-// extension Screenshot: Duet.Identifiable {
-//   typealias Id = Tagged<Screenshot, UUID>
-// }
+extension Screenshot: Duet.Identifiable {
+  typealias Id = Tagged<Screenshot, UUID>
+}
 
-// extension Screenshot {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case deviceId
-//     case url
-//     case width
-//     case height
-//     case createdAt
-//     case deletedAt
-//   }
-// }
+extension Screenshot {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case deviceId
+    case url
+    case width
+    case height
+    case createdAt
+    case deletedAt
+  }
+}
 
 // extension SuspendFilterRequest: Duet.Identifiable {
 //   typealias Id = Tagged<SuspendFilterRequest, UUID>

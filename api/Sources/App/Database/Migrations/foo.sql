@@ -3,47 +3,19 @@
 -- app_bundle_ids, app_categories, identified_apps
 -- releases, stripe_events
 
+CREATE TABLE keystroke_lines (
+    id uuid NOT NULL,
+    device_id uuid NOT NULL,
+    app_name text NOT NULL,
+    line text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    deleted_at timestamp with time zone
+);
+
+ALTER TABLE ONLY keystroke_lines
+    ADD CONSTRAINT keystroke_lines_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;
+
 --
-
-CREATE TYPE admin_user_notification_trigger AS ENUM (
-    'unlockRequestSubmitted',
-    'suspendFilterRequestSubmitted'
-);
-
-CREATE TYPE admin_user_subscription_status AS ENUM (
-    'pendingEmailVerification',
-    'emailVerified',
-    'signupCanceled',
-    'incomplete',
-    'incompleteExpired',
-    'trialing',
-    'active',
-    'pastDue',
-    'canceled',
-    'unpaid',
-    'complimentary'
-);
-
-CREATE TYPE key_domain_type AS ENUM (
-    'wildcard',
-    'exact',
-    'anySubdomain',
-    'regex'
-);
-
-CREATE TYPE key_scope AS ENUM (
-    'wildcard',
-    'category',
-    'app',
-    'id'
-);
-
-CREATE TYPE key_type AS ENUM (
-    'domain',
-    'fileExt',
-    'path',
-    'ip'
-);
 
 CREATE TYPE network_decision_reason AS ENUM (
     'block',
@@ -165,15 +137,6 @@ CREATE TABLE identified_apps (
     updated_at timestamp with time zone NOT NULL
 );
 
-CREATE TABLE keystroke_lines (
-    id uuid NOT NULL,
-    device_id uuid NOT NULL,
-    app_name text NOT NULL,
-    line text NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
-);
-
 CREATE TABLE network_decisions (
     id uuid NOT NULL,
     device_id uuid NOT NULL,
@@ -199,16 +162,6 @@ CREATE TABLE releases (
     core_revision text NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
-);
-
-CREATE TABLE screenshots (
-    id uuid NOT NULL,
-    device_id uuid NOT NULL,
-    url text NOT NULL,
-    width bigint NOT NULL,
-    height bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
 );
 
 CREATE TABLE stripe_events (
@@ -266,9 +219,6 @@ ALTER TABLE ONLY app_categories
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT identified_apps_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY keystroke_lines
-    ADD CONSTRAINT keystroke_lines_pkey PRIMARY KEY (id);
-
 ALTER TABLE ONLY network_decisions
     ADD CONSTRAINT network_decisions_pkey PRIMARY KEY (id);
 
@@ -277,9 +227,6 @@ ALTER TABLE ONLY releases
 
 ALTER TABLE ONLY releases
     ADD CONSTRAINT releases_semver_key UNIQUE (semver);
-
-ALTER TABLE ONLY screenshots
-    ADD CONSTRAINT screenshots_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY stripe_events
     ADD CONSTRAINT stripe_events_pkey PRIMARY KEY (id);
@@ -335,17 +282,11 @@ ALTER TABLE ONLY admin_notifications
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT identified_apps_app_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_categories(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY keystroke_lines
-    ADD CONSTRAINT keystroke_lines_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY network_decisions
     ADD CONSTRAINT network_decisions_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY network_decisions
     ADD CONSTRAINT network_decisions_responsible_key_id_fkey FOREIGN KEY (responsible_key_id) REFERENCES keys(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-ALTER TABLE ONLY screenshots
-    ADD CONSTRAINT screenshots_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY suspend_filter_requests
     ADD CONSTRAINT suspend_filter_requests_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;
