@@ -21,17 +21,16 @@ struct KeychainTables: GertieMigration {
   )
 
   func upKeychains(_ sql: SQLDatabase) async throws {
-    try await sql.create(
-      table: Keychain.M2.self,
-      Column(.id, .uuid, .primaryKey),
-      Column(Keychain.M2.name, .text),
-      Column(Keychain.M2.description, .text, .nullable),
-      Column(Keychain.M2.isPublic, .boolean),
-      Column(Keychain.M2.authorId, .uuid),
-      Column(.createdAt, .timestampWithTimezone),
-      Column(.updatedAt, .timestampWithTimezone),
+    try await sql.create(table: Keychain.M2.self) {
+      Column(.id, .uuid, .primaryKey)
+      Column(Keychain.M2.name, .text)
+      Column(Keychain.M2.description, .text, .nullable)
+      Column(Keychain.M2.isPublic, .boolean)
+      Column(Keychain.M2.authorId, .uuid)
+      Column(.createdAt, .timestampWithTimezone)
+      Column(.updatedAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
-    )
+    }
     try await sql.add(constraint: keychainsFk)
   }
 
@@ -50,16 +49,15 @@ struct KeychainTables: GertieMigration {
   )
 
   func upKeys(_ sql: SQLDatabase) async throws {
-    try await sql.create(
-      table: Key.M2.self,
-      Column(.id, .uuid, .primaryKey),
-      Column(Key.M2.key, .jsonb),
-      Column(Key.M2.comment, .text),
-      Column(Key.M2.keychainId, .uuid),
-      Column(.createdAt, .timestampWithTimezone),
-      Column(.updatedAt, .timestampWithTimezone),
+    try await sql.create(table: Key.M2.self) {
+      Column(.id, .uuid, .primaryKey)
+      Column(Key.M2.key, .jsonb)
+      Column(Key.M2.comment, .text)
+      Column(Key.M2.keychainId, .uuid)
+      Column(.createdAt, .timestampWithTimezone)
+      Column(.updatedAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
-    )
+    }
     try await sql.add(constraint: keysFk)
   }
 

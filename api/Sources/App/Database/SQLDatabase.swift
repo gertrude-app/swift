@@ -13,10 +13,13 @@ extension SQLDatabase {
     return try await raw(sql).all()
   }
 
-  func create(table: TableNamingMigration.Type, _ columns: Column...) async throws {
+  func create(
+    table: TableNamingMigration.Type,
+    @ColumnBuilder columns: () -> [Column]
+  ) async throws {
     try await execute("""
       CREATE TABLE \(table: table) (
-        \(raw: columns.map(\.sql).joined(separator: ",\n    "))
+        \(raw: columns().map(\.sql).joined(separator: ",\n    "))
       )
     """)
   }

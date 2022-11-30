@@ -21,21 +21,20 @@ struct AdminTables: GertieMigration {
 
   func upAdmins(_ sql: SQLDatabase) async throws {
     try await sql.create(enum: Admin.SubscriptionStatus.self)
-    try await sql.create(
-      table: Admin.M1.self,
-      Column(.id, .uuid, .primaryKey),
-      Column(Admin.M1.email, .text, .unique),
-      Column(Admin.M1.password, .text),
-      Column(Admin.M1.subscriptionId, .text, .nullable),
+    try await sql.create(table: Admin.M1.self) {
+      Column(.id, .uuid, .primaryKey)
+      Column(Admin.M1.email, .text, .unique)
+      Column(Admin.M1.password, .text)
+      Column(Admin.M1.subscriptionId, .text, .nullable)
       Column(
         Admin.M1.subscriptionStatus,
         .enum(Admin.SubscriptionStatus.self),
         default: .enumValue(Admin.SubscriptionStatus.pendingEmailVerification)
-      ),
-      Column(.createdAt, .timestampWithTimezone),
-      Column(.updatedAt, .timestampWithTimezone),
+      )
+      Column(.createdAt, .timestampWithTimezone)
+      Column(.updatedAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
-    )
+    }
   }
 
   func downAdmins(_ sql: SQLDatabase) async throws {
@@ -53,14 +52,13 @@ struct AdminTables: GertieMigration {
   )
 
   func upAdminTokens(_ sql: SQLDatabase) async throws {
-    try await sql.create(
-      table: AdminToken.M1.self,
-      Column(.id, .uuid, .primaryKey),
-      Column(AdminToken.M1.value, .uuid),
-      Column(AdminToken.M1.adminId, .uuid),
-      Column(.createdAt, .timestampWithTimezone),
+    try await sql.create(table: AdminToken.M1.self) {
+      Column(.id, .uuid, .primaryKey)
+      Column(AdminToken.M1.value, .uuid)
+      Column(AdminToken.M1.adminId, .uuid)
+      Column(.createdAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone)
-    )
+    }
     try await sql.add(constraint: adminTokensFk)
   }
 
@@ -80,13 +78,12 @@ struct AdminTables: GertieMigration {
 
   func upAdminVerifiedNotificationMethods(_ sql: SQLDatabase) async throws {
     typealias M = AdminVerifiedNotificationMethod.M1
-    try await sql.create(
-      table: M.self,
-      Column(.id, .uuid, .primaryKey),
-      Column(M.adminId, .uuid),
-      Column(M.method, .jsonb),
+    try await sql.create(table: M.self) {
+      Column(.id, .uuid, .primaryKey)
+      Column(M.adminId, .uuid)
+      Column(M.method, .jsonb)
       Column(.createdAt, .timestampWithTimezone)
-    )
+    }
     try await sql.add(constraint: adminVerifiedNotificationMethodsFk)
     try await sql.add(constraint: .unique(M.self, [M.adminId, M.method]))
   }
@@ -115,14 +112,13 @@ struct AdminTables: GertieMigration {
   func upAdminNotifications(_ sql: SQLDatabase) async throws {
     typealias M = AdminNotification.M1
     try await sql.create(enum: AdminNotification.Trigger.self)
-    try await sql.create(
-      table: M.self,
-      Column(.id, .uuid, .primaryKey),
-      Column(M.trigger, .enum(AdminNotification.Trigger.self)),
-      Column(M.adminId, .uuid),
-      Column(M.methodId, .uuid),
+    try await sql.create(table: M.self) {
+      Column(.id, .uuid, .primaryKey)
+      Column(M.trigger, .enum(AdminNotification.Trigger.self))
+      Column(M.adminId, .uuid)
+      Column(M.methodId, .uuid)
       Column(.createdAt, .timestampWithTimezone)
-    )
+    }
     try await sql.add(constraint: adminNotificationsAdminIdFk)
     try await sql.add(constraint: adminNotificationsMethodIdFk)
     try await sql.add(constraint: .unique(M.self, [M.methodId, M.adminId]))
@@ -138,14 +134,13 @@ struct AdminTables: GertieMigration {
   // table: waitlisted_admins
 
   func upWaitlistedAdmins(_ sql: SQLDatabase) async throws {
-    try await sql.create(
-      table: WaitlistedAdmin.M1.self,
-      Column(.id, .uuid, .primaryKey),
-      Column(WaitlistedAdmin.M1.email, .text, .unique),
-      Column(WaitlistedAdmin.M1.signupToken, .uuid, [.nullable, .unique]),
-      Column(.createdAt, .timestampWithTimezone),
+    try await sql.create(table: WaitlistedAdmin.M1.self) {
+      Column(.id, .uuid, .primaryKey)
+      Column(WaitlistedAdmin.M1.email, .text, .unique)
+      Column(WaitlistedAdmin.M1.signupToken, .uuid, [.nullable, .unique])
+      Column(.createdAt, .timestampWithTimezone)
       Column(.updatedAt, .timestampWithTimezone)
-    )
+    }
   }
 
   func downWaitlistedAdmins(_ sql: SQLDatabase) async throws {

@@ -1,27 +1,7 @@
--- users, user_tokens, user_keychain, devices
 -- screenshots, keystroke_lines
 -- network_decisions, unlock_requests, suspend_filter_requests
 -- app_bundle_ids, app_categories, identified_apps
 -- releases, stripe_events
-
-CREATE TABLE users (
-    id uuid NOT NULL,
-    admin_id uuid NOT NULL,
-    name text NOT NULL,
-    keylogging_enabled boolean NOT NULL,
-    screenshots_enabled boolean NOT NULL,
-    screenshots_resolution bigint NOT NULL,
-    screenshots_frequency bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
-);
-
-ALTER TABLE ONLY users
-    ADD CONSTRAINT guardians_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY users
-    ADD CONSTRAINT guardians_admin_user_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE;
 
 --
 
@@ -174,21 +154,6 @@ CREATE TABLE app_categories (
     updated_at timestamp with time zone NOT NULL
 );
 
-CREATE TABLE devices (
-    id uuid NOT NULL,
-    user_id uuid NOT NULL,
-    custom_name text,
-    hostname text,
-    username text NOT NULL,
-    full_username text NOT NULL,
-    numeric_id bigint NOT NULL,
-    serial_number text NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    app_version text DEFAULT '0.0.0'::text,
-    model_identifier text NOT NULL
-);
-
 CREATE TABLE identified_apps (
     id uuid NOT NULL,
     name text NOT NULL,
@@ -275,23 +240,6 @@ CREATE TABLE unlock_requests (
     status request_status NOT NULL
 );
 
-CREATE TABLE user_keychain (
-    id uuid NOT NULL,
-    user_id uuid NOT NULL,
-    keychain_id uuid NOT NULL,
-    created_at timestamp with time zone NOT NULL
-);
-
-CREATE TABLE user_tokens (
-    id uuid NOT NULL,
-    value uuid NOT NULL,
-    user_id uuid NOT NULL,
-    device_id uuid,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
-);
-
 -- constraints
 
 ALTER TABLE ONLY _jobs
@@ -315,12 +263,6 @@ ALTER TABLE ONLY app_bundle_ids
 ALTER TABLE ONLY app_categories
     ADD CONSTRAINT app_categories_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY user_keychain
-    ADD CONSTRAINT guardian_keychain_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY user_tokens
-    ADD CONSTRAINT guardian_tokens_pkey PRIMARY KEY (id);
-
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT identified_apps_pkey PRIMARY KEY (id);
 
@@ -329,9 +271,6 @@ ALTER TABLE ONLY keystroke_lines
 
 ALTER TABLE ONLY network_decisions
     ADD CONSTRAINT network_decisions_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY devices
-    ADD CONSTRAINT protected_users_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY releases
     ADD CONSTRAINT releases_pkey PRIMARY KEY (id);
@@ -372,20 +311,11 @@ ALTER TABLE ONLY app_categories
 ALTER TABLE ONLY app_categories
     ADD CONSTRAINT "uq:app_categories.slug" UNIQUE (slug);
 
-ALTER TABLE ONLY user_keychain
-    ADD CONSTRAINT "uq:guardian_keychain.guardian_id+guardian_keychain.keychain_id" UNIQUE (user_id, keychain_id);
-
-ALTER TABLE ONLY user_tokens
-    ADD CONSTRAINT "uq:guardian_tokens.value" UNIQUE (value);
-
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT "uq:identified_apps.name" UNIQUE (name);
 
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT "uq:identified_apps.slug" UNIQUE (slug);
-
-ALTER TABLE ONLY devices
-    ADD CONSTRAINT "uq:protected_users.device_serial_number+protected_users.device_" UNIQUE (serial_number, numeric_id);
 
 ALTER TABLE ONLY admin_notifications
     ADD CONSTRAINT admin_user_notifications_admin_user_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE;
@@ -402,18 +332,6 @@ ALTER TABLE ONLY app_bundle_ids
 ALTER TABLE ONLY admin_notifications
     ADD CONSTRAINT fk_admin_notification_method_id FOREIGN KEY (method_id) REFERENCES admin_verified_notification_methods(id);
 
-ALTER TABLE ONLY user_keychain
-    ADD CONSTRAINT guardian_keychain_guardian_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY user_keychain
-    ADD CONSTRAINT guardian_keychain_keychain_id_fkey FOREIGN KEY (keychain_id) REFERENCES keychains(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY user_tokens
-    ADD CONSTRAINT guardian_tokens_guardian_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY user_tokens
-    ADD CONSTRAINT guardian_tokens_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT identified_apps_app_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_categories(id) ON DELETE CASCADE;
 
@@ -425,9 +343,6 @@ ALTER TABLE ONLY network_decisions
 
 ALTER TABLE ONLY network_decisions
     ADD CONSTRAINT network_decisions_responsible_key_id_fkey FOREIGN KEY (responsible_key_id) REFERENCES keys(id) ON UPDATE CASCADE ON DELETE SET NULL;
-
-ALTER TABLE ONLY devices
-    ADD CONSTRAINT protected_users_guardian_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY screenshots
     ADD CONSTRAINT screenshots_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;

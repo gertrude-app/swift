@@ -114,3 +114,10 @@ extension Column {
     defaultValue = `default`
   }
 }
+
+@resultBuilder
+enum ColumnBuilder {
+  static func buildBlock(_ columns: Column...) -> [Column] {
+    columns
+  }
+}
