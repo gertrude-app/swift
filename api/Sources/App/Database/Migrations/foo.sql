@@ -4,6 +4,24 @@
 -- app_bundle_ids, app_categories, identified_apps
 -- releases, stripe_events
 
+CREATE TABLE users (
+    id uuid NOT NULL,
+    admin_id uuid NOT NULL,
+    name text NOT NULL,
+    keylogging_enabled boolean NOT NULL,
+    screenshots_enabled boolean NOT NULL,
+    screenshots_resolution bigint NOT NULL,
+    screenshots_frequency bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    deleted_at timestamp with time zone
+);
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT guardians_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT guardians_admin_user_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE;
 
 --
 
@@ -274,19 +292,6 @@ CREATE TABLE user_tokens (
     deleted_at timestamp with time zone
 );
 
-CREATE TABLE users (
-    id uuid NOT NULL,
-    admin_id uuid NOT NULL,
-    name text NOT NULL,
-    keylogging_enabled boolean NOT NULL,
-    screenshots_enabled boolean NOT NULL,
-    screenshots_resolution bigint NOT NULL,
-    screenshots_frequency bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    deleted_at timestamp with time zone
-);
-
 -- constraints
 
 ALTER TABLE ONLY _jobs
@@ -315,9 +320,6 @@ ALTER TABLE ONLY user_keychain
 
 ALTER TABLE ONLY user_tokens
     ADD CONSTRAINT guardian_tokens_pkey PRIMARY KEY (id);
-
-ALTER TABLE ONLY users
-    ADD CONSTRAINT guardians_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT identified_apps_pkey PRIMARY KEY (id);
@@ -411,9 +413,6 @@ ALTER TABLE ONLY user_tokens
 
 ALTER TABLE ONLY user_tokens
     ADD CONSTRAINT guardian_tokens_protected_user_id_fkey FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY users
-    ADD CONSTRAINT guardians_admin_user_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY identified_apps
     ADD CONSTRAINT identified_apps_app_category_id_fkey FOREIGN KEY (category_id) REFERENCES app_categories(id) ON DELETE CASCADE;

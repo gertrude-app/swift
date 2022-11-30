@@ -11,7 +11,7 @@ final class Admin: Codable {
   var deletedAt: Date?
 
   var keychains = Children<Keychain>.notLoaded
-  // var users = Children<User>.notLoaded
+  var users = Children<User>.notLoaded
   var notifications = Children<AdminNotification>.notLoaded
   var verifiedNotificationMethods = Children<AdminVerifiedNotificationMethod>.notLoaded
   // var accountStatus: AccountStatus { subscriptionStatus.accountStatus }

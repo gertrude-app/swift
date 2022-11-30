@@ -96,26 +96,26 @@ extension AdminVerifiedNotificationMethod {
 //   }
 // }
 
-// extension Device: Duet.Identifiable {
-//   typealias Id = Tagged<Device, UUID>
-// }
+extension Device: Duet.Identifiable {
+  typealias Id = Tagged<Device, UUID>
+}
 
-// extension Device {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case userId
-//     case appVersion
-//     case customName
-//     case hostname
-//     case modelIdentifier
-//     case username
-//     case fullUsername
-//     case numericId
-//     case serialNumber
-//     case createdAt
-//     case updatedAt
-//   }
-// }
+extension Device {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case userId
+    case appVersion
+    case customName
+    case hostname
+    case modelIdentifier
+    case username
+    case fullUsername
+    case numericId
+    case serialNumber
+    case createdAt
+    case updatedAt
+  }
+}
 
 // extension IdentifiedApp: Duet.Identifiable {
 //   typealias Id = Tagged<IdentifiedApp, UUID>
@@ -273,53 +273,53 @@ extension Key {
 //   }
 // }
 
-// extension User: Duet.Identifiable {
-//   typealias Id = Tagged<User, UUID>
-// }
+extension User: Duet.Identifiable {
+  typealias Id = Tagged<User, UUID>
+}
 
-// extension User {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case adminId
-//     case name
-//     case keyloggingEnabled
-//     case screenshotsEnabled
-//     case screenshotsResolution
-//     case screenshotsFrequency
-//     case createdAt
-//     case updatedAt
-//     case deletedAt
-//   }
-// }
+extension User {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case adminId
+    case name
+    case keyloggingEnabled
+    case screenshotsEnabled
+    case screenshotsResolution
+    case screenshotsFrequency
+    case createdAt
+    case updatedAt
+    case deletedAt
+  }
+}
 
-// extension UserKeychain: Duet.Identifiable {
-//   typealias Id = Tagged<UserKeychain, UUID>
-// }
+extension UserKeychain: Duet.Identifiable {
+  typealias Id = Tagged<UserKeychain, UUID>
+}
 
-// extension UserKeychain {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case userId
-//     case keychainId
-//     case createdAt
-//   }
-// }
+extension UserKeychain {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case userId
+    case keychainId
+    case createdAt
+  }
+}
 
-// extension UserToken: Duet.Identifiable {
-//   typealias Id = Tagged<UserToken, UUID>
-// }
+extension UserToken: Duet.Identifiable {
+  typealias Id = Tagged<UserToken, UUID>
+}
 
-// extension UserToken {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case userId
-//     case deviceId
-//     case value
-//     case createdAt
-//     case updatedAt
-//     case deletedAt
-//   }
-// }
+extension UserToken {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case userId
+    case deviceId
+    case value
+    case createdAt
+    case updatedAt
+    case deletedAt
+  }
+}
 
 extension WaitlistedAdmin: Duet.Identifiable {
   typealias Id = Tagged<WaitlistedAdmin, UUID>
