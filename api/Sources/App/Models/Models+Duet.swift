@@ -217,23 +217,39 @@ extension NetworkDecision.Reason: PostgresEnum {
   var typeName: String { NetworkDecision.M5.reasonTypeName }
 }
 
-// extension Release: Duet.Identifiable {
-//   typealias Id = Tagged<Release, UUID>
-// }
+extension Release: Duet.Identifiable {
+  typealias Id = Tagged<Release, UUID>
+}
 
-// extension Release {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case semver
-//     case channel
-//     case signature
-//     case length
-//     case appRevision
-//     case coreRevision
-//     case createdAt
-//     case updatedAt
-//   }
-// }
+extension Release {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case semver
+    case channel
+    case signature
+    case length
+    case appRevision
+    case coreRevision
+    case createdAt
+    case updatedAt
+  }
+}
+
+extension Release.Channel: PostgresEnum {
+  var typeName: String { Release.M7.channelTypeName }
+}
+
+extension StripeEvent: Duet.Identifiable {
+  typealias Id = Tagged<StripeEvent, UUID>
+}
+
+extension StripeEvent {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case json
+    case createdAt
+  }
+}
 
 extension Screenshot: Duet.Identifiable {
   typealias Id = Tagged<Screenshot, UUID>

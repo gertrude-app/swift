@@ -26,7 +26,6 @@ let package = Package(
         .product(name: "TaggedTime", package: "swift-tagged"),
         "Rainbow",
       ],
-      exclude: ["Database/Migrations/foo.sql"], // temp
       swiftSettings: [
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
       ]

@@ -8,5 +8,6 @@ extension Configure {
     app.migrations.add(ActivityTables())
     app.migrations.add(RequestTables())
     app.migrations.add(AppTables())
+    app.migrations.add(MiscTables())
   }
 }

@@ -15,8 +15,8 @@ final class Device: Codable {
   var updatedAt = Date()
 
   var user = Parent<User>.notLoaded
-  // var unlockRequests = Children<UnlockRequest>.notLoaded
-  // var suspendFilterRequests = Children<SuspendFilterRequest>.notLoaded
+  var unlockRequests = Children<UnlockRequest>.notLoaded
+  var suspendFilterRequests = Children<SuspendFilterRequest>.notLoaded
 
   init(
     id: Id = .init(),
