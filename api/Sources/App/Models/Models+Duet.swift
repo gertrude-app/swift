@@ -1,5 +1,10 @@
 import DuetSQL
+import Shared
 import Tagged
+
+extension RequestStatus: PostgresEnum {
+  public var typeName: String { RequestTables.M5.requestStatusTypeName }
+}
 
 extension Admin: Duet.Identifiable {
   typealias Id = Tagged<Admin, UUID>
@@ -67,34 +72,34 @@ extension AdminVerifiedNotificationMethod {
   }
 }
 
-// extension AppCategory: Duet.Identifiable {
-//   typealias Id = Tagged<AppCategory, UUID>
-// }
+extension AppCategory: Duet.Identifiable {
+  typealias Id = Tagged<AppCategory, UUID>
+}
 
-// extension AppCategory {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case name
-//     case slug
-//     case description
-//     case createdAt
-//     case updatedAt
-//   }
-// }
+extension AppCategory {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case name
+    case slug
+    case description
+    case createdAt
+    case updatedAt
+  }
+}
 
-// extension BundleId: Duet.Identifiable {
-//   typealias Id = Tagged<BundleId, UUID>
-// }
+extension AppBundleId: Duet.Identifiable {
+  typealias Id = Tagged<AppBundleId, UUID>
+}
 
-// extension BundleId {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case bundleId
-//     case identifiedAppId
-//     case createdAt
-//     case updatedAt
-//   }
-// }
+extension AppBundleId {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case bundleId
+    case identifiedAppId
+    case createdAt
+    case updatedAt
+  }
+}
 
 extension Device: Duet.Identifiable {
   typealias Id = Tagged<Device, UUID>
@@ -117,22 +122,22 @@ extension Device {
   }
 }
 
-// extension IdentifiedApp: Duet.Identifiable {
-//   typealias Id = Tagged<IdentifiedApp, UUID>
-// }
+extension IdentifiedApp: Duet.Identifiable {
+  typealias Id = Tagged<IdentifiedApp, UUID>
+}
 
-// extension IdentifiedApp {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case categoryId
-//     case name
-//     case slug
-//     case selectable
-//     case description
-//     case createdAt
-//     case updatedAt
-//   }
-// }
+extension IdentifiedApp {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case categoryId
+    case name
+    case slug
+    case selectable
+    case description
+    case createdAt
+    case updatedAt
+  }
+}
 
 extension Keychain: Duet.Identifiable {
   typealias Id = Tagged<Keychain, UUID>
@@ -182,27 +187,35 @@ extension KeystrokeLine {
   }
 }
 
-// extension NetworkDecision: Duet.Identifiable {
-//   typealias Id = Tagged<NetworkDecision, UUID>
-// }
+extension NetworkDecision: Duet.Identifiable {
+  typealias Id = Tagged<NetworkDecision, UUID>
+}
 
-// extension NetworkDecision {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case deviceId
-//     case responsibleKeyId
-//     case verdict
-//     case reason
-//     case ipProtocolNumber
-//     case hostname
-//     case ipAddress
-//     case url
-//     case appBundleId
-//     case count
-//     case createdAt
-//     case appDescriptor
-//   }
-// }
+extension NetworkDecision {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case deviceId
+    case responsibleKeyId
+    case verdict
+    case reason
+    case ipProtocolNumber
+    case hostname
+    case ipAddress
+    case url
+    case appBundleId
+    case count
+    case createdAt
+    case appDescriptor
+  }
+}
+
+extension NetworkDecision.Verdict: PostgresEnum {
+  var typeName: String { NetworkDecision.M5.verdictTypeName }
+}
+
+extension NetworkDecision.Reason: PostgresEnum {
+  var typeName: String { NetworkDecision.M5.reasonTypeName }
+}
 
 // extension Release: Duet.Identifiable {
 //   typealias Id = Tagged<Release, UUID>
@@ -238,40 +251,40 @@ extension Screenshot {
   }
 }
 
-// extension SuspendFilterRequest: Duet.Identifiable {
-//   typealias Id = Tagged<SuspendFilterRequest, UUID>
-// }
+extension SuspendFilterRequest: Duet.Identifiable {
+  typealias Id = Tagged<SuspendFilterRequest, UUID>
+}
 
-// extension SuspendFilterRequest {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case deviceId
-//     case status
-//     case scope
-//     case duration
-//     case requestComment
-//     case responseComment
-//     case createdAt
-//     case updatedAt
-//   }
-// }
+extension SuspendFilterRequest {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case deviceId
+    case status
+    case scope
+    case duration
+    case requestComment
+    case responseComment
+    case createdAt
+    case updatedAt
+  }
+}
 
-// extension UnlockRequest: Duet.Identifiable {
-//   typealias Id = Tagged<UnlockRequest, UUID>
-// }
+extension UnlockRequest: Duet.Identifiable {
+  typealias Id = Tagged<UnlockRequest, UUID>
+}
 
-// extension UnlockRequest {
-//   enum CodingKeys: String, CodingKey, CaseIterable {
-//     case id
-//     case networkDecisionId
-//     case deviceId
-//     case status
-//     case requestComment
-//     case responseComment
-//     case createdAt
-//     case updatedAt
-//   }
-// }
+extension UnlockRequest {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case networkDecisionId
+    case deviceId
+    case status
+    case requestComment
+    case responseComment
+    case createdAt
+    case updatedAt
+  }
+}
 
 extension User: Duet.Identifiable {
   typealias Id = Tagged<User, UUID>

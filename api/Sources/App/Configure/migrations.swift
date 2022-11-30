@@ -6,5 +6,7 @@ extension Configure {
     app.migrations.add(KeychainTables())
     app.migrations.add(UserTables())
     app.migrations.add(ActivityTables())
+    app.migrations.add(RequestTables())
+    app.migrations.add(AppTables())
   }
 }

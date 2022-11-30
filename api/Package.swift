@@ -9,6 +9,7 @@ let package = Package(
     .package("vapor/fluent@4.5.0"),
     .package("vapor/fluent-postgres-driver@2.4.0"),
     .package("onevcat/Rainbow@4.0.1"),
+    .package("pointfreeco/swift-tagged@0.8.0"),
     .package(path: "../duet"),
     .package(path: "../shared"),
   ],
@@ -22,6 +23,7 @@ let package = Package(
         .product(name: "Duet", package: "duet"),
         .product(name: "DuetSQL", package: "duet"),
         .product(name: "Shared", package: "shared"),
+        .product(name: "TaggedTime", package: "swift-tagged"),
         "Rainbow",
       ],
       exclude: ["Database/Migrations/foo.sql"], // temp
