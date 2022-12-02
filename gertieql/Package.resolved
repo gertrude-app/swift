@@ -1,0 +1,52 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "swift-case-paths",
+        "repositoryURL": "https://github.com/pointfreeco/swift-case-paths",
+        "state": {
+          "branch": null,
+          "revision": "bb436421f57269fbcfe7360735985321585a86e5",
+          "version": "0.10.1"
+        }
+      },
+      {
+        "package": "swift-collections",
+        "repositoryURL": "https://github.com/apple/swift-collections",
+        "state": {
+          "branch": null,
+          "revision": "f504716c27d2e5d4144fa4794b12129301d17729",
+          "version": "1.0.3"
+        }
+      },
+      {
+        "package": "swift-parsing",
+        "repositoryURL": "https://github.com/pointfreeco/swift-parsing",
+        "state": {
+          "branch": null,
+          "revision": "bc92e84968990b41640214b636667f35b6e5d44c",
+          "version": "0.10.0"
+        }
+      },
+      {
+        "package": "swift-url-routing",
+        "repositoryURL": "https://github.com/pointfreeco/swift-url-routing.git",
+        "state": {
+          "branch": null,
+          "revision": "f54c4f74e7884f7930560c08387817ce28271770",
+          "version": "0.4.0"
+        }
+      },
+      {
+        "package": "xctest-dynamic-overlay",
+        "repositoryURL": "https://github.com/pointfreeco/xctest-dynamic-overlay",
+        "state": {
+          "branch": null,
+          "revision": "5a5457a744239896e9b0b03a8e1a5069c3e7b91f",
+          "version": "0.6.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

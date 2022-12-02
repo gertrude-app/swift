@@ -19,6 +19,21 @@ migrate-up: build-api
 migrate-down: build-api
 	$(API_RUN) migrate --revert --yes
 
+# gertieql
+
+gertieql:
+	watchexec --restart --clear \
+	  --watch gertieql/Sources \
+	  --watch gertieql/Package.swift \
+	  --exts swift \
+	  'make build-gertieql'
+
+build-gertieql:
+	cd gertieql && swift build
+
+test-gertieql:
+	cd gertieql && $(SWIFT_TEST)
+
 # shared
 
 shared:
@@ -70,6 +85,7 @@ test:
 	make test-shared
 	make test-duet
 	make test-xkit
+	make test-gertieql
 
 exclude:
 	find . -path '**/.build/**/swift-nio*/**/hash.txt' -delete
@@ -83,6 +99,7 @@ clean:
 	rm -rf duet/.build
 	rm -rf x-kit/.build
 	rm -rf shared/.build
+	rm -rf gertieql/.build
 
 # helpers
 
@@ -90,6 +107,7 @@ SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
 ALL_CMDS = api build-api run-api migrate-up migrate-down \
   shared build-shared test-shared \
+  gertieql build-gertieql test-gertieql \
   xkit build-xkit test-xkit \
   duet build-duet test-duet \
 	exclude clean test
