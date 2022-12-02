@@ -1,41 +1,69 @@
 import Foundation
 
-// input, response
-
-protocol Test2 {
-  associatedtype Input: Codable
-  associatedtype Output: Codable
+public func getPair(_ route: GertieQL.Route) async throws -> AnyPair<String> {
+  switch route {
+  case .dashboard(let dashboard):
+    switch dashboard {
+    case .placeholder:
+      fatalError("placeholder")
+    }
+  case .macApp(let macApp):
+    switch macApp {
+    case .userTokenAuthed(let uuid, let userTokenAuthed):
+      print("userTokenAuthed \(uuid)")
+      switch userTokenAuthed {
+      case .createSignedScreenshotUpload(let input):
+        let pair = LolPair(input: input, resolve: Resolver.rofl)
+        return AnyPair(pair: pair, transform: { output, _ in
+          .init(foo: output.foo)
+        })
+      case .getUsersAdminAccountStatus:
+        fatalError("getUsersAdminAccountStatus")
+      }
+    case .unauthed(let unAuthed):
+      print("unauthed")
+      switch unAuthed {
+      case .register:
+        fatalError("register")
+      }
+    }
+  }
 }
 
-struct Rofl2: Test2 {
-  struct Input: Codable {
-    let name: String
+enum Resolver {
+  static func rofl(input: LolPair.Input, context: String) async throws -> LolPair.Output {
+    .init(foo: "did it")
   }
 
-  struct Output: Codable {
-    let name: String
-  }
-}
-
-protocol Test1 {
-  static var operation: Codable.Type { get }
-}
-
-struct Rofl: Test1 {
-  struct Hi: Codable {
-    let name: String
-  }
-
-  static var operation: Codable.Type {
-    [Hi].self
+  static func wrong(_ input: LolPair.Input, _ context: String) async throws -> String {
+    "lo"
   }
 }
 
-// contract: string operation name, codable input, codable response
-
-//
+// old...
 
 enum Wrapper {
+  func myFunc() async throws -> Any {
+    let body = """
+    {
+      "operation": "getAdmin123",
+      "input": { "userId": "123" } }
+    }
+    """
+
+    let opInput = try JSONDecoder().decode(NamedOperation.self, from: body.data(using: .utf8)!)
+    switch Operation(rawValue: opInput.operation) {
+    case .getUserName:
+      let input = try JSONDecoder()
+        .decode(Input<GetUserName.Input>.self, from: body.data(using: .utf8)!)
+        .input
+      let result = try await anotherFunc(input: input)
+      return result
+    case .none:
+      fatalError("Unknown operation: \(opInput.operation)")
+    }
+  }
+
   enum Operation: String, Codable {
     case getUserName
   }
@@ -58,43 +86,7 @@ enum Wrapper {
     }
   }
 
-  enum Jared {
-    case rofl(Codable)
-    case lol(Codable.Type)
-  }
-
-  struct GertieQLError: Error {}
-
-  enum GertieQLResult<Data: Codable> {
-    case success(Data)
-    case error(GertieQLError)
-  }
-
   func anotherFunc(input: GetUserName.Input) async throws -> GetUserName.Data {
     fatalError()
-  }
-
-  func myFunc() async throws -> Any {
-    let body = """
-    {
-      "operation": "getAdmin123",
-      "input": {
-          "userId": "123"
-        }
-      }
-    }
-    """
-
-    let opInput = try JSONDecoder().decode(NamedOperation.self, from: body.data(using: .utf8)!)
-    switch Operation(rawValue: opInput.operation) {
-    case .getUserName:
-      let input = try JSONDecoder()
-        .decode(Input<GetUserName.Input>.self, from: body.data(using: .utf8)!)
-        .input
-      let result = try await anotherFunc(input: input)
-      return result
-    case .none:
-      fatalError("Unknown operation: \(opInput.operation)")
-    }
   }
 }

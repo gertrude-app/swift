@@ -1,78 +1,75 @@
 import Foundation
 import URLRouting
 
-public struct Input: Codable, Equatable {
-  public init(width: Int) {
-    self.width = width
-  }
+public enum GertieQL {}
 
-  public let width: Int
-}
-
-public enum GertieQL {
-  public enum XRoute: Equatable {
+public extension GertieQL {
+  enum Route: Equatable {
     case dashboard(Dashboard)
     case macApp(MacApp)
-
-    public enum MacApp: Equatable {
-      case userTokenAuthed(UUID, UserTokenAuthed)
-      case unauthed(UnAuthed)
-
-      public static let router = OneOf {
-        Route(.case(MacApp.userTokenAuthed)) {
-          Headers { Field("X-UserToken") { UUID.parser() } }
-          UserTokenAuthed.router
-        }
-        Route(.case(MacApp.unauthed)) {
-          UnAuthed.router
-        }
-      }
-
-      public enum UnAuthed: Equatable {
-        case register
-
-        public static let router = OneOf {
-          Route(.case(UnAuthed.register)) {
-            Path { "register" }
-          }
-        }
-      }
-
-      public enum UserTokenAuthed: Equatable {
-        case getUsersAdminAccountStatus
-        case createSignedScreenshotUpload(input: Input)
-
-        public static let router = OneOf {
-          Route(.case(UserTokenAuthed.getUsersAdminAccountStatus)) {
-            Path { "getUsersAdminAccountStatus" }
-          }
-          Route(.case(UserTokenAuthed.createSignedScreenshotUpload)) {
-            Path { "createSignedScreenshotUpload" }
-            Body(.json(Input.self))
-          }
-        }
-      }
-    }
-
-    public enum Dashboard: String, CaseIterable {
-      case placeholder
-    }
   }
+}
 
-  public static let router = OneOf {
-    Route(.case(XRoute.macApp)) {
+public extension GertieQL.Route {
+  static let router = OneOf {
+    Route(.case(Self.macApp)) {
       Method.post
       Path { "macos-app" }
-      XRoute.MacApp.router
+      MacApp.router
     }
-    Route(.case(XRoute.dashboard)) {
+    Route(.case(Self.dashboard)) {
       Method.post
-      Path {
-        "dashboard"
-        XRoute.Dashboard.parser()
-      }
+      Path { "dashboard" }
+      Dashboard.router
     }
   }
 }
 
-let router = Path { "foo" }
+public extension GertieQL.Route {
+  enum MacApp: Equatable {
+    case userTokenAuthed(UUID, UserTokenAuthed)
+    case unauthed(UnAuthed)
+  }
+}
+
+public extension GertieQL.Route.MacApp {
+  static let router = OneOf {
+    Route(.case(Self.userTokenAuthed)) {
+      Headers { Field("X-UserToken") { UUID.parser() } }
+      UserTokenAuthed.router
+    }
+    Route(.case(Self.unauthed)) {
+      UnAuthed.router
+    }
+  }
+}
+
+public extension GertieQL.Route.MacApp {
+  enum UnAuthed: Equatable {
+    case register
+  }
+}
+
+public extension GertieQL.Route.MacApp.UnAuthed {
+  static let router = OneOf {
+    Route(.case(Self.register)) {
+      Path { "register" }
+    }
+  }
+}
+
+// dashboard
+
+public extension GertieQL.Route {
+  enum Dashboard: Equatable {
+    case placeholder
+  }
+}
+
+public extension GertieQL.Route.Dashboard {
+  static let router = OneOf {
+    Route(.case(Self.placeholder)) {
+      Path { "placeholder" }
+    }
+  }
+}

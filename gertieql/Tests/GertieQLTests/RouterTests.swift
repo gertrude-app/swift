@@ -2,9 +2,17 @@ import GertieQL
 import XCTest
 
 final class RouterTests: XCTestCase {
-  typealias Route = GertieQL.XRoute
-  let router = GertieQL.router
+  typealias Route = GertieQL.Route
+  let router = GertieQL.Route.router
   let deadbeef = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+
+  // func testfoo() async throws {
+  //   let route = Route.macApp(.userTokenAuthed(
+  //     deadbeef,
+  //     .createSignedScreenshotUpload(input: .init(width: 100))
+  //   ))
+  //   let (input, handler) = try foo(route)!
+  // }
 
   func testPost() throws {
     var request = URLRequest(url: URL(string: "macos-app/createSignedScreenshotUpload")!)
@@ -14,7 +22,7 @@ final class RouterTests: XCTestCase {
     XCTAssertEqual(missingBody, nil)
 
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.httpBody = try JSONEncoder().encode(Input(width: 100))
+    request.httpBody = try JSONEncoder().encode(LolInput(width: 100))
     request.httpMethod = "POST"
 
     let matched = try router.match(request: request)
