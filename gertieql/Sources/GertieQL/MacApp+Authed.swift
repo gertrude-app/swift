@@ -1,103 +1,78 @@
+import Foundation
 import URLRouting
 
 public extension GertieQL.Route.MacApp {
-  enum UserTokenAuthed: Equatable {
+  enum UserAuthed: Equatable {
     case getUsersAdminAccountStatus
-    case createSignedScreenshotUpload(input: LolPair.Input)
+    case createSignedScreenshotUpload(input: CreateSignedScreenshotUpload.Input)
   }
 }
 
-public extension GertieQL.Route.MacApp.UserTokenAuthed {
+public extension GertieQL.Route.MacApp.UserAuthed {
   static let router = OneOf {
     Route(.case(Self.getUsersAdminAccountStatus)) {
       Path { "getUsersAdminAccountStatus" }
     }
     Route(.case(Self.createSignedScreenshotUpload)) {
       Path { "createSignedScreenshotUpload" }
-      Body(.json(LolPair.Input.self))
+      Body(.json(CreateSignedScreenshotUpload.Input.self))
     }
   }
 }
 
-public struct LolInput: Codable, Equatable {
-  let width: Int
+public extension GertieQL.Route.MacApp.UserAuthed {
+  struct CreateSignedScreenshotUpload: Pair {
+    public struct Input: Codable, Equatable {
+      public let width: Int
+      public let height: Int
 
-  public init(width: Int) {
-    self.width = width
+      public init(width: Int, height: Int) {
+        self.width = width
+        self.height = height
+      }
+    }
+
+    public struct Output: Codable, Equatable {
+      public let uploadUrl: URL
+      public let webUrl: URL
+
+      public init(uploadUrl: URL, webUrl: URL) {
+        self.uploadUrl = uploadUrl
+        self.webUrl = webUrl
+      }
+    }
   }
 }
 
-public protocol Pair: Equatable {
-  associatedtype Input: Codable & Equatable
-  associatedtype Output: Codable & Equatable
-}
+// api
+// public protocol PairResolver: Pair {
+//   associatedtype Context
 
-// public protocol PairHandler {
-//   func handle<P: Pair, Context>(input: P.Input, context: Context) async throws -> P.Output
+//   var input: Input { get }
+//   var resolve: (Input, Context) async throws -> Output { get }
 // }
 
-public struct ZPair<Input: Codable & Equatable, Output: Codable & Equatable, Context> {
-  let input: Input
-  let resolve: (Input, Context) async throws -> Output
-}
+// api
+// public struct Resolver<P: Pair>: PairResolver {
+//   public typealias Input = P.Input
+//   public typealias Output = P.Output
+//   public typealias Context = String
 
-public protocol YPair {
-  associatedtype Input: Codable & Equatable
-  associatedtype Output: Codable & Equatable
-  associatedtype Context
+//   public let input: P.Input
+//   public var resolve: (Input, Context) async throws -> Output
 
-  var input: Input { get }
-  var resolve: (Input, Context) async throws -> Output { get }
-}
+//   // public func result(context: Context) async -> GertieQL.Response<Output> {
+//   //   do {
+//   //     let output = try await resolve(input, context)
+//   //     return .success(output)
+//   //   } catch {
+//   //     // @TODO: handle
+//   //     return .error(error.localizedDescription)
+//   //   }
+//   // }
 
-public struct Response: Codable, Equatable {
-  public let foo: String
-}
-
-public struct AnyPair<Context>: YPair {
-  public let input: NoInput
-  public typealias Input = NoInput
-  public typealias Output = Response
-
-  public var resolve: (Input, Context) async throws -> Output
-
-  public init<P: YPair>(pair: P, transform: @escaping (P.Output, P.Context) -> Output)
-    where P.Context == Context {
-    input = NoInput()
-    resolve = { _, context in
-      transform(try await pair.resolve(pair.input, context), context)
-    }
-  }
-}
-
-public struct NoInput: Codable, Equatable {}
-
-public struct LolPair: YPair {
-  public typealias Context = String
-  public var input: Input
-  public var resolve: (Input, Context) async throws -> Output
-
-  public struct Input: Codable, Equatable {
-    public let width: Int
-
-    public init(width: Int) {
-      self.width = width
-    }
-  }
-
-  public struct Output: Codable, Equatable {
-    public let foo: String
-
-    public init(foo: String) {
-      self.foo = foo
-    }
-  }
-
-  public init(
-    input: LolPair.Input,
-    resolve: @escaping (Input, Context) async throws -> Output
-  ) {
-    self.input = input
-    self.resolve = resolve
-  }
-}
+//   public init(_ input: P.Input, _ resolve: @escaping (P.Input, String) async throws -> P.Output) {
+//     self.input = input
+//     self.resolve = resolve
+//   }
+// }

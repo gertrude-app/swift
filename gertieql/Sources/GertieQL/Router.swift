@@ -27,16 +27,16 @@ public extension GertieQL.Route {
 
 public extension GertieQL.Route {
   enum MacApp: Equatable {
-    case userTokenAuthed(UUID, UserTokenAuthed)
+    case userAuthed(UUID, UserAuthed)
     case unauthed(UnAuthed)
   }
 }
 
 public extension GertieQL.Route.MacApp {
   static let router = OneOf {
-    Route(.case(Self.userTokenAuthed)) {
+    Route(.case(Self.userAuthed)) {
       Headers { Field("X-UserToken") { UUID.parser() } }
-      UserTokenAuthed.router
+      UserAuthed.router
     }
     Route(.case(Self.unauthed)) {
       UnAuthed.router
