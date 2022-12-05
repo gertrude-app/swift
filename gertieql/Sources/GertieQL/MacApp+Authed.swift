@@ -1,4 +1,5 @@
 import Foundation
+import Shared
 import URLRouting
 
 public extension MacApp {
@@ -21,6 +22,16 @@ public extension MacApp.UserAuthed {
 }
 
 public extension MacApp.UserAuthed {
+  struct GetUsersAdminAccountStatus: Pair {
+    public struct Output: PairOutput {
+      public let status: AdminAccountStatus
+
+      public init(status: AdminAccountStatus) {
+        self.status = status
+      }
+    }
+  }
+
   struct CreateSignedScreenshotUpload: Pair {
     public struct Input: Codable, Equatable {
       public let width: Int

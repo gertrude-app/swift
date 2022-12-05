@@ -2,12 +2,18 @@ import GertieQL
 import Vapor
 
 struct Context {
+  struct Request {}
   let request: Request
 }
 
 protocol PairResolver: Pair {
   associatedtype Context
   static func resolve(for input: Input, in context: Context) async throws -> Output
+}
+
+protocol NoInputPairResolver: Pair where Input == NoInput {
+  associatedtype Context
+  static func resolve(in context: Context) async throws -> Output
 }
 
 protocol RouteResponder {

@@ -10,7 +10,7 @@ extension Configure {
 
 // extensions
 
-public extension Vapor.Environment {
+extension Vapor.Environment {
   static var mode = Mode.dev
 
   enum Mode: Equatable {
@@ -19,7 +19,7 @@ public extension Vapor.Environment {
     case staging
     case test
 
-    public init(from env: Environment) {
+    init(from env: Env) {
       switch env.name {
       case "production":
         self = .prod
@@ -34,7 +34,7 @@ public extension Vapor.Environment {
       }
     }
 
-    public var name: String {
+    var name: String {
       switch self {
       case .prod:
         return "production"
@@ -49,7 +49,7 @@ public extension Vapor.Environment {
   }
 }
 
-public extension Vapor.Environment {
+extension Vapor.Environment {
   static let CLOUD_STORAGE_KEY = get("CLOUD_STORAGE_KEY")!
   static let CLOUD_STORAGE_SECRET = get("CLOUD_STORAGE_SECRET")!
   static let CLOUD_STORAGE_ENDPOINT = get("CLOUD_STORAGE_ENDPOINT")!

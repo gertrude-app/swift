@@ -1,6 +1,8 @@
 import Foundation
 
-public struct NoInput: Codable, Equatable {}
+public struct NoInput: Codable, Equatable {
+  public init() {}
+}
 
 public extension GertieQL {
   struct JSONEncodingError: Error {}

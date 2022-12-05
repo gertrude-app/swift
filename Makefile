@@ -2,8 +2,9 @@
 
 api:
 	watchexec --restart --clear \
-	  --watch api/Sources \
-	  --watch api/Package.swift \
+	  --watch api/Sources --watch api/Package.swift \
+	  --watch gertieql/Sources --watch gertieql/Package.swift \
+	  --watch shared/Sources --watch shared/Package.swift \
 	  --exts swift \
 	  'make build-api && make run-api'
 
@@ -12,6 +13,9 @@ build-api:
 
 run-api:
 	$(API_RUN) serve --port 8082
+
+test-api:
+	cd api && $(SWIFT_TEST)
 
 migrate-up: build-api
 	$(API_RUN) migrate --yes

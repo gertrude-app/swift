@@ -1,9 +1,10 @@
+import DuetSQL
 import Vapor
 
 extension UserAuthed: RouteResponder {
   struct Context {
-    let request: Request
-    let user: UUID
+    let request: App.Context.Request
+    let user: User
   }
 
   static func respond(to route: Self, in context: Context) async throws -> Response {
@@ -14,8 +15,19 @@ extension UserAuthed: RouteResponder {
       return try await respond(with: output)
 
     case .getUsersAdminAccountStatus:
-      fatalError()
+      let output = try await GetUsersAdminAccountStatus.resolve(in: context)
+      return try await respond(with: output)
     }
+  }
+}
+
+extension UserAuthed.GetUsersAdminAccountStatus: NoInputPairResolver {
+  static func resolve(in context: UserAuthed.Context) async throws -> Output {
+    let admin = try await Current.db.query(Admin.self)
+      .where(.id == context.user.adminId)
+      .first()
+
+    return .init(status: admin.accountStatus)
   }
 }
 

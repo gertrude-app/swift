@@ -1,4 +1,4 @@
-import Fluent
+import DuetSQL
 import FluentPostgresDriver
 import Vapor
 
@@ -14,5 +14,6 @@ extension Configure {
       ),
       as: .psql
     )
+    Current.db = LiveClient(sql: app.db as! SQLDatabase)
   }
 }

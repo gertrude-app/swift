@@ -1,3 +1,4 @@
+import DuetSQL
 import Vapor
 
 extension MacApp: RouteResponder {
@@ -8,14 +9,14 @@ extension MacApp: RouteResponder {
       fatalError("not implemented \(unauthed)")
 
     case .userAuthed(let uuid, let userRoute):
-      let user = try await getUser(token: uuid)
+      let token = try await Current.db.query(UserToken.self)
+        .where(.value == uuid)
+        .first()
+      let user = try await Current.db.query(User.self)
+        .where(.id == token.userId)
+        .first()
       let userContext = UserAuthed.Context(request: context.request, user: user)
       return try await UserAuthed.respond(to: userRoute, in: userContext)
     }
   }
-}
-
-// think: get user from db
-func getUser(token: UUID) async throws -> UUID {
-  token
 }

@@ -1,4 +1,5 @@
 import Duet
+import Shared
 
 final class Admin: Codable {
   var id: Id
@@ -14,7 +15,7 @@ final class Admin: Codable {
   var users = Children<User>.notLoaded
   var notifications = Children<AdminNotification>.notLoaded
   var verifiedNotificationMethods = Children<AdminVerifiedNotificationMethod>.notLoaded
-  // var accountStatus: AccountStatus { subscriptionStatus.accountStatus }
+  var accountStatus: AdminAccountStatus { subscriptionStatus.accountStatus }
 
   init(
     id: Id = .init(),
@@ -51,7 +52,7 @@ extension Admin {
     case canceled
     case unpaid
 
-    var accountStatus: AccountStatus {
+    var accountStatus: AdminAccountStatus {
       switch self {
       case .active, .trialing, .complimentary:
         return .active
@@ -61,14 +62,5 @@ extension Admin {
         return .inactive
       }
     }
-  }
-}
-
-extension Admin {
-  // TODO: this is shared, shouldn't be in here...
-  enum AccountStatus: String, Codable, Equatable, CaseIterable {
-    case active
-    case needsAttention
-    case inactive
   }
 }

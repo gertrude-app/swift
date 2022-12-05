@@ -12,7 +12,7 @@ public enum Configure {
 }
 
 func routeHandler(request: Request, route: GertieQL.Route) async throws -> Response {
-  let context = Context(request: request)
+  let context = Context(request: .init())
   switch route {
   case .macApp(let appRoute):
     return try await MacApp.respond(to: appRoute, in: context)

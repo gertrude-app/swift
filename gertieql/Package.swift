@@ -11,10 +11,12 @@ let package = Package(
   ],
   dependencies: [
     .package("pointfreeco/swift-url-routing@0.4.0"),
+    .package(path: "../shared"),
   ],
   targets: [
     .target(name: "GertieQL", dependencies: [
       .product(name: "URLRouting", package: "swift-url-routing"),
+      .product(name: "Shared", package: "shared"),
     ]),
     .testTarget(name: "GertieQLTests", dependencies: [
       .target(name: "GertieQL"),
