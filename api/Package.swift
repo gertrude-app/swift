@@ -10,8 +10,10 @@ let package = Package(
     .package("vapor/fluent-postgres-driver@2.4.0"),
     .package("onevcat/Rainbow@4.0.1"),
     .package("pointfreeco/swift-tagged@0.8.0"),
+    .package("pointfreeco/vapor-routing@0.1.2"),
     .package(path: "../duet"),
     .package(path: "../shared"),
+    .package(path: "../gertieql"),
   ],
   targets: [
     .target(
@@ -23,7 +25,9 @@ let package = Package(
         .product(name: "Duet", package: "duet"),
         .product(name: "DuetSQL", package: "duet"),
         .product(name: "Shared", package: "shared"),
+        .product(name: "GertieQL", package: "gertieql"),
         .product(name: "TaggedTime", package: "swift-tagged"),
+        .product(name: "VaporRouting", package: "vapor-routing"),
         "Rainbow",
       ],
       swiftSettings: [
