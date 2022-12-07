@@ -155,15 +155,6 @@
         }
       },
       {
-        "package": "swift-collections",
-        "repositoryURL": "https://github.com/apple/swift-collections",
-        "state": {
-          "branch": null,
-          "revision": "f504716c27d2e5d4144fa4794b12129301d17729",
-          "version": "1.0.3"
-        }
-      },
-      {
         "package": "swift-crypto",
         "repositoryURL": "https://github.com/apple/swift-crypto.git",
         "state": {
@@ -260,15 +251,6 @@
           "branch": null,
           "revision": "33f44ceb793b12d6af5019cbe26f8b0e66e6389f",
           "version": "0.8.0"
-        }
-      },
-      {
-        "package": "swift-url-routing",
-        "repositoryURL": "https://github.com/pointfreeco/swift-url-routing.git",
-        "state": {
-          "branch": null,
-          "revision": "f54c4f74e7884f7930560c08387817ce28271770",
-          "version": "0.4.0"
         }
       },
       {

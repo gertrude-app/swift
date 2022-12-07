@@ -4,9 +4,7 @@ public struct NoInput: Codable, Equatable {
   public init() {}
 }
 
-public extension GertieQL {
-  struct JSONEncodingError: Error {}
-}
+public struct GertieQLJsonEncodingError: Error {}
 
 public protocol PairOutput: Codable, Equatable {
   func jsonData() throws -> Data
@@ -19,7 +17,7 @@ public extension PairOutput {
 
   func json() throws -> String {
     guard let json = String(data: try jsonData(), encoding: .utf8) else {
-      throw GertieQL.JSONEncodingError()
+      throw GertieQLJsonEncodingError()
     }
     return json
   }

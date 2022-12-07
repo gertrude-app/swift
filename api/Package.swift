@@ -14,6 +14,8 @@ let package = Package(
     .package(path: "../duet"),
     .package(path: "../shared"),
     .package(path: "../gertieql"),
+    .package(path: "../gql-dashboard"),
+    .package(path: "../gql-macos-app"),
   ],
   targets: [
     .target(
@@ -26,6 +28,8 @@ let package = Package(
         .product(name: "DuetSQL", package: "duet"),
         .product(name: "Shared", package: "shared"),
         .product(name: "GertieQL", package: "gertieql"),
+        .product(name: "GqlMacOS", package: "gql-macos-app"),
+        .product(name: "GqlDashboard", package: "gql-dashboard"),
         .product(name: "TaggedTime", package: "swift-tagged"),
         .product(name: "VaporRouting", package: "vapor-routing"),
         "Rainbow",

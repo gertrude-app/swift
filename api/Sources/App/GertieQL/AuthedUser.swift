@@ -1,7 +1,8 @@
 import DuetSQL
+import GqlMacOS
 import Vapor
 
-extension UserAuthed: RouteResponder {
+extension AuthedUserRoute: RouteResponder {
   struct Context {
     let request: App.Context.Request
     let user: User
@@ -21,8 +22,8 @@ extension UserAuthed: RouteResponder {
   }
 }
 
-extension UserAuthed.GetUsersAdminAccountStatus: NoInputPairResolver {
-  static func resolve(in context: UserAuthed.Context) async throws -> Output {
+extension GetUsersAdminAccountStatus: NoInputPairResolver {
+  static func resolve(in context: AuthedUserRoute.Context) async throws -> Output {
     let admin = try await Current.db.query(Admin.self)
       .where(.id == context.user.adminId)
       .first()
@@ -31,10 +32,10 @@ extension UserAuthed.GetUsersAdminAccountStatus: NoInputPairResolver {
   }
 }
 
-extension UserAuthed.CreateSignedScreenshotUpload: PairResolver {
+extension CreateSignedScreenshotUpload: PairResolver {
   static func resolve(
     for input: Input,
-    in context: UserAuthed.Context
+    in context: AuthedUserRoute.Context
   ) async throws -> Output {
     fatalError()
   }

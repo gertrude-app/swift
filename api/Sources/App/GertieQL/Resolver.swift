@@ -6,6 +6,12 @@ struct Context {
   let request: Request
 }
 
+extension Context {
+  init() {
+    self.init(request: .init())
+  }
+}
+
 protocol PairResolver: Pair {
   associatedtype Context
   static func resolve(for input: Input, in context: Context) async throws -> Output

@@ -4,19 +4,25 @@
 import PackageDescription
 
 let package = Package(
-  name: "GertieQL",
+  name: "GqlMacOS",
   platforms: [.macOS(.v11)],
   products: [
-    .library(name: "GertieQL", targets: ["GertieQL"]),
+    .library(name: "GqlMacOS", targets: ["GqlMacOS"]),
   ],
   dependencies: [
+    .package("pointfreeco/swift-url-routing@0.4.0"),
+    .package(path: "../gertieql"),
     .package(path: "../shared"),
   ],
   targets: [
-    .target(name: "GertieQL", dependencies: [
+    .target(name: "GqlMacOS", dependencies: [
+      .product(name: "URLRouting", package: "swift-url-routing"),
+      .product(name: "GertieQL", package: "gertieql"),
       .product(name: "Shared", package: "shared"),
     ]),
-    .testTarget(name: "GertieQLTests", dependencies: []),
+    .testTarget(name: "GqlMacOSTests", dependencies: [
+      .target(name: "GqlMacOS"),
+    ]),
   ]
 )
 
