@@ -18,7 +18,7 @@ final class RouterTests: XCTestCase {
     request.httpBody = try JSONEncoder().encode(input)
 
     let matched = try router.match(request: request)
-    let expected = MacAppRoute.userAuthed(token, .createSignedScreenshotUpload(input: input))
+    let expected = MacAppRoute.userAuthed(token, .createSignedScreenshotUpload(input))
     XCTAssertEqual(matched, expected)
   }
 
