@@ -5,9 +5,20 @@ import Vapor
 import VaporRouting
 
 public extension Configure {
-  static func router(_ app: Application) {
-    app.mount(GqlRoute.router) { _, route in
-      try await GqlRoute.respond(to: route, in: Context())
+  static func router(_ app: Application) throws {
+    app.get("gertieql", "**") { request async throws -> Response in
+      guard var requestData = URLRequestData(request: request),
+            requestData.path.removeFirst() == "gertieql" else {
+        throw Abort(.badRequest)
+      }
+
+      do {
+        let route = try GqlRoute.router.parse(requestData)
+        return try await GqlRoute.respond(to: route, in: Context())
+      } catch {
+        guard Env.mode == .dev else { throw error }
+        return Response(status: .notFound, body: .init(string: "Routing \(error)"))
+      }
     }
   }
 }
@@ -19,13 +30,11 @@ enum GqlRoute: Equatable, RouteResponder {
   static let router = OneOf {
     Route(.case(GqlRoute.macApp)) {
       Method.post
-      Path { "gertieql" }
       Path { "macos-app" }
       MacAppRoute.router
     }
     Route(.case(GqlRoute.dashboard)) {
       Method.post
-      Path { "gertieql" }
       Path { "dashboard" }
       DashboardRoute.router
     }

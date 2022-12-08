@@ -1,0 +1,12 @@
+{
+  "root": "x-kit",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "cd x-kit && swift build"
+    },
+    "test": {
+      "command": "cd x-kit && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

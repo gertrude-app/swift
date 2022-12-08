@@ -1,0 +1,14 @@
+{
+  "root": "gql-dashboard",
+  "projectType": "library",
+  "implicitDependencies": ["gertieql", "shared"],
+  "targets": {
+    "build": {
+      "outputs": ["{projectRoot}/.build/debug/"],
+      "command": "cd gql-dashboard && swift build"
+    },
+    "test": {
+      "command": "cd gql-dashboard && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

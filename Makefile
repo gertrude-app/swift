@@ -1,21 +1,13 @@
 # api
 
-api:
-	watchexec --restart --clear \
-	  --watch api/Sources --watch api/Package.swift \
-	  --watch gertieql/Sources --watch gertieql/Package.swift \
-	  --watch shared/Sources --watch shared/Package.swift \
-	  --exts swift \
-	  'make build-api && make run-api'
+watch-api:
+	$(WATCH_SWIFT) '$(NX) run api:start'
 
 build-api:
-	cd api && swift build
-
-run-api:
-	$(API_RUN) serve --port 8082
+	$(NX) run api:build
 
 test-api:
-	cd api && $(SWIFT_TEST)
+	$(NX) run api:test
 
 migrate-up: build-api
 	$(API_RUN) migrate --yes
@@ -25,107 +17,55 @@ migrate-down: build-api
 
 # gertieql
 
-gertieql:
-	watchexec --restart --clear \
-	  --watch gertieql/Sources \
-	  --watch gertieql/Package.swift \
-	  --exts swift \
-	  'make build-gertieql'
-
 build-gertieql:
-	cd gertieql && swift build
+	$(NX) run gertieql:build
 
 test-gertieql:
-	cd gertieql && $(SWIFT_TEST)
-
-gql-dash:
-	watchexec --restart --clear \
-	  --watch gql-dashboard/Sources \
-	  --watch gql-dashboard/Package.swift \
-	  --exts swift \
-	  'make build-gql-dash'
+	$(NX) run gertieql:test
 
 build-gql-dash:
-	cd gql-dashboard && swift build
+	$(NX) run gql-dashboard:build
 
 test-gql-dash:
-	cd gql-dashboard && $(SWIFT_TEST)
-
-gql-macapp:
-	watchexec --restart --clear \
-	  --watch gql-macos-app/Sources \
-	  --watch gql-macos-app/Package.swift \
-	  --exts swift \
-	  'make build-gql-macapp'
+	$(NX) run gql-dashboard:test
 
 build-gql-macapp:
-	cd gql-macos-app && swift build
+	$(NX) run gql-macos-app:build
 
 test-gql-macapp:
-	cd gql-macos-app && $(SWIFT_TEST)
+	$(NX) run gql-macos-app:test
 
 # shared
 
-shared:
-	watchexec --restart --clear \
-	  --watch shared/Sources \
-	  --watch shared/Package.swift \
-	  --exts swift \
-	  'make build-shared'
-
 build-shared:
-	cd shared && swift build
+	$(NX) run shared:build
 
 test-shared:
-	cd shared && $(SWIFT_TEST)
+	$(NX) run shared:test
 
 # duet
 
-duet:
-	watchexec --restart --clear \
-	  --watch duet/Sources \
-	  --watch duet/Package.swift \
-	  --exts swift \
-	  'make build-duet'
-
 build-duet:
-	cd duet && swift build
+	$(NX) run duet:build
 
 test-duet:
-	cd duet && $(SWIFT_TEST)
+	$(NX) run duet:test
 
 # x-kit
 
-xkit:
-	watchexec --restart --clear \
-	  --watch duet/Sources \
-	  --watch duet/Package.swift \
-	  --exts swift \
-	  'make build-xkit'
-
 build-xkit:
-	cd x-kit && swift build
+	$(NX) run x-kit:build
 
 test-xkit:
-	cd x-kit && $(SWIFT_TEST)
+	$(NX) run x-kit:test
 
 # root
 
-test:
-	make test-shared
-	make test-duet
-	make test-xkit
-	make test-gertieql
-	make test-gql-dash
-	make test-gql-macapp
-
 build:
-	make build-shared
-	make build-duet
-	make build-xkit
-	make build-gertieql
-	make build-gql-dash
-	make build-gql-macapp
+	$(NX) run-many --target=build
+
+test:
+	$(NX) run-many --target=test
 
 check:
 	make build
@@ -139,6 +79,8 @@ exclude:
 	find . -path '**/.build/**/swift-nio*/**/LICENSE-MIT' -delete
 
 clean:
+	$(NX) reset
+	rm -rf node_modules/.cache
 	rm -rf api/.build
 	rm -rf duet/.build
 	rm -rf x-kit/.build
@@ -149,15 +91,17 @@ clean:
 
 # helpers
 
+NX = node_modules/.bin/nx
+WATCH_SWIFT = watchexec --restart --clear --watch . --exts swift
 SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
-ALL_CMDS = api build-api run-api migrate-up migrate-down \
-  shared build-shared test-shared \
-  gertieql build-gertieql test-gertieql \
-  gql-dash build-gql-dash test-gql-dash \
-  gql-macapp build-gql-macapp test-gql-macapp \
-  xkit build-xkit test-xkit \
-  duet build-duet test-duet \
+ALL_CMDS = api build-api migrate-up migrate-down \
+  build-shared test-shared \
+  build-gertieql test-gertieql \
+  build-gql-dash test-gql-dash \
+  build-gql-macapp test-gql-macapp \
+  build-xkit test-xkit \
+  build-duet test-duet \
 	exclude clean test build check
 
 .PHONY: $(ALL_CMDS)

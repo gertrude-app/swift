@@ -1,0 +1,28 @@
+{
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "test"]
+      }
+    }
+  },
+  "namedInputs": {
+    "sources": ["{projectRoot}/Sources/**/*.swift", "{projectRoot}/Package.swift"],
+    "tests": [
+      "{projectRoot}/Sources/**/*.swift",
+      "{projectRoot}/Tests/**/*.swift",
+      "{projectRoot}/Package.swift"
+    ]
+  },
+  "targetDefaults": {
+    "build": {
+      "outputs": ["{projectRoot}/.build/debug/"],
+      "inputs": ["sources", "^sources"]
+    },
+    "test": {
+      "inputs": ["tests", "^sources"]
+    }
+  },
+  "defaultBase": "master"
+}

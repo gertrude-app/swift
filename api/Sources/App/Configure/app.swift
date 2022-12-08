@@ -6,6 +6,6 @@ public enum Configure {
     Configure.database(app)
     Configure.middleware(app)
     try Configure.migrations(app)
-    Configure.router(app)
+    try Configure.router(app)
   }
 }

@@ -13,11 +13,12 @@ public extension DashboardRoute {
   static let router = OneOf {
     Route(.case(Self.tsCodegen)) {
       Path { TsCodegen.id }
+      Body(.json([String].self))
     }
   }
 }
 
-public struct TsCodegen: TsPair {
+public struct TsCodegen: Pair, TsPair {
   public static var id: String { "tsCodegen" }
   public static var auth: ClientAuth = .none
   public typealias Input = [String]

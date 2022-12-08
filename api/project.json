@@ -1,0 +1,29 @@
+{
+  "root": "api",
+  "projectType": "app",
+  "implicitDependencies": [
+    "duet",
+    "shared",
+    "gertieql",
+    "gql-dashboard",
+    "gql-macos-app"
+  ],
+  "targets": {
+    "build": {
+      "outputs": ["{projectRoot}/.build/debug/Run"],
+      "command": "cd api && swift build"
+    },
+    "test": {
+      "command": "cd api && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "inputs": ["sources", "^sources"],
+      "options": {
+        "cwd": "api",
+        "command": "./.build/debug/Run serve --port 8082"
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "root": "shared",
+  "projectType": "library",
+  "implicitDependencies": ["x-kit"],
+  "targets": {
+    "build": {
+      "command": "cd shared && swift build"
+    },
+    "test": {
+      "command": "cd shared && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

@@ -8,7 +8,7 @@ final class AppTests: AppTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
   func testUnauthed() throws {
-    var request = URLRequest(url: URL(string: "gertieql/macos-app/register")!)
+    var request = URLRequest(url: URL(string: "macos-app/register")!)
     request.httpMethod = "POST"
     let route = GqlRoute.macApp(.unauthed(.register))
     let matched = try GqlRoute.router.match(request: request)
@@ -16,7 +16,7 @@ final class AppTests: AppTestCase {
   }
 
   func testHeaderAuthed() throws {
-    var request = URLRequest(url: URL(string: "gertieql/macos-app/getUsersAdminAccountStatus")!)
+    var request = URLRequest(url: URL(string: "macos-app/getUsersAdminAccountStatus")!)
     request.httpMethod = "POST"
     let route = GqlRoute.macApp(.userAuthed(token, .getUsersAdminAccountStatus))
 

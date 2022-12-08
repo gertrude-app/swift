@@ -1,0 +1,13 @@
+{
+  "root": "gertieql",
+  "projectType": "library",
+  "implicitDependencies": ["shared"],
+  "targets": {
+    "build": {
+      "command": "cd gertieql && swift build"
+    },
+    "test": {
+      "command": "cd gertieql && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

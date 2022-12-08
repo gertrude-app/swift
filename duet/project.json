@@ -1,0 +1,13 @@
+{
+  "root": "duet",
+  "projectType": "library",
+  "implicitDependencies": ["x-kit"],
+  "targets": {
+    "build": {
+      "command": "cd duet && swift build"
+    },
+    "test": {
+      "command": "cd duet && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}
