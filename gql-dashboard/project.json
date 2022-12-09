@@ -4,7 +4,6 @@
   "implicitDependencies": ["gertieql", "shared"],
   "targets": {
     "build": {
-      "outputs": ["{projectRoot}/.build/debug/"],
       "command": "cd gql-dashboard && swift build"
     },
     "test": {

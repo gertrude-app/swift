@@ -18,7 +18,7 @@ public extension DashboardRoute {
   }
 }
 
-public struct TsCodegen: Pair, TsPair {
+public struct TsCodegen: Pair, TypescriptPair {
   public static var id: String { "tsCodegen" }
   public static var auth: ClientAuth = .none
   public typealias Input = [String]

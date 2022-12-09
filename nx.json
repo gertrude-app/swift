@@ -17,7 +17,7 @@
   },
   "targetDefaults": {
     "build": {
-      "outputs": ["{projectRoot}/.build/debug/"],
+      "outputs": ["{projectRoot}/.build/arm64-apple-macosx/debug/"],
       "inputs": ["sources", "^sources"]
     },
     "test": {

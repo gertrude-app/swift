@@ -9,7 +9,7 @@ public protocol PairOutput: Codable, Equatable {
   func jsonData() throws -> Data
 }
 
-public enum ClientAuth: String, TsType {
+public enum ClientAuth: String, TypescriptRepresentable {
   public static var ts: String {
     """
     export enum ClientAuth {
@@ -40,13 +40,13 @@ public extension PairOutput {
   }
 }
 
-public struct NoInput: TsPairInput {
+public struct NoInput: TypescriptPairInput {
   public static var ts: String { "type __self___ = never;" }
 
   public init() {}
 }
 
-public struct SuccessOutput: TsPairOutput {
+public struct SuccessOutput: TypescriptPairOutput {
   public let success: Bool
 
   public static var ts: String {

@@ -32,7 +32,7 @@ public struct GetUsersAdminAccountStatus: Pair {
   }
 }
 
-func pattern<P: TsPair>(type: P.Type) -> String {
+func pattern<P: TypescriptPair>(type: P.Type) -> String {
   """
   export namespace \(P.self) {
     \(P.Input.ts.replacingOccurrences(of: "__self__", with: "Input"))
@@ -75,11 +75,11 @@ func getTs(_ id: String) -> String? {
 }
 
 // TODO: this shouldn't be a ts pair, it's for the mac app, duh
-public struct CreateSignedScreenshotUpload: TsPair {
+public struct CreateSignedScreenshotUpload: TypescriptPair {
   public static let id = "createSignedScreenshotUpload"
   public static let auth: ClientAuth = .user
 
-  public struct Input: TsPairInput {
+  public struct Input: TypescriptPairInput {
     public let width: Int
     public let height: Int
 
@@ -98,7 +98,7 @@ public struct CreateSignedScreenshotUpload: TsPair {
     }
   }
 
-  public struct Output: TsPairOutput {
+  public struct Output: TypescriptPairOutput {
     public let uploadUrl: URL
     public let webUrl: URL
 

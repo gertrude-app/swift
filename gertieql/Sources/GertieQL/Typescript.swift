@@ -1,36 +1,34 @@
-public protocol TsType {
+public protocol TypescriptRepresentable {
   static var ts: String { get }
 }
 
-public protocol TsInputType: TsType {}
-public protocol TsOutputType: TsType {}
+public typealias TypescriptPairInput = TypescriptRepresentable & Codable & Equatable
 
-public typealias TsPairInput = TsType & Codable & Equatable
-
-public protocol TsPairOutput: PairOutput, TsType {
+public protocol TypescriptPairOutput: PairOutput, TypescriptRepresentable {
   static var ts: String { get }
 }
 
-public protocol TsPair: Pair where Input: TsType, Output: TsPairOutput {
+public protocol TypescriptPair: Pair
+  where Input: TypescriptRepresentable, Output: TypescriptPairOutput {
   static var id: String { get }
   static var auth: ClientAuth { get }
 }
 
-public protocol TsPrimitive {
+public protocol TypescriptPrimitive {
   static var tsPrimitiveType: String { get }
 }
 
-extension String: TsPrimitive {
+extension String: TypescriptPrimitive {
   public static var tsPrimitiveType: String { "string" }
 }
 
-extension String: TsType {
+extension String: TypescriptRepresentable {
   public static var ts: String { "export type __self__ = \(tsPrimitiveType)" }
 }
 
-extension String: TsPairOutput {}
+extension String: TypescriptPairOutput {}
 
-extension Array: TsType where Element: TsPrimitive {
+extension Array: TypescriptRepresentable where Element: TypescriptPrimitive {
   public static var ts: String {
     "export type __self__ = \(Element.tsPrimitiveType)[]"
   }
