@@ -1,29 +1,29 @@
 import DuetSQL
-import GqlMacOS
+import MacAppRoute
 import Vapor
 
-extension AuthedUserRoute: RouteResponder {
-  struct Context {
-    let request: App.Context.Request
-    let user: User
-  }
+struct UserContext {
+  let request: Context.Request
+  let user: User
+}
 
-  static func respond(to route: Self, in context: Context) async throws -> Response {
+extension AuthedUserRoute: RouteResponder {
+  static func respond(to route: Self, in context: UserContext) async throws -> Response {
     switch route {
 
     case .createSignedScreenshotUpload(let input):
       let output = try await CreateSignedScreenshotUpload.resolve(for: input, in: context)
       return try await respond(with: output)
 
-    case .getUsersAdminAccountStatus:
-      let output = try await GetUsersAdminAccountStatus.resolve(in: context)
+    case .getAccountStatus:
+      let output = try await GetAccountStatus.resolve(in: context)
       return try await respond(with: output)
     }
   }
 }
 
-extension GetUsersAdminAccountStatus: NoInputPairResolver {
-  static func resolve(in context: AuthedUserRoute.Context) async throws -> Output {
+extension GetAccountStatus: NoInputPairResolver {
+  static func resolve(in context: UserContext) async throws -> Output {
     let admin = try await Current.db.query(Admin.self)
       .where(.id == context.user.adminId)
       .first()

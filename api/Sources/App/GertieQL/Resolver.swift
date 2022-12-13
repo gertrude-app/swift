@@ -1,4 +1,4 @@
-import GertieQL
+import PairQL
 import Vapor
 
 struct Context {

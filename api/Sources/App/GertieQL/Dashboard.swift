@@ -1,5 +1,6 @@
+import DashboardRoute
 import DuetSQL
-import GqlDashboard
+import TypescriptPairQL
 import Vapor
 
 extension DashboardRoute: RouteResponder {
@@ -12,7 +13,7 @@ extension DashboardRoute: RouteResponder {
       let admin = try await Current.db.query(Admin.self)
         .where(.id == token.adminId)
         .first()
-      let adminContext = AuthedAdminRoute.Context(request: context.request, admin: admin)
+      let adminContext = AdminContext(request: context.request, admin: admin)
       return try await AuthedAdminRoute.respond(to: adminRoute, in: adminContext)
     case .unauthed(let route):
       fatalError("not implemented \(route)")
@@ -33,8 +34,8 @@ func pattern<P: TypescriptPair>(type: P.Type) -> String {
 
     \(P.Output.ts.replacingOccurrences(of: "__self__", with: "Output"))
 
-    export async function send(input: Input): Promise<GqlResult<Output>> {
-      return gqlQuery<Input, Output>(input, ClientAuth.\(P.auth), `\(P.name)`)
+    export async function send(input: Input): Promise<PqlResult<Output>> {
+      return pqlQuery<Input, Output>(input, ClientAuth.\(P.auth), `\(P.name)`)
     }
   }
   """

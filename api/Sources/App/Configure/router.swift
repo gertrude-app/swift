@@ -1,20 +1,20 @@
-import GqlDashboard
-import GqlMacOS
+import DashboardRoute
+import MacAppRoute
 import URLRouting
 import Vapor
 import VaporRouting
 
 public extension Configure {
   static func router(_ app: Application) throws {
-    app.get("gertieql", "**") { request async throws -> Response in
+    app.get("pairql", "**") { request async throws -> Response in
       guard var requestData = URLRequestData(request: request),
-            requestData.path.removeFirst() == "gertieql" else {
+            requestData.path.removeFirst() == "pairql" else {
         throw Abort(.badRequest)
       }
 
       do {
-        let route = try GqlRoute.router.parse(requestData)
-        return try await GqlRoute.respond(to: route, in: Context())
+        let route = try PqlRoute.router.parse(requestData)
+        return try await PqlRoute.respond(to: route, in: Context())
       } catch {
         guard Env.mode == .dev else { throw error }
         return Response(status: .notFound, body: .init(string: "Routing \(error)"))
@@ -23,24 +23,24 @@ public extension Configure {
   }
 }
 
-enum GqlRoute: Equatable, RouteResponder {
+enum PqlRoute: Equatable, RouteResponder {
   case dashboard(DashboardRoute)
   case macApp(MacAppRoute)
 
   static let router = OneOf {
-    Route(.case(GqlRoute.macApp)) {
+    Route(.case(PqlRoute.macApp)) {
       Method.post
       Path { "macos-app" }
       MacAppRoute.router
     }
-    Route(.case(GqlRoute.dashboard)) {
+    Route(.case(PqlRoute.dashboard)) {
       Method.post
       Path { "dashboard" }
       DashboardRoute.router
     }
   }
 
-  static func respond(to route: GqlRoute, in context: Context) async throws -> Response {
+  static func respond(to route: PqlRoute, in context: Context) async throws -> Response {
     let context = Context(request: .init())
     switch route {
     case .macApp(let appRoute):

@@ -1,13 +1,7 @@
 {
   "root": "api",
   "projectType": "app",
-  "implicitDependencies": [
-    "duet",
-    "shared",
-    "gertieql",
-    "gql-dashboard",
-    "gql-macos-app"
-  ],
+  "implicitDependencies": ["duet", "shared", "pairql", "pairql-dash", "pairql-macapp"],
   "targets": {
     "build": {
       "outputs": ["{projectRoot}/.build/debug/Run"],

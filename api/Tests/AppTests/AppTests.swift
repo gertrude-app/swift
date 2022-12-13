@@ -1,4 +1,4 @@
-import GqlMacOS
+import MacAppRoute
 import Vapor
 import XCTest
 
@@ -10,30 +10,30 @@ final class AppTests: AppTestCase {
   func testUnauthed() throws {
     var request = URLRequest(url: URL(string: "macos-app/register")!)
     request.httpMethod = "POST"
-    let route = GqlRoute.macApp(.unauthed(.register))
-    let matched = try GqlRoute.router.match(request: request)
+    let route = PqlRoute.macApp(.unauthed(.register))
+    let matched = try PqlRoute.router.match(request: request)
     XCTAssertEqual(matched, route)
   }
 
   func testHeaderAuthed() throws {
-    var request = URLRequest(url: URL(string: "macos-app/GetUsersAdminAccountStatus")!)
+    var request = URLRequest(url: URL(string: "macos-app/GetAccountStatus")!)
     request.httpMethod = "POST"
-    let route = GqlRoute.macApp(.userAuthed(token, .getUsersAdminAccountStatus))
+    let route = PqlRoute.macApp(.userAuthed(token, .getAccountStatus))
 
-    let missingHeader = try? GqlRoute.router.match(request: request)
+    let missingHeader = try? PqlRoute.router.match(request: request)
     XCTAssertEqual(missingHeader, nil)
 
     request.addValue(token.uuidString, forHTTPHeaderField: "X-UserToken")
 
-    let matched = try GqlRoute.router.match(request: request)
+    let matched = try PqlRoute.router.match(request: request)
     XCTAssertEqual(matched, route)
   }
 
   func testUserContextCreated() async throws {
     let user = try await Entities.user(admin: { $0.subscriptionStatus = .active })
 
-    let response = try await GqlRoute.respond(
-      to: .macApp(.userAuthed(user.token.value.rawValue, .getUsersAdminAccountStatus)),
+    let response = try await PqlRoute.respond(
+      to: .macApp(.userAuthed(user.token.value.rawValue, .getAccountStatus)),
       in: .init(request: .init())
     )
 
@@ -42,10 +42,7 @@ final class AppTests: AppTestCase {
 
   func testResolveUsersAdminAccountStatus() async throws {
     let user = try await Entities.user(admin: { $0.subscriptionStatus = .active })
-
-    let output = try await GetUsersAdminAccountStatus
-      .resolve(in: .init(request: .init(), user: user.model))
-
+    let output = try await GetAccountStatus.resolve(in: .init(request: .init(), user: user.model))
     XCTAssertEqual(output.status, .active)
   }
 }

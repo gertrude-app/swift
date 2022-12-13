@@ -1,0 +1,13 @@
+{
+  "root": "pairql",
+  "projectType": "library",
+  "implicitDependencies": ["shared"],
+  "targets": {
+    "build": {
+      "command": "cd pairql && swift build"
+    },
+    "test": {
+      "command": "true"
+    }
+  }
+}

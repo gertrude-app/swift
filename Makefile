@@ -15,25 +15,31 @@ migrate-up: build-api
 migrate-down: build-api
 	$(API_RUN) migrate --revert --yes
 
-# gertieql
+# pairql
 
-build-gertieql:
-	$(NX) run gertieql:build
+build-pairql:
+	$(NX) run pairql:build
 
-test-gertieql:
-	$(NX) run gertieql:test
+test-pairql:
+	$(NX) run pairql:test
 
-build-gql-dash:
-	$(NX) run gql-dashboard:build
+build-pql-dash:
+	$(NX) run pairql-dash:build
 
-test-gql-dash:
-	$(NX) run gql-dashboard:test
+test-pql-dash:
+	$(NX) run pairql-dash:test
 
-build-gql-macapp:
-	$(NX) run gql-macos-app:build
+build-pql-macapp:
+	$(NX) run pairql-macapp:build
 
-test-gql-macapp:
-	$(NX) run gql-macos-app:test
+test-pql-macapp:
+	$(NX) run pairql-macapp:test
+
+build-pairql-ts:
+	$(NX) run pairql-ts:build
+
+test-pairql-ts:
+	$(NX) run pairql-ts:test
 
 # shared
 
@@ -87,9 +93,9 @@ clean: nx-reset
 	rm -rf duet/.build
 	rm -rf x-kit/.build
 	rm -rf shared/.build
-	rm -rf gertieql/.build
-	rm -rf gql-macos-app/.build
-	rm -rf gql-dashboard/.build
+	rm -rf pairql/.build
+	rm -rf pairql-macapp/.build
+	rm -rf pairql-dash/.build
 
 # helpers
 
@@ -99,9 +105,9 @@ SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
 ALL_CMDS = api build-api migrate-up migrate-down \
   build-shared test-shared \
-  build-gertieql test-gertieql \
-  build-gql-dash test-gql-dash \
-  build-gql-macapp test-gql-macapp \
+  build-pairql test-pairql \
+  build-pairql-dash test-pairql-dash \
+  build-pairql-macapp test-pairql-macapp \
   build-xkit test-xkit \
   build-duet test-duet \
 	exclude clean test build check

@@ -1,5 +1,5 @@
 import DuetSQL
-import GqlMacOS
+import MacAppRoute
 import Vapor
 
 extension MacAppRoute: RouteResponder {
@@ -16,7 +16,7 @@ extension MacAppRoute: RouteResponder {
       let user = try await Current.db.query(User.self)
         .where(.id == token.userId)
         .first()
-      let userContext = AuthedUserRoute.Context(request: context.request, user: user)
+      let userContext = UserContext(request: context.request, user: user)
       return try await AuthedUserRoute.respond(to: userRoute, in: userContext)
     }
   }
