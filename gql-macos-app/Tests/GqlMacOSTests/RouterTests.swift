@@ -6,7 +6,7 @@ final class RouterTests: XCTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
   func testPost() throws {
-    var request = URLRequest(url: URL(string: "createSignedScreenshotUpload")!)
+    var request = URLRequest(url: URL(string: "CreateSignedScreenshotUpload")!)
     request.setValue(token.uuidString, forHTTPHeaderField: "X-UserToken")
 
     let missingBody = try? router.match(request: request)
@@ -30,7 +30,7 @@ final class RouterTests: XCTestCase {
   }
 
   func testHeaderAuthed() throws {
-    var request = URLRequest(url: URL(string: "getUsersAdminAccountStatus")!)
+    var request = URLRequest(url: URL(string: "GetUsersAdminAccountStatus")!)
     let route = MacAppRoute.userAuthed(token, .getUsersAdminAccountStatus)
 
     let missingHeader = try? router.match(request: request)

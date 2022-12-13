@@ -68,35 +68,35 @@ extension Admin: Model {
 //   }
 // }
 
-// extension AdminToken: Model, ApiModel {
-//   public static let tableName = M36.tableName
-//   public typealias ColumnName = CodingKeys
+extension AdminToken: Model {
+  public static let tableName = M1.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .adminId:
-//       return .uuid(adminId)
-//     case .value:
-//       return .uuid(value)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .deletedAt:
-//       return .date(deletedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .adminId:
+      return .uuid(adminId)
+    case .value:
+      return .uuid(value)
+    case .createdAt:
+      return .date(createdAt)
+    case .deletedAt:
+      return .date(deletedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .adminId: .uuid(adminId),
-//       .value: .uuid(value),
-//       .createdAt: .currentTimestamp,
-//       .deletedAt: .date(deletedAt),
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .adminId: .uuid(adminId),
+      .value: .uuid(value),
+      .createdAt: .currentTimestamp,
+      .deletedAt: .date(deletedAt),
+    ]
+  }
+}
 
 // extension AdminVerifiedNotificationMethod: Model, ApiModel {
 //   public static let tableName = M38.tableName

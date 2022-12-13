@@ -3,18 +3,18 @@ import GertieQL
 import Shared
 import URLRouting
 
-public enum AuthedUserRoute: Equatable {
+public enum AuthedUserRoute: PairRoute {
   case getUsersAdminAccountStatus
   case createSignedScreenshotUpload(CreateSignedScreenshotUpload.Input)
 }
 
 public extension AuthedUserRoute {
   static let router = OneOf {
-    Route(.case(Self.getUsersAdminAccountStatus)) {
-      Path { "getUsersAdminAccountStatus" }
+    Route(/Self.getUsersAdminAccountStatus) {
+      Operation(GetUsersAdminAccountStatus.self)
     }
-    Route(.case(Self.createSignedScreenshotUpload)) {
-      Path { CreateSignedScreenshotUpload.id }
+    Route(/Self.createSignedScreenshotUpload) {
+      Operation(CreateSignedScreenshotUpload.self)
       Body(.json(CreateSignedScreenshotUpload.Input.self))
     }
   }
@@ -23,6 +23,8 @@ public extension AuthedUserRoute {
 // types
 
 public struct GetUsersAdminAccountStatus: Pair {
+  public static var auth: ClientAuth = .user
+
   public struct Output: PairOutput {
     public let status: AdminAccountStatus
 
@@ -40,35 +42,16 @@ func pattern<P: TypescriptPair>(type: P.Type) -> String {
     \(P.Output.ts.replacingOccurrences(of: "__self__", with: "Output"))
 
     export async function send(input: Input): Promise<GqlResult<Output>> {
-      return gqlQuery<Input, Output>(input, ClientAuth.\(P.auth) `\(P.id)`)
+      return gqlQuery<Input, Output>(input, ClientAuth.\(P.auth), `\(P.name)`)
     }
   }
   """
 }
 
-func getTs(_ id: String) -> String? {
-  switch id {
-  case CreateSignedScreenshotUpload.id:
+func getTs(_ name: String) -> String? {
+  switch name {
+  case CreateSignedScreenshotUpload.name:
     return pattern(type: CreateSignedScreenshotUpload.self)
-    // return """
-    // export namespace CreateSignedScreenshotUpload {
-    //   export const slug = `createSignedScreenshotUpload`;
-
-    //   export interface Input {
-    //     width: number;
-    //     height: number;
-    //   }
-
-    //   export interface Output {
-    //     uploadUrl: string;
-    //     webUrl: string;
-    //   }
-
-  //   export async function send(input: Input): Promise<GqlResult<Output>> {
-  //     return gqlQuery<Input, Output>(input, slug);
-  //   }
-  // }
-  // """
   default:
     return nil
   }
@@ -76,7 +59,6 @@ func getTs(_ id: String) -> String? {
 
 // TODO: this shouldn't be a ts pair, it's for the mac app, duh
 public struct CreateSignedScreenshotUpload: TypescriptPair {
-  public static let id = "createSignedScreenshotUpload"
   public static let auth: ClientAuth = .user
 
   public struct Input: TypescriptPairInput {

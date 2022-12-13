@@ -1,5 +1,4 @@
 import Foundation
-import URLRouting
 
 @_exported import GertieQL
 
@@ -10,11 +9,11 @@ public enum MacAppRoute: Equatable {
 
 public extension MacAppRoute {
   static let router = OneOf {
-    Route(.case(Self.userAuthed)) {
+    Route(/Self.userAuthed) {
       Headers { Field("X-UserToken") { UUID.parser() } }
       AuthedUserRoute.router
     }
-    Route(.case(Self.unauthed)) {
+    Route(/Self.unauthed) {
       UnAuthedRoute.router
     }
   }
@@ -26,8 +25,8 @@ public enum UnAuthedRoute: Equatable {
 
 public extension UnAuthedRoute {
   static let router = OneOf {
-    Route(.case(Self.register)) {
-      Path { "register" }
+    Route(/Self.register) {
+      Path { "register" } // todo
     }
   }
 }

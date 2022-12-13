@@ -1,25 +1,28 @@
 import Foundation
 
-public protocol Pair {
-  associatedtype Input: Codable & Equatable = NoInput
-  associatedtype Output: PairOutput = SuccessOutput
-}
+@_exported import CasePaths
+@_exported import URLRouting
+
+public protocol PairRoute: Equatable {}
+
+public protocol PairInput: Codable, Equatable {}
 
 public protocol PairOutput: Codable, Equatable {
   func jsonData() throws -> Data
 }
 
-public enum ClientAuth: String, TypescriptRepresentable {
-  public static var ts: String {
-    """
-    export enum ClientAuth {
-      none,
-      user,
-      admin,
-    }
-    """
-  }
+public protocol Pair {
+  static var name: String { get }
+  static var auth: ClientAuth { get }
+  associatedtype Input: PairInput = NoInput
+  associatedtype Output: PairOutput = SuccessOutput
+}
 
+public extension Pair {
+  static var name: String { "\(Self.self)" }
+}
+
+public enum ClientAuth: String {
   case none
   case user
   case admin
@@ -40,24 +43,34 @@ public extension PairOutput {
   }
 }
 
-public struct NoInput: TypescriptPairInput {
-  public static var ts: String { "type __self___ = never;" }
-
+public struct NoInput: PairInput {
   public init() {}
 }
 
-public struct SuccessOutput: TypescriptPairOutput {
+public struct SuccessOutput: PairOutput {
   public let success: Bool
-
-  public static var ts: String {
-    """
-    interface __self__ {
-      success: boolean;
-    }
-    """
-  }
 
   public init(_ success: Bool) {
     self.success = success
+  }
+}
+
+extension Array: PairInput where Element == String {}
+extension String: PairOutput {}
+extension UUID: PairInput {}
+
+public struct Operation<P: Pair>: ParserPrinter {
+  private var pair: P.Type
+
+  public init(_ pair: P.Type) {
+    self.pair = pair
+  }
+
+  public func parse(_ input: inout URLRequestData) throws {
+    try Path { pair.name }.parse(&input)
+  }
+
+  public func print(_ output: Void, into input: inout URLRequestData) throws {
+    try Path { pair.name }.print(output, into: &input)
   }
 }

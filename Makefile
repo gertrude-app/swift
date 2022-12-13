@@ -78,8 +78,10 @@ exclude:
 	find . -path '**/.build/**/swift-nio*/**/*_llhttp.sh' -delete
 	find . -path '**/.build/**/swift-nio*/**/LICENSE-MIT' -delete
 
-clean:
+nx-reset:
 	$(NX) reset
+
+clean: nx-reset
 	rm -rf node_modules/.cache
 	rm -rf api/.build
 	rm -rf duet/.build

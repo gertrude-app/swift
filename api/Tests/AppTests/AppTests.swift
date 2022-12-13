@@ -16,7 +16,7 @@ final class AppTests: AppTestCase {
   }
 
   func testHeaderAuthed() throws {
-    var request = URLRequest(url: URL(string: "macos-app/getUsersAdminAccountStatus")!)
+    var request = URLRequest(url: URL(string: "macos-app/GetUsersAdminAccountStatus")!)
     request.httpMethod = "POST"
     let route = GqlRoute.macApp(.userAuthed(token, .getUsersAdminAccountStatus))
 
