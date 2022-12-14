@@ -242,7 +242,7 @@ public enum SQL {
     return "\(separatedBy)WHERE \(constraint.sql(boundTo: &bindings))"
   }
 
-  static func resetPreparedStatements() async {
+  public static func resetPreparedStatements() async {
     await prepared.reset()
   }
 }

@@ -42,3 +42,11 @@ final class Device: Codable {
     self.serialNumber = serialNumber
   }
 }
+
+// extensions
+
+extension Device {
+  var isOnline: Bool {
+    false // todo
+  }
+}

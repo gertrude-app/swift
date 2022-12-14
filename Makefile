@@ -91,11 +91,12 @@ clean: nx-reset
 	rm -rf node_modules/.cache
 	rm -rf api/.build
 	rm -rf duet/.build
-	rm -rf x-kit/.build
-	rm -rf shared/.build
 	rm -rf pairql/.build
-	rm -rf pairql-macapp/.build
 	rm -rf pairql-dash/.build
+	rm -rf pairql-macapp/.build
+	rm -rf pairql-typescript/.build
+	rm -rf shared/.build
+	rm -rf x-kit/.build
 
 # helpers
 

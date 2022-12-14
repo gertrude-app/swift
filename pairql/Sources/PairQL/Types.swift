@@ -55,6 +55,13 @@ public struct SuccessOutput: PairOutput {
   public init(_ success: Bool) {
     self.success = success
   }
+
+  public init() {
+    success = true
+  }
+
+  public static var `true`: Self { .init(true) }
+  public static var `false`: Self { .init(false) }
 }
 
 extension Array: PairInput where Element == String {}

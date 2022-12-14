@@ -1,7 +1,14 @@
 {
   "root": "api",
   "projectType": "app",
-  "implicitDependencies": ["duet", "shared", "pairql", "pairql-dash", "pairql-macapp"],
+  "implicitDependencies": [
+    "duet",
+    "shared",
+    "pairql",
+    "pairql-dash",
+    "pairql-macapp",
+    "pairql-typescript"
+  ],
   "targets": {
     "build": {
       "outputs": ["{projectRoot}/.build/debug/Run"],

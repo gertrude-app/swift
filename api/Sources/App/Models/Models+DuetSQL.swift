@@ -1,4 +1,5 @@
 import DuetSQL
+import Shared
 
 extension Admin: Model {
   public static let tableName = M1.tableName
@@ -38,7 +39,7 @@ extension Admin: Model {
   }
 }
 
-// extension AdminNotification: Model, ApiModel {
+// extension AdminNotification: Model {
 //   public static let tableName = M38.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -98,7 +99,7 @@ extension AdminToken: Model {
   }
 }
 
-// extension AdminVerifiedNotificationMethod: Model, ApiModel {
+// extension AdminVerifiedNotificationMethod: Model {
 //   public static let tableName = M38.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -125,7 +126,7 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension AppCategory: Model, ApiModel {
+// extension AppCategory: Model {
 //   public static let tableName = M7.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -158,7 +159,7 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension BundleId: Model, ApiModel {
+// extension BundleId: Model {
 //   public static let tableName = M9.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -188,58 +189,58 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension Device: Model, ApiModel {
-//   public static let tableName = M36.tableName
-//   public typealias ColumnName = CodingKeys
+extension Device: Model {
+  public static let tableName = M3.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .userId:
-//       return .uuid(userId)
-//     case .appVersion:
-//       return .string(appVersion)
-//     case .customName:
-//       return .string(customName)
-//     case .hostname:
-//       return .string(hostname)
-//     case .modelIdentifier:
-//       return .string(modelIdentifier)
-//     case .username:
-//       return .string(username)
-//     case .fullUsername:
-//       return .string(fullUsername)
-//     case .numericId:
-//       return .int(numericId)
-//     case .serialNumber:
-//       return .string(serialNumber)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .userId:
+      return .uuid(userId)
+    case .appVersion:
+      return .string(appVersion)
+    case .customName:
+      return .string(customName)
+    case .hostname:
+      return .string(hostname)
+    case .modelIdentifier:
+      return .string(modelIdentifier)
+    case .username:
+      return .string(username)
+    case .fullUsername:
+      return .string(fullUsername)
+    case .numericId:
+      return .int(numericId)
+    case .serialNumber:
+      return .string(serialNumber)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .userId: .uuid(userId),
-//       .appVersion: .string(appVersion),
-//       .customName: .string(customName),
-//       .hostname: .string(hostname),
-//       .modelIdentifier: .string(modelIdentifier),
-//       .username: .string(username),
-//       .fullUsername: .string(fullUsername),
-//       .numericId: .int(numericId),
-//       .serialNumber: .string(serialNumber),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .userId: .uuid(userId),
+      .appVersion: .string(appVersion),
+      .customName: .string(customName),
+      .hostname: .string(hostname),
+      .modelIdentifier: .string(modelIdentifier),
+      .username: .string(username),
+      .fullUsername: .string(fullUsername),
+      .numericId: .int(numericId),
+      .serialNumber: .string(serialNumber),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
 
-// extension IdentifiedApp: Model, ApiModel {
+// extension IdentifiedApp: Model {
 //   public static let tableName = M8.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -278,80 +279,82 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension Keychain: Model, ApiModel {
-//   public static let tableName = M3.tableName
-//   public typealias ColumnName = CodingKeys
+extension Keychain: Model {
+  public static let tableName = M2.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .authorId:
-//       return .uuid(authorId)
-//     case .name:
-//       return .string(name)
-//     case .description:
-//       return .string(description)
-//     case .isPublic:
-//       return .bool(isPublic)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     case .deletedAt:
-//       return .date(deletedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .authorId:
+      return .uuid(authorId)
+    case .name:
+      return .string(name)
+    case .description:
+      return .string(description)
+    case .isPublic:
+      return .bool(isPublic)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    case .deletedAt:
+      return .date(deletedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .authorId: .uuid(authorId),
-//       .name: .string(name),
-//       .description: .string(description),
-//       .isPublic: .bool(isPublic),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .authorId: .uuid(authorId),
+      .name: .string(name),
+      .description: .string(description),
+      .isPublic: .bool(isPublic),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
 
-// extension KeyRecord: Model, ApiModel {
-//   public static let tableName = M28.tableName
-//   public typealias ColumnName = CodingKeys
+extension Shared.Key: PostgresJsonable {}
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .keychainId:
-//       return .uuid(keychainId)
-//     case .key:
-//       return .json(key.toPostgresJson)
-//     case .comment:
-//       return .string(comment)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     case .deletedAt:
-//       return .date(deletedAt)
-//     }
-//   }
+extension Key: Model {
+  public static let tableName = M2.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .keychainId: .uuid(keychainId),
-//       .key: .json(key.toPostgresJson),
-//       .comment: .string(comment),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .keychainId:
+      return .uuid(keychainId)
+    case .key:
+      return .json(key.toPostgresJson)
+    case .comment:
+      return .string(comment)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    case .deletedAt:
+      return .date(deletedAt)
+    }
+  }
 
-// extension KeystrokeLine: Model, ApiModel {
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .keychainId: .uuid(keychainId),
+      .key: .json(key.toPostgresJson),
+      .comment: .string(comment),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
+// extension KeystrokeLine: Model {
 //   public static let tableName = M13.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -383,7 +386,7 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension NetworkDecision: Model, ApiModel {
+// extension NetworkDecision: Model {
 //   public static let tableName = M15.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -438,7 +441,7 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension Release: Model, ApiModel {
+// extension Release: Model {
 //   public static let tableName = M35.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -480,7 +483,7 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension Screenshot: Model, ApiModel {
+// extension Screenshot: Model {
 //   public static let tableName = M14.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -515,7 +518,7 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension SuspendFilterRequest: Model, ApiModel {
+// extension SuspendFilterRequest: Model {
 //   public static let tableName = M18.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -557,7 +560,7 @@ extension AdminToken: Model {
 //   }
 // }
 
-// extension UnlockRequest: Model, ApiModel {
+// extension UnlockRequest: Model {
 //   public static let tableName = M16.tableName
 //   public typealias ColumnName = CodingKeys
 
@@ -640,32 +643,32 @@ extension User: Model {
   }
 }
 
-// extension UserKeychain: Model, ApiModel {
-//   public static let tableName = M36.tableName
-//   public typealias ColumnName = CodingKeys
+extension UserKeychain: Model {
+  public static let tableName = M3.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .userId:
-//       return .uuid(userId)
-//     case .keychainId:
-//       return .uuid(keychainId)
-//     case .createdAt:
-//       return .date(createdAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .userId:
+      return .uuid(userId)
+    case .keychainId:
+      return .uuid(keychainId)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .userId: .uuid(userId),
-//       .keychainId: .uuid(keychainId),
-//       .createdAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .userId: .uuid(userId),
+      .keychainId: .uuid(keychainId),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
 
 extension UserToken: Model {
   public static let tableName = M3.tableName
@@ -702,7 +705,7 @@ extension UserToken: Model {
   }
 }
 
-// extension WaitlistedUser: Model, ApiModel {
+// extension WaitlistedUser: Model {
 //   public static let tableName = M34.tableName
 //   public typealias ColumnName = CodingKeys
 
