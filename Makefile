@@ -1,7 +1,7 @@
 # api
 
 watch-api:
-	$(WATCH_SWIFT) '$(NX) run api:start'
+	$(WATCH_SWIFT) 'cd api && swift build && ./.build/debug/Run serve --port 8082'
 
 build-api:
 	$(NX) run api:build

@@ -13,3 +13,4 @@ public protocol TypescriptPair: Pair
 
 public typealias TypescriptPairInput = PairInput & TypescriptRepresentable
 public typealias TypescriptPairOutput = PairOutput & TypescriptRepresentable
+public typealias TypescriptNestable = PairNestable & TypescriptRepresentable

@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 
 final class User: Codable {
   var id: Id
@@ -33,5 +33,28 @@ final class User: Codable {
     self.screenshotsEnabled = screenshotsEnabled
     self.screenshotsResolution = screenshotsResolution
     self.screenshotsFrequency = screenshotsFrequency
+  }
+}
+
+// extensions
+
+extension User {
+  func devices() async throws -> [Device] {
+    try await devices.useLoaded(or: {
+      try await Current.db.query(Device.self)
+        .where(.userId == id)
+        .all()
+    })
+  }
+
+  func keychains() async throws -> [Keychain] {
+    try await keychains.useLoaded(or: {
+      let pivots = try await Current.db.query(UserKeychain.self)
+        .where(.userId == id)
+        .all()
+      return try await Current.db.query(Keychain.self)
+        .where(.id |=| pivots.map(\.keychainId))
+        .all()
+    })
   }
 }

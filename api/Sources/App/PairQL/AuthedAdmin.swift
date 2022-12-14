@@ -1,9 +1,17 @@
 import DashboardRoute
+import DuetSQL
 import Vapor
 
 struct AdminContext {
   let request: Context.Request
   let admin: Admin
+
+  func verifiedUser(from uuid: UUID) async throws -> User {
+    try await Current.db.query(User.self)
+      .where(.id == uuid)
+      .where(.adminId == admin.id)
+      .first()
+  }
 }
 
 extension AuthedAdminRoute: RouteResponder {
@@ -20,6 +28,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .deleteUser(let uuid):
       let output = try await DeleteUser.resolve(for: uuid, in: context)
+      return try await respond(with: output)
+    case .getUserActivityDays(let input):
+      let output = try await GetUserActivityDays.resolve(for: input, in: context)
       return try await respond(with: output)
     }
   }

@@ -3,7 +3,7 @@
     "default": {
       "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": ["build", "test"]
+        "cacheableOperations": ["test"]
       }
     }
   },
@@ -17,7 +17,6 @@
   },
   "targetDefaults": {
     "build": {
-      "outputs": ["{projectRoot}/.build/arm64-apple-macosx/debug/"],
       "inputs": ["sources", "^sources"]
     },
     "test": {

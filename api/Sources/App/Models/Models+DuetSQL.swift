@@ -354,37 +354,37 @@ extension Key: Model {
   }
 }
 
-// extension KeystrokeLine: Model {
-//   public static let tableName = M13.tableName
-//   public typealias ColumnName = CodingKeys
+extension KeystrokeLine: Model {
+  public static let tableName = M4.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .deviceId:
-//       return .uuid(deviceId)
-//     case .appName:
-//       return .string(appName)
-//     case .line:
-//       return .string(line)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .deletedAt:
-//       return .date(deletedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .deviceId:
+      return .uuid(deviceId)
+    case .appName:
+      return .string(appName)
+    case .line:
+      return .string(line)
+    case .createdAt:
+      return .date(createdAt)
+    case .deletedAt:
+      return .date(deletedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .deviceId: .uuid(deviceId),
-//       .appName: .string(appName),
-//       .line: .string(line),
-//       .createdAt: .date(createdAt),
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(deviceId),
+      .appName: .string(appName),
+      .line: .string(line),
+      .createdAt: .date(createdAt),
+    ]
+  }
+}
 
 // extension NetworkDecision: Model {
 //   public static let tableName = M15.tableName
@@ -483,40 +483,40 @@ extension Key: Model {
 //   }
 // }
 
-// extension Screenshot: Model {
-//   public static let tableName = M14.tableName
-//   public typealias ColumnName = CodingKeys
+extension Screenshot: Model {
+  public static let tableName = M4.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .deviceId:
-//       return .uuid(deviceId)
-//     case .url:
-//       return .string(url)
-//     case .width:
-//       return .int(width)
-//     case .height:
-//       return .int(height)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .deletedAt:
-//       return .date(deletedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .deviceId:
+      return .uuid(deviceId)
+    case .url:
+      return .string(url)
+    case .width:
+      return .int(width)
+    case .height:
+      return .int(height)
+    case .createdAt:
+      return .date(createdAt)
+    case .deletedAt:
+      return .date(deletedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .deviceId: .uuid(deviceId),
-//       .url: .string(url),
-//       .width: .int(width),
-//       .height: .int(height),
-//       .createdAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(deviceId),
+      .url: .string(url),
+      .width: .int(width),
+      .height: .int(height),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
 
 // extension SuspendFilterRequest: Model {
 //   public static let tableName = M18.tableName

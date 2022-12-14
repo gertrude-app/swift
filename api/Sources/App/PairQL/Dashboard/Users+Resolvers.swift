@@ -3,11 +3,7 @@ import DuetSQL
 
 extension GetUser: PairResolver {
   static func resolve(for id: UUID, in context: AdminContext) async throws -> Output {
-    let user = try await Current.db.query(User.self)
-      .where(.id == id)
-      .where(.adminId == context.admin.id)
-      .first()
-    return try await Output(from: user)
+    try await Output(from: context.verifiedUser(from: id))
   }
 }
 
@@ -54,10 +50,7 @@ extension SaveUser: PairResolver {
       try await Current.db.update(user)
     }
 
-    let keychainIds = try await Current.db.query(UserKeychain.self)
-      .where(.userId == user.id)
-      .all()
-      .map(\.keychainId.rawValue)
+    let keychainIds = try await user.keychains().map(\.id.rawValue)
 
     if keychainIds.elementsEqual(input.keychainIds) {
       // TODO: dispatch event
@@ -98,15 +91,7 @@ extension GetUser.Keychain {
 
 extension GetUser.Output {
   init(from user: User) async throws {
-    let pivots = try await Current.db.query(UserKeychain.self)
-      .where(.userId == user.id)
-      .all()
-
-    let keychains = try await Current.db.query(Keychain.self)
-      .where(.id |=| pivots.map(\.keychainId))
-      .all()
-
-    async let userKeychains = keychains
+    async let userKeychains = user.keychains()
       .concurrentMap { try await GetUser.Keychain(from: $0) }
 
     async let devices = Current.db.query(Device.self)

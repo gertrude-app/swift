@@ -19,6 +19,15 @@ public enum Siblings<C: Duet.Identifiable> {
       return loaded
     }
   }
+
+  public mutating func useLoaded(or load: () async throws -> [C]) async throws -> [C] {
+    guard case .loaded(let loaded) = self else {
+      let models = try await load()
+      self = .loaded(models)
+      return models
+    }
+    return loaded
+  }
 }
 
 public enum Children<C: Duet.Identifiable> {
@@ -37,6 +46,15 @@ public enum Children<C: Duet.Identifiable> {
       }
       return loaded
     }
+  }
+
+  public mutating func useLoaded(or load: () async throws -> [C]) async throws -> [C] {
+    guard case .loaded(let loaded) = self else {
+      let models = try await load()
+      self = .loaded(models)
+      return models
+    }
+    return loaded
   }
 }
 

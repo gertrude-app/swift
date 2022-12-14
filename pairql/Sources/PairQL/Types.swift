@@ -5,6 +5,8 @@ import Foundation
 
 public protocol PairRoute: Equatable {}
 
+public typealias PairNestable = Codable & Equatable
+
 public protocol PairInput: Codable, Equatable {}
 
 public protocol PairOutput: Codable, Equatable {

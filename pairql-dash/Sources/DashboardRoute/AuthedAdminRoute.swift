@@ -5,6 +5,7 @@ public enum AuthedAdminRoute: PairRoute {
   case getUsers
   case saveUser(SaveUser.Input)
   case deleteUser(DeleteUser.Input)
+  case getUserActivityDays(GetUserActivityDays.Input)
 
   public static let router = OneOf {
     Route(/Self.getUser) {
@@ -21,6 +22,10 @@ public enum AuthedAdminRoute: PairRoute {
     Route(/Self.deleteUser) {
       Operation(DeleteUser.self)
       Body(.json(DeleteUser.Input.self))
+    }
+    Route(/Self.getUserActivityDays) {
+      Operation(GetUserActivityDays.self)
+      Body(.json(GetUserActivityDays.Input.self))
     }
   }
 }
