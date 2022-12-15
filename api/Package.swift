@@ -17,6 +17,7 @@ let package = Package(
     .package(path: "../pairql-dash"),
     .package(path: "../pairql-macapp"),
     .package(path: "../x-sendgrid"),
+    .package(path: "../x-expect"),
   ],
   targets: [
     .target(
@@ -43,8 +44,9 @@ let package = Package(
     .executableTarget(name: "Run", dependencies: [.target(name: "App")]),
     .testTarget(name: "AppTests", dependencies: [
       .target(name: "App"),
-      .product(name: "XCTVapor", package: "vapor"),
-      .product(name: "DuetMock", package: "duet"),
+      .product(name: "XExpect", package: "x-expect"),
+      .product(name: "XCTVapor", package: "vapor"), // do i need this?
+      .product(name: "DuetMock", package: "duet"), // do i need this?
     ]),
   ]
 )

@@ -1,19 +1,9 @@
 import DashboardRoute
 import DuetSQL
-import Vapor
 import XCTest
+import XExpect
 
 @testable import App
-
-extension PairResolver {
-  static func result(for input: Input, in context: Context) async -> Result<Output, Error> {
-    do {
-      return .success(try await resolve(for: input, in: context))
-    } catch {
-      return .failure(error)
-    }
-  }
-}
 
 final class SignupResolversTests: AppTestCase {
   let context = DashboardContext(dashboardUrl: "/")

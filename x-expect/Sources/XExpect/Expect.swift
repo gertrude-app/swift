@@ -1,11 +1,11 @@
 import XCTest
 
-struct ErrorExpectation<T> {
-  let fn: () async throws -> T
-  let file: StaticString
-  let line: UInt
+public struct ErrorExpectation<T> {
+  public let fn: () async throws -> T
+  public let file: StaticString
+  public let line: UInt
 
-  func toContain(_ substring: String) async throws {
+  public func toContain(_ substring: String) async throws {
     do {
       _ = try await fn()
       XCTFail("Expected error, got none", file: file, line: line)
@@ -15,26 +15,26 @@ struct ErrorExpectation<T> {
   }
 }
 
-struct EquatableExpectation<T: Equatable> {
-  let value: T
-  let file: StaticString
-  let line: UInt
+public struct EquatableExpectation<T: Equatable> {
+  public let value: T
+  public let file: StaticString
+  public let line: UInt
 
-  func toEqual(_ other: T) {
+  public func toEqual(_ other: T) {
     XCTAssertEqual(value, other, file: file, line: line)
   }
 
-  func toBeNil() {
+  public func toBeNil() {
     XCTAssertNil(value, file: file, line: line)
   }
 }
 
-struct ResultExpectation<Success, Failure: Swift.Error> {
-  let result: Result<Success, Failure>
-  let file: StaticString
-  let line: UInt
+public struct ResultExpectation<Success, Failure: Swift.Error> {
+  public let result: Result<Success, Failure>
+  public let file: StaticString
+  public let line: UInt
 
-  func toBeError(containing substring: String) {
+  public func toBeError(containing substring: String) {
     switch result {
     case .success(let value):
       XCTFail("Expected error, got success: \(value)", file: file, line: line)
@@ -49,26 +49,26 @@ struct ResultExpectation<Success, Failure: Swift.Error> {
   }
 }
 
-struct OptionalExpectation {
-  let value: Any?
-  let file: StaticString
-  let line: UInt
+public struct OptionalExpectation {
+  public let value: Any?
+  public let file: StaticString
+  public let line: UInt
 
-  func toBeNil() {
+  public func toBeNil() {
     XCTAssertNil(value, file: file, line: line)
   }
 }
 
-struct StringExpectation {
-  let value: String
-  let file: StaticString
-  let line: UInt
+public struct StringExpectation {
+  public let value: String
+  public let file: StaticString
+  public let line: UInt
 
-  func toBe(_ other: String) {
+  public func toBe(_ other: String) {
     XCTAssertEqual(value, other, file: file, line: line)
   }
 
-  func toContain(_ substring: String) {
+  public func toContain(_ substring: String) {
     XCTAssert(
       value.contains(substring),
       "Expected `\(value)` to contain `\(substring)`",
@@ -78,17 +78,17 @@ struct StringExpectation {
   }
 }
 
-struct BoolExpectation {
-  let value: Bool
-  let file: StaticString
-  let line: UInt
+public struct BoolExpectation {
+  public let value: Bool
+  public let file: StaticString
+  public let line: UInt
 
-  func toBeTrue() {
+  public func toBeTrue() {
     XCTAssert(value, file: file, line: line)
   }
 }
 
-func expect(
+public func expect(
   _ value: Bool,
   file: StaticString = #filePath,
   line: UInt = #line
@@ -96,7 +96,7 @@ func expect(
   BoolExpectation(value: value, file: file, line: line)
 }
 
-func expect(
+public func expect(
   _ value: String,
   file: StaticString = #filePath,
   line: UInt = #line
@@ -105,7 +105,7 @@ func expect(
 }
 
 @_disfavoredOverload
-func expect<T: Equatable>(
+public func expect<T: Equatable>(
   _ value: T,
   file: StaticString = #filePath,
   line: UInt = #line
@@ -113,7 +113,7 @@ func expect<T: Equatable>(
   EquatableExpectation(value: value, file: file, line: line)
 }
 
-func expect<T>(
+public func expect<T>(
   _ value: T?,
   file: StaticString = #filePath,
   line: UInt = #line
@@ -121,7 +121,7 @@ func expect<T>(
   OptionalExpectation(value: value, file: file, line: line)
 }
 
-func expect<S, F: Error>(
+public func expect<S, F: Error>(
   _ result: Result<S, F>,
   file: StaticString = #filePath,
   line: UInt = #line
@@ -129,7 +129,7 @@ func expect<S, F: Error>(
   ResultExpectation(result: result, file: file, line: line)
 }
 
-func expectErrorFrom<T>(
+public func expectErrorFrom<T>(
   file: StaticString = #filePath,
   line: UInt = #line,
   fn: @escaping () async throws -> T
