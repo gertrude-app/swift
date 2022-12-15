@@ -12,9 +12,9 @@ final class UsersResolversTests: AppTestCase {
       for: user.id.rawValue,
       in: user.admin.context
     )
-    XCTAssertEqual(output, .true)
+    expect(output).toEqual(.true)
     let retrieved = try? await Current.db.find(user.id)
-    XCTAssertNil(retrieved)
+    expect(retrieved).toBeNil()
   }
 
   func testSaveNewUser() async throws {
@@ -35,12 +35,12 @@ final class UsersResolversTests: AppTestCase {
     let output = try await SaveUser.resolve(for: input, in: admin.context)
 
     let user = try await Current.db.find(User.Id(input.id))
-    XCTAssertEqual(output, .true)
-    XCTAssertEqual(user.name, "Test User")
-    XCTAssertEqual(user.keyloggingEnabled, true)
-    XCTAssertEqual(user.screenshotsEnabled, true)
-    XCTAssertEqual(user.screenshotsResolution, 111)
-    XCTAssertEqual(user.screenshotsFrequency, 588)
+    expect(output).toEqual(.true)
+    expect(user.name).toEqual("Test User")
+    expect(user.keyloggingEnabled).toEqual(true)
+    expect(user.screenshotsEnabled).toEqual(true)
+    expect(user.screenshotsResolution).toEqual(111)
+    expect(user.screenshotsFrequency).toEqual(588)
   }
 
   func testExistingUserUpdated() async throws {
@@ -62,12 +62,12 @@ final class UsersResolversTests: AppTestCase {
     )
 
     let retrieved = try await Current.db.find(user.id)
-    XCTAssertEqual(output, .true)
-    XCTAssertEqual(retrieved.name, "New name")
-    XCTAssertEqual(retrieved.keyloggingEnabled, false)
-    XCTAssertEqual(retrieved.screenshotsEnabled, false)
-    XCTAssertEqual(retrieved.screenshotsResolution, 333)
-    XCTAssertEqual(retrieved.screenshotsFrequency, 444)
+    expect(output).toEqual(.true)
+    expect(retrieved.name).toEqual("New name")
+    expect(retrieved.keyloggingEnabled).toEqual(false)
+    expect(retrieved.screenshotsEnabled).toEqual(false)
+    expect(retrieved.screenshotsResolution).toEqual(333)
+    expect(retrieved.screenshotsFrequency).toEqual(444)
   }
 
   func testSetsNewKeychainsFromEmpty() async throws {
@@ -84,7 +84,7 @@ final class UsersResolversTests: AppTestCase {
       .all()
       .map(\.keychainId)
 
-    XCTAssertEqual(keychainIds, [keychain.id])
+    expect(keychainIds).toEqual([keychain.id])
   }
 
   func testDeletesExistingKeychains() async throws {
@@ -101,9 +101,9 @@ final class UsersResolversTests: AppTestCase {
       .where(.userId == user.id)
       .all()
 
-    XCTAssert(keychains.isEmpty)
+    expect(keychains.isEmpty).toBeTrue()
     let retrievedPivot = try? await Current.db.find(pivot.id)
-    XCTAssertNil(retrievedPivot)
+    expect(retrievedPivot).toBeNil()
   }
 
   func testReplacesExistingKeychains() async throws {
@@ -125,9 +125,9 @@ final class UsersResolversTests: AppTestCase {
       .all()
       .map(\.keychainId)
 
-    XCTAssertEqual(keychainIds, [keychain2.id])
+    expect(keychainIds).toEqual([keychain2.id])
     let retrievedPivot = try? await Current.db.find(pivot.id)
-    XCTAssertNil(retrievedPivot)
+    expect(retrievedPivot).toBeNil()
   }
 }
 

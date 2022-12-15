@@ -36,7 +36,7 @@ final class User: Codable {
   }
 }
 
-// extensions
+// loaders
 
 extension User {
   func devices() async throws -> [Device] {

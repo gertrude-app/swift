@@ -3,9 +3,15 @@ import TypescriptPairQL
 
 public enum UnauthedRoute: PairRoute {
   case tsCodegen
+  case signup(Signup.Input)
+
   public static let router = OneOf {
     Route(/Self.tsCodegen) {
       Operation(TsCodegen.self)
+    }
+    Route(/Self.signup) {
+      Operation(Signup.self)
+      Body(.json(Signup.Input.self))
     }
   }
 }

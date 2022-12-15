@@ -3,7 +3,6 @@ import MacAppRoute
 import Vapor
 
 struct UserContext {
-  let request: Context.Request
   let user: User
 }
 

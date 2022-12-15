@@ -14,7 +14,7 @@
   let token: AdminToken
 
   var context: AdminContext {
-    .init(request: .init(), admin: model)
+    .init(dashboardUrl: "/", admin: model)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {

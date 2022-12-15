@@ -17,10 +17,10 @@ migrate-down: build-api
 
 # pairql
 
-build-pairql:
+build-pql:
 	$(NX) run pairql:build
 
-test-pairql:
+test-pql:
 	$(NX) run pairql:test
 
 build-pql-dash:
@@ -35,10 +35,10 @@ build-pql-macapp:
 test-pql-macapp:
 	$(NX) run pairql-macapp:test
 
-build-pairql-ts:
+build-pql-ts:
 	$(NX) run pairql-ts:build
 
-test-pairql-ts:
+test-pql-ts:
 	$(NX) run pairql-ts:test
 
 # shared
@@ -106,9 +106,9 @@ SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
 ALL_CMDS = api build-api migrate-up migrate-down \
   build-shared test-shared \
-  build-pairql test-pairql \
-  build-pairql-dash test-pairql-dash \
-  build-pairql-macapp test-pairql-macapp \
+  build-pql test-pql \
+  build-pql-dash test-pql-dash \
+  build-pql-macapp test-pql-macapp \
   build-xkit test-xkit \
   build-duet test-duet \
 	exclude clean test build check

@@ -3,7 +3,9 @@ import MacAppRoute
 import Vapor
 
 extension MacAppRoute: RouteResponder {
-  static func respond(to route: Self, in context: Context) async throws -> Response {
+  struct MacAppContext {}
+
+  static func respond(to route: Self, in context: MacAppContext) async throws -> Response {
     switch route {
 
     case .unauthed(let unauthed):
@@ -16,7 +18,7 @@ extension MacAppRoute: RouteResponder {
       let user = try await Current.db.query(User.self)
         .where(.id == token.userId)
         .first()
-      let userContext = UserContext(request: context.request, user: user)
+      let userContext = UserContext(user: user)
       return try await AuthedUserRoute.respond(to: userRoute, in: userContext)
     }
   }

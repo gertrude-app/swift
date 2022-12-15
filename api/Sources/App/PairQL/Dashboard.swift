@@ -3,8 +3,12 @@ import DuetSQL
 import TypescriptPairQL
 import Vapor
 
+struct DashboardContext {
+  let dashboardUrl: String
+}
+
 extension DashboardRoute: RouteResponder {
-  static func respond(to route: Self, in context: Context) async throws -> Response {
+  static func respond(to route: Self, in context: DashboardContext) async throws -> Response {
     switch route {
     case .adminAuthed(let uuid, let adminRoute):
       let token = try await Current.db.query(AdminToken.self)
@@ -13,16 +17,16 @@ extension DashboardRoute: RouteResponder {
       let admin = try await Current.db.query(Admin.self)
         .where(.id == token.adminId)
         .first()
-      let adminContext = AdminContext(request: context.request, admin: admin)
+      let adminContext = AdminContext(dashboardUrl: context.dashboardUrl, admin: admin)
       return try await AuthedAdminRoute.respond(to: adminRoute, in: adminContext)
     case .unauthed(let route):
-      fatalError("not implemented \(route)")
+      fatalError("so not implemented \(route)")
     }
   }
 }
 
 extension TsCodegen: NoInputPairResolver {
-  static func resolve(in context: Context) async throws -> [String: String] {
+  static func resolve(in context: DashboardContext) async throws -> [String: String] {
     [:]
   }
 }

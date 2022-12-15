@@ -3,7 +3,7 @@ import DuetSQL
 import Vapor
 
 struct AdminContext {
-  let request: Context.Request
+  let dashboardUrl: String
   let admin: Admin
 
   func verifiedUser(from uuid: UUID) async throws -> User {

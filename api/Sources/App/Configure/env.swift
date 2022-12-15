@@ -5,6 +5,7 @@ typealias Env = Vapor.Environment
 extension Configure {
   static func env(_ app: Application) {
     Env.mode = .init(from: app.environment)
+    Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
   }
 }
 

@@ -1,11 +1,18 @@
 import DuetSQL
 import Vapor
 import XCTest
+import XSendGrid
 
 @testable import App
 
 class AppTestCase: XCTestCase {
   static var app: Application!
+
+  struct Sent {
+    var emails: [SendGrid.Email] = []
+  }
+
+  var sent = Sent()
 
   var app: Application {
     Self.app
@@ -15,8 +22,15 @@ class AppTestCase: XCTestCase {
     Current = .mock
     app = Application(.testing)
     try! Configure.app(app)
+    Current.sendGrid = .mock // set with live api key in configure
     try! app.autoRevert().wait()
     try! app.autoMigrate().wait()
+  }
+
+  override func setUp() {
+    Current.sendGrid.send = { [self] email in
+      self.sent.emails.append(email)
+    }
   }
 
   override static func tearDown() {

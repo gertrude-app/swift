@@ -50,9 +50,8 @@ extension SaveUser: PairResolver {
       try await Current.db.update(user)
     }
 
-    let keychainIds = try await user.keychains().map(\.id.rawValue)
-
-    if keychainIds.elementsEqual(input.keychainIds) {
+    let existing = try await user.keychains().map(\.id.rawValue)
+    if existing.elementsEqual(input.keychainIds) {
       // TODO: dispatch event
       return .init(true)
     }
