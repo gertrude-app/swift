@@ -1,65 +1,66 @@
 import Shared
 import XCore
 import XCTest
+import XExpect
 
 final class KeyTests: XCTestCase {
   func testConstructingValidKeyDomains() {
     let validInputs = ["foo.com", "www.hondros.com/"]
     for input in validInputs {
-      XCTAssertNotNil(Key.Domain(input))
+      expect(Key.Domain(input)).toNotBeNil()
     }
   }
 
   func testConstructingInvalidKeyDomains() {
     let validInputs = ["nope bad", "foo.com/baz"]
     for input in validInputs {
-      XCTAssertNil(Key.Domain(input))
+      expect(Key.Domain(input)).toBeNil()
     }
   }
 
   func testKeyDomainStripsScheme() {
-    XCTAssertEqual(Key.Domain("https://foo.com").string, "foo.com")
-    XCTAssertEqual(Key.Domain("http://foo.com").string, "foo.com")
-    XCTAssertEqual(Key.Domain("httpwizards.com").string, "httpwizards.com")
+    expect(Key.Domain("https://foo.com").string).toEqual("foo.com")
+    expect(Key.Domain("http://foo.com").string).toEqual("foo.com")
+    expect(Key.Domain("httpwizards.com").string).toEqual("httpwizards.com")
   }
 
   func testKeyDomainRemovesTrailingSlash() {
-    XCTAssertEqual(Key.Domain("https://foo.com/").string, "foo.com")
+    expect(Key.Domain("https://foo.com/").string).toEqual("foo.com")
   }
 
   func testConstructingValidKeyDomainRegexPatterns() {
     let validInputs = ["deploy--*--foo.com"]
     for input in validInputs {
-      XCTAssertNotNil(Key.DomainRegexPattern(input))
+      expect(Key.DomainRegexPattern(input)).toNotBeNil()
     }
   }
 
   func testConstructingInvalidKeyDomainRegexPatterns() {
     let validInputs = ["deploy--33--foo.com", "nope bad *", "nope bad"]
     for input in validInputs {
-      XCTAssertNil(Key.DomainRegexPattern(input))
+      expect(Key.DomainRegexPattern(input)).toBeNil()
     }
   }
 
   func testConstructingValidKeyPaths() {
     let validInputs = ["site.com/foo", "site.com/foo/bar"]
     for input in validInputs {
-      XCTAssertNotNil(Key.Path(input))
+      expect(Key.Path(input)).toNotBeNil()
     }
 
     let path1 = Key.Path("site.com/foo")
-    XCTAssertEqual(path1.domain.string, "site.com")
-    XCTAssertEqual(path1.path, "foo")
+    expect(path1.domain.string).toEqual("site.com")
+    expect(path1.path).toEqual("foo")
 
     let path2 = Key.Path("site.com/foo/bar")
-    XCTAssertEqual(path2.domain.string, "site.com")
-    XCTAssertEqual(path2.path, "foo/bar")
+    expect(path2.domain.string).toEqual("site.com")
+    expect(path2.path).toEqual("foo/bar")
   }
 
   func testConstructingInvalidKeyPaths() {
     let validInputs = ["site.com", "nope foo/bar"]
     for input in validInputs {
-      XCTAssertNil(Key.Path(input))
+      expect(Key.Path(input)).toBeNil()
     }
   }
 
@@ -76,7 +77,7 @@ final class KeyTests: XCTestCase {
     ]
     for (path, url, isMatch) in cases {
       let keyPath = Key.Path(path)!
-      XCTAssertEqual(keyPath.matches(url: url), isMatch)
+      expect(keyPath.matches(url: url)).toEqual(isMatch)
     }
   }
 
@@ -89,14 +90,14 @@ final class KeyTests: XCTestCase {
       "FE80::0202:B3FF:FE1E:8329%en0",
     ]
     for input in validInputs {
-      XCTAssertNotNil(Key.Ip(input))
+      expect(Key.Ip(input)).toNotBeNil()
     }
   }
 
   func testConstructingInvalidKeyIps() {
     let validInputs = ["nope", "", "1.2:3:4", "FE1:0202.3.4"]
     for input in validInputs {
-      XCTAssertNil(Key.Ip(input))
+      expect(Key.Ip(input)).toBeNil()
     }
   }
 
@@ -217,8 +218,8 @@ final class KeyTests: XCTestCase {
     ]
 
     for (key, jsonString) in cases {
-      XCTAssertEqual(jsonPretty(key), jsonString)
-      XCTAssertEqual(decode(jsonString), key)
+      expect(jsonPretty(key)).toEqual(jsonString)
+      expect(decode(jsonString)).toEqual(key)
     }
   }
 
@@ -266,8 +267,8 @@ final class KeyTests: XCTestCase {
       ),
     ]
     for (scope, jsonString) in cases {
-      XCTAssertEqual(jsonPretty(scope), jsonString)
-      XCTAssertEqual(decode(jsonString), scope)
+      expect(jsonPretty(scope)).toEqual(jsonString)
+      expect(decode(jsonString)).toEqual(scope)
     }
   }
 }

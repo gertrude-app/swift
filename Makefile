@@ -57,7 +57,7 @@ build-duet:
 test-duet:
 	$(NX) run duet:test
 
-# x-kit
+# x-*
 
 build-xkit:
 	$(NX) run x-kit:build

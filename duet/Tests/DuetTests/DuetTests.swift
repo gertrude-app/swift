@@ -1,5 +1,6 @@
-@testable import Duet
 import XCTest
+
+@testable import Duet
 
 final class DuetTests: XCTestCase {
   func testExample() throws {

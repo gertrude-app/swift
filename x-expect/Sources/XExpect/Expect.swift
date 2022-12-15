@@ -27,6 +27,10 @@ public struct EquatableExpectation<T: Equatable> {
   public func toBeNil() {
     XCTAssertNil(value, file: file, line: line)
   }
+
+  public func toNotBeNil() {
+    XCTAssertNotNil(value, file: file, line: line)
+  }
 }
 
 public struct ResultExpectation<Success, Failure: Swift.Error> {

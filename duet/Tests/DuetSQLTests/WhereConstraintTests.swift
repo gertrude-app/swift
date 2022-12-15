@@ -1,4 +1,5 @@
 import XCTest
+import XExpect
 
 @testable import DuetSQL
 
@@ -34,8 +35,8 @@ final class WhereConstraintTests: XCTestCase {
       (.init(createdAt: .distantFuture), .createdAt < .currentTimestamp, false),
     ]
     for (thing, constraint, expected) in cases {
-      XCTAssertEqual(constraint.isSatisfied(by: thing), expected)
-      XCTAssertEqual(thing.satisfies(constraint: constraint), expected)
+      expect(constraint.isSatisfied(by: thing)).toEqual(expected)
+      expect(thing.satisfies(constraint: constraint)).toEqual(expected)
     }
   }
 
@@ -80,8 +81,8 @@ final class WhereConstraintTests: XCTestCase {
 
     for (constraint, expectedSQL, expectedBindings) in cases {
       var bindings: [Postgres.Data] = []
-      XCTAssertEqual(constraint.sql(boundTo: &bindings), expectedSQL)
-      XCTAssertEqual(bindings, expectedBindings)
+      expect(constraint.sql(boundTo: &bindings)).toEqual(expectedSQL)
+      expect(bindings).toEqual(expectedBindings)
     }
   }
 }

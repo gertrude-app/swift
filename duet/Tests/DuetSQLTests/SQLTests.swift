@@ -1,5 +1,6 @@
 import Tagged
 import XCTest
+import XExpect
 
 @testable import DuetSQL
 
@@ -21,8 +22,8 @@ final class SqlTests: XCTestCase {
     OFFSET 3;
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([])
   }
 
   func testCountNoWhere() throws {
@@ -32,8 +33,8 @@ final class SqlTests: XCTestCase {
     SELECT COUNT(*) FROM "things";
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([])
   }
 
   func testCountWhere() throws {
@@ -44,8 +45,8 @@ final class SqlTests: XCTestCase {
     WHERE "string" = $1;
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, ["a"])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual(["a"])
   }
 
   func testWhereIn() throws {
@@ -61,8 +62,8 @@ final class SqlTests: XCTestCase {
     WHERE "id" IN ($1, $2);
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, ids.map { .uuid($0.rawValue) })
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual(ids.map { .uuid($0.rawValue) })
   }
 
   func testWhereInEmptyValues() throws {
@@ -75,8 +76,8 @@ final class SqlTests: XCTestCase {
     WHERE FALSE;
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([])
   }
 
   func testAlwaysRemovedFromWhereClause() throws {
@@ -86,8 +87,8 @@ final class SqlTests: XCTestCase {
     SELECT * FROM "things";
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([])
 
     stmt = SQL.select(.all, from: Thing.self, where: .and(.always, .int == 3))
 
@@ -96,8 +97,8 @@ final class SqlTests: XCTestCase {
     WHERE "int" = $1;
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [3])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([3])
   }
 
   func testSimpleSelect() throws {
@@ -107,8 +108,8 @@ final class SqlTests: XCTestCase {
     SELECT * FROM "things";
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([])
   }
 
   func testSelectWithLimit() throws {
@@ -119,8 +120,8 @@ final class SqlTests: XCTestCase {
     LIMIT 4;
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([])
   }
 
   func testSelectWithSingleWhere() throws {
@@ -131,8 +132,8 @@ final class SqlTests: XCTestCase {
     WHERE "id" = $1;
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [123])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([123])
   }
 
   func testSelectWithMultipleWheres() throws {
@@ -143,8 +144,8 @@ final class SqlTests: XCTestCase {
     WHERE ("id" = $1 AND "int" = $2);
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [123, 789])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([123, 789])
   }
 
   func testDeleteWithConstraint() throws {
@@ -155,8 +156,8 @@ final class SqlTests: XCTestCase {
     WHERE "id" = $1;
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [123])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([123])
   }
 
   func testDeleteWithOrderByAndLimit() throws {
@@ -174,8 +175,8 @@ final class SqlTests: XCTestCase {
     LIMIT 1;
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [123])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([123])
   }
 
   func testDeleteAll() throws {
@@ -185,8 +186,8 @@ final class SqlTests: XCTestCase {
     DELETE FROM "things";
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([])
   }
 
   func testBulkInsert() throws {
@@ -202,8 +203,8 @@ final class SqlTests: XCTestCase {
     ($1, $2), ($3, $4);
     """
 
-    XCTAssertEqual(stmt.query, expectedQuery)
-    XCTAssertEqual(stmt.bindings, [1, 2, 3, 4])
+    expect(stmt.query).toEqual(expectedQuery)
+    expect(stmt.bindings).toEqual([1, 2, 3, 4])
   }
 
   func testUpdate() {
@@ -219,8 +220,8 @@ final class SqlTests: XCTestCase {
     WHERE "string" = $3;
     """
 
-    XCTAssertEqual(statement.query, query)
-    XCTAssertEqual(statement.bindings, [true, 1, "a"])
+    expect(statement.query).toEqual(query)
+    expect(statement.bindings).toEqual([true, 1, "a"])
   }
 
   func testUpdateWithoutWhere() {
@@ -231,8 +232,8 @@ final class SqlTests: XCTestCase {
     SET "int" = $1;
     """
 
-    XCTAssertEqual(statement.query, query)
-    XCTAssertEqual(statement.bindings, [1])
+    expect(statement.query).toEqual(query)
+    expect(statement.bindings).toEqual([1])
   }
 
   func testUpdateReturning() {
@@ -250,8 +251,8 @@ final class SqlTests: XCTestCase {
     RETURNING *;
     """
 
-    XCTAssertEqual(statement.query, query)
-    XCTAssertEqual(statement.bindings, [1, "a"])
+    expect(statement.query).toEqual(query)
+    expect(statement.bindings).toEqual([1, "a"])
   }
 
   func testBasicInsert() throws {
@@ -268,8 +269,8 @@ final class SqlTests: XCTestCase {
     ($1, $2, $3);
     """
 
-    XCTAssertEqual(statement.query, query)
-    XCTAssertEqual(statement.bindings, [.uuid(id), 33, "lol"])
+    expect(statement.query).toEqual(query)
+    expect(statement.bindings).toEqual([.uuid(id), 33, "lol"])
   }
 
   func testOptionalInts() throws {
@@ -285,8 +286,8 @@ final class SqlTests: XCTestCase {
     ($1, $2);
     """
 
-    XCTAssertEqual(statement.query, query)
-    XCTAssertEqual(statement.bindings, [22, .int(nil)])
+    expect(statement.query).toEqual(query)
+    expect(statement.bindings).toEqual([22, .int(nil)])
   }
 
   func testOptionalStrings() throws {
@@ -302,8 +303,8 @@ final class SqlTests: XCTestCase {
     ($1, $2);
     """
 
-    XCTAssertEqual(statement.query, query)
-    XCTAssertEqual(statement.bindings, [.string(nil), "howdy"])
+    expect(statement.query).toEqual(query)
+    expect(statement.bindings).toEqual([.string(nil), "howdy"])
   }
 
   func testEnums() throws {
@@ -322,8 +323,8 @@ final class SqlTests: XCTestCase {
     ($1, $2);
     """
 
-    XCTAssertEqual(statement.query, query)
-    XCTAssertEqual(statement.bindings, [.enum(Thing.CustomEnum.foo), .enum(nil)])
+    expect(statement.query).toEqual(query)
+    expect(statement.bindings).toEqual([.enum(Thing.CustomEnum.foo), .enum(nil)])
   }
 
   func testDates() throws {
@@ -340,8 +341,8 @@ final class SqlTests: XCTestCase {
     ($1, $2);
     """
 
-    XCTAssertEqual(statement.query, query)
-    XCTAssertEqual(statement.bindings, [.date(date), .currentTimestamp])
+    expect(statement.query).toEqual(query)
+    expect(statement.bindings).toEqual([.date(date), .currentTimestamp])
   }
 
   func testUpdateRemovesIdAndCreatedAtFromInsertValues() throws {
@@ -361,6 +362,6 @@ final class SqlTests: XCTestCase {
     SET "int" = $1, "updated_at" = $2, "bool" = $3, "optional_string" = $4, "custom_enum" = $5, "optional_custom_enum" = $6, "string" = $7, "optional_int" = $8;
     """
 
-    XCTAssertEqual(statement.query, query)
+    expect(statement.query).toEqual(query)
   }
 }

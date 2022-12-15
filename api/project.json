@@ -7,7 +7,8 @@
     "pairql",
     "pairql-dash",
     "pairql-macapp",
-    "pairql-typescript"
+    "pairql-typescript",
+    "x-sendgrid"
   ],
   "targets": {
     "build": {

@@ -1,4 +1,5 @@
 import XCTest
+import XExpect
 
 @testable import DuetSQL
 
@@ -24,8 +25,8 @@ final class MemoryClientTests: XCTestCase {
       limit: 1,
       offset: 1
     )
-    XCTAssertEqual(retrieved.count, 1)
-    XCTAssertTrue(retrieved[0] === thing2)
+    expect(retrieved.count).toEqual(1)
+    expect(retrieved[0] === thing2).toBeTrue()
   }
 
   func testCreateAndSelect() async throws {
@@ -33,7 +34,7 @@ final class MemoryClientTests: XCTestCase {
     let thing1 = Thing()
     _ = try await client.create(thing1)
     let retrieved = try await client.select(Thing.self)
-    XCTAssertTrue(retrieved[0] === thing1)
+    expect(retrieved[0] === thing1).toBeTrue()
   }
 
   func testSelectingSoftDeleted() async throws {
@@ -41,7 +42,7 @@ final class MemoryClientTests: XCTestCase {
     let thing = Thing(deletedAt: .distantPast)
     _ = try await client.create(thing)
     let retrieved = try await client.select(Thing.self)
-    XCTAssertEqual(retrieved.count, 0)
+    expect(retrieved.count).toEqual(0)
   }
 
   func testDeletingSoftDeletable() async throws {
@@ -50,12 +51,12 @@ final class MemoryClientTests: XCTestCase {
     let thing = Thing()
     _ = try await client.create(thing)
     let retrieved = try await client.select(Thing.self)
-    XCTAssertEqual(retrieved.count, 1)
-    XCTAssertTrue(retrieved[0] === thing)
+    expect(retrieved.count).toEqual(1)
+    expect(retrieved[0] === thing).toBeTrue()
     _ = try await client.delete(Thing.self, where: .id == .id(thing))
     let retrieved2 = try await client.select(Thing.self)
-    XCTAssertEqual(retrieved2.count, 0)
-    XCTAssertEqual(store.things.count, 1)
+    expect(retrieved2.count).toEqual(0)
+    expect(store.things.count).toEqual(1)
   }
 
   func testForceDeletingSoftDeletable() async throws {
@@ -65,9 +66,9 @@ final class MemoryClientTests: XCTestCase {
     _ = try await client.create(thing)
     // soft delete it
     try await client.delete(thing.id)
-    XCTAssertEqual(try store.models(of: Thing.self).count, 1)
+    expect(try store.models(of: Thing.self).count).toEqual(1)
     // now hard delete
     try await client.delete(thing.id, force: true)
-    XCTAssertEqual(try store.models(of: Thing.self).count, 0)
+    expect(try store.models(of: Thing.self).count).toEqual(0)
   }
 }

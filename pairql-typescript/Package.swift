@@ -12,6 +12,7 @@ let package = Package(
   dependencies: [
     .package("wickwirew/Runtime@2.2.4"),
     .package(path: "../pairql"),
+    .package(path: "../x-expect"),
   ],
   targets: [
     .target(name: "TypescriptPairQL", dependencies: [
@@ -20,6 +21,7 @@ let package = Package(
     ]),
     .testTarget(name: "TypescriptPairQLTests", dependencies: [
       .target(name: "TypescriptPairQL"),
+      .product(name: "XExpect", package: "x-expect"),
     ]),
   ]
 )

@@ -1,0 +1,12 @@
+{
+  "root": "x-sendgrid",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "cd x-sendgrid && swift build"
+    },
+    "test": {
+      "command": "true"
+    }
+  }
+}

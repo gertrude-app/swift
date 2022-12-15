@@ -2,32 +2,27 @@ import PairQL
 import Runtime
 import TypescriptPairQL
 import XCTest
+import XExpect
 
 final class CodegenTests: XCTestCase {
   func testCoreTypes() throws {
-    XCTAssertEqual(String.ts, "export type __self__ = string;")
-    XCTAssertEqual(URL.ts, "export type __self__ = string;")
-    XCTAssertEqual(UUID.ts, "export type __self__ = UUID;")
-    XCTAssertEqual([UUID].ts, "export type __self__ = UUID[];")
-    XCTAssertEqual([String].ts, "export type __self__ = string[];")
-
-    XCTAssertEqual(
-      [String: String].ts,
-      "export type __self__ = { [key: string]: string; };"
-    )
+    expect(String.ts).toEqual("export type __self__ = string;")
+    expect(URL.ts).toEqual("export type __self__ = string;")
+    expect(UUID.ts).toEqual("export type __self__ = UUID;")
+    expect([UUID].ts).toEqual("export type __self__ = UUID[];")
+    expect([String].ts).toEqual("export type __self__ = string[];")
+    expect([String: String].ts).toEqual("export type __self__ = { [key: string]: string; };")
   }
 
   func testVendedTypes() throws {
-    XCTAssertEqual(
-      SuccessOutput.ts,
+    expect(SuccessOutput.ts).toEqual(
       """
       export interface __self__ {
         success: boolean;
       }
       """
     )
-    XCTAssertEqual(
-      ClientAuth.ts,
+    expect(ClientAuth.ts).toEqual(
       """
       export enum ClientAuth {
         none,
@@ -44,7 +39,7 @@ final class CodegenTests: XCTestCase {
       static var ts: String { "override" }
     }
 
-    XCTAssertEqual(Foo.ts, "override")
+    expect(Foo.ts).toEqual("override")
   }
 
   func testComplexStruct() throws {
@@ -63,8 +58,7 @@ final class CodegenTests: XCTestCase {
       let jim: String
     }
 
-    XCTAssertEqual(
-      Foo.ts,
+    expect(Foo.ts).toEqual(
       """
       export interface __self__ {
         id: UUID;

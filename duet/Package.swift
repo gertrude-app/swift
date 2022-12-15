@@ -13,6 +13,7 @@ let package = Package(
   ],
   dependencies: [
     .package(path: "../x-kit"),
+    .package(path: "../x-expect"),
     .package("vapor/fluent-kit@1.16.0"),
     .package("pointfreeco/swift-tagged@0.6.0"),
     .package("wickwirew/Runtime@2.2.4"),
@@ -36,8 +37,14 @@ let package = Package(
       ]
     ),
     .target(name: "DuetMock", dependencies: ["Duet"]),
-    .testTarget(name: "DuetSQLTests", dependencies: ["DuetSQL"]),
-    .testTarget(name: "DuetTests", dependencies: ["Duet"]),
+    .testTarget(
+      name: "DuetSQLTests",
+      dependencies: ["DuetSQL", .product(name: "XExpect", package: "x-expect")]
+    ),
+    .testTarget(
+      name: "DuetTests",
+      dependencies: ["Duet", .product(name: "XExpect", package: "x-expect")]
+    ),
   ]
 )
 

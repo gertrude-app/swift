@@ -1,5 +1,6 @@
 import MacAppRoute
 import XCTest
+import XExpect
 
 final class RouterTests: XCTestCase {
   let router = MacAppRoute.router
@@ -10,7 +11,7 @@ final class RouterTests: XCTestCase {
     request.setValue(token.uuidString, forHTTPHeaderField: "X-UserToken")
 
     let missingBody = try? router.match(request: request)
-    XCTAssertEqual(missingBody, nil)
+    expect(missingBody).toEqual(nil)
 
     let input = CreateSignedScreenshotUpload.Input(width: 100, height: 100)
 
@@ -19,14 +20,14 @@ final class RouterTests: XCTestCase {
 
     let matched = try router.match(request: request)
     let expected = MacAppRoute.userAuthed(token, .createSignedScreenshotUpload(input))
-    XCTAssertEqual(matched, expected)
+    expect(matched).toEqual(expected)
   }
 
   func testUnauthed() throws {
     let request = URLRequest(url: URL(string: "register")!)
     let route = MacAppRoute.unauthed(.register)
     let matched = try router.match(request: request)
-    XCTAssertEqual(matched, route)
+    expect(matched).toEqual(route)
   }
 
   func testHeaderAuthed() throws {
@@ -34,10 +35,10 @@ final class RouterTests: XCTestCase {
     let route = MacAppRoute.userAuthed(token, .getAccountStatus)
 
     let missingHeader = try? router.match(request: request)
-    XCTAssertEqual(missingHeader, nil)
+    expect(missingHeader).toEqual(nil)
 
     request.addValue(token.uuidString, forHTTPHeaderField: "X-UserToken")
     let matched = try router.match(request: request)
-    XCTAssertEqual(matched, route)
+    expect(matched).toEqual(route)
   }
 }
