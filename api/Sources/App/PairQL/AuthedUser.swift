@@ -21,7 +21,7 @@ extension AuthedUserRoute: RouteResponder {
   }
 }
 
-extension GetAccountStatus: NoInputPairResolver {
+extension GetAccountStatus: NoInputResolver {
   static func resolve(in context: UserContext) async throws -> Output {
     let admin = try await Current.db.query(Admin.self)
       .where(.id == context.user.adminId)
@@ -31,7 +31,7 @@ extension GetAccountStatus: NoInputPairResolver {
   }
 }
 
-extension CreateSignedScreenshotUpload: PairResolver {
+extension CreateSignedScreenshotUpload: Resolver {
   static func resolve(
     for input: Input,
     in context: AuthedUserRoute.Context

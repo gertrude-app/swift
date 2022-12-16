@@ -17,7 +17,7 @@ struct GetCheckoutUrl: TypescriptPair {
 
 // resolver
 
-extension GetCheckoutUrl: PairResolver {
+extension GetCheckoutUrl: Resolver {
   static func resolve(
     for input: Input,
     in context: DashboardContext

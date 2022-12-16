@@ -1,17 +1,12 @@
 import Duet
 
-public func mockUUIDs() -> (String, String, String, String) {
-  let uuids = (
-    UUID().lowercased,
-    UUID().lowercased,
-    UUID().lowercased,
-    UUID().lowercased
-  )
+public func mockUUIDs() -> (UUID, UUID) {
+  let uuids = (UUID(), UUID())
+  var array = [uuids.0, uuids.1]
 
-  var array = [uuids.0, uuids.1, uuids.2, uuids.3]
-
-  UUID.new = { guard !array.isEmpty else { return UUID() }
-    return UUID(uuidString: array.removeFirst())!
+  UUID.new = {
+    guard !array.isEmpty else { return UUID() }
+    return array.removeFirst()
   }
 
   return uuids

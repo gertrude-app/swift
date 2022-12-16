@@ -28,7 +28,7 @@ struct GetUserActivityDays: Pair, TypescriptPair {
 
 // resolver
 
-extension GetUserActivityDays: PairResolver {
+extension GetUserActivityDays: Resolver {
   static func resolve(
     for input: Input,
     in context: AdminContext

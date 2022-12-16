@@ -19,7 +19,7 @@ struct SaveUser: TypescriptPair {
 
 // resolver
 
-extension SaveUser: PairResolver {
+extension SaveUser: Resolver {
   static func resolve(for input: Input, in context: AdminContext) async throws -> Output {
     let user: User
     if input.isNew {

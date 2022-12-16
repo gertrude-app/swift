@@ -11,7 +11,7 @@ struct HandleCheckoutCancel: TypescriptPair {
 
 // resolver
 
-extension HandleCheckoutCancel: PairResolver {
+extension HandleCheckoutCancel: Resolver {
   static func resolve(
     for input: Input,
     in context: DashboardContext

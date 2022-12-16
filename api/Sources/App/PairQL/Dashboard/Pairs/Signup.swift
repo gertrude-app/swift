@@ -19,7 +19,7 @@ struct Signup: TypescriptPair {
 
 // resolver
 
-extension Signup: PairResolver {
+extension Signup: Resolver {
   static func resolve(
     for input: Input,
     in context: DashboardContext

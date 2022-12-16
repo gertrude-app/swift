@@ -112,7 +112,7 @@ final class SignupResolversTests: AppTestCase {
   func testHandleCheckoutSuccess() async throws {
     let sessionId = "cs_123"
     let admin = try await Current.db.create(Admin.random)
-    let uuids = mockUUIDs()
+    let (_, tokenValue) = mockUUIDs()
 
     Current.stripe.getCheckoutSession = { id in
       expect(id).toBe(sessionId)
@@ -135,8 +135,21 @@ final class SignupResolversTests: AppTestCase {
     )
 
     let retrieved = try await Current.db.find(admin.id)
-    expect(output).toEqual(.init(token: UUID(uuids.1)!, adminId: admin.id.rawValue))
+    expect(output).toEqual(.init(token: tokenValue, adminId: admin.id.rawValue))
     expect(retrieved.subscriptionId).toEqual(.init(rawValue: "sub_123"))
     expect(retrieved.subscriptionStatus).toEqual(.trialing)
+  }
+
+  func testLoginFromMagicLink() async throws {
+    let admin = try await Current.db.create(Admin.random)
+    let token = await Current.ephemeral.createMagicLinkToken(admin.id)
+    let (tokenId, tokenValue) = mockUUIDs()
+
+    let output = try await LoginMagicLink.resolve(for: .init(token: token), in: context)
+
+    let adminToken = try await Current.db.find(AdminToken.Id(tokenId))
+    expect(output).toEqual(.init(token: tokenValue, adminId: admin.id.rawValue))
+    expect(adminToken.value).toEqual(.init(tokenValue))
+    expect(adminToken.adminId).toEqual(admin.id)
   }
 }

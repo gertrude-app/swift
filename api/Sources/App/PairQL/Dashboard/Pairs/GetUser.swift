@@ -39,7 +39,7 @@ struct GetUser: Pair, TypescriptPair {
 
 // resolver
 
-extension GetUser: PairResolver {
+extension GetUser: Resolver {
   static func resolve(
     for id: UUID,
     in context: AdminContext

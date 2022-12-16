@@ -1,6 +1,11 @@
 import Foundation
 import TypescriptPairQL
 
+struct AdminAuth: TypescriptPairOutput {
+  var token: UUID
+  var adminId: UUID
+}
+
 struct HandleCheckoutSuccess: TypescriptPair {
   static var auth: ClientAuth = .none
 
@@ -8,15 +13,12 @@ struct HandleCheckoutSuccess: TypescriptPair {
     var stripeCheckoutSessionid: String
   }
 
-  struct Output: TypescriptPairOutput {
-    var token: UUID
-    var adminId: UUID
-  }
+  typealias Output = AdminAuth
 }
 
 // resolver
 
-extension HandleCheckoutSuccess: PairResolver {
+extension HandleCheckoutSuccess: Resolver {
   static func resolve(
     for input: Input,
     in context: DashboardContext

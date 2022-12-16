@@ -12,7 +12,7 @@ struct JoinWaitlist: TypescriptPair {
 
 // resolver
 
-extension JoinWaitlist: PairResolver {
+extension JoinWaitlist: Resolver {
   static func resolve(
     for input: Input,
     in context: DashboardContext

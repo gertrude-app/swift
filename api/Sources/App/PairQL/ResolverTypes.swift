@@ -1,12 +1,12 @@
 import PairQL
 import Vapor
 
-protocol PairResolver: Pair {
+protocol Resolver: Pair {
   associatedtype Context
   static func resolve(for input: Input, in context: Context) async throws -> Output
 }
 
-protocol NoInputPairResolver: Pair where Input == NoInput {
+protocol NoInputResolver: Pair where Input == NoInput {
   associatedtype Context
   static func resolve(in context: Context) async throws -> Output
 }
@@ -22,7 +22,7 @@ extension RouteResponder {
   }
 }
 
-extension PairResolver {
+extension Resolver {
   static func result(for input: Input, in context: Context) async -> Result<Output, Error> {
     do {
       return .success(try await resolve(for: input, in: context))

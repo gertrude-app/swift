@@ -16,7 +16,7 @@ struct VerifySignupEmail: TypescriptPair {
 
 // resolver
 
-extension VerifySignupEmail: PairResolver {
+extension VerifySignupEmail: Resolver {
   static func resolve(
     for input: Input,
     in context: DashboardContext
