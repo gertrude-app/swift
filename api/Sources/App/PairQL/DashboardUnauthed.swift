@@ -22,6 +22,9 @@ extension UnauthedRoute: RouteResponder {
     case .getCheckoutUrl(let input):
       let output = try await GetCheckoutUrl.resolve(for: input, in: context)
       return try await respond(with: output)
+    case .handleCheckoutSuccess(let input):
+      let output = try await HandleCheckoutSuccess.resolve(for: input, in: context)
+      return try await respond(with: output)
     }
   }
 }

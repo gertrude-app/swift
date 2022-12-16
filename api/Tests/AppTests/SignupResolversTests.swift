@@ -1,4 +1,5 @@
 import DashboardRoute
+import DuetMock
 import DuetSQL
 import XCTest
 import XExpect
@@ -107,5 +108,36 @@ final class SignupResolversTests: AppTestCase {
       trialEndBehavior: .createInvoice,
       paymentMethodCollection: .ifRequired
     ))
+  }
+
+  func testHandleCheckoutSuccess() async throws {
+    let sessionId = "cs_123"
+    let admin = try await Current.db.create(Admin.random)
+    let uuids = mockUUIDs()
+
+    Current.stripe.getCheckoutSession = { id in
+      expect(id).toBe(sessionId)
+      return .init(
+        id: "cs_123",
+        url: nil,
+        subscription: "sub_123",
+        clientReferenceId: admin.id.lowercased
+      )
+    }
+
+    Current.stripe.getSubscription = { id in
+      expect(id).toBe("sub_123")
+      return .init(id: id, status: .trialing, customer: "cus_123")
+    }
+
+    let output = try await HandleCheckoutSuccess.resolve(
+      for: .init(stripeCheckoutSessionid: sessionId),
+      in: context
+    )
+
+    let retrieved = try await Current.db.find(admin.id)
+    expect(output).toEqual(.init(token: UUID(uuids.1)!, adminId: admin.id.rawValue))
+    expect(retrieved.subscriptionId).toEqual(.init(rawValue: "sub_123"))
+    expect(retrieved.subscriptionStatus).toEqual(.trialing)
   }
 }
