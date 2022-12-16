@@ -152,4 +152,43 @@ final class SignupResolversTests: AppTestCase {
     expect(adminToken.value).toEqual(.init(tokenValue))
     expect(adminToken.adminId).toEqual(admin.id)
   }
+
+  func testRequestMagicLink() async throws {
+    let admin = try await Current.db.create(Admin.random)
+    let (token, _) = mockUUIDs()
+
+    let output = try await RequestMagicLink.resolve(
+      for: .init(email: admin.email.rawValue, redirect: nil),
+      in: .init(dashboardUrl: "/dash")
+    )
+
+    expect(output).toEqual(.success)
+    expect(sent.emails).toHaveCount(1)
+    expect(sent.emails.first!.text).toContain("href='/dash/otp/\(token.lowercased)'")
+    expect(sent.emails.first!.text).not.toContain("redirect=")
+  }
+
+  func testSendMagicLinkWithRedirect() async throws {
+    let admin = try await Current.db.create(Admin.random)
+    let (token, _) = mockUUIDs()
+
+    let output = try await RequestMagicLink.resolve(
+      for: .init(email: admin.email.rawValue, redirect: "/foo"),
+      in: .init(dashboardUrl: "/dash")
+    )
+
+    expect(output).toEqual(.success)
+    expect(sent.emails).toHaveCount(1)
+    expect(sent.emails.first!.text).toContain("/otp/\(token.lowercased)?redirect=%2Ffoo")
+  }
+
+  func testSendMagicLinkToUnknownEmailReturnsSuccessEmittingNoEvent() async throws {
+    let output = try await RequestMagicLink.resolve(
+      for: .init(email: "some@hacker.com", redirect: nil),
+      in: context
+    )
+
+    expect(output).toEqual(.success)
+    expect(sent.emails).toBeEmpty()
+  }
 }

@@ -1,9 +1,36 @@
 import XCTest
 
+public struct CollectionExpectation<T: Collection> {
+  let collection: T
+  var negated = false
+  let file: StaticString
+  let line: UInt
+
+  public var not: Self {
+    Self(collection: collection, negated: true, file: #file, line: #line)
+  }
+
+  public func toHaveCount(_ count: Int) {
+    if negated {
+      XCTAssertNotEqual(collection.count, count, file: file, line: line)
+    } else {
+      XCTAssertEqual(collection.count, count, file: file, line: line)
+    }
+  }
+
+  public func toBeEmpty() {
+    if negated {
+      XCTAssertFalse(collection.isEmpty, file: file, line: line)
+    } else {
+      XCTAssertTrue(collection.isEmpty, file: file, line: line)
+    }
+  }
+}
+
 public struct ErrorExpectation<T> {
-  public let fn: () async throws -> T
-  public let file: StaticString
-  public let line: UInt
+  let fn: () async throws -> T
+  let file: StaticString
+  let line: UInt
 
   public func toContain(_ substring: String) async throws {
     do {
@@ -16,27 +43,36 @@ public struct ErrorExpectation<T> {
 }
 
 public struct EquatableExpectation<T: Equatable> {
-  public let value: T
-  public let file: StaticString
-  public let line: UInt
+  let value: T
+  var negated = false
+  let file: StaticString
+  let line: UInt
+
+  public var not: Self {
+    Self(value: value, negated: true, file: #file, line: #line)
+  }
 
   public func toEqual(_ other: T) {
-    XCTAssertEqual(value, other, file: file, line: line)
+    if negated {
+      XCTAssertNotEqual(value, other, file: file, line: line)
+    } else {
+      XCTAssertEqual(value, other, file: file, line: line)
+    }
   }
 
   public func toBeNil() {
-    XCTAssertNil(value, file: file, line: line)
-  }
-
-  public func toNotBeNil() {
-    XCTAssertNotNil(value, file: file, line: line)
+    if negated {
+      XCTAssertNotNil(value, file: file, line: line)
+    } else {
+      XCTAssertNil(value, file: file, line: line)
+    }
   }
 }
 
 public struct ResultExpectation<Success, Failure: Swift.Error> {
-  public let result: Result<Success, Failure>
-  public let file: StaticString
-  public let line: UInt
+  let result: Result<Success, Failure>
+  let file: StaticString
+  let line: UInt
 
   public func toBeError(containing substring: String) {
     switch result {
@@ -54,9 +90,9 @@ public struct ResultExpectation<Success, Failure: Swift.Error> {
 }
 
 public struct OptionalExpectation {
-  public let value: Any?
-  public let file: StaticString
-  public let line: UInt
+  let value: Any?
+  let file: StaticString
+  let line: UInt
 
   public func toBeNil() {
     XCTAssertNil(value, file: file, line: line)
@@ -64,31 +100,53 @@ public struct OptionalExpectation {
 }
 
 public struct StringExpectation {
-  public let value: String
-  public let file: StaticString
-  public let line: UInt
+  let value: String
+  var negated = false
+  let file: StaticString
+  let line: UInt
+
+  public var not: Self {
+    Self(value: value, negated: true, file: #file, line: #line)
+  }
 
   public func toBe(_ other: String) {
-    XCTAssertEqual(value, other, file: file, line: line)
+    if negated {
+      XCTAssertNotEqual(value, other, file: file, line: line)
+    } else {
+      XCTAssertEqual(value, other, file: file, line: line)
+    }
   }
 
   public func toContain(_ substring: String) {
-    XCTAssert(
-      value.contains(substring),
-      "Expected `\(value)` to contain `\(substring)`",
-      file: file,
-      line: line
-    )
+    if !negated {
+      XCTAssert(
+        value.contains(substring),
+        "Expected `\(value)` to contain `\(substring)`",
+        file: file,
+        line: line
+      )
+    } else {
+      XCTAssert(
+        !value.contains(substring),
+        "Expected `\(value)` NOT to contain `\(substring)`",
+        file: file,
+        line: line
+      )
+    }
   }
 }
 
 public struct BoolExpectation {
-  public let value: Bool
-  public let file: StaticString
-  public let line: UInt
+  let value: Bool
+  let file: StaticString
+  let line: UInt
 
   public func toBeTrue() {
     XCTAssert(value, file: file, line: line)
+  }
+
+  public func toBeFalse() {
+    XCTAssert(!value, file: file, line: line)
   }
 }
 
@@ -123,6 +181,14 @@ public func expect<T>(
   line: UInt = #line
 ) -> OptionalExpectation {
   OptionalExpectation(value: value, file: file, line: line)
+}
+
+public func expect<C: Collection>(
+  _ collection: C,
+  file: StaticString = #filePath,
+  line: UInt = #line
+) -> CollectionExpectation<C> {
+  CollectionExpectation(collection: collection, file: file, line: line)
 }
 
 public func expect<S, F: Error>(

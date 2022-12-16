@@ -7,7 +7,7 @@ final class KeyTests: XCTestCase {
   func testConstructingValidKeyDomains() {
     let validInputs = ["foo.com", "www.hondros.com/"]
     for input in validInputs {
-      expect(Key.Domain(input)).toNotBeNil()
+      expect(Key.Domain(input)).not.toBeNil()
     }
   }
 
@@ -31,7 +31,7 @@ final class KeyTests: XCTestCase {
   func testConstructingValidKeyDomainRegexPatterns() {
     let validInputs = ["deploy--*--foo.com"]
     for input in validInputs {
-      expect(Key.DomainRegexPattern(input)).toNotBeNil()
+      expect(Key.DomainRegexPattern(input)).not.toBeNil()
     }
   }
 
@@ -45,7 +45,7 @@ final class KeyTests: XCTestCase {
   func testConstructingValidKeyPaths() {
     let validInputs = ["site.com/foo", "site.com/foo/bar"]
     for input in validInputs {
-      expect(Key.Path(input)).toNotBeNil()
+      expect(Key.Path(input)).not.toBeNil()
     }
 
     let path1 = Key.Path("site.com/foo")
@@ -90,7 +90,7 @@ final class KeyTests: XCTestCase {
       "FE80::0202:B3FF:FE1E:8329%en0",
     ]
     for input in validInputs {
-      expect(Key.Ip(input)).toNotBeNil()
+      expect(Key.Ip(input)).not.toBeNil()
     }
   }
 

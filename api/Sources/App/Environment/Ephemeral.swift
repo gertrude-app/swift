@@ -9,7 +9,7 @@ actor Ephemeral {
     _ adminId: Admin.Id,
     expiration: Date = Current.date() + TWENTY_MINUTES
   ) -> UUID {
-    let token = UUID()
+    let token = UUID.new()
     magicLinks[token] = (adminId: adminId, expiration: expiration)
     return token
   }
@@ -73,4 +73,3 @@ actor Ephemeral {
 }
 
 private let TWENTY_MINUTES: TimeInterval = 60 * 20
-

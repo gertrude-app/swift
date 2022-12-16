@@ -5,7 +5,6 @@
     "duet",
     "shared",
     "pairql",
-    "pairql-dash",
     "pairql-macapp",
     "pairql-typescript",
     "x-sendgrid"

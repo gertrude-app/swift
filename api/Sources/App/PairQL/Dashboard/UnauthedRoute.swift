@@ -10,6 +10,8 @@ enum UnauthedRoute: PairRoute {
   case getCheckoutUrl(GetCheckoutUrl.Input)
   case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
   case handleCheckoutCancel(HandleCheckoutCancel.Input)
+  case requestMagicLink(RequestMagicLink.Input)
+  case loginMagicLink(LoginMagicLink.Input)
 
   static let router = OneOf {
     Route(/Self.signup) {
@@ -39,6 +41,14 @@ enum UnauthedRoute: PairRoute {
       Operation(HandleCheckoutCancel.self)
       Body(.json(HandleCheckoutCancel.Input.self))
     }
+    Route(/Self.requestMagicLink) {
+      Operation(RequestMagicLink.self)
+      Body(.json(RequestMagicLink.Input.self))
+    }
+    Route(/Self.loginMagicLink) {
+      Operation(LoginMagicLink.self)
+      Body(.json(LoginMagicLink.Input.self))
+    }
   }
 }
 
@@ -65,6 +75,12 @@ extension UnauthedRoute: RouteResponder {
       return try await respond(with: output)
     case .handleCheckoutCancel(let input):
       let output = try await HandleCheckoutCancel.resolve(for: input, in: context)
+      return try await respond(with: output)
+    case .loginMagicLink(let input):
+      let output = try await LoginMagicLink.resolve(for: input, in: context)
+      return try await respond(with: output)
+    case .requestMagicLink(let input):
+      let output = try await RequestMagicLink.resolve(for: input, in: context)
       return try await respond(with: output)
     }
   }
