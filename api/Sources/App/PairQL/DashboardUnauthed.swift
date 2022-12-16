@@ -13,6 +13,12 @@ extension UnauthedRoute: RouteResponder {
     case .verifySignupEmail(let input):
       let output = try await VerifySignupEmail.resolve(for: input, in: context)
       return try await respond(with: output)
+    case .joinWaitlist(let input):
+      let output = try await JoinWaitlist.resolve(for: input, in: context)
+      return try await respond(with: output)
+    case .allowingSignups:
+      let output = try await AllowingSignups.resolve(in: context)
+      return try await respond(with: output)
     }
   }
 }

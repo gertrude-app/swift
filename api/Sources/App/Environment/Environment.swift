@@ -3,9 +3,10 @@ import Vapor
 import XSendGrid
 
 struct Environment {
-  var date = { Date() }
+  var date: () -> Date = { Date() }
   var db: DuetSQL.Client = ThrowingClient()
-  var ephemeral = Ephemeral()
+  var env: EnvironmentVariables = .live
+  var ephemeral: Ephemeral = .init()
   var sendGrid: SendGrid.Client = .mock
   var verificationCode: VerificationCodeGenerator = .live
 }
@@ -16,24 +17,25 @@ extension Environment {
   static let mock = Environment(
     date: { .mock },
     db: ThrowingClient(),
+    env: .mock,
     ephemeral: Ephemeral(),
     sendGrid: .mock,
     verificationCode: .mock
   )
 }
 
-extension Date {
-  static let mock = Date(timeIntervalSinceReferenceDate: 0)
-}
-
 struct VerificationCodeGenerator {
   var generate: () -> Int
+  static let live = Self { Int.random(in: 100_000 ... 999_999) }
+  static let mock = Self { 0 }
+}
 
-  static let live = Self {
-    Int.random(in: 100_000 ... 999_999)
-  }
+struct EnvironmentVariables {
+  var get: (String) -> String?
+  static let live = EnvironmentVariables(get: { Env.get($0) })
+  static let mock = EnvironmentVariables(get: { _ in nil })
+}
 
-  static let mock = Self {
-    0
-  }
+extension Date {
+  static let mock = Date(timeIntervalSinceReferenceDate: 0)
 }

@@ -25,3 +25,7 @@ public struct Signup: TypescriptPair {
     }
   }
 }
+
+public struct AllowingSignups: TypescriptPair {
+  public static var auth: ClientAuth = .none
+}

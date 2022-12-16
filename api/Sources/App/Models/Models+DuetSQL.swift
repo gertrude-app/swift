@@ -707,32 +707,32 @@ extension UserToken: Model {
   }
 }
 
-// extension WaitlistedUser: Model {
-//   public static let tableName = M34.tableName
-//   public typealias ColumnName = CodingKeys
+extension WaitlistedAdmin: Model {
+  public static let tableName = M1.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .email:
-//       return .string(email.rawValue)
-//     case .signupToken:
-//       return .uuid(signupToken)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .email:
+      return .string(email.rawValue)
+    case .signupToken:
+      return .uuid(signupToken)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .email: .string(email.rawValue),
-//       .signupToken: .uuid(signupToken),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .email: .string(email.rawValue),
+      .signupToken: .uuid(signupToken),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}

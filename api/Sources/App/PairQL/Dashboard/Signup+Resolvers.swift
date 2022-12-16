@@ -69,6 +69,47 @@ extension VerifySignupEmail: PairResolver {
   }
 }
 
+extension JoinWaitlist: PairResolver {
+  static func resolve(
+    for input: Input,
+    in context: DashboardContext
+  ) async throws -> Output {
+    let email = input.email.lowercased()
+    guard email.isValidEmail else {
+      throw Abort(.badRequest)
+    }
+
+    let waitlisted = WaitlistedAdmin(email: .init(email))
+    let existing = try? await Current.db.query(WaitlistedAdmin.self)
+      .where(.email == .string(waitlisted.email.rawValue))
+      .first()
+    if existing != nil { return .true }
+
+    if Env.mode == .prod {
+      Current.sendGrid.fireAndForget(.toJared("Gertrude waitlist", "email: \(email)"))
+    }
+
+    try await Current.db.create(waitlisted)
+    return .true
+  }
+}
+
+extension AllowingSignups: NoInputPairResolver {
+  static func resolve(in context: DashboardContext) async throws -> Output {
+    let allowedPerDay = Current.env.get("NUM_ALLOWED_SIGNUPS_PER_DAY").flatMap { Int($0) } ?? 1
+    let todaysSignups = try await Current.db.query(Admin.self)
+      .where(
+        .subscriptionStatus |!=| [
+          Admin.SubscriptionStatus.pendingEmailVerification,
+          Admin.SubscriptionStatus.emailVerified,
+        ]
+      )
+      .where(.createdAt >= .date(Calendar.current.startOfDay(for: Date())))
+      .all()
+    return .init(todaysSignups.count < allowedPerDay)
+  }
+}
+
 // helpers
 
 private func accountExists(with email: String) -> Email {

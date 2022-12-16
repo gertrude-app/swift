@@ -8,6 +8,18 @@ import XExpect
 final class SignupResolversTests: AppTestCase {
   let context = DashboardContext(dashboardUrl: "/")
 
+  func testAllowingSignupsReturnsFalseWhenExceedingNumAllowed() async throws {
+    Current.env = .init(get: { _ in "0" })
+    let output = try await AllowingSignups.resolve(in: context)
+    expect(output).toEqual(.false)
+  }
+
+  func testAllowingSignupsReturnsTrueWhenSignupsLessThanMax() async throws {
+    Current.env = .init(get: { _ in "10000000" })
+    let output = try await AllowingSignups.resolve(in: context)
+    expect(output).toEqual(.true)
+  }
+
   func testInitiateSignupWithBadEmailErrorsBadRequest() async throws {
     let result = await Signup.result(for: .init(email: "💩", password: ""), in: context)
     expect(result).toBeError(containing: "Bad Request")
