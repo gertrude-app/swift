@@ -1,6 +1,7 @@
 import DuetSQL
 import Vapor
 import XSendGrid
+import XStripe
 
 struct Environment {
   var date: () -> Date = { Date() }
@@ -8,6 +9,7 @@ struct Environment {
   var env: EnvironmentVariables = .live
   var ephemeral: Ephemeral = .init()
   var sendGrid: SendGrid.Client = .mock
+  var stripe: Stripe.Client = .mock
   var verificationCode: VerificationCodeGenerator = .live
 }
 
@@ -20,6 +22,7 @@ extension Environment {
     env: .mock,
     ephemeral: Ephemeral(),
     sendGrid: .mock,
+    stripe: .mock,
     verificationCode: .mock
   )
 }

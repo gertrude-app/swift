@@ -6,6 +6,7 @@ extension Configure {
   static func env(_ app: Application) {
     Env.mode = .init(from: app.environment)
     Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
+    Current.stripe = .live(secretKey: Env.STRIPE_SECRET_KEY)
   }
 }
 

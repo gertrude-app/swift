@@ -17,6 +17,7 @@ let package = Package(
     .package(path: "../pairql-dash"),
     .package(path: "../pairql-macapp"),
     .package(path: "../x-sendgrid"),
+    .package(path: "../x-stripe"),
     .package(path: "../x-expect"),
   ],
   targets: [
@@ -35,6 +36,7 @@ let package = Package(
         .product(name: "TaggedTime", package: "swift-tagged"),
         .product(name: "VaporRouting", package: "vapor-routing"),
         .product(name: "XSendGrid", package: "x-sendgrid"),
+        .product(name: "XStripe", package: "x-stripe"),
         "Rainbow",
       ],
       swiftSettings: [

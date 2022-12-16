@@ -7,6 +7,7 @@ public enum UnauthedRoute: PairRoute {
   case verifySignupEmail(VerifySignupEmail.Input)
   case joinWaitlist(JoinWaitlist.Input)
   case allowingSignups
+  case getCheckoutUrl(GetCheckoutUrl.Input)
 
   public static let router = OneOf {
     Route(/Self.tsCodegen) {
@@ -26,6 +27,10 @@ public enum UnauthedRoute: PairRoute {
     }
     Route(/Self.allowingSignups) {
       Operation(AllowingSignups.self)
+    }
+    Route(/Self.getCheckoutUrl) {
+      Operation(GetCheckoutUrl.self)
+      Body(.json(GetCheckoutUrl.Input.self))
     }
   }
 }

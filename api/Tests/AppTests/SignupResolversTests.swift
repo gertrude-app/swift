@@ -2,6 +2,7 @@ import DashboardRoute
 import DuetSQL
 import XCTest
 import XExpect
+import XStripe
 
 @testable import App
 
@@ -78,5 +79,33 @@ final class SignupResolversTests: AppTestCase {
 
     expect(output).toEqual(.init(adminId: admin.id.rawValue))
     expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed
+  }
+
+  func testGetCheckoutUrl() async throws {
+    var sessionData: Stripe.CheckoutSessionData?
+    Current.stripe.createCheckoutSession = { data in
+      sessionData = data
+      return .init(id: "cs_123", url: "result-url", subscription: nil, clientReferenceId: nil)
+    }
+
+    let admin = try await Current.db.create(Admin.random)
+    let output = try await GetCheckoutUrl.resolve(
+      for: .init(adminId: admin.id.rawValue),
+      in: context
+    )
+
+    expect(output).toEqual(.init(url: "result-url"))
+
+    expect(sessionData).toEqual(.init(
+      successUrl: "//checkout-success?session_id={CHECKOUT_SESSION_ID}",
+      cancelUrl: "//checkout-cancel?session_id={CHECKOUT_SESSION_ID}",
+      lineItems: [.init(quantity: 1, priceId: Env.STRIPE_SUBSCRIPTION_PRICE_ID)],
+      mode: .subscription,
+      clientReferenceId: admin.id.lowercased,
+      customerEmail: admin.email.rawValue,
+      trialPeriodDays: 60,
+      trialEndBehavior: .createInvoice,
+      paymentMethodCollection: .ifRequired
+    ))
   }
 }

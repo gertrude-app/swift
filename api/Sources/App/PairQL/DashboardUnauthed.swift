@@ -19,6 +19,9 @@ extension UnauthedRoute: RouteResponder {
     case .allowingSignups:
       let output = try await AllowingSignups.resolve(in: context)
       return try await respond(with: output)
+    case .getCheckoutUrl(let input):
+      let output = try await GetCheckoutUrl.resolve(for: input, in: context)
+      return try await respond(with: output)
     }
   }
 }
