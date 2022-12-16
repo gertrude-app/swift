@@ -23,12 +23,6 @@ build-pql:
 test-pql:
 	$(NX) run pairql:test
 
-build-pql-dash:
-	$(NX) run pairql-dash:build
-
-test-pql-dash:
-	$(NX) run pairql-dash:test
-
 build-pql-macapp:
 	$(NX) run pairql-macapp:build
 
@@ -92,7 +86,6 @@ clean: nx-reset
 	rm -rf api/.build
 	rm -rf duet/.build
 	rm -rf pairql/.build
-	rm -rf pairql-dash/.build
 	rm -rf pairql-macapp/.build
 	rm -rf pairql-typescript/.build
 	rm -rf shared/.build
@@ -107,7 +100,6 @@ API_RUN = cd api && ./.build/debug/Run
 ALL_CMDS = api build-api migrate-up migrate-down \
   build-shared test-shared \
   build-pql test-pql \
-  build-pql-dash test-pql-dash \
   build-pql-macapp test-pql-macapp \
   build-xkit test-xkit \
   build-duet test-duet \

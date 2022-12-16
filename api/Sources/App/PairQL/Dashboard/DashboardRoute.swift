@@ -1,10 +1,26 @@
-import DashboardRoute
 import DuetSQL
+import Foundation
+import PairQL
 import TypescriptPairQL
 import Vapor
 
 struct DashboardContext {
   let dashboardUrl: String
+}
+
+enum DashboardRoute: PairRoute {
+  case adminAuthed(UUID, AuthedAdminRoute)
+  case unauthed(UnauthedRoute)
+
+  static let router = OneOf {
+    Route(/Self.adminAuthed) {
+      Headers { Field("X-AdminToken") { UUID.parser() } }
+      AuthedAdminRoute.router
+    }
+    Route(/Self.unauthed) {
+      UnauthedRoute.router
+    }
+  }
 }
 
 extension DashboardRoute: RouteResponder {

@@ -2,23 +2,23 @@ import Foundation
 import Shared
 import TypescriptPairQL
 
-public struct GetUser: Pair, TypescriptPair {
-  public static var auth: ClientAuth = .admin
+struct GetUser: Pair, TypescriptPair {
+  static var auth: ClientAuth = .admin
 
-  public typealias Input = UUID
+  typealias Input = UUID
 
-  public struct Output: TypescriptPairOutput {
-    public var id: UUID
-    public var name: String
-    public var keyloggingEnabled: Bool
-    public var screenshotsEnabled: Bool
-    public var screenshotsResolution: Int
-    public var screenshotsFrequency: Int
-    public var keychains: [Keychain]
-    public var devices: [Device]
-    public var createdAt: Date
+  struct Output: TypescriptPairOutput {
+    var id: UUID
+    var name: String
+    var keyloggingEnabled: Bool
+    var screenshotsEnabled: Bool
+    var screenshotsResolution: Int
+    var screenshotsFrequency: Int
+    var keychains: [Keychain]
+    var devices: [Device]
+    var createdAt: Date
 
-    public init(
+    init(
       id: UUID,
       name: String,
       keyloggingEnabled: Bool,
@@ -42,19 +42,19 @@ public struct GetUser: Pair, TypescriptPair {
   }
 }
 
-public struct GetUsers: Pair, TypescriptPair {
-  public static var auth: ClientAuth = .admin
-  public typealias Output = [GetUser.Output]
+struct GetUsers: Pair, TypescriptPair {
+  static var auth: ClientAuth = .admin
+  typealias Output = [GetUser.Output]
 }
 
-public extension GetUser {
+extension GetUser {
   struct Device: Equatable, Codable, TypescriptRepresentable {
-    public let id: UUID
-    public let isOnline: Bool
-    public let modelFamily: DeviceModelFamily
-    public let modelTitle: String
+    let id: UUID
+    let isOnline: Bool
+    let modelFamily: DeviceModelFamily
+    let modelTitle: String
 
-    public init(
+    init(
       id: UUID,
       isOnline: Bool,
       modelFamily: DeviceModelFamily,
@@ -68,14 +68,14 @@ public extension GetUser {
   }
 
   struct Keychain: Equatable, Codable, TypescriptRepresentable {
-    public let id: UUID
-    public let authorId: UUID
-    public let name: String
-    public let description: String?
-    public let isPublic: Bool
-    public let numKeys: Int
+    let id: UUID
+    let authorId: UUID
+    let name: String
+    let description: String?
+    let isPublic: Bool
+    let numKeys: Int
 
-    public init(
+    init(
       id: UUID,
       authorId: UUID,
       name: String,

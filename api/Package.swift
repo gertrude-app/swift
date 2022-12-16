@@ -14,7 +14,7 @@ let package = Package(
     .package(path: "../duet"),
     .package(path: "../shared"),
     .package(path: "../pairql"),
-    .package(path: "../pairql-dash"),
+    .package(path: "../pairql-typescript"),
     .package(path: "../pairql-macapp"),
     .package(path: "../x-sendgrid"),
     .package(path: "../x-stripe"),
@@ -32,7 +32,7 @@ let package = Package(
         .product(name: "Shared", package: "shared"),
         .product(name: "PairQL", package: "pairql"),
         .product(name: "MacAppRoute", package: "pairql-macapp"),
-        .product(name: "DashboardRoute", package: "pairql-dash"),
+        .product(name: "TypescriptPairQL", package: "pairql-typescript"),
         .product(name: "TaggedTime", package: "swift-tagged"),
         .product(name: "VaporRouting", package: "vapor-routing"),
         .product(name: "XSendGrid", package: "x-sendgrid"),
@@ -48,7 +48,7 @@ let package = Package(
       .target(name: "App"),
       .product(name: "XExpect", package: "x-expect"),
       .product(name: "XCTVapor", package: "vapor"), // do i need this?
-      .product(name: "DuetMock", package: "duet"), // do i need this?
+      .product(name: "DuetMock", package: "duet"),
     ]),
   ]
 )

@@ -1,4 +1,3 @@
-import DashboardRoute
 import DuetSQL
 import Vapor
 import XStripe
@@ -86,7 +85,7 @@ extension Signup: PairResolver {
 
     let admin = try await Current.db.create(Admin(
       email: .init(rawValue: email),
-      password: try Bcrypt.hash(input.password),
+      password: Env.mode == .test ? input.password : try Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification
     ))
 

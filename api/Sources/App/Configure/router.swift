@@ -1,4 +1,3 @@
-import DashboardRoute
 import MacAppRoute
 import URLRouting
 import Vapor
