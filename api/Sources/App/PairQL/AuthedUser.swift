@@ -11,7 +11,7 @@ extension AuthedUserRoute: RouteResponder {
     switch route {
 
     case .createSignedScreenshotUpload(let input):
-      let output = try await CreateSignedScreenshotUpload.resolve(for: input, in: context)
+      let output = try await CreateSignedScreenshotUpload.resolve(with: input, in: context)
       return try await respond(with: output)
 
     case .getAccountStatus:
@@ -33,7 +33,7 @@ extension GetAccountStatus: NoInputResolver {
 
 extension CreateSignedScreenshotUpload: Resolver {
   static func resolve(
-    for input: Input,
+    with input: Input,
     in context: AuthedUserRoute.Context
   ) async throws -> Output {
     fatalError()

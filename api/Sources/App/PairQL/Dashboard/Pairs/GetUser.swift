@@ -41,7 +41,7 @@ struct GetUser: Pair, TypescriptPair {
 
 extension GetUser: Resolver {
   static func resolve(
-    for id: UUID,
+    with id: UUID,
     in context: AdminContext
   ) async throws -> Output {
     try await Output(from: context.verifiedUser(from: id))

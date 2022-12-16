@@ -18,7 +18,7 @@ struct VerifySignupEmail: TypescriptPair {
 
 extension VerifySignupEmail: Resolver {
   static func resolve(
-    for input: Input,
+    with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
     guard let adminId = await Current.ephemeral.adminIdFromMagicLinkToken(input.token) else {

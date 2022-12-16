@@ -14,7 +14,7 @@ struct JoinWaitlist: TypescriptPair {
 
 extension JoinWaitlist: Resolver {
   static func resolve(
-    for input: Input,
+    with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
     let email = input.email.lowercased()

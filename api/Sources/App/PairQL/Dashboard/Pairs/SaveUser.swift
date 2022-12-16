@@ -20,7 +20,7 @@ struct SaveUser: TypescriptPair {
 // resolver
 
 extension SaveUser: Resolver {
-  static func resolve(for input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     let user: User
     if input.isNew {
       user = try await Current.db.create(User(

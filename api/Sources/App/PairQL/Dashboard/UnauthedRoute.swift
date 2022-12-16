@@ -56,31 +56,31 @@ extension UnauthedRoute: RouteResponder {
   static func respond(to route: Self, in context: DashboardContext) async throws -> Response {
     switch route {
     case .signup(let input):
-      let output = try await Signup.resolve(for: input, in: context)
+      let output = try await Signup.resolve(with: input, in: context)
       return try await respond(with: output)
     case .verifySignupEmail(let input):
-      let output = try await VerifySignupEmail.resolve(for: input, in: context)
+      let output = try await VerifySignupEmail.resolve(with: input, in: context)
       return try await respond(with: output)
     case .joinWaitlist(let input):
-      let output = try await JoinWaitlist.resolve(for: input, in: context)
+      let output = try await JoinWaitlist.resolve(with: input, in: context)
       return try await respond(with: output)
     case .allowingSignups:
       let output = try await AllowingSignups.resolve(in: context)
       return try await respond(with: output)
     case .getCheckoutUrl(let input):
-      let output = try await GetCheckoutUrl.resolve(for: input, in: context)
+      let output = try await GetCheckoutUrl.resolve(with: input, in: context)
       return try await respond(with: output)
     case .handleCheckoutSuccess(let input):
-      let output = try await HandleCheckoutSuccess.resolve(for: input, in: context)
+      let output = try await HandleCheckoutSuccess.resolve(with: input, in: context)
       return try await respond(with: output)
     case .handleCheckoutCancel(let input):
-      let output = try await HandleCheckoutCancel.resolve(for: input, in: context)
+      let output = try await HandleCheckoutCancel.resolve(with: input, in: context)
       return try await respond(with: output)
     case .loginMagicLink(let input):
-      let output = try await LoginMagicLink.resolve(for: input, in: context)
+      let output = try await LoginMagicLink.resolve(with: input, in: context)
       return try await respond(with: output)
     case .requestMagicLink(let input):
-      let output = try await RequestMagicLink.resolve(for: input, in: context)
+      let output = try await RequestMagicLink.resolve(with: input, in: context)
       return try await respond(with: output)
     }
   }

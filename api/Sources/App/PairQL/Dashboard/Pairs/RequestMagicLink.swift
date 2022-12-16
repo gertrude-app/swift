@@ -14,7 +14,7 @@ struct RequestMagicLink: TypescriptPair {
 
 extension RequestMagicLink: Resolver {
   static func resolve(
-    for input: Input,
+    with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
     let admin = try? await Current.db.query(Admin.self)

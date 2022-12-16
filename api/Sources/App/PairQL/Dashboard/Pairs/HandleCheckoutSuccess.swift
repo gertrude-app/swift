@@ -20,7 +20,7 @@ struct HandleCheckoutSuccess: TypescriptPair {
 
 extension HandleCheckoutSuccess: Resolver {
   static func resolve(
-    for input: Input,
+    with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
     let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionid)

@@ -21,7 +21,7 @@ struct Signup: TypescriptPair {
 
 extension Signup: Resolver {
   static func resolve(
-    for input: Input,
+    with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
     let email = input.email.lowercased()

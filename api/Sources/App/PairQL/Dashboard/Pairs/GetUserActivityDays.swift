@@ -30,7 +30,7 @@ struct GetUserActivityDays: Pair, TypescriptPair {
 
 extension GetUserActivityDays: Resolver {
   static func resolve(
-    for input: Input,
+    with input: Input,
     in context: AdminContext
   ) async throws -> Output {
     let user = try await context.verifiedUser(from: input.userId)

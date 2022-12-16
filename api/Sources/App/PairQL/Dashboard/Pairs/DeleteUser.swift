@@ -9,7 +9,7 @@ struct DeleteUser: TypescriptPair {
 // resolver
 
 extension DeleteUser: Resolver {
-  static func resolve(for id: UUID, in context: AdminContext) async throws -> Output {
+  static func resolve(with id: UUID, in context: AdminContext) async throws -> Output {
     try await Current.db.query(User.self)
       .where(.id == id)
       .where(.adminId == context.admin.id)

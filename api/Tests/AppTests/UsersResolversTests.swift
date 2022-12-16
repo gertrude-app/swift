@@ -8,7 +8,7 @@ final class UsersResolversTests: AppTestCase {
   func testDeleteUser() async throws {
     let user = try await Entities.user()
     let output = try await DeleteUser.resolve(
-      for: user.id.rawValue,
+      with: user.id.rawValue,
       in: user.admin.context
     )
     expect(output).toEqual(.success)
@@ -31,7 +31,7 @@ final class UsersResolversTests: AppTestCase {
       keychainIds: []
     )
 
-    let output = try await SaveUser.resolve(for: input, in: admin.context)
+    let output = try await SaveUser.resolve(with: input, in: admin.context)
 
     let user = try await Current.db.find(User.Id(input.id))
     expect(output).toEqual(.success)
@@ -46,7 +46,7 @@ final class UsersResolversTests: AppTestCase {
     let user = try await Entities.user()
 
     let output = try await SaveUser.resolve(
-      for: SaveUser.Input(
+      with: SaveUser.Input(
         id: user.id.rawValue,
         adminId: user.admin.id.rawValue,
         isNew: false,
@@ -76,7 +76,7 @@ final class UsersResolversTests: AppTestCase {
     try await Current.db.create(keychain)
 
     let input = SaveUser.Input(from: user, keychainIds: [keychain.id])
-    _ = try await SaveUser.resolve(for: input, in: user.admin.context)
+    _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychainIds = try await Current.db.query(UserKeychain.self)
       .where(.userId == user.id)
@@ -94,7 +94,7 @@ final class UsersResolversTests: AppTestCase {
     let pivot = try await Current.db.create(UserKeychain(userId: user.id, keychainId: keychain.id))
 
     let input = SaveUser.Input(from: user, keychainIds: [])
-    _ = try await SaveUser.resolve(for: input, in: user.admin.context)
+    _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychains = try await Current.db.query(UserKeychain.self)
       .where(.userId == user.id)
@@ -117,7 +117,7 @@ final class UsersResolversTests: AppTestCase {
     let pivot = try await Current.db.create(UserKeychain(userId: user.id, keychainId: keychain1.id))
 
     let input = SaveUser.Input(from: user, keychainIds: [keychain2.id])
-    _ = try await SaveUser.resolve(for: input, in: user.admin.context)
+    _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychainIds = try await Current.db.query(UserKeychain.self)
       .where(.userId == user.id)

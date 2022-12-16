@@ -19,7 +19,7 @@ struct GetCheckoutUrl: TypescriptPair {
 
 extension GetCheckoutUrl: Resolver {
   static func resolve(
-    for input: Input,
+    with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
     let admin = try await Current.db.find(Admin.Id(input.adminId))

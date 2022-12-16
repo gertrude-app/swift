@@ -22,7 +22,7 @@ final class SignupResolversTests: AppTestCase {
   }
 
   func testInitiateSignupWithBadEmailErrorsBadRequest() async throws {
-    let result = await Signup.result(for: .init(email: "💩", password: ""), in: context)
+    let result = await Signup.result(with: .init(email: "💩", password: ""), in: context)
     expect(result).toBeError(containing: "Bad Request")
   }
 
@@ -30,7 +30,7 @@ final class SignupResolversTests: AppTestCase {
     let existing = try await Current.db.create(Admin.random)
 
     let input = Signup.Input(email: existing.email.rawValue, password: "pass")
-    let output = try await Signup.resolve(for: input, in: context)
+    let output = try await Signup.resolve(with: input, in: context)
 
     expect(output).toEqual(.init(url: nil))
     expect(sent.emails.count).toEqual(1)
@@ -40,7 +40,7 @@ final class SignupResolversTests: AppTestCase {
   func testInitiateSignupHappyPath() async throws {
     let email = "signup".random + "@example.com"
     let input = Signup.Input(email: email, password: "pass")
-    let output = try await Signup.resolve(for: input, in: context)
+    let output = try await Signup.resolve(with: input, in: context)
 
     let user = try await Current.db.query(Admin.self)
       .where(.email == email)
@@ -57,7 +57,7 @@ final class SignupResolversTests: AppTestCase {
     let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
     let token = await Current.ephemeral.createMagicLinkToken(admin.id)
 
-    let output = try await VerifySignupEmail.resolve(for: .init(token: token), in: context)
+    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
 
     let retrieved = try await Current.db.find(admin.id)
     let method = try await Current.db.query(AdminVerifiedNotificationMethod.self)
@@ -73,7 +73,7 @@ final class SignupResolversTests: AppTestCase {
     let admin = try await Entities.admin { $0.subscriptionStatus = .trialing } // <-- not pending
     let token = await Current.ephemeral.createMagicLinkToken(admin.id)
 
-    let output = try await VerifySignupEmail.resolve(for: .init(token: token), in: context)
+    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
 
     let retrieved = try await Current.db.find(admin.id)
 
@@ -90,7 +90,7 @@ final class SignupResolversTests: AppTestCase {
 
     let admin = try await Current.db.create(Admin.random)
     let output = try await GetCheckoutUrl.resolve(
-      for: .init(adminId: admin.id.rawValue),
+      with: .init(adminId: admin.id.rawValue),
       in: context
     )
 
@@ -130,7 +130,7 @@ final class SignupResolversTests: AppTestCase {
     }
 
     let output = try await HandleCheckoutSuccess.resolve(
-      for: .init(stripeCheckoutSessionid: sessionId),
+      with: .init(stripeCheckoutSessionid: sessionId),
       in: context
     )
 
@@ -145,7 +145,7 @@ final class SignupResolversTests: AppTestCase {
     let token = await Current.ephemeral.createMagicLinkToken(admin.id)
     let (tokenId, tokenValue) = mockUUIDs()
 
-    let output = try await LoginMagicLink.resolve(for: .init(token: token), in: context)
+    let output = try await LoginMagicLink.resolve(with: .init(token: token), in: context)
 
     let adminToken = try await Current.db.find(AdminToken.Id(tokenId))
     expect(output).toEqual(.init(token: tokenValue, adminId: admin.id.rawValue))
@@ -158,7 +158,7 @@ final class SignupResolversTests: AppTestCase {
     let (token, _) = mockUUIDs()
 
     let output = try await RequestMagicLink.resolve(
-      for: .init(email: admin.email.rawValue, redirect: nil),
+      with: .init(email: admin.email.rawValue, redirect: nil),
       in: .init(dashboardUrl: "/dash")
     )
 
@@ -173,7 +173,7 @@ final class SignupResolversTests: AppTestCase {
     let (token, _) = mockUUIDs()
 
     let output = try await RequestMagicLink.resolve(
-      for: .init(email: admin.email.rawValue, redirect: "/foo"),
+      with: .init(email: admin.email.rawValue, redirect: "/foo"),
       in: .init(dashboardUrl: "/dash")
     )
 
@@ -184,7 +184,7 @@ final class SignupResolversTests: AppTestCase {
 
   func testSendMagicLinkToUnknownEmailReturnsSuccessEmittingNoEvent() async throws {
     let output = try await RequestMagicLink.resolve(
-      for: .init(email: "some@hacker.com", redirect: nil),
+      with: .init(email: "some@hacker.com", redirect: nil),
       in: context
     )
 

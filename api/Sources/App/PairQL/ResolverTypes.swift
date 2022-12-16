@@ -3,7 +3,7 @@ import Vapor
 
 protocol Resolver: Pair {
   associatedtype Context
-  static func resolve(for input: Input, in context: Context) async throws -> Output
+  static func resolve(with input: Input, in context: Context) async throws -> Output
 }
 
 protocol NoInputResolver: Pair where Input == NoInput {
@@ -23,9 +23,9 @@ extension RouteResponder {
 }
 
 extension Resolver {
-  static func result(for input: Input, in context: Context) async -> Result<Output, Error> {
+  static func result(with input: Input, in context: Context) async -> Result<Output, Error> {
     do {
-      return .success(try await resolve(for: input, in: context))
+      return .success(try await resolve(with: input, in: context))
     } catch {
       return .failure(error)
     }
