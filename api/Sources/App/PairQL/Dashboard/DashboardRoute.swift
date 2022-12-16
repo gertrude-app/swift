@@ -11,7 +11,9 @@ struct DashboardContext {
 enum DashboardRoute: PairRoute {
   case adminAuthed(UUID, AuthedAdminRoute)
   case unauthed(UnauthedRoute)
+}
 
+extension DashboardRoute {
   static let router = OneOf {
     Route(/Self.adminAuthed) {
       Headers { Field("X-AdminToken") { UUID.parser() } }
@@ -41,12 +43,7 @@ extension DashboardRoute: RouteResponder {
   }
 }
 
-extension TsCodegen: NoInputPairResolver {
-  static func resolve(in context: DashboardContext) async throws -> [String: String] {
-    [:]
-  }
-}
-
+// TODO: lol
 func pattern<P: TypescriptPair>(type: P.Type) -> String {
   """
   export namespace \(P.self) {

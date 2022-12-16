@@ -3,18 +3,15 @@ import TypescriptPairQL
 import Vapor
 
 enum UnauthedRoute: PairRoute {
-  case tsCodegen
   case signup(Signup.Input)
   case verifySignupEmail(VerifySignupEmail.Input)
   case joinWaitlist(JoinWaitlist.Input)
   case allowingSignups
   case getCheckoutUrl(GetCheckoutUrl.Input)
   case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
+  case handleCheckoutCancel(HandleCheckoutCancel.Input)
 
   static let router = OneOf {
-    Route(/Self.tsCodegen) {
-      Operation(TsCodegen.self)
-    }
     Route(/Self.signup) {
       Operation(Signup.self)
       Body(.json(Signup.Input.self))
@@ -38,19 +35,16 @@ enum UnauthedRoute: PairRoute {
       Operation(HandleCheckoutSuccess.self)
       Body(.json(HandleCheckoutSuccess.Input.self))
     }
+    Route(/Self.handleCheckoutCancel) {
+      Operation(HandleCheckoutCancel.self)
+      Body(.json(HandleCheckoutCancel.Input.self))
+    }
   }
-}
-
-struct TsCodegen: Pair, TypescriptPair {
-  static var auth: ClientAuth = .none
-  typealias Output = [String: String]
 }
 
 extension UnauthedRoute: RouteResponder {
   static func respond(to route: Self, in context: DashboardContext) async throws -> Response {
     switch route {
-    case .tsCodegen:
-      fatalError("Unimplemented")
     case .signup(let input):
       let output = try await Signup.resolve(for: input, in: context)
       return try await respond(with: output)
@@ -68,6 +62,9 @@ extension UnauthedRoute: RouteResponder {
       return try await respond(with: output)
     case .handleCheckoutSuccess(let input):
       let output = try await HandleCheckoutSuccess.resolve(for: input, in: context)
+      return try await respond(with: output)
+    case .handleCheckoutCancel(let input):
+      let output = try await HandleCheckoutCancel.resolve(for: input, in: context)
       return try await respond(with: output)
     }
   }

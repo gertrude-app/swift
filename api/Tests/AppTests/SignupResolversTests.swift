@@ -12,13 +12,13 @@ final class SignupResolversTests: AppTestCase {
   func testAllowingSignupsReturnsFalseWhenExceedingNumAllowed() async throws {
     Current.env = .init(get: { _ in "0" })
     let output = try await AllowingSignups.resolve(in: context)
-    expect(output).toEqual(.false)
+    expect(output).toEqual(.failure)
   }
 
   func testAllowingSignupsReturnsTrueWhenSignupsLessThanMax() async throws {
     Current.env = .init(get: { _ in "10000000" })
     let output = try await AllowingSignups.resolve(in: context)
-    expect(output).toEqual(.true)
+    expect(output).toEqual(.success)
   }
 
   func testInitiateSignupWithBadEmailErrorsBadRequest() async throws {

@@ -11,7 +11,7 @@ final class UsersResolversTests: AppTestCase {
       for: user.id.rawValue,
       in: user.admin.context
     )
-    expect(output).toEqual(.true)
+    expect(output).toEqual(.success)
     let retrieved = try? await Current.db.find(user.id)
     expect(retrieved).toBeNil()
   }
@@ -34,7 +34,7 @@ final class UsersResolversTests: AppTestCase {
     let output = try await SaveUser.resolve(for: input, in: admin.context)
 
     let user = try await Current.db.find(User.Id(input.id))
-    expect(output).toEqual(.true)
+    expect(output).toEqual(.success)
     expect(user.name).toEqual("Test User")
     expect(user.keyloggingEnabled).toEqual(true)
     expect(user.screenshotsEnabled).toEqual(true)
@@ -61,7 +61,7 @@ final class UsersResolversTests: AppTestCase {
     )
 
     let retrieved = try await Current.db.find(user.id)
-    expect(output).toEqual(.true)
+    expect(output).toEqual(.success)
     expect(retrieved.name).toEqual("New name")
     expect(retrieved.keyloggingEnabled).toEqual(false)
     expect(retrieved.screenshotsEnabled).toEqual(false)

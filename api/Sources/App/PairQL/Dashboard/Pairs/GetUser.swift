@@ -1,9 +1,26 @@
+import DuetSQL
 import Foundation
 import Shared
 import TypescriptPairQL
 
 struct GetUser: Pair, TypescriptPair {
   static var auth: ClientAuth = .admin
+
+  struct Device: Equatable, Codable, TypescriptRepresentable {
+    let id: UUID
+    let isOnline: Bool
+    let modelFamily: DeviceModelFamily
+    let modelTitle: String
+  }
+
+  struct Keychain: Equatable, Codable, TypescriptRepresentable {
+    let id: UUID
+    let authorId: UUID
+    let name: String
+    let description: String?
+    let isPublic: Bool
+    let numKeys: Int
+  }
 
   typealias Input = UUID
 
@@ -17,78 +34,65 @@ struct GetUser: Pair, TypescriptPair {
     var keychains: [Keychain]
     var devices: [Device]
     var createdAt: Date
-
-    init(
-      id: UUID,
-      name: String,
-      keyloggingEnabled: Bool,
-      screenshotsEnabled: Bool,
-      screenshotsResolution: Int,
-      screenshotsFrequency: Int,
-      keychains: [Keychain],
-      devices: [Device],
-      createdAt: Date
-    ) {
-      self.id = id
-      self.name = name
-      self.keyloggingEnabled = keyloggingEnabled
-      self.screenshotsEnabled = screenshotsEnabled
-      self.screenshotsResolution = screenshotsResolution
-      self.screenshotsFrequency = screenshotsFrequency
-      self.keychains = keychains
-      self.devices = devices
-      self.createdAt = createdAt
-    }
   }
 }
 
-struct GetUsers: Pair, TypescriptPair {
-  static var auth: ClientAuth = .admin
-  typealias Output = [GetUser.Output]
+// resolver
+
+extension GetUser: PairResolver {
+  static func resolve(
+    for id: UUID,
+    in context: AdminContext
+  ) async throws -> Output {
+    try await Output(from: context.verifiedUser(from: id))
+  }
 }
 
-extension GetUser {
-  struct Device: Equatable, Codable, TypescriptRepresentable {
-    let id: UUID
-    let isOnline: Bool
-    let modelFamily: DeviceModelFamily
-    let modelTitle: String
-
-    init(
-      id: UUID,
-      isOnline: Bool,
-      modelFamily: DeviceModelFamily,
-      modelTitle: String
-    ) {
-      self.id = id
-      self.isOnline = isOnline
-      self.modelFamily = modelFamily
-      self.modelTitle = modelTitle
-    }
+extension GetUser.Keychain {
+  init(from keychain: App.Keychain) async throws {
+    let numKeys = try await Current.db.count(
+      Key.self,
+      where: .keychainId == keychain.id,
+      withSoftDeleted: false
+    )
+    self.init(
+      id: keychain.id.rawValue,
+      authorId: keychain.authorId.rawValue,
+      name: keychain.name,
+      description: keychain.description,
+      isPublic: keychain.isPublic,
+      numKeys: numKeys
+    )
   }
+}
 
-  struct Keychain: Equatable, Codable, TypescriptRepresentable {
-    let id: UUID
-    let authorId: UUID
-    let name: String
-    let description: String?
-    let isPublic: Bool
-    let numKeys: Int
+extension GetUser.Output {
+  init(from user: User) async throws {
+    async let userKeychains = user.keychains()
+      .concurrentMap { try await GetUser.Keychain(from: $0) }
 
-    init(
-      id: UUID,
-      authorId: UUID,
-      name: String,
-      description: String?,
-      isPublic: Bool,
-      numKeys: Int
-    ) {
-      self.id = id
-      self.authorId = authorId
-      self.name = name
-      self.description = description
-      self.isPublic = isPublic
-      self.numKeys = numKeys
-    }
+    async let devices = Current.db.query(Device.self)
+      .where(.userId == user.id)
+      .all()
+      .map { device in
+        GetUser.Device(
+          id: device.id.rawValue,
+          isOnline: device.isOnline,
+          modelFamily: device.model.family,
+          modelTitle: device.model.shortDescription
+        )
+      }
+
+    self.init(
+      id: user.id.rawValue,
+      name: user.name,
+      keyloggingEnabled: user.keyloggingEnabled,
+      screenshotsEnabled: user.screenshotsEnabled,
+      screenshotsResolution: user.screenshotsResolution,
+      screenshotsFrequency: user.screenshotsFrequency,
+      keychains: try await userKeychains,
+      devices: try await devices,
+      createdAt: user.createdAt
+    )
   }
 }

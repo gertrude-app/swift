@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 import Shared
 
 final class Admin: Codable {
@@ -29,6 +29,18 @@ final class Admin: Codable {
     self.password = password
     self.subscriptionId = subscriptionId
     self.subscriptionStatus = subscriptionStatus
+  }
+}
+
+// loaders
+
+extension Admin {
+  func users() async throws -> [User] {
+    try await users.useLoaded(or: {
+      try await Current.db.query(User.self)
+        .where(.adminId == id)
+        .all()
+    })
   }
 }
 
