@@ -99,32 +99,34 @@ extension AdminToken: Model {
   }
 }
 
-// extension AdminVerifiedNotificationMethod: Model {
-//   public static let tableName = M38.tableName
-//   public typealias ColumnName = CodingKeys
+extension NotificationMethod: PostgresJsonable {}
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .adminId:
-//       return .uuid(adminId)
-//     case .method:
-//       return .json(method.toPostgresJson)
-//     case .createdAt:
-//       return .date(createdAt)
-//     }
-//   }
+extension AdminVerifiedNotificationMethod: Model {
+  public static let tableName = M1.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .adminId: .uuid(adminId),
-//       .method: .json(method.toPostgresJson),
-//       .createdAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .adminId:
+      return .uuid(adminId)
+    case .method:
+      return .json(method.toPostgresJson)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .adminId: .uuid(adminId),
+      .method: .json(method.toPostgresJson),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
 
 // extension AppCategory: Model {
 //   public static let tableName = M7.tableName

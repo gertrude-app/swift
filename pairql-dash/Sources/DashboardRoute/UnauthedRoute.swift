@@ -4,6 +4,7 @@ import TypescriptPairQL
 public enum UnauthedRoute: PairRoute {
   case tsCodegen
   case signup(Signup.Input)
+  case verifySignupEmail(VerifySignupEmail.Input)
 
   public static let router = OneOf {
     Route(/Self.tsCodegen) {
@@ -12,6 +13,10 @@ public enum UnauthedRoute: PairRoute {
     Route(/Self.signup) {
       Operation(Signup.self)
       Body(.json(Signup.Input.self))
+    }
+    Route(/Self.verifySignupEmail) {
+      Operation(VerifySignupEmail.self)
+      Body(.json(VerifySignupEmail.Input.self))
     }
   }
 }

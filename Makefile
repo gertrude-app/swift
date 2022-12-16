@@ -68,10 +68,10 @@ test-xkit:
 # root
 
 build:
-	$(NX) run-many --target=build
+	$(NX) run-many --target=build --parallel=10
 
 test:
-	$(NX) run-many --target=test
+	$(NX) run-many --target=test --parallel=10
 
 check:
 	make build

@@ -39,4 +39,32 @@ final class SignupResolversTests: AppTestCase {
     expect(sent.emails[0].firstRecipient.email).toEqual(email)
     expect(sent.emails[0].text).toContain("verify your email address")
   }
+
+  func testVerifySignupEmailSetsSubsriptionStatusAndCreatesNotificationMethod() async throws {
+    let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
+    let token = await Current.ephemeral.createMagicLinkToken(admin.id)
+
+    let output = try await VerifySignupEmail.resolve(for: .init(token: token), in: context)
+
+    let retrieved = try await Current.db.find(admin.id)
+    let method = try await Current.db.query(AdminVerifiedNotificationMethod.self)
+      .where(.adminId == admin.id)
+      .first()
+
+    expect(output).toEqual(.init(adminId: admin.id.rawValue))
+    expect(retrieved.subscriptionStatus).toEqual(.emailVerified)
+    expect(method.method).toEqual(.email(email: admin.email.rawValue))
+  }
+
+  func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
+    let admin = try await Entities.admin { $0.subscriptionStatus = .trialing } // <-- not pending
+    let token = await Current.ephemeral.createMagicLinkToken(admin.id)
+
+    let output = try await VerifySignupEmail.resolve(for: .init(token: token), in: context)
+
+    let retrieved = try await Current.db.find(admin.id)
+
+    expect(output).toEqual(.init(adminId: admin.id.rawValue))
+    expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed
+  }
 }
