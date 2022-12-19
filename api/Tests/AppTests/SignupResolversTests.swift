@@ -191,4 +191,27 @@ final class SignupResolversTests: AppTestCase {
     expect(output).toEqual(.success)
     expect(sent.emails).toBeEmpty()
   }
+
+  func testCreateBillingPortalSessionHappyPath() async throws {
+    let admin = try await Entities.admin {
+      $0.subscriptionId = .init(rawValue: "sub_123")
+      $0.subscriptionStatus = .active
+    }
+
+    Current.stripe.getSubscription = { subId in
+      expect(subId).toBe("sub_123")
+      return .init(id: "sub_123", status: .active, customer: "cus_123")
+    }
+
+    Current.stripe.createBillingPortalSession = { cusId in
+      expect(cusId).toBe("cus_123")
+      return .init(id: "bps_123", url: "bps-url")
+    }
+
+    let output = try await CreateBillingPortalSession.resolve(
+      in: .init(dashboardUrl: "", admin: admin.model)
+    )
+
+    expect(output).toEqual(.init(url: "bps-url"))
+  }
 }

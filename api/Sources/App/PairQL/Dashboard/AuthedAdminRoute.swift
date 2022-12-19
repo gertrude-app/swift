@@ -8,6 +8,7 @@ enum AuthedAdminRoute: PairRoute {
   case saveUser(SaveUser.Input)
   case deleteUser(DeleteUser.Input)
   case getUserActivityDays(GetUserActivityDays.Input)
+  case createBillingPortalSession
 }
 
 extension AuthedAdminRoute {
@@ -30,6 +31,9 @@ extension AuthedAdminRoute {
     Route(/Self.getUserActivityDays) {
       Operation(GetUserActivityDays.self)
       Body(.json(GetUserActivityDays.Input.self))
+    }
+    Route(/Self.createBillingPortalSession) {
+      Operation(CreateBillingPortalSession.self)
     }
   }
 }
@@ -63,6 +67,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .getUserActivityDays(let input):
       let output = try await GetUserActivityDays.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .createBillingPortalSession:
+      let output = try await CreateBillingPortalSession.resolve(in: context)
       return try await respond(with: output)
     }
   }
