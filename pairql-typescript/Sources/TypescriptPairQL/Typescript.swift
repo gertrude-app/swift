@@ -18,3 +18,11 @@ public typealias TypescriptNestable = PairNestable & TypescriptRepresentable
 public protocol NamedUnion {
   static var __typeName: String { get }
 }
+
+public protocol SharedType: TypescriptRepresentable {
+  static var __typeName: String { get }
+}
+
+public extension SharedType {
+  static var __typeName: String { "\(Self.self)" }
+}

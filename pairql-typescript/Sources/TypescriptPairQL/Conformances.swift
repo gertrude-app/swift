@@ -22,6 +22,10 @@ extension URL: TypescriptPrimitive {
   public static var tsPrimitiveType: String { "string" }
 }
 
+extension Date: TypescriptPrimitive {
+  public static var tsPrimitiveType: String { "ISODateString" }
+}
+
 extension Array: TypescriptPrimitive where Element: TypescriptPrimitive {
   public static var tsPrimitiveType: String {
     "\(Element.tsPrimitiveType)[]"
@@ -41,6 +45,8 @@ extension String: TypescriptRepresentable {}
 
 extension Bool: TypescriptRepresentable {}
 
+extension Date: TypescriptRepresentable {}
+
 extension Array: TypescriptRepresentable where Element: TypescriptRepresentable {}
 
 extension Dictionary: PairOutput where Key == String, Value == String {}
@@ -56,13 +62,13 @@ extension URL: TypescriptRepresentable {}
 extension SuccessOutput: TypescriptRepresentable {}
 
 extension NoInput: TypescriptRepresentable {
-  public static var ts: String { "type __self___ = never;" }
+  public static var customTs: String? { "export type __self__ = void;" }
 }
 
 extension ClientAuth: TypescriptRepresentable {
   public static var customTs: String? {
     guard let info = try? typeInfo(of: ClientAuth.self) else {
-      return "export type ClientAuth = never; // !! runtime introspection failed"
+      return "export type ClientAuth = never; /* !! runtime introspection failed */"
     }
     return """
     export enum ClientAuth {

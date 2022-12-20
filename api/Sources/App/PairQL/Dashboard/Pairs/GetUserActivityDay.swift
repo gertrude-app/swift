@@ -99,7 +99,7 @@ func coalesce(
 extension Union2: NamedUnion where
   A == UserActivity.Screenshot,
   B == UserActivity.CoalescedKeystrokeLine {
-  public static var __typeName: String { "UserActivityItem" }
+  public static var __typeName: String { "Item" }
 }
 
 extension UserActivity.Screenshot {

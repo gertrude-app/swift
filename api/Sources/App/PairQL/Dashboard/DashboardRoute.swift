@@ -42,18 +42,3 @@ extension DashboardRoute: RouteResponder {
     }
   }
 }
-
-// TODO: lol
-func pattern<P: TypescriptPair>(type: P.Type) -> String {
-  """
-  export namespace \(P.self) {
-    \(P.Input.ts.replacingOccurrences(of: "__self__", with: "Input"))
-
-    \(P.Output.ts.replacingOccurrences(of: "__self__", with: "Output"))
-
-    export async function send(input: Input): Promise<PqlResult<Output>> {
-      return pqlQuery<Input, Output>(input, ClientAuth.\(P.auth), `\(P.name)`)
-    }
-  }
-  """
-}

@@ -1,7 +1,8 @@
 import PairQL
 import Runtime
 
-extension Union2: TypescriptRepresentable where A: TypescriptRepresentable,
+extension Union2: TypescriptRepresentable where
+  A: TypescriptRepresentable,
   B: TypescriptRepresentable {
   public static var customTs: String? {
     """
@@ -29,10 +30,22 @@ public extension TypescriptRepresentable {
 private func derive(
   _ type: Any.Type,
   _ named: inout [String: String],
+  _ depth: Int = 0,
   resolveNamed: Bool = true
 ) -> String {
+  var derivingRootSharedType = false
+  if let sharedType = type as? SharedType.Type {
+    if depth == 0 {
+      derivingRootSharedType = true
+      // return sharedType.ts.replacingOccurrences(of: "__self__", with: "\(type)")
+      // return derive(sharedType, &named, 1).replacingOccurrences(of: "__self__", with: "\(type)")
+    } else {
+      return sharedType.__typeName
+    }
+  }
+
   if resolveNamed, let namedType = type as? NamedUnion.Type {
-    let decl = derive(namedType, &named, resolveNamed: false)
+    let decl = derive(namedType, &named, depth + 1, resolveNamed: false)
       .replacingOccurrences(of: "__self__", with: namedType.__typeName)
     named["\(type)"] = decl
     return namedType.__typeName
@@ -41,28 +54,47 @@ private func derive(
   if let repr = type as? TypescriptRepresentable.Type, let customTs = repr.customTs {
     return customTs
   }
+
   if let primitive = type as? TypescriptPrimitive.Type {
     return "export type __self__ = \(primitive.tsPrimitiveType);"
   }
+
   guard let info = try? typeInfo(of: type) else {
-    return "export type __self__ = unknown; // !! runtime introspection failed"
+    return "export type __self__ = unknown; /* !! runtime introspection failed */"
+  }
+
+  if info.kind == .enum {
+    var enumTs = """
+    export enum __self__ {
+      \(info.cases.map(\.name).joined(separator: ",\n  ")),
+    }
+    """
+    if derivingRootSharedType {
+      enumTs = enumTs.replacingOccurrences(of: "__self__", with: "\(type)")
+    }
+    return enumTs
   }
 
   if info.genericTypes.count == 1, info.name.starts(with: "Array<"),
      let element = info.genericTypes.first as? TypescriptRepresentable.Type {
-    return "export type __self__ = Array<\(unnest(derive(element, &named)))>"
+    return "export type __self__ = Array<\(unnest(derive(element, &named, depth + 1)))>"
   }
 
   let props = info.properties
   var ts = "export interface __self__ {\n"
   for prop in props {
-    ts += "  \(prop.name)\(tsProp(prop.type, &named))"
+    ts += "  \(prop.name)\(tsProp(prop.type, &named, depth + 1))"
   }
   ts += "}"
   return ts
 }
 
-func tsProp(_ type: Any.Type, _ named: inout [String: String], optional: Bool = false) -> String {
+func tsProp(
+  _ type: Any.Type,
+  _ named: inout [String: String],
+  _ depth: Int,
+  optional: Bool = false
+) -> String {
   if let type = type as? TypescriptPrimitive.Type {
     return optional
       ? "?: " + type.tsPrimitiveType + ";\n"
@@ -70,13 +102,13 @@ func tsProp(_ type: Any.Type, _ named: inout [String: String], optional: Bool = 
   }
 
   if let info = try? typeInfo(of: type), info.kind == .optional {
-    return tsProp(info.genericTypes[0], &named, optional: true)
+    return tsProp(info.genericTypes[0], &named, depth, optional: true)
   }
 
   if let nested = type as? TypescriptRepresentable.Type {
-    return "\(optional ? "?" : ""): \(unnest(derive(nested, &named)));\n"
+    return "\(optional ? "?" : ""): \(unnest(derive(nested, &named, depth)));\n"
   }
-  return ": unknown; // !! runtime introspection failed\n"
+  return ": unknown; /* !! runtime introspection failed */\n"
 }
 
 private func unnest(_ ts: String) -> String {

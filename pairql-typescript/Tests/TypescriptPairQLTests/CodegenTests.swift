@@ -1,5 +1,6 @@
 import PairQL
 import Runtime
+import Shared
 import TypescriptPairQL
 import XCTest
 import XExpect
@@ -9,6 +10,8 @@ extension Union2: NamedUnion where A == String, B == Bool {
     "StringOrBool"
   }
 }
+
+extension DeviceModelFamily: SharedType {}
 
 final class CodegenTests: XCTestCase {
   func testUnnamedUnion() {
@@ -74,6 +77,7 @@ final class CodegenTests: XCTestCase {
   }
 
   func testCoreTypes() throws {
+    expect(Date.ts).toEqual("export type __self__ = ISODateString;")
     expect(String.ts).toEqual("export type __self__ = string;")
     expect(URL.ts).toEqual("export type __self__ = string;")
     expect(UUID.ts).toEqual("export type __self__ = UUID;")
@@ -82,7 +86,52 @@ final class CodegenTests: XCTestCase {
     expect([String: String].ts).toEqual("export type __self__ = { [key: string]: string; };")
   }
 
+  func testSharedType() {
+    // the root type definition
+    expect(DeviceModelFamily.ts).toEqual(
+      """
+      export enum DeviceModelFamily {
+        macBookAir,
+        macBookPro,
+        mini,
+        iMac,
+        studio,
+        pro,
+        unknown,
+      }
+      """
+    )
+
+    // when nested, use global type name
+    struct Struct: TypescriptRepresentable {
+      let family: DeviceModelFamily
+    }
+    expect(Struct.ts).toEqual(
+      """
+      export interface __self__ {
+        family: DeviceModelFamily;
+      }
+      """
+    )
+  }
+
+  func testIterableEnum() {
+    enum StringEnum: String, Codable, CaseIterable, TypescriptRepresentable {
+      case foo, bar, baz
+    }
+    expect(StringEnum.ts).toEqual(
+      """
+      export enum __self__ {
+        foo,
+        bar,
+        baz,
+      }
+      """
+    )
+  }
+
   func testVendedTypes() throws {
+    expect(NoInput.ts).toEqual("export type __self__ = void;")
     expect(SuccessOutput.ts).toEqual(
       """
       export interface __self__ {
