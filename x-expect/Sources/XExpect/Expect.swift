@@ -59,6 +59,25 @@ public struct EquatableExpectation<T: Equatable> {
       XCTAssertEqual(value, other, file: file, line: line)
     }
   }
+}
+
+public struct EquatableOptionalExpectation<T: Equatable> {
+  let value: T?
+  var negated = false
+  let file: StaticString
+  let line: UInt
+
+  public var not: Self {
+    Self(value: value, negated: true, file: #file, line: #line)
+  }
+
+  public func toEqual(_ other: T) {
+    if negated {
+      XCTAssertNotEqual(value, other, file: file, line: line)
+    } else {
+      XCTAssertEqual(value, other, file: file, line: line)
+    }
+  }
 
   public func toBeNil() {
     if negated {
@@ -173,6 +192,15 @@ public func expect<T: Equatable>(
   line: UInt = #line
 ) -> EquatableExpectation<T> {
   EquatableExpectation(value: value, file: file, line: line)
+}
+
+@_disfavoredOverload
+public func expect<T: Equatable>(
+  _ value: T?,
+  file: StaticString = #filePath,
+  line: UInt = #line
+) -> EquatableOptionalExpectation<T> {
+  EquatableOptionalExpectation(value: value, file: file, line: line)
 }
 
 public func expect<T>(

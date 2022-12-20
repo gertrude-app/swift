@@ -9,6 +9,16 @@
   }
 }
 
+@dynamicMemberLookup struct UserWithDeviceEntities {
+  let model: User
+  let device: Device
+  let token: UserToken
+  let admin: AdminEntities
+  subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
+    model[keyPath: keyPath]
+  }
+}
+
 @dynamicMemberLookup struct AdminEntities {
   let model: Admin
   let token: AdminToken
@@ -42,5 +52,17 @@ enum Entities {
     })
     let token = try await Current.db.create(UserToken(userId: user.id))
     return UserEntities(model: user, token: token, admin: admin)
+  }
+}
+
+extension UserEntities {
+  func withDevice(
+    config: (inout Device) -> Void = { _ in }
+  ) async throws -> UserWithDeviceEntities {
+    let device = try await Current.db.create(Device.random {
+      config(&$0)
+      $0.userId = model.id
+    })
+    return .init(model: model, device: device, token: token, admin: admin)
   }
 }

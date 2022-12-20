@@ -6,6 +6,24 @@ extension RequestStatus: PostgresEnum {
   public var typeName: String { RequestTables.M5.requestStatusTypeName }
 }
 
+protocol HasCreatedAt {
+  var createdAt: Date { get set }
+}
+
+extension KeystrokeLine: HasCreatedAt {}
+extension Screenshot: HasCreatedAt {}
+
+extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
+  var createdAt: Date {
+    switch self {
+    case .left(let model):
+      return model.createdAt
+    case .right(let model):
+      return model.createdAt
+    }
+  }
+}
+
 extension Admin: Duet.Identifiable {
   typealias Id = Tagged<Admin, UUID>
 }

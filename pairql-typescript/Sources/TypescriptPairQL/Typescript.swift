@@ -1,7 +1,7 @@
 @_exported import PairQL
 
 public protocol TypescriptRepresentable {
-  static var ts: String { get }
+  static var customTs: String? { get }
 }
 
 public protocol TypescriptPrimitive {
@@ -14,3 +14,7 @@ public protocol TypescriptPair: Pair
 public typealias TypescriptPairInput = PairInput & TypescriptRepresentable
 public typealias TypescriptPairOutput = PairOutput & TypescriptRepresentable
 public typealias TypescriptNestable = PairNestable & TypescriptRepresentable
+
+public protocol NamedUnion {
+  static var __typeName: String { get }
+}

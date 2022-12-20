@@ -6,7 +6,7 @@ final class Screenshot: Codable {
   var url: String
   var width: Int
   var height: Int
-  var createdAt = Date()
+  var createdAt = Current.date()
   var deletedAt: Date?
 
   var device = Parent<Device>.notLoaded

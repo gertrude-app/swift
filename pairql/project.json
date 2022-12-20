@@ -7,7 +7,7 @@
       "command": "cd pairql && swift build"
     },
     "test": {
-      "command": "true"
+      "command": "cd api && SWIFT_DETERMINISTIC_HASHING=1 swift test"
     }
   }
 }

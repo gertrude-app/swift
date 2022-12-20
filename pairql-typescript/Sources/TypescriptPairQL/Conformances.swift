@@ -35,7 +35,11 @@ extension Dictionary: TypescriptPrimitive where Key: TypescriptPrimitive,
   }
 }
 
+extension Int: TypescriptRepresentable {}
+
 extension String: TypescriptRepresentable {}
+
+extension Bool: TypescriptRepresentable {}
 
 extension Array: TypescriptRepresentable where Element: TypescriptRepresentable {}
 
@@ -56,7 +60,7 @@ extension NoInput: TypescriptRepresentable {
 }
 
 extension ClientAuth: TypescriptRepresentable {
-  public static var ts: String {
+  public static var customTs: String? {
     guard let info = try? typeInfo(of: ClientAuth.self) else {
       return "export type ClientAuth = never; // !! runtime introspection failed"
     }
