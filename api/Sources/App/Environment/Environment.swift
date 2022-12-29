@@ -1,6 +1,7 @@
 import DuetSQL
 import Vapor
 import XSendGrid
+import XSlack
 import XStripe
 
 struct Environment {
@@ -9,7 +10,9 @@ struct Environment {
   var env: EnvironmentVariables = .live
   var ephemeral: Ephemeral = .init()
   var sendGrid: SendGrid.Client = .mock
+  var slack = XSlack.Slack.Client()
   var stripe: Stripe.Client = .mock
+  var twilio: TwilioSmsClient = .init()
   var verificationCode: VerificationCodeGenerator = .live
 }
 
@@ -22,7 +25,9 @@ extension Environment {
     env: .mock,
     ephemeral: Ephemeral(),
     sendGrid: .mock,
+    slack: .mock,
     stripe: .mock,
+    twilio: .mock,
     verificationCode: .mock
   )
 }

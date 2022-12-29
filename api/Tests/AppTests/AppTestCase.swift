@@ -2,6 +2,7 @@ import DuetSQL
 import Vapor
 import XCTest
 import XSendGrid
+import XSlack
 
 @testable import App
 
@@ -10,6 +11,8 @@ class AppTestCase: XCTestCase {
 
   struct Sent {
     var emails: [SendGrid.Email] = []
+    var slacks: [(XSlack.Slack.Message, String)] = []
+    var texts: [Text] = []
   }
 
   var sent = Sent()
@@ -34,6 +37,13 @@ class AppTestCase: XCTestCase {
   override func setUp() {
     Current.sendGrid.send = { [self] email in
       self.sent.emails.append(email)
+    }
+    Current.slack.send = { [self] message, token in
+      sent.slacks.append((message, token))
+      return nil
+    }
+    Current.twilio.send = { [self] text in
+      sent.texts.append(text)
     }
   }
 

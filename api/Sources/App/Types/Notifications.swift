@@ -13,7 +13,7 @@ protocol Notification {
   func text(phoneNumber: String) -> Text
 }
 
-struct Slack {
+struct Slack: Equatable {
   let text: String
   let channel: String
   let token: String
@@ -43,7 +43,7 @@ extension Email {
   }
 }
 
-struct Text {
+struct Text: Equatable {
   let to: PhoneNumber
   let message: String
   typealias PhoneNumber = Tagged<Text, String>

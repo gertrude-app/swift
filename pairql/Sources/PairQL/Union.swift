@@ -3,7 +3,7 @@ private struct Case<T: PairNestable>: PairNestable {
   var value: T
 }
 
-public enum Union2<A: PairNestable, B: PairNestable>: PairNestable {
+public enum Union2<A: PairNestable, B: PairNestable>: PairNestable, PairInput, PairOutput {
   case a(A)
   case b(B)
 
@@ -47,7 +47,8 @@ public extension Union2 {
   }
 }
 
-public enum Union3<A: PairNestable, B: PairNestable, C: PairNestable>: PairNestable {
+public enum Union3<A: PairNestable, B: PairNestable, C: PairNestable>:
+  PairNestable, PairInput, PairOutput {
   case a(A)
   case b(B)
   case c(C)

@@ -1,3 +1,4 @@
+import DuetMock
 import XCore
 import XCTest
 import XExpect
@@ -100,6 +101,120 @@ final class DashboardAdminResolverTests: AppTestCase {
       ],
       verifiedNotificationMethods: [.a(.init(id: method.id.rawValue, email: "blob@blob.com"))]
     ))
+  }
+
+  func testCreatePendingMethod_Text() async throws {
+    Current.verificationCode.generate = { 987_654 }
+    let admin = try await Entities.admin()
+    let (id, _) = mockUUIDs()
+
+    let output = try await CreatePendingNotificationMethod.resolve(
+      with: .b(.init(phoneNumber: "1234567890")),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.init(methodId: id))
+
+    // verify no db record created
+    let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    expect(preConfirm).toBeNil()
+
+    // check that text was sent
+    expect(sent.texts).toEqual([.init(
+      to: "1234567890",
+      message: "Your verification code is 987654"
+    )])
+    expect(sent.texts.first?.recipientI164).toEqual("+1234567890")
+
+    // submit the "confirm pending" mutation
+    let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
+      with: .init(id: id, code: 987_654),
+      in: context(admin)
+    )
+
+    expect(confirmOuput).toEqual(.success)
+
+    // verify method now added to db w/ correct info
+    let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    expect(retrieved?.id.rawValue).toEqual(id)
+    expect(retrieved?.adminId).toEqual(admin.id)
+    expect(retrieved?.method).toEqual(.text(phoneNumber: "1234567890"))
+  }
+
+  func testCreatePendingMethod_Slack() async throws {
+    Current.verificationCode.generate = { 123_456 }
+    let admin = try await Entities.admin()
+    let (id, _) = mockUUIDs()
+
+    let output = try await CreatePendingNotificationMethod.resolve(
+      with: .c(.init(token: "xoxb-123", channelId: "C123", channelName: "Foo")),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.init(methodId: id))
+
+    // verify no db record created
+    let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    expect(preConfirm).toBeNil()
+
+    // check that slack was sent
+    expect(sent.slacks).toHaveCount(1)
+    let (slack, token) = try XCTUnwrap(sent.slacks.first)
+    expect(token).toBe("xoxb-123")
+    expect(slack.channel).toBe("C123")
+    expect(slack.text).toContain("123456")
+
+    // submit the "confirm pending" mutation
+    let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
+      with: .init(id: id, code: 123_456),
+      in: context(admin)
+    )
+
+    expect(confirmOuput).toEqual(.success)
+
+    // verify method now added to db w/ correct info
+    let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    expect(retrieved?.id.rawValue).toEqual(id)
+    expect(retrieved?.adminId).toEqual(admin.id)
+    expect(retrieved?.method)
+      .toEqual(.slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"))
+  }
+
+  func testCreatePendingMethod_Email() async throws {
+    Current.verificationCode.generate = { 123_456 }
+    let admin = try await Entities.admin()
+    let (id, _) = mockUUIDs()
+
+    let output = try await CreatePendingNotificationMethod.resolve(
+      with: .a(.init(email: "blob@blob.com")),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.init(methodId: id))
+
+    // verify no db record created
+    let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    expect(preConfirm).toBeNil()
+
+    // check that email was sent
+    expect(sent.emails).toHaveCount(1)
+    let email = try XCTUnwrap(sent.emails.first)
+    expect(email.firstRecipient).toEqual("blob@blob.com")
+    expect(email.text).toContain("123456")
+
+    // submit the "confirm pending" mutation
+    let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
+      with: .init(id: id, code: 123_456),
+      in: context(admin)
+    )
+
+    expect(confirmOuput).toEqual(.success)
+
+    // verify method now added to db w/ correct info
+    let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    expect(retrieved?.id.rawValue).toEqual(id)
+    expect(retrieved?.adminId).toEqual(admin.id)
+    expect(retrieved?.method).toEqual(.email(email: "blob@blob.com"))
   }
 
   // helpers

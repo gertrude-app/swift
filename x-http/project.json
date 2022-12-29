@@ -3,7 +3,7 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "cd duet && swift build"
+      "command": "cd x-http && swift build"
     },
     "test": {
       "command": "cd x-http && SWIFT_DETERMINISTIC_HASHING=1 swift test"
