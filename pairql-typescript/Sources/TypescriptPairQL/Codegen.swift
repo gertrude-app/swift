@@ -13,6 +13,20 @@ extension Union2: TypescriptRepresentable where
   }
 }
 
+extension Union3: TypescriptRepresentable where
+  A: TypescriptRepresentable,
+  B: TypescriptRepresentable,
+  C: TypescriptRepresentable {
+  public static var customTs: String? {
+    """
+    export type __self__ =
+      | { type: "\(A.self)"; value: \(unnest(A.ts)) }
+      | { type: "\(B.self)"; value: \(unnest(B.ts)) }
+      | { type: "\(C.self)"; value: \(unnest(C.ts)) }
+    """
+  }
+}
+
 public extension TypescriptRepresentable {
   static var customTs: String? { nil }
 
@@ -44,7 +58,7 @@ private func derive(
     }
   }
 
-  if resolveNamed, let namedType = type as? NamedUnion.Type {
+  if resolveNamed, let namedType = type as? NamedType.Type {
     let decl = derive(namedType, &named, depth + 1, resolveNamed: false)
       .replacingOccurrences(of: "__self__", with: namedType.__typeName)
     named["\(type)"] = decl

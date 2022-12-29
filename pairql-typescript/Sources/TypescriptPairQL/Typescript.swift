@@ -15,7 +15,7 @@ public typealias TypescriptPairInput = PairInput & TypescriptRepresentable
 public typealias TypescriptPairOutput = PairOutput & TypescriptRepresentable
 public typealias TypescriptNestable = PairNestable & TypescriptRepresentable
 
-public protocol NamedUnion {
+public protocol NamedType {
   static var __typeName: String { get }
 }
 

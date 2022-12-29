@@ -42,6 +42,22 @@ extension Admin {
         .all()
     })
   }
+
+  func notifications() async throws -> [AdminNotification] {
+    try await notifications.useLoaded(or: {
+      try await Current.db.query(AdminNotification.self)
+        .where(.adminId == id)
+        .all()
+    })
+  }
+
+  func verifiedNotificationMethods() async throws -> [AdminVerifiedNotificationMethod] {
+    try await verifiedNotificationMethods.useLoaded(or: {
+      try await Current.db.query(AdminVerifiedNotificationMethod.self)
+        .where(.adminId == id)
+        .all()
+    })
+  }
 }
 
 // extensions

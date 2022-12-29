@@ -19,6 +19,7 @@ enum DashboardTsCodegenRoute {
         CreateBillingPortalSession.name: ts(for: CreateBillingPortalSession.self),
         CreatePendingAppConnection.name: ts(for: CreatePendingAppConnection.self),
         DeleteUser.name: ts(for: DeleteUser.self),
+        GetAdmin.name: ts(for: GetAdmin.self),
         GetCheckoutUrl.name: ts(for: GetCheckoutUrl.self),
         GetUser.name: ts(for: GetUser.self),
         GetUserActivityDay.name: ts(for: GetUserActivityDay.self),

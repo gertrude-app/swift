@@ -39,35 +39,35 @@ extension Admin: Model {
   }
 }
 
-// extension AdminNotification: Model {
-//   public static let tableName = M38.tableName
-//   public typealias ColumnName = CodingKeys
+extension AdminNotification: Model {
+  public static let tableName = M1.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .adminId:
-//       return .uuid(adminId)
-//     case .methodId:
-//       return .uuid(methodId)
-//     case .trigger:
-//       return .enum(trigger)
-//     case .createdAt:
-//       return .date(createdAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .adminId:
+      return .uuid(adminId)
+    case .methodId:
+      return .uuid(methodId)
+    case .trigger:
+      return .enum(trigger)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .adminId: .uuid(adminId),
-//       .methodId: .uuid(methodId),
-//       .trigger: .enum(trigger),
-//       .createdAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .adminId: .uuid(adminId),
+      .methodId: .uuid(methodId),
+      .trigger: .enum(trigger),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
 
 extension AdminToken: Model {
   public static let tableName = M1.tableName

@@ -5,7 +5,7 @@ import TypescriptPairQL
 import XCTest
 import XExpect
 
-extension Union2: NamedUnion where A == String, B == Bool {
+extension Union2: NamedType where A == String, B == Bool {
   public static var __typeName: String {
     "StringOrBool"
   }
@@ -28,7 +28,7 @@ final class CodegenTests: XCTestCase {
     )
   }
 
-  func testNamedUnion() {
+  func testNamedType() {
     struct Struct: TypescriptRepresentable {
       let items: [Union2<String, Bool>]
     }

@@ -96,7 +96,7 @@ func coalesce(
 
 // extensions
 
-extension Union2: NamedUnion where
+extension Union2: NamedType where
   A == UserActivity.Screenshot,
   B == UserActivity.CoalescedKeystrokeLine {
   public static var __typeName: String { "Item" }

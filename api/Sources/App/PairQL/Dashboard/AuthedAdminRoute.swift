@@ -3,6 +3,7 @@ import PairQL
 import Vapor
 
 enum AuthedAdminRoute: PairRoute {
+  case getAdmin
   case getUser(GetUser.Input)
   case getUsers
   case saveUser(SaveUser.Input)
@@ -18,6 +19,9 @@ extension AuthedAdminRoute {
     Route(/Self.getUser) {
       Operation(GetUser.self)
       Body(.json(GetUser.Input.self))
+    }
+    Route(/Self.getAdmin) {
+      Operation(GetAdmin.self)
     }
     Route(/Self.getUsers) {
       Operation(GetUsers.self)
@@ -86,6 +90,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .getUserActivityDay(let input):
       let output = try await GetUserActivityDay.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .getAdmin:
+      let output = try await GetAdmin.resolve(in: context)
       return try await respond(with: output)
     }
   }

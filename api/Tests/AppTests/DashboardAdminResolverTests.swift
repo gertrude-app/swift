@@ -22,9 +22,7 @@ final class DashboardAdminResolverTests: AppTestCase {
       return .init(id: "bps_123", url: "bps-url")
     }
 
-    let output = try await CreateBillingPortalSession.resolve(
-      in: .init(dashboardUrl: "", admin: admin.model)
-    )
+    let output = try await CreateBillingPortalSession.resolve(in: context(admin))
 
     expect(output).toEqual(.init(url: "bps-url"))
   }
@@ -35,7 +33,7 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     let output = try await CreatePendingAppConnection.resolve(
       with: .init(userId: user.id.rawValue),
-      in: .init(dashboardUrl: "", admin: user.admin.model)
+      in: context(user.admin)
     )
 
     expect(output).toEqual(.init(code: 1234))
@@ -59,7 +57,7 @@ final class DashboardAdminResolverTests: AppTestCase {
           end: Date(addingDays: 2).isoString
         )
       ),
-      in: .init(dashboardUrl: "", admin: user.admin.model)
+      in: context(user.admin)
     )
 
     // date timezone issues preventing checking whole struct equality
@@ -74,5 +72,43 @@ final class DashboardAdminResolverTests: AppTestCase {
     expect(output.items[1].a?.url).toEqual(screenshot.url)
     expect(output.items[1].a?.width).toEqual(screenshot.width)
     expect(output.items[1].a?.height).toEqual(screenshot.height)
+  }
+
+  func testGetAdminWithNotifications() async throws {
+    let admin = try await Entities.admin()
+    let method = AdminVerifiedNotificationMethod(
+      adminId: admin.id,
+      method: .email(email: "blob@blob.com")
+    )
+    try await Current.db.create(method)
+    let notification = AdminNotification.random
+    notification.adminId = admin.id
+    notification.methodId = method.id
+    try await Current.db.create(notification)
+
+    let output = try await GetAdmin.resolve(in: context(admin))
+
+    expect(output).toEqual(.init(
+      id: admin.id.rawValue,
+      email: admin.email.rawValue,
+      notifications: [
+        .init(
+          id: notification.id.rawValue,
+          trigger: notification.trigger,
+          methodId: notification.methodId.rawValue
+        ),
+      ],
+      verifiedNotificationMethods: [.a(.init(id: method.id.rawValue, email: "blob@blob.com"))]
+    ))
+  }
+
+  // helpers
+
+  private func context(_ admin: Admin) -> AdminContext {
+    .init(dashboardUrl: "", admin: admin)
+  }
+
+  private func context(_ admin: AdminEntities) -> AdminContext {
+    .init(dashboardUrl: "", admin: admin.model)
   }
 }
