@@ -7,7 +7,7 @@ struct GetCheckoutUrl: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
-    var adminId: UUID
+    var adminId: Admin.Id
   }
 
   struct Output: TypescriptPairOutput {
@@ -22,7 +22,7 @@ extension GetCheckoutUrl: Resolver {
     with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
-    let admin = try await Current.db.find(Admin.Id(input.adminId))
+    let admin = try await Current.db.find(input.adminId)
 
     let sessionData = Stripe.CheckoutSessionData(
       successUrl: "\(context.dashboardUrl)/checkout-success?session_id={CHECKOUT_SESSION_ID}",

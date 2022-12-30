@@ -3,29 +3,29 @@ import Foundation
 import Shared
 import TypescriptPairQL
 
-struct GetUser: Pair, TypescriptPair {
+struct GetUser: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Device: Equatable, Codable, TypescriptRepresentable {
-    let id: UUID
+    let id: App.Device.Id
     let isOnline: Bool
     let modelFamily: DeviceModelFamily
     let modelTitle: String
   }
 
   struct Keychain: Equatable, Codable, TypescriptRepresentable {
-    let id: UUID
-    let authorId: UUID
+    let id: App.Keychain.Id
+    let authorId: Admin.Id
     let name: String
     let description: String?
     let isPublic: Bool
     let numKeys: Int
   }
 
-  typealias Input = UUID
+  typealias Input = User.Id
 
   struct Output: TypescriptPairOutput {
-    var id: UUID
+    var id: User.Id
     var name: String
     var keyloggingEnabled: Bool
     var screenshotsEnabled: Bool
@@ -41,7 +41,7 @@ struct GetUser: Pair, TypescriptPair {
 
 extension GetUser: Resolver {
   static func resolve(
-    with id: UUID,
+    with id: User.Id,
     in context: AdminContext
   ) async throws -> Output {
     try await Output(from: context.verifiedUser(from: id))
@@ -56,8 +56,8 @@ extension GetUser.Keychain {
       withSoftDeleted: false
     )
     self.init(
-      id: keychain.id.rawValue,
-      authorId: keychain.authorId.rawValue,
+      id: keychain.id,
+      authorId: keychain.authorId,
       name: keychain.name,
       description: keychain.description,
       isPublic: keychain.isPublic,
@@ -76,7 +76,7 @@ extension GetUser.Output {
       .all()
       .map { device in
         GetUser.Device(
-          id: device.id.rawValue,
+          id: device.id,
           isOnline: device.isOnline,
           modelFamily: device.model.family,
           modelTitle: device.model.shortDescription
@@ -84,7 +84,7 @@ extension GetUser.Output {
       }
 
     self.init(
-      id: user.id.rawValue,
+      id: user.id,
       name: user.name,
       keyloggingEnabled: user.keyloggingEnabled,
       screenshotsEnabled: user.screenshotsEnabled,

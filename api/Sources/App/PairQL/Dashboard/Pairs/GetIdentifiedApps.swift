@@ -6,17 +6,17 @@ struct GetIdentifiedApps: TypescriptPair {
 
   struct App: TypescriptPairOutput {
     struct BundleId: TypescriptNestable {
-      let id: UUID
+      let id: AppBundleId.Id
       let bundleId: String
     }
 
     struct Category: TypescriptNestable {
-      let id: UUID
+      let id: AppCategory.Id
       let name: String
       let slug: String
     }
 
-    let id: UUID
+    let id: IdentifiedApp.Id
     let name: String
     let slug: String
     let selectable: Bool
@@ -41,7 +41,7 @@ extension GetIdentifiedApps: NoInputResolver {
     var appMap: [IdentifiedApp.Id: App] = (try await apps)
       .reduce(into: [:]) { map, identifiedApp in
         map[identifiedApp.id] = .init(
-          id: identifiedApp.id.rawValue,
+          id: identifiedApp.id,
           name: identifiedApp.name,
           slug: identifiedApp.slug,
           selectable: identifiedApp.selectable,
@@ -62,7 +62,7 @@ extension GetIdentifiedApps: NoInputResolver {
 
 extension GetIdentifiedApps.App.Category {
   init(from appCategory: AppCategory) {
-    id = appCategory.id.rawValue
+    id = appCategory.id
     name = appCategory.name
     slug = appCategory.slug
   }
@@ -70,7 +70,7 @@ extension GetIdentifiedApps.App.Category {
 
 extension GetIdentifiedApps.App.BundleId {
   init(from appBundleId: AppBundleId) {
-    id = appBundleId.id.rawValue
+    id = appBundleId.id
     bundleId = appBundleId.bundleId
   }
 }

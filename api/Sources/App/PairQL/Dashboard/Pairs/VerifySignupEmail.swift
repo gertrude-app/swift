@@ -10,7 +10,7 @@ struct VerifySignupEmail: TypescriptPair {
   }
 
   struct Output: TypescriptPairOutput {
-    let adminId: UUID
+    let adminId: Admin.Id
   }
 }
 
@@ -27,7 +27,7 @@ extension VerifySignupEmail: Resolver {
 
     let admin = try await Current.db.find(adminId)
     if admin.subscriptionStatus != .pendingEmailVerification {
-      return .init(adminId: admin.id.rawValue)
+      return .init(adminId: admin.id)
     }
 
     admin.subscriptionStatus = .emailVerified
@@ -37,6 +37,6 @@ extension VerifySignupEmail: Resolver {
       adminId: admin.id,
       method: .email(email: admin.email.rawValue)
     ))
-    return Output(adminId: admin.id.rawValue)
+    return Output(adminId: admin.id)
   }
 }

@@ -73,9 +73,9 @@ struct AdminContext {
   let dashboardUrl: String
   let admin: Admin
 
-  func verifiedUser(from uuid: UUID) async throws -> User {
+  func verifiedUser(from id: User.Id) async throws -> User {
     try await Current.db.query(User.self)
-      .where(.id == uuid)
+      .where(.id == id)
       .where(.adminId == admin.id)
       .first()
   }

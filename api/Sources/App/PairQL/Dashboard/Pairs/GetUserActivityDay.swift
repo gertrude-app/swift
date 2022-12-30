@@ -5,8 +5,8 @@ import Vapor
 
 public enum UserActivity {
   public struct Screenshot: TypescriptNestable {
-    var id: UUID
-    var ids: [UUID]
+    var id: App.Screenshot.Id
+    var ids: [App.Screenshot.Id]
     var url: String
     var width: Int
     var height: Int
@@ -14,8 +14,8 @@ public enum UserActivity {
   }
 
   public struct CoalescedKeystrokeLine: TypescriptNestable {
-    var id: UUID
-    var ids: [UUID]
+    var id: KeystrokeLine.Id
+    var ids: [KeystrokeLine.Id]
     var appName: String
     var line: String
     var createdAt: Date
@@ -26,7 +26,7 @@ struct GetUserActivityDay: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
-    var userId: UUID
+    var userId: User.Id
     var range: DateRange
   }
 
@@ -83,7 +83,7 @@ func coalesce(
       if var coalescedKeystroke = coalesced.last?.b,
          keystroke.appName == coalescedKeystroke.appName {
         coalescedKeystroke.line = "\(keystroke.line)\n\(coalescedKeystroke.line)"
-        coalescedKeystroke.ids.append(keystroke.id.rawValue)
+        coalescedKeystroke.ids.append(keystroke.id)
         coalesced[coalesced.count - 1] = .b(coalescedKeystroke)
       } else {
         coalesced.append(.b(.init(from: keystroke)))
@@ -104,8 +104,8 @@ extension Union2: NamedType where
 
 extension UserActivity.Screenshot {
   init(from screenshot: Screenshot) {
-    id = screenshot.id.rawValue
-    ids = [screenshot.id.rawValue]
+    id = screenshot.id
+    ids = [screenshot.id]
     url = screenshot.url
     width = screenshot.width
     height = screenshot.height
@@ -115,8 +115,8 @@ extension UserActivity.Screenshot {
 
 extension UserActivity.CoalescedKeystrokeLine {
   init(from keystroke: KeystrokeLine) {
-    id = keystroke.id.rawValue
-    ids = [keystroke.id.rawValue]
+    id = keystroke.id
+    ids = [keystroke.id]
     appName = keystroke.appName
     line = keystroke.line
     createdAt = keystroke.createdAt

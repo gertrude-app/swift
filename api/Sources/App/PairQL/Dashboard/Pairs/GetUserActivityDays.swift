@@ -10,7 +10,7 @@ struct GetUserActivityDays: Pair, TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
-    let userId: UUID
+    let userId: User.Id
     let dateRanges: [DateRange]
   }
 

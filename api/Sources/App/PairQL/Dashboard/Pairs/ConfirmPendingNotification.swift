@@ -6,7 +6,7 @@ struct ConfirmPendingNotificationMethod: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
-    let id: UUID
+    let id: AdminVerifiedNotificationMethod.Id
     let code: Int
   }
 }

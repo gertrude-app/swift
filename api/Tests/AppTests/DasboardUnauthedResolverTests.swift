@@ -64,7 +64,7 @@ final class DasboardUnauthedResolverTests: AppTestCase {
       .where(.adminId == admin.id)
       .first()
 
-    expect(output).toEqual(.init(adminId: admin.id.rawValue))
+    expect(output).toEqual(.init(adminId: admin.id))
     expect(retrieved.subscriptionStatus).toEqual(.emailVerified)
     expect(method.method).toEqual(.email(email: admin.email.rawValue))
   }
@@ -77,7 +77,7 @@ final class DasboardUnauthedResolverTests: AppTestCase {
 
     let retrieved = try await Current.db.find(admin.id)
 
-    expect(output).toEqual(.init(adminId: admin.id.rawValue))
+    expect(output).toEqual(.init(adminId: admin.id))
     expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed
   }
 
@@ -90,7 +90,7 @@ final class DasboardUnauthedResolverTests: AppTestCase {
 
     let admin = try await Current.db.create(Admin.random)
     let output = try await GetCheckoutUrl.resolve(
-      with: .init(adminId: admin.id.rawValue),
+      with: .init(adminId: admin.id),
       in: context
     )
 
@@ -135,7 +135,7 @@ final class DasboardUnauthedResolverTests: AppTestCase {
     )
 
     let retrieved = try await Current.db.find(admin.id)
-    expect(output).toEqual(.init(token: tokenValue, adminId: admin.id.rawValue))
+    expect(output).toEqual(.init(token: .init(tokenValue), adminId: admin.id))
     expect(retrieved.subscriptionId).toEqual(.init(rawValue: "sub_123"))
     expect(retrieved.subscriptionStatus).toEqual(.trialing)
   }
@@ -148,7 +148,7 @@ final class DasboardUnauthedResolverTests: AppTestCase {
     let output = try await LoginMagicLink.resolve(with: .init(token: token), in: context)
 
     let adminToken = try await Current.db.find(AdminToken.Id(tokenId))
-    expect(output).toEqual(.init(token: tokenValue, adminId: admin.id.rawValue))
+    expect(output).toEqual(.init(token: .init(tokenValue), adminId: admin.id))
     expect(adminToken.value).toEqual(.init(tokenValue))
     expect(adminToken.adminId).toEqual(admin.id)
   }

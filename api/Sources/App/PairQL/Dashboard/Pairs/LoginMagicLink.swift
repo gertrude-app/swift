@@ -22,6 +22,6 @@ extension LoginMagicLink: Resolver {
       throw Abort(.notFound)
     }
     let token = try await Current.db.create(AdminToken(adminId: adminId))
-    return Output(token: token.value.rawValue, adminId: adminId.rawValue)
+    return Output(token: token.value, adminId: adminId)
   }
 }

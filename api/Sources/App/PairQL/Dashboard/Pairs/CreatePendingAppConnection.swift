@@ -5,7 +5,7 @@ struct CreatePendingAppConnection: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
-    var userId: UUID
+    var userId: User.Id
   }
 
   struct Output: TypescriptPairOutput {

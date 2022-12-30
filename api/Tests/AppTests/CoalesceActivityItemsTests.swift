@@ -16,10 +16,10 @@ class CoalesceMonitoringItemsTests: XCTestCase {
     let coalesced = coalesce([screenshot2, screenshot1], [keystroke2, keystroke1])
 
     XCTAssertEqual(coalesced.count, 4)
-    XCTAssertEqual(coalesced[0].b?.ids, [keystroke2.id.rawValue])
-    XCTAssertEqual(coalesced[1].a?.id, screenshot2.id.rawValue)
-    XCTAssertEqual(coalesced[2].b?.ids, [keystroke1.id.rawValue])
-    XCTAssertEqual(coalesced[3].a?.id, screenshot1.id.rawValue)
+    XCTAssertEqual(coalesced[0].b?.ids, [keystroke2.id])
+    XCTAssertEqual(coalesced[1].a?.id, screenshot2.id)
+    XCTAssertEqual(coalesced[2].b?.ids, [keystroke1.id])
+    XCTAssertEqual(coalesced[3].a?.id, screenshot1.id)
   }
 
   func testContiguousKeystrokesFromSameAppCoalesce() {
@@ -42,9 +42,9 @@ class CoalesceMonitoringItemsTests: XCTestCase {
     let coalesced = coalesce([screenshot2, screenshot1], [keystroke2, keystroke1])
 
     XCTAssertEqual(coalesced.count, 3)
-    XCTAssertEqual(coalesced[0].a?.id, screenshot2.id.rawValue)
-    XCTAssertEqual(coalesced[1].b?.ids, [keystroke2.id, keystroke1.id].map(\.rawValue))
-    XCTAssertEqual(coalesced[2].a?.id, screenshot1.id.rawValue)
+    XCTAssertEqual(coalesced[0].a?.id, screenshot2.id)
+    XCTAssertEqual(coalesced[1].b?.ids, [keystroke2.id, keystroke1.id])
+    XCTAssertEqual(coalesced[2].a?.id, screenshot1.id)
     XCTAssertEqual(coalesced[1].b?.line, "Foo\nBar")
   }
 
@@ -66,9 +66,9 @@ class CoalesceMonitoringItemsTests: XCTestCase {
     let coalesced = coalesce([screenshot2, screenshot1], [keystroke2, keystroke1])
 
     XCTAssertEqual(coalesced.count, 4)
-    XCTAssertEqual(coalesced[0].a?.id, screenshot2.id.rawValue)
-    XCTAssertEqual(coalesced[1].b?.ids, [keystroke2.id.rawValue])
-    XCTAssertEqual(coalesced[2].b?.ids, [keystroke1.id.rawValue])
-    XCTAssertEqual(coalesced[3].a?.id, screenshot1.id.rawValue)
+    XCTAssertEqual(coalesced[0].a?.id, screenshot2.id)
+    XCTAssertEqual(coalesced[1].b?.ids, [keystroke2.id])
+    XCTAssertEqual(coalesced[2].b?.ids, [keystroke1.id])
+    XCTAssertEqual(coalesced[3].a?.id, screenshot1.id)
   }
 }

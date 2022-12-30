@@ -22,7 +22,7 @@ struct CreatePendingNotificationMethod: TypescriptPair {
   typealias Input = Union3<EmailInput, TextInput, SlackInput>
 
   struct Output: TypescriptPairOutput {
-    let methodId: UUID
+    let methodId: AdminVerifiedNotificationMethod.Id
   }
 }
 
@@ -34,7 +34,7 @@ extension CreatePendingNotificationMethod: Resolver {
     let model = AdminVerifiedNotificationMethod(adminId: context.admin.id, method: method)
     let code = await Current.ephemeral.createPendingNotificationMethod(model)
     try await sendVerification(code, for: method)
-    return .init(methodId: model.id.rawValue)
+    return .init(methodId: model.id)
   }
 }
 

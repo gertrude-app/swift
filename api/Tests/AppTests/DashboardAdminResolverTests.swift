@@ -33,7 +33,7 @@ final class DashboardAdminResolverTests: AppTestCase {
     let user = try await Entities.user()
 
     let output = try await CreatePendingAppConnection.resolve(
-      with: .init(userId: user.id.rawValue),
+      with: .init(userId: user.id),
       in: context(user.admin)
     )
 
@@ -52,7 +52,7 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     let output = try await GetUserActivityDay.resolve(
       with: .init(
-        userId: user.id.rawValue,
+        userId: user.id,
         range: .init(
           start: Date(subtractingDays: 2).isoString,
           end: Date(addingDays: 2).isoString
@@ -63,13 +63,13 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     // date timezone issues preventing checking whole struct equality
     expect(output.items).toHaveCount(2)
-    expect(output.items[0].b?.id).toEqual(keystrokeLine.id.rawValue)
-    expect(output.items[0].b?.ids).toEqual([keystrokeLine.id.rawValue])
+    expect(output.items[0].b?.id).toEqual(keystrokeLine.id)
+    expect(output.items[0].b?.ids).toEqual([keystrokeLine.id])
     expect(output.items[0].b?.appName).toEqual(keystrokeLine.appName)
     expect(output.items[0].b?.line).toEqual(keystrokeLine.line)
 
-    expect(output.items[1].a?.id).toEqual(screenshot.id.rawValue)
-    expect(output.items[1].a?.ids).toEqual([screenshot.id.rawValue])
+    expect(output.items[1].a?.id).toEqual(screenshot.id)
+    expect(output.items[1].a?.ids).toEqual([screenshot.id])
     expect(output.items[1].a?.url).toEqual(screenshot.url)
     expect(output.items[1].a?.width).toEqual(screenshot.width)
     expect(output.items[1].a?.height).toEqual(screenshot.height)
@@ -90,16 +90,14 @@ final class DashboardAdminResolverTests: AppTestCase {
     let output = try await GetAdmin.resolve(in: context(admin))
 
     expect(output).toEqual(.init(
-      id: admin.id.rawValue,
+      id: admin.id,
       email: admin.email.rawValue,
-      notifications: [
-        .init(
-          id: notification.id.rawValue,
-          trigger: notification.trigger,
-          methodId: notification.methodId.rawValue
-        ),
-      ],
-      verifiedNotificationMethods: [.a(.init(id: method.id.rawValue, email: "blob@blob.com"))]
+      notifications: [.init(
+        id: notification.id,
+        trigger: notification.trigger,
+        methodId: notification.methodId
+      )],
+      verifiedNotificationMethods: [.a(.init(id: method.id, email: "blob@blob.com"))]
     ))
   }
 
@@ -113,7 +111,7 @@ final class DashboardAdminResolverTests: AppTestCase {
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(methodId: id))
+    expect(output).toEqual(.init(methodId: .init(id)))
 
     // verify no db record created
     let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
@@ -128,7 +126,7 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
-      with: .init(id: id, code: 987_654),
+      with: .init(id: .init(id), code: 987_654),
       in: context(admin)
     )
 
@@ -151,7 +149,7 @@ final class DashboardAdminResolverTests: AppTestCase {
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(methodId: id))
+    expect(output).toEqual(.init(methodId: .init(id)))
 
     // verify no db record created
     let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
@@ -166,7 +164,7 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
-      with: .init(id: id, code: 123_456),
+      with: .init(id: .init(id), code: 123_456),
       in: context(admin)
     )
 
@@ -190,7 +188,7 @@ final class DashboardAdminResolverTests: AppTestCase {
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(methodId: id))
+    expect(output).toEqual(.init(methodId: .init(id)))
 
     // verify no db record created
     let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
@@ -204,7 +202,7 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
-      with: .init(id: id, code: 123_456),
+      with: .init(id: .init(id), code: 123_456),
       in: context(admin)
     )
 
@@ -226,11 +224,11 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     let (id, _) = mockUUIDs()
     let output = try await SaveNotification_v0.resolve(
-      with: .init(id: nil, methodId: method.id.rawValue, trigger: .unlockRequestSubmitted),
+      with: .init(id: nil, methodId: method.id, trigger: .unlockRequestSubmitted),
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(id: id))
+    expect(output).toEqual(.init(id: .init(id)))
   }
 
   func testUpdateAdminNotification() async throws {
@@ -251,14 +249,14 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     let output = try await SaveNotification_v0.resolve(
       with: .init(
-        id: notification.id.rawValue,
-        methodId: text.id.rawValue, // <-- new method
+        id: notification.id,
+        methodId: text.id, // <-- new method
         trigger: .suspendFilterRequestSubmitted // <-- new trigger
       ),
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(id: notification.id.rawValue))
+    expect(output).toEqual(.init(id: notification.id))
 
     let retrieved = try await Current.db.find(notification.id)
     expect(retrieved.methodId).toEqual(text.id)
@@ -282,7 +280,7 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     expect(output).toEqual([
       GetIdentifiedApps.App(
-        id: app.id.rawValue,
+        id: app.id,
         name: app.name,
         slug: app.slug,
         selectable: app.selectable,

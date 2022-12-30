@@ -5,15 +5,15 @@ struct SaveUser: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
-    var id: UUID
-    var adminId: UUID
+    var id: User.Id
+    // var adminId: Admin.Id
     var isNew: Bool
     var name: String
     var keyloggingEnabled: Bool
     var screenshotsEnabled: Bool
     var screenshotsResolution: Int
     var screenshotsFrequency: Int
-    var keychainIds: [UUID]
+    var keychainIds: [Keychain.Id]
   }
 }
 
@@ -24,8 +24,8 @@ extension SaveUser: Resolver {
     let user: User
     if input.isNew {
       user = try await Current.db.create(User(
-        id: .init(input.id),
-        adminId: .init(input.adminId),
+        id: input.id,
+        adminId: context.admin.id,
         name: input.name,
         keyloggingEnabled: input.keyloggingEnabled,
         screenshotsEnabled: input.screenshotsEnabled,
@@ -33,7 +33,7 @@ extension SaveUser: Resolver {
         screenshotsFrequency: input.screenshotsFrequency
       ))
     } else {
-      user = try await Current.db.find(User.Id(input.id))
+      user = try await Current.db.find(input.id)
       user.name = input.name
       user.keyloggingEnabled = input.keyloggingEnabled
       user.screenshotsEnabled = input.screenshotsEnabled
@@ -42,7 +42,7 @@ extension SaveUser: Resolver {
       try await Current.db.update(user)
     }
 
-    let existing = try await user.keychains().map(\.id.rawValue)
+    let existing = try await user.keychains().map(\.id)
     if existing.elementsEqual(input.keychainIds) {
       // TODO: dispatch event
       return .init(true)
@@ -53,7 +53,7 @@ extension SaveUser: Resolver {
       .delete()
 
     let pivots = input.keychainIds
-      .map { UserKeychain(userId: user.id, keychainId: .init(rawValue: $0)) }
+      .map { UserKeychain(userId: user.id, keychainId: $0) }
 
     try await Current.db.create(pivots)
 

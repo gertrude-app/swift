@@ -20,8 +20,7 @@ final class UsersResolversTests: AppTestCase {
     let admin = try await Entities.admin()
 
     let input = SaveUser.Input(
-      id: UUID(),
-      adminId: admin.id.rawValue,
+      id: .init(),
       isNew: true,
       name: "Test User",
       keyloggingEnabled: true,
@@ -33,7 +32,7 @@ final class UsersResolversTests: AppTestCase {
 
     let output = try await SaveUser.resolve(with: input, in: admin.context)
 
-    let user = try await Current.db.find(User.Id(input.id))
+    let user = try await Current.db.find(input.id)
     expect(output).toEqual(.success)
     expect(user.name).toEqual("Test User")
     expect(user.keyloggingEnabled).toEqual(true)
@@ -47,8 +46,7 @@ final class UsersResolversTests: AppTestCase {
 
     let output = try await SaveUser.resolve(
       with: SaveUser.Input(
-        id: user.id.rawValue,
-        adminId: user.admin.id.rawValue,
+        id: user.id,
         isNew: false,
         name: "New name",
         keyloggingEnabled: false,
@@ -133,15 +131,14 @@ final class UsersResolversTests: AppTestCase {
 extension SaveUser.Input {
   init(from user: UserEntities, keychainIds: [Keychain.Id] = []) {
     self.init(
-      id: user.id.rawValue,
-      adminId: user.admin.id.rawValue,
+      id: user.id,
       isNew: false,
       name: user.name,
       keyloggingEnabled: user.keyloggingEnabled,
       screenshotsEnabled: user.screenshotsEnabled,
       screenshotsResolution: user.screenshotsResolution,
       screenshotsFrequency: user.screenshotsFrequency,
-      keychainIds: keychainIds.map(\.rawValue)
+      keychainIds: keychainIds
     )
   }
 }

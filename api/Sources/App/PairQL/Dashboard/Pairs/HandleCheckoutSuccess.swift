@@ -2,8 +2,8 @@ import Foundation
 import TypescriptPairQL
 
 struct AdminAuth: TypescriptPairOutput {
-  var token: UUID
-  var adminId: UUID
+  var token: AdminToken.Value
+  var adminId: Admin.Id
 }
 
 struct HandleCheckoutSuccess: TypescriptPair {
@@ -35,6 +35,6 @@ extension HandleCheckoutSuccess: Resolver {
 
     try await Current.db.update(admin)
     let token = try await Current.db.create(AdminToken(adminId: admin.id))
-    return Output(token: token.value.rawValue, adminId: admin.id.rawValue)
+    return Output(token: token.value, adminId: admin.id)
   }
 }

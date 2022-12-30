@@ -22,7 +22,7 @@ actor Ephemeral {
     return adminId
   }
 
-  private var pendingMethods: [UUID: (
+  private var pendingMethods: [AdminVerifiedNotificationMethod.Id: (
     model: AdminVerifiedNotificationMethod,
     code: Int,
     expiration: Date
@@ -33,12 +33,12 @@ actor Ephemeral {
     expiration: Date = Current.date() + TWENTY_MINUTES
   ) -> Int {
     let code = Current.verificationCode.generate()
-    pendingMethods[model.id.rawValue] = (model: model, code: code, expiration: expiration)
+    pendingMethods[model.id] = (model: model, code: code, expiration: expiration)
     return code
   }
 
   func confirmPendingNotificationMethod(
-    _ modelId: UUID,
+    _ modelId: AdminVerifiedNotificationMethod.Id,
     _ code: Int
   ) -> AdminVerifiedNotificationMethod? {
     guard let (model, storedCode, expiration) = pendingMethods.removeValue(forKey: modelId),
