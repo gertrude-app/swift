@@ -30,6 +30,7 @@ enum DashboardTsCodegenRoute {
         JoinWaitlist.name: ts(for: JoinWaitlist.self),
         LoginMagicLink.name: ts(for: LoginMagicLink.self),
         RequestMagicLink.name: ts(for: RequestMagicLink.self),
+        SaveNotification_v0.name: ts(for: SaveNotification_v0.self),
         SaveUser.name: ts(for: SaveUser.self),
         Signup.name: ts(for: Signup.self),
         VerifySignupEmail.name: ts(for: VerifySignupEmail.self),

@@ -12,6 +12,7 @@ enum AuthedAdminRoute: PairRoute {
   case getUserActivityDay(GetUserActivityDay.Input)
   case createBillingPortalSession
   case createPendingAppConnection(CreatePendingAppConnection.Input)
+  case saveNotification_v0(SaveNotification_v0.Input)
 }
 
 extension AuthedAdminRoute {
@@ -48,6 +49,10 @@ extension AuthedAdminRoute {
     Route(/Self.createPendingAppConnection) {
       Operation(CreatePendingAppConnection.self)
       Body(.json(CreatePendingAppConnection.Input.self))
+    }
+    Route(/Self.saveNotification_v0) {
+      Operation(SaveNotification_v0.self)
+      Body(.json(SaveNotification_v0.Input.self))
     }
   }
 }
@@ -93,6 +98,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .getAdmin:
       let output = try await GetAdmin.resolve(in: context)
+      return try await respond(with: output)
+    case .saveNotification_v0(let input):
+      let output = try await SaveNotification_v0.resolve(with: input, in: context)
       return try await respond(with: output)
     }
   }

@@ -91,6 +91,9 @@ clean: nx-reset
 	rm -rf shared/.build
 	rm -rf x-kit/.build
 
+clean-api-tests:
+	cd api && find .build -name '*AppTests*' -delete
+
 # helpers
 
 NX = node_modules/.bin/nx

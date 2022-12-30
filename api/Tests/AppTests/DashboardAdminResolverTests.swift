@@ -217,6 +217,54 @@ final class DashboardAdminResolverTests: AppTestCase {
     expect(retrieved?.method).toEqual(.email(email: "blob@blob.com"))
   }
 
+  func testCreateNewAdminNotification() async throws {
+    let admin = try await Entities.admin()
+    let method = try await Current.db.create(AdminVerifiedNotificationMethod(
+      adminId: admin.model.id,
+      method: .email(email: "foo@bar.com")
+    ))
+
+    let (id, _) = mockUUIDs()
+    let output = try await SaveNotification_v0.resolve(
+      with: .init(id: nil, methodId: method.id.rawValue, trigger: .unlockRequestSubmitted),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.init(id: id))
+  }
+
+  func testUpdateAdminNotification() async throws {
+    let admin = try await Entities.admin()
+    let email = try await Current.db.create(AdminVerifiedNotificationMethod(
+      adminId: admin.model.id,
+      method: .email(email: "foo@bar.com")
+    ))
+    let text = try await Current.db.create(AdminVerifiedNotificationMethod(
+      adminId: admin.model.id,
+      method: .text(phoneNumber: "1234567890")
+    ))
+    let notification = try await Current.db.create(AdminNotification(
+      adminId: admin.model.id,
+      methodId: email.id,
+      trigger: .unlockRequestSubmitted
+    ))
+
+    let output = try await SaveNotification_v0.resolve(
+      with: .init(
+        id: notification.id.rawValue,
+        methodId: text.id.rawValue, // <-- new method
+        trigger: .suspendFilterRequestSubmitted // <-- new trigger
+      ),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.init(id: notification.id.rawValue))
+
+    let retrieved = try await Current.db.find(notification.id)
+    expect(retrieved.methodId).toEqual(text.id)
+    expect(retrieved.trigger).toEqual(.suspendFilterRequestSubmitted)
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
