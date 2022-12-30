@@ -7,6 +7,17 @@ import XExpect
 final class AppTests: AppTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
+  func testDashboardRoute() async throws {
+    let admin = try await Entities.admin()
+    let token = admin.token.value
+    var request = URLRequest(url: URL(string: "dashboard/GetIdentifiedApps")!)
+    request.httpMethod = "POST"
+    request.addValue(token.lowercased, forHTTPHeaderField: "X-AdminToken")
+    let route = PairQLRoute.dashboard(.adminAuthed(token.rawValue, .getIdentifiedApps))
+    let matched = try PairQLRoute.router.match(request: request)
+    expect(matched).toEqual(route)
+  }
+
   func testUnauthed() throws {
     var request = URLRequest(url: URL(string: "macos-app/register")!)
     request.httpMethod = "POST"

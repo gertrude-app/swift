@@ -8,6 +8,7 @@ enum AuthedAdminRoute: PairRoute {
   case getUsers
   case saveUser(SaveUser.Input)
   case deleteEntity(DeleteEntity.Input)
+  case getIdentifiedApps
   case getUserActivityDays(GetUserActivityDays.Input)
   case getUserActivityDay(GetUserActivityDay.Input)
   case createBillingPortalSession
@@ -17,42 +18,49 @@ enum AuthedAdminRoute: PairRoute {
 
 extension AuthedAdminRoute {
   static let router = OneOf {
-    Route(/Self.getUser) {
-      Operation(GetUser.self)
-      Body(.json(GetUser.Input.self))
+    OneOf {
+      Route(/Self.getUser) {
+        Operation(GetUser.self)
+        Body(.json(GetUser.Input.self))
+      }
+      Route(/Self.getAdmin) {
+        Operation(GetAdmin.self)
+      }
+      Route(/Self.getUsers) {
+        Operation(GetUsers.self)
+      }
+      Route(/Self.saveUser) {
+        Operation(SaveUser.self)
+        Body(.json(SaveUser.Input.self))
+      }
+      Route(/Self.deleteEntity) {
+        Operation(DeleteEntity.self)
+        Body(.json(DeleteEntity.Input.self))
+      }
+      Route(/Self.getIdentifiedApps) {
+        Operation(GetIdentifiedApps.self)
+      }
+      Route(/Self.getUserActivityDays) {
+        Operation(GetUserActivityDays.self)
+        Body(.json(GetUserActivityDays.Input.self))
+      }
+      Route(/Self.getUserActivityDay) {
+        Operation(GetUserActivityDay.self)
+        Body(.json(GetUserActivityDay.Input.self))
+      }
+      Route(/Self.createBillingPortalSession) {
+        Operation(CreateBillingPortalSession.self)
+      }
+      Route(/Self.createPendingAppConnection) {
+        Operation(CreatePendingAppConnection.self)
+        Body(.json(CreatePendingAppConnection.Input.self))
+      }
     }
-    Route(/Self.getAdmin) {
-      Operation(GetAdmin.self)
-    }
-    Route(/Self.getUsers) {
-      Operation(GetUsers.self)
-    }
-    Route(/Self.saveUser) {
-      Operation(SaveUser.self)
-      Body(.json(SaveUser.Input.self))
-    }
-    Route(/Self.deleteEntity) {
-      Operation(DeleteEntity.self)
-      Body(.json(DeleteEntity.Input.self))
-    }
-    Route(/Self.getUserActivityDays) {
-      Operation(GetUserActivityDays.self)
-      Body(.json(GetUserActivityDays.Input.self))
-    }
-    Route(/Self.getUserActivityDay) {
-      Operation(GetUserActivityDay.self)
-      Body(.json(GetUserActivityDay.Input.self))
-    }
-    Route(/Self.createBillingPortalSession) {
-      Operation(CreateBillingPortalSession.self)
-    }
-    Route(/Self.createPendingAppConnection) {
-      Operation(CreatePendingAppConnection.self)
-      Body(.json(CreatePendingAppConnection.Input.self))
-    }
-    Route(/Self.saveNotification_v0) {
-      Operation(SaveNotification_v0.self)
-      Body(.json(SaveNotification_v0.Input.self))
+    OneOf {
+      Route(/Self.saveNotification_v0) {
+        Operation(SaveNotification_v0.self)
+        Body(.json(SaveNotification_v0.Input.self))
+      }
     }
   }
 }
@@ -101,6 +109,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .saveNotification_v0(let input):
       let output = try await SaveNotification_v0.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .getIdentifiedApps:
+      let output = try await GetIdentifiedApps.resolve(in: context)
       return try await respond(with: output)
     }
   }

@@ -128,68 +128,68 @@ extension AdminVerifiedNotificationMethod: Model {
   }
 }
 
-// extension AppCategory: Model {
-//   public static let tableName = M7.tableName
-//   public typealias ColumnName = CodingKeys
+extension AppCategory: Model {
+  public static let tableName = M6.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .name:
-//       return .string(name)
-//     case .slug:
-//       return .string(slug)
-//     case .description:
-//       return .string(description)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .name:
+      return .string(name)
+    case .slug:
+      return .string(slug)
+    case .description:
+      return .string(description)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .name: .string(name),
-//       .slug: .string(slug),
-//       .description: .string(description),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .name: .string(name),
+      .slug: .string(slug),
+      .description: .string(description),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
 
-// extension BundleId: Model {
-//   public static let tableName = M9.tableName
-//   public typealias ColumnName = CodingKeys
+extension AppBundleId: Model {
+  public static let tableName = M6.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .bundleId:
-//       return .string(bundleId)
-//     case .identifiedAppId:
-//       return .uuid(identifiedAppId)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .bundleId:
+      return .string(bundleId)
+    case .identifiedAppId:
+      return .uuid(identifiedAppId)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .bundleId: .string(bundleId),
-//       .identifiedAppId: .uuid(identifiedAppId),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .bundleId: .string(bundleId),
+      .identifiedAppId: .uuid(identifiedAppId),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
 
 extension Device: Model {
   public static let tableName = M3.tableName
@@ -242,44 +242,44 @@ extension Device: Model {
   }
 }
 
-// extension IdentifiedApp: Model {
-//   public static let tableName = M8.tableName
-//   public typealias ColumnName = CodingKeys
+extension IdentifiedApp: Model {
+  public static let tableName = M6.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .categoryId:
-//       return .uuid(categoryId)
-//     case .name:
-//       return .string(name)
-//     case .slug:
-//       return .string(slug)
-//     case .selectable:
-//       return .bool(selectable)
-//     case .description:
-//       return .string(description)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .categoryId:
+      return .uuid(categoryId)
+    case .name:
+      return .string(name)
+    case .slug:
+      return .string(slug)
+    case .selectable:
+      return .bool(selectable)
+    case .description:
+      return .string(description)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .categoryId: .uuid(categoryId),
-//       .name: .string(name),
-//       .slug: .string(slug),
-//       .selectable: .bool(selectable),
-//       .description: .string(description),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .categoryId: .uuid(categoryId),
+      .name: .string(name),
+      .slug: .string(slug),
+      .selectable: .bool(selectable),
+      .description: .string(description),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
 
 extension Keychain: Model {
   public static let tableName = M2.tableName

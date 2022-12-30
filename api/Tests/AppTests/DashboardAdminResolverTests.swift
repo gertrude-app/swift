@@ -265,6 +265,33 @@ final class DashboardAdminResolverTests: AppTestCase {
     expect(retrieved.trigger).toEqual(.suspendFilterRequestSubmitted)
   }
 
+  func testGetIdentifiedApps() async throws {
+    try await Current.db.query(IdentifiedApp.self).delete()
+    try await Current.db.query(AppCategory.self).delete()
+    try await Current.db.query(AppBundleId.self).delete()
+
+    let cat = try await Current.db.create(AppCategory.random)
+    let app = IdentifiedApp.random
+    app.categoryId = cat.id
+    try await Current.db.create(app)
+    let bundleId = AppBundleId.random
+    bundleId.identifiedAppId = app.id
+    try await Current.db.create(bundleId)
+
+    let output = try await GetIdentifiedApps.resolve(in: context(.mock))
+
+    expect(output).toEqual([
+      GetIdentifiedApps.App(
+        id: app.id.rawValue,
+        name: app.name,
+        slug: app.slug,
+        selectable: app.selectable,
+        bundleIds: [.init(from: bundleId)],
+        category: .init(from: cat)
+      ),
+    ])
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
