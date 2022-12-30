@@ -1,4 +1,5 @@
 import MacAppRoute
+import TypescriptPairQL
 import XCTest
 import XExpect
 
@@ -6,6 +7,36 @@ import XExpect
 
 final class AppTests: AppTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+
+  func testCodableRoundTrippingOfTaggedIds() throws {
+    struct WithTagged: TypescriptPairInput {
+      let id: User.Id
+    }
+
+    let uuid = "A7F4192B-472A-4887-AC54-ED1AE1753AD7"
+    let tagged = WithTagged(id: .init(UUID(uuidString: uuid)!))
+    let data = try JSONEncoder().encode(tagged)
+    var decoded = try JSONDecoder().decode(WithTagged.self, from: data)
+    expect(decoded).toEqual(tagged)
+
+    let json = #"{"id":"\#(uuid)"}"#.data(using: .utf8)!
+    decoded = try JSONDecoder().decode(WithTagged.self, from: json)
+    expect(decoded).toEqual(tagged)
+  }
+
+  func testTsCodegenOfTaggedIds() throws {
+    struct WithTagged: TypescriptPairInput {
+      let id: User.Id
+    }
+
+    expect(WithTagged.ts).toEqual(
+      """
+      export interface __self__ {
+        id: UUID;
+      }
+      """
+    )
+  }
 
   func testDashboardRoute() async throws {
     let admin = try await Entities.admin()

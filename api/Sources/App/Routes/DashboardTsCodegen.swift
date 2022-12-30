@@ -21,6 +21,7 @@ enum DashboardTsCodegenRoute {
         DeleteEntity.name: ts(for: DeleteEntity.self),
         GetAdmin.name: ts(for: GetAdmin.self),
         GetCheckoutUrl.name: ts(for: GetCheckoutUrl.self),
+        GetDashboardWidgets.name: ts(for: GetDashboardWidgets.self),
         GetIdentifiedApps.name: ts(for: GetIdentifiedApps.self),
         GetUser.name: ts(for: GetUser.self),
         GetUserActivityDay.name: ts(for: GetUserActivityDay.self),

@@ -8,6 +8,7 @@ enum AuthedAdminRoute: PairRoute {
   case getUsers
   case saveUser(SaveUser.Input)
   case deleteEntity(DeleteEntity.Input)
+  case getDashboardWidgets
   case getIdentifiedApps
   case getUserActivityDays(GetUserActivityDays.Input)
   case getUserActivityDay(GetUserActivityDay.Input)
@@ -37,6 +38,9 @@ extension AuthedAdminRoute {
         Operation(DeleteEntity.self)
         Body(.json(DeleteEntity.Input.self))
       }
+      Route(/Self.getDashboardWidgets) {
+        Operation(GetDashboardWidgets.self)
+      }
       Route(/Self.getIdentifiedApps) {
         Operation(GetIdentifiedApps.self)
       }
@@ -51,12 +55,12 @@ extension AuthedAdminRoute {
       Route(/Self.createBillingPortalSession) {
         Operation(CreateBillingPortalSession.self)
       }
+    }
+    OneOf {
       Route(/Self.createPendingAppConnection) {
         Operation(CreatePendingAppConnection.self)
         Body(.json(CreatePendingAppConnection.Input.self))
       }
-    }
-    OneOf {
       Route(/Self.saveNotification_v0) {
         Operation(SaveNotification_v0.self)
         Body(.json(SaveNotification_v0.Input.self))
@@ -112,6 +116,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .getIdentifiedApps:
       let output = try await GetIdentifiedApps.resolve(in: context)
+      return try await respond(with: output)
+    case .getDashboardWidgets:
+      let output = try await GetDashboardWidgets.resolve(in: context)
       return try await respond(with: output)
     }
   }

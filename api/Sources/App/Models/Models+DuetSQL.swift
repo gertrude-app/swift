@@ -388,60 +388,60 @@ extension KeystrokeLine: Model {
   }
 }
 
-// extension NetworkDecision: Model {
-//   public static let tableName = M15.tableName
-//   public typealias ColumnName = CodingKeys
+extension NetworkDecision: Model {
+  public static let tableName = M5.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .deviceId:
-//       return .uuid(deviceId)
-//     case .responsibleKeyId:
-//       return .uuid(responsibleKeyId)
-//     case .verdict:
-//       return .enum(verdict)
-//     case .reason:
-//       return .enum(reason)
-//     case .ipProtocolNumber:
-//       return .int(ipProtocolNumber)
-//     case .hostname:
-//       return .string(hostname)
-//     case .ipAddress:
-//       return .string(ipAddress)
-//     case .url:
-//       return .string(url)
-//     case .appBundleId:
-//       return .string(appBundleId)
-//     case .count:
-//       return .int(count)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .appDescriptor:
-//       Current.logger
-//         .error("unexpected postgresData access of sideLoadable NetworkDecision.appDescriptor")
-//       return .null
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .deviceId:
+      return .uuid(deviceId)
+    case .responsibleKeyId:
+      return .uuid(responsibleKeyId)
+    case .verdict:
+      return .enum(verdict)
+    case .reason:
+      return .enum(reason)
+    case .ipProtocolNumber:
+      return .int(ipProtocolNumber)
+    case .hostname:
+      return .string(hostname)
+    case .ipAddress:
+      return .string(ipAddress)
+    case .url:
+      return .string(url)
+    case .appBundleId:
+      return .string(appBundleId)
+    case .count:
+      return .int(count)
+    case .createdAt:
+      return .date(createdAt)
+    case .appDescriptor:
+      // Current.logger
+      //   .error("unexpected postgresData access of sideLoadable NetworkDecision.appDescriptor")
+      return .null
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .deviceId: .uuid(deviceId),
-//       .responsibleKeyId: .uuid(responsibleKeyId),
-//       .verdict: .enum(verdict),
-//       .reason: .enum(reason),
-//       .ipProtocolNumber: .int(ipProtocolNumber),
-//       .hostname: .string(hostname),
-//       .ipAddress: .string(ipAddress),
-//       .url: .string(url),
-//       .appBundleId: .string(appBundleId),
-//       .count: .int(count),
-//       .createdAt: .date(createdAt),
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(deviceId),
+      .responsibleKeyId: .uuid(responsibleKeyId),
+      .verdict: .enum(verdict),
+      .reason: .enum(reason),
+      .ipProtocolNumber: .int(ipProtocolNumber),
+      .hostname: .string(hostname),
+      .ipAddress: .string(ipAddress),
+      .url: .string(url),
+      .appBundleId: .string(appBundleId),
+      .count: .int(count),
+      .createdAt: .date(createdAt),
+    ]
+  }
+}
 
 // extension Release: Model {
 //   public static let tableName = M35.tableName
@@ -562,44 +562,44 @@ extension Screenshot: Model {
 //   }
 // }
 
-// extension UnlockRequest: Model {
-//   public static let tableName = M16.tableName
-//   public typealias ColumnName = CodingKeys
+extension UnlockRequest: Model {
+  public static let tableName = M5.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .networkDecisionId:
-//       return .uuid(networkDecisionId)
-//     case .deviceId:
-//       return .uuid(deviceId)
-//     case .status:
-//       return .enum(status)
-//     case .requestComment:
-//       return .string(requestComment)
-//     case .responseComment:
-//       return .string(responseComment)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .networkDecisionId:
+      return .uuid(networkDecisionId)
+    case .deviceId:
+      return .uuid(deviceId)
+    case .status:
+      return .enum(status)
+    case .requestComment:
+      return .string(requestComment)
+    case .responseComment:
+      return .string(responseComment)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .networkDecisionId: .uuid(networkDecisionId),
-//       .deviceId: .uuid(deviceId),
-//       .status: .enum(status),
-//       .requestComment: .string(requestComment),
-//       .responseComment: .string(responseComment),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .networkDecisionId: .uuid(networkDecisionId),
+      .deviceId: .uuid(deviceId),
+      .status: .enum(status),
+      .requestComment: .string(requestComment),
+      .responseComment: .string(responseComment),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
 
 extension User: Model {
   public static let tableName = M3.tableName

@@ -10,8 +10,23 @@ protocol HasCreatedAt {
   var createdAt: Date { get set }
 }
 
+protocol HasOptionalDeletedAt {
+  var deletedAt: Date? { get set }
+}
+
+extension HasOptionalDeletedAt {
+  var isDeleted: Bool {
+    guard let deletedAt = deletedAt else { return false }
+    return deletedAt < Current.date()
+  }
+
+  var notDeleted: Bool { !isDeleted }
+}
+
 extension KeystrokeLine: HasCreatedAt {}
 extension Screenshot: HasCreatedAt {}
+extension KeystrokeLine: HasOptionalDeletedAt {}
+extension Screenshot: HasOptionalDeletedAt {}
 
 extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
   var createdAt: Date {
@@ -21,6 +36,12 @@ extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
     case .right(let model):
       return model.createdAt
     }
+  }
+}
+
+extension Either where Left: HasOptionalDeletedAt, Right: HasOptionalDeletedAt {
+  var isDeleted: Bool {
+    left?.isDeleted ?? right?.isDeleted ?? false
   }
 }
 
