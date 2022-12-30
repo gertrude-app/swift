@@ -51,8 +51,6 @@ private func derive(
   if let sharedType = type as? SharedType.Type {
     if depth == 0 {
       derivingRootSharedType = true
-      // return sharedType.ts.replacingOccurrences(of: "__self__", with: "\(type)")
-      // return derive(sharedType, &named, 1).replacingOccurrences(of: "__self__", with: "\(type)")
     } else {
       return sharedType.__typeName
     }

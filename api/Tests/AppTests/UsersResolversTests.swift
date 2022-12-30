@@ -7,8 +7,8 @@ import XExpect
 final class UsersResolversTests: AppTestCase {
   func testDeleteUser() async throws {
     let user = try await Entities.user()
-    let output = try await DeleteUser.resolve(
-      with: user.id.rawValue,
+    let output = try await DeleteEntity.resolve(
+      with: .init(id: user.id.rawValue, type: "User"),
       in: user.admin.context
     )
     expect(output).toEqual(.success)
