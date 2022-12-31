@@ -3,9 +3,9 @@ import XCore
 import XCTest
 import XExpect
 
-@testable import App
+@testable import Api
 
-final class DashboardAdminResolverTests: AppTestCase {
+final class DashboardAdminResolverTests: ApiTestCase {
 
   func testCreateBillingPortalSessionHappyPath() async throws {
     let admin = try await Entities.admin {

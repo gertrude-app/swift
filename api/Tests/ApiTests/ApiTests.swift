@@ -4,12 +4,13 @@ import TypescriptPairQL
 import XCTest
 import XExpect
 
-@testable import App
+@testable import Api
 
+// todo, move me now
 extension AppScope: TypescriptRepresentable {}
 extension AppScope.Single: TypescriptRepresentable {}
 
-final class AppTests: AppTestCase {
+final class ApiTests: ApiTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
   func testKeyTsCodegen_isolate() {

@@ -23,7 +23,7 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "App",
+      name: "Api",
       dependencies: [
         .product(name: "Vapor", package: "vapor"),
         .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
@@ -45,9 +45,9 @@ let package = Package(
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
       ]
     ),
-    .executableTarget(name: "Run", dependencies: [.target(name: "App")]),
-    .testTarget(name: "AppTests", dependencies: [
-      .target(name: "App"),
+    .executableTarget(name: "Run", dependencies: [.target(name: "Api")]),
+    .testTarget(name: "ApiTests", dependencies: [
+      .target(name: "Api"),
       .product(name: "XExpect", package: "x-expect"),
       .product(name: "XCTVapor", package: "vapor"), // do i need this?
       .product(name: "DuetMock", package: "duet"),

@@ -1,6 +1,6 @@
 import DuetMock
 
-@testable import App
+@testable import Api
 
 extension User: Mock {
   public static var mock: User {

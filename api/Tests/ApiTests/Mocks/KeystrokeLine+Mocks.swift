@@ -1,7 +1,7 @@
 import DuetMock
 import Foundation
 
-@testable import App
+@testable import Api
 
 extension KeystrokeLine {
   static var mock: KeystrokeLine {

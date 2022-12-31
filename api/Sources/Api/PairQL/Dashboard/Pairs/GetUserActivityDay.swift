@@ -5,8 +5,8 @@ import Vapor
 
 public enum UserActivity {
   public struct Screenshot: TypescriptNestable {
-    var id: App.Screenshot.Id
-    var ids: [App.Screenshot.Id]
+    var id: Api.Screenshot.Id
+    var ids: [Api.Screenshot.Id]
     var url: String
     var width: Int
     var height: Int

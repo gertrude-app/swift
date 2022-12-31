@@ -47,13 +47,13 @@ struct GetAdminKeychains: TypescriptPair {
         Key.IpAddress
       >
 
-      let id: App.Key.Id
+      let id: Api.Key.Id
       let comment: String?
       let expiration: Date?
       let key: SharedKey
     }
 
-    let id: App.Keychain.Id
+    let id: Api.Keychain.Id
     let name: String
     let description: String?
     let isPublic: Bool
@@ -78,7 +78,7 @@ extension GetAdminKeychains: NoInputResolver {
 // extensions
 
 extension GetAdminKeychains.Keychain {
-  init(from model: App.Keychain, in context: AdminContext) async throws {
+  init(from model: Api.Keychain, in context: AdminContext) async throws {
     let keys = try await model.keys()
     id = model.id
     name = model.name
@@ -90,7 +90,7 @@ extension GetAdminKeychains.Keychain {
 }
 
 extension GetAdminKeychains.Keychain.Key {
-  init(from model: App.Key) {
+  init(from model: Api.Key) {
     let sharedKey: SharedKey
     switch model.key {
     case .domain(let domain, let scope):

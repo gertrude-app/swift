@@ -2,9 +2,9 @@ import DuetSQL
 import XCTest
 import XExpect
 
-@testable import App
+@testable import Api
 
-final class UsersResolversTests: AppTestCase {
+final class UsersResolversTests: ApiTestCase {
   func testDeleteUser() async throws {
     let user = try await Entities.user()
     let output = try await DeleteEntity.resolve(

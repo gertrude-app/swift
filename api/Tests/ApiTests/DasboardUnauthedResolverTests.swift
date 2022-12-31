@@ -4,9 +4,9 @@ import XCTest
 import XExpect
 import XStripe
 
-@testable import App
+@testable import Api
 
-final class DasboardUnauthedResolverTests: AppTestCase {
+final class DasboardUnauthedResolverTests: ApiTestCase {
   let context = DashboardContext(dashboardUrl: "/")
 
   func testAllowingSignupsReturnsFalseWhenExceedingNumAllowed() async throws {

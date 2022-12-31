@@ -7,14 +7,14 @@ struct GetUser: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Device: Equatable, Codable, TypescriptRepresentable {
-    let id: App.Device.Id
+    let id: Api.Device.Id
     let isOnline: Bool
     let modelFamily: DeviceModelFamily
     let modelTitle: String
   }
 
   struct Keychain: Equatable, Codable, TypescriptRepresentable {
-    let id: App.Keychain.Id
+    let id: Api.Keychain.Id
     let authorId: Admin.Id
     let name: String
     let description: String?
@@ -49,7 +49,7 @@ extension GetUser: Resolver {
 }
 
 extension GetUser.Keychain {
-  init(from keychain: App.Keychain) async throws {
+  init(from keychain: Api.Keychain) async throws {
     let numKeys = try await Current.db.count(
       Key.self,
       where: .keychainId == keychain.id,

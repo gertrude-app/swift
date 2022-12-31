@@ -1,6 +1,6 @@
 import DuetMock
 
-@testable import App
+@testable import Api
 
 extension AppBundleId {
   static var mock: AppBundleId {

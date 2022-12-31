@@ -7,21 +7,21 @@ struct GetDashboardWidgets: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct User: TypescriptNestable {
-    var id: App.User.Id
+    var id: Api.User.Id
     var userName: String
     var isOnline: Bool
   }
 
   struct UserActivitySummary: TypescriptNestable {
-    var id: App.User.Id
+    var id: Api.User.Id
     var name: String
     var numUnreviewed: Int
     var numReviewed: Int
   }
 
   struct UnlockRequest: TypescriptNestable {
-    var id: App.UnlockRequest.Id
-    var userId: App.User.Id
+    var id: Api.UnlockRequest.Id
+    var userId: Api.User.Id
     var userName: String
     var target: String
     var comment: String?
@@ -47,7 +47,7 @@ struct GetDashboardWidgets: TypescriptPair {
 
 extension GetDashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let users = try await Current.db.query(App.User.self)
+    let users = try await Current.db.query(Api.User.self)
       .where(.adminId == context.admin.id)
       .all()
 
@@ -64,7 +64,7 @@ extension GetDashboardWidgets: NoInputResolver {
       .where(.userId |=| users.map(\.id))
       .all()
 
-    let unlockRequests = try await Current.db.query(App.UnlockRequest.self)
+    let unlockRequests = try await Current.db.query(Api.UnlockRequest.self)
       .where(.deviceId |=| devices.map(\.id))
       .where(.status == .enum(RequestStatus.pending))
       .all()
@@ -73,7 +73,7 @@ extension GetDashboardWidgets: NoInputResolver {
       .where(.id |=| unlockRequests.map(\.networkDecisionId))
       .all()
 
-    let deviceToUserMap: [Device.Id: App.User] = devices.reduce(into: [:]) { map, device in
+    let deviceToUserMap: [Device.Id: Api.User] = devices.reduce(into: [:]) { map, device in
       map[device.id] = users.first(where: { $0.id == device.userId })
     }
 
@@ -122,7 +122,7 @@ extension GetDashboardWidgets: NoInputResolver {
 // helpers
 
 func mapUnlockRequests(
-  unlockRequests: [App.UnlockRequest],
+  unlockRequests: [Api.UnlockRequest],
   map: [Device.Id: User],
   networkDecisions: [NetworkDecision]
 ) -> [GetDashboardWidgets.UnlockRequest] {

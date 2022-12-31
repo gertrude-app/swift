@@ -1,4 +1,4 @@
-@testable import App
+@testable import Api
 
 @dynamicMemberLookup struct UserEntities {
   let model: User

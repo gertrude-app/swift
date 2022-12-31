@@ -1,6 +1,6 @@
 import DuetMock
 
-@testable import App
+@testable import Api
 
 extension AdminNotification: Mock {
   public static var mock: AdminNotification {

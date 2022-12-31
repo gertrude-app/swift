@@ -1,7 +1,7 @@
 import XCTest
 import XExpect
 
-@testable import App
+@testable import Api
 
 class EphemeralTests: XCTestCase {
   func testAddingAndRetrievingToken() async {

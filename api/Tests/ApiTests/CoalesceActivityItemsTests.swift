@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import App
+@testable import Api
 
 class CoalesceMonitoringItemsTests: XCTestCase {
   func testAlternatingItemsDontCoalesce() {

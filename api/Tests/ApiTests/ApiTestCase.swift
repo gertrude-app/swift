@@ -4,9 +4,9 @@ import XCTest
 import XSendGrid
 import XSlack
 
-@testable import App
+@testable import Api
 
-class AppTestCase: XCTestCase {
+class ApiTestCase: XCTestCase {
   static var app: Application!
 
   struct Sent {
