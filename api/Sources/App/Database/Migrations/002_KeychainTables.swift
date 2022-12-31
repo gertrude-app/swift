@@ -51,9 +51,9 @@ struct KeychainTables: GertieMigration {
   func upKeys(_ sql: SQLDatabase) async throws {
     try await sql.create(table: Key.M2.self) {
       Column(.id, .uuid, .primaryKey)
-      Column(Key.M2.key, .jsonb)
-      Column(Key.M2.comment, .text)
       Column(Key.M2.keychainId, .uuid)
+      Column(Key.M2.key, .jsonb)
+      Column(Key.M2.comment, .text, .nullable)
       Column(.createdAt, .timestampWithTimezone)
       Column(.updatedAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)

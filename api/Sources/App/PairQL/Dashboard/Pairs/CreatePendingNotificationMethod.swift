@@ -41,11 +41,11 @@ extension CreatePendingNotificationMethod: Resolver {
 extension NotificationMethod {
   init(from: CreatePendingNotificationMethod.Input) {
     switch from {
-    case .a(let input):
+    case .t1(let input):
       self = .email(email: input.email)
-    case .b(let input):
+    case .t2(let input):
       self = .text(phoneNumber: input.phoneNumber)
-    case .c(let input):
+    case .t3(let input):
       self = .slack(
         channelId: input.channelId,
         channelName: input.channelName,

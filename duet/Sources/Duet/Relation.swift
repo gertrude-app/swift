@@ -75,6 +75,15 @@ public enum Parent<P: Duet.Identifiable> {
       return loaded
     }
   }
+
+  public mutating func useLoaded(or load: () async throws -> P) async throws -> P {
+    guard case .loaded(let loaded) = self else {
+      let model = try await load()
+      self = .loaded(model)
+      return model
+    }
+    return loaded
+  }
 }
 
 public enum OptionalParent<P: Duet.Identifiable> {

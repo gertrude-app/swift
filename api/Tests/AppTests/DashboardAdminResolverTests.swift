@@ -63,16 +63,16 @@ final class DashboardAdminResolverTests: AppTestCase {
 
     // date timezone issues preventing checking whole struct equality
     expect(output.items).toHaveCount(2)
-    expect(output.items[0].b?.id).toEqual(keystrokeLine.id)
-    expect(output.items[0].b?.ids).toEqual([keystrokeLine.id])
-    expect(output.items[0].b?.appName).toEqual(keystrokeLine.appName)
-    expect(output.items[0].b?.line).toEqual(keystrokeLine.line)
+    expect(output.items[0].t2?.id).toEqual(keystrokeLine.id)
+    expect(output.items[0].t2?.ids).toEqual([keystrokeLine.id])
+    expect(output.items[0].t2?.appName).toEqual(keystrokeLine.appName)
+    expect(output.items[0].t2?.line).toEqual(keystrokeLine.line)
 
-    expect(output.items[1].a?.id).toEqual(screenshot.id)
-    expect(output.items[1].a?.ids).toEqual([screenshot.id])
-    expect(output.items[1].a?.url).toEqual(screenshot.url)
-    expect(output.items[1].a?.width).toEqual(screenshot.width)
-    expect(output.items[1].a?.height).toEqual(screenshot.height)
+    expect(output.items[1].t1?.id).toEqual(screenshot.id)
+    expect(output.items[1].t1?.ids).toEqual([screenshot.id])
+    expect(output.items[1].t1?.url).toEqual(screenshot.url)
+    expect(output.items[1].t1?.width).toEqual(screenshot.width)
+    expect(output.items[1].t1?.height).toEqual(screenshot.height)
   }
 
   func testGetAdminWithNotifications() async throws {
@@ -97,7 +97,7 @@ final class DashboardAdminResolverTests: AppTestCase {
         trigger: notification.trigger,
         methodId: notification.methodId
       )],
-      verifiedNotificationMethods: [.a(.init(id: method.id, email: "blob@blob.com"))]
+      verifiedNotificationMethods: [.t1(.init(id: method.id, email: "blob@blob.com"))]
     ))
   }
 
@@ -107,7 +107,7 @@ final class DashboardAdminResolverTests: AppTestCase {
     let (id, _) = mockUUIDs()
 
     let output = try await CreatePendingNotificationMethod.resolve(
-      with: .b(.init(phoneNumber: "1234567890")),
+      with: .t2(.init(phoneNumber: "1234567890")),
       in: context(admin)
     )
 
@@ -145,7 +145,7 @@ final class DashboardAdminResolverTests: AppTestCase {
     let (id, _) = mockUUIDs()
 
     let output = try await CreatePendingNotificationMethod.resolve(
-      with: .c(.init(token: "xoxb-123", channelId: "C123", channelName: "Foo")),
+      with: .t3(.init(token: "xoxb-123", channelId: "C123", channelName: "Foo")),
       in: context(admin)
     )
 
@@ -184,7 +184,7 @@ final class DashboardAdminResolverTests: AppTestCase {
     let (id, _) = mockUUIDs()
 
     let output = try await CreatePendingNotificationMethod.resolve(
-      with: .a(.init(email: "blob@blob.com")),
+      with: .t1(.init(email: "blob@blob.com")),
       in: context(admin)
     )
 
@@ -290,6 +290,27 @@ final class DashboardAdminResolverTests: AppTestCase {
     ])
   }
 
+  func testGetAdminKeychains() async throws {
+    let admin = try await Entities.admin().withKeychain()
+    let listOutput = try await GetAdminKeychains.resolve(in: context(admin))
+    let singleOutput = try await GetAdminKeychain.resolve(
+      with: admin.keychain.id,
+      in: context(admin)
+    )
+
+    let expected = GetAdminKeychains.Keychain(
+      id: admin.keychain.id,
+      name: admin.keychain.name,
+      description: admin.keychain.description,
+      isPublic: admin.keychain.isPublic,
+      authorId: admin.id,
+      keys: [.init(from: admin.key)]
+    )
+
+    expect(listOutput).toEqual([expected])
+    expect(singleOutput).toEqual(expected)
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
@@ -297,6 +318,10 @@ final class DashboardAdminResolverTests: AppTestCase {
   }
 
   private func context(_ admin: AdminEntities) -> AdminContext {
+    .init(dashboardUrl: "", admin: admin.model)
+  }
+
+  private func context(_ admin: AdminWithKeychainEntities) -> AdminContext {
     .init(dashboardUrl: "", admin: admin.model)
   }
 }

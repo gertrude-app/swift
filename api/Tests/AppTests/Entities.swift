@@ -32,6 +32,21 @@
   }
 }
 
+@dynamicMemberLookup struct AdminWithKeychainEntities {
+  let model: Admin
+  let token: AdminToken
+  let keychain: Keychain
+  let key: Key
+
+  var context: AdminContext {
+    .init(dashboardUrl: "/", admin: model)
+  }
+
+  subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
+    model[keyPath: keyPath]
+  }
+}
+
 enum Entities {
   static func admin(
     config: (inout Admin) -> Void = { _ in }
@@ -52,6 +67,21 @@ enum Entities {
     })
     let token = try await Current.db.create(UserToken(userId: user.id))
     return UserEntities(model: user, token: token, admin: admin)
+  }
+}
+
+extension AdminEntities {
+  func withKeychain(
+    config: (inout Keychain, inout Key) -> Void = { _, _ in }
+  ) async throws -> AdminWithKeychainEntities {
+    var keychain = Keychain.random
+    keychain.authorId = model.id
+    var key = Key.random
+    key.keychainId = keychain.id
+    config(&keychain, &key)
+    try await Current.db.create(keychain)
+    try await Current.db.create(key)
+    return .init(model: model, token: token, keychain: keychain, key: key)
   }
 }
 

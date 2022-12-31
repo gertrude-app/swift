@@ -26,3 +26,13 @@ final class Key: Codable {
     self.deletedAt = deletedAt
   }
 }
+
+// loaders
+
+extension Key {
+  func keychain() async throws -> Keychain {
+    try await keychain.useLoaded(or: {
+      try await Current.db.find(keychainId)
+    })
+  }
+}

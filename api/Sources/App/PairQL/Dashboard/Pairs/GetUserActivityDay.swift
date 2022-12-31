@@ -78,15 +78,15 @@ func coalesce(
   for item in sorted {
     switch item {
     case .left(let screenshot):
-      coalesced.append(.a(.init(from: screenshot)))
+      coalesced.append(.t1(.init(from: screenshot)))
     case .right(let keystroke):
-      if var coalescedKeystroke = coalesced.last?.b,
+      if var coalescedKeystroke = coalesced.last?.t2,
          keystroke.appName == coalescedKeystroke.appName {
         coalescedKeystroke.line = "\(keystroke.line)\n\(coalescedKeystroke.line)"
         coalescedKeystroke.ids.append(keystroke.id)
-        coalesced[coalesced.count - 1] = .b(coalescedKeystroke)
+        coalesced[coalesced.count - 1] = .t2(coalescedKeystroke)
       } else {
-        coalesced.append(.b(.init(from: keystroke)))
+        coalesced.append(.t2(.init(from: keystroke)))
       }
     }
   }
@@ -97,8 +97,8 @@ func coalesce(
 // extensions
 
 extension Union2: NamedType where
-  A == UserActivity.Screenshot,
-  B == UserActivity.CoalescedKeystrokeLine {
+  T1 == UserActivity.Screenshot,
+  T2 == UserActivity.CoalescedKeystrokeLine {
   public static var __typeName: String { "Item" }
 }
 

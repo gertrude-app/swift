@@ -1,12 +1,32 @@
 import MacAppRoute
+import Shared
 import TypescriptPairQL
 import XCTest
 import XExpect
 
 @testable import App
 
+extension AppScope: TypescriptRepresentable {}
+extension AppScope.Single: TypescriptRepresentable {}
+
 final class AppTests: AppTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+
+  func testKeyTsCodegen_isolate() {
+    expect(AppScope.ts).toEqual(
+      """
+      export type __self__ =
+        | { type: `unrestricted`  }
+        | { type: `webBrowsers`  }
+        | {
+            type: `single`;
+            single:
+              | { type: `bundleId` bundleId: string; }
+              | { type: `identifiedAppSlug` identifiedAppSlug: string; }
+          }
+      """
+    )
+  }
 
   func testCodableRoundTrippingOfTaggedIds() throws {
     struct WithTagged: TypescriptPairInput {

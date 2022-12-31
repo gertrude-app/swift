@@ -2,6 +2,22 @@ public enum AppScope: Equatable, Hashable, Codable {
   case unrestricted
   case webBrowsers
   case single(Single)
+
+  public static var customTs: String? {
+    let single = Single.customTs?
+      .replacingOccurrences(of: "export type __self__ =\n", with: "\n")
+      .replacingOccurrences(of: "|", with: "      |")
+
+    return """
+    export type __self__ =
+      | { type: `unrestricted`  }
+      | { type: `webBrowsers`  }
+      | {
+          type: `single`;
+          single:\(single ?? "")
+        }
+    """
+  }
 }
 
 // extensions
@@ -10,6 +26,14 @@ public extension AppScope {
   enum Single: Equatable, Hashable, Codable {
     case identifiedAppSlug(String)
     case bundleId(String)
+
+    public static var customTs: String? {
+      """
+      export type __self__ =
+        | { type: `bundleId` bundleId: string; }
+        | { type: `identifiedAppSlug` identifiedAppSlug: string; }
+      """
+    }
   }
 
   func permits(_ app: AppDescriptor) -> Bool {

@@ -55,16 +55,16 @@ extension GetAdmin: NoInputResolver {
       verifiedNotificationMethods: methods.map { verifiedMethod in
         switch verifiedMethod.method {
         case .email(let email):
-          return .a(.init(id: verifiedMethod.id, email: .init(email)))
+          return .t1(.init(id: verifiedMethod.id, email: .init(email)))
         case .slack(let channelId, let channelName, let token):
-          return .b(.init(
+          return .t2(.init(
             id: verifiedMethod.id,
             channelId: channelId,
             channelName: channelName,
             token: token
           ))
         case .text(let phoneNumber):
-          return .c(.init(id: verifiedMethod.id, phoneNumber: phoneNumber))
+          return .t3(.init(id: verifiedMethod.id, phoneNumber: phoneNumber))
         }
       }
     )

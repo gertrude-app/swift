@@ -16,11 +16,6 @@ struct DeleteEntity: TypescriptPair {
 extension DeleteEntity: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     switch input.type {
-    case "User":
-      try await Current.db.query(User.self)
-        .where(.id == input.id)
-        .where(.adminId == context.admin.id)
-        .delete()
 
     case "AdminNotification":
       try await Current.db.query(AdminNotification.self)
@@ -30,6 +25,26 @@ extension DeleteEntity: Resolver {
 
     case "AdminVerifiedNotificationMethod":
       try await Current.db.query(AdminVerifiedNotificationMethod.self)
+        .where(.id == input.id)
+        .where(.adminId == context.admin.id)
+        .delete()
+
+    case "Key":
+      let key = try await Current.db.find(Key.Id(input.id))
+      let keychain = try await key.keychain()
+      guard keychain.authorId == context.admin.id else {
+        throw Abort(.unauthorized)
+      }
+      try await Current.db.delete(key.id)
+
+    case "Keychain":
+      try await Current.db.query(Keychain.self)
+        .where(.id == input.id)
+        .where(.authorId == context.admin.id)
+        .delete()
+
+    case "User":
+      try await Current.db.query(User.self)
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .delete()
@@ -49,9 +64,11 @@ extension DeleteEntity.Input {
     export interface __self__ {
       id: UUID;
       type:
-        | `User`
         | `AdminNotification`
-        | `AdminVerifiedNotificationMethod`;
+        | `AdminVerifiedNotificationMethod`
+        | `Key`
+        | `Keychain`
+        | `User`;
     }
   """
 }

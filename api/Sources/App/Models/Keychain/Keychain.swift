@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 
 final class Keychain: Codable {
   var id: Id
@@ -11,8 +11,8 @@ final class Keychain: Codable {
   var deletedAt: Date?
 
   var author = Parent<Admin>.notLoaded
-  // var keys = Children<KeyRecord>.notLoaded
-  // var users = Siblings<User>.notLoaded
+  var keys = Children<Key>.notLoaded
+  var users = Siblings<User>.notLoaded
 
   init(
     id: Id = .init(),
@@ -26,5 +26,17 @@ final class Keychain: Codable {
     self.name = name
     self.isPublic = isPublic
     self.description = description
+  }
+}
+
+// loaders
+
+extension Keychain {
+  func keys() async throws -> [Key] {
+    try await keys.useLoaded(or: {
+      try await Current.db.query(Key.self)
+        .where(.keychainId == id)
+        .all()
+    })
   }
 }

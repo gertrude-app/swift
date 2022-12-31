@@ -2,27 +2,47 @@ import PairQL
 import Runtime
 
 extension Union2: TypescriptRepresentable where
-  A: TypescriptRepresentable,
-  B: TypescriptRepresentable {
+  T1: TypescriptRepresentable,
+  T2: TypescriptRepresentable {
   public static var customTs: String? {
     """
     export type __self__ =
-      | { type: "\(A.self)"; value: \(unnest(A.ts)) }
-      | { type: "\(B.self)"; value: \(unnest(B.ts)) }
+      | { type: "\(T1.self)"; value: \(unnest(T1.ts)) }
+      | { type: "\(T2.self)"; value: \(unnest(T2.ts)) }
     """
   }
 }
 
 extension Union3: TypescriptRepresentable where
-  A: TypescriptRepresentable,
-  B: TypescriptRepresentable,
-  C: TypescriptRepresentable {
+  T1: TypescriptRepresentable,
+  T2: TypescriptRepresentable,
+  T3: TypescriptRepresentable {
   public static var customTs: String? {
     """
     export type __self__ =
-      | { type: "\(A.self)"; value: \(unnest(A.ts)) }
-      | { type: "\(B.self)"; value: \(unnest(B.ts)) }
-      | { type: "\(C.self)"; value: \(unnest(C.ts)) }
+      | { type: "\(T1.self)"; value: \(unnest(T1.ts)) }
+      | { type: "\(T2.self)"; value: \(unnest(T2.ts)) }
+      | { type: "\(T3.self)"; value: \(unnest(T3.ts)) }
+    """
+  }
+}
+
+extension Union6: TypescriptRepresentable where
+  T1: TypescriptRepresentable,
+  T2: TypescriptRepresentable,
+  T3: TypescriptRepresentable,
+  T4: TypescriptRepresentable,
+  T5: TypescriptRepresentable,
+  T6: TypescriptRepresentable {
+  public static var customTs: String? {
+    """
+    export type __self__ =
+      | { type: "\(T1.self)"; value: \(unnest(T1.ts)) }
+      | { type: "\(T2.self)"; value: \(unnest(T2.ts)) }
+      | { type: "\(T3.self)"; value: \(unnest(T3.ts)) }
+      | { type: "\(T4.self)"; value: \(unnest(T4.ts)) }
+      | { type: "\(T5.self)"; value: \(unnest(T5.ts)) }
+      | { type: "\(T6.self)"; value: \(unnest(T6.ts)) }
     """
   }
 }

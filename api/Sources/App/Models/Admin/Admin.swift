@@ -35,6 +35,14 @@ final class Admin: Codable {
 // loaders
 
 extension Admin {
+  func keychains() async throws -> [Keychain] {
+    try await keychains.useLoaded(or: {
+      try await Current.db.query(Keychain.self)
+        .where(.authorId == id)
+        .all()
+    })
+  }
+
   func users() async throws -> [User] {
     try await users.useLoaded(or: {
       try await Current.db.query(User.self)
