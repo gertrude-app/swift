@@ -396,7 +396,7 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(output.status).toEqual(request.status)
   }
 
-  func testGetUnlockRequest() async throws {
+  func testGetUnlockRequests() async throws {
     let user = try await Entities.user().withDevice()
 
     let decision = NetworkDecision.random
@@ -411,16 +411,19 @@ final class DashboardAdminResolverTests: ApiTestCase {
     request.networkDecisionId = decision.id
     try await Current.db.create(request)
 
-    let output = try await GetUnlockRequest.resolve(
+    let single = try await GetUnlockRequest.resolve(
       with: request.id,
       in: context(user.admin)
     )
 
-    expect(output.id).toEqual(request.id)
-    expect(output.userId).toEqual(user.id)
-    expect(output.userName).toEqual(user.name)
-    expect(output.requestComment).toEqual("please dad")
-    expect(output.appBundleId).toEqual("com.rofl.biz")
+    expect(single.id).toEqual(request.id)
+    expect(single.userId).toEqual(user.id)
+    expect(single.userName).toEqual(user.name)
+    expect(single.requestComment).toEqual("please dad")
+    expect(single.appBundleId).toEqual("com.rofl.biz")
+
+    let list = try await GetUnlockRequests.resolve(in: context(user.admin))
+    expect(list).toEqual([single])
   }
 
   // helpers

@@ -29,6 +29,12 @@ struct GetUnlockRequest: TypescriptPair {
 extension GetUnlockRequest: Resolver {
   static func resolve(with id: Input, in context: AdminContext) async throws -> Output {
     let request = try await Current.db.find(id)
+    return try await Output(from: request, in: context)
+  }
+}
+
+extension GetUnlockRequest.Output {
+  init(from request: UnlockRequest, in context: AdminContext) async throws {
     let device = try await request.device()
     let decision = try await request.networkDecision()
     let user = try await context.verifiedUser(from: device.userId)
@@ -40,8 +46,8 @@ extension GetUnlockRequest: Resolver {
       app = factory.make(bundleId: bundleId)
     }
 
-    return .init(
-      id: id,
+    self.init(
+      id: request.id,
       userId: user.id,
       userName: user.name,
       status: request.status,
