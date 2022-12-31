@@ -454,12 +454,39 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(retrieved.status).toEqual(.accepted)
 
     // @TODO: test that mac app is notified via websocket
-    // let received = Connection.ApiToApp.Message.SuspendFilter.load(
-    //   fromJson: connectedApp.webSocket.sent.first ?? ""
-    // )
+  }
 
-    // XCTAssertEqual(received?.suspension.scope, .webBrowsers)
-    // XCTAssertEqual(received?.suspension.duration, 333)
+  func testUpdateUnlockRequest() async throws {
+    let user = try await Entities.user().withDevice()
+
+    let decision = NetworkDecision.random
+    decision.deviceId = user.device.id
+    decision.appBundleId = "com.rofl.biz"
+    try await Current.db.create(decision)
+
+    let request = UnlockRequest.mock
+    request.deviceId = user.device.id
+    request.status = .pending
+    request.requestComment = "please dad"
+    request.networkDecisionId = decision.id
+    try await Current.db.create(request)
+
+    let output = try await UpdateUnlockRequest.resolve(
+      with: UpdateUnlockRequest.Input(
+        id: request.id,
+        responseComment: "no way",
+        status: .rejected
+      ),
+      in: context(user.admin)
+    )
+
+    expect(output).toEqual(.success)
+
+    let retrieved = try await Current.db.find(request.id)
+    expect(retrieved.responseComment).toEqual("no way")
+    expect(retrieved.status).toEqual(.rejected)
+
+    // @TODO: test that mac app is notified via websocket
   }
 
   // helpers

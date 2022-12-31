@@ -73,6 +73,7 @@ struct AdminContext {
   let dashboardUrl: String
   let admin: Admin
 
+  @discardableResult
   func verifiedUser(from id: User.Id) async throws -> User {
     try await Current.db.query(User.self)
       .where(.id == id)
