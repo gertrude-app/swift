@@ -418,10 +418,6 @@ extension NetworkDecision: Model {
       return .int(count)
     case .createdAt:
       return .date(createdAt)
-    case .appDescriptor:
-      // Current.logger
-      //   .error("unexpected postgresData access of sideLoadable NetworkDecision.appDescriptor")
-      return .null
     }
   }
 

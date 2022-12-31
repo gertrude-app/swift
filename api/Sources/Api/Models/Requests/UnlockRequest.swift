@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 import Shared
 
 final class UnlockRequest: Codable {
@@ -28,5 +28,25 @@ final class UnlockRequest: Codable {
     self.status = status
     self.requestComment = requestComment
     self.responseComment = responseComment
+  }
+}
+
+// loaders
+
+extension UnlockRequest {
+  func networkDecision() async throws -> NetworkDecision {
+    try await networkDecision.useLoaded(or: {
+      try await Current.db.query(NetworkDecision.self)
+        .where(.id == networkDecisionId)
+        .first()
+    })
+  }
+
+  func device() async throws -> Device {
+    try await device.useLoaded(or: {
+      try await Current.db.query(Device.self)
+        .where(.id == deviceId)
+        .first()
+    })
   }
 }

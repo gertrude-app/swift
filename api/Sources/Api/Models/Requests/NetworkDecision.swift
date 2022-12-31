@@ -14,7 +14,6 @@ final class NetworkDecision: Codable {
   var appBundleId: String?
   var count: Int
   var createdAt: Date
-  var appDescriptor: AppDescriptor?
 
   var device = Parent<Device>.notLoaded
   var responsibleKey = OptionalParent<Key>.notLoaded

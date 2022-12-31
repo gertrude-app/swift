@@ -396,6 +396,33 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(output.status).toEqual(request.status)
   }
 
+  func testGetUnlockRequest() async throws {
+    let user = try await Entities.user().withDevice()
+
+    let decision = NetworkDecision.random
+    decision.deviceId = user.device.id
+    decision.appBundleId = "com.rofl.biz"
+    try await Current.db.create(decision)
+
+    let request = UnlockRequest.mock
+    request.deviceId = user.device.id
+    request.status = .pending
+    request.requestComment = "please dad"
+    request.networkDecisionId = decision.id
+    try await Current.db.create(request)
+
+    let output = try await GetUnlockRequest.resolve(
+      with: request.id,
+      in: context(user.admin)
+    )
+
+    expect(output.id).toEqual(request.id)
+    expect(output.userId).toEqual(user.id)
+    expect(output.userName).toEqual(user.name)
+    expect(output.requestComment).toEqual("please dad")
+    expect(output.appBundleId).toEqual("com.rofl.biz")
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {

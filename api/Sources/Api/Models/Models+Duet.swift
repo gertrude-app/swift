@@ -244,7 +244,6 @@ extension NetworkDecision {
     case appBundleId
     case count
     case createdAt
-    case appDescriptor
   }
 }
 
