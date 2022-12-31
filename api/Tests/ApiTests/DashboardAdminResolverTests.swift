@@ -333,6 +333,51 @@ final class DashboardAdminResolverTests: ApiTestCase {
     ))
   }
 
+  func testSaveExistingKeychain() async throws {
+    let admin = try await Entities.admin().withKeychain()
+
+    let output = try await SaveKeychain.resolve(
+      with: SaveKeychain.Input(
+        isNew: false,
+        id: admin.keychain.id,
+        name: "new name",
+        description: "new description",
+        isPublic: true
+      ),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.success)
+
+    let retrieved = try await Current.db.find(admin.keychain.id)
+    expect(retrieved.name).toEqual("new name")
+    expect(retrieved.description).toEqual("new description")
+    expect(retrieved.isPublic).toEqual(true)
+  }
+
+  func testSaveNewKeychain() async throws {
+    let admin = try await Entities.admin()
+    let id = Keychain.Id()
+
+    let output = try await SaveKeychain.resolve(
+      with: SaveKeychain.Input(
+        isNew: true,
+        id: id,
+        name: "some name",
+        description: "some description",
+        isPublic: false
+      ),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.success)
+
+    let retrieved = try await Current.db.find(id)
+    expect(retrieved.name).toEqual("some name")
+    expect(retrieved.description).toEqual("some description")
+    expect(retrieved.isPublic).toEqual(false)
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
