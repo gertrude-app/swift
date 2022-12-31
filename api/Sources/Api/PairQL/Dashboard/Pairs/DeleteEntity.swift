@@ -29,6 +29,11 @@ extension DeleteEntity: Resolver {
         .where(.adminId == context.admin.id)
         .delete()
 
+    case "Device":
+      let device = try await Current.db.find(Device.Id(input.id))
+      try await context.verifiedUser(from: device.userId)
+      try await Current.db.delete(device.id)
+
     case "Key":
       let key = try await Current.db.find(Key.Id(input.id))
       let keychain = try await key.keychain()
@@ -66,6 +71,7 @@ extension DeleteEntity.Input {
       type:
         | `AdminNotification`
         | `AdminVerifiedNotificationMethod`
+        | `Device`
         | `Key`
         | `Keychain`
         | `User`;

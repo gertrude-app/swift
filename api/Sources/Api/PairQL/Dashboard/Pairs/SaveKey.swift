@@ -18,6 +18,6 @@ struct SaveKey: TypescriptPair {
 
 extension SaveKey: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    fatalError()
+    fatalError("todo")
   }
 }
