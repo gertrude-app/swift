@@ -489,6 +489,28 @@ final class DashboardAdminResolverTests: ApiTestCase {
     // @TODO: test that mac app is notified via websocket
   }
 
+  func testDeleteActivityItems() async throws {
+    let user = try await Entities.user().withDevice()
+    let screenshot = Screenshot.random
+    screenshot.deviceId = user.device.id
+    try await Current.db.create(screenshot)
+    let keystrokeLine = KeystrokeLine.random
+    keystrokeLine.deviceId = user.device.id
+    try await Current.db.create(keystrokeLine)
+
+    let output = try await DeleteActivityItems.resolve(
+      with: DeleteActivityItems.Input(
+        keystrokeLineIds: [keystrokeLine.id],
+        screenshotIds: [screenshot.id]
+      ),
+      in: context(user.admin)
+    )
+
+    expect(output).toEqual(.success)
+    expect(try? await Current.db.find(keystrokeLine.id)).toBeNil()
+    expect(try? await Current.db.find(screenshot.id)).toBeNil()
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
