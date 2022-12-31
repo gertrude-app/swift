@@ -311,6 +311,28 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(singleOutput).toEqual(expected)
   }
 
+  func testGetSelectableKeychains() async throws {
+    try await Current.db.query(Key.self).delete()
+    try await Current.db.query(Keychain.self).delete()
+
+    let admin = try await Entities.admin().withKeychain { keychain, _ in
+      keychain.isPublic = false
+    }
+
+    let otherAdmin = try await Entities.admin()
+    let publicKeychain = Keychain.random
+    publicKeychain.authorId = otherAdmin.id
+    publicKeychain.isPublic = true
+    try await Current.db.create(publicKeychain)
+
+    let output = try await GetSelectableKeychains.resolve(in: context(admin))
+
+    expect(output).toEqual(.init(
+      own: [try await .init(from: admin.keychain)],
+      public: [try await .init(from: publicKeychain)]
+    ))
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
