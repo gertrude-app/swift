@@ -411,19 +411,22 @@ final class DashboardAdminResolverTests: ApiTestCase {
     request.networkDecisionId = decision.id
     try await Current.db.create(request)
 
-    let single = try await GetUnlockRequest.resolve(
+    let output = try await GetUnlockRequest.resolve(
       with: request.id,
       in: context(user.admin)
     )
 
-    expect(single.id).toEqual(request.id)
-    expect(single.userId).toEqual(user.id)
-    expect(single.userName).toEqual(user.name)
-    expect(single.requestComment).toEqual("please dad")
-    expect(single.appBundleId).toEqual("com.rofl.biz")
+    expect(output.id).toEqual(request.id)
+    expect(output.userId).toEqual(user.id)
+    expect(output.userName).toEqual(user.name)
+    expect(output.requestComment).toEqual("please dad")
+    expect(output.appBundleId).toEqual("com.rofl.biz")
 
     let list = try await GetUnlockRequests.resolve(in: context(user.admin))
-    expect(list).toEqual([single])
+    expect(list).toEqual([output])
+
+    let userList = try await GetUserUnlockRequests.resolve(with: user.id, in: context(user.admin))
+    expect(userList).toEqual([output])
   }
 
   // helpers
