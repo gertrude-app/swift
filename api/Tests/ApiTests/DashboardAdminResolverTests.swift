@@ -429,6 +429,39 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(userList).toEqual([output])
   }
 
+  func testUpdateSuspendFilterRequest() async throws {
+    let user = try await Entities.user().withDevice()
+    let request = SuspendFilterRequest.random
+    request.deviceId = user.device.id
+    request.status = .pending
+    try await Current.db.create(request)
+
+    let output = try await UpdateSuspendFilterRequest.resolve(
+      with: UpdateSuspendFilterRequest.Input(
+        id: request.id,
+        durationInSeconds: 333,
+        responseComment: "ok",
+        status: .accepted
+      ),
+      in: context(user.admin)
+    )
+
+    expect(output).toEqual(.success)
+
+    let retrieved = try await Current.db.find(request.id)
+    expect(retrieved.duration).toEqual(.init(333))
+    expect(retrieved.responseComment).toEqual("ok")
+    expect(retrieved.status).toEqual(.accepted)
+
+    // @TODO: test that mac app is notified via websocket
+    // let received = Connection.ApiToApp.Message.SuspendFilter.load(
+    //   fromJson: connectedApp.webSocket.sent.first ?? ""
+    // )
+
+    // XCTAssertEqual(received?.suspension.scope, .webBrowsers)
+    // XCTAssertEqual(received?.suspension.duration, 333)
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
