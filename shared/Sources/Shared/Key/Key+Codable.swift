@@ -65,7 +65,7 @@ public extension Key {
       guard let ip = Key.Ip(ipString) else {
         throw ModelDecodingError("invalid ip string \(ipString) for Key")
       }
-      self = .ipAddress(ip: ip, scope: scope)
+      self = .ipAddress(ipAddress: ip, scope: scope)
 
     default:
       throw ModelDecodingError("unknown key type `\(type)`")

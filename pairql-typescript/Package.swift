@@ -16,8 +16,8 @@ let package = Package(
   ],
   targets: [
     .target(name: "TypescriptPairQL", dependencies: [
-      .product(name: "Runtime", package: "Runtime"),
       .product(name: "PairQL", package: "pairql"),
+      .product(name: "Runtime", package: "Runtime"),
     ]),
     .testTarget(name: "TypescriptPairQLTests", dependencies: [
       .target(name: "TypescriptPairQL"),

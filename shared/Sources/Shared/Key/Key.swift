@@ -4,7 +4,7 @@ public enum Key: Hashable, Codable {
   case skeleton(scope: AppScope.Single)
   case domainRegex(pattern: DomainRegexPattern, scope: AppScope)
   case path(path: Path, scope: AppScope)
-  case ipAddress(ip: Ip, scope: AppScope)
+  case ipAddress(ipAddress: Ip, scope: AppScope)
 }
 
 public extension Key {

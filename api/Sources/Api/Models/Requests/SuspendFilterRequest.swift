@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 import Shared
 import TaggedTime
 
@@ -31,5 +31,17 @@ final class SuspendFilterRequest: Codable {
     self.duration = duration
     self.requestComment = requestComment
     self.responseComment = responseComment
+  }
+}
+
+// loaders
+
+extension SuspendFilterRequest {
+  func device() async throws -> Device {
+    try await device.useLoaded(or: {
+      try await Current.db.query(Device.self)
+        .where(.id == deviceId)
+        .first()
+    })
   }
 }

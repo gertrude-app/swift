@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 
 final class Device: Codable {
   var id: Id
@@ -40,6 +40,18 @@ final class Device: Codable {
     self.fullUsername = fullUsername
     self.numericId = numericId
     self.serialNumber = serialNumber
+  }
+}
+
+// loaders
+
+extension Device {
+  func user() async throws -> User {
+    try await user.useLoaded(or: {
+      try await Current.db.query(User.self)
+        .where(.id == userId)
+        .first()
+    })
   }
 }
 

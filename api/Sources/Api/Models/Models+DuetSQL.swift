@@ -520,47 +520,49 @@ extension Screenshot: Model {
   }
 }
 
-// extension SuspendFilterRequest: Model {
-//   public static let tableName = M18.tableName
-//   public typealias ColumnName = CodingKeys
+extension AppScope: PostgresJsonable {}
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .deviceId:
-//       return .uuid(deviceId)
-//     case .status:
-//       return .enum(status)
-//     case .scope:
-//       return .json(scope.toPostgresJson)
-//     case .duration:
-//       return .int(duration.rawValue)
-//     case .requestComment:
-//       return .string(requestComment)
-//     case .responseComment:
-//       return .string(responseComment)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     }
-//   }
+extension SuspendFilterRequest: Model {
+  public static let tableName = M5.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .deviceId: .uuid(deviceId),
-//       .status: .enum(status),
-//       .scope: .json(scope.toPostgresJson),
-//       .duration: .int(duration.rawValue),
-//       .requestComment: .string(requestComment),
-//       .responseComment: .string(responseComment),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .deviceId:
+      return .uuid(deviceId)
+    case .status:
+      return .enum(status)
+    case .scope:
+      return .json(scope.toPostgresJson)
+    case .duration:
+      return .int(duration.rawValue)
+    case .requestComment:
+      return .string(requestComment)
+    case .responseComment:
+      return .string(responseComment)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(deviceId),
+      .status: .enum(status),
+      .scope: .json(scope.toPostgresJson),
+      .duration: .int(duration.rawValue),
+      .requestComment: .string(requestComment),
+      .responseComment: .string(responseComment),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
 
 extension UnlockRequest: Model {
   public static let tableName = M5.tableName

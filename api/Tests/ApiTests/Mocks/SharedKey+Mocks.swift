@@ -7,7 +7,7 @@ extension Key: Mock {
   }
 
   public static var empty: Key {
-    .ipAddress(ip: .init("0.0.0.0")!, scope: .empty)
+    .ipAddress(ipAddress: .init("0.0.0.0")!, scope: .empty)
   }
 
   public static var random: Key {
@@ -23,7 +23,7 @@ extension Key: Mock {
     case 5:
       return .path(path: .init("foo.com/bar")!, scope: .random)
     default:
-      return .ipAddress(ip: .init("1.2.3.4")!, scope: .random)
+      return .ipAddress(ipAddress: .init("1.2.3.4")!, scope: .random)
     }
   }
 }

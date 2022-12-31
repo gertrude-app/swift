@@ -5,7 +5,7 @@ import TypescriptPairQL
 import XCTest
 import XExpect
 
-extension Union2: NamedType where A == String, B == Bool {
+extension Union2: NamedType where T1 == String, T2 == Bool {
   public static var __typeName: String {
     "StringOrBool"
   }

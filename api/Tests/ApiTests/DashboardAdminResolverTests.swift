@@ -378,6 +378,24 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(retrieved.isPublic).toEqual(false)
   }
 
+  func testGetSuspendFilterRequest() async throws {
+    let user = try await Entities.user().withDevice()
+    let request = SuspendFilterRequest.random
+    request.deviceId = user.device.id
+    try await Current.db.create(request)
+
+    let output = try await GetSuspendFilterRequest.resolve(
+      with: request.id,
+      in: context(user.admin)
+    )
+
+    expect(output.id).toEqual(request.id)
+    expect(output.deviceId).toEqual(user.device.id)
+    expect(output.userName).toEqual(user.name)
+    expect(output.requestedDurationInSeconds).toEqual(request.duration.rawValue)
+    expect(output.status).toEqual(request.status)
+  }
+
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
