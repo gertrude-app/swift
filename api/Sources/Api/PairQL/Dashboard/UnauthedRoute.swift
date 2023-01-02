@@ -3,29 +3,17 @@ import TypescriptPairQL
 import Vapor
 
 enum UnauthedRoute: PairRoute {
-  case signup(Signup.Input)
-  case verifySignupEmail(VerifySignupEmail.Input)
-  case joinWaitlist(JoinWaitlist.Input)
   case allowingSignups
   case getCheckoutUrl(GetCheckoutUrl.Input)
-  case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
   case handleCheckoutCancel(HandleCheckoutCancel.Input)
-  case requestMagicLink(RequestMagicLink.Input)
+  case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
+  case joinWaitlist(JoinWaitlist.Input)
   case loginMagicLink(LoginMagicLink.Input)
+  case requestMagicLink(RequestMagicLink.Input)
+  case signup(Signup.Input)
+  case verifySignupEmail(VerifySignupEmail.Input)
 
   static let router = OneOf {
-    Route(/Self.signup) {
-      Operation(Signup.self)
-      Body(.json(Signup.Input.self))
-    }
-    Route(/Self.verifySignupEmail) {
-      Operation(VerifySignupEmail.self)
-      Body(.json(VerifySignupEmail.Input.self))
-    }
-    Route(/Self.joinWaitlist) {
-      Operation(JoinWaitlist.self)
-      Body(.json(JoinWaitlist.Input.self))
-    }
     Route(/Self.allowingSignups) {
       Operation(AllowingSignups.self)
     }
@@ -33,21 +21,33 @@ enum UnauthedRoute: PairRoute {
       Operation(GetCheckoutUrl.self)
       Body(.json(GetCheckoutUrl.Input.self))
     }
+    Route(/Self.handleCheckoutCancel) {
+      Operation(HandleCheckoutCancel.self)
+      Body(.json(HandleCheckoutCancel.Input.self))
+    }
     Route(/Self.handleCheckoutSuccess) {
       Operation(HandleCheckoutSuccess.self)
       Body(.json(HandleCheckoutSuccess.Input.self))
     }
-    Route(/Self.handleCheckoutCancel) {
-      Operation(HandleCheckoutCancel.self)
-      Body(.json(HandleCheckoutCancel.Input.self))
+    Route(/Self.joinWaitlist) {
+      Operation(JoinWaitlist.self)
+      Body(.json(JoinWaitlist.Input.self))
+    }
+    Route(/Self.loginMagicLink) {
+      Operation(LoginMagicLink.self)
+      Body(.json(LoginMagicLink.Input.self))
     }
     Route(/Self.requestMagicLink) {
       Operation(RequestMagicLink.self)
       Body(.json(RequestMagicLink.Input.self))
     }
-    Route(/Self.loginMagicLink) {
-      Operation(LoginMagicLink.self)
-      Body(.json(LoginMagicLink.Input.self))
+    Route(/Self.signup) {
+      Operation(Signup.self)
+      Body(.json(Signup.Input.self))
+    }
+    Route(/Self.verifySignupEmail) {
+      Operation(VerifySignupEmail.self)
+      Body(.json(VerifySignupEmail.Input.self))
     }
   }
 }
