@@ -6,10 +6,6 @@ import XExpect
 
 @testable import Api
 
-// todo, move me now
-extension AppScope: TypescriptRepresentable {}
-extension AppScope.Single: TypescriptRepresentable {}
-
 final class ApiTests: ApiTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
@@ -22,8 +18,8 @@ final class ApiTests: ApiTestCase {
         | {
             type: `single`;
             single:
-              | { type: `bundleId` bundleId: string; }
-              | { type: `identifiedAppSlug` identifiedAppSlug: string; }
+              | { type: `bundleId`; bundleId: string; }
+              | { type: `identifiedAppSlug`; identifiedAppSlug: string; }
           }
       """
     )

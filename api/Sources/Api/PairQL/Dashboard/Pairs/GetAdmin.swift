@@ -19,7 +19,7 @@ struct GetAdmin: TypescriptPair {
 
   struct VerifiedEmailMethod: TypescriptNestable {
     let id: AdminVerifiedNotificationMethod.Id
-    let email: EmailAddress
+    let email: String
   }
 
   struct VerifiedTextMethod: TypescriptNestable {
@@ -55,7 +55,7 @@ extension GetAdmin: NoInputResolver {
       verifiedNotificationMethods: methods.map { verifiedMethod in
         switch verifiedMethod.method {
         case .email(let email):
-          return .t1(.init(id: verifiedMethod.id, email: .init(email)))
+          return .t1(.init(id: verifiedMethod.id, email: email))
         case .slack(let channelId, let channelName, let token):
           return .t2(.init(
             id: verifiedMethod.id,
@@ -77,6 +77,6 @@ extension Admin.SubscriptionStatus: NamedType {
   static var __typeName: String { "AdminSubscriptionStatus" }
 }
 
-extension AdminNotification.Trigger: NamedType {
+extension AdminNotification.Trigger: GlobalType {
   static var __typeName: String { "AdminNotificationTrigger" }
 }

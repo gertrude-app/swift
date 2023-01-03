@@ -4,7 +4,7 @@ import TypescriptPairQL
 struct GetAdminKeychain: TypescriptPair {
   static var auth: ClientAuth = .admin
   typealias Input = Keychain.Id
-  typealias Output = GetAdminKeychains.Keychain
+  typealias Output = Alias<Pql.Keychain>
 }
 
 // resolver
@@ -19,6 +19,6 @@ extension GetAdminKeychain: Resolver {
       .where(.authorId == context.admin.id)
       .first()
 
-    return try await .init(from: model, in: context)
+    return try await .init(.init(from: model, in: context))
   }
 }

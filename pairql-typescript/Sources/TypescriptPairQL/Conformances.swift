@@ -59,7 +59,9 @@ extension UUID: TypescriptRepresentable {}
 
 extension URL: TypescriptRepresentable {}
 
-extension SuccessOutput: TypescriptRepresentable {}
+extension SuccessOutput: TypescriptRepresentable {
+  public static var customTs: String? { "export type __self__ = SuccessOutput;" }
+}
 
 extension NoInput: TypescriptRepresentable {
   public static var customTs: String? { "export type __self__ = void;" }

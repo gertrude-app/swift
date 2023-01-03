@@ -5,6 +5,18 @@ public enum Key: Hashable, Codable {
   case domainRegex(pattern: DomainRegexPattern, scope: AppScope)
   case path(path: Path, scope: AppScope)
   case ipAddress(ipAddress: Ip, scope: AppScope)
+
+  public static var customTs: String? {
+    """
+    export type __self__ =
+      | { type: 'anySubdomain'; domain: string; scope: AppScope }
+      | { type: 'domain'; domain: string; scope: AppScope }
+      | { type: 'domainRegex'; pattern: string; scope: AppScope }
+      | { type: 'skeleton'; pattern: string; scope: SingleAppScope }
+      | { type: 'ipAddress'; ipAddress: string; scope: AppScope }
+      | { type: 'path'; path: string; scope: AppScope };
+    """
+  }
 }
 
 public extension Key {

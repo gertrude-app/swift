@@ -4,18 +4,11 @@ public enum AppScope: Equatable, Hashable, Codable {
   case single(Single)
 
   public static var customTs: String? {
-    let single = Single.customTs?
-      .replacingOccurrences(of: "export type __self__ =\n", with: "\n")
-      .replacingOccurrences(of: "|", with: "      |")
-
-    return """
+    """
     export type __self__ =
-      | { type: `unrestricted`  }
-      | { type: `webBrowsers`  }
-      | {
-          type: `single`;
-          single:\(single ?? "")
-        }
+      | { type: 'unrestricted'  }
+      | { type: 'webBrowsers'  }
+      | { type: 'single'; single: SingleAppScope }
     """
   }
 }
@@ -30,8 +23,8 @@ public extension AppScope {
     public static var customTs: String? {
       """
       export type __self__ =
-        | { type: `bundleId` bundleId: string; }
-        | { type: `identifiedAppSlug` identifiedAppSlug: string; }
+        | { type: 'bundleId'; bundleId: string; }
+        | { type: 'identifiedAppSlug'; identifiedAppSlug: string; }
       """
     }
   }

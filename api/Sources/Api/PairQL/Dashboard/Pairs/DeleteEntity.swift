@@ -65,16 +65,18 @@ extension DeleteEntity: Resolver {
 // extensions
 
 extension DeleteEntity.Input {
-  static var customTs = """
-    export interface __self__ {
-      id: UUID;
-      type:
-        | `AdminNotification`
-        | `AdminVerifiedNotificationMethod`
-        | `Device`
-        | `Key`
-        | `Keychain`
-        | `User`;
-    }
-  """
+  static var customTs: String? {
+    """
+      export interface __self__ {
+        id: UUID;
+        type:
+          | 'AdminNotification'
+          | 'AdminVerifiedNotificationMethod'
+          | 'Device'
+          | 'Key'
+          | 'Keychain'
+          | 'User';
+      }
+    """
+  }
 }

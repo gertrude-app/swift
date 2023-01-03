@@ -11,9 +11,43 @@ extension Union2: NamedType where T1 == String, T2 == Bool {
   }
 }
 
-extension DeviceModelFamily: SharedType {}
+extension DeviceModelFamily: GlobalType {}
+
+enum Nested {
+  struct Inner: TypescriptNestable, GlobalType {
+    let inner: String
+  }
+
+  struct Outer: TypescriptNestable, PairOutput, GlobalType {
+    let outer: String
+    let inners: [Inner]
+  }
+}
 
 final class CodegenTests: XCTestCase {
+  func testTypealiasWrappedByAliasStruct() {
+    struct Pair1: TypescriptPair {
+      static var auth: ClientAuth = .admin
+      typealias Output = [Nested.Outer]
+    }
+
+    struct Pair2: TypescriptPair {
+      static var auth: ClientAuth = .admin
+      typealias Output = Alias<Nested.Outer>
+    }
+
+    expect(Pair1.Output.ts).toEqual(
+      """
+      export type __self__ = Array<Outer>
+      """
+    )
+    expect(Pair2.Output.ts).toEqual(
+      """
+      export type __self__ = Outer
+      """
+    )
+  }
+
   func testUnnamedUnion() {
     struct Struct: TypescriptRepresentable {
       let items: [Union2<String, UUID>]
@@ -86,7 +120,7 @@ final class CodegenTests: XCTestCase {
     expect([String: String].ts).toEqual("export type __self__ = { [key: string]: string; };")
   }
 
-  func testSharedType() {
+  func testGlobalType() {
     // the root type definition
     expect(DeviceModelFamily.ts).toEqual(
       """
@@ -115,6 +149,30 @@ final class CodegenTests: XCTestCase {
     )
   }
 
+  func testGlobalTypesProperlyNamed() {
+    enum Example: TypescriptRepresentable, GlobalType {
+      case foo(bar: String)
+      case baz(num: Int)
+      public static var customTs: String? {
+        """
+        export type __self__ =
+          | { type: 'foo'; bar: string; }
+          | { type: 'baz'; num: number; };
+        """
+      }
+
+      public static var __typeName = "MyExample"
+    }
+
+    expect(Example.ts).toEqual(
+      """
+      export type MyExample =
+        | { type: 'foo'; bar: string; }
+        | { type: 'baz'; num: number; };
+      """
+    )
+  }
+
   func testIterableEnum() {
     enum StringEnum: String, Codable, CaseIterable, TypescriptRepresentable {
       case foo, bar, baz
@@ -134,9 +192,7 @@ final class CodegenTests: XCTestCase {
     expect(NoInput.ts).toEqual("export type __self__ = void;")
     expect(SuccessOutput.ts).toEqual(
       """
-      export interface __self__ {
-        success: boolean;
-      }
+      export type __self__ = SuccessOutput;
       """
     )
     expect(ClientAuth.ts).toEqual(

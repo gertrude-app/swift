@@ -4,7 +4,7 @@ import TypescriptPairQL
 struct GetSelectableKeychains: TypescriptPair {
   static var auth: ClientAuth = .admin
 
-  struct Keychain: TypescriptNestable {
+  struct Keychain: TypescriptNestable, NamedType {
     let id: Api.Keychain.Id
     let name: String
     let isPublic: Bool

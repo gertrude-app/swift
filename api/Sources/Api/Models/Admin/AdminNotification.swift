@@ -32,3 +32,4 @@ extension AdminNotification {
     case suspendFilterRequestSubmitted
   }
 }
+

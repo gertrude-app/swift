@@ -1,4 +1,5 @@
 import Foundation
+import Shared
 import TypescriptPairQL
 
 struct SaveKey: TypescriptPair {
@@ -8,7 +9,7 @@ struct SaveKey: TypescriptPair {
     let isNew: Bool
     let id: Key.Id
     let keychainId: Keychain.Id
-    let key: PQL.Key.SharedKey
+    let key: Shared.Key
     let comment: String?
     let expiration: Date?
   }

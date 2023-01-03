@@ -27,6 +27,7 @@ extension Union3: TypescriptRepresentable where
   }
 }
 
+// TODO: delete me
 extension Union6: TypescriptRepresentable where
   T1: TypescriptRepresentable,
   T2: TypescriptRepresentable,
@@ -67,10 +68,19 @@ private func derive(
   _ depth: Int = 0,
   resolveNamed: Bool = true
 ) -> String {
-  var derivingRootSharedType = false
-  if let sharedType = type as? SharedType.Type {
+  if "\(type)".hasPrefix("Alias<"),
+     let info = try? typeInfo(of: type),
+     info.genericTypes.count == 1, info.name.starts(with: "Alias<"),
+     let element = info.genericTypes.first {
+    return "export type __self__ = " + derive(element, &named, depth + 1)
+  }
+
+  var derivingRootGlobalType = false
+  var sharedTypeName: String?
+  if let sharedType = type as? GlobalType.Type {
     if depth == 0 {
-      derivingRootSharedType = true
+      derivingRootGlobalType = true
+      sharedTypeName = sharedType.__typeName
     } else {
       return sharedType.__typeName
     }
@@ -78,13 +88,12 @@ private func derive(
 
   if resolveNamed, let namedType = type as? NamedType.Type {
     let decl = derive(namedType, &named, depth + 1, resolveNamed: false)
-      .replacingOccurrences(of: "__self__", with: namedType.__typeName)
-    named["\(type)"] = decl
+    named["\(type)"] = identify(decl, namedType.__typeName)
     return namedType.__typeName
   }
 
   if let repr = type as? TypescriptRepresentable.Type, let customTs = repr.customTs {
-    return customTs
+    return derivingRootGlobalType ? identify(customTs, sharedTypeName ?? "\(type)") : customTs
   }
 
   if let primitive = type as? TypescriptPrimitive.Type {
@@ -101,8 +110,8 @@ private func derive(
       \(info.cases.map(\.name).joined(separator: ",\n  ")),
     }
     """
-    if derivingRootSharedType {
-      enumTs = enumTs.replacingOccurrences(of: "__self__", with: "\(type)")
+    if derivingRootGlobalType {
+      enumTs = identify(enumTs, sharedTypeName ?? "\(type)")
     }
     return enumTs
   }
@@ -118,6 +127,11 @@ private func derive(
     ts += "  \(prop.name)\(tsProp(prop.type, &named, depth + 1))"
   }
   ts += "}"
+
+  if derivingRootGlobalType {
+    ts = identify(ts, sharedTypeName ?? "\(type)")
+  }
+
   return ts
 }
 
@@ -141,6 +155,10 @@ func tsProp(
     return "\(optional ? "?" : ""): \(unnest(derive(nested, &named, depth)));\n"
   }
   return ": unknown; /* !! runtime introspection failed */\n"
+}
+
+private func identify(_ ts: String, _ name: String) -> String {
+  ts.replacingOccurrences(of: "__self__", with: name)
 }
 
 private func unnest(_ ts: String) -> String {
