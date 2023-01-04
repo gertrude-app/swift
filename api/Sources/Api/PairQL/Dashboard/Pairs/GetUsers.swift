@@ -2,7 +2,7 @@ import TypescriptPairQL
 
 struct GetUsers: Pair, TypescriptPair {
   static var auth: ClientAuth = .admin
-  typealias Output = [GetUser.Output]
+  typealias Output = [GetUser.User]
 }
 
 // resolvers

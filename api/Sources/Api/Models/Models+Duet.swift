@@ -39,12 +39,6 @@ extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
   }
 }
 
-extension Either where Left: HasOptionalDeletedAt, Right: HasOptionalDeletedAt {
-  var isDeleted: Bool {
-    left?.isDeleted ?? right?.isDeleted ?? false
-  }
-}
-
 extension Admin: Duet.Identifiable {
   typealias Id = Tagged<Admin, UUID>
 }

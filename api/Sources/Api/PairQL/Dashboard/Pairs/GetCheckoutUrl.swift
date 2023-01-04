@@ -11,7 +11,7 @@ struct GetCheckoutUrl: TypescriptPair {
   }
 
   struct Output: TypescriptPairOutput {
-    let url: String?
+    let url: String
   }
 }
 

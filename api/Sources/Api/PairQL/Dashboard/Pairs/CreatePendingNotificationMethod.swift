@@ -5,21 +5,21 @@ import Vapor
 struct CreatePendingNotificationMethod: TypescriptPair {
   static var auth: ClientAuth = .admin
 
-  struct EmailInput: TypescriptNestable {
+  struct Email: TypescriptNestable {
     let email: String
   }
 
-  struct TextInput: TypescriptNestable {
+  struct Text: TypescriptNestable {
     let phoneNumber: String
   }
 
-  struct SlackInput: TypescriptNestable {
+  struct Slack: TypescriptNestable {
     let token: String
     let channelId: String
     let channelName: String
   }
 
-  typealias Input = Union3<EmailInput, TextInput, SlackInput>
+  typealias Input = Union3<Email, Text, Slack>
 
   struct Output: TypescriptPairOutput {
     let methodId: AdminVerifiedNotificationMethod.Id

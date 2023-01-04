@@ -3,53 +3,54 @@ import Foundation
 import Shared
 import TypescriptPairQL
 
+struct KeychainSummary: TypescriptNestable, GlobalType {
+  let id: Api.Keychain.Id
+  let authorId: Admin.Id
+  let name: String
+  let description: String?
+  let isPublic: Bool
+  let numKeys: Int
+}
+
 struct GetUser: TypescriptPair {
   static var auth: ClientAuth = .admin
 
-  struct Device: Equatable, Codable, TypescriptRepresentable {
+  struct User: TypescriptPairOutput, GlobalType {
+    var id: Api.User.Id
+    var name: String
+    var keyloggingEnabled: Bool
+    var screenshotsEnabled: Bool
+    var screenshotsResolution: Int
+    var screenshotsFrequency: Int
+    var keychains: [KeychainSummary]
+    var devices: [Device]
+    var createdAt: Date
+  }
+
+  struct Device: TypescriptNestable, GlobalType {
     let id: Api.Device.Id
     let isOnline: Bool
     let modelFamily: DeviceModelFamily
     let modelTitle: String
   }
 
-  struct Keychain: Equatable, Codable, TypescriptRepresentable {
-    let id: Api.Keychain.Id
-    let authorId: Admin.Id
-    let name: String
-    let description: String?
-    let isPublic: Bool
-    let numKeys: Int
-  }
-
-  typealias Input = User.Id
-
-  struct Output: TypescriptPairOutput {
-    var id: User.Id
-    var name: String
-    var keyloggingEnabled: Bool
-    var screenshotsEnabled: Bool
-    var screenshotsResolution: Int
-    var screenshotsFrequency: Int
-    var keychains: [Keychain]
-    var devices: [Device]
-    var createdAt: Date
-  }
+  typealias Input = Api.User.Id
+  typealias Output = User
 }
 
 // resolver
 
 extension GetUser: Resolver {
   static func resolve(
-    with id: User.Id,
+    with id: Api.User.Id,
     in context: AdminContext
   ) async throws -> Output {
     try await Output(from: context.verifiedUser(from: id))
   }
 }
 
-extension GetUser.Keychain {
-  init(from keychain: Api.Keychain) async throws {
+extension KeychainSummary {
+  init(from keychain: Keychain) async throws {
     let numKeys = try await Current.db.count(
       Key.self,
       where: .keychainId == keychain.id,
@@ -66,10 +67,10 @@ extension GetUser.Keychain {
   }
 }
 
-extension GetUser.Output {
-  init(from user: User) async throws {
+extension GetUser.User {
+  init(from user: Api.User) async throws {
     async let userKeychains = user.keychains()
-      .concurrentMap { try await GetUser.Keychain(from: $0) }
+      .concurrentMap { try await KeychainSummary(from: $0) }
 
     async let devices = Current.db.query(Device.self)
       .where(.userId == user.id)

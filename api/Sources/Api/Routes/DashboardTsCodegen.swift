@@ -23,8 +23,14 @@ enum DashboardTsCodegenRoute {
         Shared.Key.__typeName: Shared.Key.ts,
         "\(AppScope.self)": AppScope.ts,
         AppScope.Single.__typeName: AppScope.Single.ts,
-        Pql.Keychain.__typeName: Pql.Keychain.ts,
-        Pql.Key.__typeName: Pql.Key.ts,
+        GetUnlockRequest.Output.__typeName: GetUnlockRequest.Output.ts,
+        "\(GetUser.User.self)": GetUser.User.ts,
+        "\(KeychainSummary.self)": KeychainSummary.ts,
+        "\(GetUser.Device.self)": GetUser.Device.ts,
+        GetSuspendFilterRequest.Output.__typeName: GetSuspendFilterRequest.Output.ts,
+        Admin.SubscriptionStatus.__typeName: Admin.SubscriptionStatus.ts,
+        "\(GetAdminKeychains.AdminKeychain.self)": GetAdminKeychains.AdminKeychain.ts,
+        "\(GetAdminKeychains.Key.self)": GetAdminKeychains.Key.ts,
       ],
       pairs: [
         AllowingSignups.name: ts(for: AllowingSignups.self),
@@ -52,6 +58,7 @@ enum DashboardTsCodegenRoute {
         HandleCheckoutCancel.name: ts(for: HandleCheckoutCancel.self),
         HandleCheckoutSuccess.name: ts(for: HandleCheckoutSuccess.self),
         JoinWaitlist.name: ts(for: JoinWaitlist.self),
+        Login.name: ts(for: Login.self),
         LoginMagicLink.name: ts(for: LoginMagicLink.self),
         RequestMagicLink.name: ts(for: RequestMagicLink.self),
         SaveKey.name: ts(for: SaveKey.self),
@@ -70,9 +77,9 @@ enum DashboardTsCodegenRoute {
     let name = "\(P.self)"
     var pair = """
     export namespace \(name) {
-      \(P.Input.ts.replacingOccurrences(of: "__self__", with: "Input"))
+      \(P.Input.inputTs)
 
-      \(P.Output.ts.replacingOccurrences(of: "__self__", with: "Output"))
+      \(P.Output.outputTs)
     }
     """
 

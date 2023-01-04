@@ -12,7 +12,7 @@ public enum Key: Hashable, Codable {
       | { type: 'anySubdomain'; domain: string; scope: AppScope }
       | { type: 'domain'; domain: string; scope: AppScope }
       | { type: 'domainRegex'; pattern: string; scope: AppScope }
-      | { type: 'skeleton'; pattern: string; scope: SingleAppScope }
+      | { type: 'skeleton'; scope: SingleAppScope }
       | { type: 'ipAddress'; ipAddress: string; scope: AppScope }
       | { type: 'path'; path: string; scope: AppScope };
     """

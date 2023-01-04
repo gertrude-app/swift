@@ -27,34 +27,37 @@ extension Union3: TypescriptRepresentable where
   }
 }
 
-// TODO: delete me
-extension Union6: TypescriptRepresentable where
-  T1: TypescriptRepresentable,
-  T2: TypescriptRepresentable,
-  T3: TypescriptRepresentable,
-  T4: TypescriptRepresentable,
-  T5: TypescriptRepresentable,
-  T6: TypescriptRepresentable {
-  public static var customTs: String? {
-    """
-    export type __self__ =
-      | { type: "\(T1.self)"; value: \(unnest(T1.ts)) }
-      | { type: "\(T2.self)"; value: \(unnest(T2.ts)) }
-      | { type: "\(T3.self)"; value: \(unnest(T3.ts)) }
-      | { type: "\(T4.self)"; value: \(unnest(T4.ts)) }
-      | { type: "\(T5.self)"; value: \(unnest(T5.ts)) }
-      | { type: "\(T6.self)"; value: \(unnest(T6.ts)) }
-    """
-  }
-}
-
 public extension TypescriptRepresentable {
   static var customTs: String? { nil }
 
   static var ts: String {
+    deriveTs(depth: 0)
+  }
+
+  static var inputTs: String {
+    let ts = identify(deriveTs(depth: 1), "Input")
+    if ts.contains("export ") {
+      return ts
+    } else {
+      // we are aliasing a global type
+      return "export type Output = \(ts)"
+    }
+  }
+
+  static var outputTs: String {
+    let ts = identify(deriveTs(depth: 1), "Output")
+    if ts.contains("export ") {
+      return ts
+    } else {
+      // we are aliasing a global type
+      return "export type Output = \(ts)"
+    }
+  }
+
+  private static func deriveTs(depth: Int = 0) -> String {
     var namedTypes: [String: String] = [:]
     var chunks: [String] = []
-    chunks.append(derive(Self.self, &namedTypes))
+    chunks.append(derive(Self.self, &namedTypes, depth))
     for (_, namedType) in namedTypes {
       chunks.append(namedType)
     }
@@ -68,13 +71,6 @@ private func derive(
   _ depth: Int = 0,
   resolveNamed: Bool = true
 ) -> String {
-  if "\(type)".hasPrefix("Alias<"),
-     let info = try? typeInfo(of: type),
-     info.genericTypes.count == 1, info.name.starts(with: "Alias<"),
-     let element = info.genericTypes.first {
-    return "export type __self__ = " + derive(element, &named, depth + 1)
-  }
-
   var derivingRootGlobalType = false
   var sharedTypeName: String?
   if let sharedType = type as? GlobalType.Type {
@@ -106,9 +102,7 @@ private func derive(
 
   if info.kind == .enum {
     var enumTs = """
-    export enum __self__ {
-      \(info.cases.map(\.name).joined(separator: ",\n  ")),
-    }
+    export type __self__ = \(info.cases.map { "'\($0.name)'" }.joined(separator: " | "));
     """
     if derivingRootGlobalType {
       enumTs = identify(enumTs, sharedTypeName ?? "\(type)")

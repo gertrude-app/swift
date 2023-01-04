@@ -6,14 +6,19 @@ struct GetSuspendFilterRequest: TypescriptPair {
   static var auth: ClientAuth = .admin
   typealias Input = SuspendFilterRequest.Id
 
-  struct Output: TypescriptPairOutput {
-    let id: SuspendFilterRequest.Id
-    let deviceId: Device.Id
+  struct Output: TypescriptPairOutput, GlobalType {
+    let id: Api.SuspendFilterRequest.Id
+    let deviceId: Api.Device.Id
+    let status: RequestStatus
     let userName: String
     let requestedDurationInSeconds: Int
     let requestComment: String?
-    let status: RequestStatus
+    let responseComment: String?
     let createdAt: Date
+
+    static var __typeName: String {
+      "SuspendFilterRequest"
+    }
   }
 }
 
@@ -27,10 +32,11 @@ extension GetSuspendFilterRequest: Resolver {
     return Output(
       id: id,
       deviceId: device.id,
+      status: request.status,
       userName: user.name,
       requestedDurationInSeconds: request.duration.rawValue,
       requestComment: request.requestComment,
-      status: request.status,
+      responseComment: request.responseComment,
       createdAt: request.createdAt
     )
   }

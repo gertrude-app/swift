@@ -30,28 +30,3 @@ public protocol GlobalType: TypescriptRepresentable {
 public extension GlobalType {
   static var __typeName: String { "\(Self.self)" }
 }
-
-// setting Input/Output to a typealias of a GlobalType causes ts derivation problems
-// this struct is a workaround to allow derivation to succeed, passing thru the underlying type
-public struct Alias<T: TypescriptNestable>: TypescriptNestable {
-  private let value: T
-
-  public static var customTs: String? { T.ts }
-
-  public init(_ value: T) {
-    self.value = value
-  }
-
-  public init(from decoder: Decoder) throws {
-    let container = try decoder.singleValueContainer()
-    value = try container.decode(T.self)
-  }
-
-  public func encode(to encoder: Encoder) throws {
-    var container = encoder.singleValueContainer()
-    try container.encode(value)
-  }
-}
-
-extension Alias: PairOutput {}
-extension Alias: PairInput {}

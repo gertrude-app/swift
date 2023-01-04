@@ -11,6 +11,7 @@ public enum UserActivity {
     var width: Int
     var height: Int
     var createdAt: Date
+    var deletedAt: Date?
   }
 
   public struct CoalescedKeystrokeLine: TypescriptNestable {
@@ -19,6 +20,7 @@ public enum UserActivity {
     var appName: String
     var line: String
     var createdAt: Date
+    var deletedAt: Date?
   }
 }
 
@@ -32,6 +34,7 @@ struct GetUserActivityDay: TypescriptPair {
 
   struct Output: TypescriptPairOutput {
     var userName: String
+    var numDeleted: Int
     var items: [Union2<UserActivity.Screenshot, UserActivity.CoalescedKeystrokeLine>]
   }
 }
@@ -51,16 +54,25 @@ extension GetUserActivityDay: Resolver {
       .where(.deviceId |=| deviceIds)
       .where(.createdAt <= .date(before))
       .where(.createdAt > .date(after))
+      .orderBy(.createdAt, .desc)
+      .withSoftDeleted()
       .all()
 
     async let screenshots = Current.db.query(Screenshot.self)
       .where(.deviceId |=| deviceIds)
       .where(.createdAt <= .date(before))
       .where(.createdAt > .date(after))
+      .orderBy(.createdAt, .desc)
+      .withSoftDeleted()
       .all()
 
     let coalesced = try await coalesce(screenshots, keystrokes)
-    return Output(userName: user.name, items: coalesced)
+
+    return Output(
+      userName: user.name,
+      numDeleted: coalesced.lazy.filter(\.isDeleted).count,
+      items: coalesced.lazy.filter { !$0.isDeleted }
+    )
   }
 }
 
@@ -100,6 +112,15 @@ extension Union2: NamedType where
   T1 == UserActivity.Screenshot,
   T2 == UserActivity.CoalescedKeystrokeLine {
   public static var __typeName: String { "Item" }
+}
+
+extension Union2: HasOptionalDeletedAt where
+  T1 == UserActivity.Screenshot,
+  T2 == UserActivity.CoalescedKeystrokeLine {
+  var deletedAt: Date? {
+    get { t1?.deletedAt ?? t2?.deletedAt }
+    set {}
+  }
 }
 
 extension UserActivity.Screenshot {

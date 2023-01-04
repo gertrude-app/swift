@@ -4,7 +4,7 @@ import TypescriptPairQL
 struct GetAdmin: TypescriptPair {
   static var auth: ClientAuth = .admin
 
-  struct Notification: TypescriptNestable {
+  struct Notification: TypescriptNestable, NamedType {
     let id: AdminNotification.Id
     let trigger: AdminNotification.Trigger
     let methodId: AdminVerifiedNotificationMethod.Id
@@ -27,9 +27,16 @@ struct GetAdmin: TypescriptPair {
     let phoneNumber: String
   }
 
+  typealias VerifiedNotificationMethod = Union3<
+    VerifiedEmailMethod,
+    VerifiedSlackMethod,
+    VerifiedTextMethod
+  >
+
   struct Output: TypescriptPairOutput {
     let id: Admin.Id
     let email: String
+    let subscriptionStatus: Admin.SubscriptionStatus
     let notifications: [Notification]
     let verifiedNotificationMethods: [Union3<
       VerifiedEmailMethod,
@@ -49,6 +56,7 @@ extension GetAdmin: NoInputResolver {
     return .init(
       id: admin.id,
       email: admin.email.rawValue,
+      subscriptionStatus: admin.subscriptionStatus,
       notifications: notifications.map {
         .init(id: $0.id, trigger: $0.trigger, methodId: $0.methodId)
       },
@@ -73,10 +81,16 @@ extension GetAdmin: NoInputResolver {
 
 // extensions
 
-extension Admin.SubscriptionStatus: NamedType {
+extension AdminNotification.Trigger: GlobalType {
+  static var __typeName: String { "AdminNotificationTrigger" }
+}
+
+extension Admin.SubscriptionStatus: TypescriptRepresentable {}
+
+extension Admin.SubscriptionStatus: GlobalType {
   static var __typeName: String { "AdminSubscriptionStatus" }
 }
 
-extension AdminNotification.Trigger: GlobalType {
-  static var __typeName: String { "AdminNotificationTrigger" }
+extension GetAdmin.VerifiedNotificationMethod: NamedType {
+  public static var __typeName: String { "VerifiedNotificationMethod" }
 }

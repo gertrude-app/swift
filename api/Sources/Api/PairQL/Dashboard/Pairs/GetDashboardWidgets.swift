@@ -8,7 +8,7 @@ struct GetDashboardWidgets: TypescriptPair {
 
   struct User: TypescriptNestable {
     var id: Api.User.Id
-    var userName: String
+    var name: String
     var isOnline: Bool
   }
 
@@ -96,7 +96,7 @@ extension GetDashboardWidgets: NoInputResolver {
     return .init(
       users: users.map { user in .init(
         id: user.id,
-        userName: user.name,
+        name: user.name,
         isOnline: devices.filter { $0.userId == user.id && $0.isOnline }.count > 0
       ) },
       userActivitySummaries: userActivitySummaries(

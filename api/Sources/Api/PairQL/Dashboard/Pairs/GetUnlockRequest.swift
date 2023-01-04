@@ -4,11 +4,10 @@ import TypescriptPairQL
 
 struct GetUnlockRequest: TypescriptPair {
   static var auth: ClientAuth = .admin
-  typealias Input = UnlockRequest.Id
 
-  struct Output: TypescriptPairOutput {
-    let id: UnlockRequest.Id
-    let userId: User.Id
+  struct Output: TypescriptPairOutput, GlobalType {
+    let id: Api.UnlockRequest.Id
+    let userId: Api.User.Id
     let userName: String
     let status: RequestStatus
     let url: String?
@@ -21,7 +20,13 @@ struct GetUnlockRequest: TypescriptPair {
     let appCategories: [String]
     let requestProtocol: String?
     let createdAt: Date
+
+    static var __typeName: String {
+      "UnlockRequest"
+    }
   }
+
+  typealias Input = UnlockRequest.Id
 }
 
 // resolver

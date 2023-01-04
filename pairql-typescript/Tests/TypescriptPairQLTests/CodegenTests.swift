@@ -13,19 +13,19 @@ extension Union2: NamedType where T1 == String, T2 == Bool {
 
 extension DeviceModelFamily: GlobalType {}
 
-enum Nested {
-  struct Inner: TypescriptNestable, GlobalType {
-    let inner: String
-  }
-
-  struct Outer: TypescriptNestable, PairOutput, GlobalType {
-    let outer: String
-    let inners: [Inner]
-  }
-}
-
 final class CodegenTests: XCTestCase {
-  func testTypealiasWrappedByAliasStruct() {
+  func testGlobalNestedTypesDeriveCorrectlyWithInputOutputVars() {
+    enum Nested {
+      struct Inner: TypescriptNestable, GlobalType {
+        let inner: String
+      }
+
+      struct Outer: TypescriptNestable, PairOutput, GlobalType {
+        let outer: String
+        let inners: [Inner]
+      }
+    }
+
     struct Pair1: TypescriptPair {
       static var auth: ClientAuth = .admin
       typealias Output = [Nested.Outer]
@@ -33,17 +33,17 @@ final class CodegenTests: XCTestCase {
 
     struct Pair2: TypescriptPair {
       static var auth: ClientAuth = .admin
-      typealias Output = Alias<Nested.Outer>
+      typealias Output = Nested.Outer
     }
 
-    expect(Pair1.Output.ts).toEqual(
+    expect(Pair1.Output.outputTs).toEqual(
       """
-      export type __self__ = Array<Outer>
+      export type Output = Array<Outer>
       """
     )
-    expect(Pair2.Output.ts).toEqual(
+    expect(Pair2.Output.outputTs).toEqual(
       """
-      export type __self__ = Outer
+      export type Output = Outer
       """
     )
   }
@@ -124,15 +124,7 @@ final class CodegenTests: XCTestCase {
     // the root type definition
     expect(DeviceModelFamily.ts).toEqual(
       """
-      export enum DeviceModelFamily {
-        macBookAir,
-        macBookPro,
-        mini,
-        iMac,
-        studio,
-        pro,
-        unknown,
-      }
+      export type DeviceModelFamily = 'macBookAir' | 'macBookPro' | 'mini' | 'iMac' | 'studio' | 'pro' | 'unknown';
       """
     )
 
@@ -177,15 +169,7 @@ final class CodegenTests: XCTestCase {
     enum StringEnum: String, Codable, CaseIterable, TypescriptRepresentable {
       case foo, bar, baz
     }
-    expect(StringEnum.ts).toEqual(
-      """
-      export enum __self__ {
-        foo,
-        bar,
-        baz,
-      }
-      """
-    )
+    expect(StringEnum.ts).toEqual("export type __self__ = 'foo' | 'bar' | 'baz';")
   }
 
   func testVendedTypes() throws {
