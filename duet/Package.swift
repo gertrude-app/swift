@@ -15,7 +15,7 @@ let package = Package(
     .package(path: "../x-kit"),
     .package(path: "../x-expect"),
     .package("vapor/fluent-kit@1.16.0"),
-    .package("pointfreeco/swift-tagged@0.6.0"),
+    .package("jaredh159/swift-tagged@0.8.2"),
     .package("wickwirew/Runtime@2.2.4"),
   ],
   targets: [

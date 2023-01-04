@@ -32,9 +32,15 @@ public enum ClientAuth: String {
 
 public struct PairJsonEncodingError: Error {}
 
+private let encoder = { () -> JSONEncoder in
+  let encoder = JSONEncoder()
+  encoder.dateEncodingStrategy = .iso8601
+  return encoder
+}()
+
 public extension PairOutput {
   func jsonData() throws -> Data {
-    try JSONEncoder().encode(self)
+    try encoder.encode(self)
   }
 
   func json() throws -> String {

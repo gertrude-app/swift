@@ -12,5 +12,9 @@ public extension Configure {
       "pairql", "**",
       use: PairQLRoute.handler(_:)
     )
+    app.get(
+      "reset-9cec5bbfd7f0",
+      use: ResetRoute.handler(_:)
+    )
   }
 }

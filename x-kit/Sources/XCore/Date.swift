@@ -6,7 +6,7 @@ public extension Date {
     isoFormatter().string(from: self)
   }
 
-  init?(fromIsoString isoString: String) throws {
+  init(fromIsoString isoString: String) throws {
     guard let date = isoFormatter().date(from: isoString) else {
       throw XCore.Date.Error.isoStringConversion(isoString)
     }

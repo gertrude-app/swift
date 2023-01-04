@@ -264,11 +264,11 @@
       },
       {
         "package": "swift-tagged",
-        "repositoryURL": "https://github.com/pointfreeco/swift-tagged.git",
+        "repositoryURL": "https://github.com/jaredh159/swift-tagged.git",
         "state": {
           "branch": null,
-          "revision": "33f44ceb793b12d6af5019cbe26f8b0e66e6389f",
-          "version": "0.8.0"
+          "revision": "cb4284055f6e9cc5576ff9be13723b3a039905a5",
+          "version": "0.8.2"
         }
       },
       {

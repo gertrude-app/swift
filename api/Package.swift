@@ -9,7 +9,7 @@ let package = Package(
     .package("vapor/fluent@4.5.0"),
     .package("vapor/fluent-postgres-driver@2.4.0"),
     .package("onevcat/Rainbow@4.0.1"),
-    .package("pointfreeco/swift-tagged@0.8.0"),
+    .package("jaredh159/swift-tagged@0.8.2"),
     .package("pointfreeco/vapor-routing@0.1.2"),
     .package(path: "../duet"),
     .package(path: "../shared"),

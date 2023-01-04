@@ -95,7 +95,7 @@ enum DashboardTsCodegenRoute {
 
     let fetcher = """
     \(functionName)(input: T.\(name).Input): Promise<T.Result<T.\(name).Output>> {
-      return query<T.\(name).Input, T.\(name).Output>(input, ClientAuth.\(P.auth), `\(P.name)`);
+      return query<T.\(name).Input, T.\(name).Output>(input, `\(P.auth)`, `\(P.name)`);
     }
     """
     return .init(pair: pair, fetcher: fetcher)
@@ -107,6 +107,7 @@ enum DashboardTsCodegenRoute {
 extension DeviceModelFamily: GlobalType {}
 extension AppScope: GlobalType {}
 extension RequestStatus: GlobalType {}
+extension ClientAuth: GlobalType {}
 extension AppScope: TypescriptRepresentable {}
 extension AppScope.Single: TypescriptRepresentable {}
 extension Shared.Key: TypescriptRepresentable {}

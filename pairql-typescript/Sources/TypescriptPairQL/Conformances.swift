@@ -67,15 +67,4 @@ extension NoInput: TypescriptRepresentable {
   public static var customTs: String? { "export type __self__ = void;" }
 }
 
-extension ClientAuth: TypescriptRepresentable {
-  public static var customTs: String? {
-    guard let info = try? typeInfo(of: ClientAuth.self) else {
-      return "export type ClientAuth = never; /* !! runtime introspection failed */"
-    }
-    return """
-    export enum ClientAuth {
-      \(info.cases.map(\.name).joined(separator: ",\n  ")),
-    }
-    """
-  }
-}
+extension ClientAuth: TypescriptRepresentable {}
