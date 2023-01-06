@@ -92,6 +92,7 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(output).toEqual(.init(
       id: admin.id,
       email: admin.email.rawValue,
+      subscriptionStatus: admin.subscriptionStatus,
       notifications: [.init(
         id: notification.id,
         trigger: notification.trigger,
@@ -298,13 +299,16 @@ final class DashboardAdminResolverTests: ApiTestCase {
       in: context(admin)
     )
 
-    let expected = GetAdminKeychains.Keychain(
-      id: admin.keychain.id,
-      name: admin.keychain.name,
-      description: admin.keychain.description,
-      isPublic: admin.keychain.isPublic,
-      authorId: admin.id,
-      keys: [.init(from: admin.key)]
+    let expected = GetAdminKeychains.AdminKeychain(
+      summary: KeychainSummary(
+        id: admin.keychain.id,
+        authorId: admin.id,
+        name: admin.keychain.name,
+        description: admin.keychain.description,
+        isPublic: admin.keychain.isPublic,
+        numKeys: 1
+      ),
+      keys: [.init(from: admin.key, keychainId: admin.keychain.id)]
     )
 
     expect(listOutput).toEqual([expected])
@@ -500,6 +504,7 @@ final class DashboardAdminResolverTests: ApiTestCase {
 
     let output = try await DeleteActivityItems.resolve(
       with: DeleteActivityItems.Input(
+        userId: user.id,
         keystrokeLineIds: [keystrokeLine.id],
         screenshotIds: [screenshot.id]
       ),
@@ -514,14 +519,14 @@ final class DashboardAdminResolverTests: ApiTestCase {
   // helpers
 
   private func context(_ admin: Admin) -> AdminContext {
-    .init(dashboardUrl: "", admin: admin)
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin)
   }
 
   private func context(_ admin: AdminEntities) -> AdminContext {
-    .init(dashboardUrl: "", admin: admin.model)
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
   }
 
   private func context(_ admin: AdminWithKeychainEntities) -> AdminContext {
-    .init(dashboardUrl: "", admin: admin.model)
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
   }
 }

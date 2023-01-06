@@ -2,7 +2,8 @@ import DuetSQL
 import MacAppRoute
 import Vapor
 
-struct UserContext {
+struct UserContext: ResolverContext {
+  let requestId: String
   let user: User
 }
 

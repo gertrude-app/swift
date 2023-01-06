@@ -19,7 +19,12 @@ extension LoginMagicLink: Resolver {
     in context: DashboardContext
   ) async throws -> Output {
     guard let adminId = await Current.ephemeral.adminIdFromMagicLinkToken(input.token) else {
-      throw Abort(.notFound)
+      throw context.error(
+        "9a314d21",
+        .unauthorized,
+        "Magic link token invalid or expired",
+        .magicLinkTokenNotFound
+      )
     }
     let token = try await Current.db.create(AdminToken(adminId: adminId))
     return Output(token: token.value, adminId: adminId)

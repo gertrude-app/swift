@@ -14,7 +14,10 @@ struct DeleteActivityItems: TypescriptPair {
 // resolver
 
 extension DeleteActivityItems: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(
+    with input: Input,
+    in context: AdminContext
+  ) async throws -> Output {
     let user = try await context.verifiedUser(from: input.userId)
     let devicesIds = (try await user.devices()).map(\.id)
     async let keystrokes = try await Current.db.query(KeystrokeLine.self)

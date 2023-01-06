@@ -58,16 +58,18 @@ extension GetUserActivityDays: Resolver {
             .all()
 
           _ = try await (screenshots, keystrokeLines)
-          fatalError()
 
-          // let coalesced = try await coalesce(screenshots, keystrokeLines)
-          // let deletedCount = coalesced.lazy.filter(\.isDeleted).count
+          let coalesced = try await coalesce(screenshots, keystrokeLines)
+          let deletedCount = coalesced.lazy.filter(\.isDeleted).count
 
-          // return AppSchema.MonitoringRangeCounts(
-          //   dateRange: .init(start: start.isoString, end: end.isoString),
-          //   notDeletedCount: coalesced.count - deletedCount,
-          //   deletedCount: deletedCount
-          // )
+          var day = start
+          day.addTimeInterval(.hours(12))
+
+          return .init(
+            date: day,
+            numApproved: deletedCount,
+            totalItems: coalesced.count
+          )
         }
       }
       var days: [GetUserActivityDays.Day] = []

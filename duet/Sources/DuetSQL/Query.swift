@@ -159,16 +159,8 @@ public struct DuetQuery<M: Model> {
     )
   }
 
-  public func firstOrThrowNotFound() async throws -> M {
-    try await all().firstOrThrowNotFound()
-  }
-
-  public func first() async throws -> M {
-    try await all().firstOrThrowNotFound()
-  }
-
-  public func firstOrThrow(_ error: Error) async throws -> M {
-    try await all().firstOrThrow(error)
+  public func first(orThrow error: Error = DuetSQLError.notFound) async throws -> M {
+    try await all().first(orThrow: error)
   }
 
   public func count() async throws -> Int {

@@ -103,11 +103,11 @@ public enum Postgres {
       case .null:
         return "unknown"
       case .date:
-        return "timestamp"
+        return "timestamp with time zone"
       case .json:
         return "jsonb"
       case .currentTimestamp:
-        return "timestamp"
+        return "timestamp with time zone"
       }
     }
 

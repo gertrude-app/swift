@@ -71,7 +71,7 @@ extension GetUserActivityDay: Resolver {
     return Output(
       userName: user.name,
       numDeleted: coalesced.lazy.filter(\.isDeleted).count,
-      items: coalesced.lazy.filter { !$0.isDeleted }
+      items: coalesced.lazy.filter(\.notDeleted)
     )
   }
 }
@@ -131,6 +131,7 @@ extension UserActivity.Screenshot {
     width = screenshot.width
     height = screenshot.height
     createdAt = screenshot.createdAt
+    deletedAt = screenshot.deletedAt
   }
 }
 
@@ -141,5 +142,6 @@ extension UserActivity.CoalescedKeystrokeLine {
     appName = keystroke.appName
     line = keystroke.line
     createdAt = keystroke.createdAt
+    deletedAt = keystroke.deletedAt
   }
 }

@@ -102,7 +102,7 @@ private func derive(
 
   if info.kind == .enum {
     var enumTs = """
-    export type __self__ = \(info.cases.map { "'\($0.name)'" }.joined(separator: " | "));
+    export type __self__ = \(info.cases.map { "'\($0.name)'" }.joined(separator: " | "))
     """
     if derivingRootGlobalType {
       enumTs = identify(enumTs, sharedTypeName ?? "\(type)")

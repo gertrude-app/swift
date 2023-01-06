@@ -2,9 +2,11 @@ import DuetSQL
 import MacAppRoute
 import Vapor
 
-extension MacAppRoute: RouteResponder {
-  struct MacAppContext {}
+struct MacAppContext: ResolverContext {
+  let requestId: String
+}
 
+extension MacAppRoute: RouteResponder {
   static func respond(to route: Self, in context: MacAppContext) async throws -> Response {
     switch route {
 
@@ -18,7 +20,7 @@ extension MacAppRoute: RouteResponder {
       let user = try await Current.db.query(User.self)
         .where(.id == token.userId)
         .first()
-      let userContext = UserContext(user: user)
+      let userContext = UserContext(requestId: context.requestId, user: user)
       return try await AuthedUserRoute.respond(to: userRoute, in: userContext)
     }
   }

@@ -4,7 +4,7 @@ import Vapor
 import XStripe
 
 struct GetCheckoutUrl: TypescriptPair {
-  static var auth: ClientAuth = .admin
+  static var auth: ClientAuth = .none
 
   struct Input: TypescriptPairInput {
     var adminId: Admin.Id

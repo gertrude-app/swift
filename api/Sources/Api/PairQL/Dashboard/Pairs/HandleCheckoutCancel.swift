@@ -5,7 +5,7 @@ struct HandleCheckoutCancel: TypescriptPair {
   static var auth: ClientAuth = .none
 
   struct Input: TypescriptPairInput {
-    var stripeCheckoutSessionid: String
+    var stripeCheckoutSessionId: String
   }
 }
 
@@ -16,7 +16,7 @@ extension HandleCheckoutCancel: Resolver {
     with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
-    let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionid)
+    let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionId)
     let admin = try await Current.db.find(session.adminId)
     admin.subscriptionStatus = .signupCanceled
     try await Current.db.update(admin)

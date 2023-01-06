@@ -2,7 +2,8 @@ import DuetSQL
 import PairQL
 import Vapor
 
-struct AdminContext {
+struct AdminContext: ResolverContext {
+  let requestId: String
   let dashboardUrl: String
   let admin: Admin
 

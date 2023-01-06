@@ -7,7 +7,7 @@ import XStripe
 @testable import Api
 
 final class DasboardUnauthedResolverTests: ApiTestCase {
-  let context = DashboardContext(dashboardUrl: "/")
+  let context = DashboardContext.mock
 
   func testAllowingSignupsReturnsFalseWhenExceedingNumAllowed() async throws {
     Current.env = .init(get: { _ in "0" })
@@ -130,7 +130,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     }
 
     let output = try await HandleCheckoutSuccess.resolve(
-      with: .init(stripeCheckoutSessionid: sessionId),
+      with: .init(stripeCheckoutSessionId: sessionId),
       in: context
     )
 
@@ -159,7 +159,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     let output = try await RequestMagicLink.resolve(
       with: .init(email: admin.email.rawValue, redirect: nil),
-      in: .init(dashboardUrl: "/dash")
+      in: .init(requestId: "", dashboardUrl: "/dash")
     )
 
     expect(output).toEqual(.success)
@@ -174,7 +174,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     let output = try await RequestMagicLink.resolve(
       with: .init(email: admin.email.rawValue, redirect: "/foo"),
-      in: .init(dashboardUrl: "/dash")
+      in: .init(requestId: "", dashboardUrl: "/dash")
     )
 
     expect(output).toEqual(.success)

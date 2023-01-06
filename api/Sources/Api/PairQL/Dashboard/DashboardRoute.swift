@@ -4,7 +4,8 @@ import PairQL
 import TypescriptPairQL
 import Vapor
 
-struct DashboardContext {
+struct DashboardContext: ResolverContext {
+  let requestId: String
   let dashboardUrl: String
 }
 
@@ -31,14 +32,21 @@ extension DashboardRoute: RouteResponder {
     case .adminAuthed(let uuid, let adminRoute):
       let token = try await Current.db.query(AdminToken.self)
         .where(.value == uuid)
-        .first()
+        .first(orThrow: context.error("8df93d61", .loggedOut, "Admin token not found"))
+
       let admin = try await Current.db.query(Admin.self)
         .where(.id == token.adminId)
         .first()
-      let adminContext = AdminContext(dashboardUrl: context.dashboardUrl, admin: admin)
+
+      let adminContext = AdminContext(
+        requestId: context.requestId,
+        dashboardUrl: context.dashboardUrl,
+        admin: admin
+      )
+
       return try await AuthedAdminRoute.respond(to: adminRoute, in: adminContext)
     case .unauthed(let route):
-      fatalError("so not implemented \(route)")
+      return try await UnauthedRoute.respond(to: route, in: context)
     }
   }
 }

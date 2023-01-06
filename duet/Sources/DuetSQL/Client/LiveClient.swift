@@ -31,7 +31,7 @@ public struct LiveClient: Client {
     )
     let models = try await SQL.execute(prepared, on: sql)
       .compactMap { try $0.decode(M.self) }
-      .firstOrThrowNotFound()
+      .first()
     return models
   }
 

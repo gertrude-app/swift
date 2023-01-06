@@ -31,6 +31,7 @@ enum DashboardTsCodegenRoute {
         Admin.SubscriptionStatus.__typeName: Admin.SubscriptionStatus.ts,
         "\(GetAdminKeychains.AdminKeychain.self)": GetAdminKeychains.AdminKeychain.ts,
         "\(GetAdminKeychains.Key.self)": GetAdminKeychains.Key.ts,
+        PqlError.__typeName: PqlError.ts,
       ],
       pairs: [
         AllowingSignups.name: ts(for: AllowingSignups.self),
@@ -109,8 +110,15 @@ extension AppScope: GlobalType {}
 extension RequestStatus: GlobalType {}
 extension ClientAuth: GlobalType {}
 extension AppScope: TypescriptRepresentable {}
+extension PqlError: TypescriptRepresentable {}
 extension AppScope.Single: TypescriptRepresentable {}
 extension Shared.Key: TypescriptRepresentable {}
+extension PqlError.Kind: TypescriptRepresentable {}
+extension PqlError.Tag: TypescriptRepresentable {}
+
+extension PqlError: GlobalType {
+  public static var __typeName = "ServerPqlError"
+}
 
 extension AppScope.Single: GlobalType {
   public static var __typeName = "SingleAppScope"

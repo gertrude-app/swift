@@ -24,7 +24,7 @@
   let token: AdminToken
 
   var context: AdminContext {
-    .init(dashboardUrl: "/", admin: model)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: model)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
@@ -39,7 +39,7 @@
   let key: Key
 
   var context: AdminContext {
-    .init(dashboardUrl: "/", admin: model)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: model)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {

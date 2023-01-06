@@ -6,12 +6,12 @@ struct SaveKey: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
-    let isNew: Bool
-    let id: Key.Id
-    let keychainId: Keychain.Id
-    let key: Shared.Key
-    let comment: String?
-    let expiration: Date?
+    var isNew: Bool
+    var id: Key.Id
+    var keychainId: Keychain.Id
+    var key: Shared.Key
+    var comment: String?
+    var expiration: Date?
   }
 }
 
@@ -19,6 +19,27 @@ struct SaveKey: TypescriptPair {
 
 extension SaveKey: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    fatalError("todo")
+    let keychain = try await context.admin.keychain(input.keychainId)
+    if input.isNew {
+      let key = try await Current.db.create(Key(
+        id: input.id,
+        keychainId: keychain.id,
+        key: input.key,
+        comment: input.comment,
+        deletedAt: input.expiration
+      ))
+      // duet struggles creating models with `deletedAt` set
+      if let expiration = input.expiration {
+        key.deletedAt = expiration
+        try await Current.db.update(key)
+      }
+    } else {
+      let key = try await Current.db.find(input.id)
+      key.comment = input.comment
+      key.key = input.key
+      key.deletedAt = input.expiration
+      try await Current.db.update(key)
+    }
+    return .success
   }
 }

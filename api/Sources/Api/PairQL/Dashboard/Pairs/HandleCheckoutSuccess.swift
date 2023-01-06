@@ -10,7 +10,7 @@ struct HandleCheckoutSuccess: TypescriptPair {
   static var auth: ClientAuth = .none
 
   struct Input: TypescriptPairInput {
-    var stripeCheckoutSessionid: String
+    var stripeCheckoutSessionId: String
   }
 
   typealias Output = AdminAuth
@@ -23,7 +23,7 @@ extension HandleCheckoutSuccess: Resolver {
     with input: Input,
     in context: DashboardContext
   ) async throws -> Output {
-    let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionid)
+    let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionId)
     let admin = try await Current.db.find(session.adminId)
     let subscriptionId = try session.adminUserSubscriptionId
     admin.subscriptionId = subscriptionId

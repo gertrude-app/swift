@@ -1,8 +1,9 @@
 import PairQL
 import Vapor
+import XStripe
 
 protocol Resolver: Pair {
-  associatedtype Context
+  associatedtype Context: ResolverContext
   static func resolve(with input: Input, in context: Context) async throws -> Output
 }
 
@@ -15,6 +16,16 @@ protocol RouteResponder {
   associatedtype Context
   static func respond(to route: Self, in context: Context) async throws -> Response
 }
+
+protocol ResolverContext {
+  var requestId: String { get }
+}
+
+protocol PqlErrorConvertible: Error {
+  func pqlError<C: ResolverContext>(in: C) -> PqlError
+}
+
+// extensions
 
 extension RouteResponder {
   static func respond<T: PairOutput>(with output: T) async throws -> Response {
@@ -38,6 +49,67 @@ extension PairOutput {
       status: .ok,
       headers: ["Content-Type": "application/json"],
       body: .init(data: try jsonData())
+    )
+  }
+}
+
+extension ResolverContext {
+  func error(
+    _ id: String,
+    _ type: PqlError.Kind,
+    _ debugMessage: String,
+    _ tag: PqlError.Tag? = nil
+  ) -> PqlError {
+    PqlError(id: id, requestId: requestId, type: type, debugMessage: debugMessage, tag: tag)
+  }
+
+  func error(
+    _ id: String,
+    _ type: PqlError.Kind,
+    _ tag: PqlError.Tag? = nil,
+    user userMessage: String
+  ) -> PqlError {
+    PqlError(
+      id: id,
+      requestId: requestId,
+      type: type,
+      debugMessage: userMessage,
+      userMessage: userMessage,
+      tag: tag
+    )
+  }
+
+  func error(
+    id: String,
+    type: PqlError.Kind,
+    debugMessage: String,
+    userMessage: String? = nil,
+    userAction: String? = nil,
+    entityName: String? = nil,
+    tag: PqlError.Tag? = nil,
+    showContactSupport: Bool = false
+  ) -> PqlError {
+    PqlError(
+      id: id,
+      requestId: requestId,
+      type: type,
+      debugMessage: debugMessage,
+      userMessage: userMessage,
+      userAction: userAction,
+      entityName: entityName,
+      tag: tag,
+      showContactSupport: showContactSupport
+    )
+  }
+}
+
+extension Stripe.Api.Error: PqlErrorConvertible {
+  func pqlError<C: ResolverContext>(in context: C) -> PqlError {
+    context.error(
+      id: "xstripe:\(type):\(code ?? "")",
+      type: .serverError,
+      debugMessage: "\(message.map { "\($0), error: " } ?? "")\(self)",
+      showContactSupport: true
     )
   }
 }

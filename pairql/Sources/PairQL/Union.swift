@@ -3,6 +3,10 @@ private struct Case<T: PairNestable>: PairNestable {
   var value: T
 }
 
+struct UnionDecodingError: Error {
+  var message: String
+}
+
 public enum Union2<
   T1: PairNestable,
   T2: PairNestable
@@ -20,12 +24,16 @@ public enum Union2<
   }
 
   public init(from decoder: Decoder) throws {
+    let typeContainer = try decoder.singleValueContainer()
+    let type = try typeContainer.decode(DecodeType.self).type
     let container = try decoder.singleValueContainer()
-    if let t1 = try? container.decode(Case<T1>.self) {
+    if type == "\(T1.self)", let t1 = try? container.decode(Case<T1>.self) {
       self = .t1(t1.value)
-    } else {
+    } else if type == "\(T2.self)" {
       let t2 = try container.decode(Case<T2>.self)
       self = .t2(t2.value)
+    } else {
+      throw UnionDecodingError(message: "Unexpected or un-decodable type: `\(type)`")
     }
   }
 }
@@ -71,14 +79,22 @@ public enum Union3<
   }
 
   public init(from decoder: Decoder) throws {
+    let typeContainer = try decoder.singleValueContainer()
+    let type = try typeContainer.decode(DecodeType.self).type
     let container = try decoder.singleValueContainer()
-    if let t1 = try? container.decode(Case<T1>.self) {
+    if type == "\(T1.self)", let t1 = try? container.decode(Case<T1>.self) {
       self = .t1(t1.value)
-    } else if let t2 = try? container.decode(Case<T2>.self) {
+    } else if type == "\(T2.self)", let t2 = try? container.decode(Case<T2>.self) {
       self = .t2(t2.value)
-    } else {
+    } else if type == "\(T3.self)" {
       let t3 = try container.decode(Case<T3>.self)
       self = .t3(t3.value)
+    } else {
+      throw UnionDecodingError(message: "Unexpected or un-decodable type: `\(type)`")
     }
   }
+}
+
+private struct DecodeType: Decodable {
+  var type: String
 }

@@ -43,6 +43,13 @@ extension Admin {
     })
   }
 
+  func keychain(_ keychainId: Keychain.Id) async throws -> Keychain {
+    try await Current.db.query(Keychain.self)
+      .where(.authorId == id)
+      .where(.id == keychainId)
+      .first()
+  }
+
   func users() async throws -> [User] {
     try await users.useLoaded(or: {
       try await Current.db.query(User.self)

@@ -1,6 +1,7 @@
 import MacAppRoute
 import Shared
 import TypescriptPairQL
+import Vapor
 import XCTest
 import XExpect
 
@@ -9,18 +10,13 @@ import XExpect
 final class ApiTests: ApiTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
-  func testKeyTsCodegen_isolate() {
+  func testKeyTsCodegen() {
     expect(AppScope.ts).toEqual(
       """
-      export type __self__ =
-        | { type: `unrestricted`  }
-        | { type: `webBrowsers`  }
-        | {
-            type: `single`;
-            single:
-              | { type: `bundleId`; bundleId: string; }
-              | { type: `identifiedAppSlug`; identifiedAppSlug: string; }
-          }
+      export type AppScope =
+        | { type: 'unrestricted'  }
+        | { type: 'webBrowsers'  }
+        | { type: 'single'; single: SingleAppScope }
       """
     )
   }
@@ -93,7 +89,7 @@ final class ApiTests: ApiTestCase {
 
     let response = try await PairQLRoute.respond(
       to: .macApp(.userAuthed(user.token.value.rawValue, .getAccountStatus)),
-      in: .init(headers: .init())
+      in: .mock
     )
 
     expect(response.body.string).toEqual(#"{"status":"active"}"#)
@@ -101,7 +97,19 @@ final class ApiTests: ApiTestCase {
 
   func testResolveUsersAdminAccountStatus() async throws {
     let user = try await Entities.user(admin: { $0.subscriptionStatus = .active })
-    let output = try await GetAccountStatus.resolve(in: .init(user: user.model))
+    let output = try await GetAccountStatus.resolve(in: .init(requestId: "", user: user.model))
     expect(output.status).toEqual(.active)
+  }
+}
+
+extension PairQLRoute.Context {
+  static var mock: Self {
+    .init(requestId: "mock-req-id", headers: .init())
+  }
+}
+
+extension DashboardContext {
+  static var mock: Self {
+    .init(requestId: "mock-req-id", dashboardUrl: "/")
   }
 }

@@ -1,6 +1,7 @@
 import DuetSQL
 import TypescriptPairQL
 import Vapor
+import XCore
 
 struct Login: TypescriptPair {
   static var auth: ClientAuth = .none
@@ -25,7 +26,7 @@ extension Login: Resolver {
   ) async throws -> Output {
     let admin = try await Current.db.query(Admin.self)
       .where(.email == .string(input.email.lowercased()))
-      .first()
+      .first(orThrow: context |> error)
 
     let match: Bool
     switch Env.mode {
@@ -42,10 +43,15 @@ extension Login: Resolver {
       match = try Bcrypt.verify(input.password, created: admin.password)
     }
 
-    if !match {
-      throw Abort(.unauthorized)
-    }
+    if !match { throw context |> error }
+
     let token = try await Current.db.create(AdminToken(adminId: admin.id))
     return .init(adminId: admin.id, token: token.value)
+  }
+}
+
+extension Login {
+  static func error(_ context: DashboardContext) -> PqlError {
+    context.error("1e087878", .unauthorized, user: "Incorrect email or password")
   }
 }
