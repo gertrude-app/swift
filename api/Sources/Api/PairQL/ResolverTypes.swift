@@ -1,5 +1,7 @@
+import DuetSQL
 import PairQL
 import Vapor
+import XCore
 import XStripe
 
 protocol Resolver: Pair {
@@ -111,5 +113,79 @@ extension Stripe.Api.Error: PqlErrorConvertible {
       debugMessage: "\(message.map { "\($0), error: " } ?? "")\(self)",
       showContactSupport: true
     )
+  }
+}
+
+extension DuetSQLError: PqlErrorConvertible {
+  func pqlError<C: ResolverContext>(in context: C) -> PqlError {
+    switch self {
+    case .notFound(let modelType):
+      return context.error(
+        id: "6ac1205a",
+        type: .notFound,
+        debugMessage: "DuetSQL: \(modelType) not found",
+        entityName: modelType
+          .snakeCased
+          .lowercased()
+          .replacingOccurrences(of: "_", with: " ")
+          .capitalizingFirstLetter(),
+        showContactSupport: false
+      )
+    case .decodingFailed:
+      return context.error(
+        id: "416d42b5",
+        type: .serverError,
+        debugMessage: "DuetSQL model decoding failed",
+        showContactSupport: true
+      )
+    case .emptyBulkInsertInput:
+      return context.error(
+        id: "c3d8dbfe",
+        type: .serverError,
+        debugMessage: "DuetSQL: empty bulk insert input",
+        showContactSupport: true
+      )
+    case .invalidEntity:
+      return context.error(
+        id: "cc7c423d",
+        type: .serverError,
+        debugMessage: "DuetSQL: invalid entity",
+        showContactSupport: true
+      )
+    case .missingExpectedColumn(let column):
+      return context.error(
+        id: "a6b2da10",
+        type: .serverError,
+        debugMessage: "DuetSQL: missing expected column `\(column)`",
+        showContactSupport: true
+      )
+    case .nonUniformBulkInsertInput:
+      return context.error(
+        id: "0d09dbca",
+        type: .serverError,
+        debugMessage: "DuetSQL: non-uniform bulk insert input",
+        showContactSupport: true
+      )
+    case .notImplemented(let fn):
+      return context.error(
+        id: "e3b3ae0e",
+        type: .serverError,
+        debugMessage: "DuetSQL: not implemented `\(fn)`",
+        showContactSupport: true
+      )
+    case .tooManyResultsForDeleteOne:
+      return context.error(
+        id: "277b3958",
+        type: .serverError,
+        debugMessage: "DuetSQL: too many results for delete one",
+        showContactSupport: true
+      )
+    }
+  }
+}
+
+private extension String {
+  func capitalizingFirstLetter() -> String {
+    prefix(1).capitalized + dropFirst()
   }
 }

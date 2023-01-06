@@ -1,7 +1,7 @@
 import Foundation
 
 public enum DuetSQLError: Error, Equatable, LocalizedError {
-  case notFound
+  case notFound(String)
   case decodingFailed
   case nonUniformBulkInsertInput
   case emptyBulkInsertInput

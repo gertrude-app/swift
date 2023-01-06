@@ -121,7 +121,7 @@ public struct LiveClient: Client {
       on: sql
     )
     guard let row = rows.first else {
-      throw DuetSQLError.notFound
+      throw DuetSQLError.notFound("\(M.self)")
     }
     let count = try row.decode(model: Count.self)
     return count.count
