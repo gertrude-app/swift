@@ -1,13 +1,14 @@
 import PairQL
 
 public enum UnauthedRoute: PairRoute {
-  case register
+  case connectApp(ConnectApp.Input)
 }
 
 public extension UnauthedRoute {
   static let router = OneOf {
-    Route(/Self.register) {
-      Path { "register" } // todo
+    Route(/Self.connectApp) {
+      Operation(ConnectApp.self)
+      Body(.json(ConnectApp.Input.self))
     }
   }
 }

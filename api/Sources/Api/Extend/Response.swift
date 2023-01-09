@@ -8,4 +8,11 @@ extension Response {
       body: .init(data: (try? JSONEncoder().encode(error)) ?? .init())
     )
   }
+
+  convenience init(graphqlData json: String) {
+    self.init(
+      headers: ["Content-Type": "application/json"],
+      body: .init(string: #"{"data":\#(json)}"#)
+    )
+  }
 }

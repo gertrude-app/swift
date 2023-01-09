@@ -25,22 +25,20 @@ extension LegacyMacAppGraphQLRoute {
 
     let json = """
     {
-      "data": {
-        "user": {
-          "keyloggingEnabled": \(output.keyloggingEnabled),
-          "screenshotsEnabled": \(output.screenshotsEnabled),
-          "screenshotsFrequency": \(output.screenshotsFrequency),
-          "screenshotsResolution": \(output.screenshotsResolution),
-          "keychains": [
-            "keyRecords": \(try JSON.encode(records))
-          ]
-        },
-        "manifest": {
-          "jsonString": \(try JSON.encode(output.appManifest))
-        }
+      "user": {
+        "keyloggingEnabled": \(output.keyloggingEnabled),
+        "screenshotsEnabled": \(output.screenshotsEnabled),
+        "screenshotsFrequency": \(output.screenshotsFrequency),
+        "screenshotsResolution": \(output.screenshotsResolution),
+        "keychains": [
+          "keyRecords": \(try JSON.encode(records))
+        ]
+      },
+      "manifest": {
+        "jsonString": \(try JSON.encode(output.appManifest))
       }
     }
     """
-    return .init(body: .init(string: json))
+    return .init(graphqlData: json)
   }
 }

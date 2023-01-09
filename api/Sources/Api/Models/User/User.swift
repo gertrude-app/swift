@@ -57,4 +57,12 @@ extension User {
         .all()
     })
   }
+
+  func admin() async throws -> Admin {
+    try await admin.useLoaded(or: {
+      try await Current.db.query(Admin.self)
+        .where(.id == adminId)
+        .first()
+    })
+  }
 }

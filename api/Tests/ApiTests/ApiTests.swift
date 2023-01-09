@@ -63,9 +63,18 @@ final class ApiTests: ApiTestCase {
   }
 
   func testUnauthed() throws {
-    var request = URLRequest(url: URL(string: "macos-app/register")!)
+    var request = URLRequest(url: URL(string: "macos-app/ConnectApp")!)
     request.httpMethod = "POST"
-    let route = PairQLRoute.macApp(.unauthed(.register))
+    let route = PairQLRoute.macApp(.unauthed(.connectApp(.init(
+      verificationCode: 0,
+      appVersion: "1.0.0",
+      hostname: nil,
+      modelIdentifier: "MacBookPro16,1",
+      username: "kids",
+      fullUsername: "kids",
+      numericId: 501,
+      serialNumber: "X02VH0Y6JG5J"
+    ))))
     let matched = try PairQLRoute.router.match(request: request)
     expect(matched).toEqual(route)
   }
