@@ -20,7 +20,7 @@ extension MacAppRoute: RouteResponder {
       let user = try await Current.db.query(User.self)
         .where(.id == token.userId)
         .first()
-      let userContext = UserContext(requestId: context.requestId, user: user)
+      let userContext = UserContext(requestId: context.requestId, user: user, token: token)
       return try await AuthedUserRoute.respond(to: userRoute, in: userContext)
     }
   }

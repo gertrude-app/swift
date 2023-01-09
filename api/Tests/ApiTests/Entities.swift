@@ -93,6 +93,7 @@ extension UserEntities {
       config(&$0)
       $0.userId = model.id
     })
+    token.deviceId = device.id
     return .init(model: model, device: device, token: token, admin: admin)
   }
 }

@@ -12,8 +12,14 @@ enum LegacyMacAppGraphQLRoute {
     let operationName = try request.content.decode(Operation.self).operationName
     print("Legacy GraphQL operation: \(operationName)")
     switch operationName {
+    case "AccountStatus":
+      return try await accountStatus(request)
     case "AppInstructions":
       return try await appInstructions(request)
+    case "ConnectApp":
+      return try await connectApp(request)
+    case "CreateSuspendFilterRequest":
+      return try await createSuspendFilterRequest(request)
     default:
       return .init(status: .noContent)
     }
@@ -95,6 +101,22 @@ enum LegacyMacAppGraphQLRoute {
     """
     return .init(graphqlData: json)
   }
+
+  static func createSuspendFilterRequest(_ request: Request) async throws -> Response {
+    struct Input: PairInput {
+      var duration: Int
+      var requestComment: String?
+    }
+    let input = try request.content.decode(Input.self)
+    _ = try await CreateSuspendFilterRequest.resolve(
+      with: .init(duration: input.duration, comment: input.requestComment),
+      in: try await context(request)
+    )
+    let json = """
+    { "request": { "id": "deadbeef-dead-beef-dead-deadbeefdead" } }
+    """
+    return .init(graphqlData: json)
+  }
 }
 
 // extensions
@@ -115,7 +137,7 @@ extension LegacyMacAppGraphQLRoute {
     }
 
     let user = try await Current.db.find(userToken.userId)
-    return .init(requestId: request.id, user: user)
+    return .init(requestId: request.id, user: user, token: userToken)
   }
 }
 

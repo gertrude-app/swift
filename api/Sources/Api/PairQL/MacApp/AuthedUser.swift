@@ -4,6 +4,7 @@ import Vapor
 struct UserContext: ResolverContext {
   let requestId: String
   let user: User
+  let token: UserToken
 }
 
 extension AuthedUserRoute: RouteResponder {

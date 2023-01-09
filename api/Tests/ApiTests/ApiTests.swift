@@ -74,6 +74,7 @@ final class ApiTests: ApiTestCase {
       numericId: 501,
       serialNumber: "X02VH0Y6JG5J"
     )
+
     var request = URLRequest(url: URL(string: "macos-app/ConnectApp")!)
     request.httpMethod = "POST"
     request.httpBody = try JSON.encode(input).data(using: .utf8)
@@ -110,7 +111,8 @@ final class ApiTests: ApiTestCase {
 
   func testResolveUsersAdminAccountStatus() async throws {
     let user = try await Entities.user(admin: { $0.subscriptionStatus = .active })
-    let output = try await GetAccountStatus.resolve(in: .init(requestId: "", user: user.model))
+    let context = UserContext(requestId: "", user: user.model, token: user.token)
+    let output = try await GetAccountStatus.resolve(in: context)
     expect(output.status).toEqual(.active)
   }
 }

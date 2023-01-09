@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 import Tagged
 
 final class UserToken: Codable {
@@ -11,7 +11,7 @@ final class UserToken: Codable {
   var deletedAt: Date?
 
   var user = Parent<User>.notLoaded
-  // var device = OptionalParent<Device>.notLoaded
+  var device = OptionalParent<Device>.notLoaded
 
   init(
     id: Id = .init(),
@@ -30,4 +30,17 @@ final class UserToken: Codable {
 
 extension UserToken {
   typealias Value = Tagged<(UserToken, value: ()), UUID>
+}
+
+// loaders
+
+extension UserToken {
+  func device() async throws -> Device? {
+    try await device.useLoaded(or: { () async throws -> Device? in
+      guard let deviceId = deviceId else { return nil }
+      return try await Current.db.query(Device.self)
+        .where(.id == deviceId)
+        .first()
+    })
+  }
 }
