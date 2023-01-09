@@ -2,6 +2,7 @@ import MacAppRoute
 import Shared
 import TypescriptPairQL
 import Vapor
+import XCore
 import XCTest
 import XExpect
 
@@ -63,9 +64,7 @@ final class ApiTests: ApiTestCase {
   }
 
   func testUnauthed() throws {
-    var request = URLRequest(url: URL(string: "macos-app/ConnectApp")!)
-    request.httpMethod = "POST"
-    let route = PairQLRoute.macApp(.unauthed(.connectApp(.init(
+    let input = ConnectApp.Input(
       verificationCode: 0,
       appVersion: "1.0.0",
       hostname: nil,
@@ -74,9 +73,14 @@ final class ApiTests: ApiTestCase {
       fullUsername: "kids",
       numericId: 501,
       serialNumber: "X02VH0Y6JG5J"
-    ))))
+    )
+    var request = URLRequest(url: URL(string: "macos-app/ConnectApp")!)
+    request.httpMethod = "POST"
+    request.httpBody = try JSON.encode(input).data(using: .utf8)
+
+    let expectedRoute = PairQLRoute.macApp(.unauthed(.connectApp(input)))
     let matched = try PairQLRoute.router.match(request: request)
-    expect(matched).toEqual(route)
+    expect(matched).toEqual(expectedRoute)
   }
 
   func testHeaderAuthed() throws {
