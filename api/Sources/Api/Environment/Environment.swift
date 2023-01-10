@@ -10,6 +10,7 @@ struct Environment {
   var db: DuetSQL.Client = ThrowingClient()
   var env: EnvironmentVariables = .live
   var ephemeral: Ephemeral = .init()
+  var logger: Logger = .null
   var sendGrid: SendGrid.Client = .mock
   var slack = XSlack.Slack.Client()
   var stripe: Stripe.Client = .mock
@@ -26,7 +27,8 @@ extension Environment {
     date: { .mock },
     db: ThrowingClient(),
     env: .mock,
-    ephemeral: Ephemeral(),
+    ephemeral: .init(),
+    logger: .null,
     sendGrid: .mock,
     slack: .mock,
     stripe: .mock,

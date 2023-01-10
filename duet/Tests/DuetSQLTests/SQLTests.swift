@@ -328,7 +328,7 @@ final class SqlTests: XCTestCase {
   }
 
   func testDates() throws {
-    let date = try? Date(fromIsoString: "2021-12-14T17:16:16.896Z")!
+    let date = try? Date(fromIsoString: "2021-12-14T17:16:16.896Z")
     let statement = try SQL.insert(
       into: Thing.self,
       values: [.createdAt: .date(date), .updatedAt: .currentTimestamp]

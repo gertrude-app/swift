@@ -1,3 +1,4 @@
+import Rainbow
 import SotoS3
 import Vapor
 
@@ -9,6 +10,7 @@ extension Configure {
 
     guard Env.mode != .test else { return }
 
+    Current.logger = app.logger
     Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
     Current.stripe = .live(secretKey: Env.STRIPE_SECRET_KEY)
     Current.aws = .live(
@@ -23,6 +25,8 @@ extension Configure {
         endpoint: Env.CLOUD_STORAGE_ENDPOINT
       )
     )
+
+    Current.logger.notice("App environment is \(Env.mode.coloredName)")
   }
 }
 
@@ -62,6 +66,19 @@ extension Vapor.Environment {
         return "staging"
       case .test:
         return "testing"
+      }
+    }
+
+    var coloredName: String {
+      switch self {
+      case .prod:
+        return name.uppercased().red.bold
+      case .dev:
+        return name.uppercased().green.bold
+      case .staging:
+        return name.uppercased().yellow.bold
+      case .test:
+        return name.uppercased().magenta.bold
       }
     }
   }

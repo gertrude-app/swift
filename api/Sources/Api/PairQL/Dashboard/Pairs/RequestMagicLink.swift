@@ -22,7 +22,7 @@ extension RequestMagicLink: Resolver {
       .first()
 
     guard let admin = admin else {
-      // Current.logger.error("Failed attempt to retrieve magic link for email: `\(args.email)`")
+      Current.logger.error("Failed attempt to retrieve magic link for email: `\(input.email)`")
       #if !DEBUG
         try? await Task.sleep(seconds: 2)
       #endif

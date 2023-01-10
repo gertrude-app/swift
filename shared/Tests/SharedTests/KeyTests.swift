@@ -104,7 +104,7 @@ final class KeyTests: XCTestCase {
   func testJsonCodingKeys() {
     let cases: [(Key, String)] = [
       (
-        Key.ipAddress(ip: "1.2.3.4", scope: .unrestricted),
+        Key.ipAddress(ipAddress: "1.2.3.4", scope: .unrestricted),
         """
         {
           "ipAddress": "1.2.3.4",

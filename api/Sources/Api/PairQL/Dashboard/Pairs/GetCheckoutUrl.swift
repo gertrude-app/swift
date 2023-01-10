@@ -39,8 +39,7 @@ extension GetCheckoutUrl: Resolver {
 
     let session = try await Current.stripe.createCheckoutSession(sessionData)
     guard let url = session.url else {
-      // TODO: logger
-      // Current.logger.error("created stripe checkout session, but received no url")
+      Current.logger.error("created stripe checkout session, but received no url")
       throw Abort(.internalServerError)
     }
 

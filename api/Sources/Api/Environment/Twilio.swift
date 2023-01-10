@@ -19,11 +19,10 @@ private func send(_ text: Text) {
   request.httpBody = "From=\(from)&To=\(to)&Body=\(text.message)".data(using: .utf8)
 
   URLSession.shared.dataTask(with: request) { data, response, error in
-    // if let error = error {
-    //   // TODO: log
-    //   // Current.logger.warning("Error sending twilio sms: \(error.localizedDescription)")
-    //   return
-    // }
+    if let error = error {
+      Current.logger.warning("Error sending twilio sms: \(error.localizedDescription)")
+      return
+    }
   }
   .resume()
 }

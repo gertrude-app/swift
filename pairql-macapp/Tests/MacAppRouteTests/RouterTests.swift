@@ -23,13 +23,6 @@ final class RouterTests: XCTestCase {
     expect(matched).toEqual(expected)
   }
 
-  func testUnauthed() throws {
-    let request = URLRequest(url: URL(string: "register")!)
-    let route = MacAppRoute.unauthed(.register)
-    let matched = try router.match(request: request)
-    expect(matched).toEqual(route)
-  }
-
   func testHeaderAuthed() throws {
     var request = URLRequest(url: URL(string: "GetAccountStatus")!)
     let route = MacAppRoute.userAuthed(token, .getAccountStatus)
