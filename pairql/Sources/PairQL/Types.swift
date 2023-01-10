@@ -52,6 +52,7 @@ public extension PairOutput {
 }
 
 extension Array: PairOutput where Element: PairOutput {}
+extension Array: PairInput where Element: PairInput {}
 
 public struct NoInput: PairInput {
   public init() {}
@@ -72,8 +73,8 @@ public struct SuccessOutput: PairOutput {
   public static var failure: Self { .init(false) }
 }
 
-extension Array: PairInput where Element == String {}
 extension String: PairOutput {}
+extension String: PairInput {}
 extension UUID: PairInput {}
 
 public struct Operation<P: Pair>: ParserPrinter {

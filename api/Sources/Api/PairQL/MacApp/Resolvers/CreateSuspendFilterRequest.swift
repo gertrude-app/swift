@@ -6,12 +6,8 @@ extension CreateSuspendFilterRequest: Resolver {
     with input: Input,
     in context: UserContext
   ) async throws -> Output {
-    guard let device = try await context.token.device() else {
-      throw Abort(.notFound, reason: "missing device")
-    }
-
     try await Current.db.create(SuspendFilterRequest(
-      deviceId: device.id,
+      deviceId: try await context.device().id,
       status: .pending,
       scope: .unrestricted,
       duration: .init(rawValue: input.duration),

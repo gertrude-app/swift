@@ -1,5 +1,6 @@
 import DuetMock
 import Foundation
+import Shared
 
 @testable import Api
 
@@ -15,8 +16,8 @@ extension NetworkDecision: Mock {
   public static var random: NetworkDecision {
     NetworkDecision(
       deviceId: .init(),
-      verdict: Verdict.allCases.shuffled().first!,
-      reason: Reason.allCases.shuffled().first!,
+      verdict: NetworkDecisionVerdict.allCases.shuffled().first!,
+      reason: NetworkDecisionReason.allCases.shuffled().first!,
       createdAt: Date()
     )
   }

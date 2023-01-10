@@ -35,14 +35,14 @@ struct RequestTables: GertieMigration {
   func upNetworkDecisions(_ sql: SQLDatabase) async throws {
     typealias M = NetworkDecision.M5
 
-    try await sql.create(enum: NetworkDecision.Verdict.self)
-    try await sql.create(enum: NetworkDecision.Reason.self)
+    try await sql.create(enum: NetworkDecisionVerdict.self)
+    try await sql.create(enum: NetworkDecisionReason.self)
 
     try await sql.create(table: NetworkDecision.M5.self) {
       Column(.id, .uuid, .primaryKey)
       Column(M.deviceId, .uuid)
-      Column(M.verdict, .enum(NetworkDecision.Verdict.self))
-      Column(M.reason, .enum(NetworkDecision.Reason.self))
+      Column(M.verdict, .enum(NetworkDecisionVerdict.self))
+      Column(M.reason, .enum(NetworkDecisionReason.self))
       Column(M.ipProtocolNumber, .bigint, .nullable)
       Column(M.hostname, .text, .nullable)
       Column(M.ipAddress, .text, .nullable)
@@ -61,8 +61,8 @@ struct RequestTables: GertieMigration {
     try await sql.drop(constraint: networkDecisionDeviceFk)
     try await sql.drop(constraint: networkDecisionKeyFk)
     try await sql.drop(table: NetworkDecision.M5.self)
-    try await sql.drop(enum: NetworkDecision.Verdict.self)
-    try await sql.drop(enum: NetworkDecision.Reason.self)
+    try await sql.drop(enum: NetworkDecisionVerdict.self)
+    try await sql.drop(enum: NetworkDecisionReason.self)
   }
 
   // table: unlock_requests

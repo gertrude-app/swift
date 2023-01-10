@@ -1,3 +1,4 @@
+import SotoS3
 import Vapor
 
 typealias Env = Vapor.Environment
@@ -5,8 +6,23 @@ typealias Env = Vapor.Environment
 extension Configure {
   static func env(_ app: Application) {
     Env.mode = .init(from: app.environment)
+
+    guard Env.mode != .test else { return }
+
     Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
     Current.stripe = .live(secretKey: Env.STRIPE_SECRET_KEY)
+    Current.aws = .live(
+      s3: .init(
+        client: AWSClient(
+          credentialProvider: .static(
+            accessKeyId: Env.CLOUD_STORAGE_KEY,
+            secretAccessKey: Env.CLOUD_STORAGE_SECRET
+          ),
+          httpClientProvider: .shared(app.http.client.shared)
+        ),
+        endpoint: Env.CLOUD_STORAGE_ENDPOINT
+      )
+    )
   }
 }
 

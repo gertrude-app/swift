@@ -241,12 +241,12 @@ extension NetworkDecision {
   }
 }
 
-extension NetworkDecision.Verdict: PostgresEnum {
-  var typeName: String { NetworkDecision.M5.verdictTypeName }
+extension NetworkDecisionVerdict: PostgresEnum {
+  public var typeName: String { NetworkDecision.M5.verdictTypeName }
 }
 
-extension NetworkDecision.Reason: PostgresEnum {
-  var typeName: String { NetworkDecision.M5.reasonTypeName }
+extension NetworkDecisionReason: PostgresEnum {
+  public var typeName: String { NetworkDecision.M5.reasonTypeName }
 }
 
 extension Release: Duet.Identifiable {

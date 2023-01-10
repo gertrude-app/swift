@@ -26,10 +26,6 @@ class ApiTestCase: XCTestCase {
     app = Application(.testing)
     try! Configure.app(app)
 
-    // set with live api keys during Configure.app(_:)
-    Current.sendGrid = .mock
-    Current.stripe = .mock
-
     try! app.autoRevert().wait()
     try! app.autoMigrate().wait()
   }

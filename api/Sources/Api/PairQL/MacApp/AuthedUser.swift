@@ -5,6 +5,13 @@ struct UserContext: ResolverContext {
   let requestId: String
   let user: User
   let token: UserToken
+
+  func device() async throws -> Device {
+    guard let device = try await token.device() else {
+      throw Abort(.notFound, reason: "missing device")
+    }
+    return device
+  }
 }
 
 extension AuthedUserRoute: RouteResponder {
