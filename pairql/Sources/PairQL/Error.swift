@@ -56,5 +56,6 @@ public extension PqlError {
 
   enum Tag: String, Codable, CaseIterable {
     case magicLinkTokenNotFound
+    case slackVerificationFailed
   }
 }

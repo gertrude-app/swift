@@ -99,7 +99,7 @@ extension AdminToken: Model {
   }
 }
 
-extension NotificationMethod: PostgresJsonable {}
+extension AdminVerifiedNotificationMethod.Config: PostgresJsonable {}
 
 extension AdminVerifiedNotificationMethod: Model {
   public static let tableName = M1.tableName
@@ -111,8 +111,8 @@ extension AdminVerifiedNotificationMethod: Model {
       return .id(self)
     case .adminId:
       return .uuid(adminId)
-    case .method:
-      return .json(method.toPostgresJson)
+    case .config:
+      return .json(config.toPostgresJson)
     case .createdAt:
       return .date(createdAt)
     }
@@ -122,7 +122,7 @@ extension AdminVerifiedNotificationMethod: Model {
     [
       .id: .id(self),
       .adminId: .uuid(adminId),
-      .method: .json(method.toPostgresJson),
+      .config: .json(config.toPostgresJson),
       .createdAt: .currentTimestamp,
     ]
   }

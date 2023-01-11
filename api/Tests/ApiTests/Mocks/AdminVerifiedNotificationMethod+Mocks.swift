@@ -16,7 +16,7 @@ extension AdminVerifiedNotificationMethod: Mock {
   }
 }
 
-extension NotificationMethod: Mock {
+extension AdminVerifiedNotificationMethod.Config: Mock {
   public static var mock: Self {
     .email(email: "bob".random + "@example.com")
   }

@@ -7,7 +7,7 @@ import XStripe
 @testable import Api
 
 final class DasboardUnauthedResolverTests: ApiTestCase {
-  let context = DashboardContext.mock
+  let context = Context.mock
 
   func testAllowingSignupsReturnsFalseWhenExceedingNumAllowed() async throws {
     Current.env = .init(get: { _ in "0" })
@@ -66,7 +66,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     expect(output).toEqual(.init(adminId: admin.id))
     expect(retrieved.subscriptionStatus).toEqual(.emailVerified)
-    expect(method.method).toEqual(.email(email: admin.email.rawValue))
+    expect(method.config).toEqual(.email(email: admin.email.rawValue))
   }
 
   func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {

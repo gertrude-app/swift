@@ -3,6 +3,7 @@ import Vapor
 
 struct UserContext: ResolverContext {
   let requestId: String
+  let dashboardUrl: String
   let user: User
   let token: UserToken
 

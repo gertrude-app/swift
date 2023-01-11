@@ -137,7 +137,7 @@ final class DashboardAdminResolverTests: ApiTestCase {
     let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
     expect(retrieved?.adminId).toEqual(admin.id)
-    expect(retrieved?.method).toEqual(.text(phoneNumber: "1234567890"))
+    expect(retrieved?.config).toEqual(.text(phoneNumber: "1234567890"))
   }
 
   func testCreatePendingMethod_Slack() async throws {
@@ -175,7 +175,7 @@ final class DashboardAdminResolverTests: ApiTestCase {
     let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
     expect(retrieved?.adminId).toEqual(admin.id)
-    expect(retrieved?.method)
+    expect(retrieved?.config)
       .toEqual(.slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"))
   }
 
@@ -213,7 +213,7 @@ final class DashboardAdminResolverTests: ApiTestCase {
     let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
     expect(retrieved?.adminId).toEqual(admin.id)
-    expect(retrieved?.method).toEqual(.email(email: "blob@blob.com"))
+    expect(retrieved?.config).toEqual(.email(email: "blob@blob.com"))
   }
 
   func testCreateNewAdminNotification() async throws {

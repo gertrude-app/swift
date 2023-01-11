@@ -13,10 +13,7 @@ struct RequestMagicLink: TypescriptPair {
 // resolver
 
 extension RequestMagicLink: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: DashboardContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     let admin = try? await Current.db.query(Admin.self)
       .where(.email == .string(input.email.lowercased()))
       .first()

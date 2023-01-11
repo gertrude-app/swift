@@ -4,11 +4,6 @@ import PairQL
 import TypescriptPairQL
 import Vapor
 
-struct DashboardContext: ResolverContext {
-  let requestId: String
-  let dashboardUrl: String
-}
-
 enum DashboardRoute: PairRoute {
   case adminAuthed(UUID, AuthedAdminRoute)
   case unauthed(UnauthedRoute)
@@ -27,7 +22,7 @@ extension DashboardRoute {
 }
 
 extension DashboardRoute: RouteResponder {
-  static func respond(to route: Self, in context: DashboardContext) async throws -> Response {
+  static func respond(to route: Self, in context: Context) async throws -> Response {
     switch route {
     case .adminAuthed(let uuid, let adminRoute):
       let token = try await Current.db.query(AdminToken.self)

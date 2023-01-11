@@ -3,12 +3,12 @@ import URLRouting
 import Vapor
 import VaporRouting
 
-enum PairQLRoute: Equatable, RouteResponder {
-  struct Context: ResolverContext {
-    let requestId: String
-    let headers: HTTPHeaders
-  }
+struct Context: ResolverContext {
+  let requestId: String
+  let dashboardUrl: String
+}
 
+enum PairQLRoute: Equatable, RouteResponder {
   case dashboard(DashboardRoute)
   case macApp(MacAppRoute)
 
@@ -28,13 +28,9 @@ enum PairQLRoute: Equatable, RouteResponder {
   static func respond(to route: PairQLRoute, in context: Context) async throws -> Response {
     switch route {
     case .macApp(let appRoute):
-      return try await MacAppRoute.respond(to: appRoute, in: .init(requestId: context.requestId))
+      return try await MacAppRoute.respond(to: appRoute, in: context)
     case .dashboard(let dashboardRoute):
-      let dashboardContext = DashboardContext(
-        requestId: context.requestId,
-        dashboardUrl: context.headers.first(name: .xDashboardUrl) ?? Env.DASHBOARD_URL
-      )
-      return try await DashboardRoute.respond(to: dashboardRoute, in: dashboardContext)
+      return try await DashboardRoute.respond(to: dashboardRoute, in: context)
     }
   }
 
@@ -44,7 +40,7 @@ enum PairQLRoute: Equatable, RouteResponder {
       throw Abort(.badRequest)
     }
 
-    let context = Context(requestId: request.id, headers: request.headers)
+    let context = Context(requestId: request.id, dashboardUrl: request.dashboardUrl)
     do {
       let route = try PairQLRoute.router.parse(requestData)
       return try await PairQLRoute.respond(to: route, in: context)

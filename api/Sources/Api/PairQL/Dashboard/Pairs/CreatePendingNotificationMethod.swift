@@ -30,15 +30,15 @@ struct CreatePendingNotificationMethod: TypescriptPair {
 
 extension CreatePendingNotificationMethod: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    let method = NotificationMethod(from: input)
-    let model = AdminVerifiedNotificationMethod(adminId: context.admin.id, method: method)
+    let config = AdminVerifiedNotificationMethod.Config(from: input)
+    let model = AdminVerifiedNotificationMethod(adminId: context.admin.id, config: config)
     let code = await Current.ephemeral.createPendingNotificationMethod(model)
-    try await sendVerification(code, for: method)
+    try await sendVerification(code, for: config, in: context)
     return .init(methodId: model.id)
   }
 }
 
-extension NotificationMethod {
+extension AdminVerifiedNotificationMethod.Config {
   init(from: CreatePendingNotificationMethod.Input) {
     switch from {
     case .t1(let input):
@@ -57,16 +57,26 @@ extension NotificationMethod {
 
 // helpers
 
-private func sendVerification(_ code: Int, for method: NotificationMethod) async throws {
+private func sendVerification(
+  _ code: Int,
+  for method: AdminVerifiedNotificationMethod.Config,
+  in context: AdminContext
+) async throws {
   switch method {
-  case .slack(channelId: let channelId, channelName: _, token: let token):
-    let error = await Current.slack.send(.init(
-      text: "Your verification code is `\(code)`",
-      channel: channelId,
-      username: "Gertrude App"
-    ), token)
-    guard error == nil else {
-      throw Abort(.forbidden, reason: "[@client:slackVerificationSendFailed]")
+  case .slack(channelId: let channel, channelName: _, token: let token):
+    do {
+      try await Current.slack.send(.init(
+        text: "Your verification code is `\(code)`",
+        channel: channel,
+        token: token
+      ))
+    } catch {
+      throw context.error(
+        id: "df619205",
+        type: .unauthorized,
+        debugMessage: "failed to send Slack verification code: \(error) ",
+        tag: .slackVerificationFailed
+      )
     }
 
   case .email(email: let email):

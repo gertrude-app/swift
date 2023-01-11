@@ -124,7 +124,7 @@ final class CodegenTests: XCTestCase {
     // the root type definition
     expect(DeviceModelFamily.ts).toEqual(
       """
-      export type DeviceModelFamily = 'macBookAir' | 'macBookPro' | 'mini' | 'iMac' | 'studio' | 'pro' | 'unknown';
+      export type DeviceModelFamily = 'macBookAir' | 'macBookPro' | 'mini' | 'iMac' | 'studio' | 'pro' | 'unknown'
       """
     )
 
@@ -169,25 +169,13 @@ final class CodegenTests: XCTestCase {
     enum StringEnum: String, Codable, CaseIterable, TypescriptRepresentable {
       case foo, bar, baz
     }
-    expect(StringEnum.ts).toEqual("export type __self__ = 'foo' | 'bar' | 'baz';")
+    expect(StringEnum.ts).toEqual("export type __self__ = 'foo' | 'bar' | 'baz'")
   }
 
   func testVendedTypes() throws {
     expect(NoInput.ts).toEqual("export type __self__ = void;")
-    expect(SuccessOutput.ts).toEqual(
-      """
-      export type __self__ = SuccessOutput;
-      """
-    )
-    expect(ClientAuth.ts).toEqual(
-      """
-      export enum ClientAuth {
-        none,
-        user,
-        admin,
-      }
-      """
-    )
+    expect(SuccessOutput.ts).toEqual("export type __self__ = SuccessOutput;")
+    expect(ClientAuth.ts).toEqual("export type __self__ = 'none' | 'user' | 'admin'")
   }
 
   func testCustomImplementationWins() throws {

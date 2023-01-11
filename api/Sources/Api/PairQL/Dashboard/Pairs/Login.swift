@@ -20,10 +20,7 @@ struct Login: TypescriptPair {
 // resolver
 
 extension Login: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: DashboardContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     let admin = try await Current.db.query(Admin.self)
       .where(.email == .string(input.email.lowercased()))
       .first(orThrow: context |> error)
@@ -51,7 +48,7 @@ extension Login: Resolver {
 }
 
 extension Login {
-  static func error(_ context: DashboardContext) -> PqlError {
+  static func error(_ context: Context) -> PqlError {
     context.error("1e087878", .unauthorized, user: "Incorrect email or password")
   }
 }

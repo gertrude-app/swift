@@ -14,14 +14,15 @@ extension CreateUnlockRequests: Resolver {
 
     try await Current.db.create(requests)
 
-    // TODO: event, notify connected app
-    // let payload = Event.Payload.UnlockRequestSubmitted(
-    //   adminId: user.adminId,
-    //   userId: user.id,
-    //   userName: user.name,
-    //   requests: requests.map(\.id)
-    // )
-    // try await Current.events.receive(.unlockRequestSubmitted(payload))
+    try await Current.adminNotifier.notify(
+      context.user.adminId,
+      .unlockRequestSubmitted(.init(
+        dashboardUrl: context.dashboardUrl,
+        userId: context.user.id,
+        userName: context.user.name,
+        requestIds: requests.map(\.id)
+      ))
+    )
 
     return .success
   }

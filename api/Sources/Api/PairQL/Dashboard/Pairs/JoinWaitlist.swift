@@ -13,10 +13,7 @@ struct JoinWaitlist: TypescriptPair {
 // resolver
 
 extension JoinWaitlist: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: DashboardContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     let email = input.email.lowercased()
     guard email.isValidEmail else {
       throw Abort(.badRequest)

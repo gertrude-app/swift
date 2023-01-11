@@ -90,7 +90,10 @@ enum LegacyMacAppGraphQLRoute {
 
   static func connectApp(_ request: Request) async throws -> Response {
     let input = try request.content.decode(Vars<ConnectApp.Input>.self).variables
-    let output = try await ConnectApp.resolve(with: input, in: .init(requestId: request.id))
+    let output = try await ConnectApp.resolve(
+      with: input,
+      in: .init(requestId: request.id, dashboardUrl: "")
+    )
     let json = """
     {
       "connection": {
@@ -248,28 +251,9 @@ private extension CreateNetworkDecisions.DecisionInput {
 
 extension LegacyMacAppGraphQLRoute {
   static func context(_ request: Request) async throws -> UserContext {
-    guard let header = request.headers.first(name: .authorization),
-          let token = UUID(authorizationHeader: header) else {
-      throw Abort(.badRequest, reason: "invalid user auth token")
-    }
-
-    let userToken = try? await Current.db.query(UserToken.self)
-      .where(.value == token)
-      .first()
-
-    guard let userToken = userToken else {
-      throw Abort(.unauthorized, reason: "protected auth token not found")
-    }
-
+    let dashboardUrl = request.headers.first(name: .xDashboardUrl) ?? Env.DASHBOARD_URL
+    let userToken = try await request.userToken()
     let user = try await Current.db.find(userToken.userId)
-    return .init(requestId: request.id, user: user, token: userToken)
-  }
-}
-
-private extension UUID {
-  init?(authorizationHeader: String) {
-    let prefix = "Bearer "
-    guard authorizationHeader.hasPrefix(prefix) else { return nil }
-    self.init(uuidString: String(authorizationHeader.dropFirst(prefix.count)))
+    return .init(requestId: request.id, dashboardUrl: dashboardUrl, user: user, token: userToken)
   }
 }

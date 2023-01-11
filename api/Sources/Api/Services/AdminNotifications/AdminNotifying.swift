@@ -1,17 +1,30 @@
 import Duet
-import Fluent
-import Foundation
 import Tagged
 import XSendGrid
-// import XSlack
+import XSlack
+
+protocol AdminNotifying {
+  func sendEmail(to address: String) async throws
+  func sendSlack(channel: String, token: String) async throws
+  func sendText(to phoneNumber: String) async throws
+}
+
+extension AdminNotifying {
+  func send(with config: AdminVerifiedNotificationMethod.Config) async throws {
+    switch config {
+    case .email(let address):
+      try await sendEmail(to: address)
+    case .slack(let channelId, let channelName, let token):
+      print(channelId, channelName, token)
+    case .text(let phoneNumber):
+      print(phoneNumber)
+    }
+  }
+}
+
+// helpers and domain types
 
 typealias Email = SendGrid.Email
-
-protocol Notification {
-  // func slack(channel: String, token: String) -> Slack
-  func email(email: String) -> Email
-  func text(phoneNumber: String) -> Text
-}
 
 struct Slack: Equatable {
   let text: String
@@ -27,7 +40,7 @@ extension Email {
   static func fromApp(to: String, subject: String, html: String) -> Email {
     .init(
       to: .init(email: to),
-      from: .init(email: "notifications@gertrude-app.com", name: "Gertrude App"),
+      from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
       subject: subject.withEmailSubjectDisambiguator,
       html: html
     )
@@ -36,7 +49,7 @@ extension Email {
   static func toJared(_ subject: String, _ html: String) -> Email {
     .init(
       to: .init(email: "jared@netrivet.com"),
-      from: .init(email: "notifications@gertrude-app.com", name: "Gertrude App"),
+      from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
       subject: subject.withEmailSubjectDisambiguator,
       html: html
     )
@@ -54,13 +67,9 @@ struct Text: Equatable {
 }
 
 extension Slack {
-  // var xSlackMessage: XSlack.Slack.Message {
-  //   .init(text: text, channel: channel, username: "Gertrude")
-  // }
-
-  // static func link(to url: String, withText text: String) -> String {
-  //   XSlack.Slack.Message.link(to: url, withText: text)
-  // }
+  static func link(to url: String, withText text: String) -> String {
+    XSlack.Slack.Message.link(to: url, withText: text)
+  }
 }
 
 extension Text {

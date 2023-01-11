@@ -3,14 +3,24 @@ import Duet
 final class AdminVerifiedNotificationMethod: Codable {
   var id: Id
   var adminId: Admin.Id
-  var method: NotificationMethod
+  var config: Config
   var createdAt = Date()
 
   var admin = Parent<Admin>.notLoaded
 
-  init(id: Id = .init(), adminId: Admin.Id, method: NotificationMethod) {
+  init(id: Id = .init(), adminId: Admin.Id, config: Config) {
     self.id = id
     self.adminId = adminId
-    self.method = method
+    self.config = config
+  }
+}
+
+// extensions
+
+extension AdminVerifiedNotificationMethod {
+  enum Config: Codable, Equatable {
+    case slack(channelId: String, channelName: String, token: String)
+    case email(email: String)
+    case text(phoneNumber: String)
   }
 }

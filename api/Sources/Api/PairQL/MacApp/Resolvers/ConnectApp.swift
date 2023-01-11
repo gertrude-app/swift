@@ -3,10 +3,7 @@ import MacAppRoute
 import Vapor
 
 extension ConnectApp: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: MacAppContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     guard let userId = await Current.ephemeral.getPendingAppConnection(input.verificationCode)
     else {
       throw Abort(.notFound, reason: "verification code not found")

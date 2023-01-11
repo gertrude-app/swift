@@ -8,7 +8,7 @@ struct AllowingSignups: TypescriptPair {
 // resolver
 
 extension AllowingSignups: NoInputResolver {
-  static func resolve(in context: DashboardContext) async throws -> Output {
+  static func resolve(in context: Context) async throws -> Output {
     let allowedPerDay = Current.env.get("NUM_ALLOWED_SIGNUPS_PER_DAY").flatMap { Int($0) } ?? 10
     let todaysSignups = try await Current.db.query(Admin.self)
       .where(

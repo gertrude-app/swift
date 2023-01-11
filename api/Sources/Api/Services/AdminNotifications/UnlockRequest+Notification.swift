@@ -1,0 +1,73 @@
+import Foundation
+
+extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
+  func sendText(to phoneNumber: String) async throws {
+    let newRequest =
+      requestIds.count > 1
+        ? "\(requestIds.count) new unlock requests"
+        : "New unlock request"
+
+    let message = """
+    [Gertrude App] \(newRequest) from user "\(userName)".\
+     View the details and approve or deny at \(url)
+    """
+
+    Current.twilio.send(Text(to: .init(phoneNumber), message: message))
+  }
+
+  func sendSlack(channel: String, token: String) async throws {
+    let newRequest =
+      requestIds.count > 1
+        ? "\(requestIds.count) new *unlock requests*"
+        : "New *unlock request*"
+
+    let text = """
+    \(newRequest) from user `\(userName)`.\
+     \(Slack.link(to: url, withText: "Click here")) to view the details and approve or deny.
+    """
+
+    try await Current.slack.send(Slack(text: text, channel: channel, token: token))
+  }
+
+  func sendEmail(to address: String) async throws {
+    let subjectPreamble =
+      requestIds.count > 1
+        ? "\(requestIds.count) new unlock requests from \(userName)"
+        : "New unlock request from \(userName)"
+
+    let subject = "[Gertrude App] \(subjectPreamble)".withEmailSubjectDisambiguator
+
+    let unlockRequests =
+      requestIds.count > 1
+        ? "\(requestIds.count) new <b>network unlock requests</b>"
+        : "a new <b>network unlock request</b>"
+
+    let html = """
+    User \(userName) submitted \(unlockRequests).
+     \(Email.link(url: url, text: "Click here")) to view the details and approve or deny.
+    """
+
+    let email = Email.fromApp(to: address, subject: subject, html: html)
+    try await Current.sendGrid.send(email)
+  }
+}
+
+// helpers
+
+extension AdminEvent.UnlockRequestSubmitted {
+  private var url: String {
+    if requestIds.count == 1, let first = requestIds.first {
+      return individualRequestUrl(first)
+    } else {
+      return userUnlockRequestsUrl
+    }
+  }
+
+  private var userUnlockRequestsUrl: String {
+    "\(dashboardUrl)/users/\(userId.lowercased)/unlock-requests"
+  }
+
+  private func individualRequestUrl(_ requestId: UnlockRequest.Id) -> String {
+    "\(userUnlockRequestsUrl)/\(requestId.lowercased)"
+  }
+}

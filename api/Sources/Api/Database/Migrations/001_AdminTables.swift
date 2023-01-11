@@ -81,11 +81,11 @@ struct AdminTables: GertieMigration {
     try await sql.create(table: M.self) {
       Column(.id, .uuid, .primaryKey)
       Column(M.adminId, .uuid)
-      Column(M.method, .jsonb)
+      Column(M.config, .jsonb)
       Column(.createdAt, .timestampWithTimezone)
     }
     try await sql.add(constraint: adminVerifiedNotificationMethodsFk)
-    try await sql.add(constraint: .unique(M.self, [M.adminId, M.method]))
+    try await sql.add(constraint: .unique(M.self, [M.adminId, M.config]))
   }
 
   func downAdminVerifiedNotificationMethods(_ sql: SQLDatabase) async throws {
@@ -183,7 +183,7 @@ extension AdminVerifiedNotificationMethod {
   enum M1: TableNamingMigration {
     static let tableName = "admin_verified_notification_methods"
     static let adminId = FieldKey("admin_id")
-    static let method = FieldKey("method")
+    static let config = FieldKey("config")
   }
 }
 

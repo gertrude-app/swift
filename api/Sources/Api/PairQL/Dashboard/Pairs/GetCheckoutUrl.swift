@@ -18,10 +18,7 @@ struct GetCheckoutUrl: TypescriptPair {
 // resolver
 
 extension GetCheckoutUrl: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: DashboardContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     let admin = try await Current.db.find(input.adminId)
 
     let sessionData = Stripe.CheckoutSessionData(

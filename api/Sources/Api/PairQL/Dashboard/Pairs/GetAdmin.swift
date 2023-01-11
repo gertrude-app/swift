@@ -61,7 +61,7 @@ extension GetAdmin: NoInputResolver {
         .init(id: $0.id, trigger: $0.trigger, methodId: $0.methodId)
       },
       verifiedNotificationMethods: methods.map { verifiedMethod in
-        switch verifiedMethod.method {
+        switch verifiedMethod.config {
         case .email(let email):
           return .t1(.init(id: verifiedMethod.id, email: email))
         case .slack(let channelId, let channelName, let token):

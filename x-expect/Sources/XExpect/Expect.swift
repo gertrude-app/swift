@@ -27,6 +27,16 @@ public struct CollectionExpectation<T: Collection> {
   }
 }
 
+public extension CollectionExpectation where T: Equatable {
+  func toEqual(_ expected: T) {
+    if negated {
+      XCTAssertNotEqual(collection, expected, file: file, line: line)
+    } else {
+      XCTAssertEqual(collection, expected, file: file, line: line)
+    }
+  }
+}
+
 public struct ErrorExpectation<T> {
   let fn: () async throws -> T
   let file: StaticString

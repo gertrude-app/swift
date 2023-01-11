@@ -14,10 +14,7 @@ struct LoginMagicLink: TypescriptPair {
 // resolver
 
 extension LoginMagicLink: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: DashboardContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     guard let adminId = await Current.ephemeral.adminIdFromMagicLinkToken(input.token) else {
       throw context.error(
         "9a314d21",

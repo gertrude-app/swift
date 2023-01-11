@@ -19,10 +19,7 @@ struct HandleCheckoutSuccess: TypescriptPair {
 // resolver
 
 extension HandleCheckoutSuccess: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: DashboardContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionId)
     let admin = try await Current.db.find(session.adminId)
     let subscriptionId = try session.adminUserSubscriptionId

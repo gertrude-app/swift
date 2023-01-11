@@ -58,7 +58,7 @@ enum UnauthedRoute: PairRoute {
 }
 
 extension UnauthedRoute: RouteResponder {
-  static func respond(to route: Self, in context: DashboardContext) async throws -> Response {
+  static func respond(to route: Self, in context: Context) async throws -> Response {
     switch route {
     case .signup(let input):
       let output = try await Signup.resolve(with: input, in: context)

@@ -100,7 +100,7 @@ extension AdminVerifiedNotificationMethod {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
     case adminId
-    case method
+    case config
     case createdAt
   }
 }

@@ -10,9 +10,15 @@ class ApiTestCase: XCTestCase {
   static var app: Application!
 
   struct Sent {
+    struct AdminNotification: Equatable {
+      let adminId: Admin.Id
+      let event: AdminEvent
+    }
+
     var emails: [SendGrid.Email] = []
     var slacks: [(XSlack.Slack.Message, String)] = []
     var texts: [Text] = []
+    var adminNotifications: [AdminNotification] = []
   }
 
   var sent = Sent()
@@ -25,7 +31,6 @@ class ApiTestCase: XCTestCase {
     Current = .mock
     app = Application(.testing)
     try! Configure.app(app)
-
     try! app.autoRevert().wait()
     try! app.autoMigrate().wait()
   }
@@ -40,6 +45,9 @@ class ApiTestCase: XCTestCase {
     }
     Current.twilio.send = { [self] text in
       sent.texts.append(text)
+    }
+    Current.adminNotifier.notify = { [self] adminId, event in
+      sent.adminNotifications.append(.init(adminId: adminId, event: event))
     }
   }
 

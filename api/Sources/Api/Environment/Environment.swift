@@ -5,36 +5,40 @@ import XSlack
 import XStripe
 
 struct Environment {
+  var adminNotifier: AdminNotifier = .live
   var aws: AWS = .mock
+  var connectedApps: ConnectedApps = .live
   var date: () -> Date = { Date() }
   var db: DuetSQL.Client = ThrowingClient()
-  var env: EnvironmentVariables = .live
   var ephemeral: Ephemeral = .init()
+  var env: EnvironmentVariables = .live
   var logger: Logger = .null
   var sendGrid: SendGrid.Client = .mock
   var slack = XSlack.Slack.Client()
   var stripe: Stripe.Client = .mock
   var twilio: TwilioSmsClient = .init()
-  var verificationCode: VerificationCodeGenerator = .live
   var uuid: () -> UUID = { UUID.new() }
+  var verificationCode: VerificationCodeGenerator = .live
 }
 
 var Current = Environment()
 
 extension Environment {
   static let mock = Environment(
+    adminNotifier: .mock,
     aws: .mock,
+    connectedApps: .mock,
     date: { .mock },
     db: ThrowingClient(),
-    env: .mock,
     ephemeral: .init(),
+    env: .mock,
     logger: .null,
     sendGrid: .mock,
     slack: .mock,
     stripe: .mock,
     twilio: .mock,
-    verificationCode: .mock,
-    uuid: { .mock }
+    uuid: { .mock },
+    verificationCode: .mock
   )
 }
 

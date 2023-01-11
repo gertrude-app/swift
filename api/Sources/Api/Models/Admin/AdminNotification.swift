@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 import Tagged
 
 final class AdminNotification: Codable {
@@ -33,3 +33,14 @@ extension AdminNotification {
   }
 }
 
+// loaders
+
+extension AdminNotification {
+  func method() async throws -> AdminVerifiedNotificationMethod {
+    try await method.useLoaded(or: {
+      try await Current.db.query(AdminVerifiedNotificationMethod.self)
+        .where(.id == methodId)
+        .first()
+    })
+  }
+}

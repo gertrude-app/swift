@@ -25,6 +25,20 @@ final class MacAppResolverTests: ApiTestCase {
     expect(suspendRequests).toHaveCount(1)
     expect(suspendRequests.first?.duration.rawValue).toEqual(1111)
     expect(suspendRequests.first?.requestComment).toEqual("test")
+
+    expect(sent.adminNotifications).toEqual([
+      .init(
+        adminId: user.adminId,
+        event: .suspendFilterRequestSubmitted(.init(
+          dashboardUrl: "",
+          deviceId: user.device.id,
+          userName: user.name,
+          duration: 1111,
+          requestId: suspendRequests.first!.id,
+          requestComment: "test"
+        ))
+      ),
+    ])
   }
 
   func testInsertNetworkDecisions() async throws {
@@ -66,7 +80,15 @@ final class MacAppResolverTests: ApiTestCase {
     let retrieved = try await Current.db.find(UnlockRequest.Id(uuid))
     expect(retrieved.requestComment).toEqual("please dad!")
 
-    // TODO: test event, notify connected app
+    expect(sent.adminNotifications).toEqual([.init(
+      adminId: user.adminId,
+      event: .unlockRequestSubmitted(.init(
+        dashboardUrl: "",
+        userId: user.id,
+        userName: user.name,
+        requestIds: [retrieved.id]
+      ))
+    )])
   }
 
   func testCreateSignedScreenshotUpload() async throws {
@@ -89,10 +111,10 @@ final class MacAppResolverTests: ApiTestCase {
   // helpers
 
   func context(_ user: UserEntities) async throws -> UserContext {
-    .init(requestId: "", user: user.model, token: user.token)
+    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
   }
 
   func context(_ user: UserWithDeviceEntities) async throws -> UserContext {
-    .init(requestId: "", user: user.model, token: user.token)
+    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
   }
 }

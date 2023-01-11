@@ -17,10 +17,7 @@ struct VerifySignupEmail: TypescriptPair {
 // resolver
 
 extension VerifySignupEmail: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: DashboardContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     guard let adminId = await Current.ephemeral.adminIdFromMagicLinkToken(input.token) else {
       throw Abort(.notFound)
     }
@@ -35,7 +32,7 @@ extension VerifySignupEmail: Resolver {
     // they get a default "verified" notification method, since they verified their email
     try await Current.db.create(AdminVerifiedNotificationMethod(
       adminId: admin.id,
-      method: .email(email: admin.email.rawValue)
+      config: .email(email: admin.email.rawValue)
     ))
     return Output(adminId: admin.id)
   }

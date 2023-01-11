@@ -35,6 +35,14 @@ extension UserToken {
 // loaders
 
 extension UserToken {
+  func user() async throws -> User {
+    try await user.useLoaded(or: {
+      try await Current.db.query(User.self)
+        .where(.id == userId)
+        .first()
+    })
+  }
+
   func device() async throws -> Device? {
     try await device.useLoaded(or: { () async throws -> Device? in
       guard let deviceId = deviceId else { return nil }

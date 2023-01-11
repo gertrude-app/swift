@@ -31,11 +31,3 @@ private func corsMiddleware(_ app: Application) -> CORSMiddleware {
 
   return CORSMiddleware(configuration: configuration)
 }
-
-// extensions
-
-public extension HTTPHeaders.Name {
-  static let xDashboardUrl = HTTPHeaders.Name("X-DashboardUrl")
-  static let xAdminToken = HTTPHeaders.Name("X-AdminToken")
-  static let xUserToken = HTTPHeaders.Name("X-UserToken")
-}

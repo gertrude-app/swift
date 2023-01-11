@@ -111,19 +111,13 @@ final class ApiTests: ApiTestCase {
 
   func testResolveUsersAdminAccountStatus() async throws {
     let user = try await Entities.user(admin: { $0.subscriptionStatus = .active })
-    let context = UserContext(requestId: "", user: user.model, token: user.token)
+    let context = UserContext(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
     let output = try await GetAccountStatus.resolve(in: context)
     expect(output.status).toEqual(.active)
   }
 }
 
-extension PairQLRoute.Context {
-  static var mock: Self {
-    .init(requestId: "mock-req-id", headers: .init())
-  }
-}
-
-extension DashboardContext {
+extension Context {
   static var mock: Self {
     .init(requestId: "mock-req-id", dashboardUrl: "/")
   }

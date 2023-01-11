@@ -115,7 +115,7 @@ final class ConnectAppResolversTests: ApiTestCase {
     )
   }
 
-  var context: MacAppContext {
-    .init(requestId: "")
+  var context: Context {
+    .init(requestId: "", dashboardUrl: "")
   }
 }

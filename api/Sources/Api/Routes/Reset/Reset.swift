@@ -46,9 +46,9 @@ enum Reset {
   @discardableResult
   static func createNotification(
     _ admin: Admin,
-    _ method: NotificationMethod
+    _ config: AdminVerifiedNotificationMethod.Config
   ) async throws -> AdminVerifiedNotificationMethod {
-    try await Current.db.create(AdminVerifiedNotificationMethod(adminId: admin.id, method: method))
+    try await Current.db.create(AdminVerifiedNotificationMethod(adminId: admin.id, config: config))
   }
 
   static func testEmail(_ tag: String) -> EmailAddress {

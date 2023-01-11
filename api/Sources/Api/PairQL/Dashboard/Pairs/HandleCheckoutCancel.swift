@@ -12,10 +12,7 @@ struct HandleCheckoutCancel: TypescriptPair {
 // resolver
 
 extension HandleCheckoutCancel: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: DashboardContext
-  ) async throws -> Output {
+  static func resolve(with input: Input, in context: Context) async throws -> Output {
     let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionId)
     let admin = try await Current.db.find(session.adminId)
     admin.subscriptionStatus = .signupCanceled
