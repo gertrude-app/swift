@@ -19,6 +19,7 @@ class ApiTestCase: XCTestCase {
     var slacks: [(XSlack.Slack.Message, String)] = []
     var texts: [Text] = []
     var adminNotifications: [AdminNotification] = []
+    var appEvents: [AppEvent] = []
   }
 
   var sent = Sent()
@@ -48,6 +49,9 @@ class ApiTestCase: XCTestCase {
     }
     Current.adminNotifier.notify = { [self] adminId, event in
       sent.adminNotifications.append(.init(adminId: adminId, event: event))
+    }
+    Current.connectedApps.notify = { [self] event in
+      sent.appEvents.append(event)
     }
   }
 

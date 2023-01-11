@@ -1,19 +1,15 @@
-import Duet
 import Shared
-import Vapor
 
-final class AppConnections: LifecycleHandler {
-  private typealias OutgoingMessage = WebsocketMsg.ApiToApp.Message
-  static let shared = AppConnections()
-  private var timer: Timer?
+actor AppConnections {
+  typealias OutgoingMessage = WebsocketMsg.ApiToApp.Message
+  var connections: [AppConnection.Id: AppConnection] = [:]
 
-  private init() {
-    timer = Timer.scheduledTimer(withTimeInterval: 120, repeats: true) { [weak self] _ in
-      self?.flush()
+  func start() async {
+    while true {
+      try? await Task.sleep(seconds: 120)
+      flush()
     }
   }
-
-  @ThreadSafe var connections: [AppConnection.Id: AppConnection] = [:]
 
   func add(_ connection: AppConnection) {
     connections[connection.id] = connection
@@ -32,7 +28,7 @@ final class AppConnections: LifecycleHandler {
     return nil
   }
 
-  func deviceOnline(_ id: Device.Id) -> Bool {
+  func isDeviceOnline(_ id: Device.Id) -> Bool {
     connections.values.contains { $0.ids.device == id }
   }
 
@@ -47,18 +43,18 @@ final class AppConnections: LifecycleHandler {
     return Array(connections.values)
   }
 
-  func notify(_ event: Event) {
+  func notify(_ event: AppEvent) {
     switch event {
-    case .keychainUpdated(let payload):
+    case .keychainUpdated(let keychainId):
       currentConnections
-        .filter { $0.ids.keychains.contains(payload.keychainId) }
+        .filter { $0.ids.keychains.contains(keychainId) }
         .forEach {
           try? $0.ws.send(OutgoingMessage(type: .userUpdated))
         }
 
-    case .userUpdated(let payload):
+    case .userUpdated(let userId):
       currentConnections
-        .filter { $0.ids.user == payload.userId }
+        .filter { $0.ids.user == userId }
         .forEach {
           try? $0.ws.send(OutgoingMessage(type: .userUpdated))
         }
@@ -84,7 +80,7 @@ final class AppConnections: LifecycleHandler {
           .forEach {
             try? $0.ws.send(
               OutgoingMessage.SuspendFilter(
-                suspension: .init(scope: payload.scope, duration: payload.duration),
+                suspension: .init(scope: .unrestricted, duration: payload.duration),
                 comment: payload.responseComment
               )
             )
@@ -101,13 +97,10 @@ final class AppConnections: LifecycleHandler {
             )
           }
       }
-
-    default:
-      break
     }
   }
 
-  func shutdown(_ application: Application) {
+  deinit {
     connections.values.forEach { _ = $0.ws.close(code: .goingAway) }
     connections = [:]
   }

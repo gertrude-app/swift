@@ -16,11 +16,21 @@ struct UpdateUnlockRequest: TypescriptPair {
 extension UpdateUnlockRequest: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     let request = try await Current.db.find(input.id)
-    try await context.verifiedUser(from: try await request.device().userId)
+    let device = try await request.device()
+    try await context.verifiedUser(from: device.userId)
     request.responseComment = input.responseComment
     request.status = input.status
     try await Current.db.update(request)
-    // @TODO: notify via websocket
+    let decision = try await Current.db.find(request.networkDecisionId)
+
+    await Current.connectedApps.notify(.unlockRequestUpdated(.init(
+      deviceId: device.id,
+      status: request.status,
+      target: decision.target ?? "",
+      comment: request.requestComment,
+      responseComment: request.responseComment
+    )))
+
     return .success
   }
 }

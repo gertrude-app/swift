@@ -44,7 +44,7 @@ extension SaveUser: Resolver {
 
     let existing = try await user.keychains().map(\.id)
     if existing.elementsEqual(input.keychainIds) {
-      // TODO: dispatch event
+      await Current.connectedApps.notify(.userUpdated(user.id))
       return .init(true)
     }
 
@@ -57,7 +57,7 @@ extension SaveUser: Resolver {
 
     try await Current.db.create(pivots)
 
-    // TODO: dispatch event
+    await Current.connectedApps.notify(.userUpdated(user.id))
     return .init(true)
   }
 }

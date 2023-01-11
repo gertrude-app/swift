@@ -5,17 +5,19 @@ struct ConnectedApps {
   var remove: (AppConnection) async -> Void
   var filterState: (Device.Id) async -> FilterState?
   var isDeviceOnline: (Device.Id) async -> Bool
+  var notify: (AppEvent) async -> Void
 }
 
 extension ConnectedApps {
   static var live: Self {
-    let connections = _AppConnections()
+    let connections = AppConnections()
     Task { await connections.start() }
     return ConnectedApps(
       add: { await connections.add($0) },
       remove: { await connections.remove($0) },
       filterState: { await connections.filterState(for: $0) },
-      isDeviceOnline: { await connections.isDeviceOnline($0) }
+      isDeviceOnline: { await connections.isDeviceOnline($0) },
+      notify: { await connections.notify($0) }
     )
   }
 
@@ -24,118 +26,8 @@ extension ConnectedApps {
       add: { _ in },
       remove: { _ in },
       filterState: { _ in nil },
-      isDeviceOnline: { _ in false }
+      isDeviceOnline: { _ in false },
+      notify: { _ in }
     )
-  }
-}
-
-// actor implementation
-
-private actor _AppConnections {
-  typealias OutgoingMessage = WebsocketMsg.ApiToApp.Message
-  var connections: [AppConnection.Id: AppConnection] = [:]
-
-  func start() async {
-    while true {
-      try? await Task.sleep(seconds: 120)
-      flush()
-    }
-  }
-
-  func add(_ connection: AppConnection) {
-    connections[connection.id] = connection
-  }
-
-  func remove(_ connection: AppConnection) {
-    connections.removeValue(forKey: connection.id)
-  }
-
-  func filterState(for deviceId: Device.Id) -> FilterState? {
-    for connection in connections.values {
-      if connection.ids.device == deviceId {
-        return connection.filterState
-      }
-    }
-    return nil
-  }
-
-  func isDeviceOnline(_ id: Device.Id) -> Bool {
-    connections.values.contains { $0.ids.device == id }
-  }
-
-  private func flush() {
-    connections.values.filter(\.ws.isClosed).forEach {
-      self.remove($0)
-    }
-  }
-
-  private var currentConnections: [AppConnection] {
-    flush()
-    return Array(connections.values)
-  }
-
-  func notify(_ event: Event) {
-    switch event {
-    case .keychainUpdated(let payload):
-      currentConnections
-        .filter { $0.ids.keychains.contains(payload.keychainId) }
-        .forEach {
-          try? $0.ws.send(OutgoingMessage(type: .userUpdated))
-        }
-
-    case .userUpdated(let payload):
-      currentConnections
-        .filter { $0.ids.user == payload.userId }
-        .forEach {
-          try? $0.ws.send(OutgoingMessage(type: .userUpdated))
-        }
-
-    case .unlockRequestUpdated(let payload):
-      currentConnections
-        .filter { $0.ids.device == payload.deviceId }
-        .forEach {
-          try? $0.ws.send(
-            OutgoingMessage.UnlockRequestUpdated(
-              status: payload.status,
-              target: payload.target,
-              comment: payload.comment,
-              responseComment: payload.responseComment
-            )
-          )
-        }
-
-    case .suspendFilterRequestUpdated(let payload):
-      if payload.status == .accepted {
-        currentConnections
-          .filter { $0.ids.device == payload.deviceId }
-          .forEach {
-            try? $0.ws.send(
-              OutgoingMessage.SuspendFilter(
-                suspension: .init(scope: payload.scope, duration: payload.duration),
-                comment: payload.responseComment
-              )
-            )
-          }
-      } else {
-        currentConnections
-          .filter { $0.ids.device == payload.deviceId }
-          .forEach {
-            try? $0.ws.send(
-              OutgoingMessage.SuspendFilterRequestDenied(
-                requestComment: payload.requestComment,
-                responseComment: payload.responseComment
-              )
-            )
-          }
-      }
-
-    default:
-      break
-    }
-  }
-
-  deinit {
-    connections.values.forEach { _ = $0.ws.close(code: .goingAway) }
-    connections = [:]
   }
 }

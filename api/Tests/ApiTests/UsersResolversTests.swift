@@ -65,6 +65,8 @@ final class UsersResolversTests: ApiTestCase {
     expect(retrieved.screenshotsEnabled).toEqual(false)
     expect(retrieved.screenshotsResolution).toEqual(333)
     expect(retrieved.screenshotsFrequency).toEqual(444)
+
+    expect(sent.appEvents).toEqual([.userUpdated(user.id)])
   }
 
   func testSetsNewKeychainsFromEmpty() async throws {

@@ -4,15 +4,15 @@ import DuetMock
 
 extension AdminVerifiedNotificationMethod: Mock {
   public static var mock: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(adminId: .init(), method: .mock)
+    AdminVerifiedNotificationMethod(adminId: .init(), config: .mock)
   }
 
   public static var empty: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(adminId: .init(), method: .empty)
+    AdminVerifiedNotificationMethod(adminId: .init(), config: .empty)
   }
 
   public static var random: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(adminId: .init(), method: .random)
+    AdminVerifiedNotificationMethod(adminId: .init(), config: .random)
   }
 }
 

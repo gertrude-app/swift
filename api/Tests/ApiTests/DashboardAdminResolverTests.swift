@@ -79,7 +79,7 @@ final class DashboardAdminResolverTests: ApiTestCase {
     let admin = try await Entities.admin()
     let method = AdminVerifiedNotificationMethod(
       adminId: admin.id,
-      method: .email(email: "blob@blob.com")
+      config: .email(email: "blob@blob.com")
     )
     try await Current.db.create(method)
     let notification = AdminNotification.random
@@ -220,7 +220,7 @@ final class DashboardAdminResolverTests: ApiTestCase {
     let admin = try await Entities.admin()
     let method = try await Current.db.create(AdminVerifiedNotificationMethod(
       adminId: admin.model.id,
-      method: .email(email: "foo@bar.com")
+      config: .email(email: "foo@bar.com")
     ))
 
     let (id, _) = mockUUIDs()
@@ -232,15 +232,25 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(output).toEqual(.init(id: .init(id)))
   }
 
+  func testDeleteKeyNotifiesConnectedApps() async throws {
+    let admin = try await Entities.admin().withKeychain()
+    let output = try await DeleteEntity.resolve(
+      with: .init(id: admin.key.id.rawValue, type: "Key"),
+      in: context(admin)
+    )
+    expect(output).toEqual(.success)
+    expect(sent.appEvents).toEqual([.keychainUpdated(admin.keychain.id)])
+  }
+
   func testUpdateAdminNotification() async throws {
     let admin = try await Entities.admin()
     let email = try await Current.db.create(AdminVerifiedNotificationMethod(
       adminId: admin.model.id,
-      method: .email(email: "foo@bar.com")
+      config: .email(email: "foo@bar.com")
     ))
     let text = try await Current.db.create(AdminVerifiedNotificationMethod(
       adminId: admin.model.id,
-      method: .text(phoneNumber: "1234567890")
+      config: .text(phoneNumber: "1234567890")
     ))
     let notification = try await Current.db.create(AdminNotification(
       adminId: admin.model.id,
@@ -457,7 +467,15 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(retrieved.responseComment).toEqual("ok")
     expect(retrieved.status).toEqual(.accepted)
 
-    // @TODO: test that mac app is notified via websocket
+    expect(sent.appEvents).toEqual([
+      .suspendFilterRequestUpdated(.init(
+        deviceId: user.device.id,
+        status: .accepted,
+        duration: 333,
+        requestComment: request.requestComment,
+        responseComment: "ok"
+      )),
+    ])
   }
 
   func testUpdateUnlockRequest() async throws {
@@ -490,7 +508,15 @@ final class DashboardAdminResolverTests: ApiTestCase {
     expect(retrieved.responseComment).toEqual("no way")
     expect(retrieved.status).toEqual(.rejected)
 
-    // @TODO: test that mac app is notified via websocket
+    expect(sent.appEvents).toEqual([
+      .unlockRequestUpdated(.init(
+        deviceId: user.device.id,
+        status: .rejected,
+        target: decision.target ?? "",
+        comment: "please dad",
+        responseComment: "no way"
+      )),
+    ])
   }
 
   func testDeleteActivityItems() async throws {
