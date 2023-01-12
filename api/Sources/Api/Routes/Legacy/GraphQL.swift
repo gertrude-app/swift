@@ -6,26 +6,34 @@ import XCore
 
 enum LegacyMacAppGraphQLRoute {
   static func handler(_ request: Request) async throws -> Response {
-    let operationName = try request.content.decode(Name.self).operationName
-    switch operationName {
-    case "AccountStatus":
-      return try await accountStatus(request)
-    case "AppInstructions":
-      return try await appInstructions(request)
-    case "ConnectApp":
-      return try await connectApp(request)
-    case "CreateSuspendFilterRequest":
-      return try await createSuspendFilterRequest(request)
-    case "InsertKeystrokeLines":
-      return try await insertKeystrokeLines(request)
-    case "InsertNetworkDecisions":
-      return try await insertNetworkDecisions(request)
-    case "CreateUnlockRequests":
-      return try await createUnlockRequests(request)
-    case "CreateSignedScreenshotUpload":
-      return try await createSignedScreenshotUpload(request)
-    default:
-      return .init(status: .notFound)
+    do {
+      let operationName = try request.content.decode(Name.self).operationName
+      switch operationName {
+      case "AccountStatus":
+        return try await accountStatus(request)
+      case "AppInstructions":
+        return try await appInstructions(request)
+      case "ConnectApp":
+        return try await connectApp(request)
+      case "CreateSuspendFilterRequest":
+        return try await createSuspendFilterRequest(request)
+      case "InsertKeystrokeLines":
+        return try await insertKeystrokeLines(request)
+      case "InsertNetworkDecisions":
+        return try await insertNetworkDecisions(request)
+      case "CreateUnlockRequests":
+        return try await createUnlockRequests(request)
+      case "CreateSignedScreenshotUpload":
+        return try await createSignedScreenshotUpload(request)
+      default:
+        throw Abort(.notFound, reason: "Unknown operation: \(operationName)")
+      }
+    } catch {
+      let message = "\(error)".replacingOccurrences(of: "\"", with: "'")
+      return .init(
+        headers: ["Content-Type": "application/json"],
+        body: .init(string: #"{"errors":[{"message":"\#(message)"}]}")"#)
+      )
     }
   }
 
