@@ -4,6 +4,11 @@
   let model: User
   let token: UserToken
   let admin: AdminEntities
+
+  var context: UserContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "/", user: model, token: token)
+  }
+
   subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
     model[keyPath: keyPath]
   }
@@ -14,6 +19,11 @@
   let device: Device
   let token: UserToken
   let admin: AdminEntities
+
+  var context: UserContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "/", user: model, token: token)
+  }
+
   subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
     model[keyPath: keyPath]
   }
