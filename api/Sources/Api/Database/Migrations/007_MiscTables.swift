@@ -1,4 +1,5 @@
 import FluentSQL
+import Shared
 
 struct MiscTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {
@@ -14,11 +15,11 @@ struct MiscTables: GertieMigration {
   // table: releases
 
   func upReleases(_ sql: SQLDatabase) async throws {
-    try await sql.create(enum: Release.Channel.self)
+    try await sql.create(enum: ReleaseChannel.self)
     try await sql.create(table: Release.M7.self) {
       Column(.id, .uuid, .primaryKey)
       Column(Release.M7.semver, .text, .unique)
-      Column(Release.M7.channel, .enum(Release.Channel.self))
+      Column(Release.M7.channel, .enum(ReleaseChannel.self))
       Column(Release.M7.signature, .text)
       Column(Release.M7.length, .bigint)
       Column(Release.M7.appRevision, .text)
@@ -30,7 +31,7 @@ struct MiscTables: GertieMigration {
 
   func downReleases(_ sql: SQLDatabase) async throws {
     try await sql.drop(table: Release.M7.self)
-    try await sql.drop(enum: Release.Channel.self)
+    try await sql.drop(enum: ReleaseChannel.self)
   }
 
   // table: stripe_events

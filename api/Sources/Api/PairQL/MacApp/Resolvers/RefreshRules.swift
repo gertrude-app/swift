@@ -1,13 +1,21 @@
 import DuetSQL
 import MacAppRoute
 
-extension RefreshRules: NoInputResolver {
-  static func resolve(in context: UserContext) async throws -> Output {
+extension RefreshRules: Resolver {
+  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
     let user = context.user
     let keychains = try await user.keychains()
     var keys = try await keychains.concurrentMap { keychain in
       try await keychain.keys()
     }.flatMap { $0 }
+
+    // update the app version if it changed
+    if let device = try? await context.device(),
+       !input.appVersion.isEmpty,
+       input.appVersion != device.appVersion {
+      device.appVersion = input.appVersion
+      try await Current.db.update(device)
+    }
 
     // ...merging in AUTO-INCLUDED Keychain
     if !keys.isEmpty {

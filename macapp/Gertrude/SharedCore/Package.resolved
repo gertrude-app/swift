@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "swift-tagged",
+        "repositoryURL": "https://github.com/jaredh159/swift-tagged.git",
+        "state": {
+          "branch": null,
+          "revision": "cb4284055f6e9cc5576ff9be13723b3a039905a5",
+          "version": "0.8.2"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

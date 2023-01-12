@@ -60,15 +60,21 @@ extension ResolverContext {
     _ id: String,
     _ type: PqlError.Kind,
     _ debugMessage: String,
-    _ tag: PqlError.Tag? = nil
+    _ tag: PqlError.DashboardTag? = nil
   ) -> PqlError {
-    PqlError(id: id, requestId: requestId, type: type, debugMessage: debugMessage, tag: tag)
+    PqlError(
+      id: id,
+      requestId: requestId,
+      type: type,
+      debugMessage: debugMessage,
+      dashboardTag: tag
+    )
   }
 
   func error(
     _ id: String,
     _ type: PqlError.Kind,
-    _ tag: PqlError.Tag? = nil,
+    _ tag: PqlError.DashboardTag? = nil,
     user userMessage: String
   ) -> PqlError {
     PqlError(
@@ -77,7 +83,7 @@ extension ResolverContext {
       type: type,
       debugMessage: userMessage,
       userMessage: userMessage,
-      tag: tag
+      dashboardTag: tag
     )
   }
 
@@ -88,7 +94,7 @@ extension ResolverContext {
     userMessage: String? = nil,
     userAction: String? = nil,
     entityName: String? = nil,
-    tag: PqlError.Tag? = nil,
+    tag: PqlError.DashboardTag? = nil,
     showContactSupport: Bool = false
   ) -> PqlError {
     PqlError(
@@ -99,7 +105,7 @@ extension ResolverContext {
       userMessage: userMessage,
       userAction: userAction,
       entityName: entityName,
-      tag: tag,
+      dashboardTag: tag,
       showContactSupport: showContactSupport
     )
   }

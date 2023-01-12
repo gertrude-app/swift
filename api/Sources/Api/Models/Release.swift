@@ -1,9 +1,10 @@
 import Duet
+import Shared
 
 final class Release: Codable {
   var id: Id
   var semver: String
-  var channel: Channel
+  var channel: ReleaseChannel
   var signature: String
   var length: Int
   var appRevision: GitCommitSha
@@ -14,7 +15,7 @@ final class Release: Codable {
   init(
     id: Id = .init(),
     semver: String,
-    channel: Channel,
+    channel: ReleaseChannel,
     signature: String,
     length: Int,
     appRevision: GitCommitSha,
@@ -27,15 +28,5 @@ final class Release: Codable {
     self.length = length
     self.appRevision = appRevision
     self.coreRevision = coreRevision
-  }
-}
-
-// extensions
-
-extension Release {
-  enum Channel: String, Codable, Equatable, CaseIterable {
-    case stable
-    case beta
-    case canary
   }
 }

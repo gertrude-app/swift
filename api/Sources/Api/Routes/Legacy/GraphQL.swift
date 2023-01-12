@@ -94,8 +94,12 @@ enum LegacyMacAppGraphQLRoute {
       let key: Key
     }
 
+    let appVersion = request.headers.first(name: .xAppVersion) ?? ""
     let context = try await context(request)
-    let output = try await RefreshRules.resolve(in: context)
+    let output = try await RefreshRules.resolve(
+      with: .init(appVersion: appVersion),
+      in: context
+    )
     let records = try output.keys.map { key in
       KeyRecord(
         id: key.id.lowercased,
@@ -286,7 +290,6 @@ private extension CreateNetworkDecisions.DecisionInput {
       reason: legacy.reason,
       ipProtocolNumber: legacy.ipProtocolNumber,
       responsibleKeyId: legacy.responsibleKeyId,
-      userId: legacy.userId,
       hostname: legacy.hostname,
       url: legacy.url,
       ipAddress: legacy.ipAddress,

@@ -24,8 +24,20 @@ extension AuthedUserRoute: RouteResponder {
     case .getAccountStatus:
       let output = try await GetAccountStatus.resolve(in: context)
       return try await respond(with: output)
-    case .refreshRules:
-      let output = try await RefreshRules.resolve(in: context)
+    case .refreshRules(let input):
+      let output = try await RefreshRules.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .createKeystrokeLines(let input):
+      let output = try await CreateKeystrokeLines.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .createNetworkDecisions(let input):
+      let output = try await CreateNetworkDecisions.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .createSuspendFilterRequest(let input):
+      let output = try await CreateSuspendFilterRequest.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .createUnlockRequests(let input):
+      let output = try await CreateUnlockRequests.resolve(with: input, in: context)
       return try await respond(with: output)
     }
   }

@@ -1,4 +1,4 @@
-public struct PqlError: Error, Codable {
+public struct PqlError: Error, Codable, Equatable {
   public var version = 1
   public var id: String
   public var requestId: String
@@ -8,7 +8,8 @@ public struct PqlError: Error, Codable {
   public var debugMessage: String
   public var entityName: String?
   public var showContactSupport: Bool
-  public var tag: Tag?
+  public var dashboardTag: DashboardTag?
+  public var appTag: AppTag?
   public var statusCode: Int
 
   public init(
@@ -19,7 +20,8 @@ public struct PqlError: Error, Codable {
     userMessage: String? = nil,
     userAction: String? = nil,
     entityName: String? = nil,
-    tag: Tag? = nil,
+    dashboardTag: DashboardTag? = nil,
+    appTag: AppTag? = nil,
     showContactSupport: Bool = false
   ) {
     self.id = id
@@ -29,7 +31,8 @@ public struct PqlError: Error, Codable {
     self.userAction = userAction
     self.debugMessage = debugMessage
     self.entityName = entityName
-    self.tag = tag
+    self.dashboardTag = dashboardTag
+    self.appTag = appTag
     self.showContactSupport = showContactSupport
     statusCode = type.statusCode
   }
@@ -54,8 +57,12 @@ public extension PqlError {
     }
   }
 
-  enum Tag: String, Codable, CaseIterable {
+  enum DashboardTag: String, Codable, CaseIterable {
     case magicLinkTokenNotFound
     case slackVerificationFailed
+  }
+
+  enum AppTag: String, Codable, CaseIterable {
+    case todo
   }
 }

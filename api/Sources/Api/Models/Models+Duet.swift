@@ -267,8 +267,8 @@ extension Release {
   }
 }
 
-extension Release.Channel: PostgresEnum {
-  var typeName: String { Release.M7.channelTypeName }
+extension ReleaseChannel: PostgresEnum {
+  public var typeName: String { Release.M7.channelTypeName }
 }
 
 extension StripeEvent: Duet.Identifiable {

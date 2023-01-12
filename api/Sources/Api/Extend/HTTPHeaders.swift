@@ -7,6 +7,7 @@ extension HTTPHeaders {
 }
 
 extension HTTPHeaders.Name {
+  static let xAppVersion = HTTPHeaders.Name("X-App-Version")
   static let xDashboardUrl = HTTPHeaders.Name("X-DashboardUrl")
   static let xAdminToken = HTTPHeaders.Name("X-AdminToken")
   static let xUserToken = HTTPHeaders.Name("X-UserToken")

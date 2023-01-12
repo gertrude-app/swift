@@ -1,5 +1,6 @@
 import Duet
 import Foundation
+import XCore
 
 public protocol PostgresEnum {
   var typeName: String { get }
@@ -18,7 +19,7 @@ public extension PostgresEnum where Self: CaseIterable {
 public protocol PostgresJsonable: Codable {}
 
 public extension PostgresJsonable {
-  var toPostgresJson: String { json(self) }
+  var toPostgresJson: String { json! }
   init(fromPostgresJson json: String) throws {
     self = try JSONDecoder().decode(Self.self, from: json.data(using: .utf8)!)
   }
@@ -302,10 +303,10 @@ private func nullable<N: Numeric>(_ string: N?) -> String {
 
 // helpers
 
-private func json<T: Encodable>(_ msg: T) -> String {
-  let data = try? jsonEncoder.encode(msg)
-  return String(data: data ?? .init(), encoding: .utf8)!
-}
+// private func <T: Encodable>(_ msg: T) -> String {
+//   let data = try? jsonEncoder.encode(msg)
+//   return String(data: data ?? .init(), encoding: .utf8)!
+// }
 
 private let jsonEncoder: JSONEncoder = {
   let encoder = JSONEncoder()

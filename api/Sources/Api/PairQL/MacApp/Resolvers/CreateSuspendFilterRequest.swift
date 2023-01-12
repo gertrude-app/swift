@@ -12,7 +12,7 @@ extension CreateSuspendFilterRequest: Resolver {
       requestComment: input.comment
     ))
 
-    try await Current.adminNotifier.notify(
+    await Current.adminNotifier.notify(
       context.user.adminId,
       .suspendFilterRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,

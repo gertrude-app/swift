@@ -13,7 +13,6 @@ public struct CreateNetworkDecisions: Pair {
     public var reason: NetworkDecisionReason
     public var ipProtocolNumber: Int?
     public var responsibleKeyId: UUID?
-    public var userId: Int?
     public var hostname: String?
     public var url: String?
     public var ipAddress: String?
@@ -27,7 +26,6 @@ public struct CreateNetworkDecisions: Pair {
       reason: NetworkDecisionReason,
       ipProtocolNumber: Int? = nil,
       responsibleKeyId: UUID? = nil,
-      userId: Int? = nil,
       hostname: String? = nil,
       url: String? = nil,
       ipAddress: String? = nil,
@@ -40,7 +38,6 @@ public struct CreateNetworkDecisions: Pair {
       self.reason = reason
       self.ipProtocolNumber = ipProtocolNumber
       self.responsibleKeyId = responsibleKeyId
-      self.userId = userId
       self.hostname = hostname
       self.url = url
       self.ipAddress = ipAddress

@@ -14,7 +14,7 @@ extension CreateUnlockRequests: Resolver {
 
     try await Current.db.create(requests)
 
-    try await Current.adminNotifier.notify(
+    await Current.adminNotifier.notify(
       context.user.adminId,
       .unlockRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,

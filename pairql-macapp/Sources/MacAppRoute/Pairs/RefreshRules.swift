@@ -5,6 +5,14 @@ import Shared
 public struct RefreshRules: Pair {
   public static var auth: ClientAuth = .user
 
+  public struct Input: PairInput {
+    public var appVersion: String
+
+    public init(appVersion: String) {
+      self.appVersion = appVersion
+    }
+  }
+
   public struct Key: PairNestable {
     public let id: UUID
     public let key: Shared.Key
