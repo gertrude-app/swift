@@ -37,6 +37,28 @@ enum LegacyMacAppGraphQLRoute {
     }
   }
 
+  static func edensHandler(_ request: Request) async throws -> Response {
+    do {
+      let operationName = try request.content.decode(Name.self).operationName
+      switch operationName {
+      case "CreateSignedScreenshotUpload":
+        return try await createSignedScreenshotUpload(request)
+      case "InsertKeystrokeLines":
+        return try await insertKeystrokeLines(request)
+      case "RefreshRules": // Eden only
+        return try await refreshRules(request)
+      default:
+        throw Abort(.notFound, reason: "Unknown operation: \(operationName)")
+      }
+    } catch {
+      let message = "\(error)".replacingOccurrences(of: "\"", with: "'")
+      return .init(
+        headers: ["Content-Type": "application/json"],
+        body: .init(string: #"{"errors":[{"message":"\#(message)"}]}")"#)
+      )
+    }
+  }
+
   // implementations
 
   static func accountStatus(_ request: Request) async throws -> Response {
@@ -56,6 +78,11 @@ enum LegacyMacAppGraphQLRoute {
     return .init(graphqlData: json)
   }
 
+  struct Manifest: Encodable {
+    var __typename = "AppIdManifest"
+    let jsonString: String
+  }
+
   static func appInstructions(_ request: Request) async throws -> Response {
     struct Key: Encodable {
       var __typename = "Key"
@@ -65,10 +92,6 @@ enum LegacyMacAppGraphQLRoute {
       var __typename = "KeyRecord"
       let id: String
       let key: Key
-    }
-    struct Manifest: Encodable {
-      var __typename = "AppIdManifest"
-      let jsonString: String
     }
 
     let context = try await context(request)
@@ -91,6 +114,25 @@ enum LegacyMacAppGraphQLRoute {
         "keychains": [{ "__typename": "Keychain", "keyRecords": \(try JSON.encode(records)) }]
       },
       "manifest": \(try JSON.encode(Manifest(jsonString: try JSON.encode(output.appManifest))))
+    }
+    """
+    return .init(graphqlData: json)
+  }
+
+  // only used by Eden
+  static func refreshRules(_ request: Request) async throws -> Response {
+    let user = try await context(request).user
+    let json = """
+    {
+      "guardian": {
+        "__typename": "Guardian",
+        "keyloggingEnabled": \(user.keyloggingEnabled),
+        "screenshotsEnabled": \(user.screenshotsEnabled),
+        "screenshotsFrequency": \(user.screenshotsFrequency),
+        "screenshotsResolution": \(user.screenshotsResolution),
+        "keychains": []
+      },
+      "manifest": \(try JSON.encode(Manifest(jsonString: try JSON.encode(AppIdManifest()))))
     }
     """
     return .init(graphqlData: json)
@@ -263,5 +305,14 @@ extension LegacyMacAppGraphQLRoute {
     let userToken = try await request.userToken()
     let user = try await Current.db.find(userToken.userId)
     return .init(requestId: request.id, dashboardUrl: dashboardUrl, user: user, token: userToken)
+  }
+}
+
+extension Response {
+  convenience init(graphqlData json: String) {
+    self.init(
+      headers: ["Content-Type": "application/json"],
+      body: .init(string: #"{"data":\#(json)}"#)
+    )
   }
 }

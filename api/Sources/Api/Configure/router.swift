@@ -15,13 +15,20 @@ public extension Configure {
       "reset-9cec5bbfd7f0",
       use: ResetRoute.handler(_:)
     )
+    app.webSocket(
+      "app",
+      onUpgrade: AppWebsocket.handler(_:_:)
+    )
+
+    // deprecated, legacy
+
     app.post(
       "graphql", "macos-app-05-2022",
       use: LegacyMacAppGraphQLRoute.handler(_:)
     )
-    app.webSocket(
-      "app",
-      onUpgrade: AppWebsocket.handler(_:_:)
+    app.post(
+      "graphql",
+      use: LegacyMacAppGraphQLRoute.edensHandler(_:)
     )
   }
 }
