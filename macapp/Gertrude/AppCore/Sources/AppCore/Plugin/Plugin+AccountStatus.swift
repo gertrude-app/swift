@@ -5,6 +5,7 @@ import SharedCore
 
 class AccountStatusPlugin: Plugin {
   var store: AppStore
+  private var cancellables = Set<AnyCancellable>()
 
   var currentAccountStatus: AdminAccountStatus {
     store.state.accountStatus
@@ -16,18 +17,20 @@ class AccountStatusPlugin: Plugin {
   }
 
   func checkStatus(after seconds: TimeInterval) {
-    afterDelayOf(seconds: seconds) { [updateStatus] in
-      Task { await updateStatus() }
+    afterDelayOf(seconds: seconds) { [weak self] in
+      self?.updateStatus()
     }
   }
 
-  @MainActor
-  func updateStatus() async {
+  func updateStatus() {
     log(.plugin("AccountStatus", .info("update account status")))
-    if store.state.hasUserToken,
-       let status = try? await Current.api.getAccountStatus().async() {
-      store.send(.setAccountStatus(status))
-    }
+    Current.api.getAccountStatus()
+      .sink(receiveCompletion: { _ in }, receiveValue: { [weak self] status in
+        DispatchQueue.main.async {
+          self?.store.send(.setAccountStatus(status))
+        }
+      })
+      .store(in: &cancellables)
     checkStatus(after: currentAccountStatus.recheckTime)
   }
 
