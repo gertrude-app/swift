@@ -16,7 +16,7 @@ final class RefreshResolverTests: ApiTestCase {
       $0.screenshotsResolution = 1081
     })
 
-    let output = try await RefreshRules.resolve(in: user.context)
+    let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
     expect(output.keyloggingEnabled).toBeFalse()
     expect(output.screenshotsEnabled).toBeTrue()
     expect(output.screenshotsFrequency).toEqual(376)
@@ -35,7 +35,7 @@ final class RefreshResolverTests: ApiTestCase {
     try await Current.db.create(id)
 
     let user = try await Entities.user()
-    let output = try await RefreshRules.resolve(in: user.context)
+    let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
     expect(output.appManifest.apps).toEqual([app.slug: [id.bundleId]])
   }
 
@@ -43,7 +43,7 @@ final class RefreshResolverTests: ApiTestCase {
     let user = try await Entities.user()
     try await createAutoIncludeKeychain()
 
-    let output = try await RefreshRules.resolve(in: user.context)
+    let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
     expect(output.keys).toHaveCount(0)
   }
 
@@ -53,7 +53,7 @@ final class RefreshResolverTests: ApiTestCase {
     try await Current.db.create(UserKeychain(userId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
 
-    let output = try await RefreshRules.resolve(in: user.context)
+    let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
     expect(output.keys.contains(.init(id: autoKey.id.rawValue, key: autoKey.key))).toBeTrue()
   }
 }

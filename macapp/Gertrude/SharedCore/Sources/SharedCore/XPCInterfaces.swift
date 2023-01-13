@@ -1,5 +1,7 @@
 import Foundation
 
+public protocol IPCTransmitable: Codable {}
+
 @objc(ReceiveAppMessageInterface) public protocol ReceiveAppMessageInterface {
   func register(_ completionHandler: @escaping (Bool) -> Void)
 
