@@ -155,7 +155,6 @@ private func createConnection(_ store: AppStore) -> WebsocketConnection {
         .getURL(.websocketEndpointOverride) ?? SharedConstants.WEBSOCKET_ENDPOINT
     )
     let token = store?.state.userToken?.uuidString ?? "websocket-no-user-token"
-    request.setValue("user", forHTTPHeaderField: "X-Authorization-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     return WebSocket(request: request)
   }

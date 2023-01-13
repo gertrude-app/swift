@@ -1,7 +1,10 @@
 # api
 
 watch-api:
-	$(WATCH_SWIFT) 'cd api && swift build && ./.build/debug/Run serve --port 8082'
+	$(WATCH_SWIFT) 'make run-api'
+
+run-api:
+	cd api && swift build && ./.build/debug/Run serve --port 8082
 
 build-api:
 	$(NX) run api:build
@@ -97,10 +100,10 @@ clean-api-tests:
 # helpers
 
 NX = node_modules/.bin/nx
-WATCH_SWIFT = watchexec --restart --clear --watch . --exts swift
+WATCH_SWIFT = watchexec --restart --clear --watch . --exts swift --ignore **/ApiKeys.swift
 SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
-ALL_CMDS = api build-api migrate-up migrate-down \
+ALL_CMDS = api watch-api run-api build-api migrate-up migrate-down \
   build-shared test-shared \
   build-pql test-pql \
   build-pql-macapp test-pql-macapp \

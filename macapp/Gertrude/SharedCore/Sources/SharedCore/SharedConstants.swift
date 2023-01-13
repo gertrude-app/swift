@@ -10,7 +10,7 @@ public enum SharedConstants {
       URL(string: "http://127.0.0.1:8082/releases")!
     public static let PAIRQL_ENDPOINT =
       URL(string: "http://127.0.0.1:8082/pairql")!
-    public static let WEBSOCKET_ENDPOINT = URL(string: "http://127.0.0.1:8080/app")!
+    public static let WEBSOCKET_ENDPOINT = URL(string: "http://127.0.0.1:8082/app")!
   #else
     public static let RELEASE_ENDPOINT =
       URL(string: "https://api.gertrude-app.com/releases")!

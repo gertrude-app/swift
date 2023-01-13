@@ -29,7 +29,7 @@ class AppConnection {
     }
 
     ws.onClose.whenComplete { result in
-      Current.logger.notice("WS: closed with result \(result)")
+      Current.logger.debug("WS: closed with result \(result)")
       switch result {
       case .success:
         Task { await Current.connectedApps.remove(self) }
@@ -40,7 +40,7 @@ class AppConnection {
   }
 
   func onText(_ ws: WebsocketProtocol, _ json: String) {
-    Current.logger.notice("WS: WebSocket \(id) got a message: `\(json)`")
+    Current.logger.debug("WS: WebSocket \(id) got a message: `\(json)`")
     guard let msg = try? JSON.decode(json, as: IncomingMessage.self) else {
       Current.logger.error("WS: failed to decode message type from WebSocket msg: `\(json)`")
       return
@@ -53,7 +53,7 @@ class AppConnection {
         return
       }
       filterState = currentFilter.state
-      Current.logger.notice(
+      Current.logger.debug(
         "WS: received current filter state \(currentFilter) from \(ids.device)"
       )
     }
