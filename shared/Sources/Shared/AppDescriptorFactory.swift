@@ -1,6 +1,5 @@
 import Foundation
 
-// @TODO: is this really shared?
 public final class AppDescriptorFactory {
   private let manifest: AppIdManifest
   private let rootAppQuery: RootAppQuery?
@@ -10,11 +9,6 @@ public final class AppDescriptorFactory {
     manifest = appIdManifest
     self.rootAppQuery = rootAppQuery
   }
-
-  // @TODO: should be added as an extension from mac app, i think
-  // public func make(fromFlow flow: FilterFlow) -> AppDescriptor {
-  //   make(bundleId: flow.bundleId ?? "", auditToken: flow.sourceAuditToken)
-  // }
 
   public func make(bundleId: String, auditToken: Data? = nil) -> AppDescriptor {
     if let cached = cache[bundleId] {

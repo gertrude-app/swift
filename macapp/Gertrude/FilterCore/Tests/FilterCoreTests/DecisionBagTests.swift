@@ -1,4 +1,4 @@
-import Shared
+import SharedCore
 import XCTest
 
 @testable import FilterCore

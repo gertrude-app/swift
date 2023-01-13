@@ -1,0 +1,13 @@
+{
+  "root": "macapp/Gertrude/FilterCore",
+  "projectType": "library",
+  "implicitDependencies": ["shared", "sharedcore"],
+  "targets": {
+    "build": {
+      "command": "cd macapp/Gertrude/FilterCore && swift build"
+    },
+    "test": {
+      "command": "cd macapp/Gertrude/FilterCore && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

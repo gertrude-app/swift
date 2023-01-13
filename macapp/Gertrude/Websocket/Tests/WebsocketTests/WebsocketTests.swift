@@ -56,7 +56,7 @@ final class WebsocketTests: XCTestCase {
 
   func testWaitsLongerToReconnectIfDisconnectReasonIsMissingUserToken() {
     send(.connected([:]))
-    send(.disconnected("", Connection.Error.USER_TOKEN_NOT_FOUND))
+    send(.disconnected("", WebsocketMsg.Error.USER_TOKEN_NOT_FOUND))
 
     scheduler.advance(by: 60 * 60 - 1)
     XCTAssertEqual(state, .disconnected)
@@ -123,9 +123,9 @@ final class WebsocketTests: XCTestCase {
     send(.connected([:]))
 
     let message = IncomingMessage.RequestCurrentFilterState()
-    send(.text(message.jsonString!))
+    send(.text(message.json!))
 
-    XCTAssertEqual(receivedMessages, [message.jsonString])
+    XCTAssertEqual(receivedMessages, [message.json])
   }
 
   func testReceivingCancelledReschedulesConnectionIn30Seconds() {

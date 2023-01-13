@@ -1,0 +1,13 @@
+{
+  "root": "macapp/Gertrude/Websocket",
+  "projectType": "library",
+  "implicitDependencies": ["shared", "x-kit"],
+  "targets": {
+    "build": {
+      "command": "cd macapp/Gertrude/Websocket && swift build"
+    },
+    "test": {
+      "command": "cd macapp/Gertrude/Websocket && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

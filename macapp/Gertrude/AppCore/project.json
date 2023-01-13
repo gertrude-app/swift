@@ -1,0 +1,13 @@
+{
+  "root": "macapp/Gertrude/AppCore",
+  "projectType": "library",
+  "implicitDependencies": ["shared", "sharedcore", "pairql-macapp", "websocket"],
+  "targets": {
+    "build": {
+      "command": "cd macapp/Gertrude/AppCore && swift build"
+    },
+    "test": {
+      "command": "cd macapp/Gertrude/AppCore && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

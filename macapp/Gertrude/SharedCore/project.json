@@ -1,0 +1,13 @@
+{
+  "root": "macapp/Gertrude/SharedCore",
+  "projectType": "library",
+  "implicitDependencies": ["shared", "x-kit"],
+  "targets": {
+    "build": {
+      "command": "cd macapp/Gertrude/SharedCore && swift build"
+    },
+    "test": {
+      "command": "cd macapp/Gertrude/SharedCore && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

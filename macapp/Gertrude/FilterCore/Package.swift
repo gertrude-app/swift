@@ -10,6 +10,7 @@ let package = Package(
   ],
   dependencies: [
     .package(name: "Shared", path: "../../../shared"),
+    .package(path: "../../../duet"),
     .package(name: "SharedCore", path: "../SharedCore"),
     .package(
       url: "https://github.com/pointfreeco/combine-schedulers",
@@ -30,6 +31,7 @@ let package = Package(
       dependencies: [
         "FilterCore",
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
+        .product(name: "DuetMock", package: "duet"),
       ]
     ),
   ]

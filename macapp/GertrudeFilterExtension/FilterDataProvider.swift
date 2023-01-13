@@ -188,7 +188,6 @@ class FilterDataProvider: NEFilterDataProvider {
       "filter_decision.raw_flow_identifier": .string(flow.identifier.uuidString),
       "filter_decision.suspension_data": .string(decisionMaker.suspensions.debugData),
       "filter_decision.user_id": .string(userId.map { "\($0)" } ?? "(nil)"),
-      "filter_decision.device_id_map": .init(decisionMaker.deviceIds.json),
       "filter_decision.exempt_users": .init(
         exemptedUsers
           .map { $0.map { "\($0)" }}?

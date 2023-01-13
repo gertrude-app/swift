@@ -4,8 +4,6 @@ import SharedCore
 
 public final class FilterDecisionMaker {
   public var userKeys: [uid_t: [FilterKey]] = [:]
-  // public var deviceIds: [uid_t: Device.Id] = [:]
-  public var deviceIds: [uid_t: UUID] = [:]
   public var suspensions = FilterSuspensions()
   public var appDescriptorFactory = AppDescriptorFactory()
 
