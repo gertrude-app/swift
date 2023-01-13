@@ -30,10 +30,6 @@ let package = Package(
       url: "https://github.com/pointfreeco/combine-schedulers",
       from: "0.5.3"
     ),
-    .package(
-      url: "https://github.com/pointfreeco/swift-url-routing",
-      from: "0.4.0"
-    ),
     .package(name: "Shared", path: "../../../shared"),
     .package(name: "MacAppRoute", path: "../../../pairql-macapp"),
     .package(name: "SharedCore", path: "../SharedCore"),
@@ -51,7 +47,6 @@ let package = Package(
         "Websocket",
         "LaunchAtLogin",
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
-        .product(name: "URLRouting", package: "swift-url-routing"),
       ]
     ),
     .testTarget(

@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-  name: "VaporUtils",
+  name: "XExpect",
   platforms: [.macOS(.v11)],
   products: [
     .library(name: "XExpect", targets: ["XExpect"]),

@@ -74,6 +74,15 @@
         }
       },
       {
+        "package": "swift-url-routing",
+        "repositoryURL": "https://github.com/pointfreeco/swift-url-routing.git",
+        "state": {
+          "branch": null,
+          "revision": "f54c4f74e7884f7930560c08387817ce28271770",
+          "version": "0.4.0"
+        }
+      },
+      {
         "package": "xctest-dynamic-overlay",
         "repositoryURL": "https://github.com/pointfreeco/xctest-dynamic-overlay",
         "state": {
