@@ -75,10 +75,10 @@ extension GetUser.User {
     async let devices = Current.db.query(Device.self)
       .where(.userId == user.id)
       .all()
-      .map { device in
+      .concurrentMap { device in
         GetUser.Device(
           id: device.id,
-          isOnline: device.isOnline,
+          isOnline: await device.isOnline(),
           modelFamily: device.model.family,
           modelTitle: device.model.shortDescription
         )

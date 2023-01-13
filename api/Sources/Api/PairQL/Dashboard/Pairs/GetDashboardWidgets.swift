@@ -93,11 +93,11 @@ extension GetDashboardWidgets: NoInputResolver {
 
     let networkDecisions = try await awaitedNetworkDecisions
 
-    return .init(
-      users: users.map { user in .init(
+    return try await .init(
+      users: users.concurrentMap { user in .init(
         id: user.id,
         name: user.name,
-        isOnline: devices.filter { $0.userId == user.id && $0.isOnline }.count > 0
+        isOnline: try await userOnline(user.id, devices)
       ) },
       userActivitySummaries: userActivitySummaries(
         users: users,
@@ -120,6 +120,10 @@ extension GetDashboardWidgets: NoInputResolver {
 }
 
 // helpers
+
+func userOnline(_ userId: User.Id, _ devices: [Device]) async throws -> Bool {
+  try await devices.concurrentMap { await $0.isOnline() }.contains(true)
+}
 
 func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],

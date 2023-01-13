@@ -58,7 +58,7 @@ extension Device {
 // extensions
 
 extension Device {
-  var isOnline: Bool {
-    false // todo
+  func isOnline() async -> Bool {
+    await Current.connectedApps.isDeviceOnline(id)
   }
 }
