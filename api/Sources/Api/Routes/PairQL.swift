@@ -43,6 +43,7 @@ enum PairQLRoute: Equatable, RouteResponder {
     let context = Context(requestId: request.id, dashboardUrl: request.dashboardUrl)
     do {
       let route = try PairQLRoute.router.parse(requestData)
+      logOperation(route, request)
       return try await PairQLRoute.respond(to: route, in: context)
     } catch {
       if "\(type(of: error))" == "ParsingError" {
@@ -62,9 +63,21 @@ enum PairQLRoute: Equatable, RouteResponder {
         print(type(of: error), error)
         throw error
       }
-      // guard Env.mode == .dev else { throw error }
-      // print(String(describing: error))
-      // return Response(status: .notFound, body: .init(string: "Routing \(error)"))
     }
+  }
+}
+
+// helpers
+
+private func logOperation(_ route: PairQLRoute, _ request: Request) {
+  switch route {
+  case .macApp:
+    let operation = request.parameters.get("operation") ?? ""
+    Current.logger
+      .notice("PairQL request: \("MacApp".magenta) \(operation.yellow)")
+  case .dashboard:
+    let operation = request.parameters.get("operation") ?? ""
+    Current.logger
+      .notice("PairQL request: \("Dashboard".green) \(operation.yellow)")
   }
 }

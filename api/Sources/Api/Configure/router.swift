@@ -8,7 +8,7 @@ public extension Configure {
       use: DashboardTsCodegenRoute.handler(_:)
     )
     app.post(
-      "pairql", "**",
+      "pairql", ":domain", ":operation",
       use: PairQLRoute.handler(_:)
     )
     app.get(
