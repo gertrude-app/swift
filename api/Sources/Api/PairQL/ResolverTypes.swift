@@ -94,7 +94,8 @@ extension ResolverContext {
     userMessage: String? = nil,
     userAction: String? = nil,
     entityName: String? = nil,
-    tag: PqlError.DashboardTag? = nil,
+    dashboardTag: PqlError.DashboardTag? = nil,
+    appTag: PqlError.AppTag? = nil,
     showContactSupport: Bool = false
   ) -> PqlError {
     PqlError(
@@ -105,7 +106,8 @@ extension ResolverContext {
       userMessage: userMessage,
       userAction: userAction,
       entityName: entityName,
-      dashboardTag: tag,
+      dashboardTag: dashboardTag,
+      appTag: appTag,
       showContactSupport: showContactSupport
     )
   }

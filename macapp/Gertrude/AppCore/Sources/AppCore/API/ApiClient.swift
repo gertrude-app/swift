@@ -33,7 +33,7 @@ public struct ApiClient {
   var uploadScreenshot: (Data, Int, Int, ((String?) -> Void)?) -> Void
 }
 
-// protocols
+// extensions
 
 extension ApiClient.Error {
   var logged: Self {
@@ -49,6 +49,15 @@ extension ApiClient.Error {
       )))
     }
     return self
+  }
+
+  var tag: PqlError.AppTag? {
+    switch self {
+    case .pql(_, let pqlError):
+      return pqlError.appTag
+    default:
+      return nil
+    }
   }
 }
 

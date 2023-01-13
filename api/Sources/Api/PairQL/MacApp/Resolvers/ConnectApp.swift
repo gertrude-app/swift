@@ -6,7 +6,12 @@ extension ConnectApp: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     guard let userId = await Current.ephemeral.getPendingAppConnection(input.verificationCode)
     else {
-      throw Abort(.notFound, reason: "verification code not found")
+      throw context.error(
+        id: "6e7fc234",
+        type: .unauthorized,
+        debugMessage: "ConnectApp verification code not found",
+        appTag: .connectionCodeNotFound
+      )
     }
 
     let device: Device

@@ -75,7 +75,7 @@ private func sendVerification(
         id: "df619205",
         type: .unauthorized,
         debugMessage: "failed to send Slack verification code: \(error) ",
-        tag: .slackVerificationFailed
+        dashboardTag: .slackVerificationFailed
       )
     }
 

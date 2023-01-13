@@ -7,7 +7,7 @@
       "command": "cd pairql-typescript && swift build"
     },
     "test": {
-      "command": "cd api && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+      "command": "cd pairql-typescript && SWIFT_DETERMINISTIC_HASHING=1 swift test"
     }
   }
 }

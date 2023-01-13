@@ -63,6 +63,7 @@ public extension PqlError {
   }
 
   enum AppTag: String, Codable, CaseIterable {
-    case todo
+    case userTokenNotFound
+    case connectionCodeNotFound
   }
 }

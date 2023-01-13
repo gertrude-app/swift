@@ -7,12 +7,22 @@ extension MacAppRoute: RouteResponder {
     switch route {
 
     case .unauthed(let unauthed):
-      fatalError("not implemented \(unauthed)")
+      switch unauthed {
+      case .connectApp(let input):
+        let output = try await ConnectApp.resolve(with: input, in: context)
+        return try await respond(with: output)
+      }
 
     case .userAuthed(let uuid, let userRoute):
       let token = try await Current.db.query(UserToken.self)
         .where(.value == uuid)
-        .first()
+        .first(orThrow: context.error(
+          id: "6e88d0de",
+          type: .unauthorized,
+          debugMessage: "user token not found",
+          appTag: .userTokenNotFound
+        ))
+
       let userContext = UserContext(
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,

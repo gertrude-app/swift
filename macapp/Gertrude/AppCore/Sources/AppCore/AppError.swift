@@ -4,18 +4,25 @@ public enum AppError {
   case refreshRulesFailed(ApiClient.Error)
   case filterSuspensionRequestFailed(ApiClient.Error)
   case unlockRequestFailed(ApiClient.Error)
+
+  var error: ApiClient.Error {
+    switch self {
+    case .refreshRulesFailed(let error):
+      return error
+    case .filterSuspensionRequestFailed(let error):
+      return error
+    case .unlockRequestFailed(let error):
+      return error
+    }
+  }
 }
 
 func errorMsg(_ event: AppError) -> String {
   var error: String?
-  switch event {
-  case .refreshRulesFailed(let apiError),
-       .unlockRequestFailed(let apiError),
-       .filterSuspensionRequestFailed(let apiError):
-    error = apiError.localizedDescription
-    if error?.contains("401") == true {
-      return ACCOUNT_CONNECTION_LOST
-    }
+  if event.error.tag == .userTokenNotFound {
+    return ACCOUNT_CONNECTION_LOST
+  } else {
+    error = event.error.localizedDescription
   }
 
   if let error = error?.lowercased() {

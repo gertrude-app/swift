@@ -235,7 +235,7 @@ func appReducer(
   case .connectToUser:
     let connect = state.adminWindow.connectState
     connect.fetchState = .fetching
-    let code = Int(connect.code) ?? -999999
+    let code = Int(connect.code) ?? -999_999
     return environment.api
       .connectToUser(code)
       .map { .connectToUserSuccess(userId: $0, userToken: $1, userName: $2, deviceId: $3) }
@@ -244,7 +244,7 @@ func appReducer(
 
   case .connectToUserError(let error):
     var message = "Something went wrong, please try again."
-    if (~error).contains("code not found") {
+    if error.tag == .connectionCodeNotFound {
       message = "Code not found, or expired. Try re-entering, or create a new code."
     }
     state.adminWindow.connectState.fetchState = .error(message)
