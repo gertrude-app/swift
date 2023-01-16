@@ -1,0 +1,25 @@
+import Shared
+import Vapor
+import XCore
+
+enum ReleasesRoute {
+  static func handler(_ request: Request) async throws -> Response {
+    struct Item: Encodable {
+      var version: String
+      var channel: ReleaseChannel
+    }
+
+    let releases = try await Current.db.query(Release.self)
+      .orderBy(.createdAt, .desc)
+      .all()
+
+    let items = releases.map {
+      Item(version: $0.semver, channel: $0.channel)
+    }
+
+    return Response(
+      headers: ["Content-Type": "application/json"],
+      body: .init(string: try JSON.encode(items))
+    )
+  }
+}

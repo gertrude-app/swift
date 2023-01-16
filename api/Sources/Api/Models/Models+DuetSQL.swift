@@ -439,47 +439,47 @@ extension NetworkDecision: Model {
   }
 }
 
-// extension Release: Model {
-//   public static let tableName = M35.tableName
-//   public typealias ColumnName = CodingKeys
+extension Release: Model {
+  public static let tableName = M7.tableName
+  public typealias ColumnName = CodingKeys
 
-//   public func postgresData(for column: ColumnName) -> Postgres.Data {
-//     switch column {
-//     case .id:
-//       return .id(self)
-//     case .semver:
-//       return .string(semver)
-//     case .channel:
-//       return .enum(channel)
-//     case .signature:
-//       return .string(signature)
-//     case .length:
-//       return .int(length)
-//     case .appRevision:
-//       return .string(appRevision.rawValue)
-//     case .coreRevision:
-//       return .string(coreRevision.rawValue)
-//     case .createdAt:
-//       return .date(createdAt)
-//     case .updatedAt:
-//       return .date(updatedAt)
-//     }
-//   }
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .semver:
+      return .string(semver)
+    case .channel:
+      return .enum(channel)
+    case .signature:
+      return .string(signature)
+    case .length:
+      return .int(length)
+    case .appRevision:
+      return .string(appRevision.rawValue)
+    case .coreRevision:
+      return .string(coreRevision.rawValue)
+    case .createdAt:
+      return .date(createdAt)
+    case .updatedAt:
+      return .date(updatedAt)
+    }
+  }
 
-//   public var insertValues: [ColumnName: Postgres.Data] {
-//     [
-//       .id: .id(self),
-//       .semver: .string(semver),
-//       .channel: .enum(channel),
-//       .signature: .string(signature),
-//       .length: .int(length),
-//       .appRevision: .string(appRevision.rawValue),
-//       .coreRevision: .string(coreRevision.rawValue),
-//       .createdAt: .currentTimestamp,
-//       .updatedAt: .currentTimestamp,
-//     ]
-//   }
-// }
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .semver: .string(semver),
+      .channel: .enum(channel),
+      .signature: .string(signature),
+      .length: .int(length),
+      .appRevision: .string(appRevision.rawValue),
+      .coreRevision: .string(coreRevision.rawValue),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
 
 extension Screenshot: Model {
   public static let tableName = M4.tableName
