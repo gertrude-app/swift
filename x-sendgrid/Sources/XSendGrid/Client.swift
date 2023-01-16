@@ -1,6 +1,10 @@
 import Foundation
 import XHttp
 
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
+
 public extension SendGrid {
   struct Client {
     public var send: (Email) async throws -> Void
