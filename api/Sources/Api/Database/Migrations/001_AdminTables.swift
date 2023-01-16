@@ -121,7 +121,7 @@ struct AdminTables: GertieMigration {
     }
     try await sql.add(constraint: adminNotificationsAdminIdFk)
     try await sql.add(constraint: adminNotificationsMethodIdFk)
-    try await sql.add(constraint: .unique(M.self, [M.methodId, M.adminId]))
+    try await sql.add(constraint: .unique(M.self, [M.methodId, M.adminId, M.trigger]))
   }
 
   func downAdminNotifications(_ sql: SQLDatabase) async throws {
