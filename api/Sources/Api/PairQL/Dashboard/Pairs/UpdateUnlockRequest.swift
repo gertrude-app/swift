@@ -23,7 +23,7 @@ extension UpdateUnlockRequest: Resolver {
     try await Current.db.update(request)
     let decision = try await Current.db.find(request.networkDecisionId)
 
-    await Current.connectedApps.notify(.unlockRequestUpdated(.init(
+    try await Current.connectedApps.notify(.unlockRequestUpdated(.init(
       deviceId: device.id,
       status: request.status,
       target: decision.target ?? "",

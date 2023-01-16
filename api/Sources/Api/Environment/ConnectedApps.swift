@@ -5,7 +5,7 @@ struct ConnectedApps {
   var remove: (AppConnection) async -> Void
   var filterState: (Device.Id) async -> FilterState?
   var isDeviceOnline: (Device.Id) async -> Bool
-  var notify: (AppEvent) async -> Void
+  var notify: (AppEvent) async throws -> Void
 }
 
 extension ConnectedApps {
@@ -17,7 +17,7 @@ extension ConnectedApps {
       remove: { await connections.remove($0) },
       filterState: { await connections.filterState(for: $0) },
       isDeviceOnline: { await connections.isDeviceOnline($0) },
-      notify: { await connections.notify($0) }
+      notify: { try await connections.notify($0) }
     )
   }
 

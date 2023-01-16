@@ -10,13 +10,12 @@ protocol WebsocketProtocol {
   var isClosed: Bool { get }
   func send<S>(_ text: S) async throws
     where S: Collection, S.Element == Character
-  func send<T: Codable>(_ msg: T) throws
 }
 
 extension WebSocket: WebsocketProtocol {}
 
 extension WebsocketProtocol {
-  func send<T: Codable>(_ msg: T) throws {
-    try send(try JSON.encode(msg))
+  func send<T: Codable>(codable msg: T) async throws {
+    try await send(try JSON.encode(msg))
   }
 }

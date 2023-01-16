@@ -8,6 +8,7 @@ enum LegacyMacAppGraphQLRoute {
   static func handler(_ request: Request) async throws -> Response {
     do {
       let operationName = try request.content.decode(Name.self).operationName
+      Current.logger.notice("Legacy GraphQL operation: \(operationName.red)")
       switch operationName {
       case "AccountStatus":
         return try await accountStatus(request)
@@ -29,6 +30,7 @@ enum LegacyMacAppGraphQLRoute {
         throw Abort(.notFound, reason: "Unknown operation: \(operationName)")
       }
     } catch {
+      Current.logger.error("Legacy GraphQL error: \(error)")
       let message = "\(error)".replacingOccurrences(of: "\"", with: "'")
       return .init(
         headers: ["Content-Type": "application/json"],

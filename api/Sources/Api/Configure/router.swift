@@ -18,8 +18,10 @@ public extension Configure {
       use: DashboardTsCodegenRoute.handler(_:)
     )
 
-    app.post(
+    app.on(
+      .POST,
       "pairql", ":domain", ":operation",
+      body: .collect(maxSize: "512kb"),
       use: PairQLRoute.handler(_:)
     )
 
@@ -40,10 +42,13 @@ public extension Configure {
 
     // deprecated, legacy
 
-    app.post(
+    app.on(
+      .POST,
       "graphql", "macos-app-05-2022",
+      body: .collect(maxSize: "512kb"),
       use: LegacyMacAppGraphQLRoute.handler(_:)
     )
+
     app.post(
       "graphql",
       use: LegacyMacAppGraphQLRoute.edensHandler(_:)

@@ -43,27 +43,28 @@ actor AppConnections {
     return Array(connections.values)
   }
 
-  func notify(_ event: AppEvent) {
+  func notify(_ event: AppEvent) async throws {
     switch event {
     case .keychainUpdated(let keychainId):
-      currentConnections
+      try await currentConnections
         .filter { $0.ids.keychains.contains(keychainId) }
-        .forEach {
-          try? $0.ws.send(OutgoingMessage(type: .userUpdated))
+        .asyncForEach {
+          try await $0.ws.send(codable: OutgoingMessage(type: .userUpdated))
         }
 
     case .userUpdated(let userId):
-      currentConnections
+      try await currentConnections
         .filter { $0.ids.user == userId }
-        .forEach {
-          try? $0.ws.send(OutgoingMessage(type: .userUpdated))
+        .asyncForEach {
+          try await $0.ws.send(codable: OutgoingMessage(type: .userUpdated))
         }
 
     case .unlockRequestUpdated(let payload):
-      currentConnections
+      try await currentConnections
         .filter { $0.ids.device == payload.deviceId }
-        .forEach {
-          try? $0.ws.send(
+        .asyncForEach {
+          try await $0.ws.send(
+            codable:
             OutgoingMessage.UnlockRequestUpdated(
               status: payload.status,
               target: payload.target,
@@ -75,10 +76,11 @@ actor AppConnections {
 
     case .suspendFilterRequestUpdated(let payload):
       if payload.status == .accepted {
-        currentConnections
+        try await currentConnections
           .filter { $0.ids.device == payload.deviceId }
-          .forEach {
-            try? $0.ws.send(
+          .asyncForEach {
+            try await $0.ws.send(
+              codable:
               OutgoingMessage.SuspendFilter(
                 suspension: .init(scope: .unrestricted, duration: payload.duration),
                 comment: payload.responseComment
@@ -86,10 +88,11 @@ actor AppConnections {
             )
           }
       } else {
-        currentConnections
+        try await currentConnections
           .filter { $0.ids.device == payload.deviceId }
-          .forEach {
-            try? $0.ws.send(
+          .asyncForEach {
+            try await $0.ws.send(
+              codable:
               OutgoingMessage.SuspendFilterRequestDenied(
                 requestComment: payload.requestComment,
                 responseComment: payload.responseComment
