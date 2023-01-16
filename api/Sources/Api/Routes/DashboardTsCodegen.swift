@@ -115,6 +115,7 @@ extension AppScope.Single: TypescriptRepresentable {}
 extension Shared.Key: TypescriptRepresentable {}
 extension PqlError.Kind: TypescriptRepresentable {}
 extension PqlError.DashboardTag: TypescriptRepresentable {}
+extension PqlError.AppTag: TypescriptRepresentable {}
 
 extension PqlError: GlobalType {
   public static var __typeName = "ServerPqlError"
