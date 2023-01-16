@@ -1,12 +1,26 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@friends-library/env': ^1.4.0
+  '@types/node': ^18.11.18
   nx: ^15.3.0
+  x-chalk: ^1.0.1
+  x-exec: ^1.2.0
 
 devDependencies:
+  '@friends-library/env': 1.4.0
+  '@types/node': 18.11.18
   nx: 15.3.0
+  x-chalk: 1.0.1
+  x-exec: 1.2.0
 
 packages:
+
+  /@friends-library/env/1.4.0:
+    resolution: {integrity: sha512-tw9TcguHM0YKNSnnf3wDjuyJ1FHvjK0y1HRDgZ0n2/Cee6KQ2lKkUx3H85u/frQ43D5XWwxmiRef0SP5E5SDNg==}
+    dependencies:
+      dotenv: 6.2.0
+    dev: true
 
   /@nodelib/fs.scandir/2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -61,6 +75,10 @@ packages:
 
   /@types/json5/0.0.29:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+    dev: true
+
+  /@types/node/18.11.18:
+    resolution: {integrity: sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==}
     dev: true
 
   /@yarnpkg/lockfile/1.1.0:
@@ -260,6 +278,11 @@ packages:
   /dotenv/10.0.0:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
     engines: {node: '>=10'}
+    dev: true
+
+  /dotenv/6.2.0:
+    resolution: {integrity: sha512-HygQCKUBSFl8wKQZBSemMywRWcEDNidvNbjGVyZu3nbZ8qq9ubiPoGLMdRDpfSrpkkm9BXYFkpKxxFX38o/76w==}
+    engines: {node: '>=6'}
     dev: true
 
   /duplexer/0.1.2:
@@ -849,6 +872,16 @@ packages:
 
   /wrappy/1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
+    dev: true
+
+  /x-chalk/1.0.1:
+    resolution: {integrity: sha512-hzldDedmkfF+Mn3UhmCIChfWSBm8l6A1k6WA20IJo7fJdhZIHbwV3QMBu/QtIFTfzuh+3Qk04T0UO93rzaioMA==}
+    dependencies:
+      chalk: 4.1.0
+    dev: true
+
+  /x-exec/1.2.0:
+    resolution: {integrity: sha512-SbMXLx0hiHjeQY9GeL4awzfSrHS5tcNleMx3WE0tXOgce3kQh3W3ANzs42fWmOgHSWeRtXxl4VOJKNywQmxYOQ==}
     dev: true
 
   /y18n/5.0.8:

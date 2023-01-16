@@ -1,5 +1,9 @@
 {
   "devDependencies": {
-    "nx": "^15.3.0"
+    "@friends-library/env": "^1.4.0",
+    "@types/node": "^18.11.18",
+    "nx": "^15.3.0",
+    "x-chalk": "^1.0.1",
+    "x-exec": "^1.2.0"
   }
 }

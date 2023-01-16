@@ -33,6 +33,11 @@ public extension Configure {
       use: ResetRoute.handler(_:)
     )
 
+    app.post(
+      "stripe-events",
+      use: StripeEventsRoute.handler(_:)
+    )
+
     // deprecated, legacy
 
     app.post(
