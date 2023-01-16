@@ -11,6 +11,20 @@ extension Request {
     }
   }
 
+  // get the entire request body as a string, collecting if necessary
+  // @see https://stackoverflow.com/questions/70120989
+  func collectedBody(max: Int? = nil) async throws -> String? {
+    if let body = body.string {
+      return body
+    }
+
+    guard let buffer = try await body.collect(max: max).get() else {
+      return nil
+    }
+
+    return String(data: Data(buffer: buffer), encoding: .utf8)
+  }
+
   func userToken() async throws -> UserToken {
     guard let header = headers.first(name: .authorization),
           let uuid = UUID(authorizationHeader: header) else {

@@ -734,3 +734,27 @@ extension WaitlistedAdmin: Model {
     ]
   }
 }
+
+extension StripeEvent: Model {
+  public static let tableName = StripeEvent.M7.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .json:
+      return .string(json)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .json: .string(json),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
