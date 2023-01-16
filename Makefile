@@ -3,64 +3,20 @@
 watch-api:
 	$(WATCH_SWIFT) 'make run-api'
 
-run-api:
-	cd api && swift build && ./.build/debug/Run serve --port 8082
+run-api: build-api
+	$(API_RUN) serve --port 8080
+
+run-api-ip: build-api
+	$(API_RUN) serve --port 8080 --hostname 192.168.10.227
 
 build-api:
-	$(NX) run api:build
-
-test-api:
-	$(NX) run api:test
+	cd api && swift build
 
 migrate-up: build-api
 	$(API_RUN) migrate --yes
 
 migrate-down: build-api
 	$(API_RUN) migrate --revert --yes
-
-# pairql
-
-build-pql:
-	$(NX) run pairql:build
-
-test-pql:
-	$(NX) run pairql:test
-
-build-pql-macapp:
-	$(NX) run pairql-macapp:build
-
-test-pql-macapp:
-	$(NX) run pairql-macapp:test
-
-build-pql-ts:
-	$(NX) run pairql-ts:build
-
-test-pql-ts:
-	$(NX) run pairql-ts:test
-
-# shared
-
-build-shared:
-	$(NX) run shared:build
-
-test-shared:
-	$(NX) run shared:test
-
-# duet
-
-build-duet:
-	$(NX) run duet:build
-
-test-duet:
-	$(NX) run duet:test
-
-# x-*
-
-build-xkit:
-	$(NX) run x-kit:build
-
-test-xkit:
-	$(NX) run x-kit:test
 
 # root
 
@@ -103,13 +59,8 @@ NX = node_modules/.bin/nx
 WATCH_SWIFT = watchexec --restart --clear --watch . --exts swift --ignore **/ApiKeys.swift
 SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
-ALL_CMDS = api watch-api run-api build-api migrate-up migrate-down \
-  build-shared test-shared \
-  build-pql test-pql \
-  build-pql-macapp test-pql-macapp \
-  build-xkit test-xkit \
-  build-duet test-duet \
-	exclude clean test build check
+ALL_CMDS = api watch-api run-api run-api-ip build-api migrate-up migrate-down \
+	exclude clean test build check nx-reset clean-api-tests
 
 .PHONY: $(ALL_CMDS)
 .SILENT: $(ALL_CMDS)

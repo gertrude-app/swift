@@ -395,3 +395,4 @@ extension WaitlistedAdmin {
     case updatedAt
   }
 }
+
