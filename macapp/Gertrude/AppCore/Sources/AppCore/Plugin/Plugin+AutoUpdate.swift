@@ -102,7 +102,7 @@ class AutoUpdatePlugin: NSObject, Plugin, SPUUpdaterDelegate {
       query.version = version
     }
 
-    let endpoint = isDev() ? "http://127.0.0.1:8080" : "https://api.gertrude-app.com"
+    let endpoint = isDev() ? "http://127.0.0.1:8080" : "https://api.gertrude.app"
     let urlString = "\(endpoint)/appcast.xml\(query.urlString)"
     log(.plugin("AutoUpdate", .level(.info, "set appcast feed url", .primary(urlString))))
     return urlString

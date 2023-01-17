@@ -17,9 +17,9 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
+    <string>1.1.0</string>
     <key>CFBundleVersion</key>
-    <string>1.0.0</string>
+    <string>1.1.0</string>
     <key>LSMinimumSystemVersion</key>
     <string>$(MACOSX_DEPLOYMENT_TARGET)</string>
     <key>LSUIElement</key>
@@ -37,7 +37,7 @@
     <key>SUPublicEDKey</key>
     <string>aA2gVfZdTe/oPuDeoO9UJUTF3dXbPTooEHW+jvw2/0I=</string>
     <key>SUFeedURL</key>
-    <string>https://api.gertrude-app.com/appcast.xml</string>
+    <string>https://api.gertrude.app/appcast.xml</string>
     <key>NSAppTransportSecurity</key>
     <dict>
       <key>NSAllowsLocalNetworking</key>

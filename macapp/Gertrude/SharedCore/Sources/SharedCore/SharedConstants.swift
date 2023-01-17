@@ -16,6 +16,6 @@ public enum SharedConstants {
       URL(string: "https://api.gertrude.app/releases")!
     public static let PAIRQL_ENDPOINT =
       URL(string: "https://api.gertrude.app/pairql")!
-    public static let WEBSOCKET_ENDPOINT = URL(string: "https://api.gertrude-app.com/app")!
+    public static let WEBSOCKET_ENDPOINT = URL(string: "https://api.gertrude.app/app")!
   #endif
 }

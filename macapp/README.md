@@ -1,5 +1,10 @@
 # Gertrude
 
+## Release notes
+
+- `1.1.0` (1/17/23) pairql/monorepo refactor, no real new features, but ripped out api
+  layer, and modules changed
+
 ## Sparkle Releases
 
 - Increment build numbers in _BOTH_ `Info.plist`s

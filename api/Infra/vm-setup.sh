@@ -57,7 +57,7 @@ sudo ufw allow 'Nginx Full'
 # make /etc/nginx/sites-available/default look like this:
 ```
 server {
-  server_name api.gertrude-app.com;
+  server_name api.getrude.app;
   location / {
     proxy_pass http://127.0.0.1:8080;
     proxy_http_version 1.1;
@@ -79,7 +79,7 @@ server {
 }
 
 server {
-  server_name api--staging.gertrude-app.com;
+  server_name api--staging.getrude.app;
   location / {
     proxy_pass http://127.0.0.1:8090;
     proxy_http_version 1.1;
@@ -128,10 +128,8 @@ sudo timedatectl set-timezone America/New_York
 
 # then install and run let's encrypt, letting it finish the config
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d api.gertrude-app.com # choose 2 for https redirect
-sudo certbot --nginx -d api--staging.gertrude-app.com # choose 2 for https redirect
-sudo certbot --nginx -d api.gertrude.app # choose 2 for https redirect
-sudo certbot --nginx -d api--staging.gertrude.app # choose 2 for https redirect
+sudo certbot --nginx -d api.getrude.app # choose 2 for https redirect
+sudo certbot --nginx -d api--staging.getrude.app # choose 2 for https redirect
 sudo systemctl reload nginx
 
 # add 1GB of SWAP space (compiling swift takes a lot of memory)
