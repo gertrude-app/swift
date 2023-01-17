@@ -40,6 +40,11 @@ public extension Configure {
       use: StripeEventsRoute.handler(_:)
     )
 
+    app.get(
+      "test-inbox",
+      use: TestEmailInboxRoute.handler(_:)
+    )
+
     // deprecated, legacy
 
     app.on(
