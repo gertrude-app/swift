@@ -30,6 +30,9 @@ deploy-all:
 	make deploy-staging
 	make deploy-prod
 
+db-sync:
+	node ./api/Infra/db-sync.mjs
+
 # root
 
 build:
@@ -72,7 +75,7 @@ WATCH_SWIFT = watchexec --restart --clear --watch . --exts swift --ignore **/Api
 SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
 ALL_CMDS = api watch-api run-api run-api-ip build-api migrate-up migrate-down \
-	deploy-prod deploy-staging deploy-all \
+	deploy-prod deploy-staging deploy-all db-sync \
 	exclude clean test build check nx-reset clean-api-tests
 
 .PHONY: $(ALL_CMDS)
