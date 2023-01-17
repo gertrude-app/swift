@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { c, log, red } from 'x-chalk';
 import exec from 'x-exec';
 import { spawnSync } from 'child_process';
@@ -8,7 +7,7 @@ const ENV: 'production' | 'staging' = process.argv.includes(`--production`)
   ? `production`
   : `staging`;
 
-env.load(`../.env.${ENV}`);
+env.load(`./api/.env.${ENV}`);
 
 const { HOST, MONOREPO_DIR, REPO_URL, PORT_START } = env.require(
   `HOST`,
@@ -38,7 +37,7 @@ inMonorepoDir(`git reset --hard HEAD`);
 inMonorepoDir(`git pull origin master`);
 
 log(c`{green env:} {gray copying .env file to} {magenta ${API_DIR}}`);
-exec.exit(`scp ./.env.${ENV} ${HOST}:${API_DIR}/.env`);
+exec.exit(`scp ./api/.env.${ENV} ${HOST}:${API_DIR}/.env`);
 
 log(c`{green swift:} {gray building vapor app with command} {magenta ${BUILD_CMD}}`);
 inApiDirWithOutput(BUILD_CMD);
@@ -73,7 +72,7 @@ exec(`ssh ${HOST} "pm2 delete ${PM2_PREV_NAME}"`);
 exec(`ssh ${HOST} "pm2 save"`);
 console.log(``);
 
-// // helper functions
+// helpers
 
 function inApiDirWithOutput(cmd: string): boolean {
   console.log(``);
