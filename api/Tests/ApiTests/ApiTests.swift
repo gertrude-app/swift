@@ -6,6 +6,10 @@ import XCore
 import XCTest
 import XExpect
 
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
+
 @testable import Api
 
 final class ApiTests: ApiTestCase {

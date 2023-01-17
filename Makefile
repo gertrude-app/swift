@@ -21,10 +21,10 @@ migrate-down: build-api
 #infra
 
 deploy-prod:
-	$(TSNODE) ./api/Infra/deploy.ts --production
+	node ./api/Infra/deploy.mjs --production
 
 deploy-staging:
-	$(TSNODE) ./api/Infra/deploy.ts
+	node ./api/Infra/deploy.mjs
 
 deploy-all:
 	make deploy-staging
@@ -69,7 +69,6 @@ clean-api-tests:
 
 NX = node_modules/.bin/nx
 WATCH_SWIFT = watchexec --restart --clear --watch . --exts swift --ignore **/ApiKeys.swift
-TSNODE = ./node_modules/.bin/ts-node
 SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
 ALL_CMDS = api watch-api run-api run-api-ip build-api migrate-up migrate-down \

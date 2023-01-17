@@ -1,11 +1,17 @@
-import { c, log, red } from 'x-chalk';
-import exec from 'x-exec';
-import { spawnSync } from 'child_process';
-import env from '@friends-library/env';
+/* eslint-disable */
+// @ts-check
 
-const ENV: 'production' | 'staging' = process.argv.includes(`--production`)
-  ? `production`
-  : `staging`;
+import { c, log, red } from 'x-chalk';
+import xExec from 'x-exec';
+import { spawnSync } from 'child_process';
+import flpEnv from '@friends-library/env';
+
+// @ts-ignore
+const env = flpEnv.default;
+// @ts-ignore
+const exec = xExec.default;
+
+const ENV = process.argv.includes(`--production`) ? `production` : `staging`;
 
 env.load(`./api/.env.${ENV}`);
 
@@ -41,17 +47,18 @@ exec.exit(`scp ./api/.env.${ENV} ${HOST}:${API_DIR}/.env`);
 
 log(c`{green swift:} {gray building vapor app with command} {magenta ${BUILD_CMD}}`);
 inApiDirWithOutput(BUILD_CMD);
+inMonorepoDir(`make exclude`);
 
 log(c`{green vapor:} {gray running migrations}`);
 inApiDirWithOutput(`${VAPOR_RUN} migrate --yes`);
 
-// if (ENV === `staging`) {
-//   log(c`{green test:} {gray running tests}`);
-//   if (!inApiDirWithOutput(`npm run test`)) {
-//     red(`Tests failed, halting deploy.\n`);
-//     process.exit(1);
-//   }
-// }
+if (ENV === `staging`) {
+  log(c`{green test:} {gray running tests}`);
+  if (!inApiDirWithOutput(`SWIFT_DETERMINISTIC_HASHING=1 swift test`)) {
+    red(`Tests failed, halting deploy.\n`);
+    process.exit(1);
+  }
+}
 
 log(c`{green pm2:} {gray setting serve script for pm2} {magenta ${SERVE_CMD}}`);
 inApiDir(`echo \\"#!/usr/bin/bash\\" > ./serve.sh`);
@@ -74,7 +81,11 @@ console.log(``);
 
 // helpers
 
-function inApiDirWithOutput(cmd: string): boolean {
+/**
+ * @param {string} cmd
+ * @returns {boolean}
+ */
+function inApiDirWithOutput(cmd) {
   console.log(``);
   const result = spawnSync(`ssh`, [HOST, `cd ${API_DIR} && ${cmd}`], {
     stdio: `inherit`,
@@ -83,15 +94,24 @@ function inApiDirWithOutput(cmd: string): boolean {
   return result.status === 0;
 }
 
-function inApiDir(cmd: string): void {
+/**
+ * @param {string} cmd
+ */
+function inApiDir(cmd) {
   exec.exit(`ssh ${HOST} "cd ${API_DIR} && ${cmd}"`);
 }
 
-function inMonorepoDir(cmd: string): void {
+/**
+ * @param {string} cmd
+ */
+function inMonorepoDir(cmd) {
   exec.exit(`ssh ${HOST} "cd ${MONOREPO_DIR} && ${cmd}"`);
 }
 
-function getCurrentPort(): number {
+/**
+ * @returns {number}
+ */
+function getCurrentPort() {
   const port = Number(
     exec
       .exit(`ssh ${HOST} "sudo cat ${NGINX_CONFIG} | grep :${PORT_START} --max-count=1"`)

@@ -7,14 +7,17 @@ enum TestEmailInboxRoute {
     guard Env.mode != .prod else {
       throw Abort(.notFound)
     }
+
     guard let API_KEY = Env.get("TESTMAIL_API_KEY") else {
       throw Abort(.badRequest, reason: "TESTMAIL_API_KEY is not set")
     }
+
     let response = try await HTTP.get(
       "https://api.testmail.app/api/json?apikey=\(API_KEY)&namespace=82uii",
       decoding: TestEmailResponse.self,
       keyDecodingStrategy: .convertFromSnakeCase
     )
+
     return .init(
       status: .ok,
       headers: ["Content-Type": "text/html"],
