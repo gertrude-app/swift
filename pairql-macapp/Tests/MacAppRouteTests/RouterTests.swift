@@ -2,6 +2,10 @@ import MacAppRoute
 import XCTest
 import XExpect
 
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
+
 final class RouterTests: XCTestCase {
   let router = MacAppRoute.router
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
