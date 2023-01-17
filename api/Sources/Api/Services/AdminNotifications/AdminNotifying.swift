@@ -14,10 +14,10 @@ extension AdminNotifying {
     switch config {
     case .email(let address):
       try await sendEmail(to: address)
-    case .slack(let channelId, let channelName, let token):
-      print(channelId, channelName, token)
+    case .slack(let channelId, _, let token):
+      try await sendSlack(channel: channelId, token: token)
     case .text(let phoneNumber):
-      print(phoneNumber)
+      try await sendText(to: phoneNumber)
     }
   }
 }
