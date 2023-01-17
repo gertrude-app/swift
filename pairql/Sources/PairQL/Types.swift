@@ -28,6 +28,7 @@ public enum ClientAuth: String {
   case none
   case user
   case admin
+  case superAdmin
 }
 
 public struct PairJsonEncodingError: Error {}

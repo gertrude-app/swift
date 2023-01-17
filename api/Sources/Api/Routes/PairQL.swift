@@ -11,6 +11,7 @@ struct Context: ResolverContext {
 enum PairQLRoute: Equatable, RouteResponder {
   case dashboard(DashboardRoute)
   case macApp(MacAppRoute)
+  case superAdmin(SuperAdminRoute)
 
   static let router = OneOf {
     Route(.case(PairQLRoute.macApp)) {
@@ -23,6 +24,11 @@ enum PairQLRoute: Equatable, RouteResponder {
       Path { "dashboard" }
       DashboardRoute.router
     }
+    Route(.case(PairQLRoute.superAdmin)) {
+      Method.post
+      Path { "super-admin" }
+      SuperAdminRoute.router
+    }
   }
 
   static func respond(to route: PairQLRoute, in context: Context) async throws -> Response {
@@ -31,6 +37,8 @@ enum PairQLRoute: Equatable, RouteResponder {
       return try await MacAppRoute.respond(to: appRoute, in: context)
     case .dashboard(let dashboardRoute):
       return try await DashboardRoute.respond(to: dashboardRoute, in: context)
+    case .superAdmin(let superAdminRoute):
+      return try await SuperAdminRoute.respond(to: superAdminRoute, in: context)
     }
   }
 
@@ -70,14 +78,16 @@ enum PairQLRoute: Equatable, RouteResponder {
 // helpers
 
 private func logOperation(_ route: PairQLRoute, _ request: Request) {
+  let operation = request.parameters.get("operation") ?? ""
   switch route {
   case .macApp:
-    let operation = request.parameters.get("operation") ?? ""
     Current.logger
       .notice("PairQL request: \("MacApp".magenta) \(operation.yellow)")
   case .dashboard:
-    let operation = request.parameters.get("operation") ?? ""
     Current.logger
       .notice("PairQL request: \("Dashboard".green) \(operation.yellow)")
+  case .superAdmin:
+    Current.logger
+      .notice("PairQL request: \("SuperAdmin".cyan) \(operation.yellow)")
   }
 }

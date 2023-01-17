@@ -175,7 +175,7 @@ final class CodegenTests: XCTestCase {
   func testVendedTypes() throws {
     expect(NoInput.ts).toEqual("export type __self__ = void;")
     expect(SuccessOutput.ts).toEqual("export type __self__ = SuccessOutput;")
-    expect(ClientAuth.ts).toEqual("export type __self__ = 'none' | 'user' | 'admin'")
+    expect(ClientAuth.ts).toEqual("export type __self__ = 'none' | 'user' | 'admin' | 'superAdmin'")
   }
 
   func testCustomImplementationWins() throws {

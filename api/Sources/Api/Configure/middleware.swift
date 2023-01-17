@@ -25,6 +25,7 @@ private func corsMiddleware(_ app: Application) -> CORSMiddleware {
       .referer,
       .xDashboardUrl,
       .xAdminToken,
+      .xSuperAdminToken,
       .xUserToken,
       .xAppVersion,
     ]
