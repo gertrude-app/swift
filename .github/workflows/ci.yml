@@ -1,0 +1,208 @@
+name: basic-ci
+
+on: push
+
+jobs:
+  linux-build-libs-1:
+    runs-on: ubuntu-latest
+    container: swift:5.5-focal
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: build-duet
+        run: cd duet && swift build
+      - name: build-pairql
+        run: cd pairql && swift build
+
+  linux-build-libs-2:
+    runs-on: ubuntu-latest
+    container: swift:5.5-focal
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: build-pairql-macapp
+        run: cd pairql-macapp && swift build
+      - name: build-pairql-typescript
+        run: cd pairql-typescript && swift build
+      - name: build-shared
+        run: cd shared && swift build
+      - name: build-x-expect
+        run: cd x-expect && swift build
+      - name: build-x-http
+        run: cd x-http && swift build
+      - name: build-x-kit
+        run: cd x-kit && swift build
+      - name: build-x-sendgrid
+        run: cd x-sendgrid && swift build
+      - name: build-x-slack
+        run: cd x-slack && swift build
+      - name: build-x-stripe
+        run: cd x-stripe && swift build
+
+  linux-lib-test-libs-1:
+    runs-on: ubuntu-latest
+    container: swift:5.5-focal
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: test-duet
+        run: cd duet && swift test
+      - name: test-pairql
+        run: cd pairql && swift test
+
+  linux-lib-test-libs-2:
+    runs-on: ubuntu-latest
+    container: swift:5.5-focal
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: test-pairql-macapp
+        run: cd pairql-macapp && swift test
+      - name: test-pairql-typescript
+        run: cd pairql-typescript && swift test
+      - name: test-shared
+        run: cd shared && swift test
+      - name: test-x-http
+        run: cd x-http && swift test
+      - name: test-x-kit
+        run: cd x-kit && swift test
+      - name: test-x-slack
+        run: cd x-slack && swift test
+
+  linux-api-build:
+    runs-on: ubuntu-latest
+    container: swift:5.5-focal
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: api/.build
+          key: api-${{ hashFiles('api/Package.resolved') }}
+          restore-keys: api-
+      - name: test-api
+        run: cd api && swift build
+
+  linux-api-test:
+    runs-on: ubuntu-latest
+    container: swift:5.5-focal
+    env:
+      DATABASE_HOST: postgres
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: vapor_username
+          POSTGRES_PASSWORD: vapor_password
+          POSTGRES_DB: vapor_database
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: api/.build
+          key: api-${{ hashFiles('api/Package.resolved') }}
+          restore-keys: api-
+      - name: test-api
+        run: cd api && swift test
+
+  macos-appcore:
+    runs-on: macos-12
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 13.2
+      - uses: actions/cache@v3
+        with:
+          path: macapp/Gertrude/AppCore/.build
+          key: appcore-${{ hashFiles('macapp/Gertrude/AppCore/Package.resolved') }}
+          restore-keys: appcore-
+      - name: stub api keys
+        run:
+          printf "struct ApiKeys { static let HONEYCOMB_DEV = \"\"; static let
+          HONEYCOMB_PROD = \"\" }" > macapp/Gertrude/AppCore/Sources/AppCore/ApiKeys.swift
+      - name: build
+        run: cd macapp/Gertrude/AppCore && swift build
+      - name: test
+        run: cd macapp/Gertrude/AppCore && swift test
+
+  macos-sharedcore:
+    runs-on: macos-12
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 13.2
+      - uses: actions/cache@v3
+        with:
+          path: macapp/Gertrude/SharedCore/.build
+          key: appcore-${{ hashFiles('macapp/Gertrude/SharedCore/Package.resolved') }}
+          restore-keys: appcore-
+      - name: build
+        run: cd macapp/Gertrude/SharedCore && swift build
+      - name: test
+        run: cd macapp/Gertrude/SharedCore && swift test
+
+  macos-filtercore:
+    runs-on: macos-12
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 13.2
+      - uses: actions/cache@v3
+        with:
+          path: macapp/Gertrude/FilterCore/.build
+          key: appcore-${{ hashFiles('macapp/Gertrude/FilterCore/Package.resolved') }}
+          restore-keys: appcore-
+      - name: build
+        run: cd macapp/Gertrude/FilterCore && swift build
+      - name: test
+        run: cd macapp/Gertrude/FilterCore && swift test
+
+  macos-websocket:
+    runs-on: macos-12
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 13.2
+      - uses: actions/cache@v3
+        with:
+          path: macapp/Gertrude/Websocket/.build
+          key: appcore-${{ hashFiles('macapp/Gertrude/Websocket/Package.resolved') }}
+          restore-keys: appcore-
+      - name: build
+        run: cd macapp/Gertrude/Websocket && swift build
+      - name: test
+        run: cd macapp/Gertrude/Websocket && swift test
+
+# env
+
+env:
+  DATABASE_NAME: vapor_database
+  DATABASE_USERNAME: vapor_username
+  DATABASE_PASSWORD: vapor_password
+  TEST_DATABASE_NAME: vapor_database
+  CLOUD_STORAGE_KEY: not-real
+  CLOUD_STORAGE_SECRET: not-real
+  CLOUD_STORAGE_ENDPOINT: not-real
+  CLOUD_STORAGE_BUCKET: not-real
+  CLOUD_STORAGE_BUCKET_URL: /not-real
+  TWILIO_ACCOUNT_SID: not-real
+  TWILIO_AUTH_TOKEN: not-real
+  TWILIO_FROM_PHONE: not-real
+  DASHBOARD_URL: /dashboard
+  SENDGRID_API_KEY: not-real
+  STRIPE_SUBSCRIPTION_PRICE_ID: not-real
+  STRIPE_SECRET_KEY: not-real
+  SWIFT_DETERMINISTIC_HASHING: 1
