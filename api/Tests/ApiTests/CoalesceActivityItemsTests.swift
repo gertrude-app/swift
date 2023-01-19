@@ -48,6 +48,25 @@ class CoalesceMonitoringItemsTests: XCTestCase {
     XCTAssertEqual(coalesced[1].t2?.line, "Foo\nBar")
   }
 
+  func testDoesntCoalesceDeletedAndNonDeleted() {
+    let keystroke1 = KeystrokeLine.random
+    keystroke1.appName = "Brave"
+    keystroke1.createdAt = Date(timeIntervalSince1970: 10)
+    keystroke1.deletedAt = Date(timeIntervalSince1970: 11) // deleted
+    let keystroke2 = KeystrokeLine.random
+    keystroke2.appName = "Brave"
+    keystroke2.createdAt = Date(timeIntervalSince1970: 15)
+    keystroke2.deletedAt = nil // not deleted
+    let keystroke3 = KeystrokeLine.random
+    keystroke3.appName = "Brave"
+    keystroke3.createdAt = Date(timeIntervalSince1970: 20)
+    keystroke3.deletedAt = Date(timeIntervalSince1970: 21) // deleted
+
+    let coalesced = coalesce([], [keystroke2, keystroke1, keystroke3])
+
+    XCTAssertEqual(coalesced.count, 3)
+  }
+
   func testContiguousKeystrokesFromDifferentAppsDontCoalesce() {
     let screenshot1 = Screenshot.random
     screenshot1.createdAt = Date(timeIntervalSince1970: 0)

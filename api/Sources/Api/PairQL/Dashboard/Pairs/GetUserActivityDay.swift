@@ -93,6 +93,7 @@ func coalesce(
       coalesced.append(.t1(.init(from: screenshot)))
     case .right(let keystroke):
       if var coalescedKeystroke = coalesced.last?.t2,
+         coalescedKeystroke.deletedAt == keystroke.deletedAt,
          keystroke.appName == coalescedKeystroke.appName {
         coalescedKeystroke.line = "\(keystroke.line)\n\(coalescedKeystroke.line)"
         coalescedKeystroke.ids.append(keystroke.id)
