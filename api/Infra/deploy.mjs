@@ -40,14 +40,15 @@ inMonorepoDir(`test -d .git || git clone ${REPO_URL} .`);
 
 log(c`{green git:} {gray updating {cyan monorepo} at} {magenta ${MONOREPO_DIR}}`);
 inMonorepoDir(`git reset --hard HEAD`);
-inMonorepoDir(`git pull origin master`);
+inMonorepoDir(`git clean --force`);
+inMonorepoDir(`git pull --rebase origin master`);
 
 log(c`{green env:} {gray copying .env file to} {magenta ${API_DIR}}`);
 exec.exit(`scp ./api/.env.${ENV} ${HOST}:${API_DIR}/.env`);
 
 log(c`{green swift:} {gray building vapor app with command} {magenta ${BUILD_CMD}}`);
-inApiDirWithOutput(BUILD_CMD);
 inMonorepoDir(`make exclude`);
+inApiDirWithOutput(BUILD_CMD);
 
 log(c`{green vapor:} {gray running migrations}`);
 inApiDirWithOutput(`${VAPOR_RUN} migrate --yes`);
