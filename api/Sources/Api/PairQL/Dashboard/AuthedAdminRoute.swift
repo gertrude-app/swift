@@ -31,6 +31,7 @@ enum AuthedAdminRoute: PairRoute {
   case getSelectableKeychains
   case getSuspendFilterRequest(GetSuspendFilterRequest.Input)
   case getUnlockRequest(GetUnlockRequest.Input)
+  case getUnlockRequests
   case getUser(GetUser.Input)
   case getUserActivityDay(GetUserActivityDay.Input)
   case getUserActivityDays(GetUserActivityDays.Input)
@@ -99,6 +100,9 @@ extension AuthedAdminRoute {
         Operation(GetUnlockRequest.self)
         Body(.json(GetUnlockRequest.Input.self))
       }
+      Route(/Self.getUnlockRequests) {
+        Operation(GetUnlockRequests.self)
+      }
       Route(/Self.getUser) {
         Operation(GetUser.self)
         Body(.json(GetUser.Input.self))
@@ -118,12 +122,12 @@ extension AuthedAdminRoute {
         Operation(GetUserUnlockRequests.self)
         Body(.json(GetUserUnlockRequests.Input.self))
       }
+    }
+    OneOf {
       Route(/Self.saveKey) {
         Operation(SaveKey.self)
         Body(.json(SaveKey.Input.self))
       }
-    }
-    OneOf {
       Route(/Self.saveKeychain) {
         Operation(SaveKeychain.self)
         Body(.json(SaveKeychain.Input.self))
@@ -204,6 +208,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .getUnlockRequest(let input):
       let output = try await GetUnlockRequest.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .getUnlockRequests:
+      let output = try await GetUnlockRequests.resolve(in: context)
       return try await respond(with: output)
     case .getUserUnlockRequests(let input):
       let output = try await GetUserUnlockRequests.resolve(with: input, in: context)
