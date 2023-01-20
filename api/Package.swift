@@ -12,6 +12,7 @@ let package = Package(
     .package("jaredh159/swift-tagged@0.8.2"),
     .package("pointfreeco/vapor-routing@0.1.2"),
     .package("soto-project/soto@5.12.0"),
+    .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta", "QueuesFluentDriver"),
     .package(path: "../duet"),
     .package(path: "../shared"),
     .package(path: "../pairql"),
@@ -42,6 +43,7 @@ let package = Package(
         .product(name: "XSlack", package: "x-slack"),
         .product(name: "XStripe", package: "x-stripe"),
         "Rainbow",
+        "QueuesFluentDriver",
       ],
       swiftSettings: [
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
