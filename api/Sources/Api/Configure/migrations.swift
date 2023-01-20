@@ -1,3 +1,4 @@
+import QueuesFluentDriver
 import Vapor
 
 extension Configure {
@@ -9,5 +10,6 @@ extension Configure {
     app.migrations.add(RequestTables())
     app.migrations.add(AppTables())
     app.migrations.add(MiscTables())
+    app.migrations.add(JobMetadataMigrate())
   }
 }

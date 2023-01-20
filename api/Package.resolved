@@ -92,6 +92,15 @@
         }
       },
       {
+        "package": "queues",
+        "repositoryURL": "https://github.com/vapor/queues.git",
+        "state": {
+          "branch": null,
+          "revision": "c95c891c3c04817eac1165587fb02457c749523a",
+          "version": "1.11.1"
+        }
+      },
+      {
         "package": "Rainbow",
         "repositoryURL": "https://github.com/onevcat/Rainbow.git",
         "state": {
@@ -314,6 +323,15 @@
           "branch": null,
           "revision": "2d54398d50951f177eb899c05154636e381f3bc6",
           "version": "4.67.4"
+        }
+      },
+      {
+        "package": "QueuesFluentDriver",
+        "repositoryURL": "https://github.com/m-barthelemy/vapor-queues-fluent-driver.git",
+        "state": {
+          "branch": null,
+          "revision": "e2ce6775850bdbe277cb2e5792d05eff42434f52",
+          "version": "3.0.0-beta1"
         }
       },
       {

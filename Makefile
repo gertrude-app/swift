@@ -71,7 +71,7 @@ clean-api-tests:
 # helpers
 
 NX = node_modules/.bin/nx
-WATCH_SWIFT = watchexec --restart --clear --watch . --exts swift --ignore **/ApiKeys.swift
+WATCH_SWIFT = watchexec --project-origin . --clear --restart --watch . --exts swift --ignore '**/ApiKeys.swift' --ignore '**/.build/*/**/*'
 SWIFT_TEST = SWIFT_DETERMINISTIC_HASHING=1 swift test
 API_RUN = cd api && ./.build/debug/Run
 ALL_CMDS = api watch-api run-api run-api-ip build-api migrate-up migrate-down \

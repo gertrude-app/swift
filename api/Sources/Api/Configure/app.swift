@@ -7,5 +7,6 @@ public enum Configure {
     Configure.middleware(app)
     try Configure.migrations(app)
     try Configure.router(app)
+    try Configure.jobs(app)
   }
 }
