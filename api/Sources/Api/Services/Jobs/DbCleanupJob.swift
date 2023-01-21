@@ -6,6 +6,8 @@ import Vapor
 
 struct CleanupJob: AsyncScheduledJob {
   func run(context: QueueContext) async throws {
+    guard Env.mode == .prod else { return }
+
     let logs = try await cleanupDb()
     for log in logs {
       context.logger.info("DbCleanupJob: \(log)")

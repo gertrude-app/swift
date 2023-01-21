@@ -6,8 +6,8 @@ public extension Configure {
     app.queues.configuration.workerCount = 1
     app.queues.configuration.refreshInterval = .seconds(300)
 
-    // app.queues.schedule(CleanupJob()).daily().at(4, 30, .am) // 12:30am EST
-    app.queues.schedule(CleanupJob()).hourly().at(30)
+    // 2:30am EST
+    app.queues.schedule(CleanupJob()).daily().at(6, 30, .am)
 
     try app.queues.startScheduledJobs()
   }
