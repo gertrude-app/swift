@@ -35,7 +35,8 @@ public extension SendGrid.Client {
       let (_, response) = try await HTTP.postJson(
         email,
         to: "https://api.sendgrid.com/v3/mail/send",
-        auth: .bearer(apiKey)
+        auth: .bearer(apiKey),
+        keyEncodingStrategy: .convertToSnakeCase
       )
       if response.statusCode != 202 {
         throw Error.unexpectedResponse(statusCode: response.statusCode, response: response)
