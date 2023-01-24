@@ -12,11 +12,6 @@ struct CleanupJob: AsyncScheduledJob {
     for log in logs {
       context.logger.info("DbCleanupJob: \(log)")
     }
-
-    Current.sendGrid.fireAndForget(.toJared(
-      "Gertrude API DB Cleanup Job",
-      "<ul><li>\(logs.joined(separator: "</li><li>"))</li></ul>"
-    ))
   }
 }
 
@@ -24,18 +19,18 @@ func cleanupDb() async throws -> [String] {
   let now = Date()
   var logs: [String] = []
 
-  let dashboardDeletedScreenshots = try await Current.db.query(Screenshot.self)
+  let deletedScreenshots = try await Current.db.query(Screenshot.self)
     .withSoftDeleted()
     .where(.not(.isNull(.deletedAt)) .&& .deletedAt <= now)
     .all()
 
-  try await dashboardDeletedScreenshots.chunked(into: Postgres.MAX_BIND_PARAMS).asyncForEach {
+  try await deletedScreenshots.chunked(into: Postgres.MAX_BIND_PARAMS).asyncForEach {
     try await Current.db.query(Screenshot.self)
       .where(.id |=| $0.map(\.id))
       .delete(force: true)
   }
 
-  logs.append("Deleted \(dashboardDeletedScreenshots.count) dashboard screenshots")
+  logs.append("Deleted \(deletedScreenshots.count) screenshots")
 
   let deletedDecisions = try await Current.db.query(NetworkDecision.self)
     .where(.createdAt < 7.daysAgo)
@@ -91,7 +86,7 @@ func cleanupDb() async throws -> [String] {
     .where(.createdAt < 21.daysAgo)
     .delete(force: true)
 
-  logs.append("Deleted \(keystrokeslines.count) keystrokes lines")
+  logs.append("Deleted \(keystrokeslines.count) keystroke lines")
 
   return logs
 }
