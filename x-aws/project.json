@@ -1,0 +1,12 @@
+{
+  "root": "x-aws",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "cd x-aws && swift build"
+    },
+    "test": {
+      "command": "cd x-aws && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import CustomDump
 import XCTest
 
 public struct CollectionExpectation<T: Collection> {
@@ -14,7 +15,7 @@ public struct CollectionExpectation<T: Collection> {
     if negated {
       XCTAssertNotEqual(collection.count, count, file: file, line: line)
     } else {
-      XCTAssertEqual(collection.count, count, file: file, line: line)
+      XCTAssertNoDifference(collection.count, count, file: file, line: line)
     }
   }
 
@@ -32,7 +33,7 @@ public extension CollectionExpectation where T: Equatable {
     if negated {
       XCTAssertNotEqual(collection, expected, file: file, line: line)
     } else {
-      XCTAssertEqual(collection, expected, file: file, line: line)
+      XCTAssertNoDifference(collection, expected, file: file, line: line)
     }
   }
 }
@@ -66,7 +67,7 @@ public struct EquatableExpectation<T: Equatable> {
     if negated {
       XCTAssertNotEqual(value, other, file: file, line: line)
     } else {
-      XCTAssertEqual(value, other, file: file, line: line)
+      XCTAssertNoDifference(value, other, file: file, line: line)
     }
   }
 }
@@ -85,7 +86,7 @@ public struct EquatableOptionalExpectation<T: Equatable> {
     if negated {
       XCTAssertNotEqual(value, other, file: file, line: line)
     } else {
-      XCTAssertEqual(value, other, file: file, line: line)
+      XCTAssertNoDifference(value, other, file: file, line: line)
     }
   }
 
@@ -142,7 +143,7 @@ public struct StringExpectation {
     if negated {
       XCTAssertNotEqual(value, other, file: file, line: line)
     } else {
-      XCTAssertEqual(value, other, file: file, line: line)
+      XCTAssertNoDifference(value, other, file: file, line: line)
     }
   }
 
