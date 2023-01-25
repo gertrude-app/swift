@@ -7,11 +7,15 @@ let package = Package(
   products: [
     .library(name: "XExpect", targets: ["XExpect"]),
   ],
-  dependencies: [],
+  dependencies: [
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
+  ],
   targets: [
     .target(
       name: "XExpect",
-      dependencies: []
+      dependencies: [
+        .product(name: "CustomDump", package: "swift-custom-dump"),
+      ]
     ),
   ]
 )

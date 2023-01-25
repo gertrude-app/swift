@@ -95,7 +95,7 @@ final class MacAppResolverTests: ApiTestCase {
     let beforeCount = try await Current.db.query(Screenshot.self).all().count
     let user = try await Entities.user().withDevice()
 
-    Current.aws.signedS3UploadURL = { _ in URL(string: "from-aws.com")! }
+    Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
 
     let output = try await CreateSignedScreenshotUpload.resolve(
       with: .init(width: 111, height: 222),

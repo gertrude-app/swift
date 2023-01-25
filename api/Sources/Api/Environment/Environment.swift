@@ -1,12 +1,13 @@
 import DuetSQL
 import Vapor
+import XAws
 import XSendGrid
 import XSlack
 import XStripe
 
 struct Environment {
   var adminNotifier: AdminNotifier = .live
-  var aws: AWS = .mock
+  var aws: AWS.Client = .mock
   var connectedApps: ConnectedApps = .live
   var date: () -> Date = { Date() }
   var db: DuetSQL.Client = ThrowingClient()

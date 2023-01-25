@@ -9,7 +9,8 @@ extension CreateSignedScreenshotUpload: Resolver {
     let filename = "\(unixTime)--\(Current.uuid().lowercased).jpg"
     let filepath = "\(device.id.lowercased)/\(filename)"
     let dir = "\(Env.mode == .prod ? "" : "\(Env.mode)-")screenshots"
-    let webUrlString = "\(Env.CLOUD_STORAGE_BUCKET_URL)/\(dir)/\(filepath)"
+    let objectName = "\(dir)/\(filepath)"
+    let webUrlString = "\(Env.CLOUD_STORAGE_BUCKET_URL)/\(objectName)"
 
     guard let webUrl = URL(string: webUrlString) else {
       throw Abort(
@@ -18,7 +19,7 @@ extension CreateSignedScreenshotUpload: Resolver {
       )
     }
 
-    let signedUrl = try await Current.aws.signedS3UploadURL(webUrl)
+    let signedUrl = try Current.aws.signedS3UploadUrl(objectName)
 
     try await Current.db.create(Screenshot(
       deviceId: device.id,

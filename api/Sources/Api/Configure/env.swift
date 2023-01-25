@@ -1,5 +1,4 @@
 import Rainbow
-import SotoS3
 import Vapor
 
 typealias Env = Vapor.Environment
@@ -14,16 +13,10 @@ extension Configure {
     Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
     Current.stripe = .live(secretKey: Env.STRIPE_SECRET_KEY)
     Current.aws = .live(
-      s3: .init(
-        client: AWSClient(
-          credentialProvider: .static(
-            accessKeyId: Env.CLOUD_STORAGE_KEY,
-            secretAccessKey: Env.CLOUD_STORAGE_SECRET
-          ),
-          httpClientProvider: .shared(app.http.client.shared)
-        ),
-        endpoint: Env.CLOUD_STORAGE_ENDPOINT
-      )
+      accessKeyId: Env.CLOUD_STORAGE_KEY,
+      secretAccessKey: Env.CLOUD_STORAGE_SECRET,
+      endpoint: Env.CLOUD_STORAGE_ENDPOINT,
+      bucket: Env.CLOUD_STORAGE_BUCKET
     )
 
     Current.logger.notice("App environment is \(Env.mode.coloredName)")
