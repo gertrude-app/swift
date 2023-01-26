@@ -20,39 +20,39 @@ enum UnauthedRoute: PairRoute {
     }
     Route(/Self.getCheckoutUrl) {
       Operation(GetCheckoutUrl.self)
-      Body(.json(GetCheckoutUrl.Input.self))
+      Body(.dashboardInput(GetCheckoutUrl.self))
     }
     Route(/Self.handleCheckoutCancel) {
       Operation(HandleCheckoutCancel.self)
-      Body(.json(HandleCheckoutCancel.Input.self))
+      Body(.dashboardInput(HandleCheckoutCancel.self))
     }
     Route(/Self.handleCheckoutSuccess) {
       Operation(HandleCheckoutSuccess.self)
-      Body(.json(HandleCheckoutSuccess.Input.self))
+      Body(.dashboardInput(HandleCheckoutSuccess.self))
     }
     Route(/Self.joinWaitlist) {
       Operation(JoinWaitlist.self)
-      Body(.json(JoinWaitlist.Input.self))
+      Body(.dashboardInput(JoinWaitlist.self))
     }
     Route(/Self.login) {
       Operation(Login.self)
-      Body(.json(Login.Input.self))
+      Body(.dashboardInput(Login.self))
     }
     Route(/Self.loginMagicLink) {
       Operation(LoginMagicLink.self)
-      Body(.json(LoginMagicLink.Input.self))
+      Body(.dashboardInput(LoginMagicLink.self))
     }
     Route(/Self.requestMagicLink) {
       Operation(RequestMagicLink.self)
-      Body(.json(RequestMagicLink.Input.self))
+      Body(.dashboardInput(RequestMagicLink.self))
     }
     Route(/Self.signup) {
       Operation(Signup.self)
-      Body(.json(Signup.Input.self))
+      Body(.dashboardInput(Signup.self))
     }
     Route(/Self.verifySignupEmail) {
       Operation(VerifySignupEmail.self)
-      Body(.json(VerifySignupEmail.Input.self))
+      Body(.dashboardInput(VerifySignupEmail.self))
     }
   }
 }

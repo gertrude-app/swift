@@ -50,33 +50,33 @@ extension AuthedAdminRoute {
     OneOf {
       Route(/Self.confirmPendingNotificationMethod) {
         Operation(ConfirmPendingNotificationMethod.self)
-        Body(.json(ConfirmPendingNotificationMethod.Input.self))
+        Body(.dashboardInput(ConfirmPendingNotificationMethod.self))
       }
       Route(/Self.createBillingPortalSession) {
         Operation(CreateBillingPortalSession.self)
       }
       Route(/Self.createPendingAppConnection) {
         Operation(CreatePendingAppConnection.self)
-        Body(.json(CreatePendingAppConnection.Input.self))
+        Body(.dashboardInput(CreatePendingAppConnection.self))
       }
       Route(/Self.createPendingNotificationMethod) {
         Operation(CreatePendingNotificationMethod.self)
-        Body(.json(CreatePendingNotificationMethod.Input.self))
+        Body(.dashboardInput(CreatePendingNotificationMethod.self))
       }
       Route(/Self.deleteActivityItems) {
         Operation(DeleteActivityItems.self)
-        Body(.json(DeleteActivityItems.Input.self))
+        Body(.dashboardInput(DeleteActivityItems.self))
       }
       Route(/Self.deleteEntity) {
         Operation(DeleteEntity.self)
-        Body(.json(DeleteEntity.Input.self))
+        Body(.dashboardInput(DeleteEntity.self))
       }
       Route(/Self.getAdmin) {
         Operation(GetAdmin.self)
       }
       Route(/Self.getAdminKeychain) {
         Operation(GetAdminKeychain.self)
-        Body(.json(GetAdminKeychain.Input.self))
+        Body(.dashboardInput(GetAdminKeychain.self))
       }
       Route(/Self.getAdminKeychains) {
         Operation(GetAdminKeychains.self)
@@ -94,59 +94,59 @@ extension AuthedAdminRoute {
       }
       Route(/Self.getSuspendFilterRequest) {
         Operation(GetSuspendFilterRequest.self)
-        Body(.json(GetSuspendFilterRequest.Input.self))
+        Body(.dashboardInput(GetSuspendFilterRequest.self))
       }
       Route(/Self.getUnlockRequest) {
         Operation(GetUnlockRequest.self)
-        Body(.json(GetUnlockRequest.Input.self))
+        Body(.dashboardInput(GetUnlockRequest.self))
       }
       Route(/Self.getUnlockRequests) {
         Operation(GetUnlockRequests.self)
       }
       Route(/Self.getUser) {
         Operation(GetUser.self)
-        Body(.json(GetUser.Input.self))
+        Body(.dashboardInput(GetUser.self))
       }
       Route(/Self.getUserActivityDays) {
         Operation(GetUserActivityDays.self)
-        Body(.json(GetUserActivityDays.Input.self))
+        Body(.dashboardInput(GetUserActivityDays.self))
       }
       Route(/Self.getUserActivityDay) {
         Operation(GetUserActivityDay.self)
-        Body(.json(GetUserActivityDay.Input.self))
+        Body(.dashboardInput(GetUserActivityDay.self))
       }
       Route(/Self.getUsers) {
         Operation(GetUsers.self)
       }
       Route(/Self.getUserUnlockRequests) {
         Operation(GetUserUnlockRequests.self)
-        Body(.json(GetUserUnlockRequests.Input.self))
+        Body(.dashboardInput(GetUserUnlockRequests.self))
       }
     }
     OneOf {
       Route(/Self.saveKey) {
         Operation(SaveKey.self)
-        Body(.json(SaveKey.Input.self))
+        Body(.dashboardInput(SaveKey.self))
       }
       Route(/Self.saveKeychain) {
         Operation(SaveKeychain.self)
-        Body(.json(SaveKeychain.Input.self))
+        Body(.dashboardInput(SaveKeychain.self))
       }
       Route(/Self.saveNotification_v0) {
         Operation(SaveNotification_v0.self)
-        Body(.json(SaveNotification_v0.Input.self))
+        Body(.dashboardInput(SaveNotification_v0.self))
       }
       Route(/Self.saveUser) {
         Operation(SaveUser.self)
-        Body(.json(SaveUser.Input.self))
+        Body(.dashboardInput(SaveUser.self))
       }
       Route(/Self.updateSuspendFilterRequest) {
         Operation(UpdateSuspendFilterRequest.self)
-        Body(.json(UpdateSuspendFilterRequest.Input.self))
+        Body(.dashboardInput(UpdateSuspendFilterRequest.self))
       }
       Route(/Self.updateUnlockRequest) {
         Operation(UpdateUnlockRequest.self)
-        Body(.json(UpdateUnlockRequest.Input.self))
+        Body(.dashboardInput(UpdateUnlockRequest.self))
       }
     }
   }
