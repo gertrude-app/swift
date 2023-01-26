@@ -160,5 +160,5 @@ aws configure
 
 # then
 crontab -e
-# add line `0 4 * * * /usr/bin/bash /home/jared/deploy/production/api/cron-backup-db.sh` to start backups
+# add line `0 4 * * * /usr/bin/bash /home/jared/production/api/Infra/cron-backup-db.sh` to start backups
 
