@@ -11,7 +11,7 @@ enum AuthedSuperAdminRoute: PairRoute {
   static let router = OneOf {
     Route(/Self.createRelease) {
       Operation(CreateRelease.self)
-      Body(.json(CreateRelease.Input.self))
+      Body(.input(CreateRelease.self))
     }
   }
 }

@@ -1,4 +1,3 @@
-import DuetMock
 import Foundation
 import Shared
 import SharedCore
@@ -215,8 +214,10 @@ class FilterDecisionMakerCompletedFlowTests: FilterDecisionMakerTestCase {
       let pattern = Key.DomainRegexPattern(patternStr)!
       // ALLOWS any matching hostname when scope = .unrestricted
       var id = setOnlyKey(.domainRegex(pattern: pattern, scope: .unrestricted))
-      let unrestricted = maker
-        .make(fromCompletedFlow: .test(hostname: hostname, bundleId: "com.".random))
+      let unrestricted = maker.make(fromCompletedFlow: .test(
+        hostname: hostname,
+        bundleId: "com.\(Int.random(in: 100_000 ... 999_999))"
+      ))
       assertDecision(unrestricted, .allow, .domainAllowed, id)
 
       // when scope = .webBrowsers, only allows web browsers

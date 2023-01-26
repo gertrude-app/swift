@@ -93,3 +93,17 @@ public struct Operation<P: Pair>: ParserPrinter {
     try Path { pair.name }.print(output, into: &input)
   }
 }
+
+public extension Conversion {
+  static func input<P: Pair>(
+    _ Pair: P.Type,
+    dateDecodingStrategy strategy: JSONDecoder.DateDecodingStrategy? = nil
+  ) -> Self where Self == Conversions.JSON<P.Input> {
+    if let strategy = strategy {
+      let decoder = JSONDecoder()
+      decoder.dateDecodingStrategy = strategy
+      return .init(Pair.Input, decoder: decoder)
+    }
+    return .init(Pair.Input)
+  }
+}

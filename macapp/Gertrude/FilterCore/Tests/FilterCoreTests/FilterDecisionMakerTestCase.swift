@@ -20,14 +20,14 @@ class FilterDecisionMakerTestCase: XCTestCase {
 
   @discardableResult
   func setOnlyKey(_ key: Key, userId: uid_t = 501) -> UUID {
-    let userKey = FilterKey(id: .new(), type: key)
+    let userKey = FilterKey(id: .init(), type: key)
     maker.userKeys[userId] = [userKey]
     return userKey.id
   }
 
   @discardableResult
   func addKey(_ key: Key, userId: uid_t = 501) -> UUID {
-    let userKey = FilterKey(id: .new(), type: key)
+    let userKey = FilterKey(id: .init(), type: key)
     maker.userKeys[userId, default: []].append(userKey)
     return userKey.id
   }

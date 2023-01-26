@@ -67,6 +67,28 @@ final class ApiTests: ApiTestCase {
     expect(matched).toEqual(route)
   }
 
+  func testDateDecodingInPairQL() async throws {
+    let input = SaveKey.Input(
+      isNew: true,
+      id: .init(),
+      keychainId: .init(),
+      key: .mock,
+      comment: nil,
+      expiration: Date(timeIntervalSince1970: 0)
+    )
+    let admin = try await Entities.admin()
+    let token = admin.token.value
+    var request = URLRequest(url: URL(string: "dashboard/SaveKey")!)
+    request.httpMethod = "POST"
+    request.addValue(token.lowercased, forHTTPHeaderField: "X-AdminToken")
+    let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .iso8601
+    request.httpBody = try encoder.encode(input)
+    let route = PairQLRoute.dashboard(.adminAuthed(token.rawValue, .saveKey(input)))
+    let matched = try? PairQLRoute.router.match(request: request)
+    expect(matched).toEqual(route)
+  }
+
   func testUnauthed() throws {
     let input = ConnectApp.Input(
       verificationCode: 0,

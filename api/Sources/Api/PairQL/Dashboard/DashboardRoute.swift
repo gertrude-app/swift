@@ -45,3 +45,11 @@ extension DashboardRoute: RouteResponder {
     }
   }
 }
+
+extension Conversion {
+  static func dashboardInput<P: Pair>(
+    _ Pair: P.Type
+  ) -> Self where Self == Conversions.JSON<P.Input> {
+    .input(Pair, dateDecodingStrategy: .iso8601)
+  }
+}

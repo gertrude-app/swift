@@ -108,7 +108,28 @@ jobs:
       - name: test-api
         run: cd api && swift test
 
+  files-changed:
+    runs-on: ubuntu-latest
+    outputs:
+      maclibs: ${{ steps.changes.outputs.maclibs }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            maclibs:
+              - macapp/Gertrude/AppCore/**
+              - macapp/Gertrude/FilterCore/**
+              - macapp/Gertrude/SharedCore/**
+              - macapp/Gertrude/Websocket/**
+              - shared/Sources/**
+              - x-kit/Sources/XCore/**
+
   macos-appcore:
+    needs: files-changed
+    if: needs.files-changed.outputs.maclibs == 'true'
     runs-on: macos-12
     steps:
       - name: checkout
@@ -132,6 +153,8 @@ jobs:
         run: cd macapp/Gertrude/AppCore && swift test
 
   macos-sharedcore:
+    needs: files-changed
+    if: needs.files-changed.outputs.maclibs == 'true'
     runs-on: macos-12
     steps:
       - name: checkout
@@ -151,6 +174,8 @@ jobs:
         run: cd macapp/Gertrude/SharedCore && swift test
 
   macos-filtercore:
+    needs: files-changed
+    if: needs.files-changed.outputs.maclibs == 'true'
     runs-on: macos-12
     steps:
       - name: checkout
@@ -170,6 +195,8 @@ jobs:
         run: cd macapp/Gertrude/FilterCore && swift test
 
   macos-websocket:
+    needs: files-changed
+    if: needs.files-changed.outputs.maclibs == 'true'
     runs-on: macos-12
     steps:
       - name: checkout
