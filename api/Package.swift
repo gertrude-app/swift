@@ -29,6 +29,7 @@ let package = Package(
       dependencies: [
         .product(name: "Vapor", package: "vapor"),
         .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+        .product(name: "QueuesFluentDriver", package: "vapor-queues-fluent-driver"),
         .product(name: "Fluent", package: "fluent"),
         .product(name: "Duet", package: "duet"),
         .product(name: "DuetSQL", package: "duet"),
@@ -43,7 +44,6 @@ let package = Package(
         .product(name: "XSlack", package: "x-slack"),
         .product(name: "XStripe", package: "x-stripe"),
         "Rainbow",
-        "QueuesFluentDriver",
       ],
       swiftSettings: [
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
