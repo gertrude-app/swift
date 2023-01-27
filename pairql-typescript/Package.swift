@@ -29,10 +29,9 @@ let package = Package(
 // helpers
 
 extension PackageDescription.Package.Dependency {
-  static func package(_ commitish: String, _ name: String? = nil) -> Package.Dependency {
+  static func package(_ commitish: String) -> Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
-      name: name,
       url: "https://github.com/\(parts[0]).git",
       from: .init(stringLiteral: "\(parts[1])")
     )

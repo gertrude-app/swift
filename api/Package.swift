@@ -11,7 +11,7 @@ let package = Package(
     .package("onevcat/Rainbow@4.0.1"),
     .package("jaredh159/swift-tagged@0.8.2"),
     .package("pointfreeco/vapor-routing@0.1.2"),
-    .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta", "QueuesFluentDriver"),
+    .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta"),
     .package(path: "../duet"),
     .package(path: "../shared"),
     .package(path: "../pairql"),
@@ -62,10 +62,9 @@ let package = Package(
 // helpers
 
 extension PackageDescription.Package.Dependency {
-  static func package(_ commitish: String, _ name: String? = nil) -> Package.Dependency {
+  static func package(_ commitish: String) -> Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
-      name: name,
       url: "https://github.com/\(parts[0]).git",
       from: .init(stringLiteral: "\(parts[1])")
     )
