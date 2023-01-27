@@ -137,7 +137,7 @@ jobs:
       - name: setup xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 13.2
+          xcode-version: 14.2
       - uses: actions/cache@v3
         with:
           path: macapp/Gertrude/AppCore/.build
@@ -162,7 +162,7 @@ jobs:
       - name: setup xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 13.2
+          xcode-version: 14.2
       - uses: actions/cache@v3
         with:
           path: macapp/Gertrude/SharedCore/.build
@@ -183,7 +183,7 @@ jobs:
       - name: setup xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 13.2
+          xcode-version: 14.2
       - uses: actions/cache@v3
         with:
           path: macapp/Gertrude/FilterCore/.build
@@ -204,7 +204,7 @@ jobs:
       - name: setup xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 13.2
+          xcode-version: 14.2
       - uses: actions/cache@v3
         with:
           path: macapp/Gertrude/Websocket/.build
