@@ -1,9 +1,9 @@
 /* eslint-disable */
 // @ts-check
 
+import { spawnSync } from 'child_process';
 import { c, log, red } from 'x-chalk';
 import xExec from 'x-exec';
-import { spawnSync } from 'child_process';
 import flpEnv from '@friends-library/env';
 
 // @ts-ignore
@@ -15,11 +15,20 @@ const ENV = process.argv.includes(`--production`) ? `production` : `staging`;
 
 env.load(`./api/.env.${ENV}`);
 
-const { HOST, MONOREPO_DIR, REPO_URL, PORT_START } = env.require(
+const {
+  HOST,
+  MONOREPO_DIR,
+  REPO_URL,
+  PORT_START,
+  CLOUD_STORAGE_BUCKET,
+  CLOUD_STORAGE_ENDPOINT,
+} = env.require(
   `HOST`,
   `MONOREPO_DIR`,
   `REPO_URL`,
   `PORT_START`,
+  `CLOUD_STORAGE_BUCKET`,
+  `CLOUD_STORAGE_ENDPOINT`,
 );
 
 const NGINX_CONFIG = `/etc/nginx/sites-available/default`;
@@ -78,6 +87,18 @@ log(c`{green pm2:} {gray stopping previous pm2 app} {magenta ${PM2_PREV_NAME}}`)
 exec(`ssh ${HOST} "pm2 stop ${PM2_PREV_NAME}"`);
 exec(`ssh ${HOST} "pm2 delete ${PM2_PREV_NAME}"`);
 exec(`ssh ${HOST} "pm2 save"`);
+
+if (ENV === `production`) {
+  log(c`{green s3:} {gray updating s3 expiration policies}`);
+  inApiDir(`
+    cd Infra && \
+    aws s3api put-bucket-lifecycle-configuration \
+      --bucket ${CLOUD_STORAGE_BUCKET} \
+      --endpoint ${CLOUD_STORAGE_ENDPOINT} \
+      --lifecycle-configuration file://s3-expiration-policy.json
+  `);
+}
+
 console.log(``);
 
 // helpers

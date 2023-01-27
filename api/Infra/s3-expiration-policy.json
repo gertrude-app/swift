@@ -1,0 +1,20 @@
+{
+  "Rules": [
+    {
+      "ID": "prune screenshots",
+      "Status": "Enabled",
+      "Prefix": "screenshots/",
+      "Expiration": {
+        "Days": 14
+      }
+    },
+    {
+      "ID": "prune dev screenshots",
+      "Status": "Enabled",
+      "Prefix": "dev-screenshots/",
+      "Expiration": {
+        "Days": 2
+      }
+    }
+  ]
+}
