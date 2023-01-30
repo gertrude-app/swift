@@ -1,6 +1,4 @@
-// swift-tools-version:5.5
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
+// swift-tools-version:5.7
 import PackageDescription
 
 let package = Package(
@@ -31,10 +29,9 @@ let package = Package(
 // helpers
 
 extension PackageDescription.Package.Dependency {
-  static func package(_ commitish: String, _ name: String? = nil) -> Package.Dependency {
+  static func package(_ commitish: String) -> Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
-      name: name,
       url: "https://github.com/\(parts[0]).git",
       from: .init(stringLiteral: "\(parts[1])")
     )
