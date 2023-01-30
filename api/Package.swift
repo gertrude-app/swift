@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.7
 import PackageDescription
 
 let package = Package(
@@ -11,7 +11,7 @@ let package = Package(
     .package("onevcat/Rainbow@4.0.1"),
     .package("jaredh159/swift-tagged@0.8.2"),
     .package("pointfreeco/vapor-routing@0.1.2"),
-    .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta", "QueuesFluentDriver"),
+    .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta"),
     .package(path: "../duet"),
     .package(path: "../shared"),
     .package(path: "../pairql"),
@@ -29,6 +29,7 @@ let package = Package(
       dependencies: [
         .product(name: "Vapor", package: "vapor"),
         .product(name: "FluentPostgresDriver", package: "fluent-postgres-driver"),
+        .product(name: "QueuesFluentDriver", package: "vapor-queues-fluent-driver"),
         .product(name: "Fluent", package: "fluent"),
         .product(name: "Duet", package: "duet"),
         .product(name: "DuetSQL", package: "duet"),
@@ -43,7 +44,6 @@ let package = Package(
         .product(name: "XSlack", package: "x-slack"),
         .product(name: "XStripe", package: "x-stripe"),
         "Rainbow",
-        "QueuesFluentDriver",
       ],
       swiftSettings: [
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
@@ -62,10 +62,9 @@ let package = Package(
 // helpers
 
 extension PackageDescription.Package.Dependency {
-  static func package(_ commitish: String, _ name: String? = nil) -> Package.Dependency {
+  static func package(_ commitish: String) -> Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
-      name: name,
       url: "https://github.com/\(parts[0]).git",
       from: .init(stringLiteral: "\(parts[1])")
     )

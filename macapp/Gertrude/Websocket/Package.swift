@@ -1,5 +1,4 @@
-// swift-tools-version:5.5
-
+// swift-tools-version:5.7
 import PackageDescription
 
 let package = Package(
@@ -10,7 +9,7 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.5.3"),
-    .package(name: "Starscream", url: "https://github.com/daltoniam/Starscream.git", from: "4.0.4"),
+    .package(url: "https://github.com/daltoniam/Starscream.git", from: "4.0.4"),
     .package(name: "Shared", path: "../../../shared"),
     .package(name: "XKit", path: "../../../x-kit"),
   ],

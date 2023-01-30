@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 typealias Pixel = (UInt8, UInt8, UInt8, UInt8)
