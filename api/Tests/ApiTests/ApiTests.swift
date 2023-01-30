@@ -82,10 +82,26 @@ final class ApiTests: ApiTestCase {
     request.httpMethod = "POST"
     request.addValue(token.lowercased, forHTTPHeaderField: "X-AdminToken")
     let encoder = JSONEncoder()
-    encoder.dateEncodingStrategy = .iso8601
+    encoder.dateEncodingStrategy = .iso8601 // <-- without fractional seconds
     request.httpBody = try encoder.encode(input)
+
     let route = PairQLRoute.dashboard(.adminAuthed(token.rawValue, .saveKey(input)))
-    let matched = try? PairQLRoute.router.match(request: request)
+    var matched = try? PairQLRoute.router.match(request: request)
+    expect(matched).toEqual(route)
+
+    // now test that it accepts fractional seconds
+    let json = String(data: request.httpBody!, encoding: .utf8)!
+    let fractional = json.replacingOccurrences(
+      of: "1970-01-01T00:00:00Z",
+      with: "1970-01-01T00:00:00.000Z"
+    )
+    expect(json).not.toBe(fractional)
+    request = URLRequest(url: URL(string: "dashboard/SaveKey")!)
+    request.httpMethod = "POST"
+    request.addValue(token.lowercased, forHTTPHeaderField: "X-AdminToken")
+    request.httpBody = fractional.data(using: .utf8)!
+
+    matched = try? PairQLRoute.router.match(request: request)
     expect(matched).toEqual(route)
   }
 
