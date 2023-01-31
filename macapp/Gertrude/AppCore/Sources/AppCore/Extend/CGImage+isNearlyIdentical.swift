@@ -14,7 +14,7 @@ extension CGImage {
     var numDifferent = 0
 
     // speed sanity check, sample 1% of the pixels below the menu bar,
-    // if we get more than 2 unique, very unlikely to be an identical image
+    // if we get more than 4 unique, very unlikely to be an identical image
     for index in stride(
       from: width * MENU_BAR_MAX_HEIGHT * BYTES_PER_PIXEL,
       to: data.count,
@@ -25,7 +25,7 @@ extension CGImage {
         // don't check 4th (alpha) byte
         data[index + 2] != otherData[index + 2] {
         numDifferent += 1
-        if numDifferent == 2 {
+        if numDifferent == 4 {
           return false
         }
       }
@@ -107,6 +107,6 @@ extension CGImage {
 
 private let MENU_BAR_MAX_HEIGHT = 36
 private let CLOCK_MAX_EDGE_OFFSET = 150
-private let MAX_DIFFERENT_PIXELS_NON_CLOCK_AREA = 40
+private let MAX_DIFFERENT_PIXELS_NON_CLOCK_AREA = 80
 // should allow up to `11:50 AM` -> `12:00 PM`
 private let MAX_DIFFERENT_PIXELS_IN_CLOCK_AREA = 370
