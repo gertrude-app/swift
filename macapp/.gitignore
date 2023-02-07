@@ -11,7 +11,7 @@ Gertrude/Websocket/build
 # api creds
 Gertrude/AppCore/Sources/AppCore/ApiKeys.swift
 
- Xcode - User files
+# Xcode - User files
 xcuserdata/
 
 **/*.xcodeproj/project.xcworkspace/*
