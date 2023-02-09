@@ -4,6 +4,7 @@
 
 - `1.1.0` (1/17/23) pairql/monorepo refactor, no real new features, but ripped out api
   layer, and modules changed
+- `1.1.1` (2/8/23) new app icon and menu bar icon only
 
 ## Sparkle Releases
 
@@ -12,6 +13,7 @@
 - export notarized app into `~/gertie/app-updates`
 - cd into `/gertie/release`
 - run `run release X.Y.Z stable`, setting real semver and channel (stable|beta|canary)
+- remember to add it to **Release notes** above ^^^
 
 ## Dmg woes...
 
