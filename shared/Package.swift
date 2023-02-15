@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
   name: "Shared",
-  platforms: [.macOS(.v11)],
+  platforms: [.macOS(.v10_15)],
   products: [.library(name: "Shared", targets: ["Shared"])],
   dependencies: [
     .package("jaredh159/swift-tagged@0.8.2"),
