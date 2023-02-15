@@ -1,11 +1,6 @@
 import ComposableArchitecture
-
-// TODO: shared
-public enum FilterState: String, Codable, CaseIterable, Equatable {
-  case on
-  case off
-  case suspended
-}
+import CoreGraphics
+import Shared
 
 public struct MenuBar: Reducer {
   public struct State: Equatable {
@@ -17,9 +12,27 @@ public struct MenuBar: Reducer {
       public var recordingKeystrokes = false
       public var recordingScreen = false
       public var filterState: FilterState = .off
+      public var filterSuspension: FilterSuspension?
+
+      public init(
+        filterRunning: Bool = false,
+        recordingKeystrokes: Bool = false,
+        recordingScreen: Bool = false,
+        filterState: FilterState = .off,
+        filterSuspension: FilterSuspension? = nil
+      ) {
+        self.filterRunning = filterRunning
+        self.recordingKeystrokes = recordingKeystrokes
+        self.recordingScreen = recordingScreen
+        self.filterState = filterState
+        self.filterSuspension = filterSuspension
+      }
     }
 
-    public init() {}
+    public init(visible: Bool = false, user: MenuBar.State.User? = nil) {
+      self.visible = visible
+      self.user = user
+    }
   }
 
   public enum Action: Equatable {
@@ -33,7 +46,12 @@ public struct MenuBar: Reducer {
       state.visible.toggle()
       return .none
     case .fakeConnect:
-      state.user = .init()
+      state.user = .init(
+        filterRunning: true,
+        recordingKeystrokes: true,
+        recordingScreen: true,
+        filterState: .on
+      )
       return .none
     }
   }

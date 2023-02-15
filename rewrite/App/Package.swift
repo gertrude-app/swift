@@ -13,6 +13,7 @@ let package = Package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
       branch: "prerelease/1.0"
     ),
+    .package(path: "../../shared"),
   ],
   targets: [
     .checkedTarget(
@@ -21,7 +22,7 @@ let package = Package(
     ),
     .checkedTarget(
       name: "MenuBar",
-      dependencies: [.tca]
+      dependencies: [.tca, .product(name: "Shared", package: "shared")]
     ),
     .testTarget(name: "AppTests", dependencies: ["App"]),
   ]
