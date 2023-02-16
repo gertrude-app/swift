@@ -1,6 +1,7 @@
 import DuetSQL
 import Vapor
 import XAws
+import XPostmark
 import XSendGrid
 import XSlack
 import XStripe
@@ -14,6 +15,7 @@ struct Environment {
   var ephemeral: Ephemeral = .init()
   var env: EnvironmentVariables = .live
   var logger: Logger = .null
+  var postmark: XPostmark.Client = .mock
   var sendGrid: SendGrid.Client = .mock
   var slack = XSlack.Slack.Client()
   var stripe: Stripe.Client = .mock
@@ -34,6 +36,7 @@ extension Environment {
     ephemeral: .init(),
     env: .mock,
     logger: .null,
+    postmark: .mock,
     sendGrid: .mock,
     slack: .mock,
     stripe: .mock,

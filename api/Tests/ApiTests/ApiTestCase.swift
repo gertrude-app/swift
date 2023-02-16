@@ -1,6 +1,7 @@
 import DuetSQL
 import Vapor
 import XCTest
+import XPostmark
 import XSendGrid
 import XSlack
 
@@ -16,6 +17,7 @@ class ApiTestCase: XCTestCase {
     }
 
     var emails: [SendGrid.Email] = []
+    var postmarkEmails: [XPostmark.Email] = []
     var slacks: [(XSlack.Slack.Message, String)] = []
     var texts: [Text] = []
     var adminNotifications: [AdminNotification] = []
@@ -39,6 +41,9 @@ class ApiTestCase: XCTestCase {
   override func setUp() {
     Current.sendGrid.send = { [self] email in
       self.sent.emails.append(email)
+    }
+    Current.postmark.send = { [self] email in
+      self.sent.postmarkEmails.append(email)
     }
     Current.slack.send = { [self] message, token in
       sent.slacks.append((message, token))

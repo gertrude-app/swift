@@ -33,8 +33,8 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     let output = try await Signup.resolve(with: input, in: context)
 
     expect(output).toEqual(.init(url: nil))
-    expect(sent.emails.count).toEqual(1)
-    expect(sent.emails[0].text).toContain("already has an account")
+    expect(sent.postmarkEmails.count).toEqual(1)
+    expect(sent.postmarkEmails[0].html).toContain("already has an account")
   }
 
   func testInitiateSignupHappyPath() async throws {
@@ -48,9 +48,9 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     expect(output).toEqual(.init(url: nil))
     expect(user.subscriptionStatus).toEqual(.pendingEmailVerification)
-    expect(sent.emails.count).toEqual(1)
-    expect(sent.emails[0].firstRecipient.email).toEqual(email)
-    expect(sent.emails[0].text).toContain("verify your email address")
+    expect(sent.postmarkEmails.count).toEqual(1)
+    expect(sent.postmarkEmails[0].to).toEqual(email)
+    expect(sent.postmarkEmails[0].html).toContain("verify your email address")
   }
 
   func testVerifySignupEmailSetsSubsriptionStatusAndCreatesNotificationMethod() async throws {
