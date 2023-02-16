@@ -2,6 +2,7 @@ import DuetSQL
 import Foundation
 import TypescriptPairQL
 import Vapor
+import XPostmark
 
 struct Signup: TypescriptPair {
   static var auth: ClientAuth = .none
@@ -41,7 +42,7 @@ extension Signup: Resolver {
       .first()
 
     if existing != nil {
-      try await Current.sendGrid.send(accountExists(with: email))
+      try await Current.postmark.send(accountExists(with: email))
       return .init(url: nil)
     }
 
@@ -52,7 +53,7 @@ extension Signup: Resolver {
     ))
 
     let token = await Current.ephemeral.createMagicLinkToken(admin.id)
-    try await Current.sendGrid.send(verify(email, context.dashboardUrl, token))
+    try await Current.postmark.send(verify(email, context.dashboardUrl, token))
 
     return Output(url: nil)
   }
@@ -60,21 +61,28 @@ extension Signup: Resolver {
 
 // helpers
 
-private func accountExists(with email: String) -> Email {
-  Email.fromApp(
+private func accountExists(with email: String) -> XPostmark.Email {
+  .init(
     to: email,
-    subject: "Gertrude Signup Request",
-    html: "We received a request to initiate a signup for the Gertrude app, but this email address already has an account! Try signing in instead."
+    from: "noreply@gertrude.app",
+    subject: "Gertrude Signup Request".withEmailSubjectDisambiguator,
+    html: """
+    We received a request to initiate a signup for the Gertrude app, \
+    but this email address already has an account! Try signing in instead.\
+    <br /><br />
+    Or, if you just created your account, check your spam folder for the verification email.
+    """
   )
 }
 
-private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> Email {
-  Email.fromApp(
+private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> XPostmark.Email {
+  .init(
     to: email,
-    subject: "Verify your email to start using Gertrude",
+    from: "noreply@gertrude.app",
+    subject: "Action Required: Confirm your email".withEmailSubjectDisambiguator,
     html: """
-    Please verify your email address by clicking <a href="\(dashboardUrl)/verify-signup-email/\(token
-      .lowercased)">here</a>.
+    Please verify your email address by clicking \
+    <a href="\(dashboardUrl)/verify-signup-email/\(token.lowercased)">here</a>.
     """
   )
 }

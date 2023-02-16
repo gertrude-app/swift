@@ -1,0 +1,12 @@
+{
+  "root": "x-postmark",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "cd x-postmark && swift build"
+    },
+    "test": {
+      "command": "true"
+    }
+  }
+}
