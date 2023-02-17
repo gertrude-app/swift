@@ -56,7 +56,7 @@ log(c`{green env:} {gray copying .env file to} {magenta ${API_DIR}}`);
 exec.exit(`scp ./api/.env.${ENV} ${HOST}:${API_DIR}/.env`);
 
 log(c`{green swift:} {gray building vapor app with command} {magenta ${BUILD_CMD}}`);
-inMonorepoDir(`make exclude`);
+inMonorepoDir(`just exclude`);
 inApiDirWithOutput(BUILD_CMD);
 
 log(c`{green vapor:} {gray running migrations}`);
