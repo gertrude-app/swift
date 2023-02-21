@@ -10,15 +10,27 @@ extension Configure {
     guard Env.mode != .test else { return }
 
     Current.logger = app.logger
-    Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
     Current.stripe = .live(secretKey: Env.STRIPE_SECRET_KEY)
-    Current.postmark = .live(apiKey: Env.POSTMARK_API_KEY)
     Current.aws = .live(
       accessKeyId: Env.CLOUD_STORAGE_KEY,
       secretAccessKey: Env.CLOUD_STORAGE_SECRET,
       endpoint: Env.CLOUD_STORAGE_ENDPOINT,
       bucket: Env.CLOUD_STORAGE_BUCKET
     )
+
+    Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
+    Current.postmark = .live(apiKey: Env.POSTMARK_API_KEY)
+
+    if Env.mode == .staging {
+      Current.postmark.send = { email in
+        try await Current.sendGrid.send(.init(
+          to: .init(email: email.to),
+          from: .init(email: email.from),
+          subject: email.subject,
+          html: email.html
+        ))
+      }
+    }
 
     Current.logger.notice("App environment is \(Env.mode.coloredName)")
   }
