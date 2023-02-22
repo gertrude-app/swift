@@ -35,7 +35,7 @@ public struct MenuBar: Reducer {
     }
   }
 
-  public enum Action: Equatable {
+  public enum Action: String, Equatable {
     case menuBarIconClicked
     case fakeConnect
   }
