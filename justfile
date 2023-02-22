@@ -4,7 +4,7 @@ _default:
 # macapp (rewrite)
 
 watch-macapp pkg="App":
-  @just watch-swift rewrite/{{pkg}} 'build-macapp {{pkg}}'
+  @just watch-swift rewrite/{{pkg}} 'just build-macapp {{pkg}}'
 
 build-macapp pkg="App":
   @cd rewrite/{{pkg}} && swift build

@@ -1,0 +1,12 @@
+{
+  "root": "typescript",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "cd typescript && swift build"
+    },
+    "test": {
+      "command": "cd x-aws && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}
