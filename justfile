@@ -9,6 +9,9 @@ watch-macapp pkg="App":
 build-macapp pkg="App":
   @cd rewrite/{{pkg}} && swift build
 
+xcode:
+  @open rewrite/Xcode/Gertrude.xcodeproj
+
 # api
 
 watch-api:

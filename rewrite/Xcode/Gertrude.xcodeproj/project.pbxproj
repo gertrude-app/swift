@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7F4D0E4E2628B9450060281F /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F4D0E4D2628B9450060281F /* libbsm.tbd */; };
 		7F51420F261D000300A66260 /* com.netrivet.gertrude.filter-extension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7F53C599299FF6CA0097285A /* WebViews in Resources */ = {isa = PBXBuildFile; fileRef = 7F53C598299FF6CA0097285A /* WebViews */; };
 		7F5476DF299BD08A0084F682 /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7F5476DE299BD08A0084F682 /* Filter */; };
 		7F94DC8C261CF092002D4534 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F94DC8B261CF092002D4534 /* main.swift */; };
 		7FC14B07299BF96E00FC3B13 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 7FC14B06299BF96E00FC3B13 /* App */; };
@@ -47,6 +48,7 @@
 
 /* Begin PBXFileReference section */
 		7F4D0E4D2628B9450060281F /* libbsm.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbsm.tbd; path = usr/lib/libbsm.tbd; sourceTree = SDKROOT; };
+		7F53C598299FF6CA0097285A /* WebViews */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebViews; sourceTree = "<group>"; };
 		7F5476DD299BCFF30084F682 /* Filter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Filter; path = ../Filter; sourceTree = "<group>"; };
 		7F94DC6D261CEA75002D4534 /* Gertrude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gertrude.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = "com.netrivet.gertrude.filter-extension.systemextension"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -114,6 +116,7 @@
 		C4B45DB722739FFF0050C59B /* Gertrude */ = {
 			isa = PBXGroup;
 			children = (
+				7F53C598299FF6CA0097285A /* WebViews */,
 				C4B45DBC2273A0020050C59B /* Assets.xcassets */,
 				C4B45DC12273A0020050C59B /* Info.plist */,
 				C4B45DC22273A0020050C59B /* Gertrude.entitlements */,
@@ -231,6 +234,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F53C599299FF6CA0097285A /* WebViews in Resources */,
 				C4B45DBD2273A0020050C59B /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
