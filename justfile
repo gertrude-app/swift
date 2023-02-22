@@ -4,7 +4,7 @@ _default:
 # macapp (rewrite)
 
 watch-macapp pkg="App":
-  @just watch-swift rewrite/{{pkg}} 'build-macapp {{pkg}}'
+  @just watch-swift rewrite/{{pkg}} 'just build-macapp {{pkg}}'
 
 build-macapp pkg="App":
   @cd rewrite/{{pkg}} && swift build
@@ -15,7 +15,7 @@ xcode:
 # api
 
 watch-api:
-  @just watch-swift . run-api 'macapp/**/*' 'rewrite/**/*'
+  @just watch-swift . 'just run-api' 'macapp/**/*' 'rewrite/**/*'
 
 run-api: build-api
 	@just exec-api serve
@@ -96,4 +96,8 @@ nx-run-many targets:
 watch-swift dir cmd ignore1="•" ignore2="•" ignore3="•":
   @watchexec --project-origin . --clear --restart --watch {{dir}} --exts swift \
   --ignore '**/.build/*/**' --ignore '{{ignore1}}' --ignore '{{ignore2}}' --ignore '{{ignore3}}' \
-  just {{cmd}}
+  {{cmd}}
+
+[private]
+watch-build dir:
+  just watch-swift {{dir}} '"cd {{dir}} && swift build"'
