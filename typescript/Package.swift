@@ -9,9 +9,12 @@ let package = Package(
   ],
   dependencies: [
     .package(path: "../x-expect"),
+    .package(url: "https://github.com/wickwirew/Runtime.git", from: "2.2.4"),
   ],
   targets: [
-    .target(name: "TypeScript", dependencies: []),
+    .target(name: "TypeScript", dependencies: [
+      .product(name: "Runtime", package: "Runtime"),
+    ]),
     .testTarget(
       name: "TypeScriptTests",
       dependencies: ["TypeScript", .product(name: "XExpect", package: "x-expect")]
