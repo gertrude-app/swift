@@ -98,6 +98,8 @@ watch-swift dir cmd ignore1="•" ignore2="•" ignore3="•":
   --ignore '**/.build/*/**' --ignore '{{ignore1}}' --ignore '{{ignore2}}' --ignore '{{ignore3}}' \
   {{cmd}}
 
-[private]
 watch-build dir:
-  just watch-swift {{dir}} '"cd {{dir}} && swift build"'
+  @just watch-swift {{dir}} '"cd {{dir}} && swift build"'
+
+watch-test dir:
+  @just watch-swift {{dir}} '"cd {{dir}} && swift test"'
