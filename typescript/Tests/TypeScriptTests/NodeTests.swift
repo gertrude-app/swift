@@ -39,7 +39,7 @@ final class NodeTests: XCTestCase {
     ]))
   }
 
-  func testParseEnumWithPayload_isolate() throws {
+  func testParseEnumWithPayload() throws {
     enum Foo {
       case bar(String)
       case baz(Int?)
