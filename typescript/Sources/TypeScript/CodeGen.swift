@@ -10,7 +10,3 @@ struct CodeGen {
     return "export interface \(type) \(root.declaration(.init(config: config)))"
   }
 }
-
-func indent(_ depth: Int) -> String {
-  String(repeating: " ", count: depth * 2)
-}

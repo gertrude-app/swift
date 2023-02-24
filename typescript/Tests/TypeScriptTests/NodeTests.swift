@@ -28,6 +28,12 @@ final class NodeTests: XCTestCase {
     expect(try Node(from: [[Bool]].self)).toEqual(.array(.array(.primitive(.boolean))))
   }
 
+  func testUnrepresentableTupleThrows() async throws {
+    try await expectErrorFrom {
+      try Node(from: (Int?, String).self)
+    }.toContain("Unrepresentable tuple")
+  }
+
   func testParseSimpleEnum() throws {
     enum Foo {
       case bar
@@ -86,11 +92,15 @@ final class NodeTests: XCTestCase {
       var bar: String
       let baz: Int
       var jim: Bool?
+      var void: Void
+      var never: Never
     }
     expect(try Node(from: Foo.self)).toEqual(.object([
       .init(name: "bar", value: .primitive(.string), optional: false, readonly: false),
       .init(name: "baz", value: .primitive(.number), optional: false, readonly: true),
       .init(name: "jim", value: .primitive(.boolean), optional: true, readonly: false),
+      .init(name: "void", value: .primitive(.void)),
+      .init(name: "never", value: .primitive(.never)),
     ]))
   }
 }
