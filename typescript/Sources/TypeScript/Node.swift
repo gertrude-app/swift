@@ -13,6 +13,8 @@ indirect enum Node: Equatable {
     case number
     case boolean
     case null
+    case void
+    case never
   }
 
   struct TupleMember: Equatable {
@@ -60,6 +62,10 @@ extension Node {
       self = .primitive(.number)
     case is Bool.Type:
       self = .primitive(.boolean)
+    case is Void.Type:
+      self = .primitive(.void)
+    case is Never.Type:
+      self = .primitive(.never)
     default:
       try self.init(from: typeInfo(of: type))
     }
@@ -123,15 +129,39 @@ extension Node {
     case .enum:
       self = .union(try type.cases.map { try Node(caseWithValue: $0) })
     case .tuple:
-      self = .tuple(
-        try type.properties.map { TupleMember(
-          name: $0.name == "" ? nil : $0.name,
-          value: try Node(from: $0.type),
-          optional: try $0.isOptional
-        ) }
-      )
+      let members = try type.properties.map { TupleMember(
+        name: $0.name == "" ? nil : $0.name,
+        value: try Node(from: $0.type),
+        optional: try $0.isOptional
+      ) }
+      try members.checkValidity(for: type)
+      self = .tuple(members)
     default:
       self = .primitive(.null)
+    }
+  }
+}
+
+extension Node {
+  struct Error: Swift.Error {
+    let message: String
+  }
+}
+
+extension Array where Element == Node.TupleMember {
+  func checkValidity(for type: TypeInfo) throws {
+    var optionalMemberFound = false
+    for member in self {
+      if member.optional {
+        optionalMemberFound = true
+      } else if optionalMemberFound {
+        let message = """
+        Unrepresentable tuple:
+          -> \(type.name)
+        non-optional member must not follow optional
+        """
+        throw Node.Error(message: message)
+      }
     }
   }
 }

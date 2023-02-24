@@ -131,6 +131,10 @@ extension Node.Primitive: TypeScriptRepresentable {
       return "number"
     case .string:
       return "string"
+    case .void:
+      return "void"
+    case .never:
+      return "never"
     case .stringLiteral(let string):
       return "'\(string)'"
     }
