@@ -20,7 +20,14 @@ final class CodeGenTests: XCTestCase {
         let reallyLongPropertyName: Int
       }
 
+      enum Value {
+        case string(String)
+        case optInt(Int?)
+        case bare
+      }
+
       let foo: String
+      var value: Value
       var inline: Tiny
       var tinyArray: [Tiny]
       var baz: Int?
@@ -36,6 +43,15 @@ final class CodeGenTests: XCTestCase {
       """
       export interface Foo {
         readonly foo: string;
+        value: {
+          case: 'string';
+          string: string;
+        } | {
+          case: 'optInt';
+          optInt?: number;
+        } | {
+          case: 'bare';
+        };
         inline: {
           a: string;
         };

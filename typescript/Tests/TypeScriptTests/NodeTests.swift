@@ -26,6 +26,11 @@ final class NodeTests: XCTestCase {
     expect(try Node(from: [Int].self)).toEqual(.array(.primitive(.number)))
     expect(try Node(from: [Bool].self)).toEqual(.array(.primitive(.boolean)))
     expect(try Node(from: [[Bool]].self)).toEqual(.array(.array(.primitive(.boolean))))
+
+    struct Foo { var bar: Int }
+    expect(try Node(from: [Foo].self)).toEqual(.array(.object([
+      .init(name: "bar", value: .primitive(.number)),
+    ])))
   }
 
   func testUnrepresentableTupleThrows() async throws {
