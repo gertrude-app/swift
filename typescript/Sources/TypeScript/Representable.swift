@@ -67,29 +67,9 @@ extension Node: TypeScriptRepresentable {
     case .primitive(let primitive):
       return primitive.declaration(ctx)
 
-    case .tuple(let members):
-      var decl = "[\(ctx.newLine)"
-      decl += ctx.compact(" ", or: (ctx++).indent)
-      decl += members.declaration(ctx++)
-      decl += ctx.compact("]", or: "\n\(ctx.indent)]")
-      return decl
-
     case .union(let members):
       return members.declaration(ctx)
     }
-  }
-}
-
-extension Node.TupleMember: TypeScriptRepresentable {
-  func declaration(_ ctx: Context) -> String {
-    value.declaration(ctx) + (optional ? "?" : "")
-  }
-}
-
-extension Array where Element == Node.TupleMember {
-  func declaration(_ ctx: Context) -> String {
-    let members = map { $0.declaration(ctx) }
-    return members.joined(separator: ctx.compact(", ", or: ",\(ctx.indentedNewLine)"))
   }
 }
 
