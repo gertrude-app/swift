@@ -4,6 +4,32 @@ import XExpect
 @testable import TypeScript
 
 final class CodeGenTests: XCTestCase {
+
+  func testEnumWithNamedAssociatedValues() throws {
+    enum Bar {
+      case a
+      case b(foo: String, bar: Int)
+    }
+
+    struct Foo {
+      var bar: Bar
+    }
+
+    expect(try CodeGen().declaration(for: Foo.self)).toEqual(
+      """
+      export interface Foo {
+        bar: {
+          case: 'b';
+          foo: string;
+          bar: number;
+        } | {
+          case: 'a';
+        };
+      }
+      """
+    )
+  }
+
   func testKitchenSink() throws {
     struct Foo {
       enum Bar {
@@ -23,6 +49,7 @@ final class CodeGenTests: XCTestCase {
       enum Value {
         case string(String)
         case optInt(Int?)
+        case named(a: Int, b: String)
         case bare
       }
 
@@ -31,12 +58,9 @@ final class CodeGenTests: XCTestCase {
       var inline: Tiny
       var tinyArray: [Tiny]
       var baz: Int?
-      var tuple: (String, Int)
-      var optTuple: (String, Int?)
       var bar: Bar
       let rofl: [String]?
       var nested: Nested
-      var bigTuple: (Nested, [Int])
     }
 
     expect(try CodeGen().declaration(for: Foo.self)).toEqual(
@@ -50,6 +74,10 @@ final class CodeGenTests: XCTestCase {
           case: 'optInt';
           optInt?: number;
         } | {
+          case: 'named';
+          a: number;
+          b: string;
+        } | {
           case: 'bare';
         };
         inline: {
@@ -59,14 +87,6 @@ final class CodeGenTests: XCTestCase {
           a: string;
         }>;
         baz?: number;
-        tuple: [
-          string,
-          number
-        ];
-        optTuple: [
-          string,
-          number?
-        ];
         bar: 'a' | 'b';
         readonly rofl?: string[];
         nested: {
@@ -74,14 +94,6 @@ final class CodeGenTests: XCTestCase {
           readonly b: number;
           readonly reallyLongPropertyName: number;
         };
-        bigTuple: [
-          {
-            readonly a: string;
-            readonly b: number;
-            readonly reallyLongPropertyName: number;
-          },
-          number[]
-        ];
       }
       """
     )

@@ -5,7 +5,6 @@ indirect enum Node: Equatable {
   case array(Node)
   case object([Property])
   case union([Node])
-  case tuple([TupleMember])
 
   enum Primitive: Equatable {
     case string
@@ -15,18 +14,6 @@ indirect enum Node: Equatable {
     case null
     case void
     case never
-  }
-
-  struct TupleMember: Equatable {
-    let name: String?
-    let value: Node
-    let optional: Bool
-
-    init(name: String? = nil, value: Node, optional: Bool = false) {
-      self.name = name
-      self.value = value
-      self.optional = optional
-    }
   }
 
   struct Property: Equatable {
@@ -72,7 +59,11 @@ extension Node {
   }
 
   init(caseWithValue case: Case) throws {
-    let caseProp = Node.Property(name: "case", value: .primitive(.stringLiteral(`case`.name)))
+    let caseProp = Node.Property(
+      name: "case",
+      value: .primitive(.stringLiteral(`case`.name))
+    )
+
     guard let associatedValue = `case`.payloadType else {
       self = .object([caseProp])
       return
@@ -93,16 +84,16 @@ extension Node {
 
       // n-ary tuples: Foo.bar(Int, Int), Foo.bar(foo: Int, bar: Int)
     } else if associatedValueType.kind == .tuple {
-      properties.append(.init(
-        name: `case`.name,
-        value: .tuple(
-          try associatedValueType.properties.map { TupleMember(
-            name: $0.name == "" ? nil : $0.name,
-            value: try Node(from: $0.type),
-            optional: try $0.isOptional
-          ) }
-        )
-      ))
+      for member in associatedValueType.properties {
+        guard member.name != "" else {
+          throw Node.Error(message: "Multiple unnamed tuple members are not supported")
+        }
+        properties.append(.init(
+          name: member.name,
+          value: try Node(from: member.type),
+          optional: try member.isOptional
+        ))
+      }
       self = .object(properties)
 
       // unary non-tuple associated value: Foo.bar(Int)
@@ -129,15 +120,9 @@ extension Node {
     case .enum:
       self = .union(try type.cases.map { try Node(caseWithValue: $0) })
     case .tuple:
-      let members = try type.properties.map { TupleMember(
-        name: $0.name == "" ? nil : $0.name,
-        value: try Node(from: $0.type),
-        optional: try $0.isOptional
-      ) }
-      try members.checkValidity(for: type)
-      self = .tuple(members)
+      throw Error(message: "Tuples are not supported")
     default:
-      self = .primitive(.null)
+      throw Error(message: "Unexpected type: \(type.name), kind: \(type.kind)")
     }
   }
 }
@@ -145,24 +130,6 @@ extension Node {
 extension Node {
   struct Error: Swift.Error {
     let message: String
-  }
-}
-
-extension Array where Element == Node.TupleMember {
-  func checkValidity(for type: TypeInfo) throws {
-    var optionalMemberFound = false
-    for member in self {
-      if member.optional {
-        optionalMemberFound = true
-      } else if optionalMemberFound {
-        let message = """
-        Unrepresentable tuple:
-          -> \(type.name)
-        non-optional member must not follow optional
-        """
-        throw Node.Error(message: message)
-      }
-    }
   }
 }
 

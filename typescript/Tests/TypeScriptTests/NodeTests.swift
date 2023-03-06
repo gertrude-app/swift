@@ -10,17 +10,6 @@ final class NodeTests: XCTestCase {
     expect(try Node(from: Bool.self)).toEqual(.primitive(.boolean))
   }
 
-  func testParseNodeTuple() throws {
-    expect(try Node(from: (Int, Int?).self)).toEqual(.tuple([
-      .init(value: .primitive(.number)),
-      .init(value: .primitive(.number), optional: true),
-    ]))
-    expect(try Node(from: (one: Int, two: Int?).self)).toEqual(.tuple([
-      .init(name: "one", value: .primitive(.number)),
-      .init(name: "two", value: .primitive(.number), optional: true),
-    ]))
-  }
-
   func testParseArray() throws {
     expect(try Node(from: [String].self)).toEqual(.array(.primitive(.string)))
     expect(try Node(from: [Int].self)).toEqual(.array(.primitive(.number)))
@@ -33,10 +22,21 @@ final class NodeTests: XCTestCase {
     ])))
   }
 
+  func testEnumWithMultipleUnnamedValuesThrows() async throws {
+    enum NotGoodForTs {
+      case a
+      case b(Int, Int)
+    }
+
+    try await expectErrorFrom {
+      try Node(from: NotGoodForTs.self)
+    }.toContain("unnamed tuple members")
+  }
+
   func testUnrepresentableTupleThrows() async throws {
     try await expectErrorFrom {
       try Node(from: (Int?, String).self)
-    }.toContain("Unrepresentable tuple")
+    }.toContain("not supported")
   }
 
   func testParseSimpleEnum() throws {
@@ -55,7 +55,6 @@ final class NodeTests: XCTestCase {
       case bar(String)
       case baz(Int?)
       case foo(lol: Bool)
-      case two(Bool, String)
       case named(a: Bool, b: String?)
       case jim
     }
@@ -73,18 +72,9 @@ final class NodeTests: XCTestCase {
         .init(name: "lol", value: .primitive(.boolean)),
       ]),
       .object([
-        .init(name: "case", value: .primitive(.stringLiteral("two"))),
-        .init(name: "two", value: .tuple([
-          .init(value: .primitive(.boolean)),
-          .init(value: .primitive(.string)),
-        ])),
-      ]),
-      .object([
         .init(name: "case", value: .primitive(.stringLiteral("named"))),
-        .init(name: "named", value: .tuple([
-          .init(name: "a", value: .primitive(.boolean)),
-          .init(name: "b", value: .primitive(.string), optional: true),
-        ])),
+        .init(name: "a", value: .primitive(.boolean)),
+        .init(name: "b", value: .primitive(.string), optional: true),
       ]),
       .object([
         .init(name: "case", value: .primitive(.stringLiteral("jim"))),
