@@ -35,6 +35,13 @@ final class CodableTests: XCTestCase {
     expect(try EnumType(from: Baz.self)).toEqual(bazType)
   }
 
+  func testFullyQualifiedTypeNames() throws {
+    let nested = try EnumType(from: Rofl.Nested.self)
+    let firstLine = nested.codableConformance.split(separator: "\n").first!
+    expect(firstLine).toEqual("extension Rofl.Nested: Codable {")
+    expect(fullyQualifiedTypeName(Rofl.Nested.self)).toEqual("Rofl.Nested")
+  }
+
   func testCodableConformanceCodegen() {
     expect(bazType.codableConformance).toEqual(
       """
@@ -61,7 +68,7 @@ final class CodableTests: XCTestCase {
           var q: Bool?
         }
 
-        func encode(to encoder: Encoder) throws {
+        public func encode(to encoder: Encoder) throws {
           switch self {
           case .bar(let bar):
             try CaseBar(bar: bar).encode(to: encoder)
@@ -76,7 +83,7 @@ final class CodableTests: XCTestCase {
           }
         }
 
-        init(from decoder: Decoder) throws {
+        public init(from decoder: Decoder) throws {
           let caseName = try NamedCase.name(from: decoder)
           let container = try decoder.singleValueContainer()
           switch caseName {
@@ -248,4 +255,11 @@ func jsonDecode<T: Decodable>(_ string: String, as: T.Type) -> T {
   let decoder = JSONDecoder()
   let data = string.data(using: .utf8)!
   return try! decoder.decode(T.self, from: data)
+}
+
+enum Rofl {
+  enum Nested {
+    case foo
+    case bar(String)
+  }
 }

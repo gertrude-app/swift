@@ -1,6 +1,6 @@
 import Runtime
 
-struct EnumType: Equatable {
+public struct EnumType: Equatable {
   struct Case: Equatable {
     struct Value: Equatable {
       let name: String
@@ -22,19 +22,31 @@ struct EnumType: Equatable {
   let cases: [Case]
 }
 
+// helpers
+
+func fullyQualifiedTypeName(_ type: Any.Type) -> String {
+  String(reflecting: type)
+    .split(separator: ".")
+    .dropFirst() // drop the module name
+    .joined(separator: ".")
+}
+
 // extensions
 
-extension EnumType {
+public extension EnumType {
   init(from type: Any.Type) throws {
     let info = try typeInfo(of: type)
     guard info.kind == .enum else {
       throw TypeScriptError(message: "Expected enum type, got \(info.kind)")
     }
 
-    self.init(name: info.name, cases: try info.cases.map { try .init(from: $0) })
+    self.init(
+      name: fullyQualifiedTypeName(info.type),
+      cases: try info.cases.map { try .init(from: $0) }
+    )
   }
 
-  var helperStructs: String {
+  internal var helperStructs: String {
     let structs = cases.compactMap(\.codableStruct)
     if structs.isEmpty {
       return ""
@@ -46,13 +58,13 @@ extension EnumType {
   var codableConformance: String {
     """
     extension \(name): Codable {
-      \(helperStructs)func encode(to encoder: Encoder) throws {
+      \(helperStructs)public func encode(to encoder: Encoder) throws {
         switch self {
         \(cases.map(\.encodeCase).joined(separator: "\n    "))
         }
       }
 
-      init(from decoder: Decoder) throws {
+      public init(from decoder: Decoder) throws {
         let caseName = try NamedCase.name(from: decoder)
         let container = try decoder.singleValueContainer()
         switch caseName {
@@ -158,9 +170,9 @@ extension EnumType.Case.Value {
     let typeInfo = try typeInfo(of: property.type)
     if typeInfo.isOptional {
       let inner = typeInfo.genericTypes[0]
-      self.init(name: property.name, type: "\(inner)?")
+      self.init(name: property.name, type: "\(fullyQualifiedTypeName(inner))?")
     } else {
-      self.init(name: property.name, type: "\(property.type)")
+      self.init(name: property.name, type: "\(fullyQualifiedTypeName(property.type))")
     }
   }
 
@@ -173,8 +185,12 @@ extension EnumType.Case.Value {
   }
 }
 
-struct TypeScriptError: Error {
-  var message: String
+public struct TypeScriptError: Error {
+  public var message: String
+
+  public init(message: String) {
+    self.message = message
+  }
 }
 
 public struct NamedCase: Codable {

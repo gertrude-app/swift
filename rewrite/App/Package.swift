@@ -23,7 +23,7 @@ let package = Package(
     ),
     .checkedTarget(
       name: "MenuBar",
-      dependencies: [.tca, .product(name: "Shared", package: "shared")]
+      dependencies: [.tca, .typescript, .product(name: "Shared", package: "shared")]
     ),
     .testTarget(
       name: "AppTests",
@@ -31,7 +31,7 @@ let package = Package(
     ),
     .testTarget(
       name: "MenuBarTests",
-      dependencies: ["App", .product(name: "TypeScript", package: "typescript")]
+      dependencies: ["App", .typescript]
     ),
   ]
 )
@@ -55,5 +55,9 @@ extension Target.Dependency {
   static let tca: Target.Dependency = .product(
     name: "ComposableArchitecture",
     package: "swift-composable-architecture"
+  )
+  static let typescript: Target.Dependency = .product(
+    name: "TypeScript",
+    package: "typescript"
   )
 }

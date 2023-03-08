@@ -1,8 +1,10 @@
 public struct Config {
   let compact: Bool
+  let aliases: [String: String]
 
-  public init(compact: Bool = false) {
+  public init(compact: Bool = false, aliasing aliases: [String: String] = [:]) {
     self.compact = compact
+    self.aliases = aliases
   }
 }
 
@@ -94,7 +96,7 @@ extension Node.Property: TypeScriptRepresentable {
   }
 
   func declaration(_ ctx: Context) -> String {
-    let propValue = value.declaration(ctx)
+    let propValue = ctx.config.aliases[name] ?? value.declaration(ctx)
     return "\(unindentedLhs)\(propValue)"
   }
 }

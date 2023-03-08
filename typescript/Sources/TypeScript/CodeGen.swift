@@ -5,8 +5,8 @@ public struct CodeGen {
     self.config = config
   }
 
-  public func declaration(for type: Any.Type) throws -> String {
+  public func declaration(for type: Any.Type, as name: String? = nil) throws -> String {
     let root = try Node(from: type)
-    return "export type \(type) = \(root.declaration(.init(config: config)))"
+    return "export type \(name ?? "\(type)") = \(root.declaration(.init(config: config)))"
   }
 }

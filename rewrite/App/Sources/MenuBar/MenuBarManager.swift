@@ -13,14 +13,14 @@ class ViewController: NSViewController, WKUIDelegate {
     if case .connected(let user) = state {
       json = """
       {
-        "state": "connected",
+        "case": "connected",
         "recordingKeystrokes": \(user.recordingKeystrokes),
         "recordingScreenshots": \(user.recordingScreen),
-        "filterState": { "state": "on" }
+        "filterState": { "case": "on" }
       }
       """
     } else {
-      json = #"{ "state": "notConnected" }"#
+      json = #"{ "case": "notConnected" }"#
     }
 
     webView.evaluateJavaScript("window.updateAppState(\(json))")
