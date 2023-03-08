@@ -101,5 +101,7 @@ watch-swift dir cmd ignore1="•" ignore2="•" ignore3="•":
 watch-build dir:
   @just watch-swift {{dir}} '"cd {{dir}} && swift build"'
 
-watch-test dir:
-  @just watch-swift {{dir}} '"cd {{dir}} && swift test"'
+watch-test dir isolate="":
+  @just watch-swift {{dir}} '"cd {{dir}} && \
+  SWIFT_DETERMINISTIC_HASHING=1 swift test \
+  {{ if isolate != "" { "--filter " + isolate } else { "" } }} "'

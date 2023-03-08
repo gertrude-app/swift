@@ -4,9 +4,11 @@ import XExpect
 @testable import TypeScript
 
 enum Baz: Equatable {
+  struct Nested: Equatable { let foo: String, bar: Int }
   case foo
   case bar(String)
   case baz(one: String, two: Int)
+  case nested(Nested)
   case qux(q: Bool?)
 }
 
@@ -19,6 +21,11 @@ final class CodableTests: XCTestCase {
         .init(name: "one", type: "String"),
         .init(name: "two", type: "Int"),
       ]),
+      .init(
+        name: "nested",
+        values: [.init(name: "foo", type: "String"), .init(name: "bar", type: "Int")],
+        isFlattenedUserStruct: true
+      ),
       .init(name: "qux", values: [.init(name: "q", type: "Bool?")]),
       .init(name: "foo", values: []),
     ]
@@ -43,6 +50,12 @@ final class CodableTests: XCTestCase {
           var two: Int
         }
 
+        private struct CaseNested: Codable {
+          var `case` = "nested"
+          var foo: String
+          var bar: Int
+        }
+
         private struct CaseQux: Codable {
           var `case` = "qux"
           var q: Bool?
@@ -54,6 +67,8 @@ final class CodableTests: XCTestCase {
             try CaseBar(bar: bar).encode(to: encoder)
           case .baz(let one, let two):
             try CaseBaz(one: one, two: two).encode(to: encoder)
+          case .nested(let unflat):
+            try CaseNested(foo: unflat.foo, bar: unflat.bar).encode(to: encoder)
           case .qux(let q):
             try CaseQux(q: q).encode(to: encoder)
           case .foo:
@@ -71,6 +86,9 @@ final class CodableTests: XCTestCase {
           case "baz":
             let value = try container.decode(CaseBaz.self)
             self = .baz(one: value.one, two: value.two)
+          case "nested":
+            let value = try container.decode(CaseNested.self)
+            self = .nested(.init(foo: value.foo, bar: value.bar))
           case "qux":
             let value = try container.decode(CaseQux.self)
             self = .qux(q: value.q)
@@ -124,6 +142,16 @@ final class CodableTests: XCTestCase {
 
     json = """
     {
+      "bar" : 3,
+      "case" : "nested",
+      "foo" : "bar"
+    }
+    """
+    expect(jsonEncode(Baz.nested(.init(foo: "bar", bar: 3)))).toEqual(json)
+    expect(jsonDecode(json, as: Baz.self)).toEqual(Baz.nested(.init(foo: "bar", bar: 3)))
+
+    json = """
+    {
       "case" : "foo"
     }
     """
@@ -157,6 +185,12 @@ extension Baz: Codable {
     var two: Int
   }
 
+  private struct CaseNested: Codable {
+    var `case` = "nested"
+    var foo: String
+    var bar: Int
+  }
+
   private struct CaseQux: Codable {
     var `case` = "qux"
     var q: Bool?
@@ -170,6 +204,8 @@ extension Baz: Codable {
       try CaseBar(bar: bar).encode(to: encoder)
     case .baz(let one, let two):
       try CaseBaz(one: one, two: two).encode(to: encoder)
+    case .nested(let foo):
+      try CaseNested(foo: foo.foo, bar: foo.bar).encode(to: encoder)
     case .qux(let q):
       try CaseQux(q: q).encode(to: encoder)
     }
@@ -187,6 +223,9 @@ extension Baz: Codable {
     case "baz":
       let value = try container.decode(CaseBaz.self)
       self = .baz(one: value.one, two: value.two)
+    case "nested":
+      let value = try container.decode(CaseNested.self)
+      self = .nested(.init(foo: value.foo, bar: value.bar))
     case "qux":
       let value = try container.decode(CaseQux.self)
       self = .qux(q: value.q)

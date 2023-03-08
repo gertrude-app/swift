@@ -96,6 +96,12 @@ extension Node {
       }
       self = .object(properties)
 
+      // flatten unary struct associated value: Foo.bar(SomeStruct)
+    } else if associatedValueType.kind == .struct,
+              case .object(let structProps) = try Node(from: associatedValueType.type) {
+      properties.append(contentsOf: structProps)
+      self = .object(properties)
+
       // unary non-tuple associated value: Foo.bar(Int)
     } else {
       properties.append(.init(
@@ -130,23 +136,5 @@ extension Node {
 extension Node {
   struct Error: Swift.Error {
     let message: String
-  }
-}
-
-extension TypeInfo {
-  var isArray: Bool {
-    kind == .struct && name.starts(with: "Array<") && genericTypes.count == 1
-  }
-
-  var isOptional: Bool {
-    kind == .optional
-  }
-}
-
-extension PropertyInfo {
-  var isOptional: Bool {
-    get throws {
-      try typeInfo(of: type).kind == .optional
-    }
   }
 }

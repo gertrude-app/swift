@@ -14,6 +14,7 @@ let package = Package(
       branch: "prerelease/1.0"
     ),
     .package(path: "../../shared"),
+    .package(path: "../../typescript"),
   ],
   targets: [
     .checkedTarget(
@@ -24,7 +25,14 @@ let package = Package(
       name: "MenuBar",
       dependencies: [.tca, .product(name: "Shared", package: "shared")]
     ),
-    .testTarget(name: "AppTests", dependencies: ["App"]),
+    .testTarget(
+      name: "AppTests",
+      dependencies: ["App"]
+    ),
+    .testTarget(
+      name: "MenuBarTests",
+      dependencies: ["App", .product(name: "TypeScript", package: "typescript")]
+    ),
   ]
 )
 

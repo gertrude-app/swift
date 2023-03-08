@@ -9,6 +9,13 @@ struct EnumType: Equatable {
 
     let name: String
     let values: [Value]
+    let isFlattenedUserStruct: Bool
+
+    init(name: String, values: [Value], isFlattenedUserStruct: Bool = false) {
+      self.name = name
+      self.values = values
+      self.isFlattenedUserStruct = isFlattenedUserStruct
+    }
   }
 
   let name: String
@@ -66,17 +73,22 @@ extension EnumType.Case {
       return
     }
     let payloadType = try typeInfo(of: payload)
-    switch payloadType.kind {
-    case .tuple:
+    if case .tuple = payloadType.kind {
       self = .init(
         name: caseData.name,
         values: try payloadType.properties.map { try .init(from: $0) }
       )
-    default:
+      // flatten unary payload of a user struct: `case foo(SomeStruct)`
+    } else if payloadType.isUserStruct {
+      self = .init(
+        name: caseData.name,
+        values: try payloadType.properties.map { try .init(from: $0) },
+        isFlattenedUserStruct: true
+      )
+    } else {
       self = .init(name: caseData.name, values: [
         .init(name: caseData.name, type: payloadType.name),
       ])
-      return
     }
   }
 
@@ -97,6 +109,8 @@ extension EnumType.Case {
   var switchPattern: String {
     if values.isEmpty {
       return "case .\(name):"
+    } else if isFlattenedUserStruct {
+      return "case .\(name)(let unflat):"
     } else {
       return "case .\(name)(let \(values.map(\.name).joined(separator: ", let "))):"
     }
@@ -106,7 +120,10 @@ extension EnumType.Case {
     if values.isEmpty {
       return "NamedCase(\"\(name)\")"
     } else {
-      let args = values.map(\.name).map { "\($0): \($0)" }
+      var args = values.map(\.name).map { "\($0): \($0)" }
+      if isFlattenedUserStruct {
+        args = values.map(\.name).map { "\($0): unflat.\($0)" }
+      }
       return "Case\(name.capitalized)(\(args.joined(separator: ", ")))"
     }
   }
@@ -122,11 +139,15 @@ extension EnumType.Case {
             self = .\#(name)
       """#
     } else {
-      let args = values.map { $0.constructArg(caseName: name) }
+      var args = values.map { $0.constructArg(caseName: name) }
+        .joined(separator: ", ")
+      if isFlattenedUserStruct {
+        args = ".init(\(args))"
+      }
       return #"""
       case "\#(name)":
             let value = try container.decode(\#(codableStructName).self)
-            self = .\#(name)(\#(args.joined(separator: ", ")))
+            self = .\#(name)(\#(args))
       """#
     }
   }

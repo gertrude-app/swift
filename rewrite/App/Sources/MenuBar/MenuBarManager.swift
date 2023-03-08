@@ -8,9 +8,9 @@ class ViewController: NSViewController, WKUIDelegate {
   var webView: WKWebView!
   var send: (MenuBar.Action) -> Void = { _ in }
 
-  func updateState(_ state: MenuBar.State.User?) {
+  func updateState(_ state: MenuBar.State.Screen) {
     let json: String
-    if let user = state {
+    if case .connected(let user) = state {
       json = """
       {
         "state": "connected",
@@ -74,11 +74,11 @@ extension ViewController: WKScriptMessageHandler {
   var cancellables = Set<AnyCancellable>()
   var vc: ViewController!
 
-  @ObservedObject var viewStore: ViewStore<MenuBar.State.User?, MenuBar.Action>
+  @ObservedObject var viewStore: ViewStore<MenuBar.State.Screen, MenuBar.Action>
 
   public init(store: StoreOf<MenuBar>) {
     self.store = store
-    viewStore = ViewStore(store, observe: \.user)
+    viewStore = ViewStore(store, observe: \.screen)
 
     popover = NSPopover()
     popover.animates = false
@@ -102,14 +102,15 @@ extension ViewController: WKScriptMessageHandler {
     // resize popover when store gets a change
     viewStore.objectWillChange.sink { _ in
       DispatchQueue.main.async { [weak self] in
-        self?.sizePopover()
-        self?.vc.updateState(self?.viewStore.state)
+        guard let self = self else { return }
+        self.sizePopover()
+        self.vc.updateState(self.viewStore.state)
       }
     }.store(in: &cancellables)
   }
 
   func sizePopover() {
-    let (width, height) = viewStore.state?.viewDimensions ?? MenuBar.State().viewDimensions
+    let (width, height) = viewStore.state.viewDimensions
     popover.contentSize = NSSize(width: width, height: height)
   }
 

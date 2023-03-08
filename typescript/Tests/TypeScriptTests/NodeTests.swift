@@ -50,6 +50,26 @@ final class NodeTests: XCTestCase {
     ]))
   }
 
+  func testFlattensEnumCaseWithSingleStructPayload() throws {
+    enum Screen {
+      struct Connected {
+        var flat: String
+      }
+
+      case notConnected
+      case connected(Connected)
+    }
+    expect(try Node(from: Screen.self)).toEqual(.union([
+      .object([
+        .init(name: "case", value: .primitive(.stringLiteral("connected"))),
+        .init(name: "flat", value: .primitive(.string)),
+      ]),
+      .object([
+        .init(name: "case", value: .primitive(.stringLiteral("notConnected"))),
+      ]),
+    ]))
+  }
+
   func testParseEnumWithPayload() throws {
     enum Foo {
       case bar(String)
