@@ -31,7 +31,7 @@ let package = Package(
     ),
     .testTarget(
       name: "MenuBarTests",
-      dependencies: ["App", .typescript]
+      dependencies: ["MenuBar"]
     ),
   ]
 )
