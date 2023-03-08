@@ -1,7 +1,7 @@
-struct Config {
+public struct Config {
   let compact: Bool
 
-  init(compact: Bool = false) {
+  public init(compact: Bool = false) {
     self.compact = compact
   }
 }
@@ -52,7 +52,6 @@ extension Node: TypeScriptRepresentable {
   func declaration(_ ctx: Context = .init())
     -> String {
     switch self {
-
     case .array(let element):
       let decl = element.declaration(ctx)
       return decl.contains(" ") ? "Array<\(decl)>" : "\(decl)[]"

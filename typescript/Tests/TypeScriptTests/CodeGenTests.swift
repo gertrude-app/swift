@@ -4,11 +4,33 @@ import XExpect
 @testable import TypeScript
 
 final class CodeGenTests: XCTestCase {
+  func testScreen() throws {
+    enum Screen {
+      struct Connected {
+        var foo: String
+      }
+
+      case notConnected
+      case connected(Connected)
+    }
+
+    expect(try CodeGen().declaration(for: Screen.self)).toEqual(
+      """
+      export type Screen = {
+        case: 'connected';
+        foo: string;
+      } | {
+        case: 'notConnected';
+      }
+      """
+    )
+  }
 
   func testEnumWithNamedAssociatedValues() throws {
     enum Bar {
       case a
       case b(foo: String, bar: Int)
+      case c(String)
     }
 
     struct Foo {
@@ -17,11 +39,14 @@ final class CodeGenTests: XCTestCase {
 
     expect(try CodeGen().declaration(for: Foo.self)).toEqual(
       """
-      export interface Foo {
+      export type Foo = {
         bar: {
           case: 'b';
           foo: string;
           bar: number;
+        } | {
+          case: 'c';
+          c: string;
         } | {
           case: 'a';
         };
@@ -65,7 +90,7 @@ final class CodeGenTests: XCTestCase {
 
     expect(try CodeGen().declaration(for: Foo.self)).toEqual(
       """
-      export interface Foo {
+      export type Foo = {
         readonly foo: string;
         value: {
           case: 'string';
@@ -112,7 +137,7 @@ final class CodeGenTests: XCTestCase {
     let normal = try CodeGen(config: .init(compact: false)).declaration(for: Foo.self)
     expect(normal).toEqual(
       """
-      export interface Foo {
+      export type Foo = {
         inline: {
           a: string;
           b: number;
@@ -124,7 +149,7 @@ final class CodeGenTests: XCTestCase {
     let compact = try CodeGen(config: .init(compact: true)).declaration(for: Foo.self)
     expect(compact).toEqual(
       """
-      export interface Foo { inline: { a: string; b: number; }; }
+      export type Foo = { inline: { a: string; b: number; }; }
       """
     )
   }

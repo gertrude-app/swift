@@ -1,0 +1,25 @@
+import Runtime
+
+extension TypeInfo {
+  var isUserStruct: Bool {
+    guard kind == .struct else { return false }
+    // ignore structs like String, Bool, Date, Int, etc...
+    return properties.map(\.name).filter { !$0.starts(with: "_") }.count > 0
+  }
+
+  var isArray: Bool {
+    kind == .struct && name.starts(with: "Array<") && genericTypes.count == 1
+  }
+
+  var isOptional: Bool {
+    kind == .optional
+  }
+}
+
+extension PropertyInfo {
+  var isOptional: Bool {
+    get throws {
+      try typeInfo(of: type).kind == .optional
+    }
+  }
+}

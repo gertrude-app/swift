@@ -1,12 +1,17 @@
 import CoreGraphics
 
-extension MenuBar.State {
+extension MenuBar.State.Screen {
   var viewDimensions: (width: CGFloat, height: CGFloat) {
-    user?.viewDimensions ?? (width: 245, height: 60)
+    switch self {
+    case .notConnected:
+      return (width: 245, height: 60)
+    case .connected(let connected):
+      return connected.viewDimensions
+    }
   }
 }
 
-extension MenuBar.State.User {
+extension MenuBar.State.Connected {
   var viewDimensions: (width: CGFloat, height: CGFloat) {
     var height: CGFloat
     switch (recordingScreen, recordingKeystrokes) {
@@ -18,11 +23,11 @@ extension MenuBar.State.User {
       height = 144
     }
 
-    if filterRunning {
+    if filterState != .off {
       height += 28
     }
 
-    if filterSuspension?.isActive == true {
+    if case .suspended = filterState {
       height += 26
     }
 
