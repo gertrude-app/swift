@@ -1,5 +1,6 @@
 .DS_Store
-.env*
+.env
+api/.env*
 node_modules/
 
 **/.build/

@@ -146,6 +146,16 @@ final class CodeGenTests: XCTestCase {
       """
     )
 
+    let alias = try CodeGen(config: .init(compact: false, aliasing: ["inline": "Tiny"]))
+      .declaration(for: Foo.self)
+    expect(alias).toEqual(
+      """
+      export type Foo = {
+        inline: Tiny;
+      }
+      """
+    )
+
     let compact = try CodeGen(config: .init(compact: true)).declaration(for: Foo.self)
     expect(compact).toEqual(
       """

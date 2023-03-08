@@ -9,6 +9,11 @@ watch-macapp pkg="App":
 build-macapp pkg="App":
   @cd rewrite/{{pkg}} && swift build
 
+codegen-appviews:
+  @cd rewrite/App && \
+  CODEGEN_APPVIEWS=true CODEGEN_WEB_DIR=$CODEGEN_WEB_DIR \
+  swift test --filter AppCodegen # &> /dev/null
+
 xcode:
   @open rewrite/Xcode/Gertrude.xcodeproj
 
@@ -86,6 +91,8 @@ clean-api-tests:
 	@cd api && find .build -name '*AppTests*' -delete
 
 # helpers
+
+set dotenv-load
 
 [private]
 exec-api cmd *args:

@@ -42,8 +42,13 @@ public struct MenuBar: Reducer {
   }
 
   public enum Action: String, Equatable {
-    case menuBarIconClicked
     case fakeConnect
+    case menuBarIconClicked
+    case resumeFilterClicked
+    case suspendFilterClicked
+    case refreshRulesClicked
+    case administrateClicked
+    case viewNetworkTrafficClicked
   }
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
@@ -57,6 +62,8 @@ public struct MenuBar: Reducer {
         recordingScreen: true,
         filterState: .on
       ))
+      return .none
+    default: // temp
       return .none
     }
   }
