@@ -58,6 +58,18 @@ public extension EnumType {
   var codableConformance: String {
     """
     extension \(name): Codable {
+      private struct _NamedCase: Codable {
+        var `case`: String
+        static func extract(from decoder: Decoder) throws -> String {
+          let container = try decoder.singleValueContainer()
+          return try container.decode(_NamedCase.self).case
+        }
+      }
+
+      private struct _TypeScriptDecodeError: Error {
+        var message: String
+      }
+
       \(helperStructs)public func encode(to encoder: Encoder) throws {
         switch self {
         \(cases.map(\.encodeCase).joined(separator: "\n    "))
@@ -65,12 +77,12 @@ public extension EnumType {
       }
 
       public init(from decoder: Decoder) throws {
-        let caseName = try NamedCase.name(from: decoder)
+        let caseName = try _NamedCase.extract(from: decoder)
         let container = try decoder.singleValueContainer()
         switch caseName {
         \(cases.map(\.initCase).joined(separator: "\n    "))
         default:
-          throw TypeScriptError(message: "Unexpected case name: `\\(caseName)`")
+          throw _TypeScriptDecodeError(message: "Unexpected case name: `\\(caseName)`")
         }
       }
     }
@@ -105,7 +117,7 @@ extension EnumType.Case {
   }
 
   var codableStructName: String {
-    "Case\(name.capitalized)"
+    "_Case\(name.capitalized)"
   }
 
   var codableStruct: String? {
@@ -130,13 +142,13 @@ extension EnumType.Case {
 
   var encodeInit: String {
     if values.isEmpty {
-      return "NamedCase(\"\(name)\")"
+      return "_NamedCase(case: \"\(name)\")"
     } else {
       var args = values.map(\.name).map { "\($0): \($0)" }
       if isFlattenedUserStruct {
         args = values.map(\.name).map { "\($0): unflat.\($0)" }
       }
-      return "Case\(name.capitalized)(\(args.joined(separator: ", ")))"
+      return "\(codableStructName)(\(args.joined(separator: ", ")))"
     }
   }
 
@@ -185,23 +197,6 @@ extension EnumType.Case.Value {
   }
 }
 
-public struct TypeScriptError: Error {
-  public var message: String
-
-  public init(message: String) {
-    self.message = message
-  }
-}
-
-public struct NamedCase: Codable {
-  public var `case`: String
-
-  public init(_ case: String) {
-    self.case = `case`
-  }
-
-  public static func name(from decoder: Decoder) throws -> String {
-    let container = try decoder.singleValueContainer()
-    return try container.decode(NamedCase.self).case
-  }
+struct TypeScriptError: Error {
+  var message: String
 }

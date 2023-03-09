@@ -15,10 +15,7 @@ extension TypeScriptEnum: CodeGenerator {
 
   func write() throws {
     let url = URL(fileURLWithPath: path)
-    let header = """
-    // auto-generated, do not edit
-    import TypeScript
-    """
+    let header = "// auto-generated, do not edit"
     let decls = try types.map { try EnumType(from: $0).codableConformance }
     let file = header + "\n\n" + decls.joined(separator: "\n\n")
     try file.data(using: .utf8)!.write(to: url)

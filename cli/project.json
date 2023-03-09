@@ -1,0 +1,12 @@
+{
+  "root": "cli",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "cd cli && swift build"
+    },
+    "test": {
+      "command": "true"
+    }
+  }
+}
