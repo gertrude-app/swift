@@ -41,7 +41,7 @@ public struct MenuBar: Reducer {
     }
   }
 
-  public enum Action: String, Equatable {
+  public enum Action: String, Equatable, Decodable {
     case fakeConnect
     case menuBarIconClicked
     case resumeFilterClicked
