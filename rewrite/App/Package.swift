@@ -14,6 +14,7 @@ let package = Package(
       branch: "prerelease/1.0"
     ),
     .package(path: "../../shared"),
+    .package(path: "../../x-kit"),
   ],
   targets: [
     .checkedTarget(
@@ -22,7 +23,11 @@ let package = Package(
     ),
     .checkedTarget(
       name: "MenuBar",
-      dependencies: [.tca, .product(name: "Shared", package: "shared")]
+      dependencies: [
+        .tca,
+        .product(name: "Shared", package: "Shared"),
+        .product(name: "XCore", package: "x-kit"),
+      ]
     ),
     .testTarget(
       name: "AppTests",

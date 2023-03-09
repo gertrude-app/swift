@@ -3,27 +3,16 @@ import Combine
 import ComposableArchitecture
 import SwiftUI
 import WebKit
+import XCore
 
 class ViewController: NSViewController, WKUIDelegate {
   var webView: WKWebView!
   var send: (MenuBar.Action) -> Void = { _ in }
 
   func updateState(_ state: MenuBar.State.Screen) {
-    let json: String
-    if case .connected(let user) = state {
-      json = """
-      {
-        "case": "connected",
-        "recordingKeystrokes": \(user.recordingKeystrokes),
-        "recordingScreenshots": \(user.recordingScreen),
-        "filterState": { "case": "on" }
-      }
-      """
-    } else {
-      json = #"{ "case": "notConnected" }"#
+    if let json = try? JSON.encode(state) {
+      webView.evaluateJavaScript("window.updateAppState(\(json))")
     }
-
-    webView.evaluateJavaScript("window.updateAppState(\(json))")
   }
 
   func loadWebView() {
@@ -60,6 +49,7 @@ extension ViewController: WKScriptMessageHandler {
       return
     }
 
+    // can i decode here instead?
     guard let action = MenuBar.Action(rawValue: msgString) else {
       return
     }
@@ -110,8 +100,7 @@ extension ViewController: WKScriptMessageHandler {
   }
 
   func sizePopover() {
-    let (width, height) = viewStore.state.viewDimensions
-    popover.contentSize = NSSize(width: width, height: height)
+    popover.contentSize = NSSize(width: 400, height: 300)
   }
 
   @objc func iconClicked(_ sender: Any?) {
