@@ -1,6 +1,7 @@
 import MacAppRoute
 import Shared
 import SharedCore
+import XCore
 
 public extension AppLogEvent {
   enum ApiClientEvent: LogMessagable, GenericEventHandler {
@@ -47,7 +48,7 @@ public extension AppDebugEvent {
     public var logMessage: Log.Message {
       switch self {
       case .receiveAppIdManifest(let manifest):
-        return .debug("received AppIdManifest", ["json.raw": .init(manifest.json)])
+        return .debug("received AppIdManifest", ["json.raw": .init(try? JSON.encode(manifest))])
       }
     }
   }

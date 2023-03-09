@@ -1,8 +1,9 @@
 import Combine
 import Foundation
-import Shared
 import os.log
+import Shared
 import SharedCore
+import XCore
 
 struct SendToApp {
   static func batchedHoneycombLogs(_ logs: [Log.Message]) -> AnyPublisher<Bool, Never> {
@@ -17,7 +18,8 @@ struct SendToApp {
         return
       }
 
-      app.receiveBatchedHoneycombLogs(logs.compactMap(\.jsonData)) { success in
+      let logData = logs.compactMap { try? JSON.data($0) }
+      app.receiveBatchedHoneycombLogs(logData) { success in
         promise(.success(success))
       }
     }
@@ -25,7 +27,7 @@ struct SendToApp {
   }
 
   static func log(_ logMsg: Log.Message) {
-    guard let json = logMsg.jsonData else {
+    guard let json = try? JSON.data(logMsg) else {
       OsLogger().error("Error getting json data from LogMsg(\(logMsg.message)")
       return
     }
@@ -33,7 +35,7 @@ struct SendToApp {
   }
 
   static func recentFilterDecisions(_ decisions: [FilterDecision]) {
-    let data = decisions.compactMap(\.jsonData)
+    let data = decisions.compactMap { try? JSON.data($0) }
     FilterExtensionXPC.shared.appReceiver?.receiveRecentFilterDecisions(data)
   }
 }

@@ -1,5 +1,6 @@
 import Foundation
 import SharedCore
+import XCore
 
 class RequestsWindowState {
   class Filter: Codable {
@@ -23,13 +24,13 @@ class RequestsWindowState {
 
 extension RequestsWindowState.Filter: CustomStringConvertible {
   var description: String {
-    "RequestsWindowState.Filter(\(json ?? "")"
+    "RequestsWindowState.Filter(\((try? JSON.encode(self)) ?? "")"
   }
 }
 
 extension RequestsWindowState.Filter: Equatable {
   static func == (lhs: RequestsWindowState.Filter, rhs: RequestsWindowState.Filter) -> Bool {
-    lhs.json == rhs.json
+    (try? JSON.encode(lhs)) == (try? JSON.encode(rhs))
   }
 }
 

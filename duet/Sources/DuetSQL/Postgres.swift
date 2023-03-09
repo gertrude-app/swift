@@ -19,7 +19,7 @@ public extension PostgresEnum where Self: CaseIterable {
 public protocol PostgresJsonable: Codable {}
 
 public extension PostgresJsonable {
-  var toPostgresJson: String { json! }
+  var toPostgresJson: String { try! JSON.encode(self) }
   init(fromPostgresJson json: String) throws {
     self = try JSONDecoder().decode(Self.self, from: json.data(using: .utf8)!)
   }

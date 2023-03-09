@@ -31,7 +31,7 @@ enum FilterStorage {
 
   static func saveLoggingConfig(_ config: Log.Config, for sink: LogSink) {
     let key = sink == .console ? Key.consoleLoggingConfig : Key.honeycombLoggingConfig
-    guard let json = config.json else {
+    guard let json = try? JSON.encode(config) else {
       log(.encodeError(Log.Config.self))
       return
     }
@@ -40,7 +40,7 @@ enum FilterStorage {
   }
 
   static func saveIdManifest(_ idManifest: AppIdManifest) {
-    guard let json = idManifest.json else {
+    guard let json = try? JSON.encode(idManifest) else {
       log(.encodeError(AppIdManifest.self))
       return
     }
@@ -73,7 +73,7 @@ enum FilterStorage {
       return
     }
 
-    let strings = keys.compactMap(\.json)
+    let strings = keys.compactMap { try? JSON.encode($0) }
     guard strings.count == keys.count else {
       log(.encodeCountError(FilterKey.self, expected: keys.count, actual: strings.count))
       return

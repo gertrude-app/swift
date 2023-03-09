@@ -20,6 +20,6 @@ class MonitoringState: Equatable, Codable {
   }
 
   static func == (lhs: MonitoringState, rhs: MonitoringState) -> Bool {
-    lhs.json == rhs.json
+    (try? JSON.encode(lhs)) == (try? JSON.encode(rhs))
   }
 }

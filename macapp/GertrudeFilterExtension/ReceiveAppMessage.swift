@@ -121,7 +121,9 @@ import XCore
   }
 
   func transmitRecentFilterDecisions(_ handler: @escaping ([Data]) -> Void) {
-    let data = FilterDataProvider.decisions.flushRecentFirst().compactMap(\.jsonData)
+    let data = FilterDataProvider.decisions
+      .flushRecentFirst()
+      .compactMap { try? JSON.data($0) }
     if data.count > 0 {
       handler(data)
     }
