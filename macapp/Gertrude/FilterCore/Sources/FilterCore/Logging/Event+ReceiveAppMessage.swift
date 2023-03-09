@@ -1,6 +1,7 @@
 import Foundation
 import Shared
 import SharedCore
+import XCore
 
 public enum ReceiveAppMessageEvent: LogMessagable {
   case setFilterSuspension(FilterSuspension, uid_t)
@@ -32,15 +33,15 @@ public enum ReceiveAppMessageEvent: LogMessagable {
       ])
     case .loggingCommand(.setPersistentConsoleConfig(let config)):
       return .notice("logging command: set persistent console config", [
-        "json.raw": .init(config.json),
+        "json.raw": .init(try? JSON.encode(config)),
       ])
     case .loggingCommand(.setPersistentHoneycombConfig(let config)):
       return .notice("logging command: set persistent honeycomb config", [
-        "json.raw": .init(config.json),
+        "json.raw": .init(try? JSON.encode(config)),
       ])
 
     case .setFilterSuspension(let suspension, let userId):
-      return .notice("set filter suspension", .userId(userId) + .json(suspension.json))
+      return .notice("set filter suspension", .userId(userId) + .json(try? JSON.encode(suspension)))
 
     case .cancelSuspension(let userId):
       return .notice("cancel filter suspension", .userId(userId))

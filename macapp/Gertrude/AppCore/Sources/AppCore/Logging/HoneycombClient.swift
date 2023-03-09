@@ -2,6 +2,7 @@ import Combine
 import Foundation
 import Shared
 import SharedCore
+import XCore
 
 extension Honeycomb {
   struct Client {
@@ -53,7 +54,7 @@ private func _send(
     return event
   }
 
-  guard let jsonData = events.jsonData else {
+  guard let jsonData = try? JSON.data(events) else {
     return .false
   }
 

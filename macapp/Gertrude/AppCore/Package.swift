@@ -13,6 +13,7 @@ let package = Package(
     .package(url: "https://github.com/jaredh159/Sparkle", exact: "2.2.556"),
     .package(url: "https://github.com/sindresorhus/LaunchAtLogin", from: "4.2.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.5.3"),
+    .package(name: "XKit", path: "../../../x-kit"),
     .package(name: "Shared", path: "../../../shared"),
     .package(name: "MacAppRoute", path: "../../../pairql-macapp"),
     .package(name: "SharedCore", path: "../SharedCore"),
@@ -29,6 +30,7 @@ let package = Package(
         "MacAppRoute",
         "Websocket",
         "LaunchAtLogin",
+        .product(name: "XCore", package: "XKit"),
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
       ]
     ),

@@ -77,12 +77,12 @@ class FilterPlugin: StorePlugin {
       frequency: data.screenshotsFrequency
     ))
 
-    guard let manifestData = data.idManifest.jsonData else {
+    guard let manifestData = try? JSON.data(data.idManifest) else {
       log(.encodeError(AppIdManifest.self))
       return
     }
 
-    let keysData = data.keys.compactMap(\.jsonData)
+    let keysData = data.keys.compactMap { try? JSON.data($0) }
     guard keysData.count == data.keys.count else {
       log(.encodeCountError(FilterKey.self, expected: data.keys.count, actual: keysData.count))
       return

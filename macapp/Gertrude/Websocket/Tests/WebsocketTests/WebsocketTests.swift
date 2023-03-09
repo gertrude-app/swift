@@ -1,6 +1,7 @@
 import CombineSchedulers
 import Shared
 import Starscream
+import XCore
 import XCTest
 
 @testable import Websocket
@@ -119,13 +120,14 @@ final class WebsocketTests: XCTestCase {
   }
 
   // test that it passes messages on
-  func testPassesMessagesOnToHandler() {
+  func testPassesMessagesOnToHandler() throws {
     send(.connected([:]))
 
     let message = IncomingMessage.RequestCurrentFilterState()
-    send(.text(message.json!))
+    let json = try JSON.encode(message)
+    send(.text(json))
 
-    XCTAssertEqual(receivedMessages, [message.json])
+    XCTAssertEqual(receivedMessages, [json])
   }
 
   func testReceivingCancelledReschedulesConnectionIn30Seconds() {

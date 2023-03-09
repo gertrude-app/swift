@@ -1,6 +1,7 @@
 import Foundation
 import Shared
 import SharedCore
+import XCore
 
 struct SendToFilter {
   static var filter: ReceiveAppMessageInterface? {
@@ -23,7 +24,7 @@ struct SendToFilter {
   }
 
   static func suspension(_ suspension: FilterSuspension) {
-    if let data = suspension.jsonData {
+    if let data = try? JSON.data(suspension) {
       filter?.receiveSuspension(data, for: getuid())
     }
   }
@@ -53,7 +54,7 @@ struct SendToFilter {
   }
 
   static func loggingCommand(_ command: AppToFilterLoggingCommand) {
-    if let data = command.jsonData {
+    if let data = try? JSON.data(command) {
       filter?.receiveLoggingCommand(data)
     }
   }

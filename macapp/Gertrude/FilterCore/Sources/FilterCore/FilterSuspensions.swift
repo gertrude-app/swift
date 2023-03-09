@@ -32,6 +32,6 @@ public extension FilterSuspensions {
     guard map.count > 0 else {
       return "{}"
     }
-    return map.json ?? "{}"
+    return (try? JSON.encode(map)) ?? "{}"
   }
 }

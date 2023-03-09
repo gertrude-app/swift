@@ -1,4 +1,11 @@
+import Foundation
+
 public enum JSON {
+  enum Error: Swift.Error {
+    case dataToStringConversionError
+    case stringToDataConversionError
+  }
+
   public static func decode<T: Decodable>(_ json: String, as type: T.Type) throws -> T {
     let decoder = JSONDecoder()
     guard let data = json.data(using: .utf8) else {
@@ -20,23 +27,8 @@ public enum JSON {
     }
     return json
   }
-}
 
-// extensions
-
-public extension Encodable {
-  var json: String? {
-    try? JSON.encode(self)
-  }
-
-  var jsonData: Data? {
-    try? JSONEncoder().encode(self)
-  }
-}
-
-extension JSON {
-  enum Error: Swift.Error {
-    case dataToStringConversionError
-    case stringToDataConversionError
+  public static func data<T: Encodable>(_ value: T) throws -> Data {
+    try JSONEncoder().encode(value)
   }
 }
