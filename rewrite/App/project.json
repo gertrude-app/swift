@@ -1,0 +1,13 @@
+{
+  "root": "rewrite/App",
+  "projectType": "library",
+  "implicitDependencies": ["shared", "x-kit"],
+  "targets": {
+    "build": {
+      "command": "cd rewrite/App && swift build"
+    },
+    "test": {
+      "command": "cd rewrite/App && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

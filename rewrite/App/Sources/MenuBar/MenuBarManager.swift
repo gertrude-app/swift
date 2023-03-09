@@ -3,66 +3,13 @@ import Combine
 import ComposableArchitecture
 import SwiftUI
 import WebKit
-import XCore
-
-class ViewController: NSViewController, WKUIDelegate {
-  var webView: WKWebView!
-  var send: (MenuBar.Action) -> Void = { _ in }
-
-  func updateState(_ state: MenuBar.State.Screen) {
-    if let json = try? JSON.encode(state) {
-      webView.evaluateJavaScript("window.updateAppState(\(json))")
-    }
-  }
-
-  func loadWebView() {
-    let webConfiguration = WKWebViewConfiguration()
-    webConfiguration.setValue(true, forKey: "allowUniversalAccessFromFileURLs")
-    webView = WKWebView(frame: .zero, configuration: webConfiguration)
-    webView.uiDelegate = self
-    webView.setValue(false, forKey: "drawsBackground")
-
-    let contentController = webView.configuration.userContentController
-    contentController.add(self, name: "appView")
-
-    #if DEBUG
-      webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
-    #endif
-
-    let filePathURL = URL(
-      fileURLWithPath: "Contents/Resources/WebViews/MenuBar/index.html",
-      relativeTo: Bundle.main.bundleURL
-    )
-
-    let fileDirectoryURL = filePathURL.deletingLastPathComponent()
-    webView.loadFileURL(filePathURL, allowingReadAccessTo: fileDirectoryURL)
-    view = webView
-  }
-}
-
-extension ViewController: WKScriptMessageHandler {
-  func userContentController(
-    _ userContentController: WKUserContentController,
-    didReceive message: WKScriptMessage
-  ) {
-    guard let msgString = message.body as? String else {
-      return
-    }
-
-    // can i decode here instead?
-    guard let action = MenuBar.Action(rawValue: msgString) else {
-      return
-    }
-    send(action)
-  }
-}
 
 @MainActor public class MenuBarManager {
   let store: StoreOf<MenuBar>
   var statusItem: NSStatusItem
   var popover: NSPopover
   var cancellables = Set<AnyCancellable>()
-  var vc: ViewController!
+  var vc: WebViewController<MenuBar.State.Screen, MenuBar.Action>
 
   @ObservedObject var viewStore: ViewStore<MenuBar.State.Screen, MenuBar.Action>
 
@@ -74,33 +21,28 @@ extension ViewController: WKScriptMessageHandler {
     popover.animates = false
     popover.behavior = .applicationDefined
 
+    vc = WebViewController<MenuBar.State.Screen, MenuBar.Action>()
+    vc.loadWebView(screen: "MenuBar")
+    popover.contentViewController = vc
+    popover.contentSize = NSSize(width: 400, height: 300)
+
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     statusItem.button?.image = NSImage(named: "MenuBarIcon")
     statusItem.button?.image?.isTemplate = true // auto-coloring/inverting of image
     statusItem.button?.action = #selector(iconClicked(_:))
     statusItem.button?.target = self
 
-    // let view = MenuBarView(store: self.store)
-    // popover.contentViewController = NSHostingController(rootView: view)
-    let vc = ViewController()
-    vc.send = { [weak self] action in self?.viewStore.send(action) }
-    vc.loadWebView()
-    self.vc = vc
-    popover.contentViewController = vc
-    sizePopover()
+    vc.send = { [weak self] action in
+      self?.viewStore.send(action)
+    }
 
-    // resize popover when store gets a change
+    // send new state when store gets a change
     viewStore.objectWillChange.sink { _ in
       DispatchQueue.main.async { [weak self] in
         guard let self = self else { return }
-        self.sizePopover()
         self.vc.updateState(self.viewStore.state)
       }
     }.store(in: &cancellables)
-  }
-
-  func sizePopover() {
-    popover.contentSize = NSSize(width: 400, height: 300)
   }
 
   @objc func iconClicked(_ sender: Any?) {
@@ -110,7 +52,6 @@ extension ViewController: WKScriptMessageHandler {
       return
     }
     guard let button = statusItem.button else { return }
-    sizePopover()
     popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.maxY)
     popover.contentViewController?.view.window?.becomeKey()
   }
