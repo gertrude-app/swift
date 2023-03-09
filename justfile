@@ -10,13 +10,13 @@ build-macapp pkg="App":
   @cd rewrite/{{pkg}} && swift build
 
 codegen-swift:
-  @cd cli && .build/debug/GertieCLI codegen swift
+  @cd cli && .build/debug/Cli codegen swift
 
 codegen-typescript:
-  @cd cli && .build/debug/GertieCLI codegen typescript
+  @cd cli && .build/debug/Cli codegen typescript
 
 codegen:
-  @cd cli && .build/debug/GertieCLI codegen
+  @cd cli && .build/debug/Cli codegen
 
 xcode:
   @open rewrite/Xcode/Gertrude.xcodeproj

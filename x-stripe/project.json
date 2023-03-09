@@ -1,0 +1,12 @@
+{
+  "root": "x-stripe",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "command": "cd x-stripe && swift build"
+    },
+    "test": {
+      "command": "true"
+    }
+  }
+}

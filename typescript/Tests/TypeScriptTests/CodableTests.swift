@@ -46,24 +46,36 @@ final class CodableTests: XCTestCase {
     expect(bazType.codableConformance).toEqual(
       """
       extension Baz: Codable {
-        private struct CaseBar: Codable {
+        private struct _NamedCase: Codable {
+          var `case`: String
+          static func extract(from decoder: Decoder) throws -> String {
+            let container = try decoder.singleValueContainer()
+            return try container.decode(_NamedCase.self).case
+          }
+        }
+
+        private struct _TypeScriptDecodeError: Error {
+          var message: String
+        }
+
+        private struct _CaseBar: Codable {
           var `case` = "bar"
           var bar: String
         }
 
-        private struct CaseBaz: Codable {
+        private struct _CaseBaz: Codable {
           var `case` = "baz"
           var one: String
           var two: Int
         }
 
-        private struct CaseNested: Codable {
+        private struct _CaseNested: Codable {
           var `case` = "nested"
           var foo: String
           var bar: Int
         }
 
-        private struct CaseQux: Codable {
+        private struct _CaseQux: Codable {
           var `case` = "qux"
           var q: Bool?
         }
@@ -71,38 +83,38 @@ final class CodableTests: XCTestCase {
         public func encode(to encoder: Encoder) throws {
           switch self {
           case .bar(let bar):
-            try CaseBar(bar: bar).encode(to: encoder)
+            try _CaseBar(bar: bar).encode(to: encoder)
           case .baz(let one, let two):
-            try CaseBaz(one: one, two: two).encode(to: encoder)
+            try _CaseBaz(one: one, two: two).encode(to: encoder)
           case .nested(let unflat):
-            try CaseNested(foo: unflat.foo, bar: unflat.bar).encode(to: encoder)
+            try _CaseNested(foo: unflat.foo, bar: unflat.bar).encode(to: encoder)
           case .qux(let q):
-            try CaseQux(q: q).encode(to: encoder)
+            try _CaseQux(q: q).encode(to: encoder)
           case .foo:
-            try NamedCase("foo").encode(to: encoder)
+            try _NamedCase(case: "foo").encode(to: encoder)
           }
         }
 
         public init(from decoder: Decoder) throws {
-          let caseName = try NamedCase.name(from: decoder)
+          let caseName = try _NamedCase.extract(from: decoder)
           let container = try decoder.singleValueContainer()
           switch caseName {
           case "bar":
-            let value = try container.decode(CaseBar.self)
+            let value = try container.decode(_CaseBar.self)
             self = .bar(value.bar)
           case "baz":
-            let value = try container.decode(CaseBaz.self)
+            let value = try container.decode(_CaseBaz.self)
             self = .baz(one: value.one, two: value.two)
           case "nested":
-            let value = try container.decode(CaseNested.self)
+            let value = try container.decode(_CaseNested.self)
             self = .nested(.init(foo: value.foo, bar: value.bar))
           case "qux":
-            let value = try container.decode(CaseQux.self)
+            let value = try container.decode(_CaseQux.self)
             self = .qux(q: value.q)
           case "foo":
             self = .foo
           default:
-            throw TypeScriptError(message: "Unexpected case name: `\\(caseName)`")
+            throw _TypeScriptDecodeError(message: "Unexpected case name: `\\(caseName)`")
           }
         }
       }
@@ -181,63 +193,75 @@ final class CodableTests: XCTestCase {
 
 // this was code-gen'd
 extension Baz: Codable {
-  private struct CaseBar: Codable {
+  private struct _NamedCase: Codable {
+    var `case`: String
+    static func extract(from decoder: Decoder) throws -> String {
+      let container = try decoder.singleValueContainer()
+      return try container.decode(_NamedCase.self).case
+    }
+  }
+
+  private struct _TypeScriptDecodeError: Error {
+    var message: String
+  }
+
+  private struct _CaseBar: Codable {
     var `case` = "bar"
     var bar: String
   }
 
-  private struct CaseBaz: Codable {
+  private struct _CaseBaz: Codable {
     var `case` = "baz"
     var one: String
     var two: Int
   }
 
-  private struct CaseNested: Codable {
+  private struct _CaseNested: Codable {
     var `case` = "nested"
     var foo: String
     var bar: Int
   }
 
-  private struct CaseQux: Codable {
+  private struct _CaseQux: Codable {
     var `case` = "qux"
     var q: Bool?
   }
 
-  func encode(to encoder: Encoder) throws {
+  public func encode(to encoder: Encoder) throws {
     switch self {
-    case .foo:
-      try NamedCase("foo").encode(to: encoder)
     case .bar(let bar):
-      try CaseBar(bar: bar).encode(to: encoder)
+      try _CaseBar(bar: bar).encode(to: encoder)
     case .baz(let one, let two):
-      try CaseBaz(one: one, two: two).encode(to: encoder)
-    case .nested(let foo):
-      try CaseNested(foo: foo.foo, bar: foo.bar).encode(to: encoder)
+      try _CaseBaz(one: one, two: two).encode(to: encoder)
+    case .nested(let unflat):
+      try _CaseNested(foo: unflat.foo, bar: unflat.bar).encode(to: encoder)
     case .qux(let q):
-      try CaseQux(q: q).encode(to: encoder)
+      try _CaseQux(q: q).encode(to: encoder)
+    case .foo:
+      try _NamedCase(case: "foo").encode(to: encoder)
     }
   }
 
-  init(from decoder: Decoder) throws {
-    let caseName = try NamedCase.name(from: decoder)
+  public init(from decoder: Decoder) throws {
+    let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {
-    case "foo":
-      self = .foo
     case "bar":
-      let value = try container.decode(CaseBar.self)
+      let value = try container.decode(_CaseBar.self)
       self = .bar(value.bar)
     case "baz":
-      let value = try container.decode(CaseBaz.self)
+      let value = try container.decode(_CaseBaz.self)
       self = .baz(one: value.one, two: value.two)
     case "nested":
-      let value = try container.decode(CaseNested.self)
+      let value = try container.decode(_CaseNested.self)
       self = .nested(.init(foo: value.foo, bar: value.bar))
     case "qux":
-      let value = try container.decode(CaseQux.self)
+      let value = try container.decode(_CaseQux.self)
       self = .qux(q: value.q)
+    case "foo":
+      self = .foo
     default:
-      throw TypeScriptError(message: "Unexpected case name: `\\(caseName)`")
+      throw _TypeScriptDecodeError(message: "Unexpected case name: `\\(caseName)`")
     }
   }
 }
