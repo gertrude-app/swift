@@ -3,7 +3,6 @@ import AppKit
 import Cocoa
 import ComposableArchitecture
 import NetworkExtension
-import SwiftUI
 import SystemExtensions
 
 class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
@@ -154,22 +153,4 @@ func extensionBundle() -> Bundle {
   }
 
   return extensionBundle
-}
-
-struct ContentView: View {
-  var onStart: () -> Void
-  var body: some View {
-    VStack {
-      Button("Start filter") {
-        onStart()
-      }
-    }
-    .padding()
-  }
-}
-
-struct ContentView_Previews: PreviewProvider {
-  static var previews: some View {
-    ContentView(onStart: {})
-  }
 }

@@ -4,7 +4,6 @@ import MenuBar
 public struct AppReducer: Reducer {
   public struct State: Equatable {
     public var menuBar = MenuBar.State()
-
     public init() {}
   }
 
