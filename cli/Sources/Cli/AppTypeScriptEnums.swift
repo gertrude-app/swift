@@ -1,11 +1,12 @@
+import App
 import Foundation
-import MenuBar
 
 struct AppTypeScriptEnums: AggregateCodeGenerator {
   var generators: [CodeGenerator] = [
-    TypeScriptEnum(module: "MenuBar", types: [
-      MenuBar.State.Connected.FilterState.self,
-      MenuBar.State.Screen.self,
+    TypeScriptEnum(name: "MenuBar", types: [
+      MenuBar.Action.self,
+      MenuBar.State.FilterState.self,
+      Connection.State.self,
     ]),
   ]
 

@@ -1,6 +1,5 @@
 import ArgumentParser
 import Foundation
-import MenuBar
 import TypeScript
 
 struct Codegen: AsyncParsableCommand {

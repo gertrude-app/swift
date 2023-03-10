@@ -2,7 +2,7 @@ import ComposableArchitecture
 
 public struct AppDelegateReducer: Reducer {
   public struct State: Equatable {}
-  public enum Action: Equatable {
+  public enum Action: Equatable, Sendable {
     case didFinishLaunching
   }
 
