@@ -14,7 +14,7 @@ let package = Package(
     .executableTarget(name: "Cli", dependencies: [
       .product(name: "ArgumentParser", package: "swift-argument-parser"),
       .product(name: "TypeScript", package: "typescript"),
-      .product(name: "MenuBar", package: "App"),
+      .product(name: "App", package: "App"),
     ]),
   ]
 )

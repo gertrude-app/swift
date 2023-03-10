@@ -1,13 +1,13 @@
+import App
 import Foundation
-import MenuBar
 
 struct AppWebViews: AggregateCodeGenerator {
   var generators: [CodeGenerator] = [
     AppviewStore(
       at: "MenuBar/menubar-store.ts",
       generating: [
-        .init(MenuBar.State.Connected.FilterState.self),
-        .init(MenuBar.State.Screen.self, as: "AppState"),
+        .init(MenuBar.State.FilterState.self),
+        .init(MenuBar.State.self, as: "AppState"),
         .init(MenuBar.Action.self, as: "AppEvent"),
       ],
       aliasing: ["filterState": "FilterState"]

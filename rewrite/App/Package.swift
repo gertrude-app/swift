@@ -6,36 +6,25 @@ let package = Package(
   platforms: [.macOS(.v10_15)],
   products: [
     .library(name: "App", targets: ["App"]),
-    .library(name: "MenuBar", targets: ["MenuBar"]),
   ],
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
       branch: "prerelease/1.0"
     ),
-    .package(path: "../../shared"),
     .package(path: "../../x-kit"),
   ],
   targets: [
     .checkedTarget(
       name: "App",
-      dependencies: [.tca, "MenuBar"]
-    ),
-    .checkedTarget(
-      name: "MenuBar",
       dependencies: [
         .tca,
-        .product(name: "Shared", package: "Shared"),
         .product(name: "XCore", package: "x-kit"),
       ]
     ),
     .testTarget(
       name: "AppTests",
       dependencies: ["App"]
-    ),
-    .testTarget(
-      name: "MenuBarTests",
-      dependencies: ["MenuBar"]
     ),
   ]
 )

@@ -2,7 +2,7 @@ import Foundation
 import TypeScript
 
 struct TypeScriptEnum {
-  let module: String
+  let name: String
   let types: [Any.Type]
 }
 
@@ -10,7 +10,7 @@ struct TypeScriptEnum {
 
 extension TypeScriptEnum: CodeGenerator {
   var path: String {
-    "/Users/jared/gertie/swift/rewrite/App/Sources/\(module)/\(module)+Codable.swift"
+    "/Users/jared/gertie/swift/rewrite/App/Sources/App/Generated/\(name)+Codable.swift"
   }
 
   func write() throws {

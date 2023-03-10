@@ -1,5 +1,4 @@
 import ComposableArchitecture
-import MenuBar
 
 @MainActor public struct App {
   var menuBarManager: MenuBarManager
@@ -14,7 +13,7 @@ import MenuBar
 
   public init() {
     menuBarManager = MenuBarManager(store: store.scope(
-      state: \.menuBar,
+      state: { $0 },
       action: AppReducer.Action.menuBar
     ))
   }
