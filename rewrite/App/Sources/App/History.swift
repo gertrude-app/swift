@@ -13,6 +13,7 @@ public struct History: Reducer {
 
     public enum Action: Equatable, Sendable {
       case connectClicked
+      case retryConnectClicked
       case connectSubmitted(code: Int)
       case connectResponse(TaskResult<User>)
       case welcomeDismissed
@@ -34,10 +35,13 @@ public struct History: Reducer {
         state = .established(welcomeDismissed: false)
         return .none
       case (.connecting, .connectResponse(.failure(let error))):
-        state = .connectFailed(String(describing: error))
+        state = .connectFailed(error.localizedDescription)
         return .none
       case (.established, .welcomeDismissed):
         state = .established(welcomeDismissed: true)
+        return .none
+      case (.connectFailed, .retryConnectClicked):
+        state = .enteringConnectionCode
         return .none
       default:
         return .none
