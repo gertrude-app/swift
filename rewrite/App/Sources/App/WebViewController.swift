@@ -1,8 +1,9 @@
 import WebKit
 import XCore
 
-class WebViewController<State: Encodable, Action: Decodable>:
-  NSViewController, WKUIDelegate, WKScriptMessageHandler {
+class WebViewController<State, Action>:
+  NSViewController, WKUIDelegate, WKScriptMessageHandler
+  where Action: Sendable, Action: Decodable, State: Encodable {
   var webView: WKWebView!
   var send: (Action) -> Void = { _ in }
 
@@ -36,7 +37,7 @@ class WebViewController<State: Encodable, Action: Decodable>:
     view = webView
   }
 
-  func userContentController(
+  nonisolated func userContentController(
     _ userContentController: WKUserContentController,
     didReceive message: WKScriptMessage
   ) {
@@ -48,6 +49,13 @@ class WebViewController<State: Encodable, Action: Decodable>:
       return
     }
 
+    Task { [weak self] in
+      await self?.send(action: action)
+    }
+  }
+
+  // helper fn to keep compiler happy re: concurrency
+  @MainActor func send(action: Action) {
     send(action)
   }
 }
