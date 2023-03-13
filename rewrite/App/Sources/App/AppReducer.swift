@@ -3,13 +3,13 @@ import Foundation
 
 // TODO: moveme
 public struct User: Equatable, Codable, Sendable {
-  // public var token: UUID
+  public var token: UUID
   public var name: String
   public var keyloggingEnabled: Bool
   public var screenshotsEnabled: Bool
   public var screenshotFrequency: Int
   public var screenshotSize: Int
-  // public var connectedAt: Date
+  public var connectedAt: Date
 }
 
 public enum FilterState: Equatable {
@@ -55,10 +55,15 @@ public struct AppReducer: Reducer {
   public var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
+      case .history(.userConnection(.connectResponse(.success(let user)))):
+        state.user = user
+        return .none
       case .menuBar(.connectClicked):
-        return .send(.history(.userConnection(.connectClicked)))
+        return .run { await $0(.history(.userConnection(.connectClicked))) }
       case .menuBar(.connectSubmit(let code)):
-        return .send(.history(.userConnection(.connectSubmitted(code: code))))
+        return .run { await $0(.history(.userConnection(.connectSubmitted(code: code)))) }
+      case .menuBar(.welcomeAdminClicked):
+        return .run { await $0(.history(.userConnection(.welcomeDismissed))) }
       default:
         return .none
       }

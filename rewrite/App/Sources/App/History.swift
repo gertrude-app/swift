@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Dependencies
 
 public struct History: Reducer {
   public struct UserConnection: Reducer {
@@ -10,27 +11,30 @@ public struct History: Reducer {
       case established(welcomeDismissed: Bool)
     }
 
-    public enum Action: Equatable, Decodable, Sendable {
+    public enum Action: Equatable, Sendable {
       case connectClicked
       case connectSubmitted(code: Int)
-      case connectFailed(String)
-      case connectSucceeded
+      case connectResponse(TaskResult<User>)
       case welcomeDismissed
     }
+
+    @Dependency(\.apiClient) var apiClient
 
     public func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch (state, action) {
       case (.notConnected, .connectClicked):
         state = .enteringConnectionCode
         return .none
-      case (.enteringConnectionCode, .connectSubmitted):
+      case (.enteringConnectionCode, .connectSubmitted(let code)):
         state = .connecting
-        return .none
-      case (.connecting, .connectFailed(let error)):
-        state = .connectFailed(error)
-        return .none
-      case (.connecting, .connectSucceeded):
+        return .task { [connectUser = apiClient.connectUser] in
+          await .connectResponse(TaskResult { try await connectUser(code) })
+        }
+      case (.connecting, .connectResponse(.success)):
         state = .established(welcomeDismissed: false)
+        return .none
+      case (.connecting, .connectResponse(.failure(let error))):
+        state = .connectFailed(String(describing: error))
         return .none
       case (.established, .welcomeDismissed):
         state = .established(welcomeDismissed: true)
@@ -45,7 +49,7 @@ public struct History: Reducer {
     public var userConnection = UserConnection.State.notConnected
   }
 
-  public enum Action: Equatable, Decodable, Sendable {
+  public enum Action: Equatable, Sendable {
     case userConnection(UserConnection.Action)
   }
 
