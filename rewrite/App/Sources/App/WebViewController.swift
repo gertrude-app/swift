@@ -41,11 +41,9 @@ class WebViewController<State: Encodable, Action: Decodable>:
     didReceive message: WKScriptMessage
   ) {
     guard let json = message.body as? String else {
-      print("hoasers")
       return
     }
 
-    print(json)
     guard let action = try? JSON.decode(json, as: Action.self) else {
       return
     }

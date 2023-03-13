@@ -38,14 +38,14 @@ final class CodableTests: XCTestCase {
   func testFullyQualifiedTypeNames() throws {
     let nested = try EnumType(from: Rofl.Nested.self)
     let firstLine = nested.codableConformance.split(separator: "\n").first!
-    expect(firstLine).toEqual("extension Rofl.Nested: Codable {")
+    expect(firstLine).toEqual("extension Rofl.Nested {")
     expect(fullyQualifiedTypeName(Rofl.Nested.self)).toEqual("Rofl.Nested")
   }
 
   func testCodableConformanceCodegen() {
     expect(bazType.codableConformance).toEqual(
       """
-      extension Baz: Codable {
+      extension Baz {
         private struct _NamedCase: Codable {
           var `case`: String
           static func extract(from decoder: Decoder) throws -> String {

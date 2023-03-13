@@ -1,6 +1,6 @@
 // auto-generated, do not edit
 
-extension MenuBar.Action: Codable {
+extension MenuBar.Action {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {
@@ -36,6 +36,10 @@ extension MenuBar.Action: Codable {
       try _NamedCase(case: "viewNetworkTrafficClicked").encode(to: encoder)
     case .connectClicked:
       try _NamedCase(case: "connectClicked").encode(to: encoder)
+    case .retryConnectClicked:
+      try _NamedCase(case: "retryConnectClicked").encode(to: encoder)
+    case .welcomeAdminClicked:
+      try _NamedCase(case: "welcomeAdminClicked").encode(to: encoder)
     }
   }
 
@@ -60,13 +64,17 @@ extension MenuBar.Action: Codable {
       self = .viewNetworkTrafficClicked
     case "connectClicked":
       self = .connectClicked
+    case "retryConnectClicked":
+      self = .retryConnectClicked
+    case "welcomeAdminClicked":
+      self = .welcomeAdminClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }
   }
 }
 
-extension MenuBar.State.FilterState: Codable {
+extension MenuBar.State.Connected.FilterState {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {
@@ -112,7 +120,7 @@ extension MenuBar.State.FilterState: Codable {
   }
 }
 
-extension Connection.State: Codable {
+extension MenuBar.State {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {
@@ -125,31 +133,34 @@ extension Connection.State: Codable {
     var message: String
   }
 
-  private struct _CaseConnectfailed: Codable {
-    var `case` = "connectFailed"
-    var connectFailed: String
+  private struct _CaseConnectionfailed: Codable {
+    var `case` = "connectionFailed"
+    var error: String
+  }
+
+  private struct _CaseConnectionsucceded: Codable {
+    var `case` = "connectionSucceded"
+    var userName: String
   }
 
   private struct _CaseConnected: Codable {
     var `case` = "connected"
-    var name: String
-    var keyloggingEnabled: Bool
-    var screenshotsEnabled: Bool
-    var screenshotFrequency: Int
-    var screenshotSize: Int
+    var filterState: MenuBar.State.Connected.FilterState
+    var recordingScreen: Bool
+    var recordingKeystrokes: Bool
   }
 
   public func encode(to encoder: Encoder) throws {
     switch self {
-    case .connectFailed(let connectFailed):
-      try _CaseConnectfailed(connectFailed: connectFailed).encode(to: encoder)
+    case .connectionFailed(let error):
+      try _CaseConnectionfailed(error: error).encode(to: encoder)
+    case .connectionSucceded(let userName):
+      try _CaseConnectionsucceded(userName: userName).encode(to: encoder)
     case .connected(let unflat):
       try _CaseConnected(
-        name: unflat.name,
-        keyloggingEnabled: unflat.keyloggingEnabled,
-        screenshotsEnabled: unflat.screenshotsEnabled,
-        screenshotFrequency: unflat.screenshotFrequency,
-        screenshotSize: unflat.screenshotSize
+        filterState: unflat.filterState,
+        recordingScreen: unflat.recordingScreen,
+        recordingKeystrokes: unflat.recordingKeystrokes
       ).encode(to: encoder)
     case .notConnected:
       try _NamedCase(case: "notConnected").encode(to: encoder)
@@ -164,17 +175,18 @@ extension Connection.State: Codable {
     let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {
-    case "connectFailed":
-      let value = try container.decode(_CaseConnectfailed.self)
-      self = .connectFailed(value.connectFailed)
+    case "connectionFailed":
+      let value = try container.decode(_CaseConnectionfailed.self)
+      self = .connectionFailed(error: value.error)
+    case "connectionSucceded":
+      let value = try container.decode(_CaseConnectionsucceded.self)
+      self = .connectionSucceded(userName: value.userName)
     case "connected":
       let value = try container.decode(_CaseConnected.self)
       self = .connected(.init(
-        name: value.name,
-        keyloggingEnabled: value.keyloggingEnabled,
-        screenshotsEnabled: value.screenshotsEnabled,
-        screenshotFrequency: value.screenshotFrequency,
-        screenshotSize: value.screenshotSize
+        filterState: value.filterState,
+        recordingScreen: value.recordingScreen,
+        recordingKeystrokes: value.recordingKeystrokes
       ))
     case "notConnected":
       self = .notConnected
