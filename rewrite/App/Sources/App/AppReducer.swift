@@ -1,6 +1,17 @@
 import ComposableArchitecture
 import Foundation
 
+// TODO: moveme
+public struct User: Equatable, Codable, Sendable {
+  // public var token: UUID
+  public var name: String
+  public var keyloggingEnabled: Bool
+  public var screenshotsEnabled: Bool
+  public var screenshotFrequency: Int
+  public var screenshotSize: Int
+  // public var connectedAt: Date
+}
+
 public enum FilterState: Equatable {
   case unknown
   case notInstalled
@@ -30,13 +41,14 @@ public struct AppReducer: Reducer {
     public var app = AppState()
     public var device = DeviceState()
     public var filter = FilterState.unknown
-    public var connection = Connection.State.notConnected
+    public var history = History.State()
+    public var user: User?
     public init() {}
   }
 
   public enum Action: Equatable, Sendable {
     case delegate(AppDelegateReducer.Action)
-    case connection(Connection.Action)
+    case history(History.Action)
     case menuBar(MenuBar.Action)
   }
 
@@ -44,15 +56,15 @@ public struct AppReducer: Reducer {
     Reduce { state, action in
       switch action {
       case .menuBar(.connectClicked):
-        return .send(.connection(.connectClicked))
+        return .send(.history(.userConnection(.connectClicked)))
       case .menuBar(.connectSubmit(let code)):
-        return .send(.connection(.tryConnect(code: code)))
+        return .send(.history(.userConnection(.connectSubmitted(code: code))))
       default:
         return .none
       }
     }
-    Scope(state: \.connection, action: /Action.connection) {
-      Connection()
+    Scope(state: \.history, action: /Action.history) {
+      History()
     }
   }
 

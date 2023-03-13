@@ -6,7 +6,7 @@ struct AppWebViews: AggregateCodeGenerator {
     AppviewStore(
       at: "MenuBar/menubar-store.ts",
       generating: [
-        .init(MenuBar.State.FilterState.self),
+        .init(MenuBar.State.Connected.FilterState.self),
         .init(MenuBar.State.self, as: "AppState"),
         .init(MenuBar.Action.self, as: "AppEvent"),
       ],

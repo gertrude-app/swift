@@ -57,7 +57,7 @@ public extension EnumType {
 
   var codableConformance: String {
     """
-    extension \(name): Codable {
+    extension \(name) {
       private struct _NamedCase: Codable {
         var `case`: String
         static func extract(from decoder: Decoder) throws -> String {

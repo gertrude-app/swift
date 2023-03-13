@@ -1,6 +1,6 @@
 
 public extension FilterState {
-  var menuBar: MenuBar.State.FilterState {
+  var menuBar: MenuBar.State.Connected.FilterState {
     switch self {
     case .unknown, .notInstalled, .off:
       return .off
@@ -15,7 +15,28 @@ public extension FilterState {
 public extension AppReducer.State {
   var menuBar: MenuBar.State {
     get {
-      MenuBar.State(connection: connection, filterState: filter.menuBar)
+      switch history.userConnection {
+      case .connectFailed(let error):
+        return .connectionFailed(error: error)
+      case .connecting:
+        return .connecting
+      case .enteringConnectionCode:
+        return .enteringConnectionCode
+      case .established(let welcomeDismissed):
+        guard let user else {
+          return .connectionFailed(error: "Unexpected error, please reconnect") // todo
+        }
+        guard welcomeDismissed else {
+          return .connectionSucceded(userName: user.name)
+        }
+        return .connected(.init(
+          filterState: filter.menuBar,
+          recordingScreen: user.screenshotsEnabled,
+          recordingKeystrokes: user.keyloggingEnabled
+        ))
+      case .notConnected:
+        return .notConnected
+      }
     }
     set {}
   }

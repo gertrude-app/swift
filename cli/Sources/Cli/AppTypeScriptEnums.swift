@@ -5,8 +5,8 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
   var generators: [CodeGenerator] = [
     TypeScriptEnum(name: "MenuBar", types: [
       MenuBar.Action.self,
-      MenuBar.State.FilterState.self,
-      Connection.State.self,
+      MenuBar.State.Connected.FilterState.self,
+      MenuBar.State.self,
     ]),
   ]
 
