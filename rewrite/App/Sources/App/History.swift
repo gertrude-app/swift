@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Dependencies
+import Models
 
 struct History: Reducer {
   struct UserConnection: Reducer {
@@ -19,7 +20,7 @@ struct History: Reducer {
       case welcomeDismissed
     }
 
-    @Dependency(\.apiClient) var apiClient
+    @Dependency(\.apiClient.connectUser) var connectUser
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch (state, action) {
@@ -28,8 +29,10 @@ struct History: Reducer {
         return .none
       case (.enteringConnectionCode, .connectSubmitted(let code)):
         state = .connecting
-        return .task { [connectUser = apiClient.connectUser] in
-          await .connectResponse(TaskResult { try await connectUser(code) })
+        return .task {
+          await .connectResponse(TaskResult {
+            try await connectUser(code)
+          })
         }
       case (.connecting, .connectResponse(.success)):
         state = .established(welcomeDismissed: false)

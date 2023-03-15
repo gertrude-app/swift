@@ -1,16 +1,6 @@
 import ComposableArchitecture
 import Foundation
-
-// TODO: moveme
-struct User: Equatable, Codable, Sendable {
-  var token: UUID
-  var name: String
-  var keyloggingEnabled: Bool
-  var screenshotsEnabled: Bool
-  var screenshotFrequency: Int
-  var screenshotSize: Int
-  var connectedAt: Date
-}
+import Models
 
 enum FilterState: Equatable {
   case unknown

@@ -1,9 +1,9 @@
 import ComposableArchitecture
 
-struct MenuBar {
-  enum State: Equatable, Encodable {
-    struct Connected: Equatable {
-      enum FilterState: Equatable, Codable {
+public enum MenuBar {
+  public enum State: Equatable, Encodable {
+    public struct Connected: Equatable {
+      public enum FilterState: Equatable, Codable {
         case off
         case on
         case suspended(expiration: String)
@@ -22,7 +22,7 @@ struct MenuBar {
     case connected(Connected)
   }
 
-  enum Action: Equatable, Decodable, Sendable {
+  public enum Action: Equatable, Decodable, Sendable {
     case menuBarIconClicked // todo, wierd...
     case resumeFilterClicked
     case suspendFilterClicked
