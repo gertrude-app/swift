@@ -1,5 +1,5 @@
 
-public extension FilterState {
+extension FilterState {
   var menuBar: MenuBar.State.Connected.FilterState {
     switch self {
     case .unknown, .notInstalled, .off:
@@ -12,7 +12,7 @@ public extension FilterState {
   }
 }
 
-public extension AppReducer.State {
+extension AppReducer.State {
   var menuBar: MenuBar.State {
     get {
       switch history.userConnection {

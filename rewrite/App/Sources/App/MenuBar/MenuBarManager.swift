@@ -4,7 +4,7 @@ import ComposableArchitecture
 import SwiftUI
 import WebKit
 
-@MainActor public class MenuBarManager {
+@MainActor class MenuBarManager {
   let store: Store<AppReducer.State, MenuBar.Action>
   var statusItem: NSStatusItem
   var popover: NSPopover
@@ -13,7 +13,7 @@ import WebKit
 
   @ObservedObject var viewStore: ViewStore<MenuBar.State, MenuBar.Action>
 
-  public init(store: Store<AppReducer.State, MenuBar.Action>) {
+  init(store: Store<AppReducer.State, MenuBar.Action>) {
     self.store = store
     viewStore = ViewStore(store, observe: \.menuBar)
 

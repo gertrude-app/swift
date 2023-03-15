@@ -1,17 +1,17 @@
 import ComposableArchitecture
 
-public struct MenuBar {
-  public enum State: Equatable, Encodable {
-    public struct Connected: Equatable {
-      public enum FilterState: Equatable, Codable {
+struct MenuBar {
+  enum State: Equatable, Encodable {
+    struct Connected: Equatable {
+      enum FilterState: Equatable, Codable {
         case off
         case on
         case suspended(expiration: String)
       }
 
-      public var filterState: FilterState
-      public var recordingScreen: Bool
-      public var recordingKeystrokes: Bool
+      var filterState: FilterState
+      var recordingScreen: Bool
+      var recordingKeystrokes: Bool
     }
 
     case notConnected
@@ -22,7 +22,7 @@ public struct MenuBar {
     case connected(Connected)
   }
 
-  public enum Action: Equatable, Decodable, Sendable {
+  enum Action: Equatable, Decodable, Sendable {
     case menuBarIconClicked // todo, wierd...
     case resumeFilterClicked
     case suspendFilterClicked
@@ -34,6 +34,4 @@ public struct MenuBar {
     case retryConnectClicked
     case welcomeAdminClicked
   }
-
-  public init() {}
 }

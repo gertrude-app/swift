@@ -1,12 +1,15 @@
 import ComposableArchitecture
 
-public struct AppDelegateReducer: Reducer {
-  public struct State: Equatable {}
-  public enum Action: Equatable, Sendable {
-    case didFinishLaunching
-  }
+// public, not nested, because it's used in the AppDelegate
+public enum AppDelegateAction: Equatable, Sendable {
+  case didFinishLaunching
+}
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+struct AppDelegateReducer: Reducer {
+  struct State: Equatable {}
+  typealias Action = AppDelegateAction
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .didFinishLaunching:
       return .none
