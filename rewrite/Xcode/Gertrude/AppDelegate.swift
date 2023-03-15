@@ -1,7 +1,6 @@
 import App
 import AppKit
 import Cocoa
-import ComposableArchitecture
 import NetworkExtension
 import SystemExtensions
 

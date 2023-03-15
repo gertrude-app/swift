@@ -1,22 +1,21 @@
 import Dependencies
 import Foundation
+import Models
 
 struct ApiClient: Sendable {
   var connectUser: @Sendable (Int) async throws -> User
 }
 
-extension ApiClient: DependencyKey {
-  static let liveValue = Self(
+extension ApiClient: TestDependencyKey {
+  static let testValue = Self(
     connectUser: { code in
       try await Task.sleep(nanoseconds: 1_000_000_000)
       return User(
-        token: UUID(),
         name: "Huck",
         keyloggingEnabled: true,
         screenshotsEnabled: true,
         screenshotFrequency: 1,
-        screenshotSize: 1,
-        connectedAt: Date()
+        screenshotSize: 1
       )
     }
   )

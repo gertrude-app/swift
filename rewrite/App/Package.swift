@@ -6,6 +6,7 @@ let package = Package(
   platforms: [.macOS(.v10_15)],
   products: [
     .library(name: "App", targets: ["App"]),
+    .library(name: "Models", targets: ["Models"]),
   ],
   dependencies: [
     .package(
@@ -17,14 +18,15 @@ let package = Package(
   targets: [
     .checkedTarget(
       name: "App",
-      dependencies: [
-        .tca,
-        .product(name: "XCore", package: "x-kit"),
-      ]
+      dependencies: [.tca, .product(name: "XCore", package: "x-kit"), "Models"]
+    ),
+    .checkedTarget(
+      name: "Models",
+      dependencies: []
     ),
     .testTarget(
       name: "AppTests",
-      dependencies: ["App"]
+      dependencies: ["App", "Models"]
     ),
   ]
 )
@@ -45,7 +47,7 @@ extension Target {
 }
 
 extension Target.Dependency {
-  static let tca: Target.Dependency = .product(
+  static let tca: Self = .product(
     name: "ComposableArchitecture",
     package: "swift-composable-architecture"
   )

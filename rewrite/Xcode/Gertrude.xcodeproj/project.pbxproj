@@ -7,19 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7F0B887029C21561001E9427 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F0B886F29C21561001E9427 /* NetworkExtension.framework */; };
+		7F0B887129C2156D001E9427 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F0B886F29C21561001E9427 /* NetworkExtension.framework */; };
+		7F3BA9B829C214BA00C4FAF1 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3BA9B729C214BA00C4FAF1 /* App */; };
 		7F4D0E4E2628B9450060281F /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F4D0E4D2628B9450060281F /* libbsm.tbd */; };
 		7F51420F261D000300A66260 /* com.netrivet.gertrude.filter-extension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7F53C599299FF6CA0097285A /* WebViews in Resources */ = {isa = PBXBuildFile; fileRef = 7F53C598299FF6CA0097285A /* WebViews */; };
 		7F5476DF299BD08A0084F682 /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7F5476DE299BD08A0084F682 /* Filter */; };
 		7F94DC8C261CF092002D4534 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F94DC8B261CF092002D4534 /* main.swift */; };
-		7FC14B07299BF96E00FC3B13 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 7FC14B06299BF96E00FC3B13 /* App */; };
-		7FC14B0E299C0F5700FC3B13 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 7FC14B0D299C0F5700FC3B13 /* ComposableArchitecture */; };
 		7FF3CD4C2992C99000387D3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF3CD4B2992C99000387D3C /* AppDelegate.swift */; };
-		C40A5C46229DD6A500627D50 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B45DDD2273A3450050C59B /* NetworkExtension.framework */; };
 		C40A5C4B229DD6A500627D50 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C40A5C4A229DD6A500627D50 /* main.swift */; };
 		C40A5C57229DD93200627D50 /* FilterDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E0DBB42273BEA0005B02F4 /* FilterDataProvider.swift */; };
 		C4B45DBD2273A0020050C59B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4B45DBC2273A0020050C59B /* Assets.xcassets */; };
-		C4B45DDE2273A3450050C59B /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4B45DDD2273A3450050C59B /* NetworkExtension.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,13 +46,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7F0B886F29C21561001E9427 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
+		7F3BA9B629C214AB00C4FAF1 /* App */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = App; path = ../App; sourceTree = "<group>"; };
 		7F4D0E4D2628B9450060281F /* libbsm.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbsm.tbd; path = usr/lib/libbsm.tbd; sourceTree = SDKROOT; };
 		7F53C598299FF6CA0097285A /* WebViews */ = {isa = PBXFileReference; lastKnownFileType = folder; path = WebViews; sourceTree = "<group>"; };
 		7F5476DD299BCFF30084F682 /* Filter */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Filter; path = ../Filter; sourceTree = "<group>"; };
 		7F94DC6D261CEA75002D4534 /* Gertrude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gertrude.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = "com.netrivet.gertrude.filter-extension.systemextension"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F94DC8B261CF092002D4534 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		7FC14B03299BE63700FC3B13 /* App */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = App; path = ../App; sourceTree = "<group>"; };
 		7FF3CD4B2992C99000387D3C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C40A5C4A229DD6A500627D50 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		C40A5C4C229DD6A500627D50 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -61,7 +61,6 @@
 		C4B45DBC2273A0020050C59B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C4B45DC12273A0020050C59B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C4B45DC22273A0020050C59B /* Gertrude.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Gertrude.entitlements; sourceTree = "<group>"; };
-		C4B45DDD2273A3450050C59B /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		C4E0DBB42273BEA0005B02F4 /* FilterDataProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterDataProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -70,8 +69,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C40A5C46229DD6A500627D50 /* NetworkExtension.framework in Frameworks */,
 				7F5476DF299BD08A0084F682 /* Filter in Frameworks */,
+				7F0B887029C21561001E9427 /* NetworkExtension.framework in Frameworks */,
 				7F4D0E4E2628B9450060281F /* libbsm.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,15 +79,22 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7FC14B07299BF96E00FC3B13 /* App in Frameworks */,
-				C4B45DDE2273A3450050C59B /* NetworkExtension.framework in Frameworks */,
-				7FC14B0E299C0F5700FC3B13 /* ComposableArchitecture in Frameworks */,
+				7F3BA9B829C214BA00C4FAF1 /* App in Frameworks */,
+				7F0B887129C2156D001E9427 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7F3BA9B529C214AB00C4FAF1 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				7F3BA9B629C214AB00C4FAF1 /* App */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		C40A5C47229DD6A500627D50 /* GertrudeFilterExtension */ = {
 			isa = PBXGroup;
 			children = (
@@ -103,7 +109,7 @@
 		C4B45DAC22739FFF0050C59B = {
 			isa = PBXGroup;
 			children = (
-				7FC14B03299BE63700FC3B13 /* App */,
+				7F3BA9B529C214AB00C4FAF1 /* Packages */,
 				7F5476DD299BCFF30084F682 /* Filter */,
 				C4B45DB722739FFF0050C59B /* Gertrude */,
 				C40A5C47229DD6A500627D50 /* GertrudeFilterExtension */,
@@ -129,8 +135,8 @@
 		C4B45DDC2273A3450050C59B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7F0B886F29C21561001E9427 /* NetworkExtension.framework */,
 				7F4D0E4D2628B9450060281F /* libbsm.tbd */,
-				C4B45DDD2273A3450050C59B /* NetworkExtension.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -174,8 +180,7 @@
 			);
 			name = Gertrude;
 			packageProductDependencies = (
-				7FC14B06299BF96E00FC3B13 /* App */,
-				7FC14B0D299C0F5700FC3B13 /* ComposableArchitecture */,
+				7F3BA9B729C214BA00C4FAF1 /* App */,
 			);
 			productName = Gertrude;
 			productReference = 7F94DC6D261CEA75002D4534 /* Gertrude.app */;
@@ -528,18 +533,13 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		7F5476DE299BD08A0084F682 /* Filter */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Filter;
-		};
-		7FC14B06299BF96E00FC3B13 /* App */ = {
+		7F3BA9B729C214BA00C4FAF1 /* App */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = App;
 		};
-		7FC14B0D299C0F5700FC3B13 /* ComposableArchitecture */ = {
+		7F5476DE299BD08A0084F682 /* Filter */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7FC14B08299BF9E600FC3B13 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
-			productName = ComposableArchitecture;
+			productName = Filter;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
