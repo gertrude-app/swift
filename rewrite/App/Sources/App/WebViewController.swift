@@ -4,6 +4,7 @@ import XCore
 class WebViewController<State, Action>:
   NSViewController, WKUIDelegate, WKScriptMessageHandler
   where Action: Sendable, Action: Decodable, State: Encodable {
+
   var webView: WKWebView!
   var send: (Action) -> Void = { _ in }
 

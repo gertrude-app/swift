@@ -1,9 +1,9 @@
 import ComposableArchitecture
 import Dependencies
 
-public struct History: Reducer {
-  public struct UserConnection: Reducer {
-    public enum State: Equatable {
+struct History: Reducer {
+  struct UserConnection: Reducer {
+    enum State: Equatable {
       case notConnected
       case enteringConnectionCode
       case connecting
@@ -11,7 +11,7 @@ public struct History: Reducer {
       case established(welcomeDismissed: Bool)
     }
 
-    public enum Action: Equatable, Sendable {
+    enum Action: Equatable, Sendable {
       case connectClicked
       case retryConnectClicked
       case connectSubmitted(code: Int)
@@ -21,7 +21,7 @@ public struct History: Reducer {
 
     @Dependency(\.apiClient) var apiClient
 
-    public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch (state, action) {
       case (.notConnected, .connectClicked):
         state = .enteringConnectionCode
@@ -49,15 +49,15 @@ public struct History: Reducer {
     }
   }
 
-  public struct State: Equatable {
-    public var userConnection = UserConnection.State.notConnected
+  struct State: Equatable {
+    var userConnection = UserConnection.State.notConnected
   }
 
-  public enum Action: Equatable, Sendable {
+  enum Action: Equatable, Sendable {
     case userConnection(UserConnection.Action)
   }
 
-  public var body: some ReducerOf<Self> {
+  var body: some ReducerOf<Self> {
     Scope(state: \.userConnection, action: /Action.userConnection) {
       UserConnection()
     }
