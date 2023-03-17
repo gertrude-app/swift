@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
   name: "PairQL",
-  platforms: [.macOS(.v11)],
+  platforms: [.macOS(.v10_15)],
   products: [
     .library(name: "PairQL", targets: ["PairQL"]),
   ],

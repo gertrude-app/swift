@@ -15,6 +15,7 @@
 		7F53C599299FF6CA0097285A /* WebViews in Resources */ = {isa = PBXBuildFile; fileRef = 7F53C598299FF6CA0097285A /* WebViews */; };
 		7F5476DF299BD08A0084F682 /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7F5476DE299BD08A0084F682 /* Filter */; };
 		7F94DC8C261CF092002D4534 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F94DC8B261CF092002D4534 /* main.swift */; };
+		7FD8DCA629C221E0003D135A /* LiveApiClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCA529C221E0003D135A /* LiveApiClient */; };
 		7FF3CD4C2992C99000387D3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF3CD4B2992C99000387D3C /* AppDelegate.swift */; };
 		C40A5C4B229DD6A500627D50 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C40A5C4A229DD6A500627D50 /* main.swift */; };
 		C40A5C57229DD93200627D50 /* FilterDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E0DBB42273BEA0005B02F4 /* FilterDataProvider.swift */; };
@@ -80,6 +81,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F3BA9B829C214BA00C4FAF1 /* App in Frameworks */,
+				7FD8DCA629C221E0003D135A /* LiveApiClient in Frameworks */,
 				7F0B887129C2156D001E9427 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -181,6 +183,7 @@
 			name = Gertrude;
 			packageProductDependencies = (
 				7F3BA9B729C214BA00C4FAF1 /* App */,
+				7FD8DCA529C221E0003D135A /* LiveApiClient */,
 			);
 			productName = Gertrude;
 			productReference = 7F94DC6D261CEA75002D4534 /* Gertrude.app */;
@@ -216,6 +219,7 @@
 			mainGroup = C4B45DAC22739FFF0050C59B;
 			packageReferences = (
 				7FC14B08299BF9E600FC3B13 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
+				7FD8DCA729C22286003D135A /* XCRemoteSwiftPackageReference "swift-dependencies" */,
 			);
 			productRefGroup = C4B45DAC22739FFF0050C59B;
 			projectDirPath = "";
@@ -530,6 +534,14 @@
 				minimumVersion = 0.50.2;
 			};
 		};
+		7FD8DCA729C22286003D135A /* XCRemoteSwiftPackageReference "swift-dependencies" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-dependencies.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -540,6 +552,10 @@
 		7F5476DE299BD08A0084F682 /* Filter */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Filter;
+		};
+		7FD8DCA529C221E0003D135A /* LiveApiClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LiveApiClient;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
