@@ -1,14 +1,11 @@
 import ComposableArchitecture
 import Dependencies
 import Foundation
+import MacAppRoute
 import Models
 
-struct History: Reducer {
-  struct UserConnection: Reducer {
-    @Dependency(\.api.connectUser) var connectUser
-    @Dependency(\.device) var device
-    @Dependency(\.app.installedVersion) var appVersion
-
+struct History {
+  enum UserConnection {
     enum State: Equatable {
       case notConnected
       case enteringConnectionCode
@@ -18,52 +15,7 @@ struct History: Reducer {
     }
 
     enum Action: Equatable, Sendable {
-      case connectClicked
-      case retryConnectClicked
-      case connectSubmitted(code: Int)
-      case connectResponse(TaskResult<User>)
-      case welcomeDismissed
-    }
-
-    func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch (state, action) {
-      case (.notConnected, .connectClicked):
-        state = .enteringConnectionCode
-        return .none
-      case (.enteringConnectionCode, .connectSubmitted(let code)):
-        state = .connecting
-        return .task {
-          await .connectResponse(TaskResult {
-            guard let serialNumber = device.serialNumber() else {
-              throw AppError("No serial number")
-            }
-            return try await connectUser(.init(
-              verificationCode: code,
-              appVersion: appVersion() ?? "unknown",
-              hostname: device.hostname(),
-              modelIdentifier: device.modelIdentifier() ?? "unknown",
-              username: device.username(),
-              fullUsername: device.fullUsername(),
-              numericId: Int(exactly: device.numericUserId())!,
-              serialNumber: serialNumber
-            ))
-          })
-        }
-      case (.connecting, .connectResponse(.success)):
-        state = .established(welcomeDismissed: false)
-        return .none
-      case (.connecting, .connectResponse(.failure(let error))):
-        state = .connectFailed(error.localizedDescription)
-        return .none
-      case (.established, .welcomeDismissed):
-        state = .established(welcomeDismissed: true)
-        return .none
-      case (.connectFailed, .retryConnectClicked):
-        state = .enteringConnectionCode
-        return .none
-      default:
-        return .none
-      }
+      case connect(TaskResult<User>)
     }
   }
 
@@ -74,10 +26,70 @@ struct History: Reducer {
   enum Action: Equatable, Sendable {
     case userConnection(UserConnection.Action)
   }
+}
 
-  var body: some ReducerOf<Self> {
-    Scope(state: \.userConnection, action: /Action.userConnection) {
-      UserConnection()
+struct HistoryRoot: Reducer {
+  typealias State = AppReducer.State
+  typealias Action = AppReducer.Action
+
+  @Dependency(\.device) var device
+  @Dependency(\.api.connectUser) var connectUser
+  @Dependency(\.app.installedVersion) var appVersion
+
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    switch action {
+
+    case .menuBar(.connectClicked):
+      if case .notConnected = state.history.userConnection {
+        state.history.userConnection = .enteringConnectionCode
+      }
+      return .none
+
+    case .menuBar(.connectSubmit(let code)):
+      guard case .enteringConnectionCode = state.history.userConnection else { return .none }
+      state.history.userConnection = .connecting
+      return .task {
+        await .history(.userConnection(.connect(TaskResult {
+          try await connectUser(connectUserInput(code: code))
+        })))
+      }
+
+    case .menuBar(.retryConnectClicked):
+      guard case .connectFailed = state.history.userConnection else { return .none }
+      state.history.userConnection = .enteringConnectionCode
+      return .none
+
+    case .menuBar(.welcomeAdminClicked):
+      state.history.userConnection = .established(welcomeDismissed: true)
+      return .none
+
+    case .history(.userConnection(.connect(.success(let user)))):
+      state.user = user
+      state.history.userConnection = .established(welcomeDismissed: false)
+      return .none
+
+    case .history(.userConnection(.connect(.failure(let error)))):
+      state.history.userConnection = .connectFailed(error.localizedDescription)
+      return .none
+
+    default:
+      return .none
     }
+  }
+
+  private func connectUserInput(code: Int) throws -> ConnectUser.Input {
+    guard let serialNumber = device.serialNumber() else {
+      throw AppError("No serial number")
+    }
+    return ConnectUser.Input(
+      verificationCode: code,
+      appVersion: appVersion() ?? "unknown",
+      hostname: device.hostname(),
+      modelIdentifier: device.modelIdentifier() ?? "unknown",
+      username: device.username(),
+      fullUsername: device.fullUsername(),
+      numericId: Int(exactly: device.numericUserId())!,
+      serialNumber: serialNumber
+    )
   }
 }

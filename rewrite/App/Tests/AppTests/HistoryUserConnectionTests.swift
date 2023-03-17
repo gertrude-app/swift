@@ -6,46 +6,45 @@ import XCTest
 
 @MainActor final class HistoryUserConnectionTests: XCTestCase {
   func testHistoryUserConnectionHappyPath() async {
-    let store = TestStore(
-      initialState: History.UserConnection.State.notConnected,
-      reducer: History.UserConnection()
-    )
+    let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
     store.dependencies.api.connectUser = { _ in .mock }
 
-    await store.send(.connectClicked) {
-      $0 = .enteringConnectionCode
+    await store.send(.menuBar(.connectClicked)) {
+      $0.history.userConnection = .enteringConnectionCode
     }
 
-    await store.send(.connectSubmitted(code: 111_222)) {
-      $0 = .connecting
+    await store.send(.menuBar(.connectSubmit(code: 111_222))) {
+      $0.history.userConnection = .connecting
     }
 
-    await store.receive(.connectResponse(.success(.mock))) {
-      $0 = .established(welcomeDismissed: false)
+    await store.receive(.history(.userConnection(.connect(.success(.mock))))) {
+      $0.user = .mock
+      $0.history.userConnection = .established(welcomeDismissed: false)
     }
 
-    await store.send(.welcomeDismissed) {
-      $0 = .established(welcomeDismissed: true)
+    await store.send(.menuBar(.welcomeAdminClicked)) {
+      $0.history.userConnection = .established(welcomeDismissed: true)
     }
   }
 
   func testHistoryUserConnectionError() async {
-    let store = TestStore(
-      initialState: History.UserConnection.State.enteringConnectionCode,
-      reducer: History.UserConnection()
-    )
+    let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
     store.dependencies.api.connectUser = { _ in throw TestErr("Oh no!") }
 
-    await store.send(.connectSubmitted(code: 111_222)) {
-      $0 = .connecting
+    await store.send(.menuBar(.connectClicked)) {
+      $0.history.userConnection = .enteringConnectionCode
     }
 
-    await store.receive(.connectResponse(.failure(TestErr("Oh no!")))) {
-      $0 = .connectFailed("Oh no!")
+    await store.send(.menuBar(.connectSubmit(code: 111_222))) {
+      $0.history.userConnection = .connecting
     }
 
-    await store.send(.retryConnectClicked) {
-      $0 = .enteringConnectionCode
+    await store.receive(.history(.userConnection(.connect(.failure(TestErr("Oh no!")))))) {
+      $0.history.userConnection = .connectFailed("Oh no!")
+    }
+
+    await store.send(.menuBar(.retryConnectClicked)) {
+      $0.history.userConnection = .enteringConnectionCode
     }
   }
 }
