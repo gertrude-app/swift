@@ -1,9 +1,14 @@
 import ComposableArchitecture
 import Dependencies
+import Foundation
 import Models
 
 struct History: Reducer {
   struct UserConnection: Reducer {
+    @Dependency(\.api.connectUser) var connectUser
+    @Dependency(\.device) var device
+    @Dependency(\.app.installedVersion) var appVersion
+
     enum State: Equatable {
       case notConnected
       case enteringConnectionCode
@@ -20,8 +25,6 @@ struct History: Reducer {
       case welcomeDismissed
     }
 
-    @Dependency(\.apiClient.connectUser) var connectUser
-
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch (state, action) {
       case (.notConnected, .connectClicked):
@@ -31,7 +34,19 @@ struct History: Reducer {
         state = .connecting
         return .task {
           await .connectResponse(TaskResult {
-            try await connectUser(code)
+            guard let serialNumber = device.serialNumber() else {
+              throw AppError("No serial number")
+            }
+            return try await connectUser(.init(
+              verificationCode: code,
+              appVersion: appVersion() ?? "unknown",
+              hostname: device.hostname(),
+              modelIdentifier: device.modelIdentifier() ?? "unknown",
+              username: device.username(),
+              fullUsername: device.fullUsername(),
+              numericId: Int(exactly: device.numericUserId())!,
+              serialNumber: serialNumber
+            ))
           })
         }
       case (.connecting, .connectResponse(.success)):

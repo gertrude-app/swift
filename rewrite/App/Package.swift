@@ -7,22 +7,31 @@ let package = Package(
   products: [
     .library(name: "App", targets: ["App"]),
     .library(name: "Models", targets: ["Models"]),
+    .library(name: "LiveApiClient", targets: ["LiveApiClient"]),
   ],
   dependencies: [
-    .package(
-      url: "https://github.com/pointfreeco/swift-composable-architecture",
-      branch: "prerelease/1.0"
-    ),
+    .github("pointfreeco/swift-composable-architecture", branch: "prerelease/1.0"),
+    .github("pointfreeco/swift-dependencies", from: "0.1.0"),
+    .github("jaredh159/swift-tagged", from: "0.8.2"),
     .package(path: "../../x-kit"),
+    .package(path: "../../pairql-macapp"),
   ],
   targets: [
     .checkedTarget(
       name: "App",
-      dependencies: [.tca, .product(name: "XCore", package: "x-kit"), "Models"]
+      dependencies: [.tca, "x-kit" => "XCore", "Models"]
     ),
     .checkedTarget(
       name: "Models",
-      dependencies: []
+      dependencies: [
+        .dependencies,
+        "swift-tagged" => "Tagged",
+        "pairql-macapp" => "MacAppRoute",
+      ]
+    ),
+    .checkedTarget(
+      name: "LiveApiClient",
+      dependencies: [.dependencies, "x-kit" => "XCore", "Models"]
     ),
     .testTarget(
       name: "AppTests",
@@ -31,8 +40,18 @@ let package = Package(
   ]
 )
 
+// extensions, helpers
+
+infix operator =>
+private func => (lhs: String, rhs: String) -> Target.Dependency {
+  .product(name: rhs, package: lhs)
+}
+
 extension Target {
-  static func checkedTarget(name: String, dependencies: [Target.Dependency]) -> Target {
+  static func checkedTarget(
+    name: String,
+    dependencies: [Target.Dependency]
+  ) -> Target {
     .target(
       name: name,
       dependencies: dependencies,
@@ -46,9 +65,29 @@ extension Target {
   }
 }
 
+extension PackageDescription.Package.Dependency {
+  static func github(_ repo: String, from: String) -> Package.Dependency {
+    .package(
+      url: "https://github.com/\(repo).git",
+      from: .init(stringLiteral: "\(from)")
+    )
+  }
+
+  static func github(_ repo: String, branch: String) -> Package.Dependency {
+    .package(
+      url: "https://github.com/\(repo).git",
+      branch: .init(stringLiteral: "\(branch)")
+    )
+  }
+}
+
 extension Target.Dependency {
   static let tca: Self = .product(
     name: "ComposableArchitecture",
     package: "swift-composable-architecture"
+  )
+  static let dependencies: Self = .product(
+    name: "Dependencies",
+    package: "swift-dependencies"
   )
 }

@@ -9,9 +9,8 @@ import XCTest
     let store = TestStore(
       initialState: History.UserConnection.State.notConnected,
       reducer: History.UserConnection()
-    ) {
-      $0.apiClient = .init(connectUser: { _ in .mock })
-    }
+    )
+    store.dependencies.api.connectUser = { _ in .mock }
 
     await store.send(.connectClicked) {
       $0 = .enteringConnectionCode
@@ -34,9 +33,8 @@ import XCTest
     let store = TestStore(
       initialState: History.UserConnection.State.enteringConnectionCode,
       reducer: History.UserConnection()
-    ) {
-      $0.apiClient = .init(connectUser: { _ in throw TestErr("Oh no!") })
-    }
+    )
+    store.dependencies.api.connectUser = { _ in throw TestErr("Oh no!") }
 
     await store.send(.connectSubmitted(code: 111_222)) {
       $0 = .connecting
@@ -60,7 +58,9 @@ struct TestErr: Equatable, Error, LocalizedError {
 
 extension User {
   static let mock = User(
+    id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
     token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+    deviceId: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
     name: "Huck",
     keyloggingEnabled: true,
     screenshotsEnabled: true,
