@@ -2,6 +2,7 @@ import App
 import AppKit
 import Cocoa
 import LiveApiClient
+import LiveFilterClient
 import NetworkExtension
 import SystemExtensions
 

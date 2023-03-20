@@ -18,17 +18,24 @@ struct AppReducer: Reducer {
     case menuBar(MenuBar.Action)
   }
 
+  @Dependency(\.filter) var filter
+
   var body: some ReducerOf<Self> {
+    Reduce { state, action in
+      switch action {
+      case .delegate(.didFinishLaunching):
+        Task {
+          // TODO: this is a temporary testing shim
+          let setupResult = await filter.setup()
+          print("filter setup result", setupResult)
+        }
+        return .none
+      default:
+        return .none
+      }
+    }
     HistoryRoot()
   }
-}
-
-enum FilterState: Equatable {
-  case unknown
-  case notInstalled
-  case off
-  case on
-  case suspended(resuming: Date)
 }
 
 struct AppState: Equatable {

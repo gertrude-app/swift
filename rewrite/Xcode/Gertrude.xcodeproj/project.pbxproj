@@ -16,6 +16,7 @@
 		7F5476DF299BD08A0084F682 /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7F5476DE299BD08A0084F682 /* Filter */; };
 		7F94DC8C261CF092002D4534 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F94DC8B261CF092002D4534 /* main.swift */; };
 		7FD8DCA629C221E0003D135A /* LiveApiClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCA529C221E0003D135A /* LiveApiClient */; };
+		7FD8DCAB29C4BD48003D135A /* LiveFilterClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCAA29C4BD48003D135A /* LiveFilterClient */; };
 		7FF3CD4C2992C99000387D3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF3CD4B2992C99000387D3C /* AppDelegate.swift */; };
 		C40A5C4B229DD6A500627D50 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C40A5C4A229DD6A500627D50 /* main.swift */; };
 		C40A5C57229DD93200627D50 /* FilterDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E0DBB42273BEA0005B02F4 /* FilterDataProvider.swift */; };
@@ -81,6 +82,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F3BA9B829C214BA00C4FAF1 /* App in Frameworks */,
+				7FD8DCAB29C4BD48003D135A /* LiveFilterClient in Frameworks */,
 				7FD8DCA629C221E0003D135A /* LiveApiClient in Frameworks */,
 				7F0B887129C2156D001E9427 /* NetworkExtension.framework in Frameworks */,
 			);
@@ -184,6 +186,7 @@
 			packageProductDependencies = (
 				7F3BA9B729C214BA00C4FAF1 /* App */,
 				7FD8DCA529C221E0003D135A /* LiveApiClient */,
+				7FD8DCAA29C4BD48003D135A /* LiveFilterClient */,
 			);
 			productName = Gertrude;
 			productReference = 7F94DC6D261CEA75002D4534 /* Gertrude.app */;
@@ -556,6 +559,10 @@
 		7FD8DCA529C221E0003D135A /* LiveApiClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LiveApiClient;
+		};
+		7FD8DCAA29C4BD48003D135A /* LiveFilterClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LiveFilterClient;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
