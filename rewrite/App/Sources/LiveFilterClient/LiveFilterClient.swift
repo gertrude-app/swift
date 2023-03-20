@@ -8,9 +8,10 @@ extension FilterClient: DependencyKey {
     let manager = ThreadSafe(wrapped: FilterManager())
     return FilterClient(
       setup: { await manager.value.setup() },
-      start: { fatalError() },
-      state: { manager.value.filterState() },
-      install: { try await manager.value.installFilter() }
+      start: { await manager.value.startFilter() },
+      stop: { await manager.value.stopFilter() },
+      state: { await manager.value.filterState() },
+      install: { await manager.value.installFilter() }
     )
   }
 }

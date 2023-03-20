@@ -6,48 +6,73 @@ import NetworkExtension
 final class FilterManager: NSObject {
   @Dependency(\.system) var system
 
-  var status: Status = .unknown
+  var state: FilterState = .unknown
   var activationRequestCompleted = false
 
-  func setup() async -> FilterState {
-    print(
-      "before load",
-      system.filterProviderConfiguration() as Any,
-      system.isNEFilterManagerSharedEnabled()
-    )
-
+  func filterState() async -> FilterState {
     let loadResult = await system.loadFilterConfiguration()
     if case .failed(let err) = loadResult {
-      status = .failedToLoadConfig(err)
+      print("error loading config: \(err)")
+      state = .errorLoadingConfig
       return .errorLoadingConfig
     }
 
-    print(
-      "after load",
-      system.filterProviderConfiguration() as Any,
-      system.isNEFilterManagerSharedEnabled()
-    )
-
-    // TODO: check enabled/config, add observer
-    return .notInstalled
+    if system.filterProviderConfiguration() == nil {
+      return .notInstalled
+    } else {
+      return system.isNEFilterManagerSharedEnabled() ? .on : .off
+    }
   }
 
-  func installFilter() async throws -> FilterInstallResult {
+  func setup() async -> FilterState {
+    let state = await filterState()
+
+    // TODO: check enabled/config, add observer
+
+    return state
+  }
+
+  func startFilter() async -> FilterState {
+    let state = await filterState()
+    // TODO: maybe better options for some (non-.on) states, possible remediations?
+    if state != .off {
+      return state
+    }
+
+    system.enableNEFilterManagerShared()
+    if let error = await system.saveNEFilterManagerShared() {
+      print("error saving config: \(error)")
+    }
+
+    // now that we've attempted to stop the filter, recheck the state completely
+    return await filterState()
+  }
+
+  func stopFilter() async -> FilterState {
+    let state = await filterState()
+    // TODO: maybe better options for some (non-.off) states, possible remediations?
+    if state != .on {
+      return state
+    }
+
+    system.disableNEFilterManagerShared()
+    if let error = await system.saveNEFilterManagerShared() {
+      print("error saving config: \(error)")
+    }
+
+    // now that we've attempted to stop the filter, recheck the state completely
+    return await filterState()
+  }
+
+  func installFilter() async -> FilterInstallResult {
     print("installFilter")
     guard system.isNEFilterManagerSharedEnabled() == false else {
       print("already installed")
       return .alreadyInstalled
     }
 
-    // TODO: maybe remove this whole thing by checking what it resolves and
-    // just hardcoding it
-    guard let bundleIdentifier = system.extensionBundle().bundleIdentifier else {
-      print("failed to get bundle identifier")
-      return .failedToGetBundleIdentifier
-    }
-
-    print("requesting extension activation for \(bundleIdentifier)")
-    system.requestExtensionActivation(bundleIdentifier, self)
+    print("requesting extension activation")
+    system.requestExtensionActivation(self)
     print("waiting for extension activation")
 
     // the user has to do several steps at this point, like allowing
@@ -58,7 +83,9 @@ final class FilterManager: NSObject {
     var waited = 0
     activationRequestCompleted = false
     while true {
-      try await Task.sleep(nanoseconds: 1_000_000_000)
+      do {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+      } catch {}
       waited += 1
       if activationRequestCompleted {
         defer { activationRequestCompleted = false }
@@ -70,60 +97,33 @@ final class FilterManager: NSObject {
   }
 
   func configureFilter() async -> FilterInstallResult {
-    print("configureFilter")
     guard system.isNEFilterManagerSharedEnabled() == false else {
-      print("cf: already installed")
       return .alreadyInstalled
     }
 
     // check if there is an existing filter configuration
     let loadResult = await system.loadFilterConfiguration()
     if case .failed(let err) = loadResult {
-      print("cf: failed to load config")
       return .failedToLoadConfig(err)
     }
 
     if system.filterProviderConfiguration() != nil {
-      print("cf: has existing config")
       // log?  or maybe removeFromPreferences()?
     } else {
-      print("cf: no existing config, updating")
       let providerConfiguration = NEFilterProviderConfiguration()
       providerConfiguration.filterSockets = true
       providerConfiguration.filterPackets = false
-      let appName = Bundle.main.infoDictionary?["CFBundleName"] as? String ?? "rofl bundle name"
-      print("app name is \(appName)")
-      system.updateNEFilterManagerShared(providerConfiguration, appName)
+      providerConfiguration
+        .filterDataProviderBundleIdentifier = "com.netrivet.gertrude.filter-extension"
+      system.updateNEFilterManagerShared(providerConfiguration)
     }
 
-    print("cf: enabling")
     system.enableNEFilterManagerShared()
 
-    do {
-      print("cf: saving")
-      try await system.saveNEFilterManagerShared()
-      print("cf: saved")
-      return .installedSuccessfully
-    } catch {
-      print("cf: failed to save config", error)
+    if let error = await system.saveNEFilterManagerShared() {
       return .failedToSaveConfig(error)
+    } else {
+      return .installedSuccessfully
     }
-  }
-
-  func filterState() -> FilterState {
-    fatalError()
-  }
-}
-
-// extensions, types
-
-extension FilterManager {
-
-  enum Status {
-    case unknown
-    case notInstalled
-    case installedButNotRunning
-    case running
-    case failedToLoadConfig(Error)
   }
 }
