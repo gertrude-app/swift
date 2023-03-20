@@ -1,8 +1,10 @@
+import Models
 
 extension FilterState {
   var menuBar: MenuBar.State.Connected.FilterState {
     switch self {
-    case .unknown, .notInstalled, .off:
+    // todo... handle error separately?
+    case .unknown, .notInstalled, .off, .errorLoadingConfig:
       return .off
     case .on:
       return .on

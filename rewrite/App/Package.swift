@@ -8,6 +8,7 @@ let package = Package(
     .library(name: "App", targets: ["App"]),
     .library(name: "Models", targets: ["Models"]),
     .library(name: "LiveApiClient", targets: ["LiveApiClient"]),
+    .library(name: "LiveFilterClient", targets: ["LiveFilterClient"]),
   ],
   dependencies: [
     .github("pointfreeco/swift-composable-architecture", branch: "prerelease/1.0"),
@@ -32,6 +33,10 @@ let package = Package(
     .checkedTarget(
       name: "LiveApiClient",
       dependencies: [.dependencies, "x-kit" => "XCore", "Models"]
+    ),
+    .checkedTarget(
+      name: "LiveFilterClient",
+      dependencies: [.dependencies, "Models"]
     ),
     .testTarget(
       name: "AppTests",
