@@ -4,22 +4,19 @@ import NetworkExtension
 import SystemExtensions
 
 struct SystemClient: Sendable {
-  var extensionBundle: @Sendable () -> Bundle
   var loadFilterConfiguration: @Sendable () async -> LoadFilterConfigResult
   var isNEFilterManagerSharedEnabled: @Sendable () -> Bool
   var enableNEFilterManagerShared: @Sendable () -> Void
   var disableNEFilterManagerShared: @Sendable () -> Void
   var filterProviderConfiguration: @Sendable () -> NEFilterProviderConfiguration?
-  var requestExtensionActivation: @Sendable (String, any OSSystemExtensionRequestDelegate) -> Void
-  var updateNEFilterManagerShared: @Sendable (NEFilterProviderConfiguration, String) -> Void
-  var saveNEFilterManagerShared: @Sendable () async throws -> Void
+  var requestExtensionActivation: @Sendable (OSSystemExtensionRequestDelegate) -> Void
+  var updateNEFilterManagerShared: @Sendable (NEFilterProviderConfiguration) -> Void
+  var saveNEFilterManagerShared: @Sendable () async -> Error?
 }
 
 extension SystemClient: DependencyKey {
   static var liveValue: Self {
-    let bundle = ThreadSafe(wrapped: getExtensionBundle())
-    return .init(
-      extensionBundle: { bundle.value },
+    .init(
       loadFilterConfiguration: {
         do {
           try await NEFilterManager.shared().loadFromPreferences()
@@ -32,35 +29,42 @@ extension SystemClient: DependencyKey {
       enableNEFilterManagerShared: { NEFilterManager.shared().isEnabled = true },
       disableNEFilterManagerShared: { NEFilterManager.shared().isEnabled = false },
       filterProviderConfiguration: { NEFilterManager.shared().providerConfiguration },
-      requestExtensionActivation: { bundleIdentifier, delegate in
+      requestExtensionActivation: { delegate in
         let activationRequest = OSSystemExtensionRequest.activationRequest(
-          forExtensionWithIdentifier: bundleIdentifier,
+          // TODO: extract to a shared constant
+          forExtensionWithIdentifier: "com.netrivet.gertrude.filter-extension",
           queue: .main
         )
         activationRequest.delegate = delegate
         OSSystemExtensionManager.shared.submitRequest(activationRequest)
       },
-      updateNEFilterManagerShared: { configuration, appName in
+      updateNEFilterManagerShared: { configuration in
         let manager = NEFilterManager.shared()
         manager.providerConfiguration = configuration
-        manager.localizedDescription = appName
+        manager.localizedDescription = "Gertrude"
       },
-      saveNEFilterManagerShared: { try await NEFilterManager.shared().saveToPreferences() }
+      saveNEFilterManagerShared: {
+        do {
+          try await NEFilterManager.shared().saveToPreferences()
+          return nil
+        } catch {
+          return error
+        }
+      }
     )
   }
 }
 
 extension SystemClient: TestDependencyKey {
   static let testValue = Self(
-    extensionBundle: { Bundle.main },
     loadFilterConfiguration: { .doesNotExistOrLoadedSuccessfully },
     isNEFilterManagerSharedEnabled: { true },
     enableNEFilterManagerShared: {},
     disableNEFilterManagerShared: {},
     filterProviderConfiguration: { nil },
-    requestExtensionActivation: { _, _ in },
-    updateNEFilterManagerShared: { _, _ in },
-    saveNEFilterManagerShared: {}
+    requestExtensionActivation: { _ in },
+    updateNEFilterManagerShared: { _ in },
+    saveNEFilterManagerShared: { nil }
   )
 }
 

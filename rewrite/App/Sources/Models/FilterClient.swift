@@ -2,18 +2,21 @@ import Dependencies
 
 public struct FilterClient: Sendable {
   public var setup: @Sendable () async -> FilterState
-  public var start: @Sendable () async throws -> Void
-  public var state: @Sendable () async throws -> FilterState
-  public var install: @Sendable () async throws -> FilterInstallResult
+  public var start: @Sendable () async -> FilterState
+  public var stop: @Sendable () async -> FilterState
+  public var state: @Sendable () async -> FilterState
+  public var install: @Sendable () async -> FilterInstallResult
 
   public init(
     setup: @escaping @Sendable () async -> FilterState,
-    start: @escaping @Sendable () async throws -> Void,
-    state: @escaping @Sendable () async throws -> FilterState,
-    install: @escaping @Sendable () async throws -> FilterInstallResult
+    start: @escaping @Sendable () async -> FilterState,
+    stop: @escaping @Sendable () async -> FilterState,
+    state: @escaping @Sendable () async -> FilterState,
+    install: @escaping @Sendable () async -> FilterInstallResult
   ) {
     self.setup = setup
     self.start = start
+    self.stop = stop
     self.state = state
     self.install = install
   }
@@ -22,7 +25,8 @@ public struct FilterClient: Sendable {
 extension FilterClient: TestDependencyKey {
   public static let testValue = Self(
     setup: { .on },
-    start: {},
+    start: { .on },
+    stop: { .off },
     state: { .on },
     install: { .installedSuccessfully }
   )
