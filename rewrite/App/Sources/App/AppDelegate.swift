@@ -5,7 +5,7 @@ public enum AppDelegateAction: Equatable, Sendable {
   case didFinishLaunching
 }
 
-struct AppDelegateReducer: Reducer {
+struct AppDelegate: Reducer {
   struct State: Equatable {}
   typealias Action = AppDelegateAction
 

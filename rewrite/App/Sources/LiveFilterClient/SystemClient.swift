@@ -1,9 +1,11 @@
+import Combine
 import Dependencies
 import Foundation
 import NetworkExtension
 import SystemExtensions
 
 struct SystemClient: Sendable {
+  typealias Observer = (Notification) -> Void
   var loadFilterConfiguration: @Sendable () async -> LoadFilterConfigResult
   var isNEFilterManagerSharedEnabled: @Sendable () -> Bool
   var enableNEFilterManagerShared: @Sendable () -> Void
@@ -12,6 +14,7 @@ struct SystemClient: Sendable {
   var requestExtensionActivation: @Sendable (OSSystemExtensionRequestDelegate) -> Void
   var updateNEFilterManagerShared: @Sendable (NEFilterProviderConfiguration) -> Void
   var saveNEFilterManagerShared: @Sendable () async -> Error?
+  var filterDidChangePublisher: @Sendable () -> AnyPublisher<Void, Never>
 }
 
 extension SystemClient: DependencyKey {
@@ -31,8 +34,7 @@ extension SystemClient: DependencyKey {
       filterProviderConfiguration: { NEFilterManager.shared().providerConfiguration },
       requestExtensionActivation: { delegate in
         let activationRequest = OSSystemExtensionRequest.activationRequest(
-          // TODO: extract to a shared constant
-          forExtensionWithIdentifier: "com.netrivet.gertrude.filter-extension",
+          forExtensionWithIdentifier: FILTER_EXT_BUNDLE_ID,
           queue: .main
         )
         activationRequest.delegate = delegate
@@ -50,6 +52,12 @@ extension SystemClient: DependencyKey {
         } catch {
           return error
         }
+      },
+      filterDidChangePublisher: {
+        NotificationCenter.default.publisher(
+          for: .NEFilterConfigurationDidChange,
+          object: NEFilterManager.shared()
+        ).map { _ in }.eraseToAnyPublisher()
       }
     )
   }
@@ -64,7 +72,8 @@ extension SystemClient: TestDependencyKey {
     filterProviderConfiguration: { nil },
     requestExtensionActivation: { _ in },
     updateNEFilterManagerShared: { _ in },
-    saveNEFilterManagerShared: { nil }
+    saveNEFilterManagerShared: { nil },
+    filterDidChangePublisher: { Empty().eraseToAnyPublisher() }
   )
 }
 
@@ -82,35 +91,4 @@ enum LoadFilterConfigResult: Sendable {
   // "the configuration does not exist" ... "or is loaded successfully"
   case doesNotExistOrLoadedSuccessfully
   case failed(Error)
-}
-
-// implementations
-
-private func getExtensionBundle() -> Bundle {
-  let extensionsDirectoryURL = URL(
-    fileURLWithPath: "Contents/Library/SystemExtensions",
-    relativeTo: Bundle.main.bundleURL
-  )
-  let extensionURLs: [URL]
-  do {
-    extensionURLs = try FileManager.default.contentsOfDirectory(
-      at: extensionsDirectoryURL,
-      includingPropertiesForKeys: nil,
-      options: .skipsHiddenFiles
-    )
-  } catch {
-    fatalError(
-      "Failed to get the contents of \(extensionsDirectoryURL.absoluteString): \(error.localizedDescription)"
-    )
-  }
-
-  guard let extensionURL = extensionURLs.first else {
-    fatalError("Failed to find any system extensions")
-  }
-
-  guard let extensionBundle = Bundle(url: extensionURL) else {
-    fatalError("Failed to create a bundle with URL \(extensionURL.absoluteString)")
-  }
-
-  return extensionBundle
 }
