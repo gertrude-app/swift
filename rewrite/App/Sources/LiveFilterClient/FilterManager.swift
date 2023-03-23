@@ -1,3 +1,4 @@
+import Combine
 import Dependencies
 import Foundation
 import Models
@@ -6,17 +7,21 @@ import NetworkExtension
 final class FilterManager: NSObject {
   @Dependency(\.system) var system
 
-  var state: FilterState = .unknown
   var activationRequestCompleted = false
 
-  func filterState() async -> FilterState {
+  func loadState() async -> FilterState {
     let loadResult = await system.loadFilterConfiguration()
     if case .failed(let err) = loadResult {
       print("error loading config: \(err)")
-      state = .errorLoadingConfig
       return .errorLoadingConfig
     }
 
+    return getState()
+  }
+
+  // query current state, without loading filter configuration
+  // loading filter configuration only needs to be done once, and is async
+  private func getState() -> FilterState {
     if system.filterProviderConfiguration() == nil {
       return .notInstalled
     } else {
@@ -24,16 +29,8 @@ final class FilterManager: NSObject {
     }
   }
 
-  func setup() async -> FilterState {
-    let state = await filterState()
-
-    // TODO: check enabled/config, add observer
-
-    return state
-  }
-
   func startFilter() async -> FilterState {
-    let state = await filterState()
+    let state = await loadState()
     // TODO: maybe better options for some (non-.on) states, possible remediations?
     if state != .off {
       return state
@@ -45,11 +42,11 @@ final class FilterManager: NSObject {
     }
 
     // now that we've attempted to stop the filter, recheck the state completely
-    return await filterState()
+    return await loadState()
   }
 
   func stopFilter() async -> FilterState {
-    let state = await filterState()
+    let state = await loadState()
     // TODO: maybe better options for some (non-.off) states, possible remediations?
     if state != .on {
       return state
@@ -61,19 +58,15 @@ final class FilterManager: NSObject {
     }
 
     // now that we've attempted to stop the filter, recheck the state completely
-    return await filterState()
+    return await loadState()
   }
 
   func installFilter() async -> FilterInstallResult {
-    print("installFilter")
     guard system.isNEFilterManagerSharedEnabled() == false else {
-      print("already installed")
       return .alreadyInstalled
     }
 
-    print("requesting extension activation")
     system.requestExtensionActivation(self)
-    print("waiting for extension activation")
 
     // the user has to do several steps at this point, like allowing
     // installation of extension in security & privacy settings,
@@ -113,8 +106,7 @@ final class FilterManager: NSObject {
       let providerConfiguration = NEFilterProviderConfiguration()
       providerConfiguration.filterSockets = true
       providerConfiguration.filterPackets = false
-      providerConfiguration
-        .filterDataProviderBundleIdentifier = "com.netrivet.gertrude.filter-extension"
+      providerConfiguration.filterDataProviderBundleIdentifier = FILTER_EXT_BUNDLE_ID
       system.updateNEFilterManagerShared(providerConfiguration)
     }
 
@@ -126,4 +118,12 @@ final class FilterManager: NSObject {
       return .installedSuccessfully
     }
   }
+
+  func changes() -> AnyPublisher<FilterState, Never> {
+    system.filterDidChangePublisher()
+      .map { _ in self.getState() }
+      .eraseToAnyPublisher()
+  }
 }
+
+let FILTER_EXT_BUNDLE_ID = "com.netrivet.gertrude.filter-extension"

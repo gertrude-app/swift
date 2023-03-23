@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
       "state" : {
-        "revision" : "c3a42e8d1a76ff557cf565ed6d8b0aee0e6e75af",
-        "version" : "0.11.0"
+        "revision" : "870133b7b2387df136ad301ec67b2e864b51dda1",
+        "version" : "0.14.0"
       }
     },
     {
@@ -39,10 +39,10 @@
     {
       "identity" : "swift-composable-architecture",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-composable-architecture",
+      "location" : "https://github.com/pointfreeco/swift-composable-architecture.git",
       "state" : {
         "branch" : "prerelease/1.0",
-        "revision" : "8db9e20b0ad86ce6c4875e2f3928bc7b7c412bee"
+        "revision" : "fc17996ded63b136741ab2e0c0e0d549a8486adc"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-custom-dump",
       "state" : {
-        "revision" : "dd86159e25c749873f144577e5d18309bf57534f",
-        "version" : "0.8.0"
+        "revision" : "de8ba65649e7ee317b9daf27dd5eebf34bd4be57",
+        "version" : "0.9.1"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-dependencies",
       "state" : {
-        "revision" : "8282b0c59662eb38946afe30eb403663fc2ecf76",
-        "version" : "0.1.4"
+        "revision" : "6bb1034e8a1bfbf46dfb766b6c09b7b17e1cba10",
+        "version" : "0.2.0"
       }
     },
     {
@@ -104,8 +104,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swiftui-navigation",
       "state" : {
-        "revision" : "270a754308f5440be52fc295242eb7031638bd15",
-        "version" : "0.6.1"
+        "revision" : "47dd574b900ba5ba679f56ea00d4d282fc7305a6",
+        "version" : "0.7.1"
       }
     },
     {
@@ -113,8 +113,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "ace21305e0dd3a9e749aef79fef14be79a3b4669",
-        "version" : "0.8.2"
+        "revision" : "ab8c9f45843694dd16be4297e6d44c0634fd9913",
+        "version" : "0.8.4"
       }
     }
   ],

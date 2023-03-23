@@ -1,6 +1,6 @@
 import Foundation
-import Shared
 import NetworkExtension
+import Shared
 import SharedCore
 import SystemExtensions
 

@@ -200,7 +200,7 @@
 			attributes = {
 				DefaultBuildSystemTypeForWorkspace = Latest;
 				LastSwiftUpdateCheck = 1230;
-				LastUpgradeCheck = 1230;
+				LastUpgradeCheck = 1420;
 				ORGANIZATIONNAME = Apple;
 				TargetAttributes = {
 					C40A5C44229DD6A500627D50 = {
@@ -289,6 +289,7 @@
 				CODE_SIGN_ENTITLEMENTS = GertrudeFilterExtension/GertrudeFilterExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = GertrudeFilterExtension/Info.plist;
@@ -312,6 +313,7 @@
 				CODE_SIGN_ENTITLEMENTS = GertrudeFilterExtension/GertrudeFilterExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = GertrudeFilterExtension/Info.plist;
@@ -363,6 +365,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -424,6 +427,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -454,6 +458,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 0.2.1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Gertrude/Info.plist;
@@ -480,6 +485,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 0.2.1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = Gertrude/Info.plist;

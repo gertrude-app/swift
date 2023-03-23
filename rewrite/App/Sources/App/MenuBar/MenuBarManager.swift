@@ -43,6 +43,13 @@ import WebKit
         self.vc.updateState(self.viewStore.state)
       }
     }.store(in: &cancellables)
+
+    // send initial state after javascript parsed, evaluated, react ready
+    // TODO: better would be to bootstrap this when setting up webview
+    DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .seconds(1))) { [weak self] in
+      guard let self = self else { return }
+      self.vc.updateState(self.viewStore.state)
+    }
   }
 
   @objc func iconClicked(_ sender: Any?) {

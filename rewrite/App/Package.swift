@@ -12,7 +12,7 @@ let package = Package(
   ],
   dependencies: [
     .github("pointfreeco/swift-composable-architecture", branch: "prerelease/1.0"),
-    .github("pointfreeco/swift-dependencies", from: "0.1.0"),
+    .github("pointfreeco/swift-dependencies", from: "0.2.0"),
     .github("jaredh159/swift-tagged", from: "0.8.2"),
     .package(path: "../../x-kit"),
     .package(path: "../../pairql-macapp"),
