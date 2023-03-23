@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import XCTest
+import XExpect
 
 @testable import App
 @testable import Models
@@ -8,6 +9,10 @@ import XCTest
   func testHistoryUserConnectionHappyPath() async {
     let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
     store.dependencies.api.connectUser = { _ in .mock }
+    let savedState = LockIsolated<Persistent.State?>(nil)
+    store.dependencies.storage.savePersistentState = { state in
+      savedState.setValue(state)
+    }
 
     await store.send(.menuBar(.connectClicked)) {
       $0.history.userConnection = .enteringConnectionCode
@@ -21,6 +26,8 @@ import XCTest
       $0.user = .mock
       $0.history.userConnection = .established(welcomeDismissed: false)
     }
+
+    expect(savedState.value).toEqual(.init(user: .mock))
 
     await store.send(.menuBar(.welcomeAdminClicked)) {
       $0.history.userConnection = .established(welcomeDismissed: true)

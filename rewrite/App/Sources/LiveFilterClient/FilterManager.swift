@@ -6,6 +6,7 @@ import NetworkExtension
 
 final class FilterManager: NSObject {
   @Dependency(\.system) var system
+  @Dependency(\.mainQueue) var scheduler
 
   var activationRequestCompleted = false
 
@@ -72,12 +73,11 @@ final class FilterManager: NSObject {
     // installation of extension in security & privacy settings,
     // clicking the "allow" in the popup, so we wait for them
 
-    // TODO: control time
     var waited = 0
     activationRequestCompleted = false
     while true {
       do {
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        try await scheduler.sleep(for: .seconds(1))
       } catch {}
       waited += 1
       if activationRequestCompleted {
