@@ -35,6 +35,7 @@ struct HistoryRoot: Reducer {
   @Dependency(\.device) var device
   @Dependency(\.api.connectUser) var connectUser
   @Dependency(\.app.installedVersion) var appVersion
+  @Dependency(\.storage.savePersistentState) var saveState
 
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
@@ -66,7 +67,8 @@ struct HistoryRoot: Reducer {
     case .history(.userConnection(.connect(.success(let user)))):
       state.user = user
       state.history.userConnection = .established(welcomeDismissed: false)
-      return .none
+      let persist = state.persistent
+      return .fireAndForget { try await saveState(persist) }
 
     case .history(.userConnection(.connect(.failure(let error)))):
       state.history.userConnection = .connectFailed(error.localizedDescription)

@@ -16,6 +16,7 @@ let package = Package(
     .github("jaredh159/swift-tagged", from: "0.8.2"),
     .package(path: "../../x-kit"),
     .package(path: "../../pairql-macapp"),
+    .package(path: "../../x-expect"),
   ],
   targets: [
     .checkedTarget(
@@ -40,7 +41,7 @@ let package = Package(
     ),
     .testTarget(
       name: "AppTests",
-      dependencies: ["App", "Models"]
+      dependencies: ["App", "Models", "x-expect" => "XExpect"]
     ),
   ]
 )
