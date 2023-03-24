@@ -33,5 +33,6 @@ public enum MenuBar {
     case connectSubmit(code: Int)
     case retryConnectClicked
     case welcomeAdminClicked
+    case turnOnFilterClicked
   }
 }

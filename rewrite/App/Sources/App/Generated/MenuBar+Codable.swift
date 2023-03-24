@@ -40,6 +40,8 @@ extension MenuBar.Action {
       try _NamedCase(case: "retryConnectClicked").encode(to: encoder)
     case .welcomeAdminClicked:
       try _NamedCase(case: "welcomeAdminClicked").encode(to: encoder)
+    case .turnOnFilterClicked:
+      try _NamedCase(case: "turnOnFilterClicked").encode(to: encoder)
     }
   }
 
@@ -68,6 +70,8 @@ extension MenuBar.Action {
       self = .retryConnectClicked
     case "welcomeAdminClicked":
       self = .welcomeAdminClicked
+    case "turnOnFilterClicked":
+      self = .turnOnFilterClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }
