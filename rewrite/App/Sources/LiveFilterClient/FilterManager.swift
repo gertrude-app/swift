@@ -8,8 +8,6 @@ final class FilterManager: NSObject {
   @Dependency(\.system) var system
   @Dependency(\.mainQueue) var scheduler
 
-  var activationRequestCompleted = false
-
   func loadState() async -> FilterState {
     let loadResult = await system.loadFilterConfiguration()
     if case .failed(let err) = loadResult {
@@ -73,17 +71,19 @@ final class FilterManager: NSObject {
     // installation of extension in security & privacy settings,
     // clicking the "allow" in the popup, so we wait for them
 
+    await activationRequest.setValue(.pending)
     var waited = 0
-    activationRequestCompleted = false
     while true {
       do {
         try await scheduler.sleep(for: .seconds(1))
       } catch {}
       waited += 1
-      if activationRequestCompleted {
-        defer { activationRequestCompleted = false }
+      let requestStatus = await activationRequest.value
+      if requestStatus == .succeeded {
+        await activationRequest.setValue(.idle)
         return await configureFilter()
-      } else if waited > 30 {
+        // TODO: handle error
+      } else if waited > 60 {
         return .timedOutWaiting
       }
     }
@@ -127,3 +127,9 @@ final class FilterManager: NSObject {
 }
 
 let FILTER_EXT_BUNDLE_ID = "com.netrivet.gertrude.filter-extension"
+
+enum ActivationRequestStatus {
+  case idle, pending, failed, succeeded
+}
+
+let activationRequest = ActorIsolated<ActivationRequestStatus>(.idle)

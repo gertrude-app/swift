@@ -16,7 +16,7 @@ struct AppWebViews: AggregateCodeGenerator {
 
   func format() throws {
     let proc = Process()
-    proc.executableURL = URL(fileURLWithPath: "/usr/bin/make")
+    proc.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/just")
     proc.currentDirectoryURL = URL(fileURLWithPath: "/Users/jared/gertie/web")
     proc.arguments = ["format-codegen"]
     try proc.run()

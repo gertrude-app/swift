@@ -8,12 +8,16 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
   ) {
     guard result == .completed else {
       print("system extension request finished not completed")
-      // filterController.status = .error
+      Task { @MainActor in
+        await activationRequest.setValue(.failed)
+      }
       return
     }
 
-    print("system extension request finished completed")
-    activationRequestCompleted = true
+    print("system extension request finished successfully")
+    Task { @MainActor in
+      await activationRequest.setValue(.succeeded)
+    }
   }
 
   func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {

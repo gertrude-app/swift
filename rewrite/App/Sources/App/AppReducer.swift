@@ -3,7 +3,7 @@ import ComposableArchitecture
 import Foundation
 import Models
 
-struct AppReducer: Reducer {
+struct AppReducer: Reducer, Sendable {
   struct State: Equatable {
     var admin = AdminState()
     var app = AppState()
@@ -24,29 +24,43 @@ struct AppReducer: Reducer {
   @Dependency(\.filter) var filter
   @Dependency(\.storage) var storage
 
-  var cancellables = Set<AnyCancellable>()
-
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
+
       case .delegate(.didFinishLaunching):
         return .merge(
-          .run { [setup = filter.setup] send in
-            await send(.filter(.receivedState(await setup())))
+          .run { send in
+            await send(.filter(.receivedState(await filter.setup())))
           },
-          .run { [load = storage.loadPersistentState] send in
-            await send(.loadedPersistentState(try load()))
+          .run { send in
+            await send(.loadedPersistentState(try storage.loadPersistentState()))
           },
           .publisher {
             filter.changes().map { .filter(.receivedState($0)) }
           }
         )
+
       case .loadedPersistentState(let persistent):
         state.user = persistent?.user
         if state.user != nil {
           state.history.userConnection = .established(welcomeDismissed: true)
         }
         return .none
+
+      // TODO: test
+      case .menuBar(.turnOnFilterClicked):
+        if state.filter == .notInstalled {
+          // TODO: handle install timout, error, etc
+          return .fireAndForget { _ = await filter.install() }
+        } else {
+          return .fireAndForget { _ = await filter.start() }
+        }
+
+      // TODO: temporary
+      case .menuBar(.administrateClicked):
+        return .fireAndForget { _ = await filter.stop() }
+
       default:
         return .none
       }

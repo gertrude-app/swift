@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import Models
 
-struct Filter: Reducer {
+struct Filter: Reducer, Sendable {
   typealias State = FilterState
 
   enum Action: Equatable {
