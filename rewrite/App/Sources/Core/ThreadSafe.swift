@@ -1,14 +1,14 @@
 import Foundation
 
-struct ThreadSafe<Value>: @unchecked Sendable {
+public struct ThreadSafe<Value>: @unchecked Sendable {
   private var _value: Value
   private let lock = Lock()
 
-  init(wrapped value: Value) {
+  public init(wrapped value: Value) {
     _value = value
   }
 
-  var value: Value {
+  public var value: Value {
     get { lock.run { _value } }
     set { lock.run { _value = newValue } }
   }
