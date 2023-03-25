@@ -10,7 +10,7 @@ struct XPCClient: Sendable {
 
 extension XPCClient: DependencyKey {
   static var liveValue: Self {
-    let manager = ThreadSafe(wrapped: XPCManager())
+    let manager = ThreadSafe(XPCManager())
     return .init(
       startListener: { manager.value.startListener() }
     )
@@ -38,12 +38,11 @@ class XPCManager: NSObject, NSXPCListenerDelegate {
   var connection: NSXPCConnection?
 
   func startListener() {
-    let serviceName = "WFN83LM943.com.netrivet.gertrude.group.mach-service"
-    let newListener = NSXPCListener(machServiceName: serviceName)
+    let newListener = NSXPCListener(machServiceName: Constants.MACH_SERVICE_NAME)
     newListener.delegate = self
     newListener.resume()
     listener = newListener
-    os_log("[G•] XPCManager: started listener, name: %{public}s", serviceName)
+    os_log("[G•] XPCManager: started listener")
   }
 
   func listener(
@@ -51,7 +50,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate {
     shouldAcceptNewConnection newConnection: NSXPCConnection
   ) -> Bool {
 
-    os_log("[G•]  XPCManager: shouldAcceptNewConnection")
+    os_log("[G•] XPCManager: shouldAcceptNewConnection")
     newConnection.exportedInterface = NSXPCInterface(with: AppMessageReceiving.self)
     newConnection.exportedObject = self // Any?
     newConnection.remoteObjectInterface = NSXPCInterface(with: FilterMessageReceiving.self)

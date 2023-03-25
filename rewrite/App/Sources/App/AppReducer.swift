@@ -21,8 +21,9 @@ struct AppReducer: Reducer, Sendable {
     case loadedPersistentState(Persistent.State?)
   }
 
-  @Dependency(\.filter) var filter
   @Dependency(\.storage) var storage
+  @Dependency(\.filterXpc) var filterXpc
+  @Dependency(\.filterExtension) var filterExtension
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
@@ -31,13 +32,15 @@ struct AppReducer: Reducer, Sendable {
       case .delegate(.didFinishLaunching):
         return .merge(
           .run { send in
-            await send(.filter(.receivedState(await filter.setup())))
+            await send(.filter(.receivedState(await filterExtension.setup())))
           },
           .run { send in
             await send(.loadedPersistentState(try storage.loadPersistentState()))
           },
           .publisher {
-            filter.changes().map { .filter(.receivedState($0)) }
+            // TODO: when filter goes _TO_ .notInstalled, the NSXPCConnection
+            // becomes useless, we should re-create/invalidate it then
+            filterExtension.stateChanges().map { .filter(.receivedState($0)) }
           }
         )
 
@@ -52,14 +55,26 @@ struct AppReducer: Reducer, Sendable {
       case .menuBar(.turnOnFilterClicked):
         if state.filter == .notInstalled {
           // TODO: handle install timout, error, etc
-          return .fireAndForget { _ = await filter.install() }
+          return .fireAndForget { _ = await filterExtension.install() }
         } else {
-          return .fireAndForget { _ = await filter.start() }
+          return .fireAndForget { _ = await filterExtension.start() }
+        }
+
+      // TODO: temporary
+      case .menuBar(.suspendFilterClicked):
+        return .fireAndForget { _ = await filterExtension.stop() }
+
+      // TODO: temporary
+      case .menuBar(.refreshRulesClicked):
+        return .fireAndForget {
+          print("connection healthy:", await filterXpc.isConnectionHealthy())
         }
 
       // TODO: temporary
       case .menuBar(.administrateClicked):
-        return .fireAndForget { _ = await filter.stop() }
+        return .fireAndForget {
+          print("establish connection:", await filterXpc.establishConnection())
+        }
 
       default:
         return .none
