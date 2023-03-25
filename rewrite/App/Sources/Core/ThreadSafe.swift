@@ -4,13 +4,17 @@ public struct ThreadSafe<Value>: @unchecked Sendable {
   private var _value: Value
   private let lock = Lock()
 
-  public init(wrapped value: Value) {
+  public init(_ value: Value) {
     _value = value
   }
 
   public var value: Value {
     get { lock.run { _value } }
     set { lock.run { _value = newValue } }
+  }
+
+  public func unlock() -> Value {
+    value
   }
 }
 

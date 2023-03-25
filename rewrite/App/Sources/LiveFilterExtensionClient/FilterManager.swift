@@ -119,7 +119,7 @@ final class FilterManager: NSObject {
     }
   }
 
-  func changes() -> AnyPublisher<FilterState, Never> {
+  func stateChanges() -> AnyPublisher<FilterState, Never> {
     system.filterDidChangePublisher()
       .map { _ in self.getState() }
       .eraseToAnyPublisher()
