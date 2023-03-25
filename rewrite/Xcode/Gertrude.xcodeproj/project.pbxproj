@@ -13,10 +13,10 @@
 		7F4D0E4E2628B9450060281F /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F4D0E4D2628B9450060281F /* libbsm.tbd */; };
 		7F51420F261D000300A66260 /* com.netrivet.gertrude.filter-extension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7F53C599299FF6CA0097285A /* WebViews in Resources */ = {isa = PBXBuildFile; fileRef = 7F53C598299FF6CA0097285A /* WebViews */; };
-		7F5476DF299BD08A0084F682 /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7F5476DE299BD08A0084F682 /* Filter */; };
 		7F94DC8C261CF092002D4534 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F94DC8B261CF092002D4534 /* main.swift */; };
 		7FD8DCA629C221E0003D135A /* LiveApiClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCA529C221E0003D135A /* LiveApiClient */; };
 		7FD8DCAB29C4BD48003D135A /* LiveFilterClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCAA29C4BD48003D135A /* LiveFilterClient */; };
+		7FD8DCAD29CF1CCC003D135A /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCAC29CF1CCC003D135A /* Filter */; };
 		7FF3CD4C2992C99000387D3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF3CD4B2992C99000387D3C /* AppDelegate.swift */; };
 		C40A5C4B229DD6A500627D50 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C40A5C4A229DD6A500627D50 /* main.swift */; };
 		C40A5C57229DD93200627D50 /* FilterDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E0DBB42273BEA0005B02F4 /* FilterDataProvider.swift */; };
@@ -71,8 +71,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7F5476DF299BD08A0084F682 /* Filter in Frameworks */,
 				7F0B887029C21561001E9427 /* NetworkExtension.framework in Frameworks */,
+				7FD8DCAD29CF1CCC003D135A /* Filter in Frameworks */,
 				7F4D0E4E2628B9450060281F /* libbsm.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -162,7 +162,7 @@
 			);
 			name = GertrudeFilterExtension;
 			packageProductDependencies = (
-				7F5476DE299BD08A0084F682 /* Filter */,
+				7FD8DCAC29CF1CCC003D135A /* Filter */,
 			);
 			productName = GertrudeFilterExtension;
 			productReference = 7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */;
@@ -558,10 +558,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = App;
 		};
-		7F5476DE299BD08A0084F682 /* Filter */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Filter;
-		};
 		7FD8DCA529C221E0003D135A /* LiveApiClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LiveApiClient;
@@ -569,6 +565,10 @@
 		7FD8DCAA29C4BD48003D135A /* LiveFilterClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LiveFilterClient;
+		};
+		7FD8DCAC29CF1CCC003D135A /* Filter */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Filter;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

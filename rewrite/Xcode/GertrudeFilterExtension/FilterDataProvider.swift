@@ -3,8 +3,9 @@ import NetworkExtension
 import os.log
 
 class FilterDataProvider: NEFilterDataProvider {
+  let store = FilterStore()
+
   override func startFilter(completionHandler: @escaping (Error?) -> Void) {
-    os_log("gertie-rewrite: filter init %{public}@", Filter().text)
     completionHandler(nil)
   }
 

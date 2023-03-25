@@ -7,6 +7,8 @@ let package = Package(
   products: [
     .library(name: "App", targets: ["App"]),
     .library(name: "Models", targets: ["Models"]),
+    .library(name: "Filter", targets: ["Filter"]),
+    .library(name: "Core", targets: ["Core"]),
     .library(name: "LiveApiClient", targets: ["LiveApiClient"]),
     .library(name: "LiveFilterClient", targets: ["LiveFilterClient"]),
   ],
@@ -37,7 +39,15 @@ let package = Package(
     ),
     .checkedTarget(
       name: "LiveFilterClient",
-      dependencies: [.dependencies, "Models"]
+      dependencies: [.dependencies, "Core", "Models"]
+    ),
+    .checkedTarget(
+      name: "Filter",
+      dependencies: [.tca, "Core"]
+    ),
+    .checkedTarget(
+      name: "Core",
+      dependencies: []
     ),
     .testTarget(
       name: "AppTests",
