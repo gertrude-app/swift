@@ -46,6 +46,24 @@ import XCTest
     filterStateSubject.send(completion: .finished)
   }
 
+  func testDidFinishLaunching_EstablishesConnectionIfFilterOn() async {
+    let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
+    store.exhaustivity = .off
+    store.dependencies.storage.loadPersistentState = { nil }
+    store.dependencies.filterExtension.setup = { .on }
+
+    let didEstablishConnection = ActorIsolated(false)
+    store.dependencies.filterXpc.establishConnection = {
+      await didEstablishConnection.setValue(true)
+      return .success(())
+    }
+
+    await store.send(.delegate(.didFinishLaunching))
+
+    let establishRan = await didEstablishConnection.value
+    XCTAssertTrue(establishRan)
+  }
+
   func testDidFinishLaunching_NoPersistentUser() async {
     let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
     store.exhaustivity = .off
