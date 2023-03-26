@@ -52,7 +52,7 @@ let package = Package(
     ),
     .checkedTarget(
       name: "Core",
-      dependencies: []
+      dependencies: [.dependencies]
     ),
     .testTarget(
       name: "AppTests",
