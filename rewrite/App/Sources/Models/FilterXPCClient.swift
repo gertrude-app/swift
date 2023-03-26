@@ -1,14 +1,15 @@
 import Combine
+import Core
 import Dependencies
 
 public struct FilterXPCClient: Sendable {
-  public var establishConnection: @Sendable () async -> Result<Void>
-  public var isConnectionHealthy: @Sendable () async -> Result<Void>
+  public var establishConnection: @Sendable () async -> Result<Void, XPCErr>
+  public var isConnectionHealthy: @Sendable () async -> Result<Void, XPCErr>
   public var events: @Sendable () async -> AnyPublisher<Event, Never>
 
   public init(
-    establishConnection: @escaping @Sendable () async -> Result<Void>,
-    isConnectionHealthy: @escaping @Sendable () async -> Result<Void>,
+    establishConnection: @escaping @Sendable () async -> Result<Void, XPCErr>,
+    isConnectionHealthy: @escaping @Sendable () async -> Result<Void, XPCErr>,
     events: @escaping @Sendable () async -> AnyPublisher<Event, Never>
   ) {
     self.establishConnection = establishConnection
@@ -35,7 +36,6 @@ public extension DependencyValues {
 }
 
 public extension FilterXPCClient {
-  typealias Result<T> = Swift.Result<T, Error>
 
   enum Event {
     public enum MessageFromExtension: Sendable {
@@ -44,32 +44,5 @@ public extension FilterXPCClient {
 
     case receivedExtensionMessage(MessageFromExtension)
     // TODO: errors, invalidation handlers called, lost connection, etc...
-  }
-
-  enum Error: UnwrappableError, Sendable {
-    case unwrapFailed
-    case remoteProxyCastFailed
-    case remoteProxyError(Swift.Error)
-    case replyError(Swift.Error)
-    case unknownError(Swift.Error)
-    case unexpectedMissingValueAndError
-    case unexpectedIncorrectAck
-    case timeout
-    case filterNotInstalled
-    case encode(fn: StaticString, type: Encodable.Type, error: Swift.Error)
-    case decode(fn: StaticString, type: Decodable.Type, error: Swift.Error)
-  }
-}
-
-public protocol UnwrappableError: Swift.Error {
-  static var unwrapFailed: Self { get }
-}
-
-public extension Swift.Result where Failure: UnwrappableError {
-  func unwrapFailure() -> Failure {
-    guard case .failure(let err) = self else {
-      return Failure.unwrapFailed
-    }
-    return err
   }
 }

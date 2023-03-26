@@ -5,5 +5,5 @@ import Foundation
 }
 
 @objc public protocol FilterMessageReceiving {
-  func ackRandomInt(_ intData: Data, reply: @escaping (Data?, Error?) -> Void)
+  func receiveUuid(_ uuidData: Data, reply: @escaping (Error?) -> Void)
 }
