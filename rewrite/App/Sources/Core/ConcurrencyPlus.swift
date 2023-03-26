@@ -1,11 +1,10 @@
 import Foundation
-import Models
 
 // @see https://github.com/ChimeHQ/ConcurrencyPlus
 // @see https://www.chimehq.com/blog/extensionkit-xpc
 // error type extended
 
-public enum ConnectionContinuationError: Error {
+public enum XPCContinuationErr: Error {
   case serviceTypeMismatch
   case missingBothValueAndError
   case remoteProxyError(Error)
@@ -20,11 +19,11 @@ public extension NSXPCConnection {
   ) async throws -> T {
     try await withCheckedThrowingContinuation(function: function) { continuation in
       let proxy = self.remoteObjectProxyWithErrorHandler { error in
-        continuation.resume(throwing: ConnectionContinuationError.remoteProxyError(error))
+        continuation.resume(throwing: XPCContinuationErr.remoteProxyError(error))
       }
 
       guard let service = proxy as? Service else {
-        continuation.resume(throwing: ConnectionContinuationError.serviceTypeMismatch)
+        continuation.resume(throwing: XPCContinuationErr.serviceTypeMismatch)
         return
       }
 
@@ -49,9 +48,9 @@ public extension CheckedContinuation where E == Error {
     case (let value?, nil):
       resume(returning: value)
     case (_, let error?):
-      resume(throwing: ConnectionContinuationError.replyError(error))
+      resume(throwing: XPCContinuationErr.replyError(error))
     case (nil, nil):
-      resume(throwing: ConnectionContinuationError.missingBothValueAndError)
+      resume(throwing: XPCContinuationErr.missingBothValueAndError)
     }
   }
 
@@ -70,9 +69,9 @@ public extension CheckedContinuation where T: Decodable, E == Error {
   func resume(with data: Data?, error: Error?) {
     switch (data, error) {
     case (_, let error?):
-      resume(throwing: ConnectionContinuationError.replyError(error))
+      resume(throwing: XPCContinuationErr.replyError(error))
     case (nil, nil):
-      resume(throwing: ConnectionContinuationError.missingBothValueAndError)
+      resume(throwing: XPCContinuationErr.missingBothValueAndError)
     case (let encodedValue?, nil):
       let result = Swift.Result(catching: { try JSONDecoder().decode(T.self, from: encodedValue) })
       resume(with: result)

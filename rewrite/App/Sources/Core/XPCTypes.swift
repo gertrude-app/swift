@@ -1,11 +1,29 @@
-import Models
+import Foundation
 
-extension FilterXPCClient.Error {
+public enum XPCErr: Error, Sendable {
+  public enum AppErr: Error, Sendable {
+    case unexpectedIncorrectAck
+    case filterNotInstalled
+  }
+
+  case noConnection
+  case onAppSide(AppErr)
+  case remoteProxyCastFailed
+  case remoteProxyError(Error)
+  case replyError(Error)
+  case unknownError(Error)
+  case unexpectedMissingValueAndError
+  case timeout
+  case encode(fn: StaticString, type: Encodable.Type, error: Error)
+  case decode(fn: StaticString, type: Decodable.Type, error: Error)
+}
+
+public extension XPCErr {
   init(_ error: Error) {
     switch error {
-    case let error as FilterXPCClient.Error:
+    case let error as XPCErr:
       self = error
-    case let connectionError as ConnectionContinuationError:
+    case let connectionError as XPCContinuationErr:
       switch connectionError {
       case .missingBothValueAndError:
         self = .unexpectedMissingValueAndError
@@ -22,7 +40,7 @@ extension FilterXPCClient.Error {
   }
 }
 
-extension Result where Failure == FilterXPCClient.Error {
+public extension Result where Failure == XPCErr {
   init(catching body: @escaping () async throws -> Success) async {
     do {
       self = .success(try await body())
@@ -32,7 +50,7 @@ extension Result where Failure == FilterXPCClient.Error {
   }
 }
 
-extension Result {
+public extension Result {
   var isSuccess: Bool {
     switch self {
     case .success:

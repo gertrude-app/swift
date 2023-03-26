@@ -10,13 +10,13 @@ import XCTest
     let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
 
     let didSetupFilter = ActorIsolated(false)
-    store.dependencies.filter.setup = {
+    store.dependencies.filterExtension.setup = {
       await didSetupFilter.setValue(true)
       return .off
     }
 
     let filterStateSubject = PassthroughSubject<FilterState, Never>()
-    store.dependencies.filter.changes = { filterStateSubject.eraseToAnyPublisher() }
+    store.dependencies.filterExtension.stateChanges = { filterStateSubject.eraseToAnyPublisher() }
     store.dependencies.storage.loadPersistentState = { .init(user: .mock) }
 
     await store.send(.delegate(.didFinishLaunching))
