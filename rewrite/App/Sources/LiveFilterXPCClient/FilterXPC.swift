@@ -1,3 +1,4 @@
+import Combine
 import Core
 import Dependencies
 import Foundation
@@ -40,7 +41,13 @@ struct FilterXPC: Sendable {
       throw XPCErr.onAppSide(.unexpectedIncorrectAck)
     }
   }
+
+  func events() -> AnyPublisher<XPCEvent, Never> {
+    sharedEventSubject.unlock().eraseToAnyPublisher()
+  }
 }
+
+let sharedEventSubject = ThreadSafe(PassthroughSubject<XPCEvent, Never>())
 
 extension FilterXPC: XPCSender {
   typealias Proxy = AppMessageReceiving
@@ -52,24 +59,10 @@ func newConnection() -> NSXPCConnection {
     options: []
   )
   connection.exportedInterface = NSXPCInterface(with: FilterMessageReceiving.self)
-  connection.exportedObject = ReceiveFilterMessage()
+  connection.exportedObject = ReceiveFilterMessage(subject: sharedEventSubject)
   connection.remoteObjectInterface = NSXPCInterface(with: AppMessageReceiving.self)
   connection.resume()
   return connection
-}
-
-// wha????
-@objc class ReceiveFilterMessage: NSObject, FilterMessageReceiving {
-  func receiveUuid(_ uuidData: Data, reply: @escaping (Error?) -> Void) {
-    do {
-      let uuid = try JSONDecoder().decode(UUID.self, from: uuidData)
-      print("got a uuid from the filter: \(uuid)")
-      reply(nil)
-    } catch {
-      print("got an err (uuid) from the filter: \(error)")
-      reply(error)
-    }
-  }
 }
 
 private let sharedConnection = DoubleIsolated(ThreadSafe(newConnection()))

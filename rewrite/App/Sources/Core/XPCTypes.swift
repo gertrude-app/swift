@@ -40,6 +40,15 @@ public extension XPCErr {
   }
 }
 
+public enum XPCEvent: Sendable, Equatable {
+  public enum MessageFromExtension: Sendable, Equatable {
+    case uuid(UUID)
+  }
+
+  case receivedExtensionMessage(MessageFromExtension)
+  case decodingExtensionDataFailed(fn: String, type: String, error: String)
+}
+
 public extension Result where Failure == XPCErr {
   init(catching body: @escaping () async throws -> Success) async {
     do {

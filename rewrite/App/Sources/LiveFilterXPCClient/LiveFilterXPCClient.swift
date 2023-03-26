@@ -12,7 +12,9 @@ extension FilterXPCClient: DependencyKey {
       isConnectionHealthy: { await .init {
         try await xpc.value.isConnectionHealthy()
       }},
-      events: { fatalError() }
+      events: {
+        xpc.value.events()
+      }
     )
   }
 }

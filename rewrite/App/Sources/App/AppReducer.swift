@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import Core
 import Foundation
 import Models
 
@@ -16,11 +17,13 @@ struct AppReducer: Reducer, Sendable {
   enum Action: Equatable, Sendable {
     case delegate(AppDelegate.Action)
     case filter(Filter.Action)
+    case receivedXpcEvent(XPCEvent)
     case history(History.Action)
     case menuBar(MenuBar.Action)
     case loadedPersistentState(Persistent.State?)
   }
 
+  @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.storage) var storage
   @Dependency(\.filterXpc) var filterXpc
   @Dependency(\.filterExtension) var filterExtension
@@ -32,19 +35,25 @@ struct AppReducer: Reducer, Sendable {
       case .delegate(.didFinishLaunching):
         return .merge(
           .run { send in
+            await send(.loadedPersistentState(try storage.loadPersistentState()))
+
             let setupState = await filterExtension.setup()
             await send(.filter(.receivedState(setupState)))
             if setupState == .on {
               _ = await filterXpc.establishConnection()
             }
           },
-          .run { send in
-            await send(.loadedPersistentState(try storage.loadPersistentState()))
-          },
           .publisher {
             // TODO: when filter goes _TO_ .notInstalled, the NSXPCConnection
             // becomes useless, we should re-create/invalidate it then
-            filterExtension.stateChanges().map { .filter(.receivedState($0)) }
+            filterExtension.stateChanges()
+              .map { .filter(.receivedState($0)) }
+              .receive(on: mainQueue)
+          },
+          .publisher {
+            filterXpc.events()
+              .map { .receivedXpcEvent($0) }
+              .receive(on: mainQueue)
           }
         )
 
