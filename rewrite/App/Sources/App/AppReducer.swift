@@ -32,7 +32,11 @@ struct AppReducer: Reducer, Sendable {
       case .delegate(.didFinishLaunching):
         return .merge(
           .run { send in
-            await send(.filter(.receivedState(await filterExtension.setup())))
+            let setupState = await filterExtension.setup()
+            await send(.filter(.receivedState(setupState)))
+            if setupState == .on {
+              _ = await filterXpc.establishConnection()
+            }
           },
           .run { send in
             await send(.loadedPersistentState(try storage.loadPersistentState()))
