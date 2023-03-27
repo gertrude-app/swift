@@ -83,7 +83,7 @@ jobs:
           path: api/.build
           key: api-${{ hashFiles('api/Package.resolved') }}
           restore-keys: api-
-      - name: test-api
+      - name: build-api
         run: cd api && swift build
 
   linux-api-test:
