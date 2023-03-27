@@ -27,8 +27,8 @@ extension Signup: Resolver {
       throw Abort(.badRequest)
     }
 
-    if Env.mode == .prod {
-      Current.sendGrid.fireAndForget(.toJared("Gertrude signup", "email: \(email)"))
+    if email.starts(with: "e2e-test-"), email.contains("@gertrude.app") {
+      return Output(url: nil)
     }
 
     // ------ FUTURE ME --------
@@ -42,8 +42,15 @@ extension Signup: Resolver {
       .first()
 
     if existing != nil {
+      if Env.mode == .prod {
+        Current.sendGrid.fireAndForget(.toJared("Gertrude signup [exists]", email))
+      }
       try await Current.postmark.send(accountExists(with: email))
       return .init(url: nil)
+    }
+
+    if Env.mode == .prod {
+      Current.sendGrid.fireAndForget(.toJared("Gertrude signup", "email: \(email)"))
     }
 
     let admin = try await Current.db.create(Admin(

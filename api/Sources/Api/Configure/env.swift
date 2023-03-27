@@ -21,7 +21,7 @@ extension Configure {
     Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
     Current.postmark = .live(apiKey: Env.POSTMARK_API_KEY)
 
-    if Env.mode == .staging {
+    if Env.mode != .prod {
       Current.postmark.send = { email in
         try await Current.sendGrid.send(.init(
           to: .init(email: email.to),
