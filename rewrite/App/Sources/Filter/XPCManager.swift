@@ -7,7 +7,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
   typealias Proxy = FilterMessageReceiving
 
   var listener: NSXPCListener?
-  var connection: ThreadSafe<NSXPCConnection>?
+  var connection: Connection?
 
   @Dependency(\.mainQueue) var scheduler
 
@@ -15,6 +15,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     guard let connection else {
       throw XPCErr.noConnection
     }
+
     let uuid = UUID()
     os_log("[G•] XPCManager: sending uuid: %{public}@", uuid.uuidString)
     let uuidData = try XPC.encode(uuid)
@@ -35,8 +36,10 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     _ listener: NSXPCListener,
     shouldAcceptNewConnection newConnection: NSXPCConnection
   ) -> Bool {
+    // ⛔️⛔️⛔️ warning ⛔️⛔️⛔️ `newConnection` has been "moved" into
+    // the connection object, and may not be accessed again !!!
+    connection = Connection(taking: Move(configure(connection: newConnection)))
     // NB: we can get user id: `newConnection.effectiveUserIdentifier`
-    connection = ThreadSafe(configure(connection: newConnection))
     return true
   }
 }

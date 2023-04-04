@@ -14,7 +14,7 @@ struct FilterXPC: Sendable {
 
     // stored connection can go bad if something happens on the filter side
     // recreating a new connection and sending a message can restore it
-    await sharedConnection.replace(with: ThreadSafe(newConnection()))
+    await sharedConnection.replace(with: { newConnection() })
 
     // the xpc connection channel is created at the moment the app
     // first sends _ANY_ message to the listening filter extension
@@ -32,8 +32,8 @@ struct FilterXPC: Sendable {
 
     let randomInt = Int.random(in: 0 ... 10000)
     let intData = try XPC.encode(randomInt)
-    let connection = await sharedConnection.get
-    let reply = try await withTimeout(connection: connection) { filterProxy, continuation in
+
+    let reply = try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.ackRandomInt(intData, reply: continuation.resumingHandler)
     }
 
@@ -41,13 +41,7 @@ struct FilterXPC: Sendable {
       throw XPCErr.onAppSide(.unexpectedIncorrectAck)
     }
   }
-
-  func events() -> AnyPublisher<XPCEvent, Never> {
-    sharedEventSubject.unlock().eraseToAnyPublisher()
-  }
 }
-
-let sharedEventSubject = ThreadSafe(PassthroughSubject<XPCEvent, Never>())
 
 extension FilterXPC: XPCSender {
   typealias Proxy = AppMessageReceiving
@@ -59,10 +53,11 @@ func newConnection() -> NSXPCConnection {
     options: []
   )
   connection.exportedInterface = NSXPCInterface(with: FilterMessageReceiving.self)
-  connection.exportedObject = ReceiveFilterMessage(subject: sharedEventSubject)
+  connection.exportedObject = ReceiveFilterMessage(subject: xpcEventSubject)
   connection.remoteObjectInterface = NSXPCInterface(with: AppMessageReceiving.self)
   connection.resume()
   return connection
 }
 
-private let sharedConnection = DoubleIsolated(ThreadSafe(newConnection()))
+private let sharedConnection = Connection { newConnection() }
+internal let xpcEventSubject = Mutex(PassthroughSubject<XPCEvent, Never>())

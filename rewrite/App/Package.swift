@@ -30,6 +30,7 @@ let package = Package(
       name: "Models",
       dependencies: [
         .dependencies,
+        "Core",
         "swift-tagged" => "Tagged",
         "pairql-macapp" => "MacAppRoute",
       ]

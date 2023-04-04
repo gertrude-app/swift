@@ -15,14 +15,16 @@ public extension XPCSender {
   func withTimeout<T: Sendable>(
     function: String = #function,
     of seconds: Double = 3,
-    connection: ThreadSafe<NSXPCConnection>,
+    connection: Connection,
     operation: @escaping @Sendable (Proxy, CheckedContinuation<T, Error>) -> Void
   ) async throws -> T {
     let isolatedData = ActorIsolated<T?>(nil)
+
     let task = Task {
-      let data = try await connection.unlock()
-        .withContinuation(function: function, operation)
-      await isolatedData.setValue(data)
+      try await connection.withUnderlying { nsxpc in
+        let data = try await nsxpc.withContinuation(function: function, operation)
+        await isolatedData.setValue(data)
+      }
     }
 
     var ticks = 0

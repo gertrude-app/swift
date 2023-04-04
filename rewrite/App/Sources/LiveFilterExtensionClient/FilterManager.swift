@@ -1,12 +1,25 @@
 import Combine
+import Core
 import Dependencies
 import Foundation
 import Models
 import NetworkExtension
 
 final class FilterManager: NSObject {
+  private var cancellables = Set<AnyCancellable>()
+
   @Dependency(\.system) var system
   @Dependency(\.mainQueue) var scheduler
+
+  func setup() async -> FilterState {
+    system.filterDidChangePublisher().sink {
+      filterStateChanges.withValue { subject in
+        subject.send(self.getState())
+      }
+    }.store(in: &cancellables)
+
+    return await loadState()
+  }
 
   func loadState() async -> FilterState {
     let loadResult = await system.loadFilterConfiguration()
@@ -118,12 +131,6 @@ final class FilterManager: NSObject {
       return .installedSuccessfully
     }
   }
-
-  func stateChanges() -> AnyPublisher<FilterState, Never> {
-    system.filterDidChangePublisher()
-      .map { _ in self.getState() }
-      .eraseToAnyPublisher()
-  }
 }
 
 let FILTER_EXT_BUNDLE_ID = "com.netrivet.gertrude.filter-extension"
@@ -133,3 +140,4 @@ enum ActivationRequestStatus {
 }
 
 let activationRequest = ActorIsolated<ActivationRequestStatus>(.idle)
+let filterStateChanges = Mutex(PassthroughSubject<FilterState, Never>())
