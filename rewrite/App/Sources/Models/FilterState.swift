@@ -9,7 +9,7 @@ public enum FilterState: Equatable, Sendable {
   case suspended(resuming: Date)
 }
 
-public enum FilterInstallResult {
+public enum FilterInstallResult: Sendable {
   case alreadyInstalled
   case installedSuccessfully
   case userCancelled

@@ -8,10 +8,10 @@ struct XPCClient: Sendable {
 
 extension XPCClient: DependencyKey {
   static var liveValue: Self {
-    let manager = ThreadSafe(XPCManager())
+    let manager = ThreadSafeXPCManager()
     return .init(
-      startListener: { manager.value.startListener() },
-      sendUuid: { try await manager.value.sendUuid() }
+      startListener: { await manager.startListener() },
+      sendUuid: { try await manager.sendUuid() }
     )
   }
 }
@@ -27,5 +27,17 @@ extension DependencyValues {
   var xpc: XPCClient {
     get { self[XPCClient.self] }
     set { self[XPCClient.self] = newValue }
+  }
+}
+
+actor ThreadSafeXPCManager {
+  private var manager = XPCManager()
+
+  func startListener() {
+    manager.startListener()
+  }
+
+  func sendUuid() async throws {
+    try await manager.sendUuid()
   }
 }
