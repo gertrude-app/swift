@@ -33,6 +33,7 @@ struct HistoryRoot: Reducer, Sendable {
   typealias Action = AppReducer.Action
 
   @Dependency(\.device) var device
+  @Dependency(\.api.setUserToken) var setUserToken
   @Dependency(\.api.connectUser) var connectUser
   @Dependency(\.app.installedVersion) var appVersion
   @Dependency(\.storage.savePersistentState) var saveState
@@ -47,7 +48,9 @@ struct HistoryRoot: Reducer, Sendable {
       return .none
 
     case .menuBar(.connectSubmit(let code)):
-      guard case .enteringConnectionCode = state.history.userConnection else { return .none }
+      guard case .enteringConnectionCode = state.history.userConnection else {
+        return .none
+      }
       state.history.userConnection = .connecting
       return .task {
         await .history(.userConnection(.connect(TaskResult {
@@ -68,7 +71,10 @@ struct HistoryRoot: Reducer, Sendable {
       state.user = user
       state.history.userConnection = .established(welcomeDismissed: false)
       let persist = state.persistent
-      return .fireAndForget { try await saveState(persist) }
+      return .fireAndForget {
+        try await saveState(persist)
+        await setUserToken(user.token)
+      }
 
     case .history(.userConnection(.connect(.failure(let error)))):
       state.history.userConnection = .connectFailed(error.localizedDescription)

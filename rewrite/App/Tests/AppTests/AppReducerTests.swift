@@ -1,9 +1,10 @@
 import Combine
 import ComposableArchitecture
+import Models
 import XCTest
+import XExpect
 
 @testable import App
-@testable import Models
 
 extension TestStore {
   var deps: DependencyValues {
@@ -22,6 +23,9 @@ extension TestStore {
       return .off
     }
 
+    let apiUserToken = ActorIsolated<User.Token?>(nil)
+    store.deps.api.setUserToken = { await apiUserToken.setValue($0) }
+
     let filterStateSubject = PassthroughSubject<FilterState, Never>()
     store.deps.filterExtension.stateChanges = { filterStateSubject.eraseToAnyPublisher() }
     store.deps.storage.loadPersistentState = { .init(user: .mock) }
@@ -34,8 +38,8 @@ extension TestStore {
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
-    let setupRan = await didSetupFilter.value
-    XCTAssertTrue(setupRan)
+    await expect(apiUserToken).toEqual(User.mock.token)
+    await expect(didSetupFilter).toEqual(true)
 
     await store.receive(.filter(.receivedState(.off))) {
       $0.filter = .off
@@ -69,8 +73,7 @@ extension TestStore {
 
     await store.send(.delegate(.didFinishLaunching))
 
-    let establishRan = await didEstablishConnection.value
-    XCTAssertTrue(establishRan)
+    expect(await didEstablishConnection.value).toEqual(true)
   }
 
   func testDidFinishLaunching_NoPersistentUser() async {
