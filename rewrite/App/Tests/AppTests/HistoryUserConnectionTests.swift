@@ -1,18 +1,22 @@
 import ComposableArchitecture
+import Models
 import XCTest
 import XExpect
 
 @testable import App
-@testable import Models
 
 @MainActor final class HistoryUserConnectionTests: XCTestCase {
   func testHistoryUserConnectionHappyPath() async {
     let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
     store.dependencies.api.connectUser = { _ in .mock }
+
     let savedState = LockIsolated<Persistent.State?>(nil)
     store.dependencies.storage.savePersistentState = { state in
       savedState.setValue(state)
     }
+
+    let apiUserToken = ActorIsolated<User.Token?>(nil)
+    store.deps.api.setUserToken = { await apiUserToken.setValue($0) }
 
     await store.send(.menuBar(.connectClicked)) {
       $0.history.userConnection = .enteringConnectionCode
@@ -27,7 +31,8 @@ import XExpect
       $0.history.userConnection = .established(welcomeDismissed: false)
     }
 
-    expect(savedState.value).toEqual(.init(user: .mock))
+    expect(savedState).toEqual(.init(user: .mock))
+    await expect(apiUserToken).toEqual(User.mock.token)
 
     await store.send(.menuBar(.welcomeAdminClicked)) {
       $0.history.userConnection = .established(welcomeDismissed: true)
@@ -54,24 +59,4 @@ import XExpect
       $0.history.userConnection = .enteringConnectionCode
     }
   }
-}
-
-struct TestErr: Equatable, Error, LocalizedError {
-  let msg: String
-  var errorDescription: String? { msg }
-  init(_ msg: String) { self.msg = msg }
-}
-
-extension User {
-  static let mock = User(
-    id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    deviceId: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    name: "Huck",
-    keyloggingEnabled: true,
-    screenshotsEnabled: true,
-    screenshotFrequency: 1,
-    screenshotSize: 1,
-    connectedAt: .init(timeIntervalSince1970: 0)
-  )
 }

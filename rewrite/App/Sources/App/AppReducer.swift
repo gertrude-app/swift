@@ -23,6 +23,7 @@ struct AppReducer: Reducer, Sendable {
     case loadedPersistentState(Persistent.State?)
   }
 
+  @Dependency(\.api.setUserToken) var setUserToken
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.storage) var storage
   @Dependency(\.filterXpc) var filterXpc
@@ -58,11 +59,17 @@ struct AppReducer: Reducer, Sendable {
         )
 
       case .loadedPersistentState(let persistent):
-        state.user = persistent?.user
+        if let user = persistent?.user {
+          state.user = user
+        }
         if state.user != nil {
           state.history.userConnection = .established(welcomeDismissed: true)
         }
-        return .none
+        return .fireAndForget { [token = state.user?.token] in
+          if let token {
+            await setUserToken(token)
+          }
+        }
 
       // TODO: test
       case .menuBar(.turnOnFilterClicked):
