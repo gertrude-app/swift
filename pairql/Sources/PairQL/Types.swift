@@ -5,11 +5,11 @@ import Foundation
 
 public protocol PairRoute: Equatable {}
 
-public typealias PairNestable = Codable & Equatable
+public typealias PairNestable = Codable & Equatable & Sendable
 
 public protocol PairInput: Codable, Equatable {}
 
-public protocol PairOutput: Codable, Equatable {
+public protocol PairOutput: Codable, Equatable, Sendable {
   func jsonData() throws -> Data
 }
 

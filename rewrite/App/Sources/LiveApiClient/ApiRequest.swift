@@ -3,9 +3,9 @@ import MacAppRoute
 import Models
 import XCore
 
-func response<T: Pair>(
-  _ route: AuthedUserRoute,
-  to pair: T.Type
+func output<T: Pair>(
+  from pair: T.Type,
+  with route: AuthedUserRoute
 ) async throws -> T.Output {
   guard let token = await userToken.value?.rawValue else {
     throw AppError("Missing user token")
@@ -13,9 +13,9 @@ func response<T: Pair>(
   return try await request(root: .userAuthed(token, route), pair: T.self)
 }
 
-func response<T: Pair>(
-  unauthed route: UnauthedRoute,
-  to pair: T.Type
+func output<T: Pair>(
+  from pair: T.Type,
+  withUnauthed route: UnauthedRoute
 ) async throws -> T.Output {
   try await request(root: .unauthed(route), pair: T.self)
 }

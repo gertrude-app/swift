@@ -1,9 +1,9 @@
 import ComposableArchitecture
-import Models
 import XCTest
 import XExpect
 
 @testable import App
+@testable import Models
 
 @MainActor final class HistoryUserConnectionTests: XCTestCase {
   func testHistoryUserConnectionHappyPath() async {

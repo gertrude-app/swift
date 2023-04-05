@@ -48,3 +48,19 @@ public extension Tagged where RawValue == UUID {
     self.init(rawValue: .init())
   }
 }
+
+#if DEBUG
+  extension User {
+    static let mock = User(
+      id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+      token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+      deviceId: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+      name: "Mock User",
+      keyloggingEnabled: true,
+      screenshotsEnabled: true,
+      screenshotFrequency: 1,
+      screenshotSize: 1,
+      connectedAt: .init(timeIntervalSince1970: 0)
+    )
+  }
+#endif

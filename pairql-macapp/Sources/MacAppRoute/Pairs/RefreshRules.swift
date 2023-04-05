@@ -24,12 +24,12 @@ public struct RefreshRules: Pair {
   }
 
   public struct Output: PairOutput {
-    public let appManifest: AppIdManifest
-    public let keyloggingEnabled: Bool
-    public let screenshotsEnabled: Bool
-    public let screenshotsFrequency: Int
-    public let screenshotsResolution: Int
-    public let keys: [Key]
+    public var appManifest: AppIdManifest
+    public var keyloggingEnabled: Bool
+    public var screenshotsEnabled: Bool
+    public var screenshotsFrequency: Int
+    public var screenshotsResolution: Int
+    public var keys: [Key]
 
     public init(
       appManifest: AppIdManifest,

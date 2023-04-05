@@ -1,4 +1,4 @@
-public enum AppScope: Equatable, Hashable, Codable {
+public enum AppScope: Equatable, Hashable, Codable, Sendable {
   case unrestricted
   case webBrowsers
   case single(Single)
@@ -16,7 +16,7 @@ public enum AppScope: Equatable, Hashable, Codable {
 // extensions
 
 public extension AppScope {
-  enum Single: Equatable, Hashable, Codable {
+  enum Single: Equatable, Hashable, Codable, Sendable {
     case identifiedAppSlug(String)
     case bundleId(String)
 

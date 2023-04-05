@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 import Core
 import Foundation
+import MacAppRoute
 import Models
 
 struct AppReducer: Reducer, Sendable {
@@ -9,21 +10,23 @@ struct AppReducer: Reducer, Sendable {
     var admin = AdminState()
     var app = AppState()
     var device = DeviceState()
-    var filter = Filter.State.unknown
-    var history = History.State()
-    var user: User?
+    var filter = FilterReducer.State.unknown
+    var history = HistoryReducer.State()
+    var user: UserReducer.State?
   }
 
   enum Action: Equatable, Sendable {
     case delegate(AppDelegate.Action)
-    case filter(Filter.Action)
+    case filter(FilterReducer.Action)
     case receivedXpcEvent(XPCEvent)
-    case history(History.Action)
+    case history(HistoryReducer.Action)
     case menuBar(MenuBar.Action)
     case loadedPersistentState(Persistent.State?)
+    case user(UserReducer.Action)
   }
 
-  @Dependency(\.api.setUserToken) var setUserToken
+  @Dependency(\.api) var api
+  @Dependency(\.app) var appClient
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.storage) var storage
   @Dependency(\.filterXpc) var filterXpc
@@ -36,7 +39,7 @@ struct AppReducer: Reducer, Sendable {
       case .delegate(.didFinishLaunching):
         return .merge(
           .run { send in
-            await send(.loadedPersistentState(try storage.loadPersistentState()))
+            await send(.loadedPersistentState(try await storage.loadPersistentState()))
 
             let setupState = await filterExtension.setup()
             await send(.filter(.receivedState(setupState)))
@@ -59,16 +62,17 @@ struct AppReducer: Reducer, Sendable {
         )
 
       case .loadedPersistentState(let persistent):
-        if let user = persistent?.user {
-          state.user = user
+        guard let user = persistent?.user else {
+          return .none
         }
-        if state.user != nil {
-          state.history.userConnection = .established(welcomeDismissed: true)
-        }
-        return .fireAndForget { [token = state.user?.token] in
-          if let token {
-            await setUserToken(token)
-          }
+        state.user = user
+        state.history.userConnection = .established(welcomeDismissed: true)
+        return .task {
+          await api.setUserToken(user.token)
+          return await .user(.refreshRules(TaskResult {
+            let appVersion = appClient.installedVersion() ?? "unknown"
+            return try await api.refreshRules(.init(appVersion: appVersion))
+          }))
         }
 
       // TODO: test
@@ -100,9 +104,12 @@ struct AppReducer: Reducer, Sendable {
         return .none
       }
     }
-    HistoryRoot()
+    HistoryRootReducer()
     Scope(state: \.filter, action: /Action.filter) {
-      Filter()
+      FilterReducer()
+    }
+    .ifLet(\.user, action: /Action.user) {
+      UserReducer()
     }
   }
 }

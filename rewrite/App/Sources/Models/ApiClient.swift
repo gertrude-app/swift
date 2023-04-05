@@ -4,38 +4,33 @@ import MacAppRoute
 
 public struct ApiClient: Sendable {
   public var connectUser: @Sendable (ConnectUser.Input) async throws -> User
+  public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
   public var setEndpoint: @Sendable (URL) async -> Void
   public var setUserToken: @Sendable (User.Token) async -> Void
 
   public init(
     connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> User,
+    refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
     setEndpoint: @escaping @Sendable (URL) async -> Void,
     setUserToken: @escaping @Sendable (User.Token) async -> Void
   ) {
     self.connectUser = connectUser
+    self.refreshRules = refreshRules
     self.setEndpoint = setEndpoint
     self.setUserToken = setUserToken
   }
 }
 
-extension ApiClient: TestDependencyKey {
-  public static let testValue = Self(
-    connectUser: { code in
-      User(
-        id: .init(),
-        token: .init(),
-        deviceId: .init(),
-        name: "Huck",
-        keyloggingEnabled: true,
-        screenshotsEnabled: true,
-        screenshotFrequency: 1,
-        screenshotSize: 1
-      )
-    },
-    setEndpoint: { _ in },
-    setUserToken: { _ in }
-  )
-}
+#if DEBUG
+  extension ApiClient: TestDependencyKey {
+    public static let testValue = Self(
+      connectUser: { _ in .mock },
+      refreshRules: { _ in .mock },
+      setEndpoint: { _ in },
+      setUserToken: { _ in }
+    )
+  }
+#endif
 
 public extension DependencyValues {
   var api: ApiClient {
