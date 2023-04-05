@@ -24,17 +24,3 @@ struct TestErr: Equatable, Error, LocalizedError {
   var errorDescription: String? { msg }
   init(_ msg: String) { self.msg = msg }
 }
-
-extension User {
-  static let mock = User(
-    id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    deviceId: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    name: "Huck",
-    keyloggingEnabled: true,
-    screenshotsEnabled: true,
-    screenshotFrequency: 1,
-    screenshotSize: 1,
-    connectedAt: .init(timeIntervalSince1970: 0)
-  )
-}

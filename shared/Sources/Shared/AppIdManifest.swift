@@ -1,4 +1,4 @@
-public struct AppIdManifest: Codable, Equatable {
+public struct AppIdManifest: Codable, Equatable, Sendable {
   public typealias IdentifiedAppSlug = String
   public typealias AppBundleId = String
   public typealias AppDisplayName = String

@@ -1,4 +1,4 @@
-public enum Key: Hashable, Codable {
+public enum Key: Hashable, Codable, Sendable {
   case domain(domain: Domain, scope: AppScope)
   case anySubdomain(domain: Domain, scope: AppScope)
   case skeleton(scope: AppScope.Single)
@@ -19,22 +19,22 @@ public enum Key: Hashable, Codable {
 }
 
 public extension Key {
-  struct Domain: Equatable, Hashable, Codable {
+  struct Domain: Equatable, Hashable, Codable, Sendable {
     public let string: String
   }
 
-  struct DomainRegexPattern: Hashable, Codable {
+  struct DomainRegexPattern: Hashable, Codable, Sendable {
     public let string: String
     public let regex: String
   }
 
-  struct Path: Hashable, Codable {
+  struct Path: Hashable, Codable, Sendable {
     public let domain: Domain
     public let path: String
     public let regex: String?
   }
 
-  struct Ip: Hashable, Codable {
+  struct Ip: Hashable, Codable, Sendable {
     public let string: String
   }
 }

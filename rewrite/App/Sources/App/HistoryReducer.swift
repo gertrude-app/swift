@@ -4,7 +4,7 @@ import Foundation
 import MacAppRoute
 import Models
 
-struct History {
+struct HistoryReducer {
   enum UserConnection {
     enum State: Equatable {
       case notConnected
@@ -28,7 +28,7 @@ struct History {
   }
 }
 
-struct HistoryRoot: Reducer, Sendable {
+struct HistoryRootReducer: Reducer, Sendable {
   typealias State = AppReducer.State
   typealias Action = AppReducer.Action
 

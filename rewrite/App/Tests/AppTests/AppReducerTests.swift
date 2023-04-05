@@ -1,10 +1,11 @@
 import Combine
 import ComposableArchitecture
-import Models
+import MacAppRoute
 import XCTest
 import XExpect
 
 @testable import App
+@testable import Models
 
 extension TestStore {
   var deps: DependencyValues {
@@ -14,17 +15,17 @@ extension TestStore {
 }
 
 @MainActor final class AppReducerTests: XCTestCase {
-  func testDidFinishLaunching() async {
+  func testDidFinishLaunching_Exhaustive() async {
     let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
 
-    let didSetupFilter = ActorIsolated(false)
+    let filterSetupSpy = ActorIsolated(false)
     store.deps.filterExtension.setup = {
-      await didSetupFilter.setValue(true)
+      await filterSetupSpy.setValue(true)
       return .off
     }
 
-    let apiUserToken = ActorIsolated<User.Token?>(nil)
-    store.deps.api.setUserToken = { await apiUserToken.setValue($0) }
+    let tokenSetSpy = ActorIsolated<User.Token?>(nil)
+    store.deps.api.setUserToken = { await tokenSetSpy.setValue($0) }
 
     let filterStateSubject = PassthroughSubject<FilterState, Never>()
     store.deps.filterExtension.stateChanges = { filterStateSubject.eraseToAnyPublisher() }
@@ -38,11 +39,16 @@ extension TestStore {
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
-    await expect(apiUserToken).toEqual(User.mock.token)
-    await expect(didSetupFilter).toEqual(true)
+    await expect(tokenSetSpy).toEqual(User.mock.token)
+    await expect(filterSetupSpy).toEqual(true)
 
     await store.receive(.filter(.receivedState(.off))) {
       $0.filter = .off
+    }
+
+    await store.receive(.user(.refreshRules(.success(.mock)))) {
+      $0.user?.screenshotFrequency = 333
+      $0.user?.screenshotSize = 555
     }
 
     filterStateSubject.send(.on)
@@ -73,7 +79,7 @@ extension TestStore {
 
     await store.send(.delegate(.didFinishLaunching))
 
-    expect(await didEstablishConnection.value).toEqual(true)
+    await expect(didEstablishConnection).toEqual(true)
   }
 
   func testDidFinishLaunching_NoPersistentUser() async {
@@ -83,9 +89,6 @@ extension TestStore {
     store.deps.mainQueue = .immediate
 
     await store.send(.delegate(.didFinishLaunching))
-    await store.receive(.loadedPersistentState(nil)) {
-      $0.user = nil
-      $0.history.userConnection = .notConnected
-    }
+    await store.receive(.loadedPersistentState(nil))
   }
 }

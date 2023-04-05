@@ -1,10 +1,10 @@
 import Dependencies
-import Models
 import XCore
 import XCTest
 import XExpect
 
 @testable import App
+@testable import Models
 
 final class StorageClientTests: XCTestCase {
   func testLoadPersistentState() async throws {
