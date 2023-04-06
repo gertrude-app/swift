@@ -10,67 +10,28 @@ struct AppReducer: Reducer, Sendable {
     var admin = AdminState()
     var app = AppState()
     var device = DeviceState()
-    var filter = FilterReducer.State.unknown
-    var history = HistoryReducer.State()
-    var user: UserReducer.State?
+    var filter = FilterFeature.State.unknown
+    var history = HistoryFeature.State()
+    var user: UserFeature.State?
   }
 
   enum Action: Equatable, Sendable {
-    case application(Application.Action)
-    case filter(FilterReducer.Action)
+    case application(ApplicationFeature.Action)
+    case filter(FilterFeature.Action)
     case receivedXpcEvent(XPCEvent)
-    case history(HistoryReducer.Action)
-    case menuBar(MenuBar.Action)
+    case history(HistoryFeature.Action)
+    case menuBar(MenuBarFeature.Action)
     case loadedPersistentState(Persistent.State?)
-    case user(UserReducer.Action)
+    case user(UserFeature.Action)
     case heartbeat
   }
 
   @Dependency(\.api) var api
   @Dependency(\.app) var appClient
-  @Dependency(\.backgroundQueue) var bgQueue
-  @Dependency(\.mainQueue) var mainQueue
-  @Dependency(\.storage) var storage
-  @Dependency(\.filterXpc) var filterXpc
-  @Dependency(\.filterExtension) var filterExtension
-
-  private enum HeartbeatCancelId {}
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
-
-      case .application(.willTerminate):
-        return .cancel(id: HeartbeatCancelId.self)
-
-      case .application(.didFinishLaunching):
-        return .merge(
-          .run { send in
-            await send(.loadedPersistentState(try await storage.loadPersistentState()))
-            let setupState = await filterExtension.setup()
-            await send(.filter(.receivedState(setupState)))
-            if setupState == .on {
-              _ = await filterXpc.establishConnection()
-            }
-          },
-          .run { send in
-            for await _ in bgQueue.timer(interval: .seconds(60 * 30)) {
-              await send(.heartbeat)
-            }
-          }.cancellable(id: HeartbeatCancelId.self),
-          .publisher {
-            // TODO: when filter goes _TO_ .notInstalled, the NSXPCConnection
-            // becomes useless, we should re-create/invalidate it then
-            filterExtension.stateChanges()
-              .map { .filter(.receivedState($0)) }
-              .receive(on: mainQueue)
-          },
-          .publisher {
-            filterXpc.events()
-              .map { .receivedXpcEvent($0) }
-              .receive(on: mainQueue)
-          }
-        )
 
       case .heartbeat:
         guard state.user != nil else { return .none }
@@ -84,7 +45,6 @@ struct AppReducer: Reducer, Sendable {
       case .loadedPersistentState(let persistent):
         guard let user = persistent?.user else { return .none }
         state.user = user
-        state.history.userConnection = .established(welcomeDismissed: true)
         return .task {
           await api.setUserToken(user.token)
           return await .user(.refreshRules(TaskResult {
@@ -93,41 +53,28 @@ struct AppReducer: Reducer, Sendable {
           }))
         }
 
-      // TODO: test
-      case .menuBar(.turnOnFilterClicked):
-        if state.filter == .notInstalled {
-          // TODO: handle install timout, error, etc
-          return .fireAndForget { _ = await filterExtension.install() }
-        } else {
-          return .fireAndForget { _ = await filterExtension.start() }
-        }
-
-      // TODO: temporary
-      case .menuBar(.suspendFilterClicked):
-        return .fireAndForget { _ = await filterExtension.stop() }
-
-      // TODO: temporary
-      case .menuBar(.refreshRulesClicked):
-        return .fireAndForget {
-          print("connection healthy:", await filterXpc.isConnectionHealthy())
-        }
-
-      // TODO: temporary
-      case .menuBar(.administrateClicked):
-        return .fireAndForget {
-          print("establish connection:", await filterXpc.establishConnection())
-        }
-
       default:
         return .none
       }
     }
-    HistoryRootReducer()
+
+    // root reducers
+    ApplicationFeature.RootReducer()
+    HistoryFeature.RootReducer()
+    MenuBarFeature.RootReducer()
+
+    // feature reducers
+    Scope(state: \.history, action: /Action.history) {
+      HistoryFeature.Reducer()
+    }
     Scope(state: \.filter, action: /Action.filter) {
-      FilterReducer()
+      FilterFeature.Reducer()
+    }
+    Scope(state: \.menuBar, action: /Action.menuBar) {
+      MenuBarFeature.Reducer()
     }
     .ifLet(\.user, action: /Action.user) {
-      UserReducer()
+      UserFeature.Reducer()
     }
   }
 }

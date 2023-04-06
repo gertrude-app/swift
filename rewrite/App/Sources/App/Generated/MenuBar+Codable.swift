@@ -1,6 +1,6 @@
 // auto-generated, do not edit
 
-extension MenuBar.Action {
+extension MenuBarFeature.Action {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {
@@ -78,7 +78,7 @@ extension MenuBar.Action {
   }
 }
 
-extension MenuBar.State.Connected.FilterState {
+extension MenuBarFeature.State.Connected.FilterState {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {
@@ -124,7 +124,7 @@ extension MenuBar.State.Connected.FilterState {
   }
 }
 
-extension MenuBar.State {
+extension MenuBarFeature.State {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {
@@ -149,7 +149,7 @@ extension MenuBar.State {
 
   private struct _CaseConnected: Codable {
     var `case` = "connected"
-    var filterState: MenuBar.State.Connected.FilterState
+    var filterState: MenuBarFeature.State.Connected.FilterState
     var recordingScreen: Bool
     var recordingKeystrokes: Bool
   }

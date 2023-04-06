@@ -1,21 +1,21 @@
 import Models
 
 extension FilterState {
-  var menuBar: MenuBar.State.Connected.FilterState {
+  var menuBar: MenuBarFeature.State.Connected.FilterState {
     switch self {
-    // todo... handle error separately?
+    // TODO... handle error separately?
     case .unknown, .notInstalled, .off, .errorLoadingConfig:
       return .off
     case .on:
       return .on
     case .suspended(let resuming):
-      return .suspended(expiration: "\(resuming)") // todo
+      return .suspended(expiration: "\(resuming)") // TODO:
     }
   }
 }
 
 extension AppReducer.State {
-  var menuBar: MenuBar.State {
+  var menuBar: MenuBarFeature.State {
     get {
       switch history.userConnection {
       case .connectFailed(let error):
@@ -26,7 +26,7 @@ extension AppReducer.State {
         return .enteringConnectionCode
       case .established(let welcomeDismissed):
         guard let user else {
-          return .connectionFailed(error: "Unexpected error, please reconnect") // todo
+          return .connectionFailed(error: "Unexpected error, please reconnect") // TODO:
         }
         guard welcomeDismissed else {
           return .connectionSucceded(userName: user.name)

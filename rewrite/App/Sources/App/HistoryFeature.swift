@@ -4,43 +4,37 @@ import Foundation
 import MacAppRoute
 import Models
 
-struct HistoryReducer {
-  enum UserConnection {
-    enum State: Equatable {
-      case notConnected
-      case enteringConnectionCode
-      case connecting
-      case connectFailed(String)
-      case established(welcomeDismissed: Bool)
-    }
-
-    enum Action: Equatable, Sendable {
-      case connect(TaskResult<User>)
-    }
-  }
-
+enum HistoryFeature: Feature {
   struct State: Equatable {
-    var userConnection = UserConnection.State.notConnected
+    var userConnection = UserConnectionFeature.State.notConnected
   }
 
   enum Action: Equatable, Sendable {
-    case userConnection(UserConnection.Action)
+    case userConnection(UserConnectionFeature.Action)
+  }
+
+  struct Reducer: FeatureReducer {
+    typealias State = HistoryFeature.State
+    typealias Action = HistoryFeature.Action
+
+    var body: some ReducerOf<Self> {
+      Scope(state: \.userConnection, action: /Action.userConnection) {
+        UserConnectionFeature.Reducer()
+      }
+    }
+  }
+
+  struct RootReducer {
+    @Dependency(\.device) var device
+    @Dependency(\.api.connectUser) var connectUser
+    @Dependency(\.app.installedVersion) var appVersion
+    @Dependency(\.storage.savePersistentState) var save
   }
 }
 
-struct HistoryRootReducer: Reducer {
-  typealias State = AppReducer.State
-  typealias Action = AppReducer.Action
-
-  @Dependency(\.device) var device
-  @Dependency(\.api.setUserToken) var setUserToken
-  @Dependency(\.api.connectUser) var connectUser
-  @Dependency(\.app.installedVersion) var appVersion
-  @Dependency(\.storage.savePersistentState) var saveState
-
+extension HistoryFeature.RootReducer: RootReducing {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-
     case .menuBar(.connectClicked):
       if case .notConnected = state.history.userConnection {
         state.history.userConnection = .enteringConnectionCode
@@ -59,7 +53,9 @@ struct HistoryRootReducer: Reducer {
       }
 
     case .menuBar(.retryConnectClicked):
-      guard case .connectFailed = state.history.userConnection else { return .none }
+      guard case .connectFailed = state.history.userConnection else {
+        return .none
+      }
       state.history.userConnection = .enteringConnectionCode
       return .none
 
@@ -69,15 +65,14 @@ struct HistoryRootReducer: Reducer {
 
     case .history(.userConnection(.connect(.success(let user)))):
       state.user = user
-      state.history.userConnection = .established(welcomeDismissed: false)
-      let persist = state.persistent
-      return .fireAndForget {
-        try await saveState(persist)
-        await setUserToken(user.token)
+      return .fireAndForget { [persistedState = state.persistent] in
+        try await save(persistedState)
       }
 
-    case .history(.userConnection(.connect(.failure(let error)))):
-      state.history.userConnection = .connectFailed(error.localizedDescription)
+    case .loadedPersistentState(let persisted):
+      if persisted?.user != nil {
+        state.history.userConnection = .established(welcomeDismissed: true)
+      }
       return .none
 
     default:
