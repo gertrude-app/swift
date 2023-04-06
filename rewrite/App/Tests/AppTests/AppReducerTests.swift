@@ -88,10 +88,10 @@ import XExpect
     let newRules = RefreshRules.Output.mock { $0.screenshotsResolution = 999 }
     store.deps.api.refreshRules = { _ in newRules }
 
+    await time.advance(by: 60 * 19)
     expect(store.state.user?.screenshotSize).not.toEqual(999)
 
-    await time.advance(by: 60 * 30)
-
+    await time.advance(by: 60)
     await store.receive(.user(.refreshRules(.success(newRules)))) {
       $0.user?.screenshotSize = 999
     }

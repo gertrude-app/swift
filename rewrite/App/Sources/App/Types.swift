@@ -12,3 +12,12 @@ protocol RootReducing: Reducer {
   associatedtype State = AppReducer.State
   associatedtype Action = AppReducer.Action
 }
+
+enum Heartbeat {
+  enum Interval: Equatable, Sendable {
+    case everyMinute
+    case everyTwentyMinutes
+  }
+
+  enum CancelId {}
+}
