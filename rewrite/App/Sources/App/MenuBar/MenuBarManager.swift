@@ -5,15 +5,15 @@ import SwiftUI
 import WebKit
 
 @MainActor class MenuBarManager {
-  let store: Store<AppReducer.State, MenuBar.Action>
+  let store: Store<AppReducer.State, MenuBarFeature.Action>
   var statusItem: NSStatusItem
   var popover: NSPopover
   var cancellables = Set<AnyCancellable>()
-  var vc: WebViewController<MenuBar.State, MenuBar.Action>
+  var vc: WebViewController<MenuBarFeature.State, MenuBarFeature.Action>
 
-  @ObservedObject var viewStore: ViewStore<MenuBar.State, MenuBar.Action>
+  @ObservedObject var viewStore: ViewStore<MenuBarFeature.State, MenuBarFeature.Action>
 
-  init(store: Store<AppReducer.State, MenuBar.Action>) {
+  init(store: Store<AppReducer.State, MenuBarFeature.Action>) {
     self.store = store
     viewStore = ViewStore(store, observe: \.menuBar)
 
@@ -21,7 +21,7 @@ import WebKit
     popover.animates = false
     popover.behavior = .applicationDefined
 
-    vc = WebViewController<MenuBar.State, MenuBar.Action>()
+    vc = WebViewController<MenuBarFeature.State, MenuBarFeature.Action>()
     vc.loadWebView(screen: "MenuBar")
     popover.contentViewController = vc
     popover.contentSize = NSSize(width: 400, height: 300)
