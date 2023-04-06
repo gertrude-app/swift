@@ -34,10 +34,12 @@ extension ApplicationFeature.RootReducer: RootReducing {
         },
 
         .run { send in
-          for await _ in bgQueue.timer(interval: .seconds(60 * 30)) {
-            await send(.heartbeat)
+          var numTicks = 0
+          for await _ in bgQueue.timer(interval: .seconds(60)) {
+            numTicks += 1
+            await send(.heartbeatTick(numTicks))
           }
-        }.cancellable(id: HeartbeatCancelId.self),
+        }.cancellable(id: Heartbeat.CancelId.self),
 
         .publisher {
           // TODO: when filter goes _TO_ .notInstalled, the NSXPCConnection
@@ -55,14 +57,28 @@ extension ApplicationFeature.RootReducer: RootReducing {
       )
 
     case .application(.willTerminate):
-      return .cancel(id: HeartbeatCancelId.self)
+      return .cancel(id: Heartbeat.CancelId.self)
+
+    case .heartbeatTick(let numTicks):
+      return .run { [user = state.user] send in
+        let intervals = heartbeatIntervals(for: numTicks)
+        if user != nil {
+          for interval in intervals {
+            await send(.user(.heartbeat(interval)))
+          }
+        }
+      }
 
     default:
       return .none
     }
   }
-}
 
-extension ApplicationFeature.RootReducer {
-  private enum HeartbeatCancelId {}
+  func heartbeatIntervals(for tick: Int) -> [Heartbeat.Interval] {
+    var intervals: [Heartbeat.Interval] = [.everyMinute]
+    if tick % 20 == 0 {
+      intervals.append(.everyTwentyMinutes)
+    }
+    return intervals
+  }
 }

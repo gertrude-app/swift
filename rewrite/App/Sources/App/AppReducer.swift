@@ -23,7 +23,7 @@ struct AppReducer: Reducer, Sendable {
     case menuBar(MenuBarFeature.Action)
     case loadedPersistentState(Persistent.State?)
     case user(UserFeature.Action)
-    case heartbeat
+    case heartbeatTick(Int)
   }
 
   @Dependency(\.api) var api
@@ -32,16 +32,6 @@ struct AppReducer: Reducer, Sendable {
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
-
-      case .heartbeat:
-        guard state.user != nil else { return .none }
-        return .task {
-          await .user(.refreshRules(TaskResult {
-            let appVersion = appClient.installedVersion() ?? "unknown"
-            return try await api.refreshRules(.init(appVersion: appVersion))
-          }))
-        }
-
       case .loadedPersistentState(let persistent):
         guard let user = persistent?.user else { return .none }
         state.user = user
