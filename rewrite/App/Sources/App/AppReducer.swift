@@ -16,37 +16,48 @@ struct AppReducer: Reducer, Sendable {
   }
 
   enum Action: Equatable, Sendable {
-    case delegate(AppDelegate.Action)
+    case application(Application.Action)
     case filter(FilterReducer.Action)
     case receivedXpcEvent(XPCEvent)
     case history(HistoryReducer.Action)
     case menuBar(MenuBar.Action)
     case loadedPersistentState(Persistent.State?)
     case user(UserReducer.Action)
+    case heartbeat
   }
 
   @Dependency(\.api) var api
   @Dependency(\.app) var appClient
+  @Dependency(\.backgroundQueue) var bgQueue
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.storage) var storage
   @Dependency(\.filterXpc) var filterXpc
   @Dependency(\.filterExtension) var filterExtension
 
+  private enum HeartbeatCancelId {}
+
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
 
-      case .delegate(.didFinishLaunching):
+      case .application(.willTerminate):
+        return .cancel(id: HeartbeatCancelId.self)
+
+      case .application(.didFinishLaunching):
         return .merge(
           .run { send in
             await send(.loadedPersistentState(try await storage.loadPersistentState()))
-
             let setupState = await filterExtension.setup()
             await send(.filter(.receivedState(setupState)))
             if setupState == .on {
               _ = await filterXpc.establishConnection()
             }
           },
+          .run { send in
+            for await _ in bgQueue.timer(interval: .seconds(60 * 30)) {
+              await send(.heartbeat)
+            }
+          }.cancellable(id: HeartbeatCancelId.self),
           .publisher {
             // TODO: when filter goes _TO_ .notInstalled, the NSXPCConnection
             // becomes useless, we should re-create/invalidate it then
@@ -61,10 +72,17 @@ struct AppReducer: Reducer, Sendable {
           }
         )
 
-      case .loadedPersistentState(let persistent):
-        guard let user = persistent?.user else {
-          return .none
+      case .heartbeat:
+        guard state.user != nil else { return .none }
+        return .task {
+          await .user(.refreshRules(TaskResult {
+            let appVersion = appClient.installedVersion() ?? "unknown"
+            return try await api.refreshRules(.init(appVersion: appVersion))
+          }))
         }
+
+      case .loadedPersistentState(let persistent):
+        guard let user = persistent?.user else { return .none }
         state.user = user
         state.history.userConnection = .established(welcomeDismissed: true)
         return .task {

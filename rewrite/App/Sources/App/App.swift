@@ -18,10 +18,12 @@ import ComposableArchitecture
     ))
   }
 
-  public func send(delegate action: AppDelegateAction) {
+  public func send(_ action: ApplicationAction) {
     switch action {
     case .didFinishLaunching:
-      statelessViewStore.send(.delegate(.didFinishLaunching))
+      statelessViewStore.send(.application(.didFinishLaunching))
+    case .willTerminate:
+      statelessViewStore.send(.application(.willTerminate))
     }
   }
 }

@@ -28,7 +28,7 @@ struct HistoryReducer {
   }
 }
 
-struct HistoryRootReducer: Reducer, Sendable {
+struct HistoryRootReducer: Reducer {
   typealias State = AppReducer.State
   typealias Action = AppReducer.Action
 

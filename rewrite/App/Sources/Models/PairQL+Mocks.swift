@@ -11,6 +11,12 @@ import MacAppRoute
       screenshotsResolution: 555,
       keys: []
     )
+
+    static func mock(configure: (inout Self) -> Void) -> Self {
+      var mock = Self.mock
+      configure(&mock)
+      return mock
+    }
   }
 
 #endif

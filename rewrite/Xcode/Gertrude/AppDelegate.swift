@@ -9,6 +9,10 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
   let app = App()
 
   public func applicationDidFinishLaunching(_ notification: Notification) {
-    app.send(delegate: .didFinishLaunching)
+    app.send(.didFinishLaunching)
+  }
+
+  public func applicationWillTerminate(_ notification: Notification) {
+    app.send(.willTerminate)
   }
 }

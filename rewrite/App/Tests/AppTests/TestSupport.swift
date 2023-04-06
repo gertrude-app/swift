@@ -1,3 +1,4 @@
+import ComposableArchitecture
 import Dependencies
 import Foundation
 import Models
@@ -24,3 +25,12 @@ struct TestErr: Equatable, Error, LocalizedError {
   var errorDescription: String? { msg }
   init(_ msg: String) { self.msg = msg }
 }
+
+extension TestStore {
+  var deps: DependencyValues {
+    get { dependencies }
+    set { dependencies = newValue }
+  }
+}
+
+typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action, R.State, R.Action, Void>
