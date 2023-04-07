@@ -12,7 +12,6 @@ struct UserFeature: Feature {
 
   struct Reducer: FeatureReducer {
     @Dependency(\.api) var api
-    @Dependency(\.app) var appClient
     @Dependency(\.filterXpc) var filterXpc
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
@@ -33,10 +32,7 @@ struct UserFeature: Feature {
 
       case .heartbeat(let interval) where interval == .everyTwentyMinutes:
         return .task {
-          await .refreshRules(TaskResult {
-            let appVersion = appClient.installedVersion() ?? "unknown"
-            return try await api.refreshRules(.init(appVersion: appVersion))
-          })
+          await .refreshRules(TaskResult { try await api.refreshUserRules() })
         }
 
       case .heartbeat:
