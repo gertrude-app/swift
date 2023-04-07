@@ -20,7 +20,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     os_log("[G•] XPCManager: sending uuid: %{public}@", uuid.uuidString)
     let uuidData = try XPC.encode(uuid)
     try await withTimeout(connection: connection) { appProxy, continuation in
-      appProxy.receiveUuid(uuidData, reply: continuation.resumingHandler)
+      appProxy.receiveUuid(uuidData, reply: continuation.dataHandler)
     }
   }
 
@@ -36,23 +36,11 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     _ listener: NSXPCListener,
     shouldAcceptNewConnection newConnection: NSXPCConnection
   ) -> Bool {
-    // ⛔️⛔️⛔️ warning ⛔️⛔️⛔️ `newConnection` has been "moved" into
-    // the connection object, and may not be accessed again !!!
+    // ⛔️⛔️⛔️ WARNING ⛔️⛔️⛔️ `newConnection` has been "moved" into
+    // the Connection object, and may not be accessed again !!!
     connection = Connection(taking: Move(configure(connection: newConnection)))
-    // NB: we can get user id: `newConnection.effectiveUserIdentifier`
     return true
-  }
-}
-
-@objc class ReceiveAppMessage: NSObject, AppMessageReceiving {
-  func ackRandomInt(_ intData: Data, reply: @escaping (Data?, Error?) -> Void) {
-    do {
-      let int = try JSONDecoder().decode(Int.self, from: intData)
-      os_log("[G•] XPCManager: ackRandomInt: %{public}d", int)
-      reply(try JSONEncoder().encode(int), nil)
-    } catch {
-      reply(nil, error)
-    }
+    // NB: we can get user id: `newConnection.effectiveUserIdentifier`
   }
 }
 

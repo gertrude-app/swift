@@ -10,10 +10,9 @@ import Models
     self.subject = subject
   }
 
-  func receiveUuid(_ uuidData: Data, reply: @escaping (Error?) -> Void) {
+  func receiveUuid(_ uuidData: Data, reply: @escaping (XPCErrorData?) -> Void) {
     do {
       let uuid = try JSONDecoder().decode(UUID.self, from: uuidData)
-      // subject.unlock().send(.receivedExtensionMessage(.uuid(uuid)))
       subject.withValue { $0.send(.receivedExtensionMessage(.uuid(uuid))) }
       reply(nil)
     } catch {
@@ -24,7 +23,7 @@ import Models
           error: "\(error)"
         ))
       }
-      reply(error)
+      reply(XPC.errorData(error))
     }
   }
 }

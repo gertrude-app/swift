@@ -1,7 +1,7 @@
 import Foundation
 
-public enum XPCErr: Error, Sendable {
-  public enum AppErr: Error, Sendable {
+public enum XPCErr: Error, Sendable, Codable {
+  public enum AppErr: Error, Sendable, Codable {
     case unexpectedIncorrectAck
     case filterNotInstalled
   }
@@ -9,13 +9,13 @@ public enum XPCErr: Error, Sendable {
   case noConnection
   case onAppSide(AppErr)
   case remoteProxyCastFailed
-  case remoteProxyError(Error)
-  case replyError(Error)
-  case unknownError(Error)
+  case remoteProxyError(String)
+  case replyError(String)
+  case unknownError(String)
   case unexpectedMissingValueAndError
   case timeout
-  case encode(fn: StaticString, type: Encodable.Type, error: Error)
-  case decode(fn: StaticString, type: Decodable.Type, error: Error)
+  case encode(fn: String, type: String, error: String)
+  case decode(fn: String, type: String, error: String)
 }
 
 public extension XPCErr {
@@ -28,14 +28,22 @@ public extension XPCErr {
       case .missingBothValueAndError:
         self = .unexpectedMissingValueAndError
       case .remoteProxyError(let error):
-        self = .remoteProxyError(error)
+        self = .remoteProxyError(String(describing: error))
       case .replyError(let error):
-        self = .replyError(error)
+        self = .replyError(String(describing: error))
       case .serviceTypeMismatch:
         self = .remoteProxyCastFailed
       }
     default:
-      self = .unknownError(error)
+      self = .unknownError(String(describing: error))
+    }
+  }
+
+  init(data: Data) {
+    if let error = try? JSONDecoder().decode(XPCErr.self, from: data) {
+      self = error
+    } else {
+      self = .unknownError(String(decoding: data, as: UTF8.self))
     }
   }
 }

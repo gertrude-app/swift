@@ -3,6 +3,7 @@ import Core
 import Dependencies
 import Foundation
 import Models
+import Shared
 
 struct FilterXPC: Sendable {
   @Dependency(\.mainQueue) var scheduler
@@ -34,11 +35,27 @@ struct FilterXPC: Sendable {
     let intData = try XPC.encode(randomInt)
 
     let reply = try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
-      filterProxy.ackRandomInt(intData, reply: continuation.resumingHandler)
+      filterProxy.ackRandomInt(intData, reply: continuation.dataHandler)
     }
 
     if try XPC.decode(Int.self, from: reply) != randomInt {
       throw XPCErr.onAppSide(.unexpectedIncorrectAck)
+    }
+  }
+
+  func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {
+    try await establishConnection()
+
+    let manifestData = try XPC.encode(manifest)
+    let keysData = try keys.map { try XPC.encode($0) }
+
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.receiveUserRules(
+        userId: getuid(),
+        manifestData: manifestData,
+        keysData: keysData,
+        reply: continuation.dataHandler
+      )
     }
   }
 }

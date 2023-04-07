@@ -34,7 +34,7 @@ public extension NSXPCConnection {
 
 public extension CheckedContinuation where T == Void {
   func resume(with error: E?) {
-    if let error = error {
+    if let error {
       resume(throwing: error)
     } else {
       resume()
@@ -57,11 +57,19 @@ public extension CheckedContinuation where E == Error {
   var resumingHandler: (T?, Error?) -> Void {
     { resume(with: $0, error: $1) }
   }
+
+  var dataHandler: (T?, Data?) -> Void {
+    { resume(with: $0, error: $1.map(XPCErr.init(data:))) }
+  }
 }
 
 public extension CheckedContinuation where T == Void, E == Error {
   var resumingHandler: (Error?) -> Void {
     { resume(with: $0) }
+  }
+
+  var dataHandler: (Data?) -> Void {
+    { resume(with: $0.map(XPCErr.init(data:))) }
   }
 }
 
@@ -80,5 +88,9 @@ public extension CheckedContinuation where T: Decodable, E == Error {
 
   var resumingHandler: (Data?, Error?) -> Void {
     { resume(with: $0, error: $1) }
+  }
+
+  var dataHandler: (Data?, Data?) -> Void {
+    { resume(with: $0, error: $1.map(XPCErr.init(data:))) }
   }
 }

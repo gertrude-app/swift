@@ -19,11 +19,16 @@ public extension XPCSender {
     operation: @escaping @Sendable (Proxy, CheckedContinuation<T, Error>) -> Void
   ) async throws -> T {
     let isolatedData = ActorIsolated<T?>(nil)
+    let isolatedError = ActorIsolated<Error?>(nil)
 
     let task = Task {
-      try await connection.withUnderlying { nsxpc in
-        let data = try await nsxpc.withContinuation(function: function, operation)
-        await isolatedData.setValue(data)
+      do {
+        try await connection.withUnderlying { nsxpc in
+          let data = try await nsxpc.withContinuation(function: function, operation)
+          await isolatedData.setValue(data)
+        }
+      } catch {
+        await isolatedError.setValue(error)
       }
     }
 
@@ -35,6 +40,11 @@ public extension XPCSender {
       let data = await isolatedData.value
       if let data {
         return data
+      }
+
+      let error = await isolatedError.value
+      if let error {
+        throw XPCErr(error)
       }
 
       try await scheduler.sleep(for: .microseconds(stride))

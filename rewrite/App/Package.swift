@@ -20,6 +20,7 @@ let package = Package(
     .package(path: "../../x-kit"),
     .package(path: "../../pairql-macapp"),
     .package(path: "../../x-expect"),
+    .package(path: "../../shared"),
   ],
   targets: [
     .checkedTarget(
@@ -33,6 +34,7 @@ let package = Package(
         "Core",
         "swift-tagged" => "Tagged",
         "pairql-macapp" => "MacAppRoute",
+        "shared" => "Shared",
       ]
     ),
     .checkedTarget(
@@ -41,7 +43,7 @@ let package = Package(
     ),
     .checkedTarget(
       name: "LiveFilterXPCClient",
-      dependencies: [.dependencies, "Core", "Models"]
+      dependencies: [.dependencies, "Core", "Models", "shared" => "Shared"]
     ),
     .checkedTarget(
       name: "LiveFilterExtensionClient",
@@ -49,11 +51,11 @@ let package = Package(
     ),
     .checkedTarget(
       name: "Filter",
-      dependencies: [.tca, "Core"]
+      dependencies: [.tca, "Core", "shared" => "Shared"]
     ),
     .checkedTarget(
       name: "Core",
-      dependencies: [.dependencies]
+      dependencies: [.dependencies, "shared" => "Shared"]
     ),
     .testTarget(
       name: "AppTests",

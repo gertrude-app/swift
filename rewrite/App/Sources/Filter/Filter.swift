@@ -14,11 +14,6 @@ struct Filter: Reducer, Sendable {
     case .extensionStarted:
       return .fireAndForget {
         await xpc.startListener()
-        while true {
-          try? await Task.sleep(nanoseconds: 3_000_000_000)
-          // just testing filter -> app comm
-          try? await xpc.sendUuid()
-        }
       }
     }
   }
