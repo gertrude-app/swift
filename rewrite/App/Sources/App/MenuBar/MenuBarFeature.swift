@@ -46,7 +46,6 @@ public enum MenuBarFeature: Feature {
 
   struct RootReducer: RootReducing {
     @Dependency(\.api) var api
-    @Dependency(\.app) var appClient
     @Dependency(\.filterExtension) var filterExtension
   }
 }
@@ -78,10 +77,7 @@ extension MenuBarFeature.RootReducer {
     // TODO: test
     case .menuBar(.refreshRulesClicked):
       return .task {
-        await .user(.refreshRules(TaskResult {
-          let appVersion = appClient.installedVersion() ?? "unknown"
-          return try await api.refreshRules(.init(appVersion: appVersion))
-        }))
+        await .user(.refreshRules(TaskResult { try await api.refreshUserRules() }))
       }
 
     // TODO: test

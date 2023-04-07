@@ -27,7 +27,6 @@ struct AppReducer: Reducer, Sendable {
   }
 
   @Dependency(\.api) var api
-  @Dependency(\.app) var appClient
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
@@ -38,8 +37,7 @@ struct AppReducer: Reducer, Sendable {
         return .task {
           await api.setUserToken(user.token)
           return await .user(.refreshRules(TaskResult {
-            let appVersion = appClient.installedVersion() ?? "unknown"
-            return try await api.refreshRules(.init(appVersion: appVersion))
+            try await api.refreshUserRules()
           }))
         }
 
