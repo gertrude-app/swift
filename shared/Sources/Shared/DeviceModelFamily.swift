@@ -1,4 +1,4 @@
-public enum DeviceModelFamily: String, Codable, CaseIterable {
+public enum DeviceModelFamily: String, Codable, CaseIterable, Sendable {
   case macBookAir
   case macBookPro
   case mini

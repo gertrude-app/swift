@@ -45,6 +45,8 @@ public enum MenuBarFeature: Feature {
   }
 
   struct RootReducer: RootReducing {
+    @Dependency(\.api) var api
+    @Dependency(\.app) var appClient
     @Dependency(\.filterExtension) var filterExtension
   }
 }
@@ -56,12 +58,6 @@ extension MenuBarFeature.Reducer {
     // TODO: temporary
     case .suspendFilterClicked:
       return .fireAndForget { _ = await filterExtension.stop() }
-
-    // TODO: temporary
-    case .refreshRulesClicked:
-      return .fireAndForget {
-        print("connection healthy:", await filterXpc.isConnectionHealthy())
-      }
 
     // TODO: temporary
     case .administrateClicked:
@@ -78,6 +74,15 @@ extension MenuBarFeature.Reducer {
 extension MenuBarFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Self.Action> {
     switch action {
+
+    // TODO: test
+    case .menuBar(.refreshRulesClicked):
+      return .task {
+        await .user(.refreshRules(TaskResult {
+          let appVersion = appClient.installedVersion() ?? "unknown"
+          return try await api.refreshRules(.init(appVersion: appVersion))
+        }))
+      }
 
     // TODO: test
     case .menuBar(.turnOnFilterClicked):

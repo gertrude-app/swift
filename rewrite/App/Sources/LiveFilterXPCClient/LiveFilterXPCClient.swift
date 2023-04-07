@@ -1,6 +1,7 @@
 import Core
 import Dependencies
 import Models
+import Shared
 
 extension FilterXPCClient: DependencyKey {
   public static var liveValue: Self {
@@ -11,6 +12,9 @@ extension FilterXPCClient: DependencyKey {
       }},
       isConnectionHealthy: { await .init {
         try await xpc.isConnectionHealthy()
+      }},
+      sendUserRules: { manifest, keys in await .init {
+        try await xpc.sendUserRules(manifest: manifest, keys: keys)
       }},
       events: {
         xpcEventSubject.withValue { subject in
@@ -30,5 +34,9 @@ actor ThreadSafeFilterXPC {
 
   func isConnectionHealthy() async throws {
     try await filterXpc.isConnectionHealthy()
+  }
+
+  func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {
+    try await filterXpc.sendUserRules(manifest: manifest, keys: keys)
   }
 }

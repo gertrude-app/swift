@@ -13,6 +13,7 @@ struct UserFeature: Feature {
   struct Reducer: FeatureReducer {
     @Dependency(\.api) var api
     @Dependency(\.app) var appClient
+    @Dependency(\.filterXpc) var filterXpc
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
@@ -22,7 +23,13 @@ struct UserFeature: Feature {
         state.screenshotFrequency = output.screenshotsFrequency
         state.keyloggingEnabled = output.keyloggingEnabled
         state.screenshotsEnabled = output.screenshotsEnabled
-        return .none
+        return .fireAndForget {
+          // TODO: handle errors...
+          _ = await filterXpc.sendUserRules(
+            output.appManifest,
+            output.keys.map { .init(id: $0.id, key: $0.key) }
+          )
+        }
 
       case .heartbeat(let interval) where interval == .everyTwentyMinutes:
         return .task {

@@ -8,7 +8,7 @@ public enum XPC {
     do {
       return try JSONEncoder().encode(value)
     } catch {
-      throw XPCErr.encode(fn: fn, type: T.self, error: error)
+      throw XPCErr.encode(fn: "\(fn)", type: "\(T.self)", error: "\(error)")
     }
   }
 
@@ -20,7 +20,16 @@ public enum XPC {
     do {
       return try JSONDecoder().decode(T.self, from: data)
     } catch {
-      throw XPCErr.decode(fn: fn, type: T.self, error: error)
+      throw XPCErr.decode(fn: "\(fn)", type: "\(T.self)", error: "\(error)")
     }
+  }
+
+  public static func errorData(_ error: Error) -> Data {
+    do {
+      if let xpcError = error as? XPCErr {
+        return try encode(xpcError)
+      }
+    } catch {}
+    return Data(String(describing: error).utf8)
   }
 }
