@@ -1,5 +1,6 @@
-import App
 import Foundation
+
+@testable import App
 
 struct AppWebViews: AggregateCodeGenerator {
   var generators: [CodeGenerator] = [

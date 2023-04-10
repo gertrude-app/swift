@@ -1,20 +1,17 @@
 import ComposableArchitecture
 
-// TODO: remove `public` modifiers when doing codegen
-// from test target instead of cli
-
-public enum MenuBarFeature: Feature {
-  public enum State: Equatable, Encodable {
-    public struct Connected: Equatable {
-      public enum FilterState: Equatable, Codable {
+enum MenuBarFeature: Feature {
+  enum State: Equatable, Encodable {
+    struct Connected: Equatable {
+      enum FilterState: Equatable, Codable {
         case off
         case on
         case suspended(expiration: String)
       }
 
-      public var filterState: FilterState
-      public var recordingScreen: Bool
-      public var recordingKeystrokes: Bool
+      var filterState: FilterState
+      var recordingScreen: Bool
+      var recordingKeystrokes: Bool
     }
 
     case notConnected
@@ -25,7 +22,7 @@ public enum MenuBarFeature: Feature {
     case connected(Connected)
   }
 
-  public enum Action: Equatable, Decodable, Sendable {
+  enum Action: Equatable, Decodable, Sendable {
     case menuBarIconClicked // todo, wierd...
     case resumeFilterClicked
     case suspendFilterClicked

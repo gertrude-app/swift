@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "runtime",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wickwirew/Runtime.git",
+      "state" : {
+        "revision" : "dad03135d7701a4e7b3a4051e75d6b37bd8e178e",
+        "version" : "2.2.4"
+      }
+    },
+    {
       "identity" : "swift-case-paths",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",
@@ -39,7 +48,7 @@
     {
       "identity" : "swift-composable-architecture",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-composable-architecture",
+      "location" : "https://github.com/pointfreeco/swift-composable-architecture.git",
       "state" : {
         "branch" : "prerelease/1.0",
         "revision" : "132cb3bae2d333c75ff2c952086d1dcd53ba392e"
