@@ -10,13 +10,15 @@ build-macapp pkg="App":
   @cd rewrite/{{pkg}} && swift build
 
 codegen-swift:
-  @cd cli && swift run Cli codegen swift
+  @cd rewrite/App && CODEGEN_SWIFT=1 swift test --filter Codegen
+
+codegen-swift-unimplemented:
+  @cd rewrite/App && CODEGEN_SWIFT=1 CODEGEN_UNIMPLEMENTED=1 swift test --filter Codegen
 
 codegen-typescript:
-  @cd cli && swift run Cli codegen typescript
+  @cd rewrite/App && CODEGEN_TYPESCRIPT=1 swift test --filter Codegen
 
-codegen:
-  @cd cli && swift run Cli codegen
+codegen: codegen-typescript codegen-swift
 
 xcode:
   @open rewrite/Xcode/Gertrude.xcodeproj

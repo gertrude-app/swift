@@ -88,6 +88,20 @@ public extension EnumType {
     }
     """
   }
+
+  var unimplementedConformance: String {
+    """
+    extension \(name) {
+      public func encode(to encoder: Encoder) throws {
+        fatalError("Not implemented")
+      }
+
+      public init(from decoder: Decoder) throws {
+        fatalError("Not implemented")
+      }
+    }
+    """
+  }
 }
 
 extension EnumType.Case {

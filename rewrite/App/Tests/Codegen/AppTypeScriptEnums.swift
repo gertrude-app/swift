@@ -1,13 +1,18 @@
-import App
 import Foundation
 
+@testable import App
+
 struct AppTypeScriptEnums: AggregateCodeGenerator {
+
   var generators: [CodeGenerator] = [
-    TypeScriptEnum(name: "MenuBarFeature", types: [
-      MenuBarFeature.Action.self,
-      MenuBarFeature.State.Connected.FilterState.self,
-      MenuBarFeature.State.self,
-    ]),
+    TypeScriptEnum(
+      name: "MenuBarFeature",
+      types: [
+        MenuBarFeature.Action.self,
+        MenuBarFeature.State.Connected.FilterState.self,
+        MenuBarFeature.State.self,
+      ]
+    ),
   ]
 
   func format() throws {

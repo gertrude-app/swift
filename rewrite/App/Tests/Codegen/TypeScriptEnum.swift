@@ -16,7 +16,14 @@ extension TypeScriptEnum: CodeGenerator {
   func write() throws {
     let url = URL(fileURLWithPath: path)
     let header = "// auto-generated, do not edit"
-    let decls = try types.map { try EnumType(from: $0).codableConformance }
+    let decls = try types.map {
+      let enumType = try EnumType(from: $0)
+      if ProcessInfo.processInfo.environment["CODEGEN_UNIMPLEMENTED"] != nil {
+        return enumType.unimplementedConformance
+      } else {
+        return enumType.codableConformance
+      }
+    }
     let file = header + "\n\n" + decls.joined(separator: "\n\n")
     try file.data(using: .utf8)!.write(to: url)
   }

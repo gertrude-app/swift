@@ -21,6 +21,7 @@ let package = Package(
     .package(path: "../../pairql-macapp"),
     .package(path: "../../x-expect"),
     .package(path: "../../shared"),
+    .package(path: "../../typescript"),
   ],
   targets: [
     .checkedTarget(
@@ -60,6 +61,10 @@ let package = Package(
     .testTarget(
       name: "AppTests",
       dependencies: ["App", "Models", "x-expect" => "XExpect"]
+    ),
+    .testTarget(
+      name: "Codegen",
+      dependencies: ["App", "typescript" => "TypeScript"]
     ),
   ]
 )
