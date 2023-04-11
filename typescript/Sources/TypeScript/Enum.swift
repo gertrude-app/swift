@@ -55,9 +55,9 @@ public extension EnumType {
     }
   }
 
-  var codableConformance: String {
+  func codableConformance(public: Bool = false) -> String {
     """
-    extension \(name) {
+    \(`public` ? "public " : "")extension \(name) {
       private struct _NamedCase: Codable {
         var `case`: String
         static func extract(from decoder: Decoder) throws -> String {
@@ -70,13 +70,13 @@ public extension EnumType {
         var message: String
       }
 
-      \(helperStructs)public func encode(to encoder: Encoder) throws {
+      \(helperStructs)func encode(to encoder: Encoder) throws {
         switch self {
         \(cases.map(\.encodeCase).joined(separator: "\n    "))
         }
       }
 
-      public init(from decoder: Decoder) throws {
+      init(from decoder: Decoder) throws {
         let caseName = try _NamedCase.extract(from: decoder)
         let container = try decoder.singleValueContainer()
         switch caseName {
@@ -89,14 +89,14 @@ public extension EnumType {
     """
   }
 
-  var unimplementedConformance: String {
+  func unimplementedConformance(public: Bool = false) -> String {
     """
-    extension \(name) {
-      public func encode(to encoder: Encoder) throws {
+    \(`public` ? "public " : "")extension \(name) {
+      func encode(to encoder: Encoder) throws {
         fatalError("Not implemented")
       }
 
-      public init(from decoder: Decoder) throws {
+      init(from decoder: Decoder) throws {
         fatalError("Not implemented")
       }
     }

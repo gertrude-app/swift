@@ -42,6 +42,8 @@ import XExpect
   func testHistoryUserConnectionError() async {
     let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
     store.dependencies.api.connectUser = { _ in throw TestErr("Oh no!") }
+    let helpClickedSpy = ActorIsolated(false)
+    store.dependencies.device.openWebUrl = { _ in await helpClickedSpy.setValue(true) }
 
     await store.send(.menuBar(.connectClicked)) {
       $0.history.userConnection = .enteringConnectionCode
@@ -52,8 +54,12 @@ import XExpect
     }
 
     await store.receive(.history(.userConnection(.connect(.failure(TestErr("Oh no!")))))) {
-      $0.history.userConnection = .connectFailed("Oh no!")
+      $0.history.userConnection =
+        .connectFailed("Please try again, or contact help if the problem persists.")
     }
+
+    await store.send(.menuBar(.connectFailedHelpClicked))
+    await expect(helpClickedSpy).toEqual(true)
 
     await store.send(.menuBar(.retryConnectClicked)) {
       $0.history.userConnection = .enteringConnectionCode

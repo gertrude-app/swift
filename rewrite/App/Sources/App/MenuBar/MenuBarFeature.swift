@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 
 enum MenuBarFeature: Feature {
   enum State: Equatable, Encodable {
@@ -32,11 +33,13 @@ enum MenuBarFeature: Feature {
     case connectClicked
     case connectSubmit(code: Int)
     case retryConnectClicked
+    case connectFailedHelpClicked
     case welcomeAdminClicked
     case turnOnFilterClicked
   }
 
   struct Reducer: FeatureReducer {
+    @Dependency(\.device) var device
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.filterExtension) var filterExtension
   }
@@ -50,6 +53,11 @@ enum MenuBarFeature: Feature {
 extension MenuBarFeature.Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
+
+    case .connectFailedHelpClicked:
+      return .fireAndForget {
+        await device.openWebUrl(URL(string: "https://gertrude.app/contact")!)
+      }
 
     // TODO: temporary
     case .suspendFilterClicked:

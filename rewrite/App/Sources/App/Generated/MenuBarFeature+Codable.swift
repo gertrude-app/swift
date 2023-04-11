@@ -18,7 +18,7 @@ extension MenuBarFeature.Action {
     var code: Int
   }
 
-  public func encode(to encoder: Encoder) throws {
+  func encode(to encoder: Encoder) throws {
     switch self {
     case .connectSubmit(let code):
       try _CaseConnectsubmit(code: code).encode(to: encoder)
@@ -38,6 +38,8 @@ extension MenuBarFeature.Action {
       try _NamedCase(case: "connectClicked").encode(to: encoder)
     case .retryConnectClicked:
       try _NamedCase(case: "retryConnectClicked").encode(to: encoder)
+    case .connectFailedHelpClicked:
+      try _NamedCase(case: "connectFailedHelpClicked").encode(to: encoder)
     case .welcomeAdminClicked:
       try _NamedCase(case: "welcomeAdminClicked").encode(to: encoder)
     case .turnOnFilterClicked:
@@ -45,7 +47,7 @@ extension MenuBarFeature.Action {
     }
   }
 
-  public init(from decoder: Decoder) throws {
+  init(from decoder: Decoder) throws {
     let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {
@@ -68,6 +70,8 @@ extension MenuBarFeature.Action {
       self = .connectClicked
     case "retryConnectClicked":
       self = .retryConnectClicked
+    case "connectFailedHelpClicked":
+      self = .connectFailedHelpClicked
     case "welcomeAdminClicked":
       self = .welcomeAdminClicked
     case "turnOnFilterClicked":
@@ -96,7 +100,7 @@ extension MenuBarFeature.State.Connected.FilterState {
     var expiration: String
   }
 
-  public func encode(to encoder: Encoder) throws {
+  func encode(to encoder: Encoder) throws {
     switch self {
     case .suspended(let expiration):
       try _CaseSuspended(expiration: expiration).encode(to: encoder)
@@ -107,7 +111,7 @@ extension MenuBarFeature.State.Connected.FilterState {
     }
   }
 
-  public init(from decoder: Decoder) throws {
+  init(from decoder: Decoder) throws {
     let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {
@@ -154,7 +158,7 @@ extension MenuBarFeature.State {
     var recordingKeystrokes: Bool
   }
 
-  public func encode(to encoder: Encoder) throws {
+  func encode(to encoder: Encoder) throws {
     switch self {
     case .connectionFailed(let error):
       try _CaseConnectionfailed(error: error).encode(to: encoder)
@@ -175,7 +179,7 @@ extension MenuBarFeature.State {
     }
   }
 
-  public init(from decoder: Decoder) throws {
+  init(from decoder: Decoder) throws {
     let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {

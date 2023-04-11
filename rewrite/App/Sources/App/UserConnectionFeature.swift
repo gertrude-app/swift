@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Models
+import PairQL
 
 enum UserConnectionFeature: Feature {
   enum State: Equatable {
@@ -27,8 +28,19 @@ extension UserConnectionFeature.Reducer {
       return .fireAndForget {
         await setUserToken(user.token)
       }
+
     case .connect(.failure(let error)):
-      state = .connectFailed(error.localizedDescription)
+      guard let pqlError = error as? PqlError else {
+        state = .connectFailed("Please try again, or contact help if the problem persists.")
+        return .none
+      }
+      if pqlError.appTag == .connectionCodeNotFound {
+        state = .connectFailed("Code not found, or expired. Try reentering, or create a new code.")
+      } else if let userMessage = pqlError.userMessage {
+        state = .connectFailed(userMessage)
+      } else {
+        state = .connectFailed("Please try again, or contact help if the problem persists.")
+      }
       return .none
     }
   }
