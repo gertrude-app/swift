@@ -79,10 +79,12 @@ extension MenuBarFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Self.Action> {
     switch action {
 
-    // TODO: test
     case .menuBar(.refreshRulesClicked):
       return .task {
-        await .user(.refreshRules(TaskResult { try await api.refreshUserRules() }))
+        await .user(.refreshRules(
+          result: TaskResult { try await api.refreshUserRules() },
+          userInitiated: true
+        ))
       }
 
     // TODO: test

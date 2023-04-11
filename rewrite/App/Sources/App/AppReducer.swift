@@ -23,7 +23,7 @@ struct AppReducer: Reducer, Sendable {
     case menuBar(MenuBarFeature.Action)
     case loadedPersistentState(Persistent.State?)
     case user(UserFeature.Action)
-    case heartbeatTick(Int)
+    case heartbeat(Heartbeat.Interval)
   }
 
   @Dependency(\.api) var api
@@ -36,9 +36,10 @@ struct AppReducer: Reducer, Sendable {
         state.user = user
         return .task {
           await api.setUserToken(user.token)
-          return await .user(.refreshRules(TaskResult {
-            try await api.refreshUserRules()
-          }))
+          return await .user(.refreshRules(
+            result: TaskResult { try await api.refreshUserRules() },
+            userInitiated: false
+          ))
         }
 
       default:
@@ -50,6 +51,7 @@ struct AppReducer: Reducer, Sendable {
     ApplicationFeature.RootReducer()
     HistoryFeature.RootReducer()
     MenuBarFeature.RootReducer()
+    UserFeature.RootReducer()
 
     // feature reducers
     Scope(state: \.history, action: /Action.history) {

@@ -1,6 +1,7 @@
 import AppKit
 import Dependencies
 import Foundation
+import UserNotifications
 
 struct DeviceClient: Sendable {
   var fullUsername: @Sendable () -> String
@@ -8,6 +9,7 @@ struct DeviceClient: Sendable {
   var modelIdentifier: @Sendable () -> String?
   var numericUserId: @Sendable () -> uid_t
   var openWebUrl: @Sendable (URL) async -> Void
+  var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
   var username: @Sendable () -> String
 }
@@ -19,6 +21,16 @@ extension DeviceClient: DependencyKey {
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
     numericUserId: { getuid() },
     openWebUrl: { NSWorkspace.shared.open($0) },
+    showNotification: { title, body in
+      let content = UNMutableNotificationContent()
+      content.title = title
+      content.body = body
+      UNUserNotificationCenter.current().add(UNNotificationRequest(
+        identifier: UUID().uuidString,
+        content: content,
+        trigger: nil
+      ))
+    },
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
     username: { NSUserName() }
   )
@@ -31,6 +43,7 @@ extension DeviceClient: TestDependencyKey {
     modelIdentifier: { "test-model-identifier" },
     numericUserId: { 502 },
     openWebUrl: { _ in },
+    showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },
     username: { "test-username" }
   )
