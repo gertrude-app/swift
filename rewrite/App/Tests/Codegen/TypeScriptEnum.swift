@@ -19,9 +19,9 @@ extension TypeScriptEnum: CodeGenerator {
     let decls = try types.map {
       let enumType = try EnumType(from: $0)
       if ProcessInfo.processInfo.environment["CODEGEN_UNIMPLEMENTED"] != nil {
-        return enumType.unimplementedConformance
+        return enumType.unimplementedConformance()
       } else {
-        return enumType.codableConformance
+        return enumType.codableConformance()
       }
     }
     let file = header + "\n\n" + decls.joined(separator: "\n\n")

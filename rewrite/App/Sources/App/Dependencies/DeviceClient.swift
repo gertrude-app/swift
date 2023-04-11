@@ -1,3 +1,4 @@
+import AppKit
 import Dependencies
 import Foundation
 
@@ -6,6 +7,7 @@ struct DeviceClient: Sendable {
   var hostname: @Sendable () -> String?
   var modelIdentifier: @Sendable () -> String?
   var numericUserId: @Sendable () -> uid_t
+  var openWebUrl: @Sendable (URL) async -> Void
   var serialNumber: @Sendable () -> String?
   var username: @Sendable () -> String
 }
@@ -16,6 +18,7 @@ extension DeviceClient: DependencyKey {
     hostname: { Host.current().localizedName },
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
     numericUserId: { getuid() },
+    openWebUrl: { NSWorkspace.shared.open($0) },
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
     username: { NSUserName() }
   )
@@ -27,6 +30,7 @@ extension DeviceClient: TestDependencyKey {
     hostname: { "test-hostname" },
     modelIdentifier: { "test-model-identifier" },
     numericUserId: { 502 },
+    openWebUrl: { _ in },
     serialNumber: { "test-serial-number" },
     username: { "test-username" }
   )
