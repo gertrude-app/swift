@@ -6,41 +6,85 @@ struct UserFeature: Feature {
   typealias State = User
 
   enum Action: Equatable, Sendable {
-    case refreshRules(TaskResult<RefreshRules.Output>)
-    case heartbeat(Heartbeat.Interval)
+    case refreshRules(result: TaskResult<RefreshRules.Output>, userInitiated: Bool)
+  }
+
+  struct RootReducer {
+    @Dependency(\.api) var api
+    @Dependency(\.device) var device
+    @Dependency(\.filterXpc) var filterXpc
   }
 
   struct Reducer: FeatureReducer {
-    @Dependency(\.api) var api
-    @Dependency(\.filterXpc) var filterXpc
+    @Dependency(\.device) var device
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
 
-      case .refreshRules(.success(let output)):
+      case .refreshRules(.success(let output), _):
         state.screenshotSize = output.screenshotsResolution
         state.screenshotFrequency = output.screenshotsFrequency
         state.keyloggingEnabled = output.keyloggingEnabled
         state.screenshotsEnabled = output.screenshotsEnabled
+        return .none
+
+      case .refreshRules(result: .failure, userInitiated: true):
         return .fireAndForget {
-          // TODO: handle errors...
-          _ = await filterXpc.sendUserRules(
-            output.appManifest,
-            output.keys.map { .init(id: $0.id, key: $0.key) }
+          await device.showNotification(
+            "Error refreshing rules",
+            "Please try again, or contact support if the problem persists."
           )
         }
 
-      case .heartbeat(let interval) where interval == .everyTwentyMinutes:
-        return .task {
-          await .refreshRules(TaskResult { try await api.refreshUserRules() })
-        }
-
-      case .heartbeat:
-        return .none
-
-      case .refreshRules(.failure):
+      case .refreshRules(result: .failure, userInitiated: false):
         return .none
       }
+    }
+  }
+}
+
+extension UserFeature.RootReducer: RootReducing {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    switch action {
+
+    case .heartbeat(.everyTwentyMinutes):
+      return .task {
+        await .user(.refreshRules(
+          result: TaskResult { try await api.refreshUserRules() },
+          userInitiated: false
+        ))
+      }
+
+    case .user(.refreshRules(.success(let output), let userInitiated)):
+      return .fireAndForget { [filterReachable = state.filter.canReceiveMessages] in
+        guard filterReachable else {
+          if userInitiated {
+            // if filter is was never installed, we don't want to show an error
+            // message (or nothing), so consider this a success and notify
+            await device.showNotification("Refreshed rules successfully", "")
+          }
+          return
+        }
+
+        let sendToFilterResult = await filterXpc.sendUserRules(
+          output.appManifest,
+          output.keys.map { .init(id: $0.id, key: $0.key) }
+        )
+
+        if userInitiated {
+          if sendToFilterResult.isSuccess {
+            await device.showNotification("Refreshed rules successfully", "")
+          } else {
+            await device.showNotification(
+              "Error refreshing rules",
+              "We got updated rules, but there was an error sending them to the filter."
+            )
+          }
+        }
+      }
+
+    default:
+      return .none
     }
   }
 }

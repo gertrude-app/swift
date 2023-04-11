@@ -7,6 +7,15 @@ public enum FilterState: Equatable, Sendable {
   case off
   case on
   case suspended(resuming: Date)
+
+  public var canReceiveMessages: Bool {
+    switch self {
+    case .on, .off, .suspended:
+      return true
+    case .unknown, .errorLoadingConfig, .notInstalled:
+      return false
+    }
+  }
 }
 
 public enum FilterInstallResult: Sendable {

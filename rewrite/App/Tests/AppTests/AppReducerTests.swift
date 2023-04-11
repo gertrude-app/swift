@@ -38,7 +38,7 @@ import XExpect
       $0.filter = .off
     }
 
-    await store.receive(.user(.refreshRules(.success(.mock)))) {
+    await store.receive(.user(.refreshRules(result: .success(.mock), userInitiated: false))) {
       $0.user?.screenshotFrequency = 333
       $0.user?.screenshotSize = 555
     }
@@ -92,9 +92,58 @@ import XExpect
     expect(store.state.user?.screenshotSize).not.toEqual(999)
 
     await time.advance(by: 60)
-    await store.receive(.user(.refreshRules(.success(newRules)))) {
+    await store.receive(.user(.refreshRules(result: .success(newRules), userInitiated: false))) {
       $0.user?.screenshotSize = 999
     }
+  }
+
+  func testClickingRefreshRules_Success_FilterReachable() async {
+    let (store, _) = AppReducer.testStore()
+    let notifications = spyOnNotifications(store)
+    await store.send(.application(.didFinishLaunching))
+    await store.receive(.filter(.receivedState(.on)))
+
+    await store.send(.menuBar(.refreshRulesClicked))
+    await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
+  }
+
+  func testClickingRefreshRules_Success_FilterUnreachable() async {
+    let (store, _) = AppReducer.testStore()
+    store.deps.filterExtension.setup = { .notInstalled }
+    let notifications = spyOnNotifications(store)
+    await store.send(.application(.didFinishLaunching))
+    await store.receive(.filter(.receivedState(.notInstalled)))
+
+    await store.send(.menuBar(.refreshRulesClicked))
+    await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
+  }
+
+  func testClickingRefreshRules_FilterError() async {
+    let (store, _) = AppReducer.testStore()
+    let notifications = spyOnNotifications(store)
+    store.deps.filterXpc.sendUserRules = { _, _ in .failure(.unknownError("printer on fire")) }
+    await store.send(.application(.didFinishLaunching))
+    await store.receive(.filter(.receivedState(.on)))
+
+    await store.send(.menuBar(.refreshRulesClicked))
+    await expect(notifications).toEqual([.init(
+      "Error refreshing rules",
+      "We got updated rules, but there was an error sending them to the filter."
+    )])
+  }
+
+  func testClickingRefreshRules_ApiError() async {
+    let (store, _) = AppReducer.testStore()
+    store.deps.api.refreshRules = { _ in throw TestErr("Oh noes!") }
+    let notifications = spyOnNotifications(store)
+    await store.send(.application(.didFinishLaunching))
+    await store.receive(.filter(.receivedState(.on)))
+
+    await store.send(.menuBar(.refreshRulesClicked))
+    await expect(notifications).toEqual([.init(
+      "Error refreshing rules",
+      "Please try again, or contact support if the problem persists."
+    )])
   }
 }
 
@@ -109,6 +158,8 @@ extension AppReducer {
     store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
     store.deps.mainQueue = .immediate
     store.deps.storage.loadPersistentState = { .init(user: .mock) }
+    store.deps.api.refreshRules = { _ in .mock }
+    store.deps.filterExtension.setup = { .on }
     return (store, scheduler)
   }
 }

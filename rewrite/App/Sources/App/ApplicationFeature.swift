@@ -37,7 +37,9 @@ extension ApplicationFeature.RootReducer: RootReducing {
           var numTicks = 0
           for await _ in bgQueue.timer(interval: .seconds(60)) {
             numTicks += 1
-            await send(.heartbeatTick(numTicks))
+            for interval in heartbeatIntervals(for: numTicks) {
+              await send(.heartbeat(interval))
+            }
           }
         }.cancellable(id: Heartbeat.CancelId.self),
 
@@ -58,16 +60,6 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
     case .application(.willTerminate):
       return .cancel(id: Heartbeat.CancelId.self)
-
-    case .heartbeatTick(let numTicks):
-      return .run { [user = state.user] send in
-        let intervals = heartbeatIntervals(for: numTicks)
-        if user != nil {
-          for interval in intervals {
-            await send(.user(.heartbeat(interval)))
-          }
-        }
-      }
 
     default:
       return .none
