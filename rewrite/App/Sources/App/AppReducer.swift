@@ -18,7 +18,7 @@ struct AppReducer: Reducer, Sendable {
   enum Action: Equatable, Sendable {
     case application(ApplicationFeature.Action)
     case filter(FilterFeature.Action)
-    case receivedXpcEvent(XPCEvent)
+    case receivedXpcEvent(XPCEvent.App)
     case history(HistoryFeature.Action)
     case menuBar(MenuBarFeature.Action)
     case loadedPersistentState(Persistent.State?)

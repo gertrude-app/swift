@@ -4,9 +4,9 @@ import Foundation
 import Models
 
 @objc class ReceiveFilterMessage: NSObject, FilterMessageReceiving {
-  let subject: Mutex<PassthroughSubject<XPCEvent, Never>>
+  let subject: Mutex<PassthroughSubject<XPCEvent.App, Never>>
 
-  init(subject: Mutex<PassthroughSubject<XPCEvent, Never>>) {
+  init(subject: Mutex<PassthroughSubject<XPCEvent.App, Never>>) {
     self.subject = subject
   }
 
@@ -17,7 +17,7 @@ import Models
       reply(nil)
     } catch {
       subject.withValue {
-        $0.send(.decodingExtensionDataFailed(
+        $0.send(.decodingExtensionMessageDataFailed(
           fn: "\(#function)",
           type: "\(UUID.self)",
           error: "\(error)"

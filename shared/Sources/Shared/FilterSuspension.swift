@@ -1,7 +1,7 @@
 import Foundation
 import TaggedTime
 
-public struct FilterSuspension: Equatable, Codable {
+public struct FilterSuspension: Equatable, Codable, Sendable {
   public var scope: AppScope
   public var duration: Seconds<Int>
   public let expiresAt: Date

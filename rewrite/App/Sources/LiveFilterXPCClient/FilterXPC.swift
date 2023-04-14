@@ -77,4 +77,4 @@ func newConnection() -> NSXPCConnection {
 }
 
 private let sharedConnection = Connection { newConnection() }
-internal let xpcEventSubject = Mutex(PassthroughSubject<XPCEvent, Never>())
+internal let xpcEventSubject = Mutex(PassthroughSubject<XPCEvent.App, Never>())

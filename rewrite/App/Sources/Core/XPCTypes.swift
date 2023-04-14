@@ -49,12 +49,14 @@ public extension XPCErr {
 }
 
 public enum XPCEvent: Sendable, Equatable {
-  public enum MessageFromExtension: Sendable, Equatable {
-    case uuid(UUID)
-  }
+  public enum App: Sendable, Equatable {
+    public enum MessageFromExtension: Sendable, Equatable {
+      case uuid(UUID)
+    }
 
-  case receivedExtensionMessage(MessageFromExtension)
-  case decodingExtensionDataFailed(fn: String, type: String, error: String)
+    case receivedExtensionMessage(MessageFromExtension)
+    case decodingExtensionMessageDataFailed(fn: String, type: String, error: String)
+  }
 }
 
 public extension Result where Failure == XPCErr {
