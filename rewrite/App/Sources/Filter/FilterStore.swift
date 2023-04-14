@@ -1,11 +1,16 @@
 import ComposableArchitecture
+import Foundation
 
-public struct FilterStore {
-  let store = Store(initialState: Filter.State(), reducer: Filter())
-  let viewStore: ViewStore<Void, Filter.Action>
+public struct FilterStore: NetworkFilter {
+  let store: StoreOf<Filter>
+  let viewStore: ViewStoreOf<Filter>
+  public var state: Filter.State { viewStore.state }
+
+  @Dependency(\.security) public var security
 
   public init() {
-    viewStore = ViewStore(store.stateless)
+    store = Store(initialState: Filter.State(), reducer: Filter())
+    viewStore = ViewStore(store, observe: { $0 })
     viewStore.send(.extensionStarted)
   }
 }

@@ -1,9 +1,11 @@
+import Combine
 import Core
 import Dependencies
 
 struct XPCClient: Sendable {
   var startListener: @Sendable () async -> Void
   var sendUuid: @Sendable () async throws -> Void
+  var events: @Sendable () -> AnyPublisher<XPCEvent.Filter, Never>
 }
 
 extension XPCClient: DependencyKey {
@@ -11,7 +13,12 @@ extension XPCClient: DependencyKey {
     let manager = ThreadSafeXPCManager()
     return .init(
       startListener: { await manager.startListener() },
-      sendUuid: { try await manager.sendUuid() }
+      sendUuid: { try await manager.sendUuid() },
+      events: {
+        xpcEventSubject.withValue { subject in
+          Move(subject.eraseToAnyPublisher())
+        }.consume()
+      }
     )
   }
 }
@@ -19,7 +26,8 @@ extension XPCClient: DependencyKey {
 extension XPCClient: TestDependencyKey {
   static let testValue = Self(
     startListener: {},
-    sendUuid: {}
+    sendUuid: {},
+    events: { Empty().eraseToAnyPublisher() }
   )
 }
 
@@ -41,3 +49,5 @@ actor ThreadSafeXPCManager {
     try await manager.sendUuid()
   }
 }
+
+internal let xpcEventSubject = Mutex(PassthroughSubject<XPCEvent.Filter, Never>())

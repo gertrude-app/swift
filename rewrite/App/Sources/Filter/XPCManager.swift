@@ -46,7 +46,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
 
 func configure(connection: NSXPCConnection) -> NSXPCConnection {
   connection.exportedInterface = NSXPCInterface(with: AppMessageReceiving.self)
-  connection.exportedObject = ReceiveAppMessage()
+  connection.exportedObject = ReceiveAppMessage(subject: xpcEventSubject)
   connection.remoteObjectInterface = NSXPCInterface(with: FilterMessageReceiving.self)
   connection.resume()
   return connection

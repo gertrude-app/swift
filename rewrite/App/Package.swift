@@ -12,6 +12,7 @@ let package = Package(
     .library(name: "LiveApiClient", targets: ["LiveApiClient"]),
     .library(name: "LiveFilterXPCClient", targets: ["LiveFilterXPCClient"]),
     .library(name: "LiveFilterExtensionClient", targets: ["LiveFilterExtensionClient"]),
+    .library(name: "TestSupport", targets: ["TestSupport"]),
   ],
   dependencies: [
     .github("pointfreeco/swift-composable-architecture", branch: "prerelease/1.0"),
@@ -52,15 +53,24 @@ let package = Package(
     ),
     .checkedTarget(
       name: "Filter",
-      dependencies: [.tca, "Core", "shared" => "Shared"]
+      dependencies: [.tca, "Core", "shared" => "Shared"],
+      linkerSettings: [.linkedLibrary("bsm")]
     ),
     .checkedTarget(
       name: "Core",
       dependencies: [.dependencies, "shared" => "Shared"]
     ),
+    .target(
+      name: "TestSupport",
+      dependencies: [.tca, "x-expect" => "XExpect"]
+    ),
     .testTarget(
       name: "AppTests",
-      dependencies: ["App", "Models", "x-expect" => "XExpect"]
+      dependencies: ["App", "Models", "TestSupport", "x-expect" => "XExpect"]
+    ),
+    .testTarget(
+      name: "FilterTests",
+      dependencies: ["Filter", "Core", "TestSupport", "x-expect" => "XExpect"]
     ),
     .testTarget(
       name: "Codegen",
@@ -79,7 +89,8 @@ private func => (lhs: String, rhs: String) -> Target.Dependency {
 extension Target {
   static func checkedTarget(
     name: String,
-    dependencies: [Target.Dependency]
+    dependencies: [Target.Dependency],
+    linkerSettings: [LinkerSetting] = []
   ) -> Target {
     .target(
       name: name,
@@ -89,7 +100,8 @@ extension Target {
           "-Xfrontend", "-warn-concurrency",
           "-Xfrontend", "-enable-actor-data-race-checks",
         ]),
-      ]
+      ],
+      linkerSettings: linkerSettings
     )
   }
 }

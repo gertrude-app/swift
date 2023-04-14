@@ -1,9 +1,16 @@
+import Combine
 import Core
 import Foundation
 import os.log // TODO: remove when logging in place
 import Shared
 
 @objc class ReceiveAppMessage: NSObject, AppMessageReceiving {
+  let subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>
+
+  init(subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>) {
+    self.subject = subject
+  }
+
   func ackRandomInt(_ intData: Data, reply: @escaping (Data?, XPCErrorData?) -> Void) {
     do {
       let int = try XPC.decode(Int.self, from: intData)
@@ -22,8 +29,15 @@ import Shared
     reply: @escaping (XPCErrorData?) -> Void
   ) {
     do {
-      _ = try XPC.decode(AppIdManifest.self, from: manifestData)
+      let manifest = try XPC.decode(AppIdManifest.self, from: manifestData)
       let keys = try keysData.map { try XPC.decode(FilterKey.self, from: $0) }
+      subject.withValue {
+        $0.send(.receivedAppMessage(.userRules(
+          userId: userId,
+          keys: keys,
+          manifest: manifest
+        )))
+      }
       os_log(
         "[G•] XPCManager: received user rules, user: %{public}d, num keys: %{public}d",
         userId,
