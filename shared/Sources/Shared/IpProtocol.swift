@@ -1,6 +1,6 @@
 import Foundation
 
-public enum IpProtocol: Equatable, CustomStringConvertible, Codable {
+public enum IpProtocol: Equatable, CustomStringConvertible, Codable, Sendable {
   case tcp(Int32)
   case udp(Int32)
   case other(Int32)

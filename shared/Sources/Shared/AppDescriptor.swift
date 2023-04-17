@@ -1,4 +1,4 @@
-public struct AppDescriptor: Equatable, Codable {
+public struct AppDescriptor: Equatable, Codable, Sendable {
   public let bundleId: String
   public let slug: String?
   public let displayName: String?

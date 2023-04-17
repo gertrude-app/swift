@@ -44,7 +44,7 @@ extension GetUnlockRequest.Output {
     if let bundleId = decision.appBundleId {
       let idManifest = try await getCachedAppIdManifest()
       let factory = AppDescriptorFactory(appIdManifest: idManifest)
-      app = factory.make(bundleId: bundleId)
+      app = factory.appDescriptor(for: bundleId)
     }
 
     self.init(
