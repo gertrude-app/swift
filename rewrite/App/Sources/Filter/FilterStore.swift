@@ -1,9 +1,11 @@
 import ComposableArchitecture
 import Foundation
+import Shared
 
 public struct FilterStore: NetworkFilter {
   let store: StoreOf<Filter>
   let viewStore: ViewStoreOf<Filter>
+
   public var state: Filter.State { viewStore.state }
 
   @Dependency(\.security) public var security
@@ -12,5 +14,13 @@ public struct FilterStore: NetworkFilter {
     store = Store(initialState: Filter.State(), reducer: Filter())
     viewStore = ViewStore(store, observe: { $0 })
     viewStore.send(.extensionStarted)
+  }
+
+  public func appCache(insert descriptor: AppDescriptor, for bundleId: String) {
+    viewStore.send(.cacheAppDescriptor(bundleId, descriptor))
+  }
+
+  public func appCache(get bundleId: String) -> AppDescriptor? {
+    state.appCache[bundleId]
   }
 }

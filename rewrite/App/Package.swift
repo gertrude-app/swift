@@ -53,7 +53,7 @@ let package = Package(
     ),
     .checkedTarget(
       name: "Filter",
-      dependencies: [.tca, "Core", "shared" => "Shared"],
+      dependencies: [.tca, "Core", "x-kit" => "XCore", "shared" => "Shared"],
       linkerSettings: [.linkedLibrary("bsm")]
     ),
     .checkedTarget(

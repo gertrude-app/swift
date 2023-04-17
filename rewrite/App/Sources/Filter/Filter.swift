@@ -9,11 +9,13 @@ public struct Filter: Reducer {
     public var appIdManifest = AppIdManifest()
     public var exemptUsers: Set<uid_t> = []
     public var suspensions: [uid_t: FilterSuspension] = [:]
+    public var appCache: [String: AppDescriptor] = [:]
   }
 
   public enum Action: Equatable {
     case extensionStarted
     case receivedXpcEvent(XPCEvent.Filter)
+    case cacheAppDescriptor(String, AppDescriptor)
   }
 
   @Dependency(\.xpc) var xpc
@@ -34,9 +36,14 @@ public struct Filter: Reducer {
         }
       )
 
+    case .cacheAppDescriptor(let bundleId, let descriptor):
+      state.appCache[bundleId] = descriptor
+      return .none
+
     case .receivedXpcEvent(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
       state.userKeys[userId] = keys
       state.appIdManifest = manifest
+      state.appCache = [:]
       return .none
 
     case .receivedXpcEvent(.decodingAppMessageDataFailed):

@@ -19,6 +19,11 @@ import XExpect
     await store.send(.extensionStarted)
     await expect(xpcStarted).toEqual(true)
 
+    let descriptor = AppDescriptor(bundleId: "com.foo")
+    await store.send(.cacheAppDescriptor("com.foo", descriptor)) {
+      $0.appCache["com.foo"] = descriptor
+    }
+
     let key = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
     let manifest = AppIdManifest(apps: ["Lol": ["com.lol"]])
     let message = XPCEvent.Filter
@@ -29,6 +34,7 @@ import XExpect
     await store.receive(.receivedXpcEvent(message)) {
       $0.userKeys[502] = [key]
       $0.appIdManifest = manifest
+      $0.appCache = [:] // clears out app cache when new manifest is received
     }
 
     subject.send(completion: .finished)

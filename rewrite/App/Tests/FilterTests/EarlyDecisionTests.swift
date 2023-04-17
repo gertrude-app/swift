@@ -5,22 +5,22 @@ import XExpect
 
 final class EarlyDecisionTests: XCTestCase {
   func testMissingUserIdResultsInBlock() {
-    let filter = TestFilter.scenario(userId: nil, exemptUsers: [503])
+    let filter = TestFilter.scenario(userIdFromAuditToken: nil, exemptUsers: [503])
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.block)
   }
 
   func testSystemUserAllowed() {
-    let filter = TestFilter.scenario(userId: 400)
+    let filter = TestFilter.scenario(userIdFromAuditToken: 400)
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow)
   }
 
   func testExemptUserExempt() {
-    let filter = TestFilter.scenario(userId: 503, exemptUsers: [503])
+    let filter = TestFilter.scenario(userIdFromAuditToken: 503, exemptUsers: [503])
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow)
   }
 
   func testNonExemptUserNotExempt() {
-    let filter = TestFilter.scenario(userId: 502, exemptUsers: [503])
+    let filter = TestFilter.scenario(userIdFromAuditToken: 502, exemptUsers: [503])
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.none(502))
   }
 

@@ -1,9 +1,11 @@
+import Core
 import Filter
 import NetworkExtension
 import os.log
 
 class FilterDataProvider: NEFilterDataProvider {
   let store = FilterStore()
+  var flowUserIds: [UUID: uid_t] = [:]
 
   override func startFilter(completionHandler: @escaping (Error?) -> Void) {
     let networkRule = NENetworkRule(
@@ -41,27 +43,55 @@ class FilterDataProvider: NEFilterDataProvider {
       userId = id
     }
 
-    return .allow() // temp
-    // switch store.newFlowDecision(FilterFlow(flow, userId: userId)) {
-    // case .block:
-    //   return .drop()
-    // case .allow:
-    //   return .allow()
-    // case .defer:
-    //   return .filterDataVerdict(
-    //     withFilterInbound: false,
-    //     peekInboundBytes: Int.max,
-    //     filterOutbound: true,
-    //     peekOutboundBytes: 250
-    //   )
-    // }
+    switch store.newFlowDecision(
+      FilterFlow(flow, userId: userId),
+      auditToken: flow.sourceAppAuditToken
+    ) {
+    case .block:
+      return .drop()
+    case .allow:
+      return .allow()
+    case nil:
+      flowUserIds[flow.identifier] = userId
+      return .filterDataVerdict(
+        withFilterInbound: false,
+        peekInboundBytes: Int.max,
+        filterOutbound: true,
+        peekOutboundBytes: 250
+      )
+    }
   }
 
   override func handleOutboundData(
-    from rawFlow: NEFilterFlow,
-    readBytesStartOffset offset: Int,
+    from flow: NEFilterFlow,
+    readBytesStartOffset _: Int,
     readBytes: Data
   ) -> NEFilterDataVerdict {
-    .allow()
+    let userId = flowUserIds.removeValue(forKey: flow.identifier)
+
+    // safeguard: prevent memory leak
+    if flowUserIds.length > 100 {
+      flowUserIds = [:]
+    }
+
+    let decision = store.completedFlowDecision(
+      FilterFlow(flow, userId: userId),
+      readBytes: readBytes,
+      auditToken: flow.sourceAppAuditToken
+    )
+
+    switch decision {
+    case .block:
+      return .drop()
+    case .allow:
+      return .allow()
+    }
+  }
+}
+
+extension FilterFlow {
+  init(_ rawFlow: NEFilterFlow, userId: uid_t? = nil) {
+    self.init(url: rawFlow.url?.absoluteString, description: rawFlow.description)
+    self.userId = userId
   }
 }
