@@ -1,5 +1,6 @@
 import Core
 import Foundation
+import os.log // temp
 import Shared
 
 public enum FlowDecision: Equatable {
@@ -15,6 +16,9 @@ public enum FlowDecision: Equatable {
     case filterSuspended
     case systemUiServerInternal
     case permittedByKey(UUID)
+    #if DEBUG
+      case dev
+    #endif
   }
 
   case block(BlockReason)
@@ -22,8 +26,12 @@ public enum FlowDecision: Equatable {
 }
 
 public extension NetworkFilter {
+
   func newFlowDecision(_ flow: FilterFlow, auditToken: Data? = nil) -> FlowDecision? {
-    flowDecision(flow, auditToken: auditToken, canDefer: true)
+    if let decision = flowDecision(flow, auditToken: auditToken, canDefer: true) {
+      return logged(decision, from: flow)
+    }
+    return nil
   }
 
   func completedFlowDecision(
@@ -35,7 +43,9 @@ public extension NetworkFilter {
     if flow.url == nil {
       flow.parseOutboundData(byteString: bytesToString(readBytes))
     }
-    return flowDecision(flow, auditToken: auditToken, canDefer: false) ?? .block(.defaultNotAllowed)
+    let decision = flowDecision(flow, auditToken: auditToken, canDefer: false) ??
+      .block(.defaultNotAllowed)
+    return logged(decision, from: flow)
   }
 
   private func flowDecision(
@@ -127,6 +137,32 @@ public extension NetworkFilter {
       return false
     }
     return suspension.scope.permits(app)
+  }
+
+  private func logged(_ decision: FlowDecision, from flow: FilterFlow) -> FlowDecision {
+    #if DEBUG
+      if getuid() < 500 { // only log/modify decisions for root
+        switch decision {
+        case .block(let reason):
+          os_log(
+            "[G•] filter decision: BLOCK %{public}@, reason: %{public}@",
+            flow.shortDescription,
+            "\(reason)"
+          )
+          return .allow(.dev)
+        case .allow(let reason):
+          os_log(
+            "[G•] filter decision: ALLOW %{public}@, reason: %{public}@",
+            flow.shortDescription,
+            "\(reason)"
+          )
+          return decision
+        }
+      }
+      return decision
+    #else
+      return decision
+    #endif
   }
 }
 

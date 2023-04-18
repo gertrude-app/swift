@@ -70,7 +70,7 @@ class FilterDataProvider: NEFilterDataProvider {
     let userId = flowUserIds.removeValue(forKey: flow.identifier)
 
     // safeguard: prevent memory leak
-    if flowUserIds.length > 100 {
+    if flowUserIds.count > 100 {
       flowUserIds = [:]
     }
 
