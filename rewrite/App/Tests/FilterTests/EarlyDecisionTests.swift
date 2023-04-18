@@ -6,17 +6,17 @@ import XExpect
 final class EarlyDecisionTests: XCTestCase {
   func testMissingUserIdResultsInBlock() {
     let filter = TestFilter.scenario(userIdFromAuditToken: nil, exemptUsers: [503])
-    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.block)
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.block(.missingUserId))
   }
 
   func testSystemUserAllowed() {
     let filter = TestFilter.scenario(userIdFromAuditToken: 400)
-    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow)
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow(.systemUser(400)))
   }
 
   func testExemptUserExempt() {
     let filter = TestFilter.scenario(userIdFromAuditToken: 503, exemptUsers: [503])
-    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow)
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow(.exemptUser(503)))
   }
 
   func testNonExemptUserNotExempt() {
@@ -26,7 +26,7 @@ final class EarlyDecisionTests: XCTestCase {
 
   func testUserWithUnrestrictedScopeFilterSuspensionAllowed() {
     let filter = TestFilter.scenario(suspensions: [502: .init(scope: .unrestricted, duration: 100)])
-    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow)
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow(.suspended(502)))
   }
 
   func testUserWithBrowserScopeFilterSuspensionNoDecision() {
