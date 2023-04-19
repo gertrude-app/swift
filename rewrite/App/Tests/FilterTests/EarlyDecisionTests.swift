@@ -26,7 +26,7 @@ final class EarlyDecisionTests: XCTestCase {
 
   func testUserWithUnrestrictedScopeFilterSuspensionAllowed() {
     let filter = TestFilter.scenario(suspensions: [502: .init(scope: .unrestricted, duration: 100)])
-    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow(.suspended(502)))
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow(.filterSuspended(502)))
   }
 
   func testUserWithBrowserScopeFilterSuspensionNoDecision() {

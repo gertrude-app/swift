@@ -4,22 +4,31 @@ import Foundation
 import Models
 
 @objc class ReceiveFilterMessage: NSObject, FilterMessageReceiving {
+
   let subject: Mutex<PassthroughSubject<XPCEvent.App, Never>>
 
   init(subject: Mutex<PassthroughSubject<XPCEvent.App, Never>>) {
     self.subject = subject
   }
 
-  func receiveUuid(_ uuidData: Data, reply: @escaping (XPCErrorData?) -> Void) {
+  func receiveBlockedRequest(
+    _ requestData: Data,
+    userId: uid_t,
+    reply: @escaping (Core.XPCErrorData?) -> Void
+  ) {
+    guard userId == getuid() else {
+      reply(nil)
+      return
+    }
     do {
-      let uuid = try JSONDecoder().decode(UUID.self, from: uuidData)
-      subject.withValue { $0.send(.receivedExtensionMessage(.uuid(uuid))) }
+      let request = try JSONDecoder().decode(BlockedRequest.self, from: requestData)
+      subject.withValue { $0.send(.receivedExtensionMessage(.blockedRequest(request))) }
       reply(nil)
     } catch {
       subject.withValue {
         $0.send(.decodingExtensionMessageDataFailed(
           fn: "\(#function)",
-          type: "\(UUID.self)",
+          type: "\(BlockedRequest.self)",
           error: "\(error)"
         ))
       }

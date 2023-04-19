@@ -3,31 +3,10 @@ import Foundation
 import os.log // temp
 import Shared
 
-public enum FlowDecision: Equatable {
-  public enum BlockReason: Equatable {
-    case missingUserId
-    case noUserKeys
-    case defaultNotAllowed
-  }
-
-  public enum AllowReason: Equatable {
-    case dnsRequest
-    case fromGertrudeApp
-    case filterSuspended
-    case systemUiServerInternal
-    case permittedByKey(UUID)
-    #if DEBUG
-      case dev
-    #endif
-  }
-
-  case block(BlockReason)
-  case allow(AllowReason)
-}
-
 public extension NetworkFilter {
 
-  func newFlowDecision(_ flow: FilterFlow, auditToken: Data? = nil) -> FlowDecision? {
+  func newFlowDecision(_ flow: FilterFlow, auditToken: Data? = nil) -> FilterDecision
+    .FromFlow? {
     if let decision = flowDecision(flow, auditToken: auditToken, canDefer: true) {
       return logged(decision, from: flow)
     }
@@ -38,7 +17,7 @@ public extension NetworkFilter {
     _ flow: FilterFlow,
     readBytes: Data,
     auditToken: Data? = nil
-  ) -> FlowDecision {
+  ) -> FilterDecision.FromFlow {
     var flow = flow
     if flow.url == nil {
       flow.parseOutboundData(byteString: bytesToString(readBytes))
@@ -52,7 +31,7 @@ public extension NetworkFilter {
     _ flow: FilterFlow,
     auditToken: Data?,
     canDefer: Bool
-  ) -> FlowDecision? {
+  ) -> FilterDecision.FromFlow? {
 
     if flow.isDnsRequest {
       return .allow(.dnsRequest)
@@ -139,9 +118,10 @@ public extension NetworkFilter {
     return suspension.scope.permits(app)
   }
 
-  private func logged(_ decision: FlowDecision, from flow: FilterFlow) -> FlowDecision {
+  private func logged(_ decision: FilterDecision.FromFlow, from flow: FilterFlow) -> FilterDecision
+    .FromFlow {
     #if DEBUG
-      if getuid() < 500 { // only log/modify decisions for root
+      if getuid() < 500 { // prevent logging during tests
         switch decision {
         case .block(let reason):
           os_log(
@@ -149,20 +129,16 @@ public extension NetworkFilter {
             flow.shortDescription,
             "\(reason)"
           )
-          return .allow(.dev)
         case .allow(let reason):
           os_log(
             "[G•] filter decision: ALLOW %{public}@, reason: %{public}@",
             flow.shortDescription,
             "\(reason)"
           )
-          return decision
         }
       }
-      return decision
-    #else
-      return decision
     #endif
+    return decision
   }
 }
 

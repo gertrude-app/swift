@@ -32,3 +32,22 @@ public extension TestStore {
     set { dependencies = newValue }
   }
 }
+
+public extension ActorIsolated where Value: RangeReplaceableCollection {
+  func append(_ newElement: Value.Element) async {
+    value.append(newElement)
+  }
+}
+
+// if/when tuples become Sendable, this can be removed
+public struct Both<A, B> {
+  public var a: A
+  public var b: B
+  public init(_ a: A, _ b: B) {
+    self.a = a
+    self.b = b
+  }
+}
+
+extension Both: Sendable where A: Sendable, B: Sendable {}
+extension Both: Equatable where A: Equatable, B: Equatable {}

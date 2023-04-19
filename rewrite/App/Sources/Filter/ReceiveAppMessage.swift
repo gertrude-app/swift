@@ -49,4 +49,20 @@ import Shared
       reply(XPC.errorData(error))
     }
   }
+
+  func setBlockStreaming(
+    _ enabled: Bool,
+    userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    subject.withValue {
+      $0.send(.receivedAppMessage(.setBlockStreaming(enabled: enabled, userId: userId)))
+    }
+    os_log(
+      "[G•] XPCManager: setBlockStreaming enabled=%{public}d, userId: %{public}d",
+      enabled,
+      userId
+    )
+    reply(nil)
+  }
 }
