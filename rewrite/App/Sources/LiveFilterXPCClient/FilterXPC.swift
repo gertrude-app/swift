@@ -58,6 +58,16 @@ struct FilterXPC: Sendable {
       )
     }
   }
+
+  func setBlockStreaming(enabled: Bool) async throws {
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.setBlockStreaming(
+        enabled,
+        userId: getuid(),
+        reply: continuation.dataHandler
+      )
+    }
+  }
 }
 
 extension FilterXPC: XPCSender {

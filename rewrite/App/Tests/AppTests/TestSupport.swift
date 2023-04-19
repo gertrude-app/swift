@@ -10,10 +10,7 @@ import XExpect
 func spyOnNotifications(_ store: TestStoreOf<AppReducer>) -> ActorIsolated<[TestNotification]> {
   let spy = ActorIsolated<[TestNotification]>([])
   store.deps.device.showNotification = { title, body in
-    var value = await spy.value
-    value.append(TestNotification(title, body))
-    let replace = value
-    await spy.setValue(replace)
+    await spy.append(TestNotification(title, body))
   }
   return spy
 }

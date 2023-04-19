@@ -47,6 +47,7 @@ enum MenuBarFeature: Feature {
   struct RootReducer: RootReducing {
     @Dependency(\.api) var api
     @Dependency(\.filterExtension) var filterExtension
+    @Dependency(\.filterXpc) var filterXpc // temp
   }
 }
 
@@ -85,6 +86,12 @@ extension MenuBarFeature.RootReducer {
           result: TaskResult { try await api.refreshUserRules() },
           userInitiated: true
         ))
+      }
+
+    // temp, just testing...
+    case .menuBar(.viewNetworkTrafficClicked):
+      return .fireAndForget {
+        _ = await filterXpc.setBlockStreaming(true)
       }
 
     // TODO: test

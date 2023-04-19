@@ -1,24 +1,9 @@
+import Core
 import Foundation
 import os.log
 
-public enum EarlyDecision: Equatable {
-  public enum Reason: Equatable {
-    case missingUserId
-    case systemUser(uid_t)
-    case exemptUser(uid_t)
-    case suspended(uid_t)
-    #if DEBUG
-      case dev
-    #endif
-  }
-
-  case block(Reason)
-  case allow(Reason)
-  case none(uid_t)
-}
-
 public extension NetworkFilter {
-  func earlyUserDecision(auditToken: Data?) -> EarlyDecision {
+  func earlyUserDecision(auditToken: Data?) -> FilterDecision.FromUserId {
     guard let userId = security.userIdFromAuditToken(auditToken) else {
       return logged(.block(.missingUserId))
     }
@@ -35,28 +20,25 @@ public extension NetworkFilter {
     if let suspension = state.suspensions[userId],
        suspension.isActive,
        suspension.scope == .unrestricted {
-      return logged(.allow(.suspended(userId)))
+      return logged(.allow(.filterSuspended(userId)))
     }
 
     return .none(userId)
   }
 
-  private func logged(_ decision: EarlyDecision) -> EarlyDecision {
+  private func logged(_ decision: FilterDecision.FromUserId) -> FilterDecision.FromUserId {
     #if DEBUG
-      if getuid() < 500 { // only log/modify decisions for root
+      if getuid() < 500 { // prevent logging when running tests
         switch decision {
         case .block(let reason):
           os_log("[G•] filter early decision: BLOCK, reason: %{public}@", "\(reason)")
-          return .allow(.dev)
         case .allow(let reason):
           os_log("[G•] filter early decision: ALLOW, reason: %{public}@", "\(reason)")
         case .none:
           break
         }
       }
-      return decision
-    #else
-      return decision
     #endif
+    return decision
   }
 }

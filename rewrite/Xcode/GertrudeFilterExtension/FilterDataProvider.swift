@@ -1,3 +1,4 @@
+import Combine
 import Core
 import Filter
 import NetworkExtension
@@ -6,6 +7,15 @@ import os.log
 class FilterDataProvider: NEFilterDataProvider {
   let store = FilterStore()
   var flowUserIds: [UUID: uid_t] = [:]
+  var cancellables: Set<AnyCancellable> = []
+
+  // give the FilterDataProvider a simple boolean it can
+  // quickly check to decide if it needs to pass the decision
+  // on to the store - the vast majority of the time, nothing
+  // needs to be sent, and the filter is sometimes making a huge
+  // number of decisions, so keeping this lookup as fast as possible
+  // for the normal case is important
+  var sendingBlockDecisions = false
 
   override func startFilter(completionHandler: @escaping (Error?) -> Void) {
     let networkRule = NENetworkRule(
@@ -23,6 +33,11 @@ class FilterDataProvider: NEFilterDataProvider {
     apply(filterSettings) { errorOrNil in
       completionHandler(errorOrNil)
     }
+
+    store.shouldSendBlockDecisions().sink { [weak self] in
+      os_log("[G•] data provider: toggle send block decisions %{public}d", $0)
+      self?.sendingBlockDecisions = $0
+    }.store(in: &cancellables)
   }
 
   override func stopFilter(
@@ -36,19 +51,36 @@ class FilterDataProvider: NEFilterDataProvider {
     let userId: uid_t
     switch store.earlyUserDecision(auditToken: flow.sourceAppAuditToken) {
     case .block:
-      return .drop()
+      #if DEBUG
+        return .allow()
+      #else
+        return .drop()
+      #endif
     case .allow:
       return .allow()
     case .none(let id):
       userId = id
     }
 
-    switch store.newFlowDecision(
-      FilterFlow(flow, userId: userId),
-      auditToken: flow.sourceAppAuditToken
-    ) {
+    let filterFlow = FilterFlow(flow, userId: userId)
+    let decision = store.newFlowDecision(filterFlow, auditToken: flow.sourceAppAuditToken)
+
+    switch decision {
+    case .block(.defaultNotAllowed):
+      if sendingBlockDecisions {
+        store.sendBlocked(filterFlow)
+      }
+      #if DEBUG
+        return .allow()
+      #else
+        return .drop()
+      #endif
     case .block:
-      return .drop()
+      #if DEBUG
+        return .allow()
+      #else
+        return .drop()
+      #endif
     case .allow:
       return .allow()
     case nil:
@@ -74,15 +106,29 @@ class FilterDataProvider: NEFilterDataProvider {
       flowUserIds = [:]
     }
 
+    let filterFlow = FilterFlow(flow, userId: userId)
     let decision = store.completedFlowDecision(
-      FilterFlow(flow, userId: userId),
+      filterFlow,
       readBytes: readBytes,
       auditToken: flow.sourceAppAuditToken
     )
 
     switch decision {
+    case .block(.defaultNotAllowed):
+      if sendingBlockDecisions {
+        store.sendBlocked(filterFlow)
+      }
+      #if DEBUG
+        return .allow()
+      #else
+        return .drop()
+      #endif
     case .block:
-      return .drop()
+      #if DEBUG
+        return .allow()
+      #else
+        return .drop()
+      #endif
     case .allow:
       return .allow()
     }

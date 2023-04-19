@@ -11,16 +11,15 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
 
   @Dependency(\.mainQueue) var scheduler
 
-  func sendUuid() async throws {
+  func sendBlockedRequest(_ request: BlockedRequest, userId: uid_t) async throws {
     guard let connection else {
       throw XPCErr.noConnection
     }
 
-    let uuid = UUID()
-    os_log("[G•] XPCManager: sending uuid: %{public}@", uuid.uuidString)
-    let uuidData = try XPC.encode(uuid)
+    os_log("[G•] XPCManager: sending blocked request: %{public}@", String(describing: request))
+    let requestData = try XPC.encode(request)
     try await withTimeout(connection: connection) { appProxy, continuation in
-      appProxy.receiveUuid(uuidData, reply: continuation.dataHandler)
+      appProxy.receiveBlockedRequest(requestData, userId: userId, reply: continuation.dataHandler)
     }
   }
 

@@ -16,6 +16,9 @@ extension FilterXPCClient: DependencyKey {
       sendUserRules: { manifest, keys in await .init {
         try await xpc.sendUserRules(manifest: manifest, keys: keys)
       }},
+      setBlockStreaming: { enabled in await .init {
+        try await xpc.setBlockStreaming(enabled: enabled)
+      }},
       events: {
         xpcEventSubject.withValue { subject in
           Move(subject.eraseToAnyPublisher())
@@ -38,5 +41,9 @@ actor ThreadSafeFilterXPC {
 
   func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {
     try await filterXpc.sendUserRules(manifest: manifest, keys: keys)
+  }
+
+  func setBlockStreaming(enabled: Bool) async throws {
+    try await filterXpc.setBlockStreaming(enabled: enabled)
   }
 }

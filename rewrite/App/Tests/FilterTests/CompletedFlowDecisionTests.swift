@@ -243,7 +243,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
 }
 
 extension NetworkFilter {
-  func completedDecision(_ flow: FilterFlow) -> FlowDecision {
+  func completedDecision(_ flow: FilterFlow) -> FilterDecision.FromFlow {
     completedFlowDecision(flow, readBytes: .init())
   }
 }
@@ -282,7 +282,7 @@ extension CompletedFlowDecisionTests {
         flow = FilterFlow.test(url: flowUrl)
       }
       let filter = TestFilter.scenario(userKeys: [502: [key]])
-      let flowDecision = decision == .allow ? FlowDecision
+      let flowDecision = decision == .allow ? FilterDecision.FromFlow
         .allow(.permittedByKey(key.id)) : .block(.defaultNotAllowed)
       expect(filter.completedFlowDecision(flow, readBytes: .init())).toEqual(flowDecision)
     }

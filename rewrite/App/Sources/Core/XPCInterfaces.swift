@@ -10,8 +10,17 @@ public typealias XPCErrorData = Data
     keysData: [Data],
     reply: @escaping (XPCErrorData?) -> Void
   )
+  func setBlockStreaming(
+    _ enabled: Bool,
+    userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
 }
 
 @objc public protocol FilterMessageReceiving {
-  func receiveUuid(_ uuidData: Data, reply: @escaping (XPCErrorData?) -> Void)
+  func receiveBlockedRequest(
+    _ requestData: Data,
+    userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
 }

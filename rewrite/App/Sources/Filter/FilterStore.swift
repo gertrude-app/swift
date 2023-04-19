@@ -1,4 +1,6 @@
+import Combine
 import ComposableArchitecture
+import Core
 import Foundation
 import Shared
 
@@ -14,6 +16,14 @@ public struct FilterStore: NetworkFilter {
     store = Store(initialState: Filter.State(), reducer: Filter())
     viewStore = ViewStore(store, observe: { $0 })
     viewStore.send(.extensionStarted)
+  }
+
+  public func sendBlocked(_ flow: FilterFlow) {
+    viewStore.send(.flowBlocked(flow))
+  }
+
+  public func shouldSendBlockDecisions() -> AnyPublisher<Bool, Never> {
+    viewStore.publisher.blockListeners.map { !$0.isEmpty }.eraseToAnyPublisher()
   }
 
   public func appCache(insert descriptor: AppDescriptor, for bundleId: String) {

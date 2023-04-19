@@ -1,10 +1,11 @@
 import Combine
 import Core
 import Dependencies
+import Foundation
 
 struct XPCClient: Sendable {
   var startListener: @Sendable () async -> Void
-  var sendUuid: @Sendable () async throws -> Void
+  var sendBlockedRequest: @Sendable (uid_t, BlockedRequest) async throws -> Void
   var events: @Sendable () -> AnyPublisher<XPCEvent.Filter, Never>
 }
 
@@ -12,8 +13,12 @@ extension XPCClient: DependencyKey {
   static var liveValue: Self {
     let manager = ThreadSafeXPCManager()
     return .init(
-      startListener: { await manager.startListener() },
-      sendUuid: { try await manager.sendUuid() },
+      startListener: {
+        await manager.startListener()
+      },
+      sendBlockedRequest: { userId, request in
+        try await manager.sendBlockedRequest(request, userId: userId)
+      },
       events: {
         xpcEventSubject.withValue { subject in
           Move(subject.eraseToAnyPublisher())
@@ -26,7 +31,7 @@ extension XPCClient: DependencyKey {
 extension XPCClient: TestDependencyKey {
   static let testValue = Self(
     startListener: {},
-    sendUuid: {},
+    sendBlockedRequest: { _, _ in },
     events: { Empty().eraseToAnyPublisher() }
   )
 }
@@ -45,8 +50,8 @@ actor ThreadSafeXPCManager {
     manager.startListener()
   }
 
-  func sendUuid() async throws {
-    try await manager.sendUuid()
+  func sendBlockedRequest(_ request: BlockedRequest, userId: uid_t) async throws {
+    try await manager.sendBlockedRequest(request, userId: userId)
   }
 }
 
