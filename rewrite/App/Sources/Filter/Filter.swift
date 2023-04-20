@@ -3,8 +3,6 @@ import Core
 import Foundation
 import Shared
 
-import os.log // temp
-
 public struct Filter: Reducer {
   public struct State: Equatable, DecisionState {
     public var userKeys: [uid_t: [FilterKey]] = [:]
@@ -18,13 +16,14 @@ public struct Filter: Reducer {
   public enum Action: Equatable {
     case extensionStarted
     case xpc(XPCEvent.Filter)
-    case flowBlocked(FilterFlow)
+    case flowBlocked(FilterFlow, AppDescriptor)
     case cacheAppDescriptor(String, AppDescriptor)
   }
 
   @Dependency(\.xpc) var xpc
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.date.now) var now
+  @Dependency(\.uuid) var uuid
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
@@ -41,14 +40,14 @@ public struct Filter: Reducer {
         }
       )
 
-    case .flowBlocked(let flow):
+    case .flowBlocked(let flow, let app):
       if let userId = flow.userId, let expiration = state.blockListeners[userId] {
         if expiration < now {
           state.blockListeners[userId] = nil
           return .none
         }
-        return .fireAndForget { [sendBlockedRequest = xpc.sendBlockedRequest] in
-          _ = try await sendBlockedRequest(userId, flow.blockedRequest)
+        return .fireAndForget { [send = xpc.sendBlockedRequest, uuid, now] in
+          _ = try await send(userId, flow.blockedRequest(id: uuid(), time: now, app: app))
         }
       }
       return .none

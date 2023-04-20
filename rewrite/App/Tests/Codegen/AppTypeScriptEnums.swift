@@ -13,6 +13,12 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
         MenuBarFeature.State.self,
       ]
     ),
+    TypeScriptEnum(
+      name: "BlockedRequestsFeature",
+      types: [
+        BlockedRequestsFeature.Action.self,
+      ]
+    ),
   ]
 
   func format() throws {

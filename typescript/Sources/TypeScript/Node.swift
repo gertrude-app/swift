@@ -1,3 +1,4 @@
+import Foundation
 import Runtime
 
 indirect enum Node: Equatable {
@@ -13,6 +14,8 @@ indirect enum Node: Equatable {
     case boolean
     case null
     case void
+    case date
+    case uuid
     case never
   }
 
@@ -45,7 +48,14 @@ extension Node {
     switch type {
     case is String.Type:
       self = .primitive(.string)
-    case is Int.Type:
+    case is Int.Type,
+         is Int32.Type,
+         is Int64.Type,
+         is UInt.Type,
+         is UInt32.Type,
+         is UInt64.Type,
+         is Float.Type,
+         is Double.Type:
       self = .primitive(.number)
     case is Bool.Type:
       self = .primitive(.boolean)
@@ -53,6 +63,10 @@ extension Node {
       self = .primitive(.void)
     case is Never.Type:
       self = .primitive(.never)
+    case is Date.Type:
+      self = .primitive(.date)
+    case is UUID.Type:
+      self = .primitive(.uuid)
     default:
       try self.init(from: typeInfo(of: type))
     }

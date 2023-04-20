@@ -1,4 +1,5 @@
 // auto-generated, do not edit
+import Foundation
 
 extension MenuBarFeature.Action {
   private struct _NamedCase: Codable {

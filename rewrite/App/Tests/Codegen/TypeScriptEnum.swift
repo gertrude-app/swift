@@ -15,7 +15,7 @@ extension TypeScriptEnum: CodeGenerator {
 
   func write() throws {
     let url = URL(fileURLWithPath: path)
-    let header = "// auto-generated, do not edit"
+    let header = "// auto-generated, do not edit\nimport Foundation"
     let decls = try types.map {
       let enumType = try EnumType(from: $0)
       if ProcessInfo.processInfo.environment["CODEGEN_UNIMPLEMENTED"] != nil {

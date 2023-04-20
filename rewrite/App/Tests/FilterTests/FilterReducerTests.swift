@@ -49,7 +49,7 @@ import XExpect
     // in reality, the FilterDataProvider would never send a block
     // to the store if the user wasn't streaming, but this just ensures
     // that the logic in the reducer correctly ignores blocks with no listener
-    await store.send(.flowBlocked(FilterFlow(userId: 502)))
+    await store.send(.flowBlocked(FilterFlow(userId: 502), .mock))
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: true,
@@ -65,9 +65,9 @@ import XExpect
     }
 
     let flow = FilterFlow(userId: 502)
-    await store.send(.flowBlocked(flow))
-    await store.send(.flowBlocked(FilterFlow(userId: 503))) // <-- different user
-    await expect(sentBlocks).toEqual([Both(502, flow.blockedRequest)])
+    await store.send(.flowBlocked(flow, .mock))
+    await store.send(.flowBlocked(FilterFlow(userId: 503), .mock)) // <-- different user
+    await expect(sentBlocks).toEqual([Both(502, flow.testBlockedReq())])
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: false,
@@ -78,7 +78,7 @@ import XExpect
 
     // no more blocks should be sent
     store.deps.xpc.sendBlockedRequest = { _, _ in fatalError() }
-    await store.send(.flowBlocked(FilterFlow(userId: 502)))
+    await store.send(.flowBlocked(FilterFlow(userId: 502), .mock))
   }
 
   func testBlockStreamingExpiration() async {
@@ -100,16 +100,17 @@ import XExpect
     store.deps.date.now = Date(timeIntervalSince1970: 60 * 5 - 1)
 
     let flow1 = FilterFlow(userId: 502)
-    await store.send(.flowBlocked(flow1))
-    await expect(sentBlocks).toEqual([Both(502, flow1.blockedRequest)])
+    let flow1Block = flow1.testBlockedReq(time: store.deps.date.now)
+    await store.send(.flowBlocked(flow1, .mock))
+    await expect(sentBlocks).toEqual([Both(502, flow1Block)])
 
     // one second AFTER expiration
     store.deps.date.now = Date(timeIntervalSince1970: 60 * 5 + 1)
-    await store.send(.flowBlocked(FilterFlow(userId: 502))) {
+    await store.send(.flowBlocked(FilterFlow(userId: 502), .mock)) {
       $0.blockListeners = [:]
     }
 
-    await expect(sentBlocks).toEqual([Both(502, flow1.blockedRequest)])
+    await expect(sentBlocks).toEqual([Both(502, flow1Block)])
   }
 }
 
@@ -122,7 +123,29 @@ extension Filter {
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = .immediate
-    store.deps.date.now = Date(timeIntervalSince1970: 0)
+    store.deps.date.now = TEST_NOW
+    store.deps.uuid = .constant(TEST_ID)
     return (store, scheduler)
   }
+}
+
+let TEST_NOW = Date(timeIntervalSince1970: 0)
+let TEST_ID = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+
+extension FilterFlow {
+  func testBlockedReq(id: UUID = TEST_ID, time: Date = TEST_NOW) -> BlockedRequest {
+    BlockedRequest(
+      id: id,
+      time: time,
+      app: .mock,
+      url: url,
+      hostname: hostname,
+      ipAddress: ipAddress,
+      ipProtocol: ipProtocol
+    )
+  }
+}
+
+extension AppDescriptor {
+  static let mock = AppDescriptor(bundleId: "com.mock.app")
 }

@@ -18,8 +18,9 @@ public struct FilterStore: NetworkFilter {
     viewStore.send(.extensionStarted)
   }
 
-  public func sendBlocked(_ flow: FilterFlow) {
-    viewStore.send(.flowBlocked(flow))
+  public func sendBlocked(_ flow: FilterFlow, auditToken: Data?) {
+    let app = appDescriptor(for: flow.bundleId ?? "(no bundle id)", auditToken: auditToken)
+    viewStore.send(.flowBlocked(flow, app))
   }
 
   public func shouldSendBlockDecisions() -> AnyPublisher<Bool, Never> {

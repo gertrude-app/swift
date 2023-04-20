@@ -13,17 +13,19 @@ struct AppReducer: Reducer, Sendable {
     var filter = FilterFeature.State.unknown
     var history = HistoryFeature.State()
     var user: UserFeature.State?
+    var blockedRequests = BlockedRequestsFeature.State()
   }
 
   enum Action: Equatable, Sendable {
     case application(ApplicationFeature.Action)
     case filter(FilterFeature.Action)
-    case receivedXpcEvent(XPCEvent.App)
+    case xpc(XPCEvent.App)
     case history(HistoryFeature.Action)
     case menuBar(MenuBarFeature.Action)
     case loadedPersistentState(Persistent.State?)
     case user(UserFeature.Action)
     case heartbeat(Heartbeat.Interval)
+    case blockedRequests(BlockedRequestsFeature.Action)
   }
 
   @Dependency(\.api) var api
@@ -41,6 +43,11 @@ struct AppReducer: Reducer, Sendable {
             userInitiated: false
           ))
         }
+
+      // TODO: test, maybe move into blockedRequests root reducer
+      case .xpc(.receivedExtensionMessage(.blockedRequest(let request))):
+        state.blockedRequests.requests.append(request)
+        return .none
 
       default:
         return .none
@@ -62,6 +69,9 @@ struct AppReducer: Reducer, Sendable {
     }
     Scope(state: \.menuBar, action: /Action.menuBar) {
       MenuBarFeature.Reducer()
+    }
+    Scope(state: \.blockedRequests, action: /Action.blockedRequests) {
+      BlockedRequestsFeature.Reducer()
     }
     .ifLet(\.user, action: /Action.user) {
       UserFeature.Reducer()

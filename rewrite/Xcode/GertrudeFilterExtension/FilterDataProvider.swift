@@ -68,7 +68,7 @@ class FilterDataProvider: NEFilterDataProvider {
     switch decision {
     case .block(.defaultNotAllowed):
       if sendingBlockDecisions {
-        store.sendBlocked(filterFlow)
+        store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
       #if DEBUG
         return .allow()
@@ -116,7 +116,7 @@ class FilterDataProvider: NEFilterDataProvider {
     switch decision {
     case .block(.defaultNotAllowed):
       if sendingBlockDecisions {
-        store.sendBlocked(filterFlow)
+        store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
       #if DEBUG
         return .allow()

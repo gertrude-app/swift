@@ -1,10 +1,19 @@
 public struct Config {
   let compact: Bool
   let aliases: [String: String]
+  let dateType: String?
+  let uuidType: String?
 
-  public init(compact: Bool = false, aliasing aliases: [String: String] = [:]) {
+  public init(
+    compact: Bool = false,
+    aliasing aliases: [String: String] = [:],
+    dateType: String? = nil,
+    uuidType: String? = nil
+  ) {
     self.compact = compact
     self.aliases = aliases
+    self.dateType = dateType
+    self.uuidType = uuidType
   }
 }
 
@@ -106,6 +115,10 @@ extension Node.Primitive: TypeScriptRepresentable {
     switch self {
     case .boolean:
       return "boolean"
+    case .date:
+      return ctx.config.dateType ?? "Date"
+    case .uuid:
+      return ctx.config.uuidType ?? "UUID"
     case .null:
       return "boolean"
     case .number:

@@ -32,7 +32,7 @@ struct AppviewStore {
 extension AppviewStore: CodeGenerator {
   var decls: [String] {
     get throws {
-      let ts = CodeGen(config: .init(compact: true, aliasing: aliases))
+      let ts = CodeGen(config: .init(compact: true, aliasing: aliases, dateType: "ISODateString"))
       return try types.map { try ts.declaration(for: $0.type, as: $0.alias) }
     }
   }

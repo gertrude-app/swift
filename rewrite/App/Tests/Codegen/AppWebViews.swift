@@ -13,6 +13,15 @@ struct AppWebViews: AggregateCodeGenerator {
       ],
       aliasing: ["filterState": "FilterState"]
     ),
+    AppviewStore(
+      at: "BlockedRequests/blockedrequests-store.ts",
+      generating: [
+        .init(BlockedRequestsFeature.ViewState.Request.self),
+        .init(BlockedRequestsFeature.ViewState.self, as: "AppState"),
+        .init(BlockedRequestsFeature.Action.self, as: "AppEvent"),
+      ],
+      aliasing: ["requests": "Request[]"]
+    ),
   ]
 
   func format() throws {
