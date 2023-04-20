@@ -2,6 +2,7 @@ import ComposableArchitecture
 
 @MainActor public struct App {
   var menuBarManager: MenuBarManager
+  var blockedRequestsWindow: BlockedRequestsWindow
   let store = Store(
     initialState: AppReducer.State(),
     reducer: AppReducer()._printChanges()
@@ -15,6 +16,10 @@ import ComposableArchitecture
     menuBarManager = MenuBarManager(store: store.scope(
       state: { $0 },
       action: AppReducer.Action.menuBar
+    ))
+    blockedRequestsWindow = BlockedRequestsWindow(store: store.scope(
+      state: { $0.blockedRequests },
+      action: AppReducer.Action.blockedRequests
     ))
   }
 

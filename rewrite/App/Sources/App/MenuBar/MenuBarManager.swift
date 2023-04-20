@@ -21,7 +21,7 @@ import WebKit
     popover.animates = false
     popover.behavior = .applicationDefined
 
-    vc = WebViewController<MenuBarFeature.State, MenuBarFeature.Action>()
+    vc = WebViewControllerOf<MenuBarFeature>()
     vc.loadWebView(screen: "MenuBar")
     popover.contentViewController = vc
     popover.contentSize = NSSize(width: 400, height: 300)

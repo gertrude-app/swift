@@ -87,3 +87,22 @@ public enum IpProtocol: Equatable, CustomStringConvertible, Codable, Sendable {
     self = .init(int32)
   }
 }
+
+public extension IpProtocol {
+  enum Kind: String, Equatable, Sendable, Codable {
+    case tcp
+    case udp
+    case other
+  }
+
+  var kind: Kind {
+    switch self {
+    case .tcp:
+      return .tcp
+    case .udp:
+      return .udp
+    case .other:
+      return .other
+    }
+  }
+}

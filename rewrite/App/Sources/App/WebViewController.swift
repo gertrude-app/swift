@@ -1,3 +1,4 @@
+import ComposableArchitecture
 import WebKit
 import XCore
 
@@ -60,3 +61,8 @@ class WebViewController<State, Action>:
     send(action)
   }
 }
+
+typealias WebViewControllerOf<F: Feature> = WebViewController<
+  F.Reducer.State,
+  F.Reducer.Action
+> where F.Reducer.State: Encodable, F.Reducer.Action: Decodable

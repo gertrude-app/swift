@@ -53,7 +53,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
         .publisher {
           filterXpc.events()
-            .map { .receivedXpcEvent($0) }
+            .map { .xpc($0) }
             .receive(on: mainQueue)
         }
       )

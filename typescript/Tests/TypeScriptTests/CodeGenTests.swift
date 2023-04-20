@@ -4,6 +4,61 @@ import XExpect
 @testable import TypeScript
 
 final class CodeGenTests: XCTestCase {
+  func testGenericEnum() throws {
+    enum RequestState<T, E> {
+      case idle
+      case loading
+      case succeeded(T)
+      case failed(E)
+    }
+    struct Wrap {
+      var req: RequestState<Bool, String>
+    }
+    expect(try CodeGen().declaration(for: Wrap.self)).toEqual(
+      """
+      export type Wrap = {
+        req: {
+          case: 'succeeded';
+          succeeded: boolean;
+        } | {
+          case: 'failed';
+          failed: string;
+        } | {
+          case: 'idle';
+        } | {
+          case: 'loading';
+        };
+      }
+      """
+    )
+  }
+
+  func testFoundationTypes() throws {
+    struct FoundationTypes {
+      var date: Date
+      var uuid: UUID
+    }
+    expect(try CodeGen().declaration(for: FoundationTypes.self)).toEqual(
+      """
+      export type FoundationTypes = {
+        date: Date;
+        uuid: UUID;
+      }
+      """
+    )
+    expect(
+      try CodeGen(config: .init(dateType: "IsoDateString", uuidType: "string"))
+        .declaration(for: FoundationTypes.self)
+    ).toEqual(
+      """
+      export type FoundationTypes = {
+        date: IsoDateString;
+        uuid: string;
+      }
+      """
+    )
+  }
+
   func testScreen() throws {
     enum Screen {
       struct Connected {

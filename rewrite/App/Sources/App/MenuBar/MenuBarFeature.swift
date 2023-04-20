@@ -90,6 +90,7 @@ extension MenuBarFeature.RootReducer {
 
     // temp, just testing...
     case .menuBar(.viewNetworkTrafficClicked):
+      state.blockedRequests.windowOpen = true
       return .fireAndForget {
         _ = await filterXpc.setBlockStreaming(true)
       }
