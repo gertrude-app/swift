@@ -16,9 +16,9 @@ struct AppWebViews: AggregateCodeGenerator {
     AppviewStore(
       at: "BlockedRequests/blockedrequests-store.ts",
       generating: [
-        .init(BlockedRequestsFeature.ViewState.Request.self),
-        .init(BlockedRequestsFeature.ViewState.self, as: "AppState"),
-        .init(BlockedRequestsFeature.Action.self, as: "AppEvent"),
+        .init(BlockedRequestsFeature.State.View.Request.self),
+        .init(BlockedRequestsFeature.State.View.self, as: "AppState"),
+        .init(BlockedRequestsFeature.Action.View.self, as: "AppEvent"),
       ],
       aliasing: ["requests": "Request[]"]
     ),

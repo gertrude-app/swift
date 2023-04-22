@@ -11,6 +11,12 @@ extension ApiClient: DependencyKey {
         withUnauthed: .connectUser(input)
       ))
     },
+    createUnlockRequests: { input in
+      try await output(
+        from: CreateUnlockRequests_v2.self,
+        with: .createUnlockRequests_v2(input)
+      )
+    },
     refreshRules: { input in
       try await output(
         from: RefreshRules.self,
