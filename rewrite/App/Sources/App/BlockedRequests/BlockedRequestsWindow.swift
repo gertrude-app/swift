@@ -41,12 +41,13 @@ extension BlockedRequestsWindow: NSWindowDelegate {
     )
 
     window?.center()
-    window?.title = "Blocked Requests"
+    window?.title = "Blocked Requests  |  Gertrude"
     window?.makeKeyAndOrderFront(nil)
     window?.isReleasedWhenClosed = false
     window?.delegate = self
     window?.tabbingMode = .disallowed
     window?.alphaValue = 0.0
+    window?.titlebarAppearsTransparent = true
 
     let wvc = WebViewController<Feature.ViewState, Feature.Action>()
     wvc.loadWebView(screen: "BlockedRequests")

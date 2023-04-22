@@ -22,26 +22,52 @@ struct BlockedRequestsFeature: Feature {
   }
 
   struct Reducer: FeatureReducer {
+    @Dependency(\.filterXpc) var filterXpc
+
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
       case .openWindow:
         state.windowOpen = true
-        return .none
+        return restartBlockStreaming()
       case .closeWindow:
         state.windowOpen = false
-        return .none
+        return endBlockStreaming()
       case .filterTextUpdated(let text):
         state.filterText = text
-        return .none
+        return restartBlockStreaming()
       case .tcpOnlyToggled:
         state.tcpOnly.toggle()
-        return .none
+        return restartBlockStreaming()
       case .clearRequestsClicked:
         state.requests = []
-        return .none
+        return restartBlockStreaming()
       case .unlockRequestSubmitted:
         return .none
       }
+    }
+  }
+
+  struct RootReducer: RootReducing {
+    @Dependency(\.filterXpc) var filterXpc
+  }
+}
+
+extension BlockedRequestsFeature.RootReducer {
+  func reduce(into state: inout State, action: Action) -> Effect<Self.Action> {
+    switch action {
+    case .menuBar(.viewNetworkTrafficClicked):
+      state.blockedRequests.windowOpen = true
+      return .fireAndForget {
+        // TODO: handle error
+        _ = await filterXpc.setBlockStreaming(true)
+      }
+
+    case .xpc(.receivedExtensionMessage(.blockedRequest(let request))):
+      state.blockedRequests.requests.append(request)
+      return .none
+
+    default:
+      return .none
     }
   }
 }
@@ -101,4 +127,22 @@ extension AppDescriptor {
 extension BlockedRequestsFeature.Reducer {
   typealias State = BlockedRequestsFeature.State
   typealias Action = BlockedRequestsFeature.Action
+
+  // every time the user interacts with the blocked requests window, that
+  // shows they are still actively interested in the blocked requests, so
+  // we restart the 5-minute expiration timer
+  func restartBlockStreaming() -> Effect<Action> {
+    .fireAndForget { [setBlockStreaming = filterXpc.setBlockStreaming] in
+      // probably ok to ignore error here, very unlikely to happen
+      // we'll concentrate error handling for the initial window open event
+      _ = await setBlockStreaming(true)
+    }
+  }
+
+  func endBlockStreaming() -> Effect<Action> {
+    .fireAndForget { [setBlockStreaming = filterXpc.setBlockStreaming] in
+      // ok to ignore error here, worst that can happen is streaming expires on its own
+      _ = await setBlockStreaming(false)
+    }
+  }
 }

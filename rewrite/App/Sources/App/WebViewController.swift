@@ -10,7 +10,7 @@ class WebViewController<State, Action>:
   var send: (Action) -> Void = { _ in }
 
   func updateState(_ state: State) {
-    if let json = try? JSON.encode(state) {
+    if let json = try? JSON.encode(state, [.isoDates]) {
       webView.evaluateJavaScript("window.updateAppState(\(json))")
     }
   }
