@@ -1,47 +1,126 @@
 import ComposableArchitecture
 import Core
 import Foundation
+import MacAppRoute
 import Shared
 
 struct BlockedRequestsFeature: Feature {
   struct State: Equatable {
     var windowOpen = false
     var requests: [BlockedRequest] = []
+    var selectedRequestIds: [UUID] = []
     var filterText = ""
     var tcpOnly = true
-    var unlockRequest = RequestState<String>.idle
+    var createUnlockRequests = RequestState<String>.idle
   }
 
-  enum Action: Equatable, Sendable, Decodable {
+  enum Action: Equatable, Sendable {
+    enum View: Equatable, Sendable, Decodable {
+      case filterTextUpdated(text: String)
+      case requestFailedTryAgainClicked
+      case unlockRequestSubmitted(comment: String?)
+      case toggleRequestSelected(id: UUID)
+      case tcpOnlyToggled
+      case clearRequestsClicked
+      case closeWindow
+    }
+
     case openWindow
     case closeWindow
-    case filterTextUpdated(text: String)
-    case unlockRequestSubmitted(ids: [UUID])
-    case tcpOnlyToggled
-    case clearRequestsClicked
+    case webview(View)
+    case createUnlockRequests(TaskResult<CreateUnlockRequests_v2.Output>)
+    case createUnlockRequestsSuccessTimedOut
   }
 
+  private enum CancelId { case timeout }
+
   struct Reducer: FeatureReducer {
+    @Dependency(\.api) var api
     @Dependency(\.filterXpc) var filterXpc
+    @Dependency(\.mainQueue) var mainQueue
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
       case .openWindow:
         state.windowOpen = true
         return restartBlockStreaming()
-      case .closeWindow:
+
+      case .closeWindow, .webview(.closeWindow):
         state.windowOpen = false
+        state.requests = []
+        state.selectedRequestIds = []
         return endBlockStreaming()
-      case .filterTextUpdated(let text):
+
+      case .webview(.filterTextUpdated(let text)):
         state.filterText = text
         return restartBlockStreaming()
-      case .tcpOnlyToggled:
+
+      case .webview(.tcpOnlyToggled):
         state.tcpOnly.toggle()
         return restartBlockStreaming()
-      case .clearRequestsClicked:
+
+      case .webview(.clearRequestsClicked):
         state.requests = []
+        state.selectedRequestIds = []
         return restartBlockStreaming()
-      case .unlockRequestSubmitted:
+
+      case .webview(.requestFailedTryAgainClicked):
+        if case .failed = state.createUnlockRequests {
+          state.createUnlockRequests = .idle
+        }
+        return .none
+
+      case .webview(.toggleRequestSelected(id: let id)):
+        if state.selectedRequestIds.contains(id) {
+          state.selectedRequestIds.removeAll(where: { $0 == id })
+        } else {
+          state.selectedRequestIds.append(id)
+        }
+        switch state.createUnlockRequests {
+        case .succeeded, .failed:
+          state.createUnlockRequests = .idle
+          return .cancel(id: CancelId.timeout)
+        case .idle, .ongoing:
+          return .none
+        }
+
+      case .webview(.unlockRequestSubmitted(let comment)):
+        state.createUnlockRequests = .ongoing
+        let inputReqs = state.requests
+          .filter { state.selectedRequestIds.contains($0.id) }
+          .map { CreateUnlockRequests_v2.Input.BlockedRequest(
+            time: $0.time,
+            bundleId: $0.app.bundleId,
+            url: $0.url,
+            hostname: $0.hostname,
+            ipAddress: $0.ipAddress
+          ) }
+        return .task {
+          await .createUnlockRequests(TaskResult {
+            try await api.createUnlockRequests(.init(blockedRequests: inputReqs, comment: comment))
+          })
+        }
+
+      case .createUnlockRequests(.success(let result)) where result.success == true:
+        state.createUnlockRequests = .succeeded
+        state.selectedRequestIds = []
+        return .run { send in
+          try await mainQueue.sleep(for: .seconds(10))
+          await send(.createUnlockRequestsSuccessTimedOut)
+        }.cancellable(id: CancelId.timeout)
+
+      case .createUnlockRequests(.success):
+        state.createUnlockRequests = .failed(error: "Unexpected error")
+        return .none
+
+      case .createUnlockRequests(.failure(let error)):
+        state.createUnlockRequests = .failed(error: error.userMessage())
+        return .none
+
+      case .createUnlockRequestsSuccessTimedOut:
+        if case .succeeded = state.createUnlockRequests {
+          state.createUnlockRequests = .idle
+        }
         return .none
       }
     }
@@ -72,25 +151,27 @@ extension BlockedRequestsFeature.RootReducer {
   }
 }
 
-extension BlockedRequestsFeature {
-  struct ViewState: Equatable, Encodable {
+extension BlockedRequestsFeature.State {
+  struct View: Equatable, Encodable {
     var windowOpen = false
+    var selectedRequestIds: [UUID] = []
     var requests: [Request] = []
     var filterText = ""
     var tcpOnly = false
-    var unlockRequest = RequestState<String>.idle
+    var createUnlockRequests = RequestState<String>.idle
 
     init(state: BlockedRequestsFeature.State) {
       windowOpen = state.windowOpen
       requests = state.requests.map(\.view)
       filterText = state.filterText
       tcpOnly = state.tcpOnly
-      unlockRequest = state.unlockRequest
+      createUnlockRequests = state.createUnlockRequests
+      selectedRequestIds = state.selectedRequestIds
     }
   }
 }
 
-extension BlockedRequestsFeature.ViewState {
+extension BlockedRequestsFeature.State.View {
   struct Request: Equatable, Encodable {
     var id: UUID
     var time: Date
@@ -102,7 +183,7 @@ extension BlockedRequestsFeature.ViewState {
 }
 
 extension BlockedRequest {
-  var view: BlockedRequestsFeature.ViewState.Request {
+  var view: BlockedRequestsFeature.State.View.Request {
     .init(
       id: id,
       time: time,

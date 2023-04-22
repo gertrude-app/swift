@@ -10,11 +10,11 @@ class BlockedRequestsWindow: NSObject {
   var window: NSWindow?
 
   @Dependency(\.mainQueue) var mainQueue
-  @ObservedObject var viewStore: ViewStore<Feature.ViewState, Feature.Action>
+  @ObservedObject var viewStore: ViewStore<Feature.State.View, Feature.Action>
 
   init(store: StoreOf<Feature.Reducer>) {
     self.store = store
-    viewStore = ViewStore(store, observe: Feature.ViewState.init)
+    viewStore = ViewStore(store, observe: Feature.State.View.init)
     super.init()
 
     viewStore.publisher.windowOpen
@@ -40,6 +40,8 @@ extension BlockedRequestsWindow: NSWindowDelegate {
       defer: false
     )
 
+    window?.minSize = NSSize(width: 800, height: 500)
+
     window?.center()
     window?.title = "Blocked Requests  |  Gertrude"
     window?.makeKeyAndOrderFront(nil)
@@ -48,8 +50,9 @@ extension BlockedRequestsWindow: NSWindowDelegate {
     window?.tabbingMode = .disallowed
     window?.alphaValue = 0.0
     window?.titlebarAppearsTransparent = true
+    window?.level = .popUpMenu // keep on top of EVERY window
 
-    let wvc = WebViewController<Feature.ViewState, Feature.Action>()
+    let wvc = WebViewController<Feature.State.View, Feature.Action.View>()
     wvc.loadWebView(screen: "BlockedRequests")
 
     window?.contentView = wvc.view
@@ -57,7 +60,7 @@ extension BlockedRequestsWindow: NSWindowDelegate {
     NSApp.activate(ignoringOtherApps: true)
 
     wvc.send = { [weak self] action in
-      self?.viewStore.send(action)
+      self?.viewStore.send(.webview(action))
     }
 
     viewStore.objectWillChange.sink { [mainQueue] _ in

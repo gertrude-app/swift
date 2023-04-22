@@ -30,17 +30,8 @@ extension UserConnectionFeature.Reducer {
       }
 
     case .connect(.failure(let error)):
-      guard let pqlError = error as? PqlError else {
-        state = .connectFailed("Please try again, or contact help if the problem persists.")
-        return .none
-      }
-      if pqlError.appTag == .connectionCodeNotFound {
-        state = .connectFailed("Code not found, or expired. Try reentering, or create a new code.")
-      } else if let userMessage = pqlError.userMessage {
-        state = .connectFailed(userMessage)
-      } else {
-        state = .connectFailed("Please try again, or contact help if the problem persists.")
-      }
+      let codeNotFound = "Code not found, or expired. Try reentering, or create a new code."
+      state = .connectFailed(error.userMessage([.connectionCodeNotFound: codeNotFound]))
       return .none
     }
   }

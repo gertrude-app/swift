@@ -16,7 +16,7 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
     TypeScriptEnum(
       name: "BlockedRequestsFeature",
       types: [
-        BlockedRequestsFeature.Action.self,
+        BlockedRequestsFeature.Action.View.self,
       ]
     ),
   ]
