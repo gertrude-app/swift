@@ -81,18 +81,12 @@ extension MenuBarFeature.RootReducer {
     switch action {
 
     case .menuBar(.refreshRulesClicked):
+      // TODO: close menu bar so they can see the notification
       return .task {
         await .user(.refreshRules(
           result: TaskResult { try await api.refreshUserRules() },
           userInitiated: true
         ))
-      }
-
-    // temp, just testing...
-    case .menuBar(.viewNetworkTrafficClicked):
-      state.blockedRequests.windowOpen = true
-      return .fireAndForget {
-        _ = await filterXpc.setBlockStreaming(true)
       }
 
     // TODO: test

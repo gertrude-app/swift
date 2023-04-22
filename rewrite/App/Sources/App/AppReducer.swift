@@ -44,11 +44,6 @@ struct AppReducer: Reducer, Sendable {
           ))
         }
 
-      // TODO: test, maybe move into blockedRequests root reducer
-      case .xpc(.receivedExtensionMessage(.blockedRequest(let request))):
-        state.blockedRequests.requests.append(request)
-        return .none
-
       default:
         return .none
       }
@@ -59,6 +54,7 @@ struct AppReducer: Reducer, Sendable {
     HistoryFeature.RootReducer()
     MenuBarFeature.RootReducer()
     UserFeature.RootReducer()
+    BlockedRequestsFeature.RootReducer()
 
     // feature reducers
     Scope(state: \.history, action: /Action.history) {
