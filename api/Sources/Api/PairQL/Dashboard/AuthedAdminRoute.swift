@@ -2,26 +2,13 @@ import DuetSQL
 import PairQL
 import Vapor
 
-struct AdminContext: ResolverContext {
-  let requestId: String
-  let dashboardUrl: String
-  let admin: Admin
-
-  @discardableResult
-  func verifiedUser(from id: User.Id) async throws -> User {
-    try await Current.db.query(User.self)
-      .where(.id == id)
-      .where(.adminId == admin.id)
-      .first()
-  }
-}
-
 enum AuthedAdminRoute: PairRoute {
   case confirmPendingNotificationMethod(ConfirmPendingNotificationMethod.Input)
   case createBillingPortalSession
   case createPendingAppConnection(CreatePendingAppConnection.Input)
   case createPendingNotificationMethod(CreatePendingNotificationMethod.Input)
   case deleteActivityItems(DeleteActivityItems.Input)
+  case deleteActivityItems_v2(DeleteActivityItems_v2.Input)
   case deleteEntity(DeleteEntity.Input)
   case getAdmin
   case getAdminKeychain(GetAdminKeychain.Input)
@@ -66,6 +53,10 @@ extension AuthedAdminRoute {
       Route(/Self.deleteActivityItems) {
         Operation(DeleteActivityItems.self)
         Body(.dashboardInput(DeleteActivityItems.self))
+      }
+      Route(/Self.deleteActivityItems_v2) {
+        Operation(DeleteActivityItems_v2.self)
+        Body(.dashboardInput(DeleteActivityItems_v2.self))
       }
       Route(/Self.deleteEntity) {
         Operation(DeleteEntity.self)
@@ -232,6 +223,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .deleteActivityItems(let input):
       let output = try await DeleteActivityItems.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .deleteActivityItems_v2(let input):
+      let output = try await DeleteActivityItems_v2.resolve(with: input, in: context)
       return try await respond(with: output)
     }
   }

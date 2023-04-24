@@ -39,7 +39,7 @@ enum DashboardTsCodegenRoute {
         CreateBillingPortalSession.name: ts(for: CreateBillingPortalSession.self),
         CreatePendingAppConnection.name: ts(for: CreatePendingAppConnection.self),
         CreatePendingNotificationMethod.name: ts(for: CreatePendingNotificationMethod.self),
-        DeleteActivityItems.name: ts(for: DeleteActivityItems.self),
+        DeleteActivityItems_v2.name: ts(for: DeleteActivityItems_v2.self),
         DeleteEntity.name: ts(for: DeleteEntity.self),
         GetAdmin.name: ts(for: GetAdmin.self),
         GetAdminKeychain.name: ts(for: GetAdminKeychain.self),

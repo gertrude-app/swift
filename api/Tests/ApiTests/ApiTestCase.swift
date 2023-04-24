@@ -34,6 +34,7 @@ class ApiTestCase: XCTestCase {
     Current = .mock
     app = Application(.testing)
     try! Configure.app(app)
+    app.logger = .null
     try! app.autoRevert().wait()
     try! app.autoMigrate().wait()
   }
