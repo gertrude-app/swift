@@ -9,6 +9,7 @@ public enum JSON {
   public struct EncodeOptions: OptionSet {
     public let rawValue: Int
     public static let isoDates = EncodeOptions(rawValue: 1 << 0)
+    public static let prettyPrinted = EncodeOptions(rawValue: 2 << 0)
 
     public init(rawValue: Int) {
       self.rawValue = rawValue
@@ -32,18 +33,24 @@ public enum JSON {
     _ value: T,
     _ options: EncodeOptions = []
   ) throws -> String {
-    let encoder = JSONEncoder()
-    if options.contains(.isoDates) {
-      encoder.dateEncodingStrategy = .iso8601
-    }
-    let data = try encoder.encode(value)
+    let data = try data(value, options)
     guard let json = String(data: data, encoding: .utf8) else {
       throw Error.dataToStringConversionError
     }
     return json
   }
 
-  public static func data<T: Encodable>(_ value: T) throws -> Data {
-    try JSONEncoder().encode(value)
+  public static func data<T: Encodable>(
+    _ value: T,
+    _ options: EncodeOptions = []
+  ) throws -> Data {
+    let encoder = JSONEncoder()
+    if options.contains(.isoDates) {
+      encoder.dateEncodingStrategy = .iso8601
+    }
+    if options.contains(.prettyPrinted) {
+      encoder.outputFormatting = .prettyPrinted
+    }
+    return try encoder.encode(value)
   }
 }

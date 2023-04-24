@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Core
 import TestSupport
+import XCore
 import XCTest
 import XExpect
 
@@ -148,6 +149,53 @@ import XExpect
     await store.send(.webview(.toggleRequestSelected(id: req3.id))) {
       $0.selectedRequestIds = [req2.id, req3.id]
       $0.createUnlockRequests = .idle
+    }
+  }
+
+  func testTypescriptEncodedActionsDecodeProperly() throws {
+    let cases: [(String, BlockedRequestsFeature.Action.View)] = [
+      (
+        """
+        {
+          "case": "filterTextUpdated",
+          "text": "foo"
+        }
+        """,
+        .filterTextUpdated(text: "foo")
+      ),
+      (
+        #"{"case":"requestFailedTryAgainClicked"}"#,
+        .requestFailedTryAgainClicked
+      ),
+      (
+        """
+        {
+          "case": "unlockRequestSubmitted",
+          "comment": "please dad!"
+        }
+        """,
+        .unlockRequestSubmitted(comment: "please dad!")
+      ),
+      (
+        #"{"case":"unlockRequestSubmitted"}"#,
+        .unlockRequestSubmitted(comment: nil)
+      ),
+      (
+        """
+        {
+          "case": "toggleRequestSelected",
+          "id": "00000000-0000-0000-0000-000000000000"
+        }
+        """,
+        .toggleRequestSelected(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+      ),
+      (#"{"case":"tcpOnlyToggled"}"#, .tcpOnlyToggled),
+      (#"{"case":"clearRequestsClicked"}"#, .clearRequestsClicked),
+      (#"{"case":"closeWindow"}"#, .closeWindow),
+    ]
+    for (json, expected) in cases {
+      let decoded = try JSON.decode(json, as: BlockedRequestsFeature.Action.View.self)
+      expect(decoded).toEqual(expected)
     }
   }
 }
