@@ -66,7 +66,7 @@ let package = Package(
     ),
     .testTarget(
       name: "AppTests",
-      dependencies: ["App", "Models", "TestSupport", "x-expect" => "XExpect"]
+      dependencies: ["App", "Models", "TestSupport", "x-expect" => "XExpect", "x-kit" => "XCore"]
     ),
     .testTarget(
       name: "FilterTests",
