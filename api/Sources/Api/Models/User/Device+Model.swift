@@ -81,6 +81,8 @@ extension Device.Model {
 extension Device.Model {
   enum Chip: Encodable {
     case m2
+    case m2Pro
+    case m2Max
     case m1Max
     case m1Ultra
     case m1
@@ -97,7 +99,7 @@ extension Device.Model.Chip {
 
   var family: Family {
     switch self {
-    case .m2:
+    case .m2, .m2Pro, .m2Max:
       return .m2
     case .m1Max, .m1Ultra, .m1:
       return .m1
@@ -253,6 +255,38 @@ extension Device {
         newestCompatibleOS: .catalina // lol for eden
       )
     // Macbook Pro @link https://support.apple.com/en-us/HT201300
+    case "Mac14,5":
+      return .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .m2Max,
+        manufactureDates: [2023],
+        screenSizeInInches: 14
+      )
+    case "Mac14,9":
+      return .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .m2Pro,
+        manufactureDates: [2023],
+        screenSizeInInches: 14
+      )
+    case "Mac14,10":
+      return .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .m2Pro,
+        manufactureDates: [2023],
+        screenSizeInInches: 16
+      )
+    case "Mac14,6":
+      return .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .m2Max,
+        manufactureDates: [2023],
+        screenSizeInInches: 16
+      )
     case "Mac14,7":
       return .init(
         type: .macBookPro,
@@ -491,6 +525,20 @@ extension Device {
       )
 
     // Mac Mini @link https://support.apple.com/en-us/HT201894
+    case "Mac14,12":
+      return .init(
+        type: .mini,
+        identifier: modelIdentifier,
+        chip: .m2Pro,
+        manufactureDates: [2023]
+      )
+    case "Mac14,3":
+      return .init(
+        type: .mini,
+        identifier: modelIdentifier,
+        chip: .m2,
+        manufactureDates: [2023]
+      )
     case "Macmini9,1":
       return .init(
         type: .mini,
