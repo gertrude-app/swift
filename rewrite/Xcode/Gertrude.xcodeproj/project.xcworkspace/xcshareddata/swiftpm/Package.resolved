@@ -19,6 +19,15 @@
       }
     },
     {
+      "identity" : "sparkle",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jaredh159/Sparkle",
+      "state" : {
+        "revision" : "d11c8024560fcf8c11e376a9ca289150f0cbe35c",
+        "version" : "2.2.556"
+      }
+    },
+    {
       "identity" : "swift-case-paths",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",

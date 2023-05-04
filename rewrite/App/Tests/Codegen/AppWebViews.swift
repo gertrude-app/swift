@@ -22,6 +22,21 @@ struct AppWebViews: AggregateCodeGenerator {
       ],
       aliasing: ["requests": "Request[]"]
     ),
+    AppviewStore(
+      at: "Administrate/administrate-store.ts",
+      generating: [
+        .init(AdminWindowFeature.Screen.self),
+        .init(AdminWindowFeature.State.HealthCheck.self),
+        .init(AdminWindowFeature.Action.View.HealthCheckAction.self),
+        .init(AdminWindowFeature.State.View.self, as: "AppState"),
+        .init(AdminWindowFeature.Action.View.self, as: "AppEvent"),
+      ],
+      aliasing: [
+        "healthCheck": "HealthCheck",
+        "action": "HealthCheckAction",
+        "screen": "Screen",
+      ]
+    ),
   ]
 
   func format() throws {

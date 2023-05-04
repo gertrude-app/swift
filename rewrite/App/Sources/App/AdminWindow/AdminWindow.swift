@@ -3,16 +3,16 @@ import ComposableArchitecture
 import Foundation
 import SwiftUI
 
-class BlockedRequestsWindow: NSObject {
-  typealias Feature = BlockedRequestsFeature
-  let store: StoreOf<Feature.Reducer>
+class AdminWindow: NSObject {
+  typealias Feature = AdminWindowFeature
+  let store: Store<AppReducer.State, Feature.Action>
   var cancellables = Set<AnyCancellable>()
   var window: NSWindow?
 
   @Dependency(\.mainQueue) var mainQueue
   @ObservedObject var viewStore: ViewStore<Feature.State.View, Feature.Action>
 
-  init(store: StoreOf<Feature.Reducer>) {
+  init(store: Store<AppReducer.State, Feature.Action>) {
     self.store = store
     viewStore = ViewStore(store, observe: Feature.State.View.init)
     super.init()
@@ -31,7 +31,7 @@ class BlockedRequestsWindow: NSObject {
   }
 }
 
-extension BlockedRequestsWindow: NSWindowDelegate {
+extension AdminWindow: NSWindowDelegate {
   func openWindow() {
     window = NSWindow(
       contentRect: NSRect(x: 0, y: 0, width: 900, height: 600),
@@ -43,14 +43,14 @@ extension BlockedRequestsWindow: NSWindowDelegate {
     window?.minSize = NSSize(width: 800, height: 500)
 
     window?.center()
-    window?.title = "Blocked Requests  |  Gertrude"
+    window?.title = "Administrate  |  Gertrude"
     window?.makeKeyAndOrderFront(nil)
     window?.isReleasedWhenClosed = false
     window?.delegate = self
     window?.tabbingMode = .disallowed
     window?.alphaValue = 0.0
     window?.titlebarAppearsTransparent = true
-    window?.level = .popUpMenu // keep on top of EVERY window
+    // window?.level = .popUpMenu // keep on top of EVERY window
 
     let wvc = WebViewController<Feature.State.View, Feature.Action.View>()
 
@@ -71,7 +71,7 @@ extension BlockedRequestsWindow: NSWindowDelegate {
     wvc.isReady
       .receive(on: mainQueue)
       .removeDuplicates()
-      .prefix(2) // first value is initial `false`, only receive one more
+      .prefix(2)
       .sink { [weak self] isReady in
         guard let self = self, isReady else { return }
         wvc.updateState(self.viewStore.state)
@@ -82,11 +82,11 @@ extension BlockedRequestsWindow: NSWindowDelegate {
       }
       .store(in: &cancellables)
 
-    wvc.loadWebView(screen: "BlockedRequests")
+    wvc.loadWebView(screen: "Administrate")
     window?.contentView = wvc.view
   }
 
-  func windowWillClose(_ notification: Notification) {
+  func windowWillClose(_: Notification) {
     viewStore.send(.closeWindow)
     window = nil
   }

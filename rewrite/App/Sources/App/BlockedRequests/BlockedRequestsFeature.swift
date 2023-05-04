@@ -136,7 +136,7 @@ extension BlockedRequestsFeature.RootReducer {
     switch action {
     case .menuBar(.viewNetworkTrafficClicked):
       state.blockedRequests.windowOpen = true
-      return .fireAndForget {
+      return .run { _ in
         // TODO: handle error
         _ = await filterXpc.setBlockStreaming(true)
       }
@@ -213,7 +213,7 @@ extension BlockedRequestsFeature.Reducer {
   // shows they are still actively interested in the blocked requests, so
   // we restart the 5-minute expiration timer
   func restartBlockStreaming() -> Effect<Action> {
-    .fireAndForget { [setBlockStreaming = filterXpc.setBlockStreaming] in
+    .run { [setBlockStreaming = filterXpc.setBlockStreaming] _ in
       // probably ok to ignore error here, very unlikely to happen
       // we'll concentrate error handling for the initial window open event
       _ = await setBlockStreaming(true)
@@ -221,7 +221,7 @@ extension BlockedRequestsFeature.Reducer {
   }
 
   func endBlockStreaming() -> Effect<Action> {
-    .fireAndForget { [setBlockStreaming = filterXpc.setBlockStreaming] in
+    .run { [setBlockStreaming = filterXpc.setBlockStreaming] _ in
       // ok to ignore error here, worst that can happen is streaming expires on its own
       _ = await setBlockStreaming(false)
     }

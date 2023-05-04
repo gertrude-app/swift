@@ -19,6 +19,7 @@
 		7FD8DCAD29CF1CCC003D135A /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCAC29CF1CCC003D135A /* Filter */; };
 		7FD8DCAF29CF6C8D003D135A /* LiveFilterExtensionClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCAE29CF6C8D003D135A /* LiveFilterExtensionClient */; };
 		7FD8DCB129CF6C8D003D135A /* LiveFilterXPCClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCB029CF6C8D003D135A /* LiveFilterXPCClient */; };
+		7FE1DF622A016CA000CF1274 /* LiveUpdaterClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FE1DF612A016CA000CF1274 /* LiveUpdaterClient */; };
 		7FF3CD4C2992C99000387D3C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF3CD4B2992C99000387D3C /* AppDelegate.swift */; };
 		C40A5C4B229DD6A500627D50 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = C40A5C4A229DD6A500627D50 /* main.swift */; };
 		C40A5C57229DD93200627D50 /* FilterDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E0DBB42273BEA0005B02F4 /* FilterDataProvider.swift */; };
@@ -89,6 +90,7 @@
 				7F0B887129C2156D001E9427 /* NetworkExtension.framework in Frameworks */,
 				7FD8DCAF29CF6C8D003D135A /* LiveFilterExtensionClient in Frameworks */,
 				7FD8DCB129CF6C8D003D135A /* LiveFilterXPCClient in Frameworks */,
+				7FE1DF622A016CA000CF1274 /* LiveUpdaterClient in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -193,6 +195,7 @@
 				7FD8DCA529C221E0003D135A /* LiveApiClient */,
 				7FD8DCAE29CF6C8D003D135A /* LiveFilterExtensionClient */,
 				7FD8DCB029CF6C8D003D135A /* LiveFilterXPCClient */,
+				7FE1DF612A016CA000CF1274 /* LiveUpdaterClient */,
 			);
 			productName = Gertrude;
 			productReference = 7F94DC6D261CEA75002D4534 /* Gertrude.app */;
@@ -583,6 +586,10 @@
 		7FD8DCB029CF6C8D003D135A /* LiveFilterXPCClient */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LiveFilterXPCClient;
+		};
+		7FE1DF612A016CA000CF1274 /* LiveUpdaterClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LiveUpdaterClient;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

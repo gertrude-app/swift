@@ -17,6 +17,18 @@ extension ApiClient: DependencyKey {
         with: .createUnlockRequests_v2(input)
       )
     },
+    getAdminAccountStatus: {
+      try await output(
+        from: GetAccountStatus.self,
+        with: .getAccountStatus
+      ).status
+    },
+    latestAppVersion: { input in
+      try await output(
+        from: LatestAppVersion.self,
+        withUnauthed: .latestAppVersion(input)
+      )
+    },
     refreshRules: { input in
       try await output(
         from: RefreshRules.self,

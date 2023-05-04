@@ -19,4 +19,10 @@ public class Mutex<T>: @unchecked Sendable {
     defer { lock.unlock() }
     _value = closure()
   }
+
+  public func replace(with value: T) {
+    lock.lock()
+    defer { lock.unlock() }
+    _value = value
+  }
 }

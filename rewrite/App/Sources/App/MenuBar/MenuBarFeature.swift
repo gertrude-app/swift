@@ -40,14 +40,13 @@ enum MenuBarFeature: Feature {
 
   struct Reducer: FeatureReducer {
     @Dependency(\.device) var device
-    @Dependency(\.filterXpc) var filterXpc
+    @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filterExtension
+    @Dependency(\.updater) var updater // temp
   }
 
   struct RootReducer: RootReducing {
     @Dependency(\.api) var api
-    @Dependency(\.filterExtension) var filterExtension
-    @Dependency(\.filterXpc) var filterXpc // temp
   }
 }
 
@@ -56,18 +55,20 @@ extension MenuBarFeature.Reducer {
     switch action {
 
     case .connectFailedHelpClicked:
-      return .fireAndForget {
+      return .run { _ in
         await device.openWebUrl(URL(string: "https://gertrude.app/contact")!)
       }
 
     // TODO: temporary
     case .suspendFilterClicked:
-      return .fireAndForget { _ = await filterExtension.stop() }
+      return .run { _ in
+        try await updater.triggerUpdate("http://127.0.0.1:8080/appcast.xml")
+      }
 
     // TODO: temporary
     case .administrateClicked:
-      return .fireAndForget {
-        print("establish connection:", await filterXpc.establishConnection())
+      return .run { _ in
+        print("establish connection:", await xpc.establishConnection())
       }
 
     default:
@@ -87,15 +88,6 @@ extension MenuBarFeature.RootReducer {
           result: TaskResult { try await api.refreshUserRules() },
           userInitiated: true
         ))
-      }
-
-    // TODO: test
-    case .menuBar(.turnOnFilterClicked):
-      if state.filter == .notInstalled {
-        // TODO: handle install timout, error, etc
-        return .fireAndForget { _ = await filterExtension.install() }
-      } else {
-        return .fireAndForget { _ = await filterExtension.start() }
       }
 
     default:

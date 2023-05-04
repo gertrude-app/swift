@@ -29,7 +29,7 @@ struct UserFeature: Feature {
         return .none
 
       case .refreshRules(result: .failure, userInitiated: true):
-        return .fireAndForget {
+        return .run { _ in
           await device.showNotification(
             "Error refreshing rules",
             "Please try again, or contact support if the problem persists."
@@ -55,11 +55,19 @@ extension UserFeature.RootReducer: RootReducing {
         ))
       }
 
+    case .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))):
+      return .task {
+        await .user(.refreshRules(
+          result: TaskResult { try await api.refreshUserRules() },
+          userInitiated: true
+        ))
+      }
+
     case .user(.refreshRules(.success(let output), let userInitiated)):
-      return .fireAndForget { [filterReachable = state.filter.canReceiveMessages] in
+      return .run { [filterReachable = state.filter.canReceiveMessages] _ in
         guard filterReachable else {
           if userInitiated {
-            // if filter is was never installed, we don't want to show an error
+            // if filter was never installed, we don't want to show an error
             // message (or nothing), so consider this a success and notify
             await device.showNotification("Refreshed rules successfully", "")
           }

@@ -15,9 +15,22 @@ import XExpect
     store.deps.xpc.events = { subject.eraseToAnyPublisher() }
     let xpcStarted = ActorIsolated(false)
     store.deps.xpc.startListener = { await xpcStarted.setValue(true) }
+    store.deps.storage.loadPersistentState = { .init(
+      userKeys: [:],
+      appIdManifest: .init(),
+      exemptUsers: [501]
+    ) }
 
     await store.send(.extensionStarted)
     await expect(xpcStarted).toEqual(true)
+
+    await store.receive(.loadedPersistentState(.init(
+      userKeys: [:],
+      appIdManifest: .init(),
+      exemptUsers: [501]
+    ))) {
+      $0.exemptUsers = [501]
+    }
 
     let descriptor = AppDescriptor(bundleId: "com.foo")
     await store.send(.cacheAppDescriptor("com.foo", descriptor)) {
@@ -29,6 +42,9 @@ import XExpect
     let message = XPCEvent.Filter
       .receivedAppMessage(.userRules(userId: 502, keys: [key], manifest: manifest))
 
+    let savedState = ActorIsolated<Persistent.State?>(nil)
+    store.deps.storage.savePersistentState = { await savedState.setValue($0) }
+
     subject.send(message)
 
     await store.receive(.xpc(message)) {
@@ -36,6 +52,12 @@ import XExpect
       $0.appIdManifest = manifest
       $0.appCache = [:] // clears out app cache when new manifest is received
     }
+
+    await expect(savedState).toEqual(.init(
+      userKeys: [502: [key]], //  <-- new info from user rules
+      appIdManifest: manifest, // <-- new info from user rules
+      exemptUsers: [501] // <-- preserving existing unchanged data
+    ))
 
     subject.send(completion: .finished)
   }

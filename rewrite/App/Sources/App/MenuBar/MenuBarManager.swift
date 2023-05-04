@@ -6,12 +6,13 @@ import WebKit
 
 @MainActor class MenuBarManager {
   let store: Store<AppReducer.State, MenuBarFeature.Action>
+  var viewStore: ViewStore<MenuBarFeature.State, MenuBarFeature.Action>
+  var vc: WebViewController<MenuBarFeature.State, MenuBarFeature.Action>
   var statusItem: NSStatusItem
   var popover: NSPopover
   var cancellables = Set<AnyCancellable>()
-  var vc: WebViewController<MenuBarFeature.State, MenuBarFeature.Action>
 
-  @ObservedObject var viewStore: ViewStore<MenuBarFeature.State, MenuBarFeature.Action>
+  @Dependency(\.mainQueue) var mainQueue
 
   init(store: Store<AppReducer.State, MenuBarFeature.Action>) {
     self.store = store
@@ -22,7 +23,6 @@ import WebKit
     popover.behavior = .applicationDefined
 
     vc = WebViewControllerOf<MenuBarFeature>()
-    vc.loadWebView(screen: "MenuBar")
     popover.contentViewController = vc
     popover.contentSize = NSSize(width: 400, height: 300)
 
@@ -37,19 +37,23 @@ import WebKit
     }
 
     // send new state when store gets a change
-    viewStore.objectWillChange.sink { _ in
-      DispatchQueue.main.async { [weak self] in
-        guard let self = self else { return }
+    viewStore.publisher
+      .receive(on: mainQueue)
+      .sink { [weak self] _ in
+        guard let self = self, self.vc.isReady.value else { return }
         self.vc.updateState(self.viewStore.state)
-      }
-    }.store(in: &cancellables)
+      }.store(in: &cancellables)
 
-    // send initial state after javascript parsed, evaluated, react ready
-    // TODO: better would be to bootstrap this when setting up webview
-    DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .seconds(1))) { [weak self] in
-      guard let self = self else { return }
-      self.vc.updateState(self.viewStore.state)
-    }
+    vc.isReady
+      .receive(on: mainQueue)
+      .prefix(2)
+      .removeDuplicates()
+      .sink { [weak self] ready in
+        guard let self = self, ready else { return }
+        self.vc.updateState(self.viewStore.state)
+      }.store(in: &cancellables)
+
+    vc.loadWebView(screen: "MenuBar")
   }
 
   @objc func iconClicked(_ sender: Any?) {

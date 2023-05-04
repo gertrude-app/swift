@@ -14,6 +14,9 @@ extension MacAppRoute: RouteResponder {
       case .connectUser(let input):
         let output = try await ConnectUser.resolve(with: input, in: context)
         return try await respond(with: output)
+      case .latestAppVersion(let input):
+        let output = try await LatestAppVersion.resolve(with: input, in: context)
+        return try await respond(with: output)
       }
 
     case .userAuthed(let uuid, let userRoute):

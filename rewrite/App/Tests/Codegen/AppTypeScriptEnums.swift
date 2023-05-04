@@ -19,6 +19,13 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
         BlockedRequestsFeature.Action.View.self,
       ]
     ),
+    TypeScriptEnum(
+      name: "AdminWindowFeature",
+      types: [
+        AdminWindowFeature.State.HealthCheck.FilterStatus.self,
+        AdminWindowFeature.Action.View.self,
+      ]
+    ),
   ]
 
   func format() throws {

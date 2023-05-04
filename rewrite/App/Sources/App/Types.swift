@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 
 typealias FeatureReducer = Reducer
 
@@ -20,4 +21,21 @@ enum Heartbeat {
   }
 
   enum CancelId {}
+}
+
+enum NotificationsSetting: String, Equatable, Codable {
+  case none
+  case banner
+  case alert
+}
+
+enum MacOsUserType: String, Equatable, Codable, Sendable {
+  case standard
+  case admin
+}
+
+extension AnySchedulerOf<DispatchQueue> {
+  func schedule(after time: DispatchQueue.SchedulerTimeType.Stride, action: @escaping () -> Void) {
+    schedule(after: now.advanced(by: time), action)
+  }
 }

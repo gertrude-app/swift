@@ -85,6 +85,13 @@ final class FilterManager: NSObject {
     // clicking the "allow" in the popup, so we wait for them
 
     await activationRequest.setValue(.pending)
+
+    // TODO: this may not work at all... at least when RE-installing
+    // the filter, it immediately moves to .suceeded, even if the
+    // allow/deny filter content popup is sitting there on the screen
+    // it MIGHT work on initial install, but i need to re-think this
+    // to work in both scenarios. probably poll the filter state or
+    // connection instead of checking the activation request itself
     var waited = 0
     while true {
       do {
@@ -100,6 +107,11 @@ final class FilterManager: NSObject {
         return .timedOutWaiting
       }
     }
+  }
+
+  func replaceFilter() async -> FilterInstallResult {
+    _ = await stopFilter()
+    return await installFilter()
   }
 
   func configureFilter() async -> FilterInstallResult {
