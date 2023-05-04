@@ -12,12 +12,15 @@ let package = Package(
     .library(name: "LiveApiClient", targets: ["LiveApiClient"]),
     .library(name: "LiveFilterXPCClient", targets: ["LiveFilterXPCClient"]),
     .library(name: "LiveFilterExtensionClient", targets: ["LiveFilterExtensionClient"]),
+    .library(name: "LiveUpdaterClient", targets: ["LiveUpdaterClient"]),
     .library(name: "TestSupport", targets: ["TestSupport"]),
   ],
   dependencies: [
     .github("pointfreeco/swift-composable-architecture", branch: "prerelease/1.0"),
     .github("pointfreeco/swift-dependencies", from: "0.2.0"),
     .github("jaredh159/swift-tagged", from: "0.8.2"),
+    // @see: https://gist.github.com/jaredh159/5fafcdc04de9234ab4bab52897da7334
+    .package(url: "https://github.com/jaredh159/Sparkle", exact: "2.2.556"),
     .package(path: "../../x-kit"),
     .package(path: "../../pairql-macapp"),
     .package(path: "../../x-expect"),
@@ -50,6 +53,10 @@ let package = Package(
     .checkedTarget(
       name: "LiveFilterExtensionClient",
       dependencies: [.dependencies, "Core", "Models"]
+    ),
+    .checkedTarget(
+      name: "LiveUpdaterClient",
+      dependencies: [.dependencies, "App", "Core", "shared" => "Shared", "Sparkle"]
     ),
     .checkedTarget(
       name: "Filter",

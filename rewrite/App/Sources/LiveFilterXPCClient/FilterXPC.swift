@@ -31,16 +31,26 @@ struct FilterXPC: Sendable {
       throw XPCErr.onAppSide(.filterNotInstalled)
     }
 
-    let randomInt = Int.random(in: 0 ... 10000)
-    let intData = try XPC.encode(randomInt)
+    // if this doesn't throw, we know we have a good connection
+    // validated by passing random int back and forth
+    _ = try await requestAck()
+  }
 
+  func requestAck() async throws -> XPC.FilterAck {
+    let randomInt = Int.random(in: 0 ... 10000)
     let reply = try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
-      filterProxy.ackRandomInt(intData, reply: continuation.dataHandler)
+      filterProxy.receiveAckRequest(
+        randomInt: randomInt,
+        userId: getuid(),
+        reply: continuation.dataHandler
+      )
     }
 
-    if try XPC.decode(Int.self, from: reply) != randomInt {
+    let ack = try XPC.decode(XPC.FilterAck.self, from: reply)
+    if ack.randomInt != randomInt {
       throw XPCErr.onAppSide(.unexpectedIncorrectAck)
     }
+    return ack
   }
 
   func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {

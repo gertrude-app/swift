@@ -65,7 +65,7 @@ extension HistoryFeature.RootReducer: RootReducing {
 
     case .history(.userConnection(.connect(.success(let user)))):
       state.user = user
-      return .fireAndForget { [persistedState = state.persistent] in
+      return .run { [persistedState = state.persistent] _ in
         try await save(persistedState)
       }
 

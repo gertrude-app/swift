@@ -13,6 +13,9 @@ extension FilterXPCClient: DependencyKey {
       isConnectionHealthy: { await .init {
         try await xpc.isConnectionHealthy()
       }},
+      requestAck: { await .init {
+        try await xpc.requestAck()
+      }},
       sendUserRules: { manifest, keys in await .init {
         try await xpc.sendUserRules(manifest: manifest, keys: keys)
       }},
@@ -37,6 +40,10 @@ actor ThreadSafeFilterXPC {
 
   func isConnectionHealthy() async throws {
     try await filterXpc.isConnectionHealthy()
+  }
+
+  func requestAck() async throws -> XPC.FilterAck {
+    try await filterXpc.requestAck()
   }
 
   func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {

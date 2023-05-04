@@ -49,6 +49,7 @@ public extension XPCErr {
 }
 
 public enum XPCEvent: Sendable, Equatable {
+
   public enum App: Sendable, Equatable {
     public enum MessageFromExtension: Sendable, Equatable {
       case blockedRequest(BlockedRequest)
@@ -56,6 +57,22 @@ public enum XPCEvent: Sendable, Equatable {
 
     case receivedExtensionMessage(MessageFromExtension)
     case decodingExtensionMessageDataFailed(fn: String, type: String, error: String)
+  }
+}
+
+public extension XPC {
+  struct FilterAck: Sendable, Equatable, Codable {
+    public var randomInt: Int
+    public var version: String
+    public var userId: uid_t
+    public var numUserKeys: Int
+
+    public init(randomInt: Int, version: String, userId: uid_t, numUserKeys: Int) {
+      self.randomInt = randomInt
+      self.version = version
+      self.userId = userId
+      self.numUserKeys = numUserKeys
+    }
   }
 }
 

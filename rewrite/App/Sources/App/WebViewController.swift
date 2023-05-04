@@ -1,3 +1,4 @@
+import Combine
 import ComposableArchitecture
 import WebKit
 import XCore
@@ -7,6 +8,7 @@ class WebViewController<State, Action>:
   where Action: Sendable, Action: Decodable, State: Encodable {
 
   var webView: WKWebView!
+  var isReady: CurrentValueSubject<Bool, Never> = .init(false)
   var send: (Action) -> Void = { _ in }
 
   func updateState(_ state: State) {
@@ -43,22 +45,41 @@ class WebViewController<State, Action>:
     _ userContentController: WKUserContentController,
     didReceive message: WKScriptMessage
   ) {
-    guard let json = message.body as? String else {
+    guard let message = message.body as? String else {
+      #if DEBUG
+        print("ERR: message.body from webview not string: \(message.body)")
+      #endif
       return
     }
 
-    guard let action = try? JSON.decode(json, as: Action.self) else {
+    if message == "__APPVIEW_READY__" {
+      Task { [weak self] in
+        await self?.ready()
+      }
       return
     }
 
-    Task { [weak self] in
-      await self?.send(action: action)
+    do {
+      let action = try JSON.decode(message, as: Action.self)
+      Task { [weak self] in
+        await self?.send(action: action)
+      }
+    } catch {
+      #if DEBUG
+        let actionType = String(reflecting: Action.self)
+        print("ERR: could not decode action from webview: \(message) as \(actionType)\n")
+        print(error)
+      #endif
     }
   }
 
   // helper fn to keep compiler happy re: concurrency
   @MainActor func send(action: Action) {
     send(action)
+  }
+
+  @MainActor func ready() {
+    isReady.value = true
   }
 }
 

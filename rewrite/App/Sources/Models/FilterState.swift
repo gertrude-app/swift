@@ -1,4 +1,5 @@
 import Foundation
+import Shared
 
 public enum FilterState: Equatable, Sendable {
   case unknown
@@ -7,6 +8,17 @@ public enum FilterState: Equatable, Sendable {
   case off
   case on
   case suspended(resuming: Date)
+
+  public var shared: Shared.FilterState {
+    switch self {
+    case .on:
+      return .on
+    case .suspended:
+      return .suspended
+    case .errorLoadingConfig, .notInstalled, .off, .unknown:
+      return .off
+    }
+  }
 
   public var canReceiveMessages: Bool {
     switch self {

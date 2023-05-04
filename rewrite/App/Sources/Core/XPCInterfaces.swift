@@ -3,7 +3,11 @@ import Foundation
 public typealias XPCErrorData = Data
 
 @objc public protocol AppMessageReceiving {
-  func ackRandomInt(_ intData: Data, reply: @escaping (Data?, XPCErrorData?) -> Void)
+  func receiveAckRequest(
+    randomInt: Int,
+    userId: uid_t,
+    reply: @escaping (Data?, XPCErrorData?) -> Void
+  )
   func receiveUserRules(
     userId: uid_t,
     manifestData: Data,

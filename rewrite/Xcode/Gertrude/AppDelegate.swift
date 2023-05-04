@@ -4,6 +4,7 @@ import Cocoa
 import LiveApiClient
 import LiveFilterExtensionClient
 import LiveFilterXPCClient
+import LiveUpdaterClient
 
 class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
   let app = App()

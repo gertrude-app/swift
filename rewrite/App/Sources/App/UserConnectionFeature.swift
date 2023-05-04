@@ -25,7 +25,7 @@ extension UserConnectionFeature.Reducer {
     switch action {
     case .connect(.success(let user)):
       state = .established(welcomeDismissed: false)
-      return .fireAndForget {
+      return .run { _ in
         await setUserToken(user.token)
       }
 

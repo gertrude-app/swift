@@ -1,8 +1,5 @@
+import Core
 import Models
-
-protocol PersistentState: Codable, Equatable {
-  static var version: Int { get }
-}
 
 enum Persistent {
   typealias State = V1

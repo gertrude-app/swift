@@ -4,11 +4,13 @@ import Core
 import Foundation
 import MacAppRoute
 import Models
+import Shared
 
 struct AppReducer: Reducer, Sendable {
   struct State: Equatable {
-    var admin = AdminState()
-    var app = AppState()
+    var admin = AdminFeature.State()
+    var adminWindow = AdminWindowFeature.State()
+    var appUpdates = AppUpdatesFeature.State()
     var device = DeviceState()
     var filter = FilterFeature.State.unknown
     var history = HistoryFeature.State()
@@ -17,7 +19,10 @@ struct AppReducer: Reducer, Sendable {
   }
 
   enum Action: Equatable, Sendable {
+    case admin(AdminFeature.Action)
+    case adminWindow(AdminWindowFeature.Action)
     case application(ApplicationFeature.Action)
+    case appUpdates(AppUpdatesFeature.Action)
     case filter(FilterFeature.Action)
     case xpc(XPCEvent.App)
     case history(HistoryFeature.Action)
@@ -55,6 +60,10 @@ struct AppReducer: Reducer, Sendable {
     MenuBarFeature.RootReducer()
     UserFeature.RootReducer()
     BlockedRequestsFeature.RootReducer()
+    AppUpdatesFeature.RootReducer()
+    AdminFeature.RootReducer()
+    AdminWindowFeature.RootReducer()
+    FilterFeature.RootReducer()
 
     // feature reducers
     Scope(state: \.history, action: /Action.history) {
@@ -69,23 +78,19 @@ struct AppReducer: Reducer, Sendable {
     Scope(state: \.blockedRequests, action: /Action.blockedRequests) {
       BlockedRequestsFeature.Reducer()
     }
+    Scope(state: \.admin, action: /Action.admin) {
+      AdminFeature.Reducer()
+    }
+    Scope(state: \.appUpdates, action: /Action.appUpdates) {
+      AppUpdatesFeature.Reducer()
+    }
     .ifLet(\.user, action: /Action.user) {
       UserFeature.Reducer()
     }
   }
 }
 
-struct AppState: Equatable {
-  var version = "(unknown)"
-  var updateChannel = "release" // TODO: enum
-  var menuBarDropdownVisible = false
-}
-
 struct DeviceState: Equatable {
   var colorScheme = "light" // TODO: enum
   var hasInternetConnection = false
-}
-
-struct AdminState: Equatable {
-  var accountStatus = "active" // TODO: enum
 }

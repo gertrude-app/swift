@@ -4,11 +4,16 @@ import Foundation
 import UserNotifications
 
 struct DeviceClient: Sendable {
+  var currentMacOsUserType: @Sendable () async throws -> MacOsUserType
   var fullUsername: @Sendable () -> String
   var hostname: @Sendable () -> String?
+  var keystrokeRecordingPermissionGranted: @Sendable () async -> Bool
   var modelIdentifier: @Sendable () -> String?
+  var notificationsSetting: @Sendable () async -> NotificationsSetting
   var numericUserId: @Sendable () -> uid_t
+  var openSystemPrefs: @Sendable (SystemPrefsLocation) async -> Void
   var openWebUrl: @Sendable (URL) async -> Void
+  var screenRecordingPermissionGranted: @Sendable () async -> Bool
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
   var username: @Sendable () -> String
@@ -16,11 +21,41 @@ struct DeviceClient: Sendable {
 
 extension DeviceClient: DependencyKey {
   static let liveValue = Self(
+    currentMacOsUserType: getCurrentMacOsUserType,
     fullUsername: { NSFullUserName() },
     hostname: { Host.current().localizedName },
+    keystrokeRecordingPermissionGranted: {
+      #if DEBUG
+        // prevent warning while developing
+        return true
+      #else
+        // no way to make this not a concurrency warning (that i can figure out)
+        // as it's a global mutable CFString variable, but this thread is interesting:
+        // https://developer.apple.com/forums/thread/707680 - maybe i could use that
+        // api, and possibly restore sandboxing
+        let options: NSDictionary =
+          [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
+        return AXIsProcessTrustedWithOptions(options)
+      #endif
+    },
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
+    notificationsSetting: {
+      await withCheckedContinuation { continuation in
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+          if settings.authorizationStatus != .authorized || settings.alertStyle == .none {
+            continuation.resume(returning: .none)
+          } else if settings.alertStyle == .banner {
+            continuation.resume(returning: .banner)
+          } else {
+            continuation.resume(returning: .alert)
+          }
+        }
+      }
+    },
     numericUserId: { getuid() },
+    openSystemPrefs: openSystemPrefs(at:),
     openWebUrl: { NSWorkspace.shared.open($0) },
+    screenRecordingPermissionGranted: { CGPreflightScreenCaptureAccess() },
     showNotification: { title, body in
       let content = UNMutableNotificationContent()
       content.title = title
@@ -38,11 +73,16 @@ extension DeviceClient: DependencyKey {
 
 extension DeviceClient: TestDependencyKey {
   static let testValue = Self(
+    currentMacOsUserType: { .standard },
     fullUsername: { "test-full-username" },
     hostname: { "test-hostname" },
+    keystrokeRecordingPermissionGranted: { true },
     modelIdentifier: { "test-model-identifier" },
+    notificationsSetting: { .alert },
     numericUserId: { 502 },
+    openSystemPrefs: { _ in },
     openWebUrl: { _ in },
+    screenRecordingPermissionGranted: { true },
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },
     username: { "test-username" }

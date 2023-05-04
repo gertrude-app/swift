@@ -3,6 +3,7 @@ import ComposableArchitecture
 @MainActor public struct App {
   var menuBarManager: MenuBarManager
   var blockedRequestsWindow: BlockedRequestsWindow
+  var adminWindow: AdminWindow
   let store = Store(
     initialState: AppReducer.State(),
     reducer: AppReducer()._printChanges()
@@ -20,6 +21,10 @@ import ComposableArchitecture
     blockedRequestsWindow = BlockedRequestsWindow(store: store.scope(
       state: { $0.blockedRequests },
       action: AppReducer.Action.blockedRequests
+    ))
+    adminWindow = AdminWindow(store: store.scope(
+      state: { $0 },
+      action: AppReducer.Action.adminWindow
     ))
   }
 

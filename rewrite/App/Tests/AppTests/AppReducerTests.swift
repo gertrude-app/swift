@@ -44,6 +44,10 @@ import XExpect
       $0.user?.screenshotSize = 555
     }
 
+    await store.receive(.adminWindow(.setFilterStatus(.installed(version: "", numUserKeys: 0)))) {
+      $0.adminWindow.healthCheck.filterStatus = .installed(version: "", numUserKeys: 0)
+    }
+
     filterStateSubject.send(.on)
     await store.receive(.filter(.receivedState(.on))) {
       $0.filter = .on

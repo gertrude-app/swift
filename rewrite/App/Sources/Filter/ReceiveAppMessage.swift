@@ -1,5 +1,6 @@
 import Combine
 import Core
+import Dependencies
 import Foundation
 import os.log // TODO: remove when logging in place
 import Shared
@@ -7,17 +8,36 @@ import Shared
 @objc class ReceiveAppMessage: NSObject, AppMessageReceiving {
   let subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>
 
+  @Dependency(\.storage) var storage
+
   init(subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>) {
     self.subject = subject
   }
 
-  func ackRandomInt(_ intData: Data, reply: @escaping (Data?, XPCErrorData?) -> Void) {
+  func receiveAckRequest(
+    randomInt: Int,
+    userId: uid_t,
+    reply: @escaping (Data?, XPCErrorData?) -> Void
+  ) {
     do {
-      let int = try XPC.decode(Int.self, from: intData)
-      os_log("[G•] XPCManager (new): ackRandomInt: %{public}d", int)
-      reply(try XPC.encode(int), nil)
+      os_log(
+        "[G•] XPCManager (new): receiveAckRequest, int: %{public}d, userId: %{public}d",
+        randomInt,
+        userId
+      )
+      let savedState = try storage.loadPersistentState()
+      let version = Bundle.main
+        .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+      let ack = XPC.FilterAck(
+        randomInt: randomInt,
+        version: Bool.random() ? "0.9.777" : version,
+        userId: userId,
+        // 👍 change me back!!!!!!!
+        numUserKeys: Bool.random() ? 0 : savedState?.userKeys[userId]?.count ?? 0
+      )
+      let data = try XPC.encode(ack)
+      reply(data, nil)
     } catch {
-      os_log("[G•] XPCManager: error %{public}@", "\(error)")
       reply(nil, XPC.errorData(error))
     }
   }
