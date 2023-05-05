@@ -9,7 +9,7 @@ import XExpect
 final class StorageClientTests: XCTestCase {
   func testLoadPersistentState() async throws {
     let observedKey = LockIsolated<String?>(nil)
-    let state = Persistent.State(user: .mock)
+    let state = Persistent.State.mock
     let client = withDependencies {
       $0.userDefaults.setString = { _, _ in XCTFail("Should not be called") }
       $0.userDefaults.getString = { key in
@@ -37,7 +37,7 @@ final class StorageClientTests: XCTestCase {
       StorageClient.liveValue
     }
 
-    let state = Persistent.State(user: .mock)
+    let state = Persistent.State.mock
     try await client.savePersistentState(state)
     expect(observed.value.key).toEqual("persistent.state.v1")
     expect(observed.value.json).toEqual(try! JSON.encode(state))

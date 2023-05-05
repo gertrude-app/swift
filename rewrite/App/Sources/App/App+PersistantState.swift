@@ -6,12 +6,13 @@ enum Persistent {
 
   struct V1: PersistentState {
     static let version = 1
+    var appVersion: String
     var user: User?
   }
 }
 
 extension AppReducer.State {
   var persistent: Persistent.State {
-    .init(user: user)
+    .init(appVersion: appUpdates.installedVersion, user: user)
   }
 }

@@ -23,11 +23,11 @@ import XExpect
 
     let filterStateSubject = PassthroughSubject<FilterState, Never>()
     store.deps.filterExtension.stateChanges = { filterStateSubject.eraseToAnyPublisher() }
-    store.deps.storage.loadPersistentState = { .init(user: .mock) }
+    store.deps.storage.loadPersistentState = { .mock }
 
     await store.send(.application(.didFinishLaunching))
 
-    await store.receive(.loadedPersistentState(.init(user: .mock))) {
+    await store.receive(.loadedPersistentState(.mock)) {
       $0.user = .mock
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
@@ -162,7 +162,7 @@ extension AppReducer {
     let scheduler = DispatchQueue.test
     store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
     store.deps.mainQueue = .immediate
-    store.deps.storage.loadPersistentState = { .init(user: .mock) }
+    store.deps.storage.loadPersistentState = { .mock }
     store.deps.api.refreshRules = { _ in .mock }
     store.deps.filterExtension.setup = { .on }
     return (store, scheduler)

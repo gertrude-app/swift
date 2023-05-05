@@ -41,12 +41,12 @@ struct AppReducer: Reducer, Sendable {
       case .loadedPersistentState(let persistent):
         guard let user = persistent?.user else { return .none }
         state.user = user
-        return .task {
+        return .run { send in
           await api.setUserToken(user.token)
-          return await .user(.refreshRules(
+          return await send(.user(.refreshRules(
             result: TaskResult { try await api.refreshUserRules() },
             userInitiated: false
-          ))
+          )))
         }
 
       default:

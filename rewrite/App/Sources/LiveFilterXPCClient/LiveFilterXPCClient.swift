@@ -10,8 +10,8 @@ extension FilterXPCClient: DependencyKey {
       establishConnection: { await .init {
         try await xpc.establishConnection()
       }},
-      isConnectionHealthy: { await .init {
-        try await xpc.isConnectionHealthy()
+      checkConnectionHealth: { await .init {
+        try await xpc.checkConnectionHealth()
       }},
       requestAck: { await .init {
         try await xpc.requestAck()
@@ -38,8 +38,8 @@ actor ThreadSafeFilterXPC {
     try await filterXpc.establishConnection()
   }
 
-  func isConnectionHealthy() async throws {
-    try await filterXpc.isConnectionHealthy()
+  func checkConnectionHealth() async throws {
+    try await filterXpc.checkConnectionHealth()
   }
 
   func requestAck() async throws -> XPC.FilterAck {
