@@ -10,7 +10,7 @@ struct FilterXPC: Sendable {
   @Dependency(\.filterExtension) var filterExtension
 
   func establishConnection() async throws {
-    let checkConnection = await Result { try await isConnectionHealthy() }
+    let checkConnection = await Result { try await checkConnectionHealth() }
     guard checkConnection.isFailure else { return }
 
     // stored connection can go bad if something happens on the filter side
@@ -22,10 +22,10 @@ struct FilterXPC: Sendable {
     // that's why SimpleFirewall has a dummy `register()` proxy endpoint,
     // because you need to send _SOMETHING_ to fire up the connection
     // sending it the test connection healthy message serves the purpose
-    try await isConnectionHealthy()
+    try await checkConnectionHealth()
   }
 
-  func isConnectionHealthy() async throws {
+  func checkConnectionHealth() async throws {
     let extensionState = await filterExtension.state()
     guard extensionState != .notInstalled else {
       throw XPCErr.onAppSide(.filterNotInstalled)

@@ -2,13 +2,21 @@ import ComposableArchitecture
 import Shared
 
 struct AppUpdatesFeature: Feature {
+
   struct State: Equatable {
-    var latestVersion: String?
+    var installedVersion: String
     var releaseChannel: ReleaseChannel = .stable // todo, should persist
+    var latestVersion: String?
   }
 
   enum Action: Equatable, Sendable {
+    enum Delegate: Equatable, Sendable {
+      case postUpdateFilterNotInstalled
+      case postUpdateFilterReplaceFailed
+    }
+
     case latestVersionResponse(TaskResult<String>)
+    case delegate(Delegate)
   }
 
   struct Reducer: FeatureReducer {
@@ -21,26 +29,63 @@ struct AppUpdatesFeature: Feature {
 
       case .latestVersionResponse(.failure):
         return .none
+
+      case .delegate:
+        return .none
       }
     }
   }
 
   struct RootReducer {
     @Dependency(\.updater) var updater
+    @Dependency(\.storage) var storage
+    @Dependency(\.filterXpc) var xpc
+    @Dependency(\.filterExtension) var filter
+    @Dependency(\.mainQueue) var mainQueue
   }
 }
 
-extension AppUpdatesFeature.RootReducer: RootReducing {
+extension AppUpdatesFeature.State {
+  init() {
+    @Dependency(\.app) var appClient
+    self.init(
+      installedVersion: appClient.installedVersion() ?? "0.0.0",
+      releaseChannel: .stable,
+      latestVersion: nil
+    )
+  }
+}
+
+extension AppUpdatesFeature.RootReducer: FilterControlling {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
+    case .loadedPersistentState(.none):
+      return .run { [new = state.persistent] _ in
+        try await storage.savePersistentState(new)
+      }
+
+    case .loadedPersistentState(.some(let restored)):
+      guard restored.appVersion != state.appUpdates.installedVersion else {
+        return .none
+      }
+      return .merge(
+        .run { [updated = state.persistent] _ in
+          try await storage.savePersistentState(updated)
+        },
+        .run { send in
+          switch await filter.state() {
+          case .notInstalled:
+            await send(.appUpdates(.delegate(.postUpdateFilterNotInstalled)))
+          default:
+            try await replaceFilter(send, retryOnce: true)
+            if await xpc.notConnected() {
+              await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
+            }
+          }
+        }
+      )
 
     case .adminWindow(.delegate(.triggerAppUpdate)):
-      // need to hold on to current app version in persisted state, so we can compare on launch
-      // on restoration of stored app version, detect if we just updated, restart filter
-      // do we need the concept of a filter restart failsafe?
-      // - maybe when we boot into this condition, show a new window, w/ button to restart filter
-      // - and feedback, so that the admin can see if the filter failed to restart
-      // - or, better yet, restart the filter, and if it fails, immediately pop up the health-check
       // figure out how to assemble update string
       return .none
 

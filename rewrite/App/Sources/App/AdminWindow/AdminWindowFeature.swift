@@ -30,7 +30,7 @@ struct AdminWindowFeature: Feature {
     }
 
     var windowOpen = false
-    var screen: Screen = .healthCheck
+    var screen: Screen = .home
     var healthCheck: HealthCheck = .init()
   }
 
@@ -58,7 +58,6 @@ struct AdminWindowFeature: Feature {
       case triggerAppUpdate
     }
 
-    case openWindow
     case closeWindow
     case setScreenRecordingPermissionOk(Bool)
     case setKeystrokeRecordingPermissionOk(Bool)
@@ -71,18 +70,12 @@ struct AdminWindowFeature: Feature {
   }
 
   struct Reducer: FeatureReducer {
-    @Dependency(\.app) var app
-    @Dependency(\.device) var device
-    @Dependency(\.mainQueue) var mainQueue
-    @Dependency(\.filterXpc) var xpc
-    @Dependency(\.filterExtension) var filter
-
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       .none
     }
   }
 
-  struct RootReducer: RootReducing {
+  struct RootReducer: FilterControlling {
     @Dependency(\.app) var app
     @Dependency(\.api) var api
     @Dependency(\.device) var device
@@ -100,52 +93,19 @@ extension AdminWindowFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .menuBar(.administrateClicked),
-         .adminWindow(.openWindow),
-         .adminWindow(.webview(.healthCheck(.recheckClicked))):
-
+    case .menuBar(.administrateClicked): // TODO: challenge admin
+      state.adminWindow.screen = .home
       state.adminWindow.windowOpen = true
-      state.adminWindow.healthCheck = .init()
-      let keyloggingEnabled = state.user?.keyloggingEnabled == true
-      let screenRecordingEnabled = state.user?.screenshotsEnabled == true
+      return checkHealth(state: &state, action: action)
 
-      let main = Effect<Action>.run { [releaseChannel = state.appUpdates.releaseChannel] send in
-        try await mainQueue.sleep(for: .seconds(1))
+    case .adminWindow(.webview(.healthCheck(.recheckClicked))):
+      return checkHealth(state: &state, action: action)
 
-        async let accountStatus = TaskResult { try await api.getAdminAccountStatus() }
-        async let latestAppVersion = TaskResult { try await api.latestAppVersion(releaseChannel) }
-
-        await send(.admin(.accountStatusResponse(accountStatus)))
-        await send(.appUpdates(.latestVersionResponse(latestAppVersion)))
-
-        await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
-          keyloggingEnabled ? await device.keystrokeRecordingPermissionGranted() : true
-        )))
-
-        await send(.adminWindow(.setScreenRecordingPermissionOk(
-          screenRecordingEnabled ? await device.screenRecordingPermissionGranted() : true
-        )))
-
-        await send(.adminWindow(.setNotificationsSetting(
-          await device.notificationsSetting()
-        )))
-
-        await send(.adminWindow(.setMacOsUserType(
-          .init { try await device.currentMacOsUserType() }
-        )))
-
-        await recheckFilter(send)
-
-        try await mainQueue.sleep(for: .seconds(10))
-
-        await send(.adminWindow(.healthCheckTimeout))
-      }.cancellable(id: CancelId.healthCheckTimeout, cancelInFlight: true)
-
-      return .merge(
-        main,
-        action == .adminWindow(.webview(.healthCheck(action: .recheckClicked)))
-          ? .cancel(id: CancelId.healthCheckTimeout) : .none
-      )
+    case .appUpdates(.delegate(.postUpdateFilterReplaceFailed)),
+         .appUpdates(.delegate(.postUpdateFilterNotInstalled)):
+      state.adminWindow.windowOpen = true
+      state.adminWindow.screen = .healthCheck
+      return checkHealth(state: &state, action: action)
 
     case .admin(.accountStatusResponse(.success(let status))):
       state.adminWindow.healthCheck.accountStatus = .ok(value: status)
@@ -169,7 +129,7 @@ extension AdminWindowFeature.RootReducer {
     case .adminWindow(let adminWindowAction):
 
       switch adminWindowAction {
-      case .openWindow, .webview(.healthCheck(.recheckClicked)):
+      case .webview(.healthCheck(.recheckClicked)):
         return .none // handled above
 
       case .closeWindow,
@@ -224,7 +184,7 @@ extension AdminWindowFeature.RootReducer {
           .run { send in
             try await restartFilter(send)
             try await mainQueue.sleep(for: .milliseconds(10))
-            if (await xpc.isConnectionHealthy()).isFailure {
+            if await xpc.notConnected() {
               try await replaceFilter(send, retryOnce: true)
             }
           },
@@ -271,6 +231,55 @@ extension AdminWindowFeature.RootReducer {
     }
   }
 
+  func checkHealth(state: inout State, action: Action) -> Effect<Action> {
+    state.adminWindow.healthCheck = .init()
+    let keyloggingEnabled = state.user?.keyloggingEnabled == true
+    let screenRecordingEnabled = state.user?.screenshotsEnabled == true
+    let releaseChannel = state.appUpdates.releaseChannel
+
+    let main = Effect<Action>.run { send in
+      try await mainQueue.sleep(for: .seconds(1))
+
+      async let accountStatus = TaskResult { try await api.getAdminAccountStatus() }
+      async let latestAppVersion = TaskResult { try await api.latestAppVersion(releaseChannel) }
+
+      await send(.admin(.accountStatusResponse(accountStatus)))
+      await send(.appUpdates(.latestVersionResponse(latestAppVersion)))
+
+      await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
+        keyloggingEnabled ? await device.keystrokeRecordingPermissionGranted() : true
+      )))
+
+      await send(.adminWindow(.setScreenRecordingPermissionOk(
+        screenRecordingEnabled ? await device.screenRecordingPermissionGranted() : true
+      )))
+
+      await send(.adminWindow(.setNotificationsSetting(
+        await device.notificationsSetting()
+      )))
+
+      await send(.adminWindow(.setMacOsUserType(
+        .init { try await device.currentMacOsUserType() }
+      )))
+
+      await recheckFilter(send)
+
+      try await mainQueue.sleep(for: .seconds(10))
+
+      await send(.adminWindow(.healthCheckTimeout))
+    }.cancellable(id: CancelId.healthCheckTimeout, cancelInFlight: true)
+
+    return .merge(
+      main,
+      action == .adminWindow(.webview(.healthCheck(action: .recheckClicked)))
+        ? .cancel(id: CancelId.healthCheckTimeout) : .none
+    )
+  }
+
+  func afterFilterChange(_ send: Send<Action>) async {
+    await recheckFilter(send)
+  }
+
   func withTimeoutAfter(seconds: Int) -> Effect<Action> {
     .run { send in
       try await mainQueue.sleep(for: .seconds(seconds))
@@ -299,36 +308,6 @@ extension AdminWindowFeature.RootReducer {
       case .failure:
         await send(.adminWindow(.setFilterStatus(.communicationBroken)))
       }
-    }
-  }
-
-  func installFilter(_ send: Send<Action>) async throws {
-    _ = await filter.install()
-    try await mainQueue.sleep(for: .milliseconds(10))
-    _ = await xpc.establishConnection()
-    await recheckFilter(send)
-  }
-
-  func restartFilter(_ send: Send<Action>) async throws {
-    _ = await filter.restart()
-    try await mainQueue.sleep(for: .milliseconds(100))
-    _ = await xpc.establishConnection()
-    await recheckFilter(send)
-  }
-
-  func replaceFilter(_ send: Send<Action>, retryOnce retry: Bool = false) async throws {
-    _ = await filter.replace()
-    try await mainQueue.sleep(for: .milliseconds(500))
-    _ = await xpc.establishConnection()
-    await recheckFilter(send)
-    if retry, (await xpc.isConnectionHealthy()).isFailure {
-      try await replaceFilter(send, retryOnce: false)
-    }
-  }
-
-  func replaceFilterIfNotConnected(_ send: Send<Action>, retryOnce: Bool = false) async throws {
-    if (await xpc.isConnectionHealthy()).isFailure {
-      try await replaceFilter(send, retryOnce: retryOnce)
     }
   }
 }

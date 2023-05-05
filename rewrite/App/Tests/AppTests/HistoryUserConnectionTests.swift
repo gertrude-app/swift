@@ -32,7 +32,7 @@ import XExpect
       $0.history.userConnection = .established(welcomeDismissed: false)
     }
 
-    expect(savedState).toEqual(.init(user: .mock))
+    expect(savedState).toEqual(.mock)
     await expect(apiUserToken).toEqual(User.mock.token)
 
     await store.send(.menuBar(.welcomeAdminClicked)) {
