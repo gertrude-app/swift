@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import Shared
 
 struct AppUpdatesFeature: Feature {
@@ -7,6 +8,12 @@ struct AppUpdatesFeature: Feature {
     var installedVersion: String
     var releaseChannel: ReleaseChannel = .stable // todo, should persist
     var latestVersion: String?
+
+    #if DEBUG
+      var updateFeedUrl = URL(string: "http://127.0.0.1:8080/appcast.xml")!
+    #else
+      var updateFeedUrl = URL(string: "https://api.gertrude.app/appcast.xml")!
+    #endif
   }
 
   enum Action: Equatable, Sendable {
@@ -86,8 +93,12 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       )
 
     case .adminWindow(.delegate(.triggerAppUpdate)):
-      // figure out how to assemble update string
-      return .none
+      let query = AppcastQuery(channel: state.appUpdates.releaseChannel)
+      let feedUrl = "\(state.appUpdates.updateFeedUrl.absoluteString)\(query.urlString)"
+      return .run { [beforeUpdate = state.persistent] _ in
+        try await storage.savePersistentState(beforeUpdate)
+        try await updater.triggerUpdate(feedUrl)
+      }
 
     default:
       return .none

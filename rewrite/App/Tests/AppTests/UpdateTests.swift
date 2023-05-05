@@ -95,4 +95,27 @@ import XExpect
     expect(store.state.adminWindow.windowOpen).toEqual(true)
     expect(store.state.adminWindow.screen).toEqual(.healthCheck)
   }
+
+  func testTriggeredUpdateSavesStateAndCallsMethodOnClient() async {
+    let (store, _) = AppReducer.testStore()
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+    let triggerUpdate = spy(on: String.self, returning: ())
+    store.deps.updater.triggerUpdate = triggerUpdate.fn
+
+    await store.send(.adminWindow(.delegate(.triggerAppUpdate)))
+    await expect(saveState.invoked).toEqual(true)
+    await expect(triggerUpdate.invocations)
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=stable"])
+  }
+
+  func testTriggeredUpdateSavesToCorrectChannel() async {
+    let (store, _) = AppReducer.testStore { $0.appUpdates.releaseChannel = .beta }
+    let triggerUpdate = spy(on: String.self, returning: ())
+    store.deps.updater.triggerUpdate = triggerUpdate.fn
+
+    await store.send(.adminWindow(.delegate(.triggerAppUpdate)))
+    await expect(triggerUpdate.invocations)
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta"])
+  }
 }
