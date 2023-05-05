@@ -1,93 +1,33 @@
 import Combine
 import ComposableArchitecture
-import Foundation
 import SwiftUI
 
-class BlockedRequestsWindow: NSObject {
+class BlockedRequestsWindow: AppWindow {
   typealias Feature = BlockedRequestsFeature
-  let store: StoreOf<Feature.Reducer>
+  typealias State = Feature.State.View
+  typealias Action = Feature.Action
+  typealias WebViewAction = Feature.Action.View
+
+  var title = "Blocked Requests"
+  var screen = "BlockedRequests"
+  var openPublisher: StorePublisher<Bool>
   var cancellables = Set<AnyCancellable>()
+  var windowDelegate = AppWindowDelegate()
+  var viewStore: ViewStore<State, Action>
   var window: NSWindow?
+  var initialSize = NSRect(x: 0, y: 0, width: 900, height: 600)
+  var minSize = NSSize(width: 800, height: 500)
+  var closeWindowAction = Action.closeWindow
 
   @Dependency(\.mainQueue) var mainQueue
-  @ObservedObject var viewStore: ViewStore<Feature.State.View, Feature.Action>
 
-  init(store: StoreOf<Feature.Reducer>) {
-    self.store = store
-    viewStore = ViewStore(store, observe: Feature.State.View.init)
-    super.init()
-
-    viewStore.publisher.windowOpen
-      .receive(on: mainQueue)
-      .sink { open in
-        if open {
-          self.openWindow()
-        } else {
-          self.window?.close()
-          self.window = nil
-        }
-      }
-      .store(in: &cancellables)
-  }
-}
-
-extension BlockedRequestsWindow: NSWindowDelegate {
-  func openWindow() {
-    window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 900, height: 600),
-      styleMask: [.titled, .closable, .miniaturizable, .resizable],
-      backing: .buffered,
-      defer: false
-    )
-
-    window?.minSize = NSSize(width: 800, height: 500)
-
-    window?.center()
-    window?.title = "Blocked Requests  |  Gertrude"
-    window?.makeKeyAndOrderFront(nil)
-    window?.isReleasedWhenClosed = false
-    window?.delegate = self
-    window?.tabbingMode = .disallowed
-    window?.alphaValue = 0.0
-    window?.titlebarAppearsTransparent = true
-    window?.level = .popUpMenu // keep on top of EVERY window
-
-    let wvc = WebViewController<Feature.State.View, Feature.Action.View>()
-
-    NSApp.activate(ignoringOtherApps: true)
-
-    wvc.send = { [weak self] action in
-      self?.viewStore.send(.webview(action))
-    }
-
-    viewStore.objectWillChange.sink { [mainQueue] _ in
-      // tiny delay is because this gets run on WILL change, not DID change
-      mainQueue.schedule(after: .microseconds(1)) { [weak self] in
-        guard let self = self, wvc.isReady.value else { return }
-        wvc.updateState(self.viewStore.state)
-      }
-    }.store(in: &cancellables)
-
-    wvc.isReady
-      .receive(on: mainQueue)
-      .removeDuplicates()
-      .prefix(2) // first value is initial `false`, only receive one more
-      .sink { [weak self] isReady in
-        guard let self = self, isReady else { return }
-        wvc.updateState(self.viewStore.state)
-        // give time for appview to re-render
-        self.mainQueue.schedule(after: .milliseconds(10)) { [weak self] in
-          self?.window?.alphaValue = 1.0
-        }
-      }
-      .store(in: &cancellables)
-
-    wvc.loadWebView(screen: "BlockedRequests")
-    window?.contentView = wvc.view
+  @MainActor init(store: StoreOf<Feature.Reducer>) {
+    viewStore = ViewStore(store, observe: BlockedRequestsFeature.State.View.init)
+    openPublisher = viewStore.publisher.windowOpen
+    bind()
   }
 
-  func windowWillClose(_ notification: Notification) {
-    viewStore.send(.closeWindow)
-    window = nil
+  func embed(_ webviewAction: WebViewAction) -> Action {
+    .webview(webviewAction)
   }
 }
