@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Shared
 import TestSupport
 import XCTest
 import XExpect
@@ -117,5 +118,43 @@ import XExpect
     await store.send(.adminWindow(.delegate(.triggerAppUpdate)))
     await expect(triggerUpdate.invocations)
       .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta"])
+  }
+
+  func testHeartbeatCheck_TriggersUpdateSavingStateWhenBehind() async {
+    let (store, scheduler) = AppReducer.testStore()
+    let latestAppVersion = spy(on: ReleaseChannel.self, returning: "3.9.99")
+    store.deps.api.latestAppVersion = latestAppVersion.fn
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+    let triggerUpdate = spy(on: String.self, returning: ())
+    store.deps.updater.triggerUpdate = triggerUpdate.fn
+
+    await store.send(.application(.didFinishLaunching))
+    await scheduler.advance(by: .seconds(60 * 60 * 6 - 1)) // one second before 6 hours
+
+    await expect(latestAppVersion.invoked).toEqual(false)
+    await expect(saveState.invoked).toEqual(false)
+    await expect(triggerUpdate.invoked).toEqual(false)
+
+    await scheduler.advance(by: .seconds(1))
+    await store.finish()
+
+    await expect(latestAppVersion.invoked).toEqual(true)
+    await expect(saveState.invoked).toEqual(true)
+    await expect(triggerUpdate.invocations)
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=stable"])
+  }
+
+  func testHeartbeatCheck_DoesntTriggerUpdateWhenUpToDate() async {
+    let (store, scheduler) = AppReducer.testStore()
+    store.deps.api.latestAppVersion = { _ in "1.0.0" } // <-- same as current
+    let triggerUpdate = spy(on: String.self, returning: ())
+    store.deps.updater.triggerUpdate = triggerUpdate.fn
+
+    await store.send(.application(.didFinishLaunching))
+    await scheduler.advance(by: .seconds(60 * 60 * 6))
+    await store.finish()
+
+    await expect(triggerUpdate.invoked).toEqual(false)
   }
 }

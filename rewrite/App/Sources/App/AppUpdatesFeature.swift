@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Core
 import Foundation
 import Shared
 
@@ -44,11 +45,12 @@ struct AppUpdatesFeature: Feature {
   }
 
   struct RootReducer {
-    @Dependency(\.updater) var updater
-    @Dependency(\.storage) var storage
+    @Dependency(\.api) var api
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.storage) var storage
+    @Dependency(\.updater) var updater
   }
 }
 
@@ -93,15 +95,42 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       )
 
     case .adminWindow(.delegate(.triggerAppUpdate)):
-      let query = AppcastQuery(channel: state.appUpdates.releaseChannel)
-      let feedUrl = "\(state.appUpdates.updateFeedUrl.absoluteString)\(query.urlString)"
-      return .run { [beforeUpdate = state.persistent] _ in
-        try await storage.savePersistentState(beforeUpdate)
-        try await updater.triggerUpdate(feedUrl)
+      let channel = state.appUpdates.releaseChannel
+      let feedUrl = state.appUpdates.updateFeedUrl
+      let persist = state.persistent
+      return .run { _ in try await triggerUpdate(channel, feedUrl, persist) }
+
+    case .heartbeat(.everySixHours):
+      let current = state.appUpdates.installedVersion
+      let channel = state.appUpdates.releaseChannel
+      let feedUrl = state.appUpdates.updateFeedUrl
+      let persist = state.persistent
+      return .run { _ in
+        let latest = try await api.latestAppVersion(channel)
+        let shouldUpdate: Bool
+        if let current = Semver(current), let latest = Semver(latest) {
+          shouldUpdate = latest > current
+        } else {
+          shouldUpdate = latest != current // TODO: log unreachable
+        }
+        if shouldUpdate {
+          try await triggerUpdate(channel, feedUrl, persist)
+        }
       }
 
     default:
       return .none
     }
+  }
+
+  func triggerUpdate(
+    _ channel: ReleaseChannel,
+    _ feedUrl: URL,
+    _ persist: Persistent.State
+  ) async throws {
+    let query = AppcastQuery(channel: channel)
+    let feedUrl = "\(feedUrl.absoluteString)\(query.urlString)"
+    try await storage.savePersistentState(persist)
+    try await updater.triggerUpdate(feedUrl)
   }
 }
