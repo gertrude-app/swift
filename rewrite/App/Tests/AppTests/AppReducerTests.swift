@@ -155,9 +155,13 @@ import XExpect
 // helpers
 
 extension AppReducer {
-  static func testStore(exhaustive: Bool = false)
-    -> (TestStoreOf<AppReducer>, TestSchedulerOf<DispatchQueue>) {
-    let store = TestStore(initialState: State(), reducer: AppReducer())
+  static func testStore(
+    exhaustive: Bool = false,
+    mutateState: @escaping (inout State) -> Void = { _ in }
+  ) -> (TestStoreOf<AppReducer>, TestSchedulerOf<DispatchQueue>) {
+    var state = State()
+    mutateState(&state)
+    let store = TestStore(initialState: state, reducer: AppReducer())
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
     store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
