@@ -18,6 +18,7 @@ enum Heartbeat {
   enum Interval: Equatable, Sendable {
     case everyMinute
     case everyTwentyMinutes
+    case everySixHours
   }
 
   enum CancelId {}

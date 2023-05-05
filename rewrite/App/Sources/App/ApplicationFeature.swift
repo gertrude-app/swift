@@ -71,6 +71,9 @@ extension ApplicationFeature.RootReducer: RootReducing {
     if tick % 20 == 0 {
       intervals.append(.everyTwentyMinutes)
     }
+    if tick % 360 == 0 {
+      intervals.append(.everySixHours)
+    }
     return intervals
   }
 }
