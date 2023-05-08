@@ -68,6 +68,7 @@ extension AppWindow {
     window?.tabbingMode = .disallowed
     window?.alphaValue = 0.0
     window?.titlebarAppearsTransparent = true
+    window?.isReleasedWhenClosed = false
     window?.level = windowLevel
 
     let wvc = WebViewController<State, WebViewAction>()

@@ -75,13 +75,14 @@ struct AdminWindowFeature: Feature {
     }
   }
 
-  struct RootReducer: FilterControlling {
+  struct RootReducer: FilterControlling, AdminAuthenticating {
     @Dependency(\.app) var app
     @Dependency(\.api) var api
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.security) var security
   }
 }
 
@@ -93,7 +94,10 @@ extension AdminWindowFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .menuBar(.administrateClicked): // TODO: challenge admin
+    case .menuBar(.administrateClicked):
+      return adminAuthenticated(action)
+
+    case .adminAuthenticated(.menuBar(.administrateClicked)):
       state.adminWindow.screen = .home
       state.adminWindow.windowOpen = true
       return checkHealth(state: &state, action: action)
@@ -161,16 +165,8 @@ extension AdminWindowFeature.RootReducer {
           await device.openSystemPrefs(.notifications)
         }
 
-      // TODO: release channel should be cross-user concern, we can't have one user
-      // on beta with the filter on beta, and another user on stable 🤔
-      // maybe it should be stored in the api on the `device`
-
       case .webview(.healthCheck(.repairOutOfDateFilterClicked)):
-        state.adminWindow.healthCheck.filterStatus = nil
-        return .merge(
-          .run { try await replaceFilter($0, retryOnce: true) },
-          withTimeoutAfter(seconds: 5)
-        )
+        return adminAuthenticated(action)
 
       case .webview(.healthCheck(.installFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = .installing
@@ -180,23 +176,14 @@ extension AdminWindowFeature.RootReducer {
         )
 
       case .webview(.healthCheck(.repairFilterCommunicationClicked)):
-        return .merge(
-          .run { send in
-            try await restartFilter(send)
-            try await mainQueue.sleep(for: .milliseconds(10))
-            if await xpc.notConnected() {
-              try await replaceFilter(send, retryOnce: true)
-            }
-          },
-          withTimeoutAfter(seconds: 5)
-        )
+        return adminAuthenticated(action)
 
       case .webview(.healthCheck(.zeroKeysRefreshRulesClicked)):
         state.adminWindow.healthCheck.filterStatus = nil
         return withTimeoutAfter(seconds: 10)
 
       case .webview(.healthCheck(.upgradeAppClicked)):
-        return .run { send in await send(.adminWindow(.delegate(.triggerAppUpdate))) }
+        return adminAuthenticated(action)
 
       case .setNotificationsSetting(let setting):
         state.adminWindow.healthCheck.notificationsSetting = setting
@@ -223,6 +210,37 @@ extension AdminWindowFeature.RootReducer {
         return .none
 
       case .delegate:
+        return .none
+      }
+
+    // admin authenticated
+    case .adminAuthenticated(.adminWindow(let adminWindowAction)):
+      switch adminWindowAction {
+      case .webview(.healthCheck(.repairOutOfDateFilterClicked)):
+        state.adminWindow.healthCheck.filterStatus = nil
+        return .merge(
+          .run { try await replaceFilter($0, retryOnce: true) },
+          withTimeoutAfter(seconds: 5)
+        )
+
+      case .webview(.healthCheck(.repairFilterCommunicationClicked)):
+        return .merge(
+          .run { send in
+            try await restartFilter(send)
+            try await mainQueue.sleep(for: .milliseconds(10))
+            if await xpc.notConnected() {
+              try await replaceFilter(send, retryOnce: true)
+            }
+          },
+          withTimeoutAfter(seconds: 5)
+        )
+
+      case .webview(.healthCheck(.upgradeAppClicked)):
+        return .run {
+          send in await send(.adminWindow(.delegate(.triggerAppUpdate)))
+        }
+
+      default:
         return .none
       }
 

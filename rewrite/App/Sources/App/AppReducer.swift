@@ -31,6 +31,8 @@ struct AppReducer: Reducer, Sendable {
     case user(UserFeature.Action)
     case heartbeat(Heartbeat.Interval)
     case blockedRequests(BlockedRequestsFeature.Action)
+
+    indirect case adminAuthenticated(Action)
   }
 
   @Dependency(\.api) var api
