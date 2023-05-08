@@ -14,6 +14,20 @@ protocol RootReducing: Reducer {
   associatedtype Action = AppReducer.Action
 }
 
+protocol AdminAuthenticating: RootReducing {
+  var security: SecurityClient { get }
+}
+
+extension AdminAuthenticating where Action == AppReducer.Action {
+  func adminAuthenticated(_ action: Action) -> Effect<Action> {
+    .run { [didAuthenticateAsAdmin = security.didAuthenticateAsAdmin] send in
+      if await didAuthenticateAsAdmin() {
+        await send(.adminAuthenticated(action))
+      }
+    }
+  }
+}
+
 enum Heartbeat {
   enum Interval: Equatable, Sendable {
     case everyMinute
