@@ -1,6 +1,52 @@
 // auto-generated, do not edit
 import Foundation
 
+extension FilterState {
+  private struct _NamedCase: Codable {
+    var `case`: String
+    static func extract(from decoder: Decoder) throws -> String {
+      let container = try decoder.singleValueContainer()
+      return try container.decode(_NamedCase.self).case
+    }
+  }
+
+  private struct _TypeScriptDecodeError: Error {
+    var message: String
+  }
+
+  private struct _CaseSuspended: Codable {
+    var `case` = "suspended"
+    var resuming: String
+  }
+
+  func encode(to encoder: Encoder) throws {
+    switch self {
+    case .suspended(let resuming):
+      try _CaseSuspended(resuming: resuming).encode(to: encoder)
+    case .off:
+      try _NamedCase(case: "off").encode(to: encoder)
+    case .on:
+      try _NamedCase(case: "on").encode(to: encoder)
+    }
+  }
+
+  init(from decoder: Decoder) throws {
+    let caseName = try _NamedCase.extract(from: decoder)
+    let container = try decoder.singleValueContainer()
+    switch caseName {
+    case "suspended":
+      let value = try container.decode(_CaseSuspended.self)
+      self = .suspended(resuming: value.resuming)
+    case "off":
+      self = .off
+    case "on":
+      self = .on
+    default:
+      throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
+    }
+  }
+}
+
 extension MenuBarFeature.Action {
   private struct _NamedCase: Codable {
     var `case`: String
@@ -14,7 +60,7 @@ extension MenuBarFeature.Action {
     var message: String
   }
 
-  private struct _CaseConnectsubmit: Codable {
+  private struct _CaseConnectSubmit: Codable {
     var `case` = "connectSubmit"
     var code: Int
   }
@@ -22,7 +68,7 @@ extension MenuBarFeature.Action {
   func encode(to encoder: Encoder) throws {
     switch self {
     case .connectSubmit(let code):
-      try _CaseConnectsubmit(code: code).encode(to: encoder)
+      try _CaseConnectSubmit(code: code).encode(to: encoder)
     case .menuBarIconClicked:
       try _NamedCase(case: "menuBarIconClicked").encode(to: encoder)
     case .resumeFilterClicked:
@@ -53,7 +99,7 @@ extension MenuBarFeature.Action {
     let container = try decoder.singleValueContainer()
     switch caseName {
     case "connectSubmit":
-      let value = try container.decode(_CaseConnectsubmit.self)
+      let value = try container.decode(_CaseConnectSubmit.self)
       self = .connectSubmit(code: value.code)
     case "menuBarIconClicked":
       self = .menuBarIconClicked
@@ -83,52 +129,6 @@ extension MenuBarFeature.Action {
   }
 }
 
-extension MenuBarFeature.State.Connected.FilterState {
-  private struct _NamedCase: Codable {
-    var `case`: String
-    static func extract(from decoder: Decoder) throws -> String {
-      let container = try decoder.singleValueContainer()
-      return try container.decode(_NamedCase.self).case
-    }
-  }
-
-  private struct _TypeScriptDecodeError: Error {
-    var message: String
-  }
-
-  private struct _CaseSuspended: Codable {
-    var `case` = "suspended"
-    var expiration: String
-  }
-
-  func encode(to encoder: Encoder) throws {
-    switch self {
-    case .suspended(let expiration):
-      try _CaseSuspended(expiration: expiration).encode(to: encoder)
-    case .off:
-      try _NamedCase(case: "off").encode(to: encoder)
-    case .on:
-      try _NamedCase(case: "on").encode(to: encoder)
-    }
-  }
-
-  init(from decoder: Decoder) throws {
-    let caseName = try _NamedCase.extract(from: decoder)
-    let container = try decoder.singleValueContainer()
-    switch caseName {
-    case "suspended":
-      let value = try container.decode(_CaseSuspended.self)
-      self = .suspended(expiration: value.expiration)
-    case "off":
-      self = .off
-    case "on":
-      self = .on
-    default:
-      throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
-    }
-  }
-}
-
 extension MenuBarFeature.State {
   private struct _NamedCase: Codable {
     var `case`: String
@@ -142,19 +142,19 @@ extension MenuBarFeature.State {
     var message: String
   }
 
-  private struct _CaseConnectionfailed: Codable {
+  private struct _CaseConnectionFailed: Codable {
     var `case` = "connectionFailed"
     var error: String
   }
 
-  private struct _CaseConnectionsucceded: Codable {
+  private struct _CaseConnectionSucceded: Codable {
     var `case` = "connectionSucceded"
     var userName: String
   }
 
   private struct _CaseConnected: Codable {
     var `case` = "connected"
-    var filterState: MenuBarFeature.State.Connected.FilterState
+    var filterState: FilterState
     var recordingScreen: Bool
     var recordingKeystrokes: Bool
   }
@@ -162,9 +162,9 @@ extension MenuBarFeature.State {
   func encode(to encoder: Encoder) throws {
     switch self {
     case .connectionFailed(let error):
-      try _CaseConnectionfailed(error: error).encode(to: encoder)
+      try _CaseConnectionFailed(error: error).encode(to: encoder)
     case .connectionSucceded(let userName):
-      try _CaseConnectionsucceded(userName: userName).encode(to: encoder)
+      try _CaseConnectionSucceded(userName: userName).encode(to: encoder)
     case .connected(let unflat):
       try _CaseConnected(
         filterState: unflat.filterState,
@@ -185,10 +185,10 @@ extension MenuBarFeature.State {
     let container = try decoder.singleValueContainer()
     switch caseName {
     case "connectionFailed":
-      let value = try container.decode(_CaseConnectionfailed.self)
+      let value = try container.decode(_CaseConnectionFailed.self)
       self = .connectionFailed(error: value.error)
     case "connectionSucceded":
-      let value = try container.decode(_CaseConnectionsucceded.self)
+      let value = try container.decode(_CaseConnectionSucceded.self)
       self = .connectionSucceded(userName: value.userName)
     case "connected":
       let value = try container.decode(_CaseConnected.self)

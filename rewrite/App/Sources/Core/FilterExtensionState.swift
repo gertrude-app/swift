@@ -1,28 +1,16 @@
 import Foundation
 import Shared
 
-public enum FilterState: Equatable, Sendable {
+public enum FilterExtensionState: Equatable, Sendable {
   case unknown
   case errorLoadingConfig
   case notInstalled
-  case off
-  case on
-  case suspended(resuming: Date)
+  case installedButNotRunning
+  case installedAndRunning
 
-  public var shared: Shared.FilterState {
+  public var installed: Bool {
     switch self {
-    case .on:
-      return .on
-    case .suspended:
-      return .suspended
-    case .errorLoadingConfig, .notInstalled, .off, .unknown:
-      return .off
-    }
-  }
-
-  public var canReceiveMessages: Bool {
-    switch self {
-    case .on, .off, .suspended:
+    case .installedAndRunning, .installedButNotRunning:
       return true
     case .unknown, .errorLoadingConfig, .notInstalled:
       return false

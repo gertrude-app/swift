@@ -13,6 +13,12 @@ public struct Spy<T, Arg> {
   public var invoked: ActorIsolated<Bool>
 }
 
+public struct Spy2<T, Arg1, Arg2> {
+  public var fn: @Sendable (Arg1, Arg2) async -> T
+  public var invocations: ActorIsolated<[Both<Arg1, Arg2>]>
+  public var invoked: ActorIsolated<Bool>
+}
+
 public struct ThrowingSpy<T, Arg> {
   public var fn: @Sendable (Arg) async throws -> T
   public var invocations: ActorIsolated<[Arg]>
@@ -67,7 +73,7 @@ public func mock<T>(returning values: [T], then fallback: T? = nil) -> Mock<T, I
   }, invocations: invocations, invoked: invoked)
 }
 
-public func spy<T, Arg>(on arg: Arg.Type, returning value: T) -> ThrowingSpy<T, Arg> {
+public func succeed<T, Arg>(with value: T, capturing: Arg.Type) -> ThrowingSpy<T, Arg> {
   spy(returning: [], then: value)
 }
 
@@ -101,6 +107,10 @@ public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Throw
   )
 }
 
+public func spy<T, Arg>(on arg: Arg.Type, returning value: T) -> Spy<T, Arg> {
+  spy(returning: [], then: value)
+}
+
 public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Spy<T, Arg> {
   let returns = ActorIsolated<[T]>(values)
   let invocations = ActorIsolated<[Arg]>([])
@@ -122,6 +132,46 @@ public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Spy<T
         fatalError(
           "spy<\(String(reflecting: T.self)), \(String(reflecting: Arg.self))> called more than expected number of times \(values.count)"
         )
+      }
+      return returnValue
+    },
+    invocations: invocations,
+    invoked: invoked
+  )
+}
+
+public func spy2<T, Arg1, Arg2>(
+  on arg: (Arg1.Type, Arg2.Type),
+  returning value: T
+) -> Spy2<T, Arg1, Arg2> {
+  spy2(returning: [], then: value)
+}
+
+public func spy2<T, Arg1, Arg2>(
+  returning values: [T],
+  then fallback: T? = nil
+) -> Spy2<T, Arg1, Arg2> {
+  let returns = ActorIsolated<[T]>(values)
+  let invocations = ActorIsolated<[Both<Arg1, Arg2>]>([])
+  let invoked = ActorIsolated(false)
+  return .init(
+    fn: { arg1, arg2 in
+      let currentInvocations = await invocations.value
+      await invocations.setValue(currentInvocations + [Both(arg1, arg2)])
+      await invoked.setValue(true)
+      var current = await returns.value
+      let returnValue: T
+      if current.count > 1 {
+        returnValue = current.removeFirst()
+        let updated = current
+        await returns.setValue(updated)
+      } else if let fallback {
+        returnValue = fallback
+      } else {
+        let types = [T.self, Arg1.self, Arg2.self]
+          .map(String.init(describing:))
+          .joined(separator: ", ")
+        fatalError("spy<\(types))> called more than expected number of times \(values.count)")
       }
       return returnValue
     },

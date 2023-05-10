@@ -5,6 +5,7 @@ import Shared
 
 public struct ApiClient: Sendable {
   public var connectUser: @Sendable (ConnectUser.Input) async throws -> User
+  public var clearUserToken: @Sendable () async -> Void
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws
     -> CreateUnlockRequests_v2.Output
   public var getAdminAccountStatus: @Sendable () async throws -> AdminAccountStatus
@@ -15,6 +16,7 @@ public struct ApiClient: Sendable {
 
   public init(
     connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> User,
+    clearUserToken: @escaping @Sendable () async -> Void,
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws
       -> CreateUnlockRequests_v2.Output,
     getAdminAccountStatus: @escaping @Sendable () async throws -> AdminAccountStatus,
@@ -24,6 +26,7 @@ public struct ApiClient: Sendable {
     setUserToken: @escaping @Sendable (User.Token) async -> Void
   ) {
     self.connectUser = connectUser
+    self.clearUserToken = clearUserToken
     self.createUnlockRequests = createUnlockRequests
     self.getAdminAccountStatus = getAdminAccountStatus
     self.latestAppVersion = latestAppVersion
@@ -37,6 +40,7 @@ public struct ApiClient: Sendable {
   extension ApiClient: TestDependencyKey {
     public static let testValue = Self(
       connectUser: { _ in .mock },
+      clearUserToken: {},
       createUnlockRequests: { _ in .success },
       getAdminAccountStatus: { .active },
       latestAppVersion: { _ in "1.0.0" },

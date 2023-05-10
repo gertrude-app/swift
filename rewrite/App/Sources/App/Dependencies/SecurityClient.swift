@@ -6,27 +6,33 @@ public struct SecurityClient: Sendable {
 }
 
 extension SecurityClient: DependencyKey {
-  public static var liveValue = Self(didAuthenticateAsAdmin: {
-    guard let authorization = SFAuthorization.authorization() as? SFAuthorization,
-          let right = NSString(string: kAuthorizationRuleAuthenticateAsAdmin).utf8String else {
-      // TODO: log unreachable
-      return false
-    }
-
-    // TODO: I could time this to test for the weird, pre-authed state
-    defer { authorization.invalidateCredentials() }
-    return await withCheckedContinuation { continuation in
-      do {
-        try authorization.obtain(
-          withRight: right,
-          flags: [.extendRights, .interactionAllowed, .destroyRights]
-        )
-        continuation.resume(returning: true)
-      } catch {
-        continuation.resume(returning: false)
+  #if DEBUG
+    public static var liveValue = Self(
+      didAuthenticateAsAdmin: { true }
+    )
+  #else
+    public static var liveValue = Self(didAuthenticateAsAdmin: {
+      guard let authorization = SFAuthorization.authorization() as? SFAuthorization,
+            let right = NSString(string: kAuthorizationRuleAuthenticateAsAdmin).utf8String else {
+        // TODO: log unreachable
+        return false
       }
-    }
-  })
+
+      // TODO: I could time this to test for the weird, pre-authed state
+      defer { authorization.invalidateCredentials() }
+      return await withCheckedContinuation { continuation in
+        do {
+          try authorization.obtain(
+            withRight: right,
+            flags: [.extendRights, .interactionAllowed, .destroyRights]
+          )
+          continuation.resume(returning: true)
+        } catch {
+          continuation.resume(returning: false)
+        }
+      }
+    })
+  #endif
 }
 
 extension SecurityClient: TestDependencyKey {

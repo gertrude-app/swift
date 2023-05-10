@@ -134,14 +134,80 @@ import XExpect
 
     await expect(sentBlocks).toEqual([Both(502, flow1Block)])
   }
+
+  func testDisconnectUser() async {
+    let key1 = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
+    let key2 = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
+    let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
+    let (store, _) = Filter.testStore {
+      $0.userKeys = [
+        502: [key1],
+        503: [key2],
+      ]
+      $0.suspensions = [
+        502: .init(scope: .mock, duration: 600),
+        503: otherUserSuspension,
+      ]
+      // a user being disconnected should almost never be exempt
+      // but this just tests the failsafe that we also remove exempt status
+      $0.exemptUsers = [501, 502]
+    }
+
+    let save = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = save.fn
+
+    await store.send(.xpc(.receivedAppMessage(.disconnectUser(userId: 502)))) {
+      $0.userKeys = [503: [key2]]
+      $0.suspensions = [503: otherUserSuspension]
+      $0.exemptUsers = [501]
+    }
+
+    await expect(save.invocations).toEqual([.init(
+      userKeys: [503: [key2]],
+      appIdManifest: .init(),
+      exemptUsers: [501]
+    )])
+  }
+
+  func testEndFilterSuspension() async {
+    let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
+    let (store, _) = Filter.testStore {
+      $0.suspensions = [
+        502: .init(scope: .mock, duration: 600),
+        503: otherUserSuspension,
+      ]
+    }
+
+    await store.send(.xpc(.receivedAppMessage(.endFilterSuspension(userId: 502)))) {
+      $0.suspensions = [503: otherUserSuspension]
+    }
+  }
+
+  func testStartFilterSuspension() async {
+    let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
+    let (store, _) = Filter.testStore {
+      $0.suspensions = [503: otherUserSuspension]
+    }
+
+    await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
+      $0.suspensions = [
+        502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
+        503: otherUserSuspension,
+      ]
+    }
+  }
 }
 
 // helpers
 
 extension Filter {
-  static func testStore(exhaustive: Bool = false)
-    -> (TestStoreOf<Filter>, TestSchedulerOf<DispatchQueue>) {
-    let store = TestStore(initialState: State(), reducer: Filter())
+  static func testStore(
+    exhaustive: Bool = false,
+    mutateState: @escaping (inout State) -> Void = { _ in }
+  ) -> (TestStoreOf<Filter>, TestSchedulerOf<DispatchQueue>) {
+    var state = State()
+    mutateState(&state)
+    let store = TestStore(initialState: state, reducer: Filter())
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = .immediate

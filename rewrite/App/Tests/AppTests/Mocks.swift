@@ -12,10 +12,10 @@ public extension BlockedRequest {
 
 extension Persistent.State {
   static var mock: Self {
-    .init(appVersion: "1.0.0", user: .mock)
+    .init(appVersion: "1.0.0", appUpdateReleaseChannel: .stable, user: .mock)
   }
 
   static var needsAppUpdate: Self {
-    .init(appVersion: "0.9.9", user: .mock)
+    .init(appVersion: "0.9.9", appUpdateReleaseChannel: .stable, user: .mock)
   }
 }

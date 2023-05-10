@@ -1,25 +1,26 @@
 import Combine
+import Core
 import Dependencies
 
 public struct FilterExtensionClient: Sendable {
-  public var setup: @Sendable () async -> FilterState
-  public var start: @Sendable () async -> FilterState
-  public var stop: @Sendable () async -> FilterState
-  public var restart: @Sendable () async -> FilterState
+  public var setup: @Sendable () async -> FilterExtensionState
+  public var start: @Sendable () async -> FilterExtensionState
+  public var stop: @Sendable () async -> FilterExtensionState
+  public var restart: @Sendable () async -> FilterExtensionState
   public var replace: @Sendable () async -> FilterInstallResult
-  public var state: @Sendable () async -> FilterState
+  public var state: @Sendable () async -> FilterExtensionState
   public var install: @Sendable () async -> FilterInstallResult
-  public var stateChanges: @Sendable () -> AnyPublisher<FilterState, Never>
+  public var stateChanges: @Sendable () -> AnyPublisher<FilterExtensionState, Never>
 
   public init(
-    setup: @escaping @Sendable () async -> FilterState,
-    start: @escaping @Sendable () async -> FilterState,
-    stop: @escaping @Sendable () async -> FilterState,
-    restart: @escaping @Sendable () async -> FilterState,
+    setup: @escaping @Sendable () async -> FilterExtensionState,
+    start: @escaping @Sendable () async -> FilterExtensionState,
+    stop: @escaping @Sendable () async -> FilterExtensionState,
+    restart: @escaping @Sendable () async -> FilterExtensionState,
     replace: @escaping @Sendable () async -> FilterInstallResult,
-    state: @escaping @Sendable () async -> FilterState,
+    state: @escaping @Sendable () async -> FilterExtensionState,
     install: @escaping @Sendable () async -> FilterInstallResult,
-    stateChanges: @escaping @Sendable () -> AnyPublisher<FilterState, Never>
+    stateChanges: @escaping @Sendable () -> AnyPublisher<FilterExtensionState, Never>
   ) {
     self.setup = setup
     self.start = start
@@ -34,12 +35,12 @@ public struct FilterExtensionClient: Sendable {
 
 extension FilterExtensionClient: TestDependencyKey {
   public static let testValue = Self(
-    setup: { .on },
-    start: { .on },
-    stop: { .off },
-    restart: { .on },
+    setup: { .installedAndRunning },
+    start: { .installedAndRunning },
+    stop: { .installedButNotRunning },
+    restart: { .installedAndRunning },
     replace: { .installedSuccessfully },
-    state: { .on },
+    state: { .installedAndRunning },
     install: { .installedSuccessfully },
     stateChanges: { Empty().eraseToAnyPublisher() }
   )

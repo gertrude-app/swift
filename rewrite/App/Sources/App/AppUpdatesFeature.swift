@@ -7,7 +7,7 @@ struct AppUpdatesFeature: Feature {
 
   struct State: Equatable {
     var installedVersion: String
-    var releaseChannel: ReleaseChannel = .stable // todo, should persist
+    var releaseChannel: ReleaseChannel = .stable
     var latestVersion: String?
 
     #if DEBUG
@@ -94,11 +94,17 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         }
       )
 
-    case .adminWindow(.delegate(.triggerAppUpdate)):
+    // don't need admin challenge, because sparkle can't update w/out admin auth
+    case .adminWindow(.delegate(.triggerAppUpdate)),
+         .adminWindow(.webview(.checkForAppUpdatesClicked)),
+         .adminWindow(.webview(.reinstallAppClicked)):
       let channel = state.appUpdates.releaseChannel
       let feedUrl = state.appUpdates.updateFeedUrl
       let persist = state.persistent
-      return .run { _ in try await triggerUpdate(channel, feedUrl, persist) }
+      let force = action == .adminWindow(.webview(.reinstallAppClicked)) ? true : nil
+      return .run { _ in
+        try await triggerUpdate(channel, feedUrl, persist, force: force)
+      }
 
     case .heartbeat(.everySixHours):
       let current = state.appUpdates.installedVersion
@@ -118,6 +124,12 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         }
       }
 
+    case .adminWindow(.webview(.releaseChannelUpdated(let channel))):
+      state.appUpdates.releaseChannel = channel
+      return .run { [updated = state.persistent] _ in
+        try await storage.savePersistentState(updated)
+      }
+
     default:
       return .none
     }
@@ -126,9 +138,10 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
   func triggerUpdate(
     _ channel: ReleaseChannel,
     _ feedUrl: URL,
-    _ persist: Persistent.State
+    _ persist: Persistent.State,
+    force: Bool? = nil
   ) async throws {
-    let query = AppcastQuery(channel: channel)
+    let query = AppcastQuery(channel: channel, force: force)
     let feedUrl = "\(feedUrl.absoluteString)\(query.urlString)"
     try await storage.savePersistentState(persist)
     try await updater.triggerUpdate(feedUrl)

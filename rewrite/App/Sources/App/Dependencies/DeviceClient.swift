@@ -1,7 +1,6 @@
 import AppKit
 import Dependencies
 import Foundation
-import UserNotifications
 
 struct DeviceClient: Sendable {
   var currentMacOsUserType: @Sendable () async throws -> MacOsUserType
@@ -13,6 +12,7 @@ struct DeviceClient: Sendable {
   var numericUserId: @Sendable () -> uid_t
   var openSystemPrefs: @Sendable (SystemPrefsLocation) async -> Void
   var openWebUrl: @Sendable (URL) async -> Void
+  var quitBrowsers: @Sendable () async -> Void
   var screenRecordingPermissionGranted: @Sendable () async -> Bool
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
@@ -39,33 +39,13 @@ extension DeviceClient: DependencyKey {
       #endif
     },
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
-    notificationsSetting: {
-      await withCheckedContinuation { continuation in
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-          if settings.authorizationStatus != .authorized || settings.alertStyle == .none {
-            continuation.resume(returning: .none)
-          } else if settings.alertStyle == .banner {
-            continuation.resume(returning: .banner)
-          } else {
-            continuation.resume(returning: .alert)
-          }
-        }
-      }
-    },
+    notificationsSetting: getNotificationsSetting,
     numericUserId: { getuid() },
     openSystemPrefs: openSystemPrefs(at:),
     openWebUrl: { NSWorkspace.shared.open($0) },
+    quitBrowsers: quitAllBrowsers,
     screenRecordingPermissionGranted: { CGPreflightScreenCaptureAccess() },
-    showNotification: { title, body in
-      let content = UNMutableNotificationContent()
-      content.title = title
-      content.body = body
-      UNUserNotificationCenter.current().add(UNNotificationRequest(
-        identifier: UUID().uuidString,
-        content: content,
-        trigger: nil
-      ))
-    },
+    showNotification: showNotification(title:body:),
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
     username: { NSUserName() }
   )
@@ -82,6 +62,7 @@ extension DeviceClient: TestDependencyKey {
     numericUserId: { 502 },
     openSystemPrefs: { _ in },
     openWebUrl: { _ in },
+    quitBrowsers: {},
     screenRecordingPermissionGranted: { true },
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },

@@ -10,9 +10,9 @@ public struct FilterSuspension: Equatable, Codable, Sendable {
     expiresAt > Date()
   }
 
-  public init(scope: AppScope, duration: Seconds<Int>) {
+  public init(scope: AppScope, duration: Seconds<Int>, now: Date = Date()) {
     self.scope = scope
     self.duration = duration
-    expiresAt = Date(timeIntervalSinceNow: .init(duration.rawValue))
+    expiresAt = now.advanced(by: Double(duration.rawValue))
   }
 }

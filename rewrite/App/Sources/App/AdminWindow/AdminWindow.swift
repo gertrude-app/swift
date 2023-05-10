@@ -19,7 +19,9 @@ class AdminWindow: AppWindow {
   var initialSize = NSRect(x: 0, y: 0, width: 900, height: 600)
   var minSize = NSSize(width: 800, height: 500)
   var closeWindowAction = Action.closeWindow
-  var windowLevel = NSWindow.Level.popUpMenu // above everything
+
+  // above almost everything, but below filter installation system prompt
+  var windowLevel = NSWindow.Level.modalPanel
 
   @Dependency(\.mainQueue) var mainQueue
 

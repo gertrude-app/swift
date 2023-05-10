@@ -1,6 +1,8 @@
 import ComposableArchitecture
+import Core
 import Foundation
 import Shared
+import TaggedTime
 
 struct AdminWindowFeature: Feature {
   enum Screen: String, Equatable, Codable {
@@ -32,6 +34,20 @@ struct AdminWindowFeature: Feature {
     var windowOpen = false
     var screen: Screen = .home
     var healthCheck: HealthCheck = .init()
+    var quitting = false
+
+    struct View: Equatable, Encodable {
+      var windowOpen = false
+      var screen: AdminWindowFeature.Screen
+      var healthCheck: HealthCheck
+      var filterState: FilterState
+      var userName: String
+      var screenshotMonitoringEnabled: Bool
+      var keystrokeMonitoringEnabled: Bool
+      var installedAppVersion: String
+      var releaseChannel: ReleaseChannel
+      var quitting: Bool
+    }
   }
 
   enum Action: Equatable, Sendable {
@@ -52,10 +68,20 @@ struct AdminWindowFeature: Feature {
       case closeWindow
       case healthCheck(action: HealthCheckAction)
       case gotoScreenClicked(screen: Screen)
+      case stopFilterClicked
+      case startFilterClicked
+      case resumeFilterClicked
+      case releaseChannelUpdated(channel: ReleaseChannel)
+      case reinstallAppClicked
+      case quitAppClicked
+      case suspendFilterClicked(durationInSeconds: Int)
+      case reconnectUserClicked
+      case checkForAppUpdatesClicked
     }
 
     enum Delegate: Equatable, Sendable {
       case triggerAppUpdate
+      case healthCheckFilterExtensionState(FilterExtensionState)
     }
 
     case closeWindow
@@ -82,7 +108,9 @@ struct AdminWindowFeature: Feature {
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.date.now) var now
     @Dependency(\.security) var security
+    @Dependency(\.storage) var storage
   }
 }
 
@@ -128,6 +156,17 @@ extension AdminWindowFeature.RootReducer {
         // wait for feature reducer to send rules to filter
         try await mainQueue.sleep(for: .milliseconds(10))
         await recheckFilter(send)
+      }
+
+    // TODO: make cancellable, cancel when new suspension created
+    case .adminWindow(.webview(.resumeFilterClicked)),
+         .menuBar(.resumeFilterClicked):
+      state.filter.currentSuspensionExpiration = nil
+      return .run { send in
+        _ = await xpc.endFilterSuspension()
+        await device.showBrowsersQuittingWarning()
+        try await mainQueue.sleep(for: .seconds(60))
+        await device.quitBrowsers()
       }
 
     case .adminWindow(let adminWindowAction):
@@ -185,6 +224,29 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.healthCheck(.upgradeAppClicked)):
         return adminAuthenticated(action)
 
+      case .webview(.checkForAppUpdatesClicked),
+           .webview(.releaseChannelUpdated),
+           .webview(.reinstallAppClicked):
+        return .none // handled by AppUpdatesFeature
+
+      case .webview(.quitAppClicked):
+        return adminAuthenticated(action)
+
+      case .webview(.stopFilterClicked):
+        return adminAuthenticated(action)
+
+      case .webview(.reconnectUserClicked):
+        return adminAuthenticated(action)
+
+      case .webview(.startFilterClicked):
+        return .none // handled by FilterFeature
+
+      case .webview(.resumeFilterClicked):
+        return .none // handled above, with menu bar action
+
+      case .webview(.suspendFilterClicked):
+        return adminAuthenticated(action)
+
       case .setNotificationsSetting(let setting):
         state.adminWindow.healthCheck.notificationsSetting = setting
         return state.adminWindow.healthCheck.checkCompletionEffect
@@ -238,6 +300,36 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.healthCheck(.upgradeAppClicked)):
         return .run {
           send in await send(.adminWindow(.delegate(.triggerAppUpdate)))
+        }
+
+      case .webview(.quitAppClicked):
+        state.adminWindow.quitting = true
+        return .run { _ in
+          // give time for uploading keystrokes, other cleanup tasks, etc.
+          // TODO: implement keystrokes uploading on quit
+          try await mainQueue.sleep(for: .seconds(2.5))
+          await app.quit()
+        }
+
+      case .webview(.stopFilterClicked):
+        return .run { _ in _ = await filter.stop() }
+
+      case .webview(.reconnectUserClicked):
+        state.user = nil
+        state.history.userConnection = .notConnected
+        state.adminWindow.windowOpen = false
+        // TODO: open menu bar dropdown (when possible, modify test)
+        return .run { [updated = state.persistent] _ in
+          await api.clearUserToken()
+          try await storage.savePersistentState(updated)
+          _ = await xpc.disconnectUser()
+        }
+
+      case .webview(.suspendFilterClicked(let durationInSeconds)):
+        let duration = Seconds<Int>(durationInSeconds)
+        state.filter.currentSuspensionExpiration = now.advanced(by: Double(duration.rawValue))
+        return .run { send in
+          _ = await xpc.suspendFilter(duration)
         }
 
       default:
@@ -306,14 +398,16 @@ extension AdminWindowFeature.RootReducer {
   }
 
   func recheckFilter(_ send: Send<Action>) async {
-    switch await filter.state() {
+    let filterState = await filter.state()
+    await send(.adminWindow(.delegate(.healthCheckFilterExtensionState(filterState))))
+    switch filterState {
     case .notInstalled:
       await send(.adminWindow(.setFilterStatus(.notInstalled)))
       return
     case .errorLoadingConfig, .unknown:
       await send(.adminWindow(.setFilterStatus(.unexpected)))
       return
-    case .on, .off, .suspended:
+    case .installedAndRunning, .installedButNotRunning:
       switch await xpc.requestAck() {
       case .success(let ack) where ack.userId == getuid():
         await send(.adminWindow(.setFilterStatus(
@@ -330,18 +424,7 @@ extension AdminWindowFeature.RootReducer {
   }
 }
 
-extension AdminWindowFeature.State {
-  struct View: Equatable, Encodable {
-    var windowOpen = false
-    var screen: AdminWindowFeature.Screen
-    var healthCheck: HealthCheck
-    var filterState: FilterState
-    var userName: String
-    var screenshotMonitoringEnabled: Bool
-    var keystrokeMonitoringEnabled: Bool
-    var installedAppVersion: String
-  }
-}
+extension AdminWindowFeature.State {}
 
 extension AdminWindowFeature.State.HealthCheck {
   mutating func setPendingChecksToError() {
@@ -375,11 +458,13 @@ extension AdminWindowFeature.State.View {
     windowOpen = featureState.windowOpen
     screen = featureState.screen
     healthCheck = featureState.healthCheck
-    filterState = rootState.filter.shared
+    filterState = .init(rootState)
     userName = rootState.user?.name ?? ""
     screenshotMonitoringEnabled = rootState.user?.screenshotsEnabled ?? false
     keystrokeMonitoringEnabled = rootState.user?.keyloggingEnabled ?? false
     installedAppVersion = app.installedVersion() ?? "0.0.0"
+    releaseChannel = rootState.appUpdates.releaseChannel
+    quitting = featureState.quitting
   }
 }
 

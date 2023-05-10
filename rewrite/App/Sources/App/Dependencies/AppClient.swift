@@ -5,19 +5,24 @@ import Models
 
 struct AppClient: Sendable {
   var installedVersion: @Sendable () -> String?
+  var quit: @Sendable () async -> Void
 }
 
 extension AppClient: DependencyKey {
   static let liveValue = Self(
     installedVersion: {
       Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+    },
+    quit: {
+      exit(0)
     }
   )
 }
 
 extension AppClient: TestDependencyKey {
   static let testValue = Self(
-    installedVersion: { "1.0.0" }
+    installedVersion: { "1.0.0" },
+    quit: {}
   )
 }
 

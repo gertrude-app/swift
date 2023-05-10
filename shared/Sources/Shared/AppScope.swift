@@ -40,3 +40,44 @@ public extension AppScope {
     }
   }
 }
+
+#if DEBUG
+  public extension AppScope {
+    static var mock: AppScope {
+      .webBrowsers
+    }
+
+    static var empty: AppScope {
+      .unrestricted
+    }
+
+    static var random: AppScope {
+      switch Int.random(in: 1 ... 6) {
+      case 1:
+        return .webBrowsers
+      case 2:
+        return .unrestricted
+      default:
+        return .single(.random)
+      }
+    }
+  }
+
+  public extension AppScope.Single {
+    static var mock: AppScope.Single {
+      .bundleId("com.foo")
+    }
+
+    static var empty: AppScope.Single {
+      .bundleId("")
+    }
+
+    static var random: AppScope.Single {
+      if Bool.random() {
+        return .bundleId("com.foo.\(Int.random(in: 10000 ... 99999))")
+      } else {
+        return .identifiedAppSlug("slug-\(Int.random(in: 10000 ... 99999))")
+      }
+    }
+  }
+#endif
