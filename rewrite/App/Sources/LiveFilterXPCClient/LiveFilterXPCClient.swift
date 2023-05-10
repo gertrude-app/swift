@@ -2,6 +2,7 @@ import Core
 import Dependencies
 import Models
 import Shared
+import TaggedTime
 
 extension FilterXPCClient: DependencyKey {
   public static var liveValue: Self {
@@ -13,6 +14,12 @@ extension FilterXPCClient: DependencyKey {
       checkConnectionHealth: { await .init {
         try await xpc.checkConnectionHealth()
       }},
+      disconnectUser: { await .init {
+        try await xpc.disconnectUser()
+      }},
+      endFilterSuspension: { await .init {
+        try await xpc.endFilterSuspension()
+      }},
       requestAck: { await .init {
         try await xpc.requestAck()
       }},
@@ -21,6 +28,9 @@ extension FilterXPCClient: DependencyKey {
       }},
       setBlockStreaming: { enabled in await .init {
         try await xpc.setBlockStreaming(enabled: enabled)
+      }},
+      suspendFilter: { duration in await .init {
+        try await xpc.suspendFilter(for: duration)
       }},
       events: {
         xpcEventSubject.withValue { subject in
@@ -40,6 +50,18 @@ actor ThreadSafeFilterXPC {
 
   func checkConnectionHealth() async throws {
     try await filterXpc.checkConnectionHealth()
+  }
+
+  func endFilterSuspension() async throws {
+    try await filterXpc.endFilterSuspension()
+  }
+
+  func suspendFilter(for duration: Seconds<Int>) async throws {
+    try await filterXpc.suspendFilter(for: duration)
+  }
+
+  func disconnectUser() async throws {
+    try await filterXpc.disconnectUser()
   }
 
   func requestAck() async throws -> XPC.FilterAck {

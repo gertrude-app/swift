@@ -14,17 +14,17 @@ extension BlockedRequestsFeature.Action.View {
     var message: String
   }
 
-  private struct _CaseFiltertextupdated: Codable {
+  private struct _CaseFilterTextUpdated: Codable {
     var `case` = "filterTextUpdated"
     var text: String
   }
 
-  private struct _CaseUnlockrequestsubmitted: Codable {
+  private struct _CaseUnlockRequestSubmitted: Codable {
     var `case` = "unlockRequestSubmitted"
     var comment: String?
   }
 
-  private struct _CaseTogglerequestselected: Codable {
+  private struct _CaseToggleRequestSelected: Codable {
     var `case` = "toggleRequestSelected"
     var id: UUID
   }
@@ -32,11 +32,11 @@ extension BlockedRequestsFeature.Action.View {
   func encode(to encoder: Encoder) throws {
     switch self {
     case .filterTextUpdated(let text):
-      try _CaseFiltertextupdated(text: text).encode(to: encoder)
+      try _CaseFilterTextUpdated(text: text).encode(to: encoder)
     case .unlockRequestSubmitted(let comment):
-      try _CaseUnlockrequestsubmitted(comment: comment).encode(to: encoder)
+      try _CaseUnlockRequestSubmitted(comment: comment).encode(to: encoder)
     case .toggleRequestSelected(let id):
-      try _CaseTogglerequestselected(id: id).encode(to: encoder)
+      try _CaseToggleRequestSelected(id: id).encode(to: encoder)
     case .requestFailedTryAgainClicked:
       try _NamedCase(case: "requestFailedTryAgainClicked").encode(to: encoder)
     case .tcpOnlyToggled:
@@ -53,13 +53,13 @@ extension BlockedRequestsFeature.Action.View {
     let container = try decoder.singleValueContainer()
     switch caseName {
     case "filterTextUpdated":
-      let value = try container.decode(_CaseFiltertextupdated.self)
+      let value = try container.decode(_CaseFilterTextUpdated.self)
       self = .filterTextUpdated(text: value.text)
     case "unlockRequestSubmitted":
-      let value = try container.decode(_CaseUnlockrequestsubmitted.self)
+      let value = try container.decode(_CaseUnlockRequestSubmitted.self)
       self = .unlockRequestSubmitted(comment: value.comment)
     case "toggleRequestSelected":
-      let value = try container.decode(_CaseTogglerequestselected.self)
+      let value = try container.decode(_CaseToggleRequestSelected.self)
       self = .toggleRequestSelected(id: value.id)
     case "requestFailedTryAgainClicked":
       self = .requestFailedTryAgainClicked

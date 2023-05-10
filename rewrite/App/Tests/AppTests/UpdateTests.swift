@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Core
 import Shared
 import TestSupport
 import XCTest
@@ -14,7 +15,11 @@ import XExpect
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
     await store.send(.application(.didFinishLaunching))
-    await expect(saveState.invocations).toEqual([.init(appVersion: "1.0.0", user: nil)])
+    await expect(saveState.invocations).toEqual([.init(
+      appVersion: "1.0.0",
+      appUpdateReleaseChannel: .stable,
+      user: nil
+    )])
   }
 
   func testAppLaunchDetectingUpdateJustOccurred_HappyPath() async {
@@ -28,12 +33,16 @@ import XExpect
     store.deps.filterExtension.replace = filterReplaced.fn
 
     // setup filter as installed, so it should replace
-    store.deps.filterExtension.state = { .on }
+    store.deps.filterExtension.state = { .installedAndRunning }
 
     await store.send(.application(.didFinishLaunching))
 
     // we saved the new state
-    await expect(saveState.invocations).toEqual([.init(appVersion: "1.0.0", user: .mock)])
+    await expect(saveState.invocations).toEqual([.init(
+      appVersion: "1.0.0",
+      appUpdateReleaseChannel: .stable,
+      user: .mock
+    )])
 
     // and replaced the filter
     await expect(filterReplaced.invoked).toEqual(true)
@@ -51,7 +60,7 @@ import XExpect
       then: .installedSuccessfully
     )
     store.deps.filterExtension.replace = replaceFilterMock.fn
-    store.deps.filterExtension.state = { .on }
+    store.deps.filterExtension.state = { .installedAndRunning }
     store.deps.filterXpc.checkConnectionHealth = mockFn(
       returning: [.failure(.timeout)],
       then: .success(())
@@ -71,7 +80,7 @@ import XExpect
 
     let replaceFilterMock = mock(always: FilterInstallResult.timedOutWaiting)
     store.deps.filterExtension.replace = replaceFilterMock.fn
-    store.deps.filterExtension.state = { .on }
+    store.deps.filterExtension.state = { .installedAndRunning }
     store.deps.filterXpc.checkConnectionHealth = mockFn(always: .failure(.timeout))
 
     await store.send(.application(.didFinishLaunching))
@@ -131,13 +140,11 @@ import XExpect
 
     await store.send(.application(.didFinishLaunching))
     await scheduler.advance(by: .seconds(60 * 60 * 6 - 1)) // one second before 6 hours
-
     await expect(latestAppVersion.invoked).toEqual(false)
     await expect(saveState.invoked).toEqual(false)
     await expect(triggerUpdate.invoked).toEqual(false)
 
     await scheduler.advance(by: .seconds(1))
-    await store.finish()
 
     await expect(latestAppVersion.invoked).toEqual(true)
     await expect(saveState.invoked).toEqual(true)
@@ -153,8 +160,18 @@ import XExpect
 
     await store.send(.application(.didFinishLaunching))
     await scheduler.advance(by: .seconds(60 * 60 * 6))
-    await store.finish()
 
     await expect(triggerUpdate.invoked).toEqual(false)
+  }
+
+  func testUpdatingReleaseChannelSetsStateAndSavesPersistent() async {
+    let (store, _) = AppReducer.testStore()
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+
+    await store.send(.adminWindow(.webview(.releaseChannelUpdated(channel: .beta)))) {
+      $0.appUpdates.releaseChannel = .beta
+    }
+    await expect(saveState.invoked).toEqual(true)
   }
 }

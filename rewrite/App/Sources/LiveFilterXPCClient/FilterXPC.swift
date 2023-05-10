@@ -4,6 +4,7 @@ import Dependencies
 import Foundation
 import Models
 import Shared
+import TaggedTime
 
 struct FilterXPC: Sendable {
   @Dependency(\.mainQueue) var scheduler
@@ -64,6 +65,31 @@ struct FilterXPC: Sendable {
         userId: getuid(),
         manifestData: manifestData,
         keysData: keysData,
+        reply: continuation.dataHandler
+      )
+    }
+  }
+
+  func disconnectUser() async throws {
+    try await establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.disconnectUser(getuid(), reply: continuation.dataHandler)
+    }
+  }
+
+  func endFilterSuspension() async throws {
+    try await establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.endSuspension(for: getuid(), reply: continuation.dataHandler)
+    }
+  }
+
+  func suspendFilter(for duration: Seconds<Int>) async throws {
+    try await establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.suspendFilter(
+        for: getuid(),
+        durationInSeconds: duration.rawValue,
         reply: continuation.dataHandler
       )
     }

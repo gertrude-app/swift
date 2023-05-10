@@ -31,19 +31,19 @@ extension FilterExtensionClient: DependencyKey {
 actor ThreadSafeFilterManager {
   private var manager = FilterManager()
 
-  func setup() async -> FilterState {
+  func setup() async -> FilterExtensionState {
     await manager.setup()
   }
 
-  func loadState() async -> FilterState {
+  func loadState() async -> FilterExtensionState {
     await manager.loadState()
   }
 
-  func startFilter() async -> FilterState {
+  func startFilter() async -> FilterExtensionState {
     await manager.startFilter()
   }
 
-  func stopFilter() async -> FilterState {
+  func stopFilter() async -> FilterExtensionState {
     await manager.stopFilter()
   }
 

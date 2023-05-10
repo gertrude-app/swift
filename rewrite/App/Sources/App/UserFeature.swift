@@ -64,7 +64,7 @@ extension UserFeature.RootReducer: RootReducing {
       }
 
     case .user(.refreshRules(.success(let output), let userInitiated)):
-      return .run { [filterReachable = state.filter.canReceiveMessages] _ in
+      return .run { [filterReachable = state.filter.extension.installed] _ in
         guard filterReachable else {
           if userInitiated {
             // if filter was never installed, we don't want to show an error

@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import Core
 import MacAppRoute
 import TestSupport
 import XCTest
@@ -15,13 +16,13 @@ import XExpect
     let filterSetupSpy = ActorIsolated(false)
     store.deps.filterExtension.setup = {
       await filterSetupSpy.setValue(true)
-      return .off
+      return .installedButNotRunning
     }
 
     let tokenSetSpy = ActorIsolated<User.Token?>(nil)
     store.deps.api.setUserToken = { await tokenSetSpy.setValue($0) }
 
-    let filterStateSubject = PassthroughSubject<FilterState, Never>()
+    let filterStateSubject = PassthroughSubject<FilterExtensionState, Never>()
     store.deps.filterExtension.stateChanges = { filterStateSubject.eraseToAnyPublisher() }
     store.deps.storage.loadPersistentState = { .mock }
 
@@ -35,8 +36,8 @@ import XExpect
     await expect(tokenSetSpy).toEqual(User.mock.token)
     await expect(filterSetupSpy).toEqual(true)
 
-    await store.receive(.filter(.receivedState(.off))) {
-      $0.filter = .off
+    await store.receive(.filter(.receivedState(.installedButNotRunning))) {
+      $0.filter.extension = .installedButNotRunning
     }
 
     await store.receive(.user(.refreshRules(result: .success(.mock), userInitiated: false))) {
@@ -44,18 +45,25 @@ import XExpect
       $0.user?.screenshotSize = 555
     }
 
+    // refreshing rules causes the filter to be rechecked for user key count
+    // resulting in a delegate action being sent back to into the system
+    await store
+      .receive(.adminWindow(.delegate(.healthCheckFilterExtensionState(.installedAndRunning)))) {
+        $0.filter.extension = .installedAndRunning
+      }
+
     await store.receive(.adminWindow(.setFilterStatus(.installed(version: "", numUserKeys: 0)))) {
       $0.adminWindow.healthCheck.filterStatus = .installed(version: "", numUserKeys: 0)
     }
 
-    filterStateSubject.send(.on)
-    await store.receive(.filter(.receivedState(.on))) {
-      $0.filter = .on
+    filterStateSubject.send(.notInstalled)
+    await store.receive(.filter(.receivedState(.notInstalled))) {
+      $0.filter.extension = .notInstalled
     }
 
-    filterStateSubject.send(.off)
-    await store.receive(.filter(.receivedState(.off))) {
-      $0.filter = .off
+    filterStateSubject.send(.installedButNotRunning)
+    await store.receive(.filter(.receivedState(.installedButNotRunning))) {
+      $0.filter.extension = .installedButNotRunning
     }
 
     filterStateSubject.send(completion: .finished)
@@ -65,7 +73,7 @@ import XExpect
   func testDidFinishLaunching_EstablishesConnectionIfFilterOn() async {
     let (store, _) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { nil }
-    store.deps.filterExtension.setup = { .on }
+    store.deps.filterExtension.setup = { .installedAndRunning }
 
     let connectionEstablished = ActorIsolated(false)
     store.deps.filterXpc.establishConnection = {
@@ -106,7 +114,7 @@ import XExpect
     let (store, _) = AppReducer.testStore()
     let notifications = spyOnNotifications(store)
     await store.send(.application(.didFinishLaunching))
-    await store.receive(.filter(.receivedState(.on)))
+    await store.receive(.filter(.receivedState(.installedAndRunning)))
 
     await store.send(.menuBar(.refreshRulesClicked))
     await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
@@ -128,7 +136,7 @@ import XExpect
     let notifications = spyOnNotifications(store)
     store.deps.filterXpc.sendUserRules = { _, _ in .failure(.unknownError("printer on fire")) }
     await store.send(.application(.didFinishLaunching))
-    await store.receive(.filter(.receivedState(.on)))
+    await store.receive(.filter(.receivedState(.installedAndRunning)))
 
     await store.send(.menuBar(.refreshRulesClicked))
     await expect(notifications).toEqual([.init(
@@ -142,7 +150,7 @@ import XExpect
     store.deps.api.refreshRules = { _ in throw TestErr("Oh noes!") }
     let notifications = spyOnNotifications(store)
     await store.send(.application(.didFinishLaunching))
-    await store.receive(.filter(.receivedState(.on)))
+    await store.receive(.filter(.receivedState(.installedAndRunning)))
 
     await store.send(.menuBar(.refreshRulesClicked))
     await expect(notifications).toEqual([.init(
@@ -164,11 +172,12 @@ extension AppReducer {
     let store = TestStore(initialState: state, reducer: AppReducer())
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
+    store.deps.date = .constant(Date(timeIntervalSince1970: 0))
     store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
     store.deps.mainQueue = .immediate
     store.deps.storage.loadPersistentState = { .mock }
     store.deps.api.refreshRules = { _ in .mock }
-    store.deps.filterExtension.setup = { .on }
+    store.deps.filterExtension.setup = { .installedAndRunning }
     return (store, scheduler)
   }
 }

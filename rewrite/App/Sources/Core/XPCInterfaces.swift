@@ -19,6 +19,19 @@ public typealias XPCErrorData = Data
     userId: uid_t,
     reply: @escaping (XPCErrorData?) -> Void
   )
+  func disconnectUser(
+    _ userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
+  func suspendFilter(
+    for userId: uid_t,
+    durationInSeconds: Int,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
+  func endSuspension(
+    for userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
 }
 
 @objc public protocol FilterMessageReceiving {

@@ -14,6 +14,41 @@ import Shared
     self.subject = subject
   }
 
+  func disconnectUser(_ userId: uid_t, reply: @escaping (XPCErrorData?) -> Void) {
+    os_log("[G•] xpc.disconnectUser(for: %{public}d)", userId)
+    subject.withValue {
+      $0.send(.receivedAppMessage(.disconnectUser(userId: userId)))
+    }
+    reply(nil)
+  }
+
+  func endSuspension(for userId: uid_t, reply: @escaping (XPCErrorData?) -> Void) {
+    os_log("[G•] xpc.endSuspension(for: %{public}d)", userId)
+    subject.withValue {
+      $0.send(.receivedAppMessage(.endFilterSuspension(userId: userId)))
+    }
+    reply(nil)
+  }
+
+  func suspendFilter(
+    for userId: uid_t,
+    durationInSeconds: Int,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    os_log(
+      "[G•] xpc.suspendFilter(userId: %{public}d, seconds: %{public}d)",
+      userId,
+      durationInSeconds
+    )
+    subject.withValue {
+      $0.send(.receivedAppMessage(.suspendFilter(
+        userId: userId,
+        duration: .init(durationInSeconds)
+      )))
+    }
+    reply(nil)
+  }
+
   func receiveAckRequest(
     randomInt: Int,
     userId: uid_t,
@@ -21,7 +56,7 @@ import Shared
   ) {
     do {
       os_log(
-        "[G•] XPCManager (new): receiveAckRequest, int: %{public}d, userId: %{public}d",
+        "[G•] xpc.receiveAckRequest(randomInt: %{public}d, userId: %{public}d)",
         randomInt,
         userId
       )
@@ -30,14 +65,14 @@ import Shared
         .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
       let ack = XPC.FilterAck(
         randomInt: randomInt,
-        version: Bool.random() ? "0.9.777" : version,
+        version: version,
         userId: userId,
-        // 👍 change me back!!!!!!!
-        numUserKeys: Bool.random() ? 0 : savedState?.userKeys[userId]?.count ?? 0
+        numUserKeys: savedState?.userKeys[userId]?.count ?? 0
       )
       let data = try XPC.encode(ack)
       reply(data, nil)
     } catch {
+      os_log("[G•] xpc.receiveAckRequest error: %{public}@", "\(error)")
       reply(nil, XPC.errorData(error))
     }
   }
@@ -59,13 +94,13 @@ import Shared
         )))
       }
       os_log(
-        "[G•] XPCManager: received user rules, user: %{public}d, num keys: %{public}d",
+        "[G•] xpc.receiveUserRules(userId: %{public}d,...) num keys: %{public}d",
         userId,
         keys.count
       )
       reply(nil)
     } catch {
-      os_log("[G•] XPCManager: error %{public}@", "\(error)")
+      os_log("[G•] xpc.receiveUserRules error: %{public}@", "\(error)")
       reply(XPC.errorData(error))
     }
   }
@@ -79,8 +114,8 @@ import Shared
       $0.send(.receivedAppMessage(.setBlockStreaming(enabled: enabled, userId: userId)))
     }
     os_log(
-      "[G•] XPCManager: setBlockStreaming enabled=%{public}d, userId: %{public}d",
-      enabled,
+      "[G•] xpc.setBlockStreaming(%{public}s, userId: %{public}d)",
+      enabled ? "true" : "false",
       userId
     )
     reply(nil)

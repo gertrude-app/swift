@@ -4,12 +4,6 @@ import Foundation
 enum MenuBarFeature: Feature {
   enum State: Equatable, Encodable {
     struct Connected: Equatable {
-      enum FilterState: Equatable, Codable {
-        case off
-        case on
-        case suspended(expiration: String)
-      }
-
       var filterState: FilterState
       var recordingScreen: Bool
       var recordingKeystrokes: Bool

@@ -46,6 +46,7 @@ extension AppWindow {
         if open {
           self?.openWindow()
         } else {
+          self?.window?.close()
           self?.window = nil
         }
       }

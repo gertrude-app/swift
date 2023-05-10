@@ -11,7 +11,7 @@ final class FilterManager: NSObject {
   @Dependency(\.system) var system
   @Dependency(\.mainQueue) var scheduler
 
-  func setup() async -> FilterState {
+  func setup() async -> FilterExtensionState {
     system.filterDidChangePublisher().sink {
       filterStateChanges.withValue { subject in
         subject.send(self.getState())
@@ -21,7 +21,7 @@ final class FilterManager: NSObject {
     return await loadState()
   }
 
-  func loadState() async -> FilterState {
+  func loadState() async -> FilterExtensionState {
     let loadResult = await system.loadFilterConfiguration()
     if case .failed(let err) = loadResult {
       print("error loading config: \(err)")
@@ -33,18 +33,19 @@ final class FilterManager: NSObject {
 
   // query current state, without loading filter configuration
   // loading filter configuration only needs to be done once, and is async
-  private func getState() -> FilterState {
+  private func getState() -> FilterExtensionState {
     if system.filterProviderConfiguration() == nil {
       return .notInstalled
     } else {
-      return system.isNEFilterManagerSharedEnabled() ? .on : .off
+      return system.isNEFilterManagerSharedEnabled()
+        ? .installedAndRunning : .installedButNotRunning
     }
   }
 
-  func startFilter() async -> FilterState {
+  func startFilter() async -> FilterExtensionState {
     let state = await loadState()
     // TODO: maybe better options for some (non-.on) states, possible remediations?
-    if state != .off {
+    if state != .installedButNotRunning {
       return state
     }
 
@@ -57,10 +58,10 @@ final class FilterManager: NSObject {
     return await loadState()
   }
 
-  func stopFilter() async -> FilterState {
+  func stopFilter() async -> FilterExtensionState {
     let state = await loadState()
     // TODO: maybe better options for some (non-.off) states, possible remediations?
-    if state != .on {
+    if state != .installedAndRunning {
       return state
     }
 
@@ -152,4 +153,4 @@ enum ActivationRequestStatus {
 }
 
 let activationRequest = ActorIsolated<ActivationRequestStatus>(.idle)
-let filterStateChanges = Mutex(PassthroughSubject<FilterState, Never>())
+let filterStateChanges = Mutex(PassthroughSubject<FilterExtensionState, Never>())

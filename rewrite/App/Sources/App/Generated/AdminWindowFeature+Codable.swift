@@ -1,5 +1,6 @@
 // auto-generated, do not edit
 import Foundation
+import Shared
 
 extension AdminWindowFeature.State.HealthCheck.FilterStatus {
   private struct _NamedCase: Codable {
@@ -73,24 +74,52 @@ extension AdminWindowFeature.Action.View {
     var message: String
   }
 
-  private struct _CaseHealthcheck: Codable {
+  private struct _CaseHealthCheck: Codable {
     var `case` = "healthCheck"
     var action: AdminWindowFeature.Action.View.HealthCheckAction
   }
 
-  private struct _CaseGotoscreenclicked: Codable {
+  private struct _CaseGotoScreenClicked: Codable {
     var `case` = "gotoScreenClicked"
     var screen: AdminWindowFeature.Screen
+  }
+
+  private struct _CaseReleaseChannelUpdated: Codable {
+    var `case` = "releaseChannelUpdated"
+    var channel: ReleaseChannel
+  }
+
+  private struct _CaseSuspendFilterClicked: Codable {
+    var `case` = "suspendFilterClicked"
+    var durationInSeconds: Int
   }
 
   func encode(to encoder: Encoder) throws {
     switch self {
     case .healthCheck(let action):
-      try _CaseHealthcheck(action: action).encode(to: encoder)
+      try _CaseHealthCheck(action: action).encode(to: encoder)
     case .gotoScreenClicked(let screen):
-      try _CaseGotoscreenclicked(screen: screen).encode(to: encoder)
+      try _CaseGotoScreenClicked(screen: screen).encode(to: encoder)
+    case .releaseChannelUpdated(let channel):
+      try _CaseReleaseChannelUpdated(channel: channel).encode(to: encoder)
+    case .suspendFilterClicked(let durationInSeconds):
+      try _CaseSuspendFilterClicked(durationInSeconds: durationInSeconds).encode(to: encoder)
     case .closeWindow:
       try _NamedCase(case: "closeWindow").encode(to: encoder)
+    case .stopFilterClicked:
+      try _NamedCase(case: "stopFilterClicked").encode(to: encoder)
+    case .startFilterClicked:
+      try _NamedCase(case: "startFilterClicked").encode(to: encoder)
+    case .resumeFilterClicked:
+      try _NamedCase(case: "resumeFilterClicked").encode(to: encoder)
+    case .reinstallAppClicked:
+      try _NamedCase(case: "reinstallAppClicked").encode(to: encoder)
+    case .quitAppClicked:
+      try _NamedCase(case: "quitAppClicked").encode(to: encoder)
+    case .reconnectUserClicked:
+      try _NamedCase(case: "reconnectUserClicked").encode(to: encoder)
+    case .checkForAppUpdatesClicked:
+      try _NamedCase(case: "checkForAppUpdatesClicked").encode(to: encoder)
     }
   }
 
@@ -99,13 +128,33 @@ extension AdminWindowFeature.Action.View {
     let container = try decoder.singleValueContainer()
     switch caseName {
     case "healthCheck":
-      let value = try container.decode(_CaseHealthcheck.self)
+      let value = try container.decode(_CaseHealthCheck.self)
       self = .healthCheck(action: value.action)
     case "gotoScreenClicked":
-      let value = try container.decode(_CaseGotoscreenclicked.self)
+      let value = try container.decode(_CaseGotoScreenClicked.self)
       self = .gotoScreenClicked(screen: value.screen)
+    case "releaseChannelUpdated":
+      let value = try container.decode(_CaseReleaseChannelUpdated.self)
+      self = .releaseChannelUpdated(channel: value.channel)
+    case "suspendFilterClicked":
+      let value = try container.decode(_CaseSuspendFilterClicked.self)
+      self = .suspendFilterClicked(durationInSeconds: value.durationInSeconds)
     case "closeWindow":
       self = .closeWindow
+    case "stopFilterClicked":
+      self = .stopFilterClicked
+    case "startFilterClicked":
+      self = .startFilterClicked
+    case "resumeFilterClicked":
+      self = .resumeFilterClicked
+    case "reinstallAppClicked":
+      self = .reinstallAppClicked
+    case "quitAppClicked":
+      self = .quitAppClicked
+    case "reconnectUserClicked":
+      self = .reconnectUserClicked
+    case "checkForAppUpdatesClicked":
+      self = .checkForAppUpdatesClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }

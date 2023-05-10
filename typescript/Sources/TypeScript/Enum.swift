@@ -131,7 +131,7 @@ extension EnumType.Case {
   }
 
   var codableStructName: String {
-    "_Case\(name.capitalized)"
+    "_Case\(name.prefix(1).capitalized + name.dropFirst())"
   }
 
   var codableStruct: String? {

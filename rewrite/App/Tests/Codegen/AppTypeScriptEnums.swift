@@ -8,8 +8,8 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
     TypeScriptEnum(
       name: "MenuBarFeature",
       types: [
+        FilterState.self,
         MenuBarFeature.Action.self,
-        MenuBarFeature.State.Connected.FilterState.self,
         MenuBarFeature.State.self,
       ]
     ),

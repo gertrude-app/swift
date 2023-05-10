@@ -11,6 +11,7 @@ extension ApiClient: DependencyKey {
         withUnauthed: .connectUser(input)
       ))
     },
+    clearUserToken: { await userToken.setValue(nil) },
     createUnlockRequests: { input in
       try await output(
         from: CreateUnlockRequests_v2.self,

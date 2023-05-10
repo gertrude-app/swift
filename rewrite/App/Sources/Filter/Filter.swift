@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Core
 import Foundation
+import os.log
 import Shared
 
 public struct Filter: Reducer {
@@ -28,6 +29,7 @@ public struct Filter: Reducer {
   @Dependency(\.uuid) var uuid
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    os_log("[G•] filter received action: %{public}@", String(describing: action))
     switch action {
     case .extensionStarted:
       return .merge(
@@ -62,7 +64,7 @@ public struct Filter: Reducer {
           return .none
         }
         return .run { [send = xpc.sendBlockedRequest, uuid, now] _ in
-          _ = try await send(userId, flow.blockedRequest(id: uuid(), time: now, app: app))
+          try await send(userId, flow.blockedRequest(id: uuid(), time: now, app: app))
         }
       }
       return .none
@@ -79,16 +81,34 @@ public struct Filter: Reducer {
       state.blockListeners[userId] = nil
       return .none
 
+    case .xpc(.receivedAppMessage(.disconnectUser(let userId))):
+      state.userKeys[userId] = nil
+      state.suspensions[userId] = nil
+      state.exemptUsers.remove(userId)
+      return saving(state.persistent)
+
+    case .xpc(.receivedAppMessage(.endFilterSuspension(let userId))):
+      state.suspensions[userId] = nil
+      return .none
+
+    case .xpc(.receivedAppMessage(.suspendFilter(let userId, let duration))):
+      state.suspensions[userId] = .init(scope: .unrestricted, duration: duration, now: now)
+      return .none
+
     case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
       state.userKeys[userId] = keys
       state.appIdManifest = manifest
       state.appCache = [:]
-      return .run { [persistent = state.persistent, save = storage.savePersistentState] _ in
-        try await save(persistent)
-      }
+      return saving(state.persistent)
 
     case .xpc(.decodingAppMessageDataFailed):
       return .none
+    }
+  }
+
+  func saving(_ state: Persistent.State) -> Effect<Action> {
+    .run { [save = storage.savePersistentState] _ in
+      try await save(state)
     }
   }
 }

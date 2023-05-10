@@ -28,7 +28,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
           let setupState = await filterExtension.setup()
           await send(.filter(.receivedState(setupState)))
-          if setupState == .on {
+          if setupState.installed {
             _ = await filterXpc.establishConnection()
           }
         },

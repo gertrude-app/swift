@@ -1,18 +1,5 @@
+import Dependencies
 import Models
-
-extension FilterState {
-  var menuBar: MenuBarFeature.State.Connected.FilterState {
-    switch self {
-    // TODO... handle error separately?
-    case .unknown, .notInstalled, .off, .errorLoadingConfig:
-      return .off
-    case .on:
-      return .on
-    case .suspended(let resuming):
-      return .suspended(expiration: "\(resuming)") // TODO:
-    }
-  }
-}
 
 extension AppReducer.State {
   var menuBar: MenuBarFeature.State {
@@ -32,7 +19,7 @@ extension AppReducer.State {
           return .connectionSucceded(userName: user.name)
         }
         return .connected(.init(
-          filterState: filter.menuBar,
+          filterState: .init(self),
           recordingScreen: user.screenshotsEnabled,
           recordingKeystrokes: user.keyloggingEnabled
         ))

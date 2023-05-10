@@ -12,7 +12,7 @@ struct AppReducer: Reducer, Sendable {
     var adminWindow = AdminWindowFeature.State()
     var appUpdates = AppUpdatesFeature.State()
     var device = DeviceState()
-    var filter = FilterFeature.State.unknown
+    var filter = FilterFeature.State()
     var history = HistoryFeature.State()
     var user: UserFeature.State?
     var blockedRequests = BlockedRequestsFeature.State()
