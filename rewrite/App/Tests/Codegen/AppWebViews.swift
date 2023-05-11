@@ -27,6 +27,7 @@ struct AppWebViews: AggregateCodeGenerator {
       generating: [
         .init(AdminWindowFeature.Screen.self),
         .init(AdminWindowFeature.State.HealthCheck.self),
+        .init(AdminWindowFeature.State.View.ExemptableUser.self),
         .init(AdminWindowFeature.Action.View.HealthCheckAction.self),
         .init(AdminWindowFeature.State.View.self, as: "AppState"),
         .init(AdminWindowFeature.Action.View.self, as: "AppEvent"),
@@ -36,6 +37,7 @@ struct AppWebViews: AggregateCodeGenerator {
         "action": "HealthCheckAction",
         "screen": "Screen",
         "filterState": "FilterState",
+        "exemptableUsers": "Failable<ExemptableUser[]>",
       ]
     ),
   ]

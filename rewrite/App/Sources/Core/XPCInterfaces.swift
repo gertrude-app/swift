@@ -8,6 +8,9 @@ public typealias XPCErrorData = Data
     userId: uid_t,
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )
+  func receiveListExemptUserIdsRequest(
+    reply: @escaping (Data?, XPCErrorData?) -> Void
+  )
   func receiveUserRules(
     userId: uid_t,
     manifestData: Data,
@@ -21,6 +24,11 @@ public typealias XPCErrorData = Data
   )
   func disconnectUser(
     _ userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
+  func setUserExemption(
+    _ userId: uid_t,
+    enabled: Bool,
     reply: @escaping (XPCErrorData?) -> Void
   )
   func suspendFilter(

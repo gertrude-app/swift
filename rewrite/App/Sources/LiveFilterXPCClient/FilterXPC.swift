@@ -96,12 +96,31 @@ struct FilterXPC: Sendable {
   }
 
   func setBlockStreaming(enabled: Bool) async throws {
+    try await establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.setBlockStreaming(
         enabled,
         userId: getuid(),
         reply: continuation.dataHandler
       )
+    }
+  }
+
+  func setUserExemption(userId: uid_t, enabled: Bool) async throws {
+    try await establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.setUserExemption(
+        userId,
+        enabled: enabled,
+        reply: continuation.dataHandler
+      )
+    }
+  }
+
+  func requestExemptUserIds() async throws -> [uid_t] {
+    try await establishConnection()
+    return try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.receiveListExemptUserIdsRequest(reply: continuation.dataHandler)
     }
   }
 }

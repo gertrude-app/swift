@@ -158,6 +158,36 @@ import XExpect
       "Please try again, or contact support if the problem persists."
     )])
   }
+
+  func testHeartbeatClearSuspensionFallback() async {
+    let now = Date()
+    let (store, scheduler) = AppReducer.testStore {
+      $0.filter.currentSuspensionExpiration = now.advanced(by: 60 * 3)
+    }
+    store.deps.date = .advancingOneMinute(starting: now)
+
+    await store.send(.application(.didFinishLaunching))
+    await scheduler.advance(by: 60 * 2)
+    await store.receive(.heartbeat(.everyMinute))
+    await store.receive(.heartbeat(.everyMinute))
+    expect(store.state.filter.currentSuspensionExpiration).not.toBeNil()
+
+    await scheduler.advance(by: 60)
+    await store.receive(.heartbeat(.everyMinute)) {
+      $0.filter.currentSuspensionExpiration = nil
+    }
+  }
+}
+
+extension DateGenerator {
+  static func advancingOneMinute(starting: Date = Date()) -> DateGenerator {
+    let minutesPassed = LockIsolated(0)
+    return .init {
+      let numMinutes = minutesPassed.value + 1
+      minutesPassed.setValue(numMinutes)
+      return starting.advanced(by: 60 * Double(numMinutes))
+    }
+  }
 }
 
 // helpers
@@ -165,11 +195,12 @@ import XExpect
 extension AppReducer {
   static func testStore(
     exhaustive: Bool = false,
+    reducer: any ReducerOf<AppReducer> = AppReducer(),
     mutateState: @escaping (inout State) -> Void = { _ in }
   ) -> (TestStoreOf<AppReducer>, TestSchedulerOf<DispatchQueue>) {
     var state = State()
     mutateState(&state)
-    let store = TestStore(initialState: state, reducer: AppReducer())
+    let store = TestStore(initialState: state, reducer: reducer)
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))

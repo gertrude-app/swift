@@ -14,6 +14,22 @@ import Shared
     self.subject = subject
   }
 
+  func setUserExemption(
+    _ userId: uid_t,
+    enabled: Bool,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    os_log(
+      "[G•] xpc.setUserExemption(%{public}d, enabled: %{public}s)",
+      userId,
+      enabled ? "true" : "false"
+    )
+    subject.withValue {
+      $0.send(.receivedAppMessage(.setUserExemption(userId: userId, enabled: enabled)))
+    }
+    reply(nil)
+  }
+
   func disconnectUser(_ userId: uid_t, reply: @escaping (XPCErrorData?) -> Void) {
     os_log("[G•] xpc.disconnectUser(for: %{public}d)", userId)
     subject.withValue {
@@ -102,6 +118,21 @@ import Shared
     } catch {
       os_log("[G•] xpc.receiveUserRules error: %{public}@", "\(error)")
       reply(XPC.errorData(error))
+    }
+  }
+
+  func receiveListExemptUserIdsRequest(
+    reply: @escaping (Data?, XPCErrorData?) -> Void
+  ) {
+    do {
+      os_log("[G•] xpc.receiveListExemptUserIdsRequest()")
+      let savedState = try storage.loadPersistentState()
+      let exemptUsers = Array(savedState?.exemptUsers ?? [])
+      let data = try XPC.encode(exemptUsers)
+      reply(data, nil)
+    } catch {
+      os_log("[G•] xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")
+      reply(nil, XPC.errorData(error))
     }
   }
 

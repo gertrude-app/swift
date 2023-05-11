@@ -101,6 +101,14 @@ public struct Filter: Reducer {
       state.appCache = [:]
       return saving(state.persistent)
 
+    case .xpc(.receivedAppMessage(.setUserExemption(let userId, let enabled))):
+      if enabled {
+        state.exemptUsers.insert(userId)
+      } else {
+        state.exemptUsers.remove(userId)
+      }
+      return saving(state.persistent)
+
     case .xpc(.decodingAppMessageDataFailed):
       return .none
     }

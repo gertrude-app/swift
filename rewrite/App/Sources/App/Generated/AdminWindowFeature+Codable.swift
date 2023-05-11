@@ -94,6 +94,12 @@ extension AdminWindowFeature.Action.View {
     var durationInSeconds: Int
   }
 
+  private struct _CaseSetUserExemption: Codable {
+    var `case` = "setUserExemption"
+    var userId: UInt32
+    var enabled: Bool
+  }
+
   func encode(to encoder: Encoder) throws {
     switch self {
     case .healthCheck(let action):
@@ -104,6 +110,8 @@ extension AdminWindowFeature.Action.View {
       try _CaseReleaseChannelUpdated(channel: channel).encode(to: encoder)
     case .suspendFilterClicked(let durationInSeconds):
       try _CaseSuspendFilterClicked(durationInSeconds: durationInSeconds).encode(to: encoder)
+    case .setUserExemption(let userId, let enabled):
+      try _CaseSetUserExemption(userId: userId, enabled: enabled).encode(to: encoder)
     case .closeWindow:
       try _NamedCase(case: "closeWindow").encode(to: encoder)
     case .stopFilterClicked:
@@ -118,6 +126,8 @@ extension AdminWindowFeature.Action.View {
       try _NamedCase(case: "quitAppClicked").encode(to: encoder)
     case .reconnectUserClicked:
       try _NamedCase(case: "reconnectUserClicked").encode(to: encoder)
+    case .administrateOSUserAccountsClicked:
+      try _NamedCase(case: "administrateOSUserAccountsClicked").encode(to: encoder)
     case .checkForAppUpdatesClicked:
       try _NamedCase(case: "checkForAppUpdatesClicked").encode(to: encoder)
     }
@@ -139,6 +149,9 @@ extension AdminWindowFeature.Action.View {
     case "suspendFilterClicked":
       let value = try container.decode(_CaseSuspendFilterClicked.self)
       self = .suspendFilterClicked(durationInSeconds: value.durationInSeconds)
+    case "setUserExemption":
+      let value = try container.decode(_CaseSetUserExemption.self)
+      self = .setUserExemption(userId: value.userId, enabled: value.enabled)
     case "closeWindow":
       self = .closeWindow
     case "stopFilterClicked":
@@ -153,6 +166,8 @@ extension AdminWindowFeature.Action.View {
       self = .quitAppClicked
     case "reconnectUserClicked":
       self = .reconnectUserClicked
+    case "administrateOSUserAccountsClicked":
+      self = .administrateOSUserAccountsClicked
     case "checkForAppUpdatesClicked":
       self = .checkForAppUpdatesClicked
     default:

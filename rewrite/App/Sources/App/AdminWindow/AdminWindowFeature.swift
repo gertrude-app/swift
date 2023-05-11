@@ -27,7 +27,7 @@ struct AdminWindowFeature: Feature {
       var accountStatus: Failable<AdminAccountStatus>?
       var screenRecordingPermissionOk: Bool?
       var keystrokeRecordingPermissionOk: Bool?
-      var macOsUserType: Failable<MacOsUserType>?
+      var macOsUserType: Failable<MacOSUserType>?
       var notificationsSetting: NotificationsSetting?
     }
 
@@ -35,6 +35,8 @@ struct AdminWindowFeature: Feature {
     var screen: Screen = .home
     var healthCheck: HealthCheck = .init()
     var quitting = false
+    var exemptableUsers: Failable<[MacOSUser]>?
+    var exemptUserIds: Failable<[uid_t]>?
 
     struct View: Equatable, Encodable {
       var windowOpen = false
@@ -47,6 +49,15 @@ struct AdminWindowFeature: Feature {
       var installedAppVersion: String
       var releaseChannel: ReleaseChannel
       var quitting: Bool
+
+      struct ExemptableUser: Equatable, Codable {
+        var id: uid_t
+        var name: String
+        var isAdmin: Bool
+        var isExempt: Bool
+      }
+
+      var exemptableUsers: Failable<[ExemptableUser]>?
     }
   }
 
@@ -76,7 +87,9 @@ struct AdminWindowFeature: Feature {
       case quitAppClicked
       case suspendFilterClicked(durationInSeconds: Int)
       case reconnectUserClicked
+      case administrateOSUserAccountsClicked
       case checkForAppUpdatesClicked
+      case setUserExemption(userId: uid_t, enabled: Bool)
     }
 
     enum Delegate: Equatable, Sendable {
@@ -88,8 +101,10 @@ struct AdminWindowFeature: Feature {
     case setScreenRecordingPermissionOk(Bool)
     case setKeystrokeRecordingPermissionOk(Bool)
     case setNotificationsSetting(NotificationsSetting)
-    case setMacOsUserType(Failable<MacOsUserType>)
+    case setMacOsUserType(Failable<MacOSUserType>)
     case setFilterStatus(State.HealthCheck.FilterStatus)
+    case setExemptableUsers(Failable<[MacOSUser]>)
+    case setExemptUserIds(Failable<[uid_t]>)
     case webview(View)
     case delegate(Delegate)
     case healthCheckTimeout
@@ -128,7 +143,19 @@ extension AdminWindowFeature.RootReducer {
     case .adminAuthenticated(.menuBar(.administrateClicked)):
       state.adminWindow.screen = .home
       state.adminWindow.windowOpen = true
-      return checkHealth(state: &state, action: action)
+      return .merge(
+        .run { send in
+          await send(.adminWindow(.setExemptableUsers(Failable {
+            try await device.listExemptableUsers()
+          })))
+        },
+        .run { send in
+          await send(.adminWindow(.setExemptUserIds(Failable(
+            result: await xpc.requestExemptUserIds()
+          ))))
+        },
+        checkHealth(state: &state, action: action)
+      )
 
     case .adminWindow(.webview(.healthCheck(.recheckClicked))):
       return checkHealth(state: &state, action: action)
@@ -194,7 +221,8 @@ extension AdminWindowFeature.RootReducer {
           await device.openSystemPrefs(.security(.screenRecording))
         }
 
-      case .webview(.healthCheck(.removeUserAdminPrivilegeClicked)):
+      case .webview(.healthCheck(.removeUserAdminPrivilegeClicked)),
+           .webview(.administrateOSUserAccountsClicked):
         return .run { _ in
           await device.openSystemPrefs(.accounts)
         }
@@ -246,6 +274,17 @@ extension AdminWindowFeature.RootReducer {
 
       case .webview(.suspendFilterClicked):
         return adminAuthenticated(action)
+
+      case .webview(.setUserExemption):
+        return adminAuthenticated(action)
+
+      case .setExemptUserIds(let result):
+        state.adminWindow.exemptUserIds = result
+        return .none
+
+      case .setExemptableUsers(let usersResult):
+        state.adminWindow.exemptableUsers = usersResult
+        return .none
 
       case .setNotificationsSetting(let setting):
         state.adminWindow.healthCheck.notificationsSetting = setting
@@ -330,6 +369,21 @@ extension AdminWindowFeature.RootReducer {
         state.filter.currentSuspensionExpiration = now.advanced(by: Double(duration.rawValue))
         return .run { send in
           _ = await xpc.suspendFilter(duration)
+        }
+
+      case .webview(.setUserExemption(let userId, let enabled)):
+        if case .ok(let exemptUserIds) = state.adminWindow.exemptUserIds {
+          let updated = enabled
+            ? exemptUserIds + [userId]
+            : exemptUserIds.filter { $0 != userId }
+          state.adminWindow.exemptUserIds = .ok(value: updated)
+        } else if enabled {
+          state.adminWindow.exemptUserIds = .ok(value: [userId])
+        } else {
+          state.adminWindow.exemptUserIds = .ok(value: [])
+        }
+        return .run { send in
+          _ = await xpc.setUserExemption(userId, enabled)
         }
 
       default:
@@ -465,6 +519,22 @@ extension AdminWindowFeature.State.View {
     installedAppVersion = app.installedVersion() ?? "0.0.0"
     releaseChannel = rootState.appUpdates.releaseChannel
     quitting = featureState.quitting
+
+    switch (featureState.exemptableUsers, featureState.exemptUserIds) {
+    case (.ok(let users), .ok(let userIds)):
+      exemptableUsers = .ok(value: users.map {
+        ExemptableUser(
+          id: $0.id,
+          name: $0.name,
+          isAdmin: $0.type == .admin,
+          isExempt: userIds.contains($0.id)
+        )
+      })
+    case (.error, _), (_, .error):
+      exemptableUsers = .error
+    default:
+      exemptableUsers = nil
+    }
   }
 }
 
