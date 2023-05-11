@@ -11,8 +11,10 @@ public struct FilterXPCClient: Sendable {
   public var disconnectUser: @Sendable () async -> Result<Void, XPCErr>
   public var endFilterSuspension: @Sendable () async -> Result<Void, XPCErr>
   public var requestAck: @Sendable () async -> Result<XPC.FilterAck, XPCErr>
+  public var requestExemptUserIds: @Sendable () async -> Result<[uid_t], XPCErr>
   public var sendUserRules: @Sendable (AppIdManifest, [FilterKey]) async -> Result<Void, XPCErr>
   public var setBlockStreaming: @Sendable (Bool) async -> Result<Void, XPCErr>
+  public var setUserExemption: @Sendable (uid_t, Bool) async -> Result<Void, XPCErr>
   public var suspendFilter: @Sendable (Seconds<Int>) async -> Result<Void, XPCErr>
   public var events: @Sendable () -> AnyPublisher<XPCEvent.App, Never>
 
@@ -22,8 +24,10 @@ public struct FilterXPCClient: Sendable {
     disconnectUser: @escaping @Sendable () async -> Result<Void, XPCErr>,
     endFilterSuspension: @escaping @Sendable () async -> Result<Void, XPCErr>,
     requestAck: @escaping @Sendable () async -> Result<XPC.FilterAck, XPCErr>,
+    requestExemptUserIds: @escaping @Sendable () async -> Result<[uid_t], XPCErr>,
     sendUserRules: @escaping @Sendable (AppIdManifest, [FilterKey]) async -> Result<Void, XPCErr>,
     setBlockStreaming: @escaping @Sendable (Bool) async -> Result<Void, XPCErr>,
+    setUserExemption: @escaping @Sendable (uid_t, Bool) async -> Result<Void, XPCErr>,
     suspendFilter: @escaping @Sendable (Seconds<Int>) async -> Result<Void, XPCErr>,
     events: @escaping @Sendable () -> AnyPublisher<XPCEvent.App, Never>
   ) {
@@ -32,8 +36,10 @@ public struct FilterXPCClient: Sendable {
     self.disconnectUser = disconnectUser
     self.endFilterSuspension = endFilterSuspension
     self.requestAck = requestAck
+    self.requestExemptUserIds = requestExemptUserIds
     self.sendUserRules = sendUserRules
     self.setBlockStreaming = setBlockStreaming
+    self.setUserExemption = setUserExemption
     self.suspendFilter = suspendFilter
     self.events = events
   }
@@ -60,8 +66,10 @@ extension FilterXPCClient: TestDependencyKey {
         userId: 0,
         numUserKeys: 0
       )) },
+      requestExemptUserIds: { .success([]) },
       sendUserRules: { _, _ in .success(()) },
       setBlockStreaming: { _ in .success(()) },
+      setUserExemption: { _, _ in .success(()) },
       suspendFilter: { _ in .success(()) },
       events: { Empty().eraseToAnyPublisher() }
     )

@@ -22,6 +22,15 @@ enum Failable<T> {
       self = .error
     }
   }
+
+  init<E: Error>(result: Result<T, E>) {
+    switch result {
+    case .success(let value):
+      self = .ok(value: value)
+    case .failure:
+      self = .error
+    }
+  }
 }
 
 extension Failable: Equatable where T: Equatable {}

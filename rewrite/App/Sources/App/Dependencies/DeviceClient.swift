@@ -3,10 +3,12 @@ import Dependencies
 import Foundation
 
 struct DeviceClient: Sendable {
-  var currentMacOsUserType: @Sendable () async throws -> MacOsUserType
+  var currentMacOsUserType: @Sendable () async throws -> MacOSUserType
+  var currentUserId: @Sendable () -> uid_t
   var fullUsername: @Sendable () -> String
   var hostname: @Sendable () -> String?
   var keystrokeRecordingPermissionGranted: @Sendable () async -> Bool
+  var listMacOSUsers: @Sendable () async throws -> [MacOSUser]
   var modelIdentifier: @Sendable () -> String?
   var notificationsSetting: @Sendable () async -> NotificationsSetting
   var numericUserId: @Sendable () -> uid_t
@@ -21,7 +23,8 @@ struct DeviceClient: Sendable {
 
 extension DeviceClient: DependencyKey {
   static let liveValue = Self(
-    currentMacOsUserType: getCurrentMacOsUserType,
+    currentMacOsUserType: getCurrentMacOSUserType,
+    currentUserId: { getuid() },
     fullUsername: { NSFullUserName() },
     hostname: { Host.current().localizedName },
     keystrokeRecordingPermissionGranted: {
@@ -38,6 +41,7 @@ extension DeviceClient: DependencyKey {
         return AXIsProcessTrustedWithOptions(options)
       #endif
     },
+    listMacOSUsers: getAllMacOSUsers,
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
     notificationsSetting: getNotificationsSetting,
     numericUserId: { getuid() },
@@ -54,9 +58,14 @@ extension DeviceClient: DependencyKey {
 extension DeviceClient: TestDependencyKey {
   static let testValue = Self(
     currentMacOsUserType: { .standard },
+    currentUserId: { 502 },
     fullUsername: { "test-full-username" },
     hostname: { "test-hostname" },
     keystrokeRecordingPermissionGranted: { true },
+    listMacOSUsers: { [
+      .init(id: 501, name: "Dad", type: .admin),
+      .init(id: 502, name: "liljimmy", type: .standard),
+    ] },
     modelIdentifier: { "test-model-identifier" },
     notificationsSetting: { .alert },
     numericUserId: { 502 },

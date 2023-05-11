@@ -1,5 +1,6 @@
 import Core
 import Dependencies
+import Foundation
 import Models
 import Shared
 import TaggedTime
@@ -23,11 +24,17 @@ extension FilterXPCClient: DependencyKey {
       requestAck: { await .init {
         try await xpc.requestAck()
       }},
+      requestExemptUserIds: { await .init {
+        try await xpc.requestExemptUserIds()
+      }},
       sendUserRules: { manifest, keys in await .init {
         try await xpc.sendUserRules(manifest: manifest, keys: keys)
       }},
       setBlockStreaming: { enabled in await .init {
         try await xpc.setBlockStreaming(enabled: enabled)
+      }},
+      setUserExemption: { userId, enabled in await .init {
+        try await xpc.setUserExemption(userId: userId, enabled: enabled)
       }},
       suspendFilter: { duration in await .init {
         try await xpc.suspendFilter(for: duration)
@@ -74,5 +81,13 @@ actor ThreadSafeFilterXPC {
 
   func setBlockStreaming(enabled: Bool) async throws {
     try await filterXpc.setBlockStreaming(enabled: enabled)
+  }
+
+  func setUserExemption(userId: uid_t, enabled: Bool) async throws {
+    try await filterXpc.setUserExemption(userId: userId, enabled: enabled)
+  }
+
+  func requestExemptUserIds() async throws -> [uid_t] {
+    try await filterXpc.requestExemptUserIds()
   }
 }

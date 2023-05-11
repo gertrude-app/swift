@@ -23,6 +23,7 @@ struct FilterFeature: Feature {
   }
 
   struct RootReducer: RootReducing {
+    @Dependency(\.date.now) var now
     @Dependency(\.filterExtension) var filterExtension
   }
 }
@@ -30,6 +31,12 @@ struct FilterFeature: Feature {
 extension FilterFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
+
+    case .heartbeat(.everyMinute):
+      if let expiration = state.filter.currentSuspensionExpiration, expiration <= now {
+        state.filter.currentSuspensionExpiration = nil
+      }
+      return .none
 
     case .adminWindow(.delegate(.healthCheckFilterExtensionState(let filterState))):
       state.filter.extension = filterState

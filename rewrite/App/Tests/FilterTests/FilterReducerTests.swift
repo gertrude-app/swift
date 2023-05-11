@@ -169,6 +169,28 @@ import XExpect
     )])
   }
 
+  func testSetUserExemption() async {
+    let (store, _) = Filter.testStore {
+      $0.exemptUsers = [501]
+    }
+
+    let save = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = save.fn
+
+    await store.send(.xpc(.receivedAppMessage(.setUserExemption(userId: 502, enabled: true)))) {
+      $0.exemptUsers = [501, 502]
+    }
+
+    await store.send(.xpc(.receivedAppMessage(.setUserExemption(userId: 501, enabled: false)))) {
+      $0.exemptUsers = [502]
+    }
+
+    await expect(save.invocations).toEqual([
+      .init(userKeys: [:], appIdManifest: .init(), exemptUsers: [501, 502]),
+      .init(userKeys: [:], appIdManifest: .init(), exemptUsers: [502]),
+    ])
+  }
+
   func testEndFilterSuspension() async {
     let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
     let (store, _) = Filter.testStore {

@@ -15,11 +15,12 @@ extension FilterState {
          .installedButNotRunning:
       self = .off
     case .installedAndRunning:
-      guard let expiration = rootState.filter.currentSuspensionExpiration else {
+      @Dependency(\.date.now) var now
+      guard let expiration = rootState.filter.currentSuspensionExpiration,
+            expiration > now else {
         self = .on
         return
       }
-      @Dependency(\.date.now) var now
       self = .suspended(resuming: now.timeRemaining(until: expiration) ?? "now")
     }
   }

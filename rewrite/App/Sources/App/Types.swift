@@ -44,11 +44,6 @@ enum NotificationsSetting: String, Equatable, Codable {
   case alert
 }
 
-enum MacOsUserType: String, Equatable, Codable, Sendable {
-  case standard
-  case admin
-}
-
 extension AnySchedulerOf<DispatchQueue> {
   func schedule(after time: DispatchQueue.SchedulerTimeType.Stride, action: @escaping () -> Void) {
     schedule(after: now.advanced(by: time), action)
