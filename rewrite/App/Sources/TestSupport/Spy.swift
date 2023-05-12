@@ -19,6 +19,12 @@ public struct Spy2<T, Arg1, Arg2> {
   public var invoked: ActorIsolated<Bool>
 }
 
+public struct Spy3<T, Arg1, Arg2, Arg3> {
+  public var fn: @Sendable (Arg1, Arg2, Arg3) async -> T
+  public var invocations: ActorIsolated<[Three<Arg1, Arg2, Arg3>]>
+  public var invoked: ActorIsolated<Bool>
+}
+
 public struct ThrowingSpy<T, Arg> {
   public var fn: @Sendable (Arg) async throws -> T
   public var invocations: ActorIsolated<[Arg]>
@@ -158,6 +164,46 @@ public func spy2<T, Arg1, Arg2>(
     fn: { arg1, arg2 in
       let currentInvocations = await invocations.value
       await invocations.setValue(currentInvocations + [Both(arg1, arg2)])
+      await invoked.setValue(true)
+      var current = await returns.value
+      let returnValue: T
+      if current.count > 1 {
+        returnValue = current.removeFirst()
+        let updated = current
+        await returns.setValue(updated)
+      } else if let fallback {
+        returnValue = fallback
+      } else {
+        let types = [T.self, Arg1.self, Arg2.self]
+          .map(String.init(describing:))
+          .joined(separator: ", ")
+        fatalError("spy<\(types))> called more than expected number of times \(values.count)")
+      }
+      return returnValue
+    },
+    invocations: invocations,
+    invoked: invoked
+  )
+}
+
+public func spy3<T, Arg1, Arg2, Arg3>(
+  on arg: (Arg1.Type, Arg2.Type, Arg3.Type),
+  returning value: T
+) -> Spy3<T, Arg1, Arg2, Arg3> {
+  spy3(returning: [], then: value)
+}
+
+public func spy3<T, Arg1, Arg2, Arg3>(
+  returning values: [T],
+  then fallback: T? = nil
+) -> Spy3<T, Arg1, Arg2, Arg3> {
+  let returns = ActorIsolated<[T]>(values)
+  let invocations = ActorIsolated<[Three<Arg1, Arg2, Arg3>]>([])
+  let invoked = ActorIsolated(false)
+  return .init(
+    fn: { arg1, arg2, arg3 in
+      let currentInvocations = await invocations.value
+      await invocations.setValue(currentInvocations + [Three(arg1, arg2, arg3)])
       await invoked.setValue(true)
       var current = await returns.value
       let returnValue: T

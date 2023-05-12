@@ -39,7 +39,7 @@ public extension ActorIsolated where Value: RangeReplaceableCollection {
   }
 }
 
-// if/when tuples become Sendable, this can be removed
+// if/when tuples become Sendable, this (and `Three`) can be removed
 public struct Both<A, B> {
   public var a: A
   public var b: B
@@ -49,5 +49,18 @@ public struct Both<A, B> {
   }
 }
 
+public struct Three<A, B, C> {
+  public var a: A
+  public var b: B
+  public var c: C
+  public init(_ a: A, _ b: B, _ c: C) {
+    self.a = a
+    self.b = b
+    self.c = c
+  }
+}
+
 extension Both: Sendable where A: Sendable, B: Sendable {}
 extension Both: Equatable where A: Equatable, B: Equatable {}
+extension Three: Sendable where A: Sendable, B: Sendable, C: Sendable {}
+extension Three: Equatable where A: Equatable, B: Equatable, C: Equatable {}

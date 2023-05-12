@@ -5,13 +5,13 @@ import Models
 
 extension ApiClient: DependencyKey {
   public static let liveValue = Self(
+    clearUserToken: { await userToken.setValue(nil) },
     connectUser: { input in
       User(fromPairQL: try await output(
         from: ConnectUser.self,
         withUnauthed: .connectUser(input)
       ))
     },
-    clearUserToken: { await userToken.setValue(nil) },
     createUnlockRequests: { input in
       try await output(
         from: CreateUnlockRequests_v2.self,
@@ -37,7 +37,33 @@ extension ApiClient: DependencyKey {
       )
     },
     setEndpoint: { await endpoint.setValue($0) },
-    setUserToken: { await userToken.setValue($0) }
+    setUserToken: { await userToken.setValue($0) },
+    uploadScreenshot: { jpegData, width, height in
+      let signed = try await output(
+        from: CreateSignedScreenshotUpload.self,
+        with: .createSignedScreenshotUpload(.init(width: width, height: height))
+      )
+
+      var request = URLRequest(url: signed.uploadUrl, cachePolicy: .reloadIgnoringCacheData)
+      request.httpMethod = "PUT"
+      request.addValue("public-read", forHTTPHeaderField: "x-amz-acl")
+      request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type")
+
+      return try await withCheckedThrowingContinuation { continuation in
+        URLSession.shared.uploadTask(with: request, from: jpegData) { data, response, error in
+          if let error {
+            continuation.resume(throwing: error)
+            return
+          }
+          guard let data, let response else {
+            struct MissingDataOrResponse: Error {}
+            continuation.resume(throwing: MissingDataOrResponse())
+            return
+          }
+          continuation.resume(returning: signed.webUrl)
+        }.resume()
+      }
+    }
   )
 }
 

@@ -27,6 +27,7 @@ struct AppReducer: Reducer, Sendable {
     case xpc(XPCEvent.App)
     case history(HistoryFeature.Action)
     case menuBar(MenuBarFeature.Action)
+    case monitoring(MonitoringFeature.Action)
     case loadedPersistentState(Persistent.State?)
     case user(UserFeature.Action)
     case heartbeat(Heartbeat.Interval)
@@ -40,8 +41,8 @@ struct AppReducer: Reducer, Sendable {
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
       switch action {
-      case .loadedPersistentState(let persistent):
-        guard let user = persistent?.user else { return .none }
+      case .loadedPersistentState(.some(let persistent)):
+        guard let user = persistent.user else { return .none }
         state.user = user
         return .run { send in
           await api.setUserToken(user.token)
@@ -66,6 +67,7 @@ struct AppReducer: Reducer, Sendable {
     AdminFeature.RootReducer()
     AdminWindowFeature.RootReducer()
     FilterFeature.RootReducer()
+    MonitoringFeature.RootReducer()
 
     // feature reducers
     Scope(state: \.history, action: /Action.history) {
