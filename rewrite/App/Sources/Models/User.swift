@@ -56,11 +56,17 @@ public extension Tagged where RawValue == UUID {
       token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
       deviceId: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
       name: "Mock User",
-      keyloggingEnabled: true,
-      screenshotsEnabled: true,
-      screenshotFrequency: 1,
-      screenshotSize: 1,
+      keyloggingEnabled: false,
+      screenshotsEnabled: false,
+      screenshotFrequency: 60,
+      screenshotSize: 1000,
       connectedAt: .init(timeIntervalSince1970: 0)
     )
+
+    static func mock(config: (inout Self) -> Void) -> Self {
+      var mock = Self.mock
+      config(&mock)
+      return mock
+    }
   }
 #endif

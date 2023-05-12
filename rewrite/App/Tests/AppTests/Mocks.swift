@@ -1,5 +1,6 @@
 import Core
 import Dependencies
+import MacAppRoute
 
 @testable import App
 @testable import Models
@@ -11,6 +12,12 @@ public extension BlockedRequest {
 }
 
 extension Persistent.State {
+  static func mock(config: (inout Self) -> Void) -> Self {
+    var state = Self.mock
+    config(&state)
+    return state
+  }
+
   static var mock: Self {
     .init(appVersion: "1.0.0", appUpdateReleaseChannel: .stable, user: .mock)
   }

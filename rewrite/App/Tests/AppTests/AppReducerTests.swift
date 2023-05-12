@@ -41,6 +41,8 @@ import XExpect
     }
 
     await store.receive(.user(.refreshRules(result: .success(.mock), userInitiated: false))) {
+      $0.user?.screenshotsEnabled = true
+      $0.user?.keyloggingEnabled = true
       $0.user?.screenshotFrequency = 333
       $0.user?.screenshotSize = 555
     }
