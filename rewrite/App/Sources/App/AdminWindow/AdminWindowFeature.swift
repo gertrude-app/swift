@@ -123,6 +123,7 @@ struct AdminWindowFeature: Feature {
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.monitoring) var monitoring
     @Dependency(\.date.now) var now
     @Dependency(\.security) var security
     @Dependency(\.storage) var storage
@@ -411,11 +412,11 @@ extension AdminWindowFeature.RootReducer {
       await send(.appUpdates(.latestVersionResponse(latestAppVersion)))
 
       await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
-        keyloggingEnabled ? await device.keystrokeRecordingPermissionGranted() : true
+        keyloggingEnabled ? await monitoring.keystrokeRecordingPermissionGranted() : true
       )))
 
       await send(.adminWindow(.setScreenRecordingPermissionOk(
-        screenRecordingEnabled ? await device.screenRecordingPermissionGranted() : true
+        screenRecordingEnabled ? await monitoring.screenRecordingPermissionGranted() : true
       )))
 
       await send(.adminWindow(.setNotificationsSetting(

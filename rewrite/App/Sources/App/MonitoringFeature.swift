@@ -23,61 +23,90 @@ extension MonitoringFeature.RootReducer {
     switch action {
 
     case .loadedPersistentState(.some(let persistent)):
-      return configureScreenshots(current: persistent.user, previous: nil)
+      return configureMonitoring(current: persistent.user, previous: nil)
 
     case .user(.refreshRules(.success(let output), _)):
-      return configureScreenshots(current: output, previous: state.user)
+      return configureMonitoring(current: output, previous: state.user)
 
     case .history(.userConnection(.connect(.success(let user)))):
-      return configureScreenshots(current: user, previous: nil)
-
-    case .adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))):
-      return .cancel(id: CancelId.screenshots)
+      return configureMonitoring(current: user, previous: nil)
 
     case .monitoring(.timerTriggeredTakeScreenshot):
       let width = state.user?.screenshotSize ?? 800
       return .run { _ in
-        if let image = try await self.monitoring.takeScreenshot(width) {
+        if let image = try await monitoring.takeScreenshot(width) {
           _ = try await api.uploadScreenshot(image.data, image.width, image.height)
+        }
+      }
+
+    case .heartbeat(.everyFiveMinutes):
+      // for simplicity's sake, ALWAYS try to upload any pending keystrokes
+      // so we don't have to worry about edge cases when we stop/restart.
+      // if we're not monitoring keystrokes, keystrokes will be nil
+      return .run { _ in
+        if let keystrokes = await monitoring.takePendingKeystrokes() {
+          _ = try await api.createKeystrokeLines(keystrokes)
         }
       }
 
     case .application(.willTerminate):
       return .cancel(id: CancelId.screenshots)
 
+    case .adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))):
+      return .cancel(id: CancelId.screenshots)
+
+    // try to catch the moment when they've fixed monitoring permissions issues
+    case .adminWindow(.webview(.healthCheck(.recheckClicked))):
+      return configureMonitoring(current: state.user, previous: nil, force: true)
+
     default:
       return .none
     }
   }
 
-  func configureScreenshots(
-    current currentUser: ScreenshotUser?,
-    previous previousUser: ScreenshotUser?
+  func configureMonitoring(
+    current currentUser: MonitoredUser?,
+    previous previousUser: MonitoredUser?,
+    force: Bool = false
   ) -> Effect<Action> {
-    switch (currentUser, previousUser) {
+    switch (currentUser, previousUser, force) {
 
     // no change, do nothing
-    case (.none, .none):
+    case (.none, .none, _):
       return .none
 
     // no change, do nothing
-    case (.some(let current), .some(let previous)) where current.equals(previous):
+    case (.some(let current), .some(let previous), false) where current.equals(previous):
       return .none
 
     // no user anymore, just cancel
-    case (.none, .some):
-      return .cancel(id: CancelId.screenshots)
-
-    // current screenshot info changed, tear down and restart
-    case (.some(let current), .some), (.some(let current), .none):
-      guard current.screenshotsEnabled else {
-        return .cancel(id: CancelId.screenshots)
-      }
+    case (.none, .some, _):
       return .merge(
         .cancel(id: CancelId.screenshots),
+        .run { _ in await monitoring.stopLoggingKeystrokes() }
+      )
+
+    // current info changed (or we're forcing), reconfigure
+    case (.some(let current), .some, _), (.some(let current), .none, _):
+      return .merge(
+        .cancel(id: CancelId.screenshots),
+        .run { _ in
+          guard current.keyloggingEnabled else {
+            await monitoring.stopLoggingKeystrokes()
+            return
+          }
+          await monitoring.keystrokeRecordingPermissionGranted()
+            ? await monitoring.startLoggingKeystrokes()
+            : await monitoring.stopLoggingKeystrokes()
+        },
         .run { send in
-          for await _ in bgQueue.timer(interval: .seconds(current.screenshotFrequency)) {
-            await send(.monitoring(.timerTriggeredTakeScreenshot))
+          guard current.screenshotsEnabled else {
+            return
+          }
+          if await monitoring.screenRecordingPermissionGranted() {
+            for await _ in bgQueue.timer(interval: .seconds(current.screenshotFrequency)) {
+              await send(.monitoring(.timerTriggeredTakeScreenshot))
+            }
           }
         }.cancellable(id: CancelId.screenshots, cancelInFlight: true)
       )
@@ -85,23 +114,25 @@ extension MonitoringFeature.RootReducer {
   }
 }
 
-protocol ScreenshotUser: Sendable {
+protocol MonitoredUser: Sendable {
+  var keyloggingEnabled: Bool { get }
   var screenshotsEnabled: Bool { get }
   var screenshotSize: Int { get }
   var screenshotFrequency: Int { get }
 }
 
-extension ScreenshotUser {
-  func equals(_ other: ScreenshotUser) -> Bool {
-    screenshotsEnabled == other.screenshotsEnabled
+extension MonitoredUser {
+  func equals(_ other: MonitoredUser) -> Bool {
+    keyloggingEnabled == other.keyloggingEnabled
+      && screenshotsEnabled == other.screenshotsEnabled
       && screenshotSize == other.screenshotSize
       && screenshotFrequency == other.screenshotFrequency
   }
 }
 
-extension User: ScreenshotUser {}
+extension User: MonitoredUser {}
 
-extension RefreshRules.Output: ScreenshotUser {
+extension RefreshRules.Output: MonitoredUser {
   var screenshotSize: Int { screenshotsResolution }
   var screenshotFrequency: Int { screenshotsFrequency }
 }

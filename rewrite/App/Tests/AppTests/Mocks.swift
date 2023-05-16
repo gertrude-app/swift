@@ -1,5 +1,6 @@
 import Core
 import Dependencies
+import Foundation
 import MacAppRoute
 
 @testable import App
@@ -8,6 +9,16 @@ import MacAppRoute
 public extension BlockedRequest {
   static var mock: Self {
     BlockedRequest(app: .init(bundleId: "com.foo"))
+  }
+}
+
+public extension CreateKeystrokeLines.KeystrokeLineInput {
+  static var mock: Self {
+    .init(
+      appName: "Xcode",
+      line: "import Foundation",
+      time: Date(timeIntervalSince1970: 0)
+    )
   }
 }
 

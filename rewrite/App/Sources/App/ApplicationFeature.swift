@@ -68,6 +68,9 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
   func heartbeatIntervals(for tick: Int) -> [Heartbeat.Interval] {
     var intervals: [Heartbeat.Interval] = [.everyMinute]
+    if tick % 5 == 0 {
+      intervals.append(.everyFiveMinutes)
+    }
     if tick % 20 == 0 {
       intervals.append(.everyTwentyMinutes)
     }

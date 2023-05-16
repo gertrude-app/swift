@@ -12,6 +12,13 @@ extension ApiClient: DependencyKey {
         withUnauthed: .connectUser(input)
       ))
     },
+    createKeystrokeLines: { input in
+      // always produces `.success` if it doesn't throw
+      _ = try await output(
+        from: CreateKeystrokeLines.self,
+        with: .createKeystrokeLines(input)
+      )
+    },
     createUnlockRequests: { input in
       try await output(
         from: CreateUnlockRequests_v2.self,
