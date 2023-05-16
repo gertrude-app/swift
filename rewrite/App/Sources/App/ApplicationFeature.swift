@@ -26,6 +26,10 @@ extension ApplicationFeature.RootReducer: RootReducing {
       return .merge(
         .run { send in
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
+        },
+
+        .run { send in
+          try await bgQueue.sleep(for: .milliseconds(5)) // <- unit test determinism
           let setupState = await filterExtension.setup()
           await send(.filter(.receivedState(setupState)))
           if setupState.installed {
