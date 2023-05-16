@@ -6,7 +6,7 @@ public struct CreateKeystrokeLines: Pair {
 
   public typealias Input = [KeystrokeLineInput]
 
-  public struct KeystrokeLineInput: PairInput {
+  public struct KeystrokeLineInput: PairInput, Sendable {
     public var appName: String
     public var line: String
     public var time: Date

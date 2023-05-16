@@ -7,7 +7,6 @@ struct DeviceClient: Sendable {
   var currentUserId: @Sendable () -> uid_t
   var fullUsername: @Sendable () -> String
   var hostname: @Sendable () -> String?
-  var keystrokeRecordingPermissionGranted: @Sendable () async -> Bool
   var listMacOSUsers: @Sendable () async throws -> [MacOSUser]
   var modelIdentifier: @Sendable () -> String?
   var notificationsSetting: @Sendable () async -> NotificationsSetting
@@ -15,7 +14,6 @@ struct DeviceClient: Sendable {
   var openSystemPrefs: @Sendable (SystemPrefsLocation) async -> Void
   var openWebUrl: @Sendable (URL) async -> Void
   var quitBrowsers: @Sendable () async -> Void
-  var screenRecordingPermissionGranted: @Sendable () async -> Bool
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
   var username: @Sendable () -> String
@@ -27,20 +25,6 @@ extension DeviceClient: DependencyKey {
     currentUserId: { getuid() },
     fullUsername: { NSFullUserName() },
     hostname: { Host.current().localizedName },
-    keystrokeRecordingPermissionGranted: {
-      #if DEBUG
-        // prevent warning while developing
-        return true
-      #else
-        // no way to make this not a concurrency warning (that i can figure out)
-        // as it's a global mutable CFString variable, but this thread is interesting:
-        // https://developer.apple.com/forums/thread/707680 - maybe i could use that
-        // api, and possibly restore sandboxing
-        let options: NSDictionary =
-          [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
-        return AXIsProcessTrustedWithOptions(options)
-      #endif
-    },
     listMacOSUsers: getAllMacOSUsers,
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
     notificationsSetting: getNotificationsSetting,
@@ -48,7 +32,6 @@ extension DeviceClient: DependencyKey {
     openSystemPrefs: openSystemPrefs(at:),
     openWebUrl: { NSWorkspace.shared.open($0) },
     quitBrowsers: quitAllBrowsers,
-    screenRecordingPermissionGranted: { CGPreflightScreenCaptureAccess() },
     showNotification: showNotification(title:body:),
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
     username: { NSUserName() }
@@ -61,7 +44,6 @@ extension DeviceClient: TestDependencyKey {
     currentUserId: { 502 },
     fullUsername: { "test-full-username" },
     hostname: { "test-hostname" },
-    keystrokeRecordingPermissionGranted: { true },
     listMacOSUsers: { [
       .init(id: 501, name: "Dad", type: .admin),
       .init(id: 502, name: "liljimmy", type: .standard),
@@ -72,7 +54,6 @@ extension DeviceClient: TestDependencyKey {
     openSystemPrefs: { _ in },
     openWebUrl: { _ in },
     quitBrowsers: {},
-    screenRecordingPermissionGranted: { true },
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },
     username: { "test-username" }

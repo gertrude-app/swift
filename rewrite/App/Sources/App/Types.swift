@@ -31,6 +31,7 @@ extension AdminAuthenticating where Action == AppReducer.Action {
 enum Heartbeat {
   enum Interval: Equatable, Sendable {
     case everyMinute
+    case everyFiveMinutes
     case everyTwentyMinutes
     case everySixHours
   }

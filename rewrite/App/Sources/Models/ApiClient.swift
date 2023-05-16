@@ -6,6 +6,7 @@ import Shared
 public struct ApiClient: Sendable {
   public var clearUserToken: @Sendable () async -> Void
   public var connectUser: @Sendable (ConnectUser.Input) async throws -> User
+  public var createKeystrokeLines: @Sendable (CreateKeystrokeLines.Input) async throws -> Void
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws
     -> CreateUnlockRequests_v2.Output
   public var getAdminAccountStatus: @Sendable () async throws -> AdminAccountStatus
@@ -18,6 +19,7 @@ public struct ApiClient: Sendable {
   public init(
     clearUserToken: @escaping @Sendable () async -> Void,
     connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> User,
+    createKeystrokeLines: @escaping @Sendable (CreateKeystrokeLines.Input) async throws -> Void,
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws
       -> CreateUnlockRequests_v2.Output,
     getAdminAccountStatus: @escaping @Sendable () async throws -> AdminAccountStatus,
@@ -29,6 +31,7 @@ public struct ApiClient: Sendable {
   ) {
     self.clearUserToken = clearUserToken
     self.connectUser = connectUser
+    self.createKeystrokeLines = createKeystrokeLines
     self.createUnlockRequests = createUnlockRequests
     self.getAdminAccountStatus = getAdminAccountStatus
     self.latestAppVersion = latestAppVersion
@@ -44,6 +47,7 @@ public struct ApiClient: Sendable {
     public static let testValue = Self(
       clearUserToken: {},
       connectUser: { _ in .mock },
+      createKeystrokeLines: { _ in },
       createUnlockRequests: { _ in .success },
       getAdminAccountStatus: { .active },
       latestAppVersion: { _ in "1.0.0" },
