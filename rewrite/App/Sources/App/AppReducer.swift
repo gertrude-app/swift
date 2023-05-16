@@ -37,6 +37,7 @@ struct AppReducer: Reducer, Sendable {
   }
 
   @Dependency(\.api) var api
+  @Dependency(\.backgroundQueue) var bgQueue
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
@@ -46,6 +47,7 @@ struct AppReducer: Reducer, Sendable {
         state.user = user
         return .run { send in
           await api.setUserToken(user.token)
+          try await bgQueue.sleep(for: .milliseconds(10)) // <- unit test determinism
           return await send(.user(.refreshRules(
             result: TaskResult { try await api.refreshUserRules() },
             userInitiated: false

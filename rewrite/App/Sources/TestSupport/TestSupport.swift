@@ -2,6 +2,14 @@ import ComposableArchitecture
 import Foundation
 import XExpect
 
+public extension Task where Success == Never, Failure == Never {
+  static func repeatYield(count: Int = 10) async {
+    for _ in 1 ... count {
+      await Task<Void, Never>.detached(priority: .background) { await Task.yield() }.value
+    }
+  }
+}
+
 public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action, R.State, R.Action, Void>
 
 public func expect<T: Equatable>(

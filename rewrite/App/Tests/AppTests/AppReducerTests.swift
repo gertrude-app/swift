@@ -11,7 +11,7 @@ import XExpect
 
 @MainActor final class AppReducerTests: XCTestCase {
   func testDidFinishLaunching_Exhaustive() async {
-    let (store, _) = AppReducer.testStore(exhaustive: true)
+    let (store, bgQueue) = AppReducer.testStore(exhaustive: true)
 
     let filterSetupSpy = ActorIsolated(false)
     store.deps.filterExtension.setup = {
@@ -34,12 +34,15 @@ import XExpect
     }
 
     await expect(tokenSetSpy).toEqual(User.mock.token)
+
+    await bgQueue.advance(by: .milliseconds(5))
     await expect(filterSetupSpy).toEqual(true)
 
     await store.receive(.filter(.receivedState(.installedButNotRunning))) {
       $0.filter.extension = .installedButNotRunning
     }
 
+    await bgQueue.advance(by: .milliseconds(5))
     await store.receive(.user(.refreshRules(result: .success(.mock), userInitiated: false))) {
       $0.user?.screenshotsEnabled = true
       $0.user?.keyloggingEnabled = true
@@ -73,7 +76,7 @@ import XExpect
   }
 
   func testDidFinishLaunching_EstablishesConnectionIfFilterOn() async {
-    let (store, _) = AppReducer.testStore()
+    let (store, bgQueue) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { nil }
     store.deps.filterExtension.setup = { .installedAndRunning }
 
@@ -84,6 +87,8 @@ import XExpect
     }
 
     await store.send(.application(.didFinishLaunching))
+    await bgQueue.advance(by: .milliseconds(5))
+    await Task.repeatYield()
 
     await expect(connectionEstablished).toEqual(true)
   }
@@ -97,25 +102,27 @@ import XExpect
   }
 
   func testRefreshRulesInHeartbeat() async {
-    let (store, time) = AppReducer.testStore()
+    let (store, bgQueue) = AppReducer.testStore()
     await store.send(.application(.didFinishLaunching)) // start heartbeat
 
     let newRules = RefreshRules.Output.mock { $0.screenshotsResolution = 999 }
     store.deps.api.refreshRules = { _ in newRules }
 
-    await time.advance(by: 60 * 19)
+    await bgQueue.advance(by: 60 * 19)
     expect(store.state.user?.screenshotSize).not.toEqual(999)
 
-    await time.advance(by: 60)
+    await bgQueue.advance(by: 60)
     await store.receive(.user(.refreshRules(result: .success(newRules), userInitiated: false))) {
       $0.user?.screenshotSize = 999
     }
   }
 
   func testClickingRefreshRules_Success_FilterReachable() async {
-    let (store, _) = AppReducer.testStore()
+    let (store, bgQueue) = AppReducer.testStore()
     let notifications = spyOnNotifications(store)
     await store.send(.application(.didFinishLaunching))
+
+    await bgQueue.advance(by: .milliseconds(5))
     await store.receive(.filter(.receivedState(.installedAndRunning)))
 
     await store.send(.menuBar(.refreshRulesClicked))
@@ -123,10 +130,12 @@ import XExpect
   }
 
   func testClickingRefreshRules_Success_FilterUnreachable() async {
-    let (store, _) = AppReducer.testStore()
+    let (store, bgQueue) = AppReducer.testStore()
     store.deps.filterExtension.setup = { .notInstalled }
     let notifications = spyOnNotifications(store)
     await store.send(.application(.didFinishLaunching))
+
+    await bgQueue.advance(by: .milliseconds(5))
     await store.receive(.filter(.receivedState(.notInstalled)))
 
     await store.send(.menuBar(.refreshRulesClicked))
@@ -134,10 +143,12 @@ import XExpect
   }
 
   func testClickingRefreshRules_FilterError() async {
-    let (store, _) = AppReducer.testStore()
+    let (store, bgQueue) = AppReducer.testStore()
     let notifications = spyOnNotifications(store)
     store.deps.filterXpc.sendUserRules = { _, _ in .failure(.unknownError("printer on fire")) }
     await store.send(.application(.didFinishLaunching))
+
+    await bgQueue.advance(by: .milliseconds(5))
     await store.receive(.filter(.receivedState(.installedAndRunning)))
 
     await store.send(.menuBar(.refreshRulesClicked))
@@ -148,10 +159,12 @@ import XExpect
   }
 
   func testClickingRefreshRules_ApiError() async {
-    let (store, _) = AppReducer.testStore()
+    let (store, bgQueue) = AppReducer.testStore()
     store.deps.api.refreshRules = { _ in throw TestErr("Oh noes!") }
     let notifications = spyOnNotifications(store)
     await store.send(.application(.didFinishLaunching))
+
+    await bgQueue.advance(by: .milliseconds(5))
     await store.receive(.filter(.receivedState(.installedAndRunning)))
 
     await store.send(.menuBar(.refreshRulesClicked))

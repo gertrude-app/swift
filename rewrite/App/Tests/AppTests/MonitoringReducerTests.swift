@@ -176,6 +176,7 @@ import XExpect
     await expect(takeScreenshot.invocations).toEqual([1200])
     await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600)])
     await bgQueue.advance(by: .seconds(60 * 3)) // advance to heartbeat
+    await Task.repeatYield()
     await expect(keylogging.upload.invoked).toEqual(true)
   }
 
@@ -205,6 +206,7 @@ import XExpect
     await store.send(.application(.didFinishLaunching))
 
     await bgQueue.advance(by: .seconds(60))
+    await Task.repeatYield()
     await expect(takeScreenshot.invocations).toEqual([700])
     await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
@@ -257,6 +259,7 @@ import XExpect
     await expect(takeScreenshot.invocations).toEqual([800])
     await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
+    await Task.repeatYield()
     await expect(keylogging.upload.invocations.count).toEqual(1)
   }
 
