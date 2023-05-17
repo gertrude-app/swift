@@ -20,6 +20,12 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
       ]
     ),
     TypeScriptEnum(
+      name: "RequestSuspensionFeature",
+      types: [
+        RequestSuspensionFeature.Action.View.self,
+      ]
+    ),
+    TypeScriptEnum(
       name: "AdminWindowFeature",
       types: [
         AdminWindowFeature.State.HealthCheck.FilterStatus.self,

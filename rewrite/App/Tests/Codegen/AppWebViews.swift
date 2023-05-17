@@ -40,6 +40,13 @@ struct AppWebViews: AggregateCodeGenerator {
         "exemptableUsers": "Failable<ExemptableUser[]>",
       ]
     ),
+    AppviewStore(
+      at: "RequestSuspension/requestsuspension-store.ts",
+      generating: [
+        .init(RequestSuspensionFeature.State.self, as: "AppState"),
+        .init(RequestSuspensionFeature.Action.View.self, as: "AppEvent"),
+      ]
+    ),
   ]
 
   func format() throws {

@@ -54,12 +54,6 @@ extension MenuBarFeature.Reducer {
       }
 
     // TODO: temporary
-    case .suspendFilterClicked:
-      return .run { _ in
-        try await updater.triggerUpdate("http://127.0.0.1:8080/appcast.xml")
-      }
-
-    // TODO: temporary
     case .administrateClicked:
       return .run { _ in
         print("establish connection:", await xpc.establishConnection())

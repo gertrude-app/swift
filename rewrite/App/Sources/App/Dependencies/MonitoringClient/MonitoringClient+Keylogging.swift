@@ -31,7 +31,6 @@ class KeystrokeMonitor {
             let appName = NSWorkspace.shared.frontmostApplication?.localizedName else {
         return
       }
-      print(Thread.current, "keystroke: \(keystroke) from \(appName)")
       self.receive(keystroke: keystroke, from: appName)
     }
   }

@@ -11,11 +11,12 @@ struct AppReducer: Reducer, Sendable {
     var admin = AdminFeature.State()
     var adminWindow = AdminWindowFeature.State()
     var appUpdates = AppUpdatesFeature.State()
+    var blockedRequests = BlockedRequestsFeature.State()
     var device = DeviceState()
     var filter = FilterFeature.State()
     var history = HistoryFeature.State()
+    var requestSuspension = RequestSuspensionFeature.State()
     var user: UserFeature.State?
-    var blockedRequests = BlockedRequestsFeature.State()
   }
 
   enum Action: Equatable, Sendable {
@@ -32,6 +33,7 @@ struct AppReducer: Reducer, Sendable {
     case user(UserFeature.Action)
     case heartbeat(Heartbeat.Interval)
     case blockedRequests(BlockedRequestsFeature.Action)
+    case requestSuspension(RequestSuspensionFeature.Action)
 
     indirect case adminAuthenticated(Action)
   }
@@ -70,6 +72,7 @@ struct AppReducer: Reducer, Sendable {
     AdminWindowFeature.RootReducer()
     FilterFeature.RootReducer()
     MonitoringFeature.RootReducer()
+    RequestSuspensionFeature.RootReducer()
 
     // feature reducers
     Scope(state: \.history, action: /Action.history) {
@@ -89,6 +92,9 @@ struct AppReducer: Reducer, Sendable {
     }
     Scope(state: \.appUpdates, action: /Action.appUpdates) {
       AppUpdatesFeature.Reducer()
+    }
+    Scope(state: \.requestSuspension, action: /Action.requestSuspension) {
+      RequestSuspensionFeature.Reducer()
     }
     .ifLet(\.user, action: /Action.user) {
       UserFeature.Reducer()

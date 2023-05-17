@@ -28,6 +28,19 @@ extension AdminAuthenticating where Action == AppReducer.Action {
   }
 }
 
+struct EquatableVoid: Equatable {}
+
+extension TaskResult where Success == EquatableVoid {
+  init(catching body: @Sendable () async throws -> Void) async {
+    do {
+      try await body()
+      self = .success(EquatableVoid())
+    } catch {
+      self = .failure(error)
+    }
+  }
+}
+
 enum Heartbeat {
   enum Interval: Equatable, Sendable {
     case everyMinute
