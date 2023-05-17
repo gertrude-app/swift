@@ -85,7 +85,7 @@ import XExpect
     state.requests = [blocked]
     state.selectedRequestIds = [blocked.id]
     let store = TestStore(initialState: state, reducer: BlockedRequestsFeature.Reducer())
-    store.deps.api.createUnlockRequests = { _ in .success }
+    store.deps.api.createUnlockRequests = { _ in }
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
 
@@ -93,7 +93,7 @@ import XExpect
       $0.createUnlockRequests = .ongoing
     }
 
-    await store.receive(.createUnlockRequests(.success(.success))) {
+    await store.receive(.createUnlockRequests(.success(.init()))) {
       $0.createUnlockRequests = .succeeded
       $0.selectedRequestIds = []
     }
@@ -115,14 +115,14 @@ import XExpect
     state.requests = [req1, req2, req3]
     state.selectedRequestIds = [req1.id]
     let store = TestStore(initialState: state, reducer: BlockedRequestsFeature.Reducer())
-    store.deps.api.createUnlockRequests = { _ in .success }
+    store.deps.api.createUnlockRequests = { _ in }
     store.deps.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
 
     await store.send(.webview(.unlockRequestSubmitted(comment: "please"))) {
       $0.createUnlockRequests = .ongoing
     }
 
-    await store.receive(.createUnlockRequests(.success(.success))) {
+    await store.receive(.createUnlockRequests(.success(.init()))) {
       $0.createUnlockRequests = .succeeded
       $0.selectedRequestIds = []
     }

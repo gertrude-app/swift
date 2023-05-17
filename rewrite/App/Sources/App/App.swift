@@ -4,6 +4,7 @@ import ComposableArchitecture
   var menuBarManager: MenuBarManager
   var blockedRequestsWindow: BlockedRequestsWindow
   var adminWindow: AdminWindow
+  var requestSuspensionWindow: RequestSuspensionWindow
   let store = Store(
     initialState: AppReducer.State(),
     reducer: AppReducer()._printChanges()
@@ -25,6 +26,10 @@ import ComposableArchitecture
     blockedRequestsWindow = BlockedRequestsWindow(store: store.scope(
       state: { $0.blockedRequests },
       action: AppReducer.Action.blockedRequests
+    ))
+    requestSuspensionWindow = RequestSuspensionWindow(store: store.scope(
+      state: { $0.requestSuspension },
+      action: AppReducer.Action.requestSuspension
     ))
   }
 

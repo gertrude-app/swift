@@ -19,8 +19,16 @@ extension ApiClient: DependencyKey {
         with: .createKeystrokeLines(input)
       )
     },
+    createSuspendFilterRequest: { input in
+      // always produces `.success` if it doesn't throw
+      _ = try await output(
+        from: CreateSuspendFilterRequest.self,
+        with: .createSuspendFilterRequest(input)
+      )
+    },
     createUnlockRequests: { input in
-      try await output(
+      // always produces `.success` if it doesn't throw
+      _ = try await output(
         from: CreateUnlockRequests_v2.self,
         with: .createUnlockRequests_v2(input)
       )

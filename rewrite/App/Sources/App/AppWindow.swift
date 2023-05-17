@@ -60,8 +60,8 @@ extension AppWindow {
       backing: .buffered,
       defer: false
     )
-    window?.minSize = NSSize(width: 800, height: 500)
 
+    window?.minSize = minSize
     window?.center()
     window?.title = "\(title)  |  Gertrude"
     window?.makeKeyAndOrderFront(nil)

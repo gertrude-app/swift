@@ -28,7 +28,7 @@ struct BlockedRequestsFeature: Feature {
     case openWindow
     case closeWindow
     case webview(View)
-    case createUnlockRequests(TaskResult<CreateUnlockRequests_v2.Output>)
+    case createUnlockRequests(TaskResult<EquatableVoid>)
     case createUnlockRequestsSuccessTimedOut
   }
 
@@ -101,17 +101,13 @@ struct BlockedRequestsFeature: Feature {
           })
         }
 
-      case .createUnlockRequests(.success(let result)) where result.success == true:
+      case .createUnlockRequests(.success):
         state.createUnlockRequests = .succeeded
         state.selectedRequestIds = []
         return .run { send in
           try await mainQueue.sleep(for: .seconds(10))
           await send(.createUnlockRequestsSuccessTimedOut)
-        }.cancellable(id: CancelId.timeout)
-
-      case .createUnlockRequests(.success):
-        state.createUnlockRequests = .failed(error: "Unexpected error")
-        return .none
+        }.cancellable(id: CancelId.timeout, cancelInFlight: true)
 
       case .createUnlockRequests(.failure(let error)):
         state.createUnlockRequests = .failed(error: error.userMessage())

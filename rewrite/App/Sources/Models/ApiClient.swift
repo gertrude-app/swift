@@ -7,8 +7,9 @@ public struct ApiClient: Sendable {
   public var clearUserToken: @Sendable () async -> Void
   public var connectUser: @Sendable (ConnectUser.Input) async throws -> User
   public var createKeystrokeLines: @Sendable (CreateKeystrokeLines.Input) async throws -> Void
-  public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws
-    -> CreateUnlockRequests_v2.Output
+  public var createSuspendFilterRequest: @Sendable (CreateSuspendFilterRequest.Input) async throws
+    -> Void
+  public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void
   public var getAdminAccountStatus: @Sendable () async throws -> AdminAccountStatus
   public var latestAppVersion: @Sendable (ReleaseChannel) async throws -> String
   public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
@@ -20,8 +21,9 @@ public struct ApiClient: Sendable {
     clearUserToken: @escaping @Sendable () async -> Void,
     connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> User,
     createKeystrokeLines: @escaping @Sendable (CreateKeystrokeLines.Input) async throws -> Void,
-    createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws
-      -> CreateUnlockRequests_v2.Output,
+    createSuspendFilterRequest: @escaping @Sendable (CreateSuspendFilterRequest.Input) async throws
+      -> Void,
+    createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void,
     getAdminAccountStatus: @escaping @Sendable () async throws -> AdminAccountStatus,
     latestAppVersion: @escaping @Sendable (ReleaseChannel) async throws -> String,
     refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
@@ -32,6 +34,7 @@ public struct ApiClient: Sendable {
     self.clearUserToken = clearUserToken
     self.connectUser = connectUser
     self.createKeystrokeLines = createKeystrokeLines
+    self.createSuspendFilterRequest = createSuspendFilterRequest
     self.createUnlockRequests = createUnlockRequests
     self.getAdminAccountStatus = getAdminAccountStatus
     self.latestAppVersion = latestAppVersion
@@ -48,7 +51,8 @@ public struct ApiClient: Sendable {
       clearUserToken: {},
       connectUser: { _ in .mock },
       createKeystrokeLines: { _ in },
-      createUnlockRequests: { _ in .success },
+      createSuspendFilterRequest: { _ in },
+      createUnlockRequests: { _ in },
       getAdminAccountStatus: { .active },
       latestAppVersion: { _ in "1.0.0" },
       refreshRules: { _ in .mock },
