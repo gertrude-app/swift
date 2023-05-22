@@ -13,12 +13,15 @@ let package = Package(
     .library(name: "LiveFilterXPCClient", targets: ["LiveFilterXPCClient"]),
     .library(name: "LiveFilterExtensionClient", targets: ["LiveFilterExtensionClient"]),
     .library(name: "LiveUpdaterClient", targets: ["LiveUpdaterClient"]),
+    .library(name: "LiveWebSocketClient", targets: ["LiveWebSocketClient"]),
     .library(name: "TestSupport", targets: ["TestSupport"]),
   ],
   dependencies: [
     .github("pointfreeco/swift-composable-architecture", branch: "prerelease/1.0"),
     .github("pointfreeco/swift-dependencies", from: "0.2.0"),
+    .github("pointfreeco/combine-schedulers", from: "0.10.0"),
     .github("jaredh159/swift-tagged", from: "0.8.2"),
+    .github("daltoniam/Starscream", from: "4.0.4"),
     // @see: https://gist.github.com/jaredh159/5fafcdc04de9234ab4bab52897da7334
     .package(url: "https://github.com/jaredh159/Sparkle", exact: "2.2.556"),
     .package(path: "../../x-kit"),
@@ -59,6 +62,18 @@ let package = Package(
       dependencies: [.dependencies, "App", "Core", "shared" => "Shared", "Sparkle"]
     ),
     .checkedTarget(
+      name: "LiveWebSocketClient",
+      dependencies: [
+        .dependencies,
+        "Models",
+        "Core",
+        "shared" => "Shared",
+        "x-kit" => "XCore",
+        "Starscream",
+        "combine-schedulers" => "CombineSchedulers",
+      ]
+    ),
+    .checkedTarget(
       name: "Filter",
       dependencies: [.tca, "Core", "x-kit" => "XCore", "shared" => "Shared"],
       linkerSettings: [.linkedLibrary("bsm")]
@@ -73,11 +88,30 @@ let package = Package(
     ),
     .testTarget(
       name: "AppTests",
-      dependencies: ["App", "Models", "TestSupport", "x-expect" => "XExpect", "x-kit" => "XCore"]
+      dependencies: [
+        "App",
+        "Models",
+        "TestSupport",
+        "x-expect" => "XExpect",
+        "x-kit" => "XCore",
+      ]
     ),
     .testTarget(
       name: "FilterTests",
       dependencies: ["Filter", "Core", "TestSupport", "x-expect" => "XExpect"]
+    ),
+    .testTarget(
+      name: "WebSocketTests",
+      dependencies: [
+        "LiveWebSocketClient",
+        "Core",
+        "shared" => "Shared",
+        "TestSupport",
+        "x-expect" => "XExpect",
+        "x-kit" => "XCore",
+        "combine-schedulers" => "CombineSchedulers",
+        "Starscream",
+      ]
     ),
     .testTarget(
       name: "Codegen",

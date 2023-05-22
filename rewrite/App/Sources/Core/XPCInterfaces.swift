@@ -48,4 +48,8 @@ public typealias XPCErrorData = Data
     userId: uid_t,
     reply: @escaping (XPCErrorData?) -> Void
   )
+  func receiveUserFilterSuspensionEnded(
+    userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
 }

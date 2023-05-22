@@ -41,6 +41,7 @@ extension DeleteEntity: Resolver {
         throw Abort(.unauthorized)
       }
       try await Current.db.delete(key.id)
+      try await Current.legacyConnectedApps.notify(.keychainUpdated(keychain.id))
       try await Current.connectedApps.notify(.keychainUpdated(keychain.id))
 
     case "Keychain":

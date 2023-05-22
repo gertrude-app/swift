@@ -12,6 +12,17 @@ public extension Task where Success == Never, Failure == Never {
 
 public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action, R.State, R.Action, Void>
 
+public extension DateGenerator {
+  static func advancingOneMinute(starting: Date = Date()) -> DateGenerator {
+    let minutesPassed = LockIsolated(0)
+    return .init {
+      let numMinutes = minutesPassed.value + 1
+      minutesPassed.setValue(numMinutes)
+      return starting.advanced(by: 60 * Double(numMinutes))
+    }
+  }
+}
+
 public func expect<T: Equatable>(
   _ isolated: ActorIsolated<T>,
   file: StaticString = #filePath,

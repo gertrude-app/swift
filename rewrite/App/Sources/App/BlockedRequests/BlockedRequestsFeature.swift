@@ -5,7 +5,7 @@ import MacAppRoute
 import Shared
 
 struct BlockedRequestsFeature: Feature {
-  struct State: Equatable {
+  struct State: Equatable, Sendable {
     var windowOpen = false
     var requests: [BlockedRequest] = []
     var selectedRequestIds: [UUID] = []

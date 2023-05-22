@@ -47,7 +47,9 @@ extension UserFeature.RootReducer: RootReducing {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .heartbeat(.everyTwentyMinutes):
+    case .heartbeat(.everyTwentyMinutes),
+         .websocket(.receivedMessage(.userUpdated)),
+         .websocket(.receivedMessage(.unlockRequestUpdated(.accepted, _, _))):
       return .task {
         await .user(.refreshRules(
           result: TaskResult { try await api.refreshUserRules() },

@@ -15,6 +15,7 @@ enum PayloadRequestState<T, E> {
 }
 
 extension RequestState: Equatable where E: Equatable {}
+extension RequestState: Sendable where E: Sendable {}
 extension PayloadRequestState: Equatable where T: Equatable, E: Equatable {}
 
 extension RequestState: Codable where E: Codable {

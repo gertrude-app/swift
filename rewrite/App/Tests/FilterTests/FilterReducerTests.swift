@@ -10,11 +10,11 @@ import XExpect
 
 @MainActor final class FilterReducerTests: XCTestCase {
   func testExtensionStarted_Exhaustive() async {
-    let (store, _) = Filter.testStore(exhaustive: true)
+    let (store, mainQueue) = Filter.testStore(exhaustive: true)
     let subject = PassthroughSubject<XPCEvent.Filter, Never>()
     store.deps.xpc.events = { subject.eraseToAnyPublisher() }
-    let xpcStarted = ActorIsolated(false)
-    store.deps.xpc.startListener = { await xpcStarted.setValue(true) }
+    let startListener = mock(always: ())
+    store.deps.xpc.startListener = startListener.fn
     store.deps.storage.loadPersistentState = { .init(
       userKeys: [:],
       appIdManifest: .init(),
@@ -22,7 +22,7 @@ import XExpect
     ) }
 
     await store.send(.extensionStarted)
-    await expect(xpcStarted).toEqual(true)
+    await expect(startListener.invoked).toEqual(true)
 
     await store.receive(.loadedPersistentState(.init(
       userKeys: [:],
@@ -42,10 +42,12 @@ import XExpect
     let message = XPCEvent.Filter
       .receivedAppMessage(.userRules(userId: 502, keys: [key], manifest: manifest))
 
-    let savedState = ActorIsolated<Persistent.State?>(nil)
-    store.deps.storage.savePersistentState = { await savedState.setValue($0) }
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
 
     subject.send(message)
+
+    await mainQueue.advance(by: .seconds(1))
 
     await store.receive(.xpc(message)) {
       $0.userKeys[502] = [key]
@@ -53,13 +55,16 @@ import XExpect
       $0.appCache = [:] // clears out app cache when new manifest is received
     }
 
-    await expect(savedState).toEqual(.init(
+    await expect(saveState.invocations).toEqual([.init(
       userKeys: [502: [key]], //  <-- new info from user rules
       appIdManifest: manifest, // <-- new info from user rules
       exemptUsers: [501] // <-- preserving existing unchanged data
-    ))
+    )])
 
     subject.send(completion: .finished)
+    await mainQueue.advance(by: .seconds(59))
+    await store.receive(.heartbeat)
+    await store.send(.extensionStopping)
   }
 
   func testStreamBlockedRequests() async {
@@ -69,7 +74,7 @@ import XExpect
     store.deps.xpc.sendBlockedRequest = { _, _ in fatalError() }
 
     // in reality, the FilterDataProvider would never send a block
-    // to the store if the user wasn't streaming, but this just ensures
+    // to the store if the user wasn't streaming, but this test verifies
     // that the logic in the reducer correctly ignores blocks with no listener
     await store.send(.flowBlocked(FilterFlow(userId: 502), .mock))
 
@@ -81,15 +86,13 @@ import XExpect
     }
 
     // now we're streaming blocks for 502
-    let sentBlocks = ActorIsolated([Both<uid_t, BlockedRequest>]())
-    store.deps.xpc.sendBlockedRequest = { userId, request in
-      await sentBlocks.append(Both(userId, request))
-    }
+    let sendBlocked = spy2(on: (uid_t.self, BlockedRequest.self), returning: ())
+    store.deps.xpc.sendBlockedRequest = sendBlocked.fn
 
     let flow = FilterFlow(userId: 502)
     await store.send(.flowBlocked(flow, .mock))
     await store.send(.flowBlocked(FilterFlow(userId: 503), .mock)) // <-- different user
-    await expect(sentBlocks).toEqual([Both(502, flow.testBlockedReq())])
+    await expect(sendBlocked.invocations).toEqual([Both(502, flow.testBlockedReq())])
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: false,
@@ -105,11 +108,8 @@ import XExpect
 
   func testBlockStreamingExpiration() async {
     let (store, _) = Filter.testStore()
-
-    let sentBlocks = ActorIsolated([Both<uid_t, BlockedRequest>]())
-    store.deps.xpc.sendBlockedRequest = { userId, request in
-      await sentBlocks.append(Both(userId, request))
-    }
+    let sendBlocked = spy2(on: (uid_t.self, BlockedRequest.self), returning: ())
+    store.deps.xpc.sendBlockedRequest = sendBlocked.fn
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: true,
@@ -124,7 +124,7 @@ import XExpect
     let flow1 = FilterFlow(userId: 502)
     let flow1Block = flow1.testBlockedReq(time: store.deps.date.now)
     await store.send(.flowBlocked(flow1, .mock))
-    await expect(sentBlocks).toEqual([Both(502, flow1Block)])
+    await expect(sendBlocked.invocations).toEqual([Both(502, flow1Block)])
 
     // one second AFTER expiration
     store.deps.date.now = Date(timeIntervalSince1970: 60 * 5 + 1)
@@ -132,7 +132,7 @@ import XExpect
       $0.blockListeners = [:]
     }
 
-    await expect(sentBlocks).toEqual([Both(502, flow1Block)])
+    await expect(sendBlocked.invocations).toEqual([Both(502, flow1Block)])
   }
 
   func testDisconnectUser() async {
@@ -191,25 +191,14 @@ import XExpect
     ])
   }
 
-  func testEndFilterSuspension() async {
-    let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
-    let (store, _) = Filter.testStore {
-      $0.suspensions = [
-        502: .init(scope: .mock, duration: 600),
-        503: otherUserSuspension,
-      ]
-    }
-
-    await store.send(.xpc(.receivedAppMessage(.endFilterSuspension(userId: 502)))) {
-      $0.suspensions = [503: otherUserSuspension]
-    }
-  }
-
   func testStartFilterSuspension() async {
     let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
-    let (store, _) = Filter.testStore {
+    let (store, mainQueue) = Filter.testStore {
       $0.suspensions = [503: otherUserSuspension]
     }
+
+    let notifyExpired = spy(on: uid_t.self, returning: ())
+    store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
 
     await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
       $0.suspensions = [
@@ -217,6 +206,135 @@ import XExpect
         503: otherUserSuspension,
       ]
     }
+
+    await mainQueue.advance(by: .seconds(599))
+    await expect(notifyExpired.invoked).toEqual(false)
+
+    await mainQueue.advance(by: .seconds(1))
+    await expect(notifyExpired.invocations).toEqual([502])
+
+    await store.receive(.suspensionExpired(502)) {
+      $0.suspensions[502] = nil
+    }
+  }
+
+  func testCancelledFilterSuspension() async {
+    let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
+    let (store, mainQueue) = Filter.testStore {
+      $0.suspensions = [503: otherUserSuspension]
+    }
+
+    let notifyExpired = spy(on: uid_t.self, returning: ())
+    store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
+
+    await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
+      $0.suspensions = [
+        502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
+        503: otherUserSuspension,
+      ]
+    }
+
+    await store.send(.xpc(.receivedAppMessage(.endFilterSuspension(userId: 502)))) {
+      $0.suspensions = [503: otherUserSuspension]
+    }
+
+    await mainQueue.advance(by: .seconds(600))
+    await expect(notifyExpired.invoked).toEqual(false)
+  }
+
+  func testSimultaneousSuspensions() async {
+    let (store, mainQueue) = Filter.testStore()
+
+    let notifyExpired = spy(on: uid_t.self, returning: ())
+    store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
+
+    await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
+      $0.suspensions = [
+        502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
+      ]
+    }
+
+    await mainQueue.advance(by: .seconds(100))
+
+    await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 503, duration: 400)))) {
+      $0.suspensions = [
+        502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
+        503: .init(scope: .unrestricted, duration: 400, now: store.deps.date.now),
+      ]
+    }
+
+    await mainQueue.advance(by: .seconds(100))
+
+    await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 504, duration: 100)))) {
+      $0.suspensions = [
+        502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
+        503: .init(scope: .unrestricted, duration: 400, now: store.deps.date.now),
+        504: .init(scope: .unrestricted, duration: 100, now: store.deps.date.now),
+      ]
+    }
+
+    await expect(notifyExpired.invocations).toEqual([])
+
+    // now let recently received suspension expire
+    await mainQueue.advance(by: .seconds(100))
+    await expect(notifyExpired.invocations).toEqual([504])
+
+    await store.receive(.suspensionExpired(504)) {
+      $0.suspensions = [
+        502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
+        503: .init(scope: .unrestricted, duration: 400, now: store.deps.date.now),
+      ]
+    }
+
+    // cancelling one leaves other unaffected
+    await mainQueue.advance(by: .seconds(100))
+    await store.send(.xpc(.receivedAppMessage(.endFilterSuspension(userId: 503)))) {
+      $0.suspensions = [
+        502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
+      ]
+    }
+
+    // last remaining suspension expires
+    await mainQueue.advance(by: .seconds(200))
+    await expect(notifyExpired.invocations).toEqual([504, 502])
+    await store.receive(.suspensionExpired(502)) {
+      $0.suspensions = [:]
+    }
+  }
+
+  // set up so we have an expired suspension in state
+  // this can happen when the computer SLEEPS for some of the suspension
+  // during which time, the timer is not running, so when it wakes
+  // the timer shows time remaining, but the suspension has expired
+  // in this case, we want to notify the app asap
+  // NB: filter always checks suspension absolute time, so there's no danger
+  // of a wrongly prolonged suspension, just that we need to kill the browsers
+  func testHeartbeatCleansUpDanglingSuspension() async {
+    let (store, mainQueue) = Filter.testStore {
+      // by setting the suspension into state during setup,
+      // we bypass the expiration timer being set, which allows
+      // to get into the state where the heartbeat will clean up
+      $0.suspensions[502] = .init(
+        scope: .unrestricted,
+        duration: 60 * 10 + 30, // <-- expires 10.5 minutes after 1970
+        now: Date(timeIntervalSince1970: 0)
+      )
+    }
+
+    store.deps.date = .advancingOneMinute(starting: Date(timeIntervalSince1970: 0))
+    let notifyExpired = spy(on: uid_t.self, returning: ())
+    store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
+
+    await store.send(.extensionStarted) // start hearbeat
+
+    await mainQueue.advance(by: .seconds(60 * 10))
+    expect(store.state.suspensions[502]).not.toBeNil()
+
+    await mainQueue.advance(by: .seconds(60))
+    await store.receive(.suspensionExpired(502)) {
+      $0.suspensions = [:]
+    }
+    await expect(notifyExpired.invocations).toEqual([502])
   }
 }
 
@@ -232,7 +350,7 @@ extension Filter {
     let store = TestStore(initialState: state, reducer: Filter())
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
-    store.deps.mainQueue = .immediate
+    store.deps.mainQueue = scheduler.eraseToAnyScheduler()
     store.deps.date.now = TEST_NOW
     store.deps.uuid = .constant(TEST_ID)
     return (store, scheduler)

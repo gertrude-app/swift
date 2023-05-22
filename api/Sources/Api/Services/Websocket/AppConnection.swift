@@ -6,9 +6,6 @@ import Vapor
 import XCore
 
 class AppConnection {
-  typealias Id = Tagged<AppConnection, UUID>
-  typealias IncomingMessage = WebsocketMsg.AppToApi.Message
-
   struct Ids {
     let device: Device.Id
     let user: User.Id
@@ -18,7 +15,7 @@ class AppConnection {
   let id: Id
   let ids: Ids
   let ws: WebsocketProtocol
-  var filterState: FilterState?
+  var filterState: UserFilterState?
 
   init(ws: WebsocketProtocol, ids: Ids) {
     id = .init(UUID())
@@ -40,22 +37,22 @@ class AppConnection {
   }
 
   func onText(_ ws: WebsocketProtocol, _ json: String) {
-    Current.logger.debug("WS: WebSocket \(id) got a message: `\(json)`")
-    guard let msg = try? JSON.decode(json, as: IncomingMessage.self) else {
-      Current.logger.error("WS: failed to decode message type from WebSocket msg: `\(json)`")
+    guard let message = try? JSON.decode(json, as: IncomingMessage.self) else {
+      Current.logger.error("WS: failed to decode WebSocket message: `\(json)`")
       return
     }
-    switch msg.type {
-    case .currentFilterState:
-      guard let currentFilter = try? JSON.decode(json, as: IncomingMessage.CurrentFilterState.self)
-      else {
-        Current.logger.error("WS: failed to decode CurrentFilterStatus from msg: `\(json)`")
-        return
-      }
-      filterState = currentFilter.state
-      Current.logger.debug(
-        "WS: received current filter state \(currentFilter) from \(ids.device)"
-      )
+    Current.logger.notice("deviceid: \(ids.device.lowercased)")
+    Current.logger.notice("WS: WebSocket \(id.lowercased) got message: \(message)")
+    switch message {
+    case .currentFilterState(let filterState):
+      self.filterState = filterState
+    case .goingOffline:
+      break // TODO: handle
     }
   }
+}
+
+extension AppConnection {
+  typealias Id = Tagged<AppConnection, UUID>
+  typealias IncomingMessage = WebSocketMessage.FromAppToApi
 }

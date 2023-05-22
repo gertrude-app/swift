@@ -194,17 +194,6 @@ import XExpect
   }
 }
 
-extension DateGenerator {
-  static func advancingOneMinute(starting: Date = Date()) -> DateGenerator {
-    let minutesPassed = LockIsolated(0)
-    return .init {
-      let numMinutes = minutesPassed.value + 1
-      minutesPassed.setValue(numMinutes)
-      return starting.advanced(by: 60 * Double(numMinutes))
-    }
-  }
-}
-
 // helpers
 
 extension AppReducer {

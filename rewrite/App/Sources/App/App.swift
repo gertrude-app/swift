@@ -7,7 +7,15 @@ import ComposableArchitecture
   var requestSuspensionWindow: RequestSuspensionWindow
   let store = Store(
     initialState: AppReducer.State(),
-    reducer: AppReducer()._printChanges()
+    reducer: AppReducer()._printChanges(.filteredBy { action in
+      switch action {
+      case .user(.refreshRules(.success, _)):
+        print("received action:\n  .user(.refreshRules(.success(...)))\n")
+        return false
+      default:
+        return true
+      }
+    })
   )
 
   var statelessViewStore: ViewStore<Void, AppReducer.Action> {
@@ -37,6 +45,10 @@ import ComposableArchitecture
     switch action {
     case .didFinishLaunching:
       statelessViewStore.send(.application(.didFinishLaunching))
+    case .willSleep:
+      statelessViewStore.send(.application(.willSleep))
+    case .didWake:
+      statelessViewStore.send(.application(.didWake))
     case .willTerminate:
       statelessViewStore.send(.application(.willTerminate))
     }

@@ -11,6 +11,17 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
 
   @Dependency(\.mainQueue) var scheduler
 
+  func notifyFilterSuspensionEnded(for userId: uid_t) async throws {
+    guard let connection else {
+      throw XPCErr.noConnection
+    }
+
+    os_log("[G•] XPCManager: notifying filter suspension ended: %{public}d", userId)
+    try await withTimeout(connection: connection) { appProxy, continuation in
+      appProxy.receiveUserFilterSuspensionEnded(userId: userId, reply: continuation.dataHandler)
+    }
+  }
+
   func sendBlockedRequest(_ request: BlockedRequest, userId: uid_t) async throws {
     guard let connection else {
       throw XPCErr.noConnection

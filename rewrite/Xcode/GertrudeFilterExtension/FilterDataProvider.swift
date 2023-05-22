@@ -133,6 +133,10 @@ class FilterDataProvider: NEFilterDataProvider {
       return .allow()
     }
   }
+
+  deinit {
+    store.sendExtensionStopping()
+  }
 }
 
 extension FilterFlow {

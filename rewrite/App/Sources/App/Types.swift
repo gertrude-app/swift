@@ -28,19 +28,6 @@ extension AdminAuthenticating where Action == AppReducer.Action {
   }
 }
 
-struct EquatableVoid: Equatable {}
-
-extension TaskResult where Success == EquatableVoid {
-  init(catching body: @Sendable () async throws -> Void) async {
-    do {
-      try await body()
-      self = .success(EquatableVoid())
-    } catch {
-      self = .failure(error)
-    }
-  }
-}
-
 enum Heartbeat {
   enum Interval: Equatable, Sendable {
     case everyMinute
@@ -56,10 +43,4 @@ enum NotificationsSetting: String, Equatable, Codable {
   case none
   case banner
   case alert
-}
-
-extension AnySchedulerOf<DispatchQueue> {
-  func schedule(after time: DispatchQueue.SchedulerTimeType.Stride, action: @escaping () -> Void) {
-    schedule(after: now.advanced(by: time), action)
-  }
 }

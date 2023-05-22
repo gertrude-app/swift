@@ -1,8 +1,8 @@
 import Shared
 
-actor AppConnections {
-  typealias OutgoingMessage = WebSocketMessage.FromApiToApp
-  var connections: [AppConnection.Id: AppConnection] = [:]
+actor LegacyAppConnections {
+  typealias OutgoingMessage = WebsocketMsg.ApiToApp.Message
+  var connections: [LegacyAppConnection.Id: LegacyAppConnection] = [:]
 
   func start() async {
     while true {
@@ -11,15 +11,15 @@ actor AppConnections {
     }
   }
 
-  func add(_ connection: AppConnection) {
+  func add(_ connection: LegacyAppConnection) {
     connections[connection.id] = connection
   }
 
-  func remove(_ connection: AppConnection) {
+  func remove(_ connection: LegacyAppConnection) {
     connections.removeValue(forKey: connection.id)
   }
 
-  func filterState(for deviceId: Device.Id) -> UserFilterState? {
+  func filterState(for deviceId: Device.Id) -> FilterState? {
     for connection in connections.values {
       if connection.ids.device == deviceId {
         return connection.filterState
@@ -38,7 +38,7 @@ actor AppConnections {
     }
   }
 
-  private var currentConnections: [AppConnection] {
+  private var currentConnections: [LegacyAppConnection] {
     flush()
     return Array(connections.values)
   }
@@ -49,14 +49,14 @@ actor AppConnections {
       try await currentConnections
         .filter { $0.ids.keychains.contains(keychainId) }
         .asyncForEach {
-          try await $0.ws.send(codable: OutgoingMessage.userUpdated)
+          try await $0.ws.send(codable: OutgoingMessage(type: .userUpdated))
         }
 
     case .userUpdated(let userId):
       try await currentConnections
         .filter { $0.ids.user == userId }
         .asyncForEach {
-          try await $0.ws.send(codable: OutgoingMessage.userUpdated)
+          try await $0.ws.send(codable: OutgoingMessage(type: .userUpdated))
         }
 
     case .unlockRequestUpdated(let payload):
@@ -65,10 +65,11 @@ actor AppConnections {
         .asyncForEach {
           try await $0.ws.send(
             codable:
-            OutgoingMessage.unlockRequestUpdated(
+            OutgoingMessage.UnlockRequestUpdated(
               status: payload.status,
               target: payload.target,
-              parentComment: payload.responseComment
+              comment: payload.comment,
+              responseComment: payload.responseComment
             )
           )
         }
@@ -80,9 +81,9 @@ actor AppConnections {
           .asyncForEach {
             try await $0.ws.send(
               codable:
-              OutgoingMessage.suspendFilter(
-                for: payload.duration,
-                parentComment: payload.responseComment
+              OutgoingMessage.SuspendFilter(
+                suspension: .init(scope: .unrestricted, duration: payload.duration),
+                comment: payload.responseComment
               )
             )
           }
@@ -92,8 +93,9 @@ actor AppConnections {
           .asyncForEach {
             try await $0.ws.send(
               codable:
-              OutgoingMessage.suspendFilterRequestDenied(
-                parentComment: payload.responseComment
+              OutgoingMessage.SuspendFilterRequestDenied(
+                requestComment: payload.requestComment,
+                responseComment: payload.responseComment
               )
             )
           }

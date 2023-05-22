@@ -34,4 +34,8 @@ public struct FilterStore: NetworkFilter {
   public func appCache(get bundleId: String) -> AppDescriptor? {
     state.appCache[bundleId]
   }
+
+  public func sendExtensionStopping() {
+    viewStore.send(.extensionStopping)
+  }
 }
