@@ -1,3 +1,4 @@
+import TaggedTime
 import UserNotifications
 
 @Sendable func showNotification(title: String, body: String) {
@@ -26,10 +27,42 @@ import UserNotifications
 }
 
 extension DeviceClient {
-  func showBrowsersQuittingWarning() async {
+  func notifyBrowsersQuitting() async {
     await showNotification(
       "⚠️ Web browsers quitting soon!",
       "Filter suspension ended. All browsers will quit in 60 seconds. Save any important work NOW."
     )
+  }
+
+  func notifyFilterSuspensionDenied(with comment: String?) async {
+    await showNotification(
+      "⛔️ Suspend filter request DENIED",
+      comment == nil ? "" : "Parent comment: \"\(comment ?? "")\""
+    )
+  }
+
+  func notifyUnlockRequestUpdated(accepted: Bool, target: String, comment: String?) async {
+    let title = "\(accepted ? "🔓" : "🔒") Unlock request \(accepted ? "ACCEPTED" : "REJECTED")"
+    var body = "Requested address: \(target)"
+    if let comment, !comment.isEmpty {
+      body += "\nParent comment: \"\(comment)\""
+    }
+    await showNotification(title, body)
+  }
+
+  func notifyFilterSuspension(
+    resuming seconds: Seconds<Int>,
+    from now: Date = Date(),
+    with comment: String?
+  ) async {
+    let title = "🟠 Temporarily disabling filter"
+    let resuming = now.timeRemaining(until: now.advanced(by: .init(seconds.rawValue))) ?? "soo"
+    let body: String
+    if let comment, !comment.isEmpty {
+      body = "Parent comment: \"\(comment)\"\nFilter suspended, resuming \(resuming)"
+    } else {
+      body = "Filter will resume normal blocking in \(resuming)"
+    }
+    await showNotification(title, body)
   }
 }

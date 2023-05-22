@@ -26,3 +26,12 @@ public class Mutex<T>: @unchecked Sendable {
     _value = value
   }
 }
+
+public extension Mutex where T: Sendable {
+  func transition(_ closure: @Sendable (T) -> T) {
+    lock.lock()
+    defer { lock.unlock() }
+    let previous = _value
+    _value = closure(previous)
+  }
+}

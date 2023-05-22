@@ -186,17 +186,6 @@ extension AdminWindowFeature.RootReducer {
         await recheckFilter(send)
       }
 
-    // TODO: make cancellable, cancel when new suspension created
-    case .adminWindow(.webview(.resumeFilterClicked)),
-         .menuBar(.resumeFilterClicked):
-      state.filter.currentSuspensionExpiration = nil
-      return .run { send in
-        _ = await xpc.endFilterSuspension()
-        await device.showBrowsersQuittingWarning()
-        try await mainQueue.sleep(for: .seconds(60))
-        await device.quitBrowsers()
-      }
-
     case .adminWindow(let adminWindowAction):
 
       switch adminWindowAction {
@@ -267,11 +256,9 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.reconnectUserClicked):
         return adminAuthenticated(action)
 
-      case .webview(.startFilterClicked):
+      case .webview(.startFilterClicked),
+           .webview(.resumeFilterClicked):
         return .none // handled by FilterFeature
-
-      case .webview(.resumeFilterClicked):
-        return .none // handled above, with menu bar action
 
       case .webview(.suspendFilterClicked):
         return adminAuthenticated(action)
@@ -363,13 +350,6 @@ extension AdminWindowFeature.RootReducer {
           await api.clearUserToken()
           try await storage.savePersistentState(updated)
           _ = await xpc.disconnectUser()
-        }
-
-      case .webview(.suspendFilterClicked(let durationInSeconds)):
-        let duration = Seconds<Int>(durationInSeconds)
-        state.filter.currentSuspensionExpiration = now.advanced(by: Double(duration.rawValue))
-        return .run { send in
-          _ = await xpc.suspendFilter(duration)
         }
 
       case .webview(.setUserExemption(let userId, let enabled)):

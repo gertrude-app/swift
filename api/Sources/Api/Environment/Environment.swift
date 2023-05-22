@@ -14,6 +14,7 @@ struct Environment {
   var db: DuetSQL.Client = ThrowingClient()
   var ephemeral: Ephemeral = .init()
   var env: EnvironmentVariables = .live
+  var legacyConnectedApps: LegacyConnectedApps = .live
   var logger: Logger = .null
   var postmark: XPostmark.Client = .mock
   var sendGrid: SendGrid.Client = .mock
@@ -35,6 +36,7 @@ extension Environment {
     db: ThrowingClient(),
     ephemeral: .init(),
     env: .mock,
+    legacyConnectedApps: .mock,
     logger: .null,
     postmark: .mock,
     sendGrid: .mock,

@@ -3,6 +3,8 @@ import ComposableArchitecture
 // public, not nested, because it's used in the AppDelegate
 public enum ApplicationAction: Equatable, Sendable {
   case didFinishLaunching
+  case willSleep
+  case didWake
   case willTerminate
 }
 
@@ -15,6 +17,7 @@ enum ApplicationFeature {
     @Dependency(\.storage) var storage
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.filterExtension) var filterExtension
+    @Dependency(\.websocket) var websocket
   }
 }
 
@@ -58,6 +61,12 @@ extension ApplicationFeature.RootReducer: RootReducing {
         .publisher {
           filterXpc.events()
             .map { .xpc($0) }
+            .receive(on: mainQueue)
+        },
+
+        .publisher {
+          websocket.receive()
+            .map { .websocket(.receivedMessage($0)) }
             .receive(on: mainQueue)
         }
       )

@@ -4,7 +4,7 @@ import Foundation
 import os.log
 import Shared
 
-public struct Filter: Reducer {
+public struct Filter: Reducer, Sendable {
   public struct State: Equatable, DecisionState {
     public var userKeys: [uid_t: [FilterKey]] = [:]
     public var appIdManifest = AppIdManifest()
@@ -16,10 +16,13 @@ public struct Filter: Reducer {
 
   public enum Action: Equatable, Sendable {
     case extensionStarted
+    case extensionStopping
     case xpc(XPCEvent.Filter)
     case flowBlocked(FilterFlow, AppDescriptor)
     case cacheAppDescriptor(String, AppDescriptor)
     case loadedPersistentState(Persistent.State?)
+    case suspensionExpired(uid_t)
+    case heartbeat
   }
 
   @Dependency(\.xpc) var xpc
@@ -27,6 +30,11 @@ public struct Filter: Reducer {
   @Dependency(\.date.now) var now
   @Dependency(\.storage) var storage
   @Dependency(\.uuid) var uuid
+
+  private enum CancelId: Hashable {
+    case suspension(for: uid_t)
+    case heartbeat
+  }
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     os_log("[G•] filter received action: %{public}@", String(describing: action))
@@ -41,12 +49,21 @@ public struct Filter: Reducer {
           await send(.loadedPersistentState(try load()))
         },
 
+        .run { send in
+          for await _ in mainQueue.timer(interval: .seconds(60)) {
+            await send(.heartbeat)
+          }
+        }.cancellable(id: CancelId.heartbeat, cancelInFlight: true),
+
         .publisher {
           xpc.events()
             .map { .xpc($0) }
             .receive(on: mainQueue)
         }
       )
+
+    case .extensionStopping:
+      return .cancel(id: CancelId.heartbeat)
 
     case .loadedPersistentState(.some(let persisted)):
       state.userKeys = persisted.userKeys
@@ -69,6 +86,26 @@ public struct Filter: Reducer {
       }
       return .none
 
+    case .heartbeat:
+      var expiredSuspensionUserIds: [uid_t] = []
+      for (userId, suspension) in state.suspensions {
+        // 5 second cushion prevents race between heartbeat and expiration timer
+        // we want the expiration timer to do the work, this is only a failsafe
+        if suspension.expiresAt < now.advanced(by: .seconds(-5)) {
+          expiredSuspensionUserIds.append(userId)
+        }
+      }
+      return expiredSuspensionUserIds.isEmpty ? .none : .run { [expiredSuspensionUserIds] send in
+        for userId in expiredSuspensionUserIds {
+          try await xpc.notifyFilterSuspensionEnded(userId)
+          await send(.suspensionExpired(userId))
+        }
+      }
+
+    case .suspensionExpired(let userId):
+      state.suspensions[userId] = nil
+      return .none
+
     case .cacheAppDescriptor(let bundleId, let descriptor):
       state.appCache[bundleId] = descriptor
       return .none
@@ -89,11 +126,19 @@ public struct Filter: Reducer {
 
     case .xpc(.receivedAppMessage(.endFilterSuspension(let userId))):
       state.suspensions[userId] = nil
-      return .none
+      return .cancel(id: CancelId.suspension(for: userId))
 
     case .xpc(.receivedAppMessage(.suspendFilter(let userId, let duration))):
-      state.suspensions[userId] = .init(scope: .unrestricted, duration: duration, now: now)
-      return .none
+      state.suspensions[userId] = .init(
+        scope: .unrestricted,
+        duration: duration,
+        now: now
+      )
+      return .run { send in
+        try await mainQueue.sleep(for: .seconds(duration.rawValue))
+        try await xpc.notifyFilterSuspensionEnded(userId)
+        await send(.suspensionExpired(userId))
+      }.cancellable(id: CancelId.suspension(for: userId), cancelInFlight: true)
 
     case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
       state.userKeys[userId] = keys

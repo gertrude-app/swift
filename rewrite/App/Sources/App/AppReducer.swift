@@ -7,7 +7,7 @@ import Models
 import Shared
 
 struct AppReducer: Reducer, Sendable {
-  struct State: Equatable {
+  struct State: Equatable, Sendable {
     var admin = AdminFeature.State()
     var adminWindow = AdminWindowFeature.State()
     var appUpdates = AppUpdatesFeature.State()
@@ -34,6 +34,7 @@ struct AppReducer: Reducer, Sendable {
     case heartbeat(Heartbeat.Interval)
     case blockedRequests(BlockedRequestsFeature.Action)
     case requestSuspension(RequestSuspensionFeature.Action)
+    case websocket(WebSocketFeature.Action)
 
     indirect case adminAuthenticated(Action)
   }
@@ -73,6 +74,7 @@ struct AppReducer: Reducer, Sendable {
     FilterFeature.RootReducer()
     MonitoringFeature.RootReducer()
     RequestSuspensionFeature.RootReducer()
+    WebSocketFeature.RootReducer()
 
     // feature reducers
     Scope(state: \.history, action: /Action.history) {

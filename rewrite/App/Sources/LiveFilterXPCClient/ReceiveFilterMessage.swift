@@ -11,6 +11,16 @@ import Models
     self.subject = subject
   }
 
+  func receiveUserFilterSuspensionEnded(
+    userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    subject.withValue {
+      $0.send(.receivedExtensionMessage(.userFilterSuspensionEnded(userId)))
+    }
+    reply(nil)
+  }
+
   func receiveBlockedRequest(
     _ requestData: Data,
     userId: uid_t,
@@ -22,7 +32,9 @@ import Models
     }
     do {
       let request = try JSONDecoder().decode(BlockedRequest.self, from: requestData)
-      subject.withValue { $0.send(.receivedExtensionMessage(.blockedRequest(request))) }
+      subject.withValue {
+        $0.send(.receivedExtensionMessage(.blockedRequest(request)))
+      }
       reply(nil)
     } catch {
       subject.withValue {

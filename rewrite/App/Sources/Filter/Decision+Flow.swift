@@ -111,14 +111,20 @@ public extension NetworkFilter {
     return nil
   }
 
-  private func activeSuspension(for userId: uid_t, permits app: AppDescriptor) -> Bool {
+  private func activeSuspension(
+    for userId: uid_t,
+    permits app: AppDescriptor
+  ) -> Bool {
     guard let suspension = state.suspensions[userId], suspension.isActive else {
       return false
     }
     return suspension.scope.permits(app)
   }
 
-  private func logged(_ decision: FilterDecision.FromFlow, from flow: FilterFlow) -> FilterDecision
+  private func logged(
+    _ decision: FilterDecision.FromFlow,
+    from flow: FilterFlow
+  ) -> FilterDecision
     .FromFlow {
     #if DEBUG
       if getuid() < 500 { // prevent logging during tests
