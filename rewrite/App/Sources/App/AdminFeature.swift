@@ -71,7 +71,7 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
       state.filter.extension = .notInstalled
       state.filter.currentSuspensionExpiration = nil
       return .run { _ in
-        // TODO: remove launch at login
+        await app.disableLaunchAtLogin()
         await api.clearUserToken()
         await storage.deleteAllPersistentState()
         _ = await xpc.sendPrepareForUninstall()

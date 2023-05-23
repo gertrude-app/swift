@@ -12,6 +12,7 @@ enum ApplicationFeature {
   typealias Action = ApplicationAction
 
   struct RootReducer {
+    @Dependency(\.app) var app
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.storage) var storage
@@ -49,6 +50,12 @@ extension ApplicationFeature.RootReducer: RootReducing {
             }
           }
         }.cancellable(id: Heartbeat.CancelId.self),
+
+        .run { _ in
+          if await app.isLaunchAtLoginEnabled() == false {
+            await app.enableLaunchAtLogin()
+          }
+        },
 
         .publisher {
           // TODO: when filter goes _TO_ .notInstalled, the NSXPCConnection
