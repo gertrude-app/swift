@@ -39,10 +39,11 @@ extension MonitoringFeature.RootReducer {
         }
       }
 
-    case .heartbeat(.everyFiveMinutes):
-      // for simplicity's sake, ALWAYS try to upload any pending keystrokes
-      // so we don't have to worry about edge cases when we stop/restart.
-      // if we're not monitoring keystrokes, keystrokes will be nil
+    // for simplicity's sake, ALWAYS try to upload any pending keystrokes
+    // so we don't have to worry about edge cases when we stop/restart.
+    // if we're not monitoring keystrokes, keystrokes will be nil
+    case .heartbeat(.everyFiveMinutes),
+         .adminAuthenticated(.adminWindow(.webview(.quitAppClicked))):
       return .run { _ in
         if let keystrokes = await monitoring.takePendingKeystrokes() {
           _ = try await api.createKeystrokeLines(keystrokes)

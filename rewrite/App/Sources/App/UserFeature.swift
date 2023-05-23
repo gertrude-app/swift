@@ -47,9 +47,8 @@ extension UserFeature.RootReducer: RootReducing {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .heartbeat(.everyTwentyMinutes),
-         .websocket(.receivedMessage(.userUpdated)),
-         .websocket(.receivedMessage(.unlockRequestUpdated(.accepted, _, _))):
+    case .heartbeat(.everyTwentyMinutes):
+      guard state.user != nil else { return .none }
       return .task {
         await .user(.refreshRules(
           result: TaskResult { try await api.refreshUserRules() },
@@ -57,11 +56,13 @@ extension UserFeature.RootReducer: RootReducing {
         ))
       }
 
-    case .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))):
+    case .websocket(.receivedMessage(.userUpdated)),
+         .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))),
+         .websocket(.receivedMessage(.unlockRequestUpdated(.accepted, _, _))):
       return .task {
         await .user(.refreshRules(
           result: TaskResult { try await api.refreshUserRules() },
-          userInitiated: true
+          userInitiated: false
         ))
       }
 
