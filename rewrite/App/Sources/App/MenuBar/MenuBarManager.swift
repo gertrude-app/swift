@@ -27,7 +27,7 @@ import WebKit
     popover.contentSize = NSSize(width: 400, height: 300)
 
     statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    statusItem.button?.image = NSImage(named: "MenuBarIcon")
+    statusItem.button?.image = NSImage(named: "MenuBarIcon.v2")
     statusItem.button?.image?.isTemplate = true // auto-coloring/inverting of image
     statusItem.button?.action = #selector(iconClicked(_:))
     statusItem.button?.target = self
