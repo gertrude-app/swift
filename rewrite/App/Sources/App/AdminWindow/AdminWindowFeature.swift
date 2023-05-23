@@ -339,9 +339,8 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.quitAppClicked):
         state.adminWindow.quitting = true
         return .run { _ in
-          // give time for uploading keystrokes, other cleanup tasks, etc.
-          // TODO: implement keystrokes uploading on quit
-          try await mainQueue.sleep(for: .seconds(2.5))
+          // give time for uploading keystrokes, websocket disconnect, etc
+          try await mainQueue.sleep(for: .seconds(2))
           await app.quit()
         }
 
