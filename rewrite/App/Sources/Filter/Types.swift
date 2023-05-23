@@ -12,6 +12,7 @@ public extension XPCEvent {
       case endFilterSuspension(userId: uid_t)
       case suspendFilter(userId: uid_t, duration: Seconds<Int>)
       case setUserExemption(userId: uid_t, enabled: Bool)
+      case prepareForUninstall
     }
 
     case receivedAppMessage(MessageFromApp)

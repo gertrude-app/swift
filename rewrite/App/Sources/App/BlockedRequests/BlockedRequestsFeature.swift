@@ -23,6 +23,8 @@ struct BlockedRequestsFeature: Feature {
       case tcpOnlyToggled
       case clearRequestsClicked
       case closeWindow
+      case inactiveAccountRecheckClicked
+      case inactiveAccountDisconnectAppClicked
     }
 
     case openWindow
@@ -44,6 +46,10 @@ struct BlockedRequestsFeature: Feature {
       case .openWindow:
         state.windowOpen = true
         return restartBlockStreaming()
+
+      case .webview(.inactiveAccountRecheckClicked),
+           .webview(.inactiveAccountDisconnectAppClicked):
+        return .none // handled by AdminFeature
 
       case .closeWindow, .webview(.closeWindow):
         state.windowOpen = false
@@ -155,14 +161,16 @@ extension BlockedRequestsFeature.State {
     var filterText = ""
     var tcpOnly = false
     var createUnlockRequests = RequestState<String>.idle
+    var adminAccountStatus: AdminAccountStatus = .active
 
-    init(state: BlockedRequestsFeature.State) {
-      windowOpen = state.windowOpen
-      requests = state.requests.map(\.view)
-      filterText = state.filterText
-      tcpOnly = state.tcpOnly
-      createUnlockRequests = state.createUnlockRequests
-      selectedRequestIds = state.selectedRequestIds
+    init(state: AppReducer.State) {
+      windowOpen = state.blockedRequests.windowOpen
+      requests = state.blockedRequests.requests.map(\.view)
+      filterText = state.blockedRequests.filterText
+      tcpOnly = state.blockedRequests.tcpOnly
+      createUnlockRequests = state.blockedRequests.createUnlockRequests
+      selectedRequestIds = state.blockedRequests.selectedRequestIds
+      adminAccountStatus = state.admin.accountStatus
     }
   }
 }

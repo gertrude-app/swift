@@ -141,14 +141,22 @@ import Shared
     userId: uid_t,
     reply: @escaping (XPCErrorData?) -> Void
   ) {
-    subject.withValue {
-      $0.send(.receivedAppMessage(.setBlockStreaming(enabled: enabled, userId: userId)))
-    }
     os_log(
       "[G•] xpc.setBlockStreaming(%{public}s, userId: %{public}d)",
       enabled ? "true" : "false",
       userId
     )
+    subject.withValue {
+      $0.send(.receivedAppMessage(.setBlockStreaming(enabled: enabled, userId: userId)))
+    }
+    reply(nil)
+  }
+
+  func prepareForUninstall(reply: @escaping (XPCErrorData?) -> Void) {
+    os_log("[G•] xpc.prepareForUninstall()")
+    subject.withValue {
+      $0.send(.receivedAppMessage(.prepareForUninstall))
+    }
     reply(nil)
   }
 }

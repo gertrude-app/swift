@@ -42,7 +42,7 @@ final class WebsocketTests: XCTestCase {
   }
 
   func testConnection() throws {
-    expect(state).toEqual(.waitingForConnection)
+    expect(state).toEqual(.idle)
     expect(socket.connectCalls).toEqual(1)
 
     send(.connected([:]))

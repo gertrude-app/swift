@@ -12,13 +12,40 @@ public extension Task where Success == Never, Failure == Never {
 
 public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action, R.State, R.Action, Void>
 
-public extension DateGenerator {
-  static func advancingOneMinute(starting: Date = Date()) -> DateGenerator {
-    let minutesPassed = LockIsolated(0)
-    return .init {
-      let numMinutes = minutesPassed.value + 1
-      minutesPassed.setValue(numMinutes)
-      return starting.advanced(by: 60 * Double(numMinutes))
+public struct ControllingNow {
+  public let generator: DateGenerator
+  private let elapsed: LockIsolated<Int>
+  private let scheduler: TestSchedulerOf<DispatchQueue>?
+
+  internal init(
+    generator: DateGenerator,
+    elapsed: LockIsolated<Int>,
+    scheduler: TestSchedulerOf<DispatchQueue>? = nil
+  ) {
+    self.generator = generator
+    self.elapsed = elapsed
+    self.scheduler = scheduler
+  }
+
+  public init(
+    starting start: Date = Date(),
+    with scheduler: TestSchedulerOf<DispatchQueue>? = nil
+  ) {
+    let elapsed = LockIsolated<Int>(0)
+    self.init(
+      generator: .init {
+        start.advanced(by: Double(elapsed.value))
+      },
+      elapsed: elapsed,
+      scheduler: scheduler
+    )
+  }
+
+  public func advance(seconds advance: Int) async {
+    let current = elapsed.value
+    elapsed.setValue(current + advance)
+    if let scheduler = scheduler {
+      await scheduler.advance(by: .seconds(advance))
     }
   }
 }

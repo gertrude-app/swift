@@ -1,13 +1,21 @@
 import Foundation
+import Shared
 
 @testable import App
+@testable import enum App.FilterState
 
 struct AppWebViews: AggregateCodeGenerator {
   var generators: [CodeGenerator] = [
     AppviewStore(
-      at: "MenuBar/menubar-store.ts",
+      at: "lib/shared-types.ts",
       generating: [
         .init(FilterState.self),
+        .init(AdminAccountStatus.self),
+      ]
+    ),
+    AppviewStore(
+      at: "MenuBar/menubar-store.ts",
+      generating: [
         .init(MenuBarFeature.State.self, as: "AppState"),
         .init(MenuBarFeature.Action.self, as: "AppEvent"),
       ],
@@ -20,7 +28,10 @@ struct AppWebViews: AggregateCodeGenerator {
         .init(BlockedRequestsFeature.State.View.self, as: "AppState"),
         .init(BlockedRequestsFeature.Action.View.self, as: "AppEvent"),
       ],
-      aliasing: ["requests": "Request[]"]
+      aliasing: [
+        "requests": "Request[]",
+        "adminAccountStatus": "AdminAccountStatus",
+      ]
     ),
     AppviewStore(
       at: "Administrate/administrate-store.ts",
@@ -37,6 +48,7 @@ struct AppWebViews: AggregateCodeGenerator {
         "action": "HealthCheckAction",
         "screen": "Screen",
         "filterState": "FilterState",
+        "accountStatus": "Failable<AdminAccountStatus>",
         "exemptableUsers": "Failable<ExemptableUser[]>",
       ]
     ),
@@ -45,6 +57,9 @@ struct AppWebViews: AggregateCodeGenerator {
       generating: [
         .init(RequestSuspensionFeature.State.self, as: "AppState"),
         .init(RequestSuspensionFeature.Action.View.self, as: "AppEvent"),
+      ],
+      aliasing: [
+        "adminAccountStatus": "AdminAccountStatus",
       ]
     ),
   ]

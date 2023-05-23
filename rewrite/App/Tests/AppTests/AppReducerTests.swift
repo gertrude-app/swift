@@ -33,6 +33,8 @@ import XExpect
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
+    await store.receive(.websocket(.connectedSuccessfully))
+
     await expect(tokenSetSpy).toEqual(User.mock.token)
 
     await bgQueue.advance(by: .milliseconds(5))
@@ -179,15 +181,20 @@ import XExpect
     let (store, scheduler) = AppReducer.testStore {
       $0.filter.currentSuspensionExpiration = now.advanced(by: 60 * 3)
     }
-    store.deps.date = .advancingOneMinute(starting: now)
+
+    let time = ControllingNow(starting: now, with: scheduler)
+    store.deps.date = time.generator
 
     await store.send(.application(.didFinishLaunching))
-    await scheduler.advance(by: 60 * 2)
+
+    await time.advance(seconds: 60)
     await store.receive(.heartbeat(.everyMinute))
+
+    await time.advance(seconds: 60)
     await store.receive(.heartbeat(.everyMinute))
     expect(store.state.filter.currentSuspensionExpiration).not.toBeNil()
 
-    await scheduler.advance(by: 60)
+    await time.advance(seconds: 60)
     await store.receive(.heartbeat(.everyMinute)) {
       $0.filter.currentSuspensionExpiration = nil
     }

@@ -123,6 +123,13 @@ struct FilterXPC: Sendable {
       filterProxy.receiveListExemptUserIdsRequest(reply: continuation.dataHandler)
     }
   }
+
+  func sendPrepareForUninstall() async throws {
+    try await establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.prepareForUninstall(reply: continuation.dataHandler)
+    }
+  }
 }
 
 extension FilterXPC: XPCSender {

@@ -7,6 +7,7 @@ import XCore
 struct StorageClient: Sendable {
   var savePersistentState: @Sendable (Persistent.State) async throws -> Void
   var loadPersistentState: @Sendable () throws -> Persistent.State?
+  var deleteAllPersistentState: @Sendable () async -> Void
 }
 
 extension StorageClient: DependencyKey {
@@ -22,6 +23,9 @@ extension StorageClient: DependencyKey {
         return try userDefaults.getString(key).flatMap { string in
           try JSON.decode(string, as: Persistent.State.self)
         }
+      },
+      deleteAllPersistentState: {
+        userDefaults.remove("persistent.state.v\(Persistent.State.version)")
       }
     )
   }
@@ -30,7 +34,8 @@ extension StorageClient: DependencyKey {
 extension StorageClient: TestDependencyKey {
   static let testValue = Self(
     savePersistentState: { _ in },
-    loadPersistentState: { nil }
+    loadPersistentState: { nil },
+    deleteAllPersistentState: {}
   )
 }
 

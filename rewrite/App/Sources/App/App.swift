@@ -32,11 +32,11 @@ import ComposableArchitecture
       action: AppReducer.Action.adminWindow
     ))
     blockedRequestsWindow = BlockedRequestsWindow(store: store.scope(
-      state: { $0.blockedRequests },
+      state: { $0 },
       action: AppReducer.Action.blockedRequests
     ))
     requestSuspensionWindow = RequestSuspensionWindow(store: store.scope(
-      state: { $0.requestSuspension },
+      state: { $0 },
       action: AppReducer.Action.requestSuspension
     ))
   }

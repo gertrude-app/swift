@@ -115,6 +115,11 @@ final class FilterManager: NSObject {
     return await installFilter()
   }
 
+  func uninstallFilter() async -> Bool {
+    _ = await stopFilter()
+    return await system.removeFilterConfiguration() == nil
+  }
+
   func configureFilter() async -> FilterInstallResult {
     guard system.isNEFilterManagerSharedEnabled() == false else {
       return .alreadyInstalled

@@ -13,6 +13,7 @@ public struct ApiClient: Sendable {
   public var getAdminAccountStatus: @Sendable () async throws -> AdminAccountStatus
   public var latestAppVersion: @Sendable (ReleaseChannel) async throws -> String
   public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
+  public var setAccountActive: @Sendable (Bool) async -> Void
   public var setEndpoint: @Sendable (URL) async -> Void
   public var setUserToken: @Sendable (User.Token) async -> Void
   public var uploadScreenshot: @Sendable (Data, Int, Int) async throws -> URL
@@ -27,6 +28,7 @@ public struct ApiClient: Sendable {
     getAdminAccountStatus: @escaping @Sendable () async throws -> AdminAccountStatus,
     latestAppVersion: @escaping @Sendable (ReleaseChannel) async throws -> String,
     refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
+    setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setEndpoint: @escaping @Sendable (URL) async -> Void,
     setUserToken: @escaping @Sendable (User.Token) async -> Void,
     uploadScreenshot: @escaping @Sendable (Data, Int, Int) async throws -> URL
@@ -39,6 +41,7 @@ public struct ApiClient: Sendable {
     self.getAdminAccountStatus = getAdminAccountStatus
     self.latestAppVersion = latestAppVersion
     self.refreshRules = refreshRules
+    self.setAccountActive = setAccountActive
     self.setEndpoint = setEndpoint
     self.setUserToken = setUserToken
     self.uploadScreenshot = uploadScreenshot
@@ -56,6 +59,7 @@ public struct ApiClient: Sendable {
       getAdminAccountStatus: { .active },
       latestAppVersion: { _ in "1.0.0" },
       refreshRules: { _ in .mock },
+      setAccountActive: { _ in },
       setEndpoint: { _ in },
       setUserToken: { _ in },
       uploadScreenshot: { _, _, _ in .init(string: "https://s3.buck.et/img.png")! }

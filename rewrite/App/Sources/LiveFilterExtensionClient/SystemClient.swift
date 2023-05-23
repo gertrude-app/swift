@@ -11,6 +11,7 @@ struct SystemClient: Sendable {
   var enableNEFilterManagerShared: @Sendable () -> Void
   var disableNEFilterManagerShared: @Sendable () -> Void
   var filterProviderConfiguration: @Sendable () -> NEFilterProviderConfiguration?
+  var removeFilterConfiguration: @Sendable () async -> Error?
   var requestExtensionActivation: @Sendable (OSSystemExtensionRequestDelegate) -> Void
   var updateNEFilterManagerShared: @Sendable (NEFilterProviderConfiguration) -> Void
   var saveNEFilterManagerShared: @Sendable () async -> Error?
@@ -32,6 +33,14 @@ extension SystemClient: DependencyKey {
       enableNEFilterManagerShared: { NEFilterManager.shared().isEnabled = true },
       disableNEFilterManagerShared: { NEFilterManager.shared().isEnabled = false },
       filterProviderConfiguration: { NEFilterManager.shared().providerConfiguration },
+      removeFilterConfiguration: {
+        do {
+          try await NEFilterManager.shared().removeFromPreferences()
+          return nil
+        } catch {
+          return error
+        }
+      },
       requestExtensionActivation: { delegate in
         let activationRequest = OSSystemExtensionRequest.activationRequest(
           forExtensionWithIdentifier: FILTER_EXT_BUNDLE_ID,
@@ -70,6 +79,7 @@ extension SystemClient: TestDependencyKey {
     enableNEFilterManagerShared: {},
     disableNEFilterManagerShared: {},
     filterProviderConfiguration: { nil },
+    removeFilterConfiguration: { nil },
     requestExtensionActivation: { _ in },
     updateNEFilterManagerShared: { _ in },
     saveNEFilterManagerShared: { nil },
