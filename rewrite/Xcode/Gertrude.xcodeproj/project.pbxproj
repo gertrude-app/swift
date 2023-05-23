@@ -11,7 +11,6 @@
 		7F0B887129C2156D001E9427 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F0B886F29C21561001E9427 /* NetworkExtension.framework */; };
 		7F1ADE0129E99F6600F1395C /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 7F1ADE0029E99F6600F1395C /* Core */; };
 		7F3BA9B829C214BA00C4FAF1 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3BA9B729C214BA00C4FAF1 /* App */; };
-		7F4D0E4E2628B9450060281F /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F4D0E4D2628B9450060281F /* libbsm.tbd */; };
 		7F51420F261D000300A66260 /* com.netrivet.gertrude.filter-extension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7F53C599299FF6CA0097285A /* WebViews in Resources */ = {isa = PBXBuildFile; fileRef = 7F53C598299FF6CA0097285A /* WebViews */; };
 		7F94DC8C261CF092002D4534 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F94DC8B261CF092002D4534 /* main.swift */; };
@@ -78,7 +77,6 @@
 				7F0B887029C21561001E9427 /* NetworkExtension.framework in Frameworks */,
 				7F1ADE0129E99F6600F1395C /* Core in Frameworks */,
 				7FD8DCAD29CF1CCC003D135A /* Filter in Frameworks */,
-				7F4D0E4E2628B9450060281F /* libbsm.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
