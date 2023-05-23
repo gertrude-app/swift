@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,7 @@
 		7F3BA9B829C214BA00C4FAF1 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3BA9B729C214BA00C4FAF1 /* App */; };
 		7F51420F261D000300A66260 /* com.netrivet.gertrude.filter-extension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7F53C599299FF6CA0097285A /* WebViews in Resources */ = {isa = PBXBuildFile; fileRef = 7F53C598299FF6CA0097285A /* WebViews */; };
+		7F8121052A1D3B7100A3E4E5 /* LiveAppClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7F8121042A1D3B7100A3E4E5 /* LiveAppClient */; };
 		7F94DC8C261CF092002D4534 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F94DC8B261CF092002D4534 /* main.swift */; };
 		7FD8DCA629C221E0003D135A /* LiveApiClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCA529C221E0003D135A /* LiveApiClient */; };
 		7FD8DCAD29CF1CCC003D135A /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCAC29CF1CCC003D135A /* Filter */; };
@@ -89,6 +90,7 @@
 				7F0B887129C2156D001E9427 /* NetworkExtension.framework in Frameworks */,
 				7FE1DF642A16889C00CF1274 /* LiveWebSocketClient in Frameworks */,
 				7FD8DCAF29CF6C8D003D135A /* LiveFilterExtensionClient in Frameworks */,
+				7F8121052A1D3B7100A3E4E5 /* LiveAppClient in Frameworks */,
 				7FD8DCB129CF6C8D003D135A /* LiveFilterXPCClient in Frameworks */,
 				7FE1DF622A016CA000CF1274 /* LiveUpdaterClient in Frameworks */,
 			);
@@ -182,6 +184,7 @@
 				C4B45DB122739FFF0050C59B /* Sources */,
 				C4B45DB222739FFF0050C59B /* Frameworks */,
 				C4B45DB322739FFF0050C59B /* Resources */,
+				7F8121062A1D3D0A00A3E4E5 /* Copy “Launch at Login Helper” */,
 				C40A5C51229DD6A500627D50 /* Embed System Extensions */,
 			);
 			buildRules = (
@@ -197,6 +200,7 @@
 				7FD8DCB029CF6C8D003D135A /* LiveFilterXPCClient */,
 				7FE1DF612A016CA000CF1274 /* LiveUpdaterClient */,
 				7FE1DF632A16889C00CF1274 /* LiveWebSocketClient */,
+				7F8121042A1D3B7100A3E4E5 /* LiveAppClient */,
 			);
 			productName = Gertrude;
 			productReference = 7F94DC6D261CEA75002D4534 /* Gertrude.app */;
@@ -262,6 +266,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		7F8121062A1D3D0A00A3E4E5 /* Copy “Launch at Login Helper” */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy “Launch at Login Helper”";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILT_PRODUCTS_DIR}/LaunchAtLogin_LaunchAtLogin.bundle/Contents/Resources/copy-helper-swiftpm.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C40A5C41229DD6A500627D50 /* Sources */ = {
@@ -571,6 +597,10 @@
 		7F3BA9B729C214BA00C4FAF1 /* App */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = App;
+		};
+		7F8121042A1D3B7100A3E4E5 /* LiveAppClient */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LiveAppClient;
 		};
 		7FD8DCA529C221E0003D135A /* LiveApiClient */ = {
 			isa = XCSwiftPackageProductDependency;

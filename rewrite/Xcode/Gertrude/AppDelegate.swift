@@ -2,6 +2,7 @@ import App
 import AppKit
 import Cocoa
 import LiveApiClient
+import LiveAppClient
 import LiveFilterExtensionClient
 import LiveFilterXPCClient
 import LiveUpdaterClient

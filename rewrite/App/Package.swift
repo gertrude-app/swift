@@ -10,6 +10,7 @@ let package = Package(
     .library(name: "Filter", targets: ["Filter"]),
     .library(name: "Core", targets: ["Core"]),
     .library(name: "LiveApiClient", targets: ["LiveApiClient"]),
+    .library(name: "LiveAppClient", targets: ["LiveAppClient"]),
     .library(name: "LiveFilterXPCClient", targets: ["LiveFilterXPCClient"]),
     .library(name: "LiveFilterExtensionClient", targets: ["LiveFilterExtensionClient"]),
     .library(name: "LiveUpdaterClient", targets: ["LiveUpdaterClient"]),
@@ -22,6 +23,7 @@ let package = Package(
     .github("pointfreeco/combine-schedulers", from: "0.10.0"),
     .github("jaredh159/swift-tagged", from: "0.8.2"),
     .github("daltoniam/Starscream", from: "4.0.4"),
+    .github("sindresorhus/LaunchAtLogin", from: "5.0.0"),
     // @see: https://gist.github.com/jaredh159/5fafcdc04de9234ab4bab52897da7334
     .package(url: "https://github.com/jaredh159/Sparkle", exact: "2.2.556"),
     .package(path: "../../x-kit"),
@@ -48,6 +50,10 @@ let package = Package(
     .checkedTarget(
       name: "LiveApiClient",
       dependencies: [.dependencies, "x-kit" => "XCore", "Models"]
+    ),
+    .checkedTarget(
+      name: "LiveAppClient",
+      dependencies: [.dependencies, "LaunchAtLogin", "Models"]
     ),
     .checkedTarget(
       name: "LiveFilterXPCClient",

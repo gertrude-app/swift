@@ -48,24 +48,22 @@ public struct ApiClient: Sendable {
   }
 }
 
-#if DEBUG
-  extension ApiClient: TestDependencyKey {
-    public static let testValue = Self(
-      clearUserToken: {},
-      connectUser: { _ in .mock },
-      createKeystrokeLines: { _ in },
-      createSuspendFilterRequest: { _ in },
-      createUnlockRequests: { _ in },
-      getAdminAccountStatus: { .active },
-      latestAppVersion: { _ in "1.0.0" },
-      refreshRules: { _ in .mock },
-      setAccountActive: { _ in },
-      setEndpoint: { _ in },
-      setUserToken: { _ in },
-      uploadScreenshot: { _, _, _ in .init(string: "https://s3.buck.et/img.png")! }
-    )
-  }
-#endif
+extension ApiClient: TestDependencyKey {
+  public static let testValue = Self(
+    clearUserToken: {},
+    connectUser: { _ in .mock },
+    createKeystrokeLines: { _ in },
+    createSuspendFilterRequest: { _ in },
+    createUnlockRequests: { _ in },
+    getAdminAccountStatus: { .active },
+    latestAppVersion: { _ in "1.0.0" },
+    refreshRules: { _ in .mock },
+    setAccountActive: { _ in },
+    setEndpoint: { _ in },
+    setUserToken: { _ in },
+    uploadScreenshot: { _, _, _ in .init(string: "https://s3.buck.et/img.png")! }
+  )
+}
 
 public extension DependencyValues {
   var api: ApiClient {
