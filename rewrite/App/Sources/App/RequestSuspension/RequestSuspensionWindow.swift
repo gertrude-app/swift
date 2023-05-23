@@ -16,17 +16,17 @@ class RequestSuspensionWindow: AppWindow {
   var windowDelegate = AppWindowDelegate()
   var viewStore: ViewStore<State, Action>
   var window: NSWindow?
+  var closeWindowAction = Action.closeWindow
   var initialSize = NSRect(x: 0, y: 0, width: 600, height: 380)
   var minSize = NSSize(width: 600, height: 380)
-  var closeWindowAction = Action.closeWindow
 
   // above almost everything, but below filter installation system prompt
   var windowLevel = NSWindow.Level.modalPanel
 
   @Dependency(\.mainQueue) var mainQueue
 
-  @MainActor init(store: StoreOf<Feature.Reducer>) {
-    viewStore = ViewStore(store, observe: { $0 })
+  @MainActor init(store: Store<AppReducer.State, Feature.Action>) {
+    viewStore = ViewStore(store, observe: Feature.State.init)
     openPublisher = viewStore.publisher.windowOpen
     bind()
   }

@@ -154,6 +154,12 @@ public struct Filter: Reducer, Sendable {
       }
       return saving(state.persistent)
 
+    case .xpc(.receivedAppMessage(.prepareForUninstall)):
+      state = .init()
+      return .run { _ in
+        await storage.deleteAllPersistentState()
+      }
+
     case .xpc(.decodingAppMessageDataFailed):
       return .none
     }

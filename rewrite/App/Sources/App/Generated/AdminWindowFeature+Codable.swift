@@ -130,6 +130,10 @@ extension AdminWindowFeature.Action.View {
       try _NamedCase(case: "administrateOSUserAccountsClicked").encode(to: encoder)
     case .checkForAppUpdatesClicked:
       try _NamedCase(case: "checkForAppUpdatesClicked").encode(to: encoder)
+    case .inactiveAccountRecheckClicked:
+      try _NamedCase(case: "inactiveAccountRecheckClicked").encode(to: encoder)
+    case .inactiveAccountDisconnectAppClicked:
+      try _NamedCase(case: "inactiveAccountDisconnectAppClicked").encode(to: encoder)
     }
   }
 
@@ -170,6 +174,10 @@ extension AdminWindowFeature.Action.View {
       self = .administrateOSUserAccountsClicked
     case "checkForAppUpdatesClicked":
       self = .checkForAppUpdatesClicked
+    case "inactiveAccountRecheckClicked":
+      self = .inactiveAccountRecheckClicked
+    case "inactiveAccountDisconnectAppClicked":
+      self = .inactiveAccountDisconnectAppClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }

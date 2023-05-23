@@ -1,9 +1,11 @@
 import ComposableArchitecture
+import Shared
 
 struct RequestSuspensionFeature: Feature {
   struct State: Equatable, Encodable {
     var windowOpen = false
     var request = RequestState<String>.idle
+    var adminAccountStatus: AdminAccountStatus = .active
   }
 
   enum Action: Equatable, Sendable {
@@ -11,6 +13,8 @@ struct RequestSuspensionFeature: Feature {
       case closeWindow
       case requestSubmitted(durationInSeconds: Int, comment: String?)
       case requestFailedTryAgainClicked
+      case inactiveAccountRecheckClicked
+      case inactiveAccountDisconnectAppClicked
     }
 
     case webview(View)
@@ -27,6 +31,10 @@ struct RequestSuspensionFeature: Feature {
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
+
+      case .webview(.inactiveAccountRecheckClicked),
+           .webview(.inactiveAccountDisconnectAppClicked):
+        return .none // handled by AdminFeature
 
       case .webview(.closeWindow), .closeWindow:
         state.windowOpen = false
@@ -77,5 +85,13 @@ extension RequestSuspensionFeature.RootReducer {
     default:
       return .none
     }
+  }
+}
+
+extension RequestSuspensionFeature.State {
+  init(_ state: AppReducer.State) {
+    windowOpen = state.requestSuspension.windowOpen
+    request = state.requestSuspension.request
+    adminAccountStatus = state.admin.accountStatus
   }
 }

@@ -22,6 +22,7 @@ extension WebSocketFeature.RootReducer {
     switch action {
 
     case .heartbeat(.everyFiveMinutes):
+      guard state.admin.accountStatus != .inactive else { return .none }
       guard let user = state.user else { return .none }
       return .run { [state] send in
         guard try await websocket.state() != .connected else {
@@ -34,6 +35,7 @@ extension WebSocketFeature.RootReducer {
       }
 
     case .loadedPersistentState(.some(let persistent)):
+      guard state.admin.accountStatus != .inactive else { return .none }
       guard let user = persistent.user else { return .none }
       return connect(user)
 
@@ -50,21 +52,30 @@ extension WebSocketFeature.RootReducer {
          .application(.willTerminate),
          .adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))):
       return .run { _ in
+        guard try await websocket.state() == .connected else { return }
         try await websocket.send(.goingOffline)
+        try await websocket.disconnect()
+      }
+
+    case .admin(.accountStatusResponse(.success(.inactive))):
+      return .run { _ in
         try await websocket.disconnect()
       }
 
     case .adminAuthenticated(.adminWindow(.webview(.suspendFilterClicked))),
          .websocket(.receivedMessage(.suspendFilter)):
+      guard state.admin.accountStatus != .inactive else { return .none }
       return .run { _ in
         try await websocket.send(.currentFilterState(.suspended))
       }
 
     case .application(.didWake):
+      guard state.admin.accountStatus != .inactive else { return .none }
       guard let user = state.user else { return .none }
       return connect(user)
 
     case .websocket(let websocketAction):
+      guard state.admin.accountStatus != .inactive else { return .none }
       switch websocketAction {
 
       case .connectedSuccessfully:

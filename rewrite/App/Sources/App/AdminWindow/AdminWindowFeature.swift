@@ -90,6 +90,8 @@ struct AdminWindowFeature: Feature {
       case administrateOSUserAccountsClicked
       case checkForAppUpdatesClicked
       case setUserExemption(userId: uid_t, enabled: Bool)
+      case inactiveAccountRecheckClicked
+      case inactiveAccountDisconnectAppClicked
     }
 
     enum Delegate: Equatable, Sendable {
@@ -189,8 +191,13 @@ extension AdminWindowFeature.RootReducer {
     case .adminWindow(let adminWindowAction):
 
       switch adminWindowAction {
+
       case .webview(.healthCheck(.recheckClicked)):
         return .none // handled above
+
+      case .webview(.inactiveAccountRecheckClicked),
+           .webview(.inactiveAccountDisconnectAppClicked):
+        return .none // handled by AdminFeature
 
       case .closeWindow,
            .webview(.closeWindow):

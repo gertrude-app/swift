@@ -12,6 +12,7 @@ public struct FilterXPCClient: Sendable {
   public var endFilterSuspension: @Sendable () async -> Result<Void, XPCErr>
   public var requestAck: @Sendable () async -> Result<XPC.FilterAck, XPCErr>
   public var requestExemptUserIds: @Sendable () async -> Result<[uid_t], XPCErr>
+  public var sendPrepareForUninstall: @Sendable () async -> Result<Void, XPCErr>
   public var sendUserRules: @Sendable (AppIdManifest, [FilterKey]) async -> Result<Void, XPCErr>
   public var setBlockStreaming: @Sendable (Bool) async -> Result<Void, XPCErr>
   public var setUserExemption: @Sendable (uid_t, Bool) async -> Result<Void, XPCErr>
@@ -25,6 +26,7 @@ public struct FilterXPCClient: Sendable {
     endFilterSuspension: @escaping @Sendable () async -> Result<Void, XPCErr>,
     requestAck: @escaping @Sendable () async -> Result<XPC.FilterAck, XPCErr>,
     requestExemptUserIds: @escaping @Sendable () async -> Result<[uid_t], XPCErr>,
+    sendPrepareForUninstall: @escaping @Sendable () async -> Result<Void, XPCErr>,
     sendUserRules: @escaping @Sendable (AppIdManifest, [FilterKey]) async -> Result<Void, XPCErr>,
     setBlockStreaming: @escaping @Sendable (Bool) async -> Result<Void, XPCErr>,
     setUserExemption: @escaping @Sendable (uid_t, Bool) async -> Result<Void, XPCErr>,
@@ -37,6 +39,7 @@ public struct FilterXPCClient: Sendable {
     self.endFilterSuspension = endFilterSuspension
     self.requestAck = requestAck
     self.requestExemptUserIds = requestExemptUserIds
+    self.sendPrepareForUninstall = sendPrepareForUninstall
     self.sendUserRules = sendUserRules
     self.setBlockStreaming = setBlockStreaming
     self.setUserExemption = setUserExemption
@@ -67,6 +70,7 @@ extension FilterXPCClient: TestDependencyKey {
         numUserKeys: 0
       )) },
       requestExemptUserIds: { .success([]) },
+      sendPrepareForUninstall: { .success(()) },
       sendUserRules: { _, _ in .success(()) },
       setBlockStreaming: { _ in .success(()) },
       setUserExemption: { _, _ in .success(()) },

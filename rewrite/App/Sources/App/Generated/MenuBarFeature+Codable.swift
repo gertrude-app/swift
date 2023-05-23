@@ -157,6 +157,7 @@ extension MenuBarFeature.State {
     var filterState: FilterState
     var recordingScreen: Bool
     var recordingKeystrokes: Bool
+    var adminAttentionRequired: Bool
   }
 
   func encode(to encoder: Encoder) throws {
@@ -169,7 +170,8 @@ extension MenuBarFeature.State {
       try _CaseConnected(
         filterState: unflat.filterState,
         recordingScreen: unflat.recordingScreen,
-        recordingKeystrokes: unflat.recordingKeystrokes
+        recordingKeystrokes: unflat.recordingKeystrokes,
+        adminAttentionRequired: unflat.adminAttentionRequired
       ).encode(to: encoder)
     case .notConnected:
       try _NamedCase(case: "notConnected").encode(to: encoder)
@@ -195,7 +197,8 @@ extension MenuBarFeature.State {
       self = .connected(.init(
         filterState: value.filterState,
         recordingScreen: value.recordingScreen,
-        recordingKeystrokes: value.recordingKeystrokes
+        recordingKeystrokes: value.recordingKeystrokes,
+        adminAttentionRequired: value.adminAttentionRequired
       ))
     case "notConnected":
       self = .notConnected

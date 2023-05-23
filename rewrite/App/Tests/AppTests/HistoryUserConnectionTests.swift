@@ -32,6 +32,8 @@ import XExpect
       $0.history.userConnection = .established(welcomeDismissed: false)
     }
 
+    await store.receive(.websocket(.connectedSuccessfully))
+
     expect(savedState).toEqual(.mock)
     await expect(apiUserToken).toEqual(User.mock.token)
 

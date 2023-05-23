@@ -23,7 +23,8 @@ extension FilterExtensionClient: DependencyKey {
         filterStateChanges.withValue { subject in
           Move(subject.eraseToAnyPublisher())
         }.consume()
-      }
+      },
+      uninstall: { await manager.uninstallFilter() }
     )
   }
 }
@@ -53,5 +54,9 @@ actor ThreadSafeFilterManager {
 
   func installFilter() async -> FilterInstallResult {
     await manager.installFilter()
+  }
+
+  func uninstallFilter() async -> Bool {
+    await manager.uninstallFilter()
   }
 }

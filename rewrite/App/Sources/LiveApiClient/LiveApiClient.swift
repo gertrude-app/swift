@@ -4,6 +4,8 @@ import MacAppRoute
 import Models
 
 extension ApiClient: DependencyKey {
+  struct AccountInactive: Error {}
+
   public static let liveValue = Self(
     clearUserToken: { await userToken.setValue(nil) },
     connectUser: { input in
@@ -13,6 +15,7 @@ extension ApiClient: DependencyKey {
       ))
     },
     createKeystrokeLines: { input in
+      guard await accountActive.value else { return }
       // always produces `.success` if it doesn't throw
       _ = try await output(
         from: CreateKeystrokeLines.self,
@@ -20,6 +23,7 @@ extension ApiClient: DependencyKey {
       )
     },
     createSuspendFilterRequest: { input in
+      guard await accountActive.value else { return }
       // always produces `.success` if it doesn't throw
       _ = try await output(
         from: CreateSuspendFilterRequest.self,
@@ -27,6 +31,7 @@ extension ApiClient: DependencyKey {
       )
     },
     createUnlockRequests: { input in
+      guard await accountActive.value else { return }
       // always produces `.success` if it doesn't throw
       _ = try await output(
         from: CreateUnlockRequests_v2.self,
@@ -46,14 +51,17 @@ extension ApiClient: DependencyKey {
       )
     },
     refreshRules: { input in
-      try await output(
+      guard await accountActive.value else { throw AccountInactive() }
+      return try await output(
         from: RefreshRules.self,
         with: .refreshRules(input)
       )
     },
+    setAccountActive: { await accountActive.setValue($0) },
     setEndpoint: { await endpoint.setValue($0) },
     setUserToken: { await userToken.setValue($0) },
     uploadScreenshot: { jpegData, width, height in
+      guard await accountActive.value else { throw AccountInactive() }
       let signed = try await output(
         from: CreateSignedScreenshotUpload.self,
         with: .createSignedScreenshotUpload(.init(width: width, height: height))
@@ -82,6 +90,7 @@ extension ApiClient: DependencyKey {
   )
 }
 
+internal let accountActive = ActorIsolated<Bool>(true)
 internal let userToken = ActorIsolated<User.Token?>(nil)
 #if DEBUG
   internal let endpoint = ActorIsolated<URL>(.init(string: "http://127.0.0.1:8080/pairql")!)

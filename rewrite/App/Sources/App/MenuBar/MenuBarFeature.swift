@@ -7,6 +7,7 @@ enum MenuBarFeature: Feature {
       var filterState: FilterState
       var recordingScreen: Bool
       var recordingKeystrokes: Bool
+      var adminAttentionRequired: Bool
     }
 
     case notConnected
@@ -36,7 +37,6 @@ enum MenuBarFeature: Feature {
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filterExtension
-    @Dependency(\.updater) var updater // temp
   }
 
   struct RootReducer: RootReducing {

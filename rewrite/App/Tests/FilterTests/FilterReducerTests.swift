@@ -321,16 +321,18 @@ import XExpect
       )
     }
 
-    store.deps.date = .advancingOneMinute(starting: Date(timeIntervalSince1970: 0))
+    let time = ControllingNow(starting: Date(timeIntervalSince1970: 0), with: mainQueue)
+    store.deps.date = time.generator
+
     let notifyExpired = spy(on: uid_t.self, returning: ())
     store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
 
     await store.send(.extensionStarted) // start hearbeat
 
-    await mainQueue.advance(by: .seconds(60 * 10))
+    await time.advance(seconds: 60 * 10)
     expect(store.state.suspensions[502]).not.toBeNil()
 
-    await mainQueue.advance(by: .seconds(60))
+    await time.advance(seconds: 60)
     await store.receive(.suspensionExpired(502)) {
       $0.suspensions = [:]
     }

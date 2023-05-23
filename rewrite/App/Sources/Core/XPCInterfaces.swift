@@ -40,6 +40,9 @@ public typealias XPCErrorData = Data
     for userId: uid_t,
     reply: @escaping (XPCErrorData?) -> Void
   )
+  func prepareForUninstall(
+    reply: @escaping (XPCErrorData?) -> Void
+  )
 }
 
 @objc public protocol FilterMessageReceiving {

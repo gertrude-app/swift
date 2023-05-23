@@ -45,6 +45,10 @@ extension BlockedRequestsFeature.Action.View {
       try _NamedCase(case: "clearRequestsClicked").encode(to: encoder)
     case .closeWindow:
       try _NamedCase(case: "closeWindow").encode(to: encoder)
+    case .inactiveAccountRecheckClicked:
+      try _NamedCase(case: "inactiveAccountRecheckClicked").encode(to: encoder)
+    case .inactiveAccountDisconnectAppClicked:
+      try _NamedCase(case: "inactiveAccountDisconnectAppClicked").encode(to: encoder)
     }
   }
 
@@ -69,6 +73,10 @@ extension BlockedRequestsFeature.Action.View {
       self = .clearRequestsClicked
     case "closeWindow":
       self = .closeWindow
+    case "inactiveAccountRecheckClicked":
+      self = .inactiveAccountRecheckClicked
+    case "inactiveAccountDisconnectAppClicked":
+      self = .inactiveAccountDisconnectAppClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }
