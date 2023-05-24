@@ -10,7 +10,7 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
       types: [
         FilterState.self,
         MenuBarFeature.Action.self,
-        MenuBarFeature.State.self,
+        MenuBarFeature.State.View.self,
       ]
     ),
     TypeScriptEnum(

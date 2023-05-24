@@ -66,6 +66,14 @@ extension UserFeature.RootReducer: RootReducing {
         ))
       }
 
+    case .menuBar(.refreshRulesClicked):
+      return .task {
+        await .user(.refreshRules(
+          result: TaskResult { try await api.refreshUserRules() },
+          userInitiated: true
+        ))
+      }
+
     case .user(.refreshRules(.success(let output), let userInitiated)):
       return .run { [filterReachable = state.filter.extension.installed] _ in
         guard filterReachable else {

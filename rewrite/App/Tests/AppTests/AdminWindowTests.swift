@@ -28,6 +28,7 @@ import XExpect
       $0.history.userConnection = .notConnected
       $0.user = nil
       $0.adminWindow.windowOpen = false
+      $0.menuBar.dropdownOpen = true
     }
 
     await expect(clearUserToken.invoked).toEqual(true)

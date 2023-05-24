@@ -1,8 +1,26 @@
 import Dependencies
 import Models
 
+extension MenuBarFeature.State {
+  enum View: Equatable, Encodable {
+    struct Connected: Equatable, Encodable {
+      var filterState: FilterState
+      var recordingScreen: Bool
+      var recordingKeystrokes: Bool
+      var adminAttentionRequired: Bool
+    }
+
+    case notConnected
+    case enteringConnectionCode
+    case connecting
+    case connectionFailed(error: String)
+    case connectionSucceded(userName: String)
+    case connected(Connected)
+  }
+}
+
 extension AppReducer.State {
-  var menuBar: MenuBarFeature.State {
+  var menuBarView: MenuBarFeature.State.View {
     get {
       switch history.userConnection {
       case .connectFailed(let error):

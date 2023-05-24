@@ -12,9 +12,9 @@ struct AppReducer: Reducer, Sendable {
     var adminWindow = AdminWindowFeature.State()
     var appUpdates = AppUpdatesFeature.State()
     var blockedRequests = BlockedRequestsFeature.State()
-    var device = DeviceState()
     var filter = FilterFeature.State()
     var history = HistoryFeature.State()
+    var menuBar = MenuBarFeature.State()
     var requestSuspension = RequestSuspensionFeature.State()
     var user: UserFeature.State?
   }
@@ -65,7 +65,6 @@ struct AppReducer: Reducer, Sendable {
     // root reducers
     ApplicationFeature.RootReducer()
     HistoryFeature.RootReducer()
-    MenuBarFeature.RootReducer()
     UserFeature.RootReducer()
     BlockedRequestsFeature.RootReducer()
     AppUpdatesFeature.RootReducer()
@@ -102,9 +101,4 @@ struct AppReducer: Reducer, Sendable {
       UserFeature.Reducer()
     }
   }
-}
-
-struct DeviceState: Equatable {
-  var colorScheme = "light" // TODO: enum
-  var hasInternetConnection = false
 }

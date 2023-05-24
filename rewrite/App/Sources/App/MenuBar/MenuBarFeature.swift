@@ -2,24 +2,12 @@ import ComposableArchitecture
 import Foundation
 
 enum MenuBarFeature: Feature {
-  enum State: Equatable, Encodable {
-    struct Connected: Equatable {
-      var filterState: FilterState
-      var recordingScreen: Bool
-      var recordingKeystrokes: Bool
-      var adminAttentionRequired: Bool
-    }
-
-    case notConnected
-    case enteringConnectionCode
-    case connecting
-    case connectionFailed(error: String)
-    case connectionSucceded(userName: String)
-    case connected(Connected)
+  struct State: Equatable {
+    var dropdownOpen = false
   }
 
   enum Action: Equatable, Decodable, Sendable {
-    case menuBarIconClicked // todo, wierd...
+    case menuBarIconClicked
     case resumeFilterClicked
     case suspendFilterClicked
     case refreshRulesClicked
@@ -36,17 +24,23 @@ enum MenuBarFeature: Feature {
   struct Reducer: FeatureReducer {
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var xpc
-    @Dependency(\.filterExtension) var filterExtension
-  }
-
-  struct RootReducer: RootReducing {
-    @Dependency(\.api) var api
   }
 }
 
 extension MenuBarFeature.Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
+    case .menuBarIconClicked:
+      state.dropdownOpen.toggle()
+      return .none
+
+    // get menu bar out of the way after certain actions
+    case .refreshRulesClicked,
+         .administrateClicked,
+         .viewNetworkTrafficClicked,
+         .suspendFilterClicked:
+      state.dropdownOpen = false
+      return .none
 
     case .connectFailedHelpClicked:
       return .run { _ in
@@ -57,25 +51,6 @@ extension MenuBarFeature.Reducer {
     case .administrateClicked:
       return .run { _ in
         print("establish connection:", await xpc.establishConnection())
-      }
-
-    default:
-      return .none
-    }
-  }
-}
-
-extension MenuBarFeature.RootReducer {
-  func reduce(into state: inout State, action: Action) -> Effect<Self.Action> {
-    switch action {
-
-    case .menuBar(.refreshRulesClicked):
-      // TODO: close menu bar so they can see the notification
-      return .task {
-        await .user(.refreshRules(
-          result: TaskResult { try await api.refreshUserRules() },
-          userInitiated: true
-        ))
       }
 
     default:
