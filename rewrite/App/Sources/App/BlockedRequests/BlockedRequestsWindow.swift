@@ -20,6 +20,7 @@ class BlockedRequestsWindow: AppWindow {
   var minSize = NSSize(width: 800, height: 500)
 
   @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.app) var appClient
 
   @MainActor init(store: Store<AppReducer.State, Feature.Action>) {
     viewStore = ViewStore(store, observe: BlockedRequestsFeature.State.View.init)

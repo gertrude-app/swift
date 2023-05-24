@@ -24,6 +24,7 @@ class RequestSuspensionWindow: AppWindow {
   var windowLevel = NSWindow.Level.modalPanel
 
   @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.app) var appClient
 
   @MainActor init(store: Store<AppReducer.State, Feature.Action>) {
     viewStore = ViewStore(store, observe: Feature.State.init)

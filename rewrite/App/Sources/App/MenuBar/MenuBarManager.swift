@@ -13,6 +13,7 @@ import WebKit
   var cancellables = Set<AnyCancellable>()
 
   @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.app) var app
 
   init(store: Store<AppReducer.State, MenuBarFeature.Action>) {
     self.store = store
@@ -44,6 +45,15 @@ import WebKit
         self.vc.updateState(self.viewStore.state)
       }.store(in: &cancellables)
 
+    // respond to color scheme changes
+    app.colorSchemeChanges()
+      .receive(on: mainQueue)
+      .sink { [weak self] colorScheme in
+        guard let self = self, self.vc.isReady.value else { return }
+        self.vc.updateColorScheme(colorScheme)
+      }.store(in: &cancellables)
+
+    // send the initial state when the webview is ready
     vc.isReady
       .receive(on: mainQueue)
       .prefix(2)
@@ -51,6 +61,7 @@ import WebKit
       .sink { [weak self] ready in
         guard let self = self, ready else { return }
         self.vc.updateState(self.viewStore.state)
+        self.vc.updateColorScheme(self.app.colorScheme())
       }.store(in: &cancellables)
 
     vc.loadWebView(screen: "MenuBar")
