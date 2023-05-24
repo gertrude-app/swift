@@ -129,7 +129,7 @@ extension MenuBarFeature.Action {
   }
 }
 
-extension MenuBarFeature.State {
+extension MenuBarFeature.State.View {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {

@@ -351,7 +351,7 @@ extension AdminWindowFeature.RootReducer {
         state.user = nil
         state.history.userConnection = .notConnected
         state.adminWindow.windowOpen = false
-        // TODO: open menu bar dropdown (when possible, modify test)
+        state.menuBar.dropdownOpen = true
         return .run { [updated = state.persistent] _ in
           await api.clearUserToken()
           try await storage.savePersistentState(updated)
