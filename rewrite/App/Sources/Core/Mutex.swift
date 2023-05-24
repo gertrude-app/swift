@@ -28,6 +28,10 @@ public class Mutex<T>: @unchecked Sendable {
 }
 
 public extension Mutex where T: Sendable {
+  var value: T {
+    withValue { $0 }
+  }
+
   func transition(_ closure: @Sendable (T) -> T) {
     lock.lock()
     defer { lock.unlock() }

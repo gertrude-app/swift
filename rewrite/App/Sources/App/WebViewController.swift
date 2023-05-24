@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import Models
 import WebKit
 import XCore
 
@@ -11,10 +12,16 @@ class WebViewController<State, Action>:
   var isReady: CurrentValueSubject<Bool, Never> = .init(false)
   var send: (Action) -> Void = { _ in }
 
+  @Dependency(\.app) var app
+
   func updateState(_ state: State) {
     if let json = try? JSON.encode(state, [.isoDates]) {
       webView.evaluateJavaScript("window.updateAppState(\(json))")
     }
+  }
+
+  func updateColorScheme(_ colorScheme: AppClient.ColorScheme) {
+    webView.evaluateJavaScript("window.updateColorScheme('\(colorScheme.rawValue)')")
   }
 
   func loadWebView(screen: String) {

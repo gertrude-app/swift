@@ -1,5 +1,6 @@
 import Combine
 import ComposableArchitecture
+import Models
 import SwiftUI
 
 protocol AppWindow: AnyObject {
@@ -12,6 +13,7 @@ protocol AppWindow: AnyObject {
   var cancellables: Set<AnyCancellable> { get set }
   var window: NSWindow? { get set }
   var mainQueue: AnySchedulerOf<DispatchQueue> { get }
+  var appClient: AppClient { get }
   var openPublisher: StorePublisher<Bool> { get }
   var initialSize: NSRect { get }
   var minSize: NSSize { get }
@@ -81,6 +83,7 @@ extension AppWindow {
       self.viewStore.send(self.embed(action))
     }
 
+    // send state updates through to the webview
     viewStore.publisher
       .receive(on: mainQueue)
       .sink { [weak self] _ in
@@ -88,6 +91,15 @@ extension AppWindow {
         wvc.updateState(self.viewStore.state)
       }.store(in: &cancellables)
 
+    appClient.colorSchemeChanges()
+      .receive(on: mainQueue)
+      .sink { colorScheme in
+        guard wvc.isReady.value else { return }
+        wvc.updateColorScheme(colorScheme)
+      }
+      .store(in: &cancellables)
+
+    // send initial state & show window when webview becomes ready
     wvc.isReady
       .receive(on: mainQueue)
       .removeDuplicates()
@@ -95,8 +107,9 @@ extension AppWindow {
       .sink { [weak self] isReady in
         guard let self = self, isReady else { return }
         wvc.updateState(self.viewStore.state)
-        // give time for appview to re-render
-        self.mainQueue.schedule(after: .milliseconds(10)) { [weak self] in
+        wvc.updateColorScheme(self.appClient.colorScheme())
+        // give a brief moment for appview to re-render
+        self.mainQueue.schedule(after: .milliseconds(75)) { [weak self] in
           self?.window?.alphaValue = 1.0
         }
       }
