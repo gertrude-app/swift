@@ -1,12 +1,10 @@
+import ClientInterfaces
 import Dependencies
 import Foundation
 import MacAppRoute
-import Models
 import Shared
 
 extension ApiClient: DependencyKey {
-  struct AccountInactive: Error {}
-
   public static let liveValue = Self(
     clearUserToken: { await userToken.setValue(nil) },
     connectUser: { input in
@@ -52,7 +50,7 @@ extension ApiClient: DependencyKey {
       )
     },
     refreshRules: { input in
-      guard await accountActive.value else { throw AccountInactive() }
+      guard await accountActive.value else { throw Error.accountInactive }
       return try await output(
         from: RefreshRules.self,
         with: .refreshRules(input)
@@ -62,7 +60,7 @@ extension ApiClient: DependencyKey {
     setEndpoint: { await endpoint.setValue($0) },
     setUserToken: { await userToken.setValue($0) },
     uploadScreenshot: { jpegData, width, height in
-      guard await accountActive.value else { throw AccountInactive() }
+      guard await accountActive.value else { throw Error.accountInactive }
       let signed = try await output(
         from: CreateSignedScreenshotUpload.self,
         with: .createSignedScreenshotUpload(.init(width: width, height: height))
@@ -80,8 +78,7 @@ extension ApiClient: DependencyKey {
             return
           }
           guard let data, let response else {
-            struct MissingDataOrResponse: Error {}
-            continuation.resume(throwing: MissingDataOrResponse())
+            continuation.resume(throwing: Error.missingDataOrResponse)
             return
           }
           continuation.resume(returning: signed.webUrl)

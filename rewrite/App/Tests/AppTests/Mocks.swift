@@ -4,7 +4,7 @@ import Foundation
 import MacAppRoute
 
 @testable import App
-@testable import Models
+@testable import ClientInterfaces
 
 public extension BlockedRequest {
   static var mock: Self {

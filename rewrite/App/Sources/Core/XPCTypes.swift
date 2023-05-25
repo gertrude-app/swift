@@ -49,7 +49,6 @@ public extension XPCErr {
 }
 
 public enum XPCEvent: Sendable, Equatable {
-
   public enum App: Sendable, Equatable {
     public enum MessageFromExtension: Sendable, Equatable {
       case blockedRequest(BlockedRequest)

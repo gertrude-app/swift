@@ -1,8 +1,8 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Dependencies
 import Foundation
 import MacAppRoute
-import Models
 
 enum HistoryFeature: Feature {
   struct State: Equatable {
@@ -82,7 +82,8 @@ extension HistoryFeature.RootReducer: RootReducing {
 
   private func connectUserInput(code: Int) throws -> ConnectUser.Input {
     guard let serialNumber = device.serialNumber() else {
-      throw AppError("No serial number")
+      struct NoSerialNumber: Error {}
+      throw NoSerialNumber()
     }
     return ConnectUser.Input(
       verificationCode: code,

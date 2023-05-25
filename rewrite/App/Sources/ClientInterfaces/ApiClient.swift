@@ -51,6 +51,15 @@ public struct ApiClient: Sendable {
   }
 }
 
+public extension ApiClient {
+  enum Error: Swift.Error {
+    case accountInactive
+    case missingUserToken
+    case missingDataOrResponse
+    case unexpectedError(statusCode: Int)
+  }
+}
+
 extension ApiClient: TestDependencyKey {
   public static let testValue = Self(
     clearUserToken: {},

@@ -7,7 +7,7 @@ import XCTest
 import XExpect
 
 @testable import App
-@testable import Models
+@testable import ClientInterfaces
 
 @MainActor final class AdminWindowTests: XCTestCase {
   func testReconnectUserClicked() async {

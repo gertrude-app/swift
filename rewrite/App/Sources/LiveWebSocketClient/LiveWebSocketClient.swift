@@ -1,12 +1,12 @@
+import ClientInterfaces
 import Combine
 import Core
 import Dependencies
 import Foundation
-import Models
 import Shared
 import Starscream
 
-extension Models.WebSocketClient: DependencyKey {
+extension ClientInterfaces.WebSocketClient: DependencyKey {
   public static var liveValue: Self {
     @Dependency(\.mainQueue) var mainQueue
 

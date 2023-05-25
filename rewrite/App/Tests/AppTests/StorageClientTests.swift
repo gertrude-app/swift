@@ -4,7 +4,7 @@ import XCTest
 import XExpect
 
 @testable import App
-@testable import Models
+@testable import ClientInterfaces
 
 final class StorageClientTests: XCTestCase {
   func testLoadPersistentState() async throws {

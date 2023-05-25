@@ -1,6 +1,6 @@
+import ClientInterfaces
 import Foundation
 import MacAppRoute
-import Models
 import XCore
 
 func output<T: Pair>(
@@ -8,7 +8,7 @@ func output<T: Pair>(
   with route: AuthedUserRoute
 ) async throws -> T.Output {
   guard let token = await userToken.value else {
-    throw AppError("Missing user token")
+    throw ApiClient.Error.missingUserToken
   }
   return try await request(root: .userAuthed(token, route), pair: T.self)
 }
@@ -34,23 +34,22 @@ private func request<T: Pair>(
     if let pqlError = try? JSON.decode(data, as: PqlError.self) {
       throw pqlError
     } else {
-      throw AppError("Unexpected API error", unexpected: true)
+      throw ApiClient.Error.unexpectedError(statusCode: httpResponse.statusCode)
     }
   }
-  return try JSON.decode(data, as: T.Output.self)
+  return try JSON.decode(data, as: T.Output.self, [.isoDates])
 }
 
 // URLSession.data(for:) not available till macOS 12
 private func data(for request: URLRequest) async throws -> (Data, URLResponse) {
-  struct MissingDataOrResponse: Error {}
   return try await withCheckedThrowingContinuation { continuation in
     URLSession.shared.dataTask(with: request) { data, response, err in
       if let err = err {
         continuation.resume(throwing: err)
         return
       }
-      guard let data = data, let response = response else {
-        continuation.resume(throwing: MissingDataOrResponse())
+      guard let data, let response else {
+        continuation.resume(throwing: ApiClient.Error.missingDataOrResponse)
         return
       }
       continuation.resume(returning: (data, response))

@@ -1,7 +1,7 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Core
 import Foundation
-import Models
 import Shared
 
 enum WebSocketFeature {

@@ -5,7 +5,7 @@ import XCTest
 import XExpect
 
 @testable import App
-@testable import Models
+@testable import ClientInterfaces
 
 @MainActor final class MonitoringReducerTests: XCTestCase {
   func testLoadingUserStateOnLaunchStartsMonitoring() async {

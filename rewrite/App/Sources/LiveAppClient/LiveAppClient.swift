@@ -1,10 +1,10 @@
 import AppKit
+import ClientInterfaces
 import Combine
 import Core
 import Dependencies
 import Foundation
 import LaunchAtLogin
-import Models
 
 extension AppClient: DependencyKey {
   public static var liveValue: Self {
