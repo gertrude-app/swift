@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 import MacAppRoute
-import Shared
+import Gertie
 
 public struct ApiClient: Sendable {
   public var clearUserToken: @Sendable () async -> Void

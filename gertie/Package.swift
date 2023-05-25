@@ -2,23 +2,23 @@
 import PackageDescription
 
 let package = Package(
-  name: "Shared",
+  name: "Gertie",
   platforms: [.macOS(.v10_15)],
-  products: [.library(name: "Shared", targets: ["Shared"])],
+  products: [.library(name: "Gertie", targets: ["Gertie"])],
   dependencies: [
     .package("jaredh159/swift-tagged@0.8.2"),
     .package(path: "../x-kit"),
     .package(path: "../x-expect"),
   ],
   targets: [
-    .target(name: "Shared", dependencies: [
+    .target(name: "Gertie", dependencies: [
       .product(name: "XCore", package: "x-kit"),
       .product(name: "TaggedTime", package: "swift-tagged"),
     ]),
     .testTarget(
-      name: "SharedTests",
+      name: "GertieTests",
       dependencies: [
-        "Shared",
+        "Gertie",
         .product(name: "XExpect", package: "x-expect"),
       ]
     ),

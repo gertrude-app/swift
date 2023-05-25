@@ -1,10 +1,10 @@
 import Duet
-import Shared
+import Gertie
 
 final class Key: Codable {
   var id: Id
   var keychainId: Keychain.Id
-  var key: Shared.Key
+  var key: Gertie.Key
   var comment: String?
   var createdAt = Date()
   var updatedAt = Date()
@@ -15,7 +15,7 @@ final class Key: Codable {
   init(
     id: Id = .init(),
     keychainId: Keychain.Id,
-    key: Shared.Key,
+    key: Gertie.Key,
     comment: String? = nil,
     deletedAt: Date? = nil
   ) {

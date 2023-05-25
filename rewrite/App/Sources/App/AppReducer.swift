@@ -4,7 +4,7 @@ import ComposableArchitecture
 import Core
 import Foundation
 import MacAppRoute
-import Shared
+import Gertie
 
 struct AppReducer: Reducer, Sendable {
   struct State: Equatable, Sendable {

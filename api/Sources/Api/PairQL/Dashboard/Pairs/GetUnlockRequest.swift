@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 import TypescriptPairQL
 
 struct GetUnlockRequest: TypescriptPair {

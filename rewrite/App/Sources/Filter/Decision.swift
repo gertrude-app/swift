@@ -1,6 +1,6 @@
 import Core
 import Foundation
-import Shared
+import Gertie
 
 public protocol NetworkFilter: AppDescribing {
   associatedtype State: DecisionState

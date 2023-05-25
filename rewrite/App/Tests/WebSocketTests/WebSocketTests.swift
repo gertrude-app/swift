@@ -1,7 +1,7 @@
 import Combine
 import CombineSchedulers
 import Core
-import Shared
+import Gertie
 import Starscream
 import XCore
 import XCTest

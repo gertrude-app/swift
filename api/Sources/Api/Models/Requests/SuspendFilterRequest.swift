@@ -1,5 +1,5 @@
 import DuetSQL
-import Shared
+import Gertie
 import TaggedTime
 
 final class SuspendFilterRequest: Codable {

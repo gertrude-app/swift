@@ -1,5 +1,5 @@
 import PairQL
-import Shared
+import Gertie
 
 public struct GetAccountStatus: Pair {
   public static var auth: ClientAuth = .user

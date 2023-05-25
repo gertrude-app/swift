@@ -8,7 +8,7 @@ let package = Package(
     .library(name: "FilterCore", targets: ["FilterCore"]),
   ],
   dependencies: [
-    .package(name: "Shared", path: "../../../shared"),
+    .package(name: "Gertie", path: "../../../gertie"),
     .package(name: "SharedCore", path: "../SharedCore"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.5.3"),
   ],
@@ -16,7 +16,7 @@ let package = Package(
     .target(
       name: "FilterCore",
       dependencies: [
-        "Shared",
+        "Gertie",
         "SharedCore",
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
       ]

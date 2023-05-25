@@ -1,7 +1,7 @@
 import Core
 import Dependencies
 import Foundation
-import Shared
+import Gertie
 
 enum FilterState: Equatable, Codable {
   case off

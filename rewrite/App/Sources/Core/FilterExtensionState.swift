@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 public enum FilterExtensionState: Equatable, Sendable {
   case unknown

@@ -2,7 +2,7 @@ import ClientInterfaces
 import ComposableArchitecture
 import Core
 import Foundation
-import Shared
+import Gertie
 
 enum WebSocketFeature {
   enum Action: Equatable, Sendable {

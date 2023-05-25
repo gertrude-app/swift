@@ -1,7 +1,7 @@
 import DuetSQL
 import Foundation
 import Queues
-import Shared
+import Gertie
 import Vapor
 
 struct CleanupJob: AsyncScheduledJob {

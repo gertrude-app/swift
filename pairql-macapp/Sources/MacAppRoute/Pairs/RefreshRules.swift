@@ -1,6 +1,6 @@
 import Foundation
+import Gertie
 import PairQL
-import Shared
 
 public struct RefreshRules: Pair {
   public static var auth: ClientAuth = .user
@@ -15,9 +15,9 @@ public struct RefreshRules: Pair {
 
   public struct Key: PairNestable {
     public let id: UUID
-    public let key: Shared.Key
+    public let key: Gertie.Key
 
-    public init(id: UUID, key: Shared.Key) {
+    public init(id: UUID, key: Gertie.Key) {
       self.id = id
       self.key = key
     }

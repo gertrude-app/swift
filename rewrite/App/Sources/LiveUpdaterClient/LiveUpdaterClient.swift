@@ -1,7 +1,7 @@
 import App
 import Core
 import Dependencies
-import Shared
+import Gertie
 import Sparkle
 
 extension UpdaterClient: DependencyKey {

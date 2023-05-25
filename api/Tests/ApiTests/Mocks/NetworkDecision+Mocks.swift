@@ -1,6 +1,6 @@
 import DuetMock
 import Foundation
-import Shared
+import Gertie
 
 @testable import Api
 

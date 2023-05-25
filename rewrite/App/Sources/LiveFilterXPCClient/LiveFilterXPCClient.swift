@@ -2,7 +2,7 @@ import ClientInterfaces
 import Core
 import Dependencies
 import Foundation
-import Shared
+import Gertie
 import TaggedTime
 
 extension FilterXPCClient: DependencyKey {

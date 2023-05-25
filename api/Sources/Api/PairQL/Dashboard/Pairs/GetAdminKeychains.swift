@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 import TypescriptPairQL
 
 struct GetAdminKeychains: TypescriptPair {
@@ -10,7 +10,7 @@ struct GetAdminKeychains: TypescriptPair {
     let keychainId: Api.Keychain.Id
     let comment: String?
     let expiration: Date?
-    let key: Shared.Key
+    let key: Gertie.Key
   }
 
   struct AdminKeychain: TypescriptNestable, PairOutput, GlobalType {

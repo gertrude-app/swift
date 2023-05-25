@@ -1,6 +1,6 @@
 import DuetSQL
 import PairQL
-import Shared
+import Gertie
 
 struct CreateRelease: Pair {
   static var auth: ClientAuth = .superAdmin

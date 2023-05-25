@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 import XCTest
 
 @testable import FilterCore

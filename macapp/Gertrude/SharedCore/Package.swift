@@ -8,12 +8,12 @@ let package = Package(
     .library(name: "SharedCore", targets: ["SharedCore"]),
   ],
   dependencies: [
-    .package(name: "Shared", path: "../../../shared"),
+    .package(name: "Gertie", path: "../../../gertie"),
     .package(name: "XKit", path: "../../../x-kit"),
   ],
   targets: [
     .target(name: "SharedCore", dependencies: [
-      .product(name: "Shared", package: "Shared"),
+      .product(name: "Gertie", package: "Gertie"),
       .product(name: "XCore", package: "XKit"),
     ]),
     .testTarget(name: "SharedCoreTests", dependencies: ["SharedCore"]),

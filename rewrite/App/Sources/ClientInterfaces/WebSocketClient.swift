@@ -1,7 +1,7 @@
 import Combine
 import Dependencies
 import Foundation
-import Shared
+import Gertie
 import TaggedTime
 
 public struct WebSocketClient: Sendable {

@@ -10,7 +10,7 @@ let package = Package(
   dependencies: [
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.5.3"),
     .package(url: "https://github.com/daltoniam/Starscream.git", from: "4.0.4"),
-    .package(name: "Shared", path: "../../../shared"),
+    .package(name: "Gertie", path: "../../../gertie"),
     .package(name: "XKit", path: "../../../x-kit"),
   ],
   targets: [
@@ -18,7 +18,7 @@ let package = Package(
       name: "Websocket",
       dependencies: [
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
-        .product(name: "Shared", package: "Shared"),
+        .product(name: "Gertie", package: "Gertie"),
         .product(name: "XCore", package: "XKit"),
         "Starscream",
       ]
@@ -28,7 +28,7 @@ let package = Package(
       dependencies: [
         "Websocket",
         "Starscream",
-        "Shared",
+        "Gertie",
         .product(name: "CombineSchedulers", package: "combine-schedulers"),
       ]
     ),

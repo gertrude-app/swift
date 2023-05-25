@@ -1,6 +1,6 @@
 import FilterCore
 import NetworkExtension
-import Shared
+import Gertie
 import SharedCore
 import XCore
 

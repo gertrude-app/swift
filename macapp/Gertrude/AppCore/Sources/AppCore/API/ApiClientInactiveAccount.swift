@@ -1,6 +1,6 @@
 import Combine
 import Foundation
-import Shared
+import Gertie
 import SharedCore
 
 extension ApiClient {

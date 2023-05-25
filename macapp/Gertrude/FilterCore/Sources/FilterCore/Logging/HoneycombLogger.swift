@@ -1,7 +1,7 @@
 import Combine
 import CombineSchedulers
 import Foundation
-import Shared
+import Gertie
 import SharedCore
 
 public extension Honeycomb {

@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import Shared
+import Gertie
 
 struct AdminFeature: Feature {
   struct State: Equatable {

@@ -1,7 +1,7 @@
 import Collaboration
 import Combine
 import Foundation
-import Shared
+import Gertie
 import SharedCore
 
 struct MacOSUser: Identifiable, Hashable {

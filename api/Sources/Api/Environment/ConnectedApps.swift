@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 
 struct ConnectedApps {
   var add: (AppConnection) async -> Void

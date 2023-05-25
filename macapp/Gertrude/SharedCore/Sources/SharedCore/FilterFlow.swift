@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 #if os(macOS)
   import Network

@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 import TypescriptPairQL
 import Vapor
 
@@ -20,7 +20,7 @@ enum DashboardTsCodegenRoute {
         "\(DeviceModelFamily.self)": DeviceModelFamily.ts,
         "\(RequestStatus.self)": RequestStatus.ts,
         AdminNotification.Trigger.__typeName: AdminNotification.Trigger.ts,
-        Shared.Key.__typeName: Shared.Key.ts,
+        Gertie.Key.__typeName: Gertie.Key.ts,
         "\(AppScope.self)": AppScope.ts,
         AppScope.Single.__typeName: AppScope.Single.ts,
         GetUnlockRequest.Output.__typeName: GetUnlockRequest.Output.ts,
@@ -112,7 +112,7 @@ extension ClientAuth: GlobalType {}
 extension AppScope: TypescriptRepresentable {}
 extension PqlError: TypescriptRepresentable {}
 extension AppScope.Single: TypescriptRepresentable {}
-extension Shared.Key: TypescriptRepresentable {}
+extension Gertie.Key: TypescriptRepresentable {}
 extension PqlError.Kind: TypescriptRepresentable {}
 extension PqlError.DashboardTag: TypescriptRepresentable {}
 extension PqlError.AppTag: TypescriptRepresentable {}
@@ -125,6 +125,6 @@ extension AppScope.Single: GlobalType {
   public static var __typeName = "SingleAppScope"
 }
 
-extension Shared.Key: GlobalType {
+extension Gertie.Key: GlobalType {
   public static var __typeName = "SharedKey"
 }

@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import MacAppRoute
-import Shared
+import Gertie
 
 struct UserFeature: Feature {
   typealias State = UserData

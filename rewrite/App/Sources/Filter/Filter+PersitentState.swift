@@ -1,6 +1,6 @@
 import Core
 import Foundation
-import Shared
+import Gertie
 
 public enum Persistent {
   public typealias State = V1

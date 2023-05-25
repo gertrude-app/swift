@@ -1,5 +1,5 @@
 import DuetMock
-import Shared
+import Gertie
 
 extension AppScope: Mock {}
 extension AppScope.Single: Mock {}

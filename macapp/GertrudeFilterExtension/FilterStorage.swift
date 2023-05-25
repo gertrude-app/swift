@@ -1,6 +1,6 @@
 import FilterCore
 import Foundation
-import Shared
+import Gertie
 import SharedCore
 import XCore
 

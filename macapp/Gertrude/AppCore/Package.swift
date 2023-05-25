@@ -14,7 +14,7 @@ let package = Package(
     .package(url: "https://github.com/sindresorhus/LaunchAtLogin", from: "4.2.0"),
     .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.5.3"),
     .package(name: "XKit", path: "../../../x-kit"),
-    .package(name: "Shared", path: "../../../shared"),
+    .package(name: "Gertie", path: "../../../gertie"),
     .package(name: "MacAppRoute", path: "../../../pairql-macapp"),
     .package(name: "SharedCore", path: "../SharedCore"),
     .package(name: "Websocket", path: "../Websocket"),
@@ -25,7 +25,7 @@ let package = Package(
       dependencies: [
         "Starscream",
         "Sparkle",
-        "Shared",
+        "Gertie",
         "SharedCore",
         "MacAppRoute",
         "Websocket",

@@ -2,7 +2,7 @@ import Combine
 import ComposableArchitecture
 import Core
 import Foundation
-import Shared
+import Gertie
 
 public struct FilterStore: NetworkFilter {
   let store: StoreOf<Filter>

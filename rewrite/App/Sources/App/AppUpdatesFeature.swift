@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import Core
 import Foundation
-import Shared
+import Gertie
 
 struct AppUpdatesFeature: Feature {
 

@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import PairQL
-import Shared
+import Gertie
 
 enum UserConnectionFeature: Feature {
   enum State: Equatable {

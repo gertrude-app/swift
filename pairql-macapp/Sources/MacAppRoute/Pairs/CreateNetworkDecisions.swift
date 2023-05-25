@@ -1,6 +1,6 @@
 import Foundation
 import PairQL
-import Shared
+import Gertie
 
 public struct CreateNetworkDecisions: Pair {
   public static let auth: ClientAuth = .user

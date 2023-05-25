@@ -7,7 +7,7 @@ import XCTest
 import XExpect
 
 @testable import App
-@testable import Shared
+@testable import Gertie
 
 @MainActor final class AppReducerTests: XCTestCase {
   func testDidFinishLaunching_Exhaustive() async {

@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 public struct RootAppDataQuery: RootAppQuery {
 

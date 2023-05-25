@@ -1,5 +1,5 @@
 import Duet
-import Shared
+import Gertie
 
 final class Release: Codable {
   var id: Id

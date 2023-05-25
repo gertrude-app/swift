@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 import TypescriptPairQL
 
 struct UpdateUnlockRequest: TypescriptPair {

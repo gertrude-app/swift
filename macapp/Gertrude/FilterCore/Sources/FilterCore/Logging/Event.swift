@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 import SharedCore
 
 public enum FilterLogEvent: LogMessagable {

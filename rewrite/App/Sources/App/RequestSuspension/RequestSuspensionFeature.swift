@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import Shared
+import Gertie
 
 struct RequestSuspensionFeature: Feature {
   struct State: Equatable, Encodable {

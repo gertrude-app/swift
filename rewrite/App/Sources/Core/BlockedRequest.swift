@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 public struct BlockedRequest: Equatable, Codable, Sendable {
   public let id: UUID

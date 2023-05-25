@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 
 public protocol GertieLogger: LoggerProtocol {
   var honeycomb: LoggerProtocol { get set }

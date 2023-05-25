@@ -1,6 +1,6 @@
 import DuetSQL
 import Foundation
-import Shared
+import Gertie
 import TypescriptPairQL
 
 struct KeychainSummary: TypescriptNestable, GlobalType {
