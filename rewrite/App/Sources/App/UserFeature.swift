@@ -1,9 +1,9 @@
 import ComposableArchitecture
 import MacAppRoute
-import Models
+import Shared
 
 struct UserFeature: Feature {
-  typealias State = User
+  typealias State = UserData
 
   enum Action: Equatable, Sendable {
     case refreshRules(result: TaskResult<RefreshRules.Output>, userInitiated: Bool)

@@ -1,5 +1,6 @@
 import Dependencies
 import Foundation
+import XCore
 
 struct StorageClient: Sendable {
   var savePersistentState: @Sendable (Persistent.State) async throws -> Void
@@ -9,18 +10,16 @@ struct StorageClient: Sendable {
 
 extension StorageClient: DependencyKey {
   static var liveValue: Self {
+    @Dependency(\.api) var api
     @Dependency(\.userDefaults) var userDefaults
-    @Dependency(\.json) var json
     return Self(
       savePersistentState: { state in
         let key = "persistent.state.v\(Persistent.State.version)"
-        userDefaults.setString(try json.encode(state), key)
+        userDefaults.setString(try JSON.encode(state), key)
       },
       loadPersistentState: {
-        let key = "persistent.state.v\(Persistent.State.version)"
-        return try userDefaults.getString(key).flatMap { string in
-          try json.decode(string, as: Persistent.State.self)
-        }
+        await Migrator(api: api, userDefaults: userDefaults)
+          .migratePersistedState()
       },
       deleteAllPersistentState: {
         userDefaults.remove("persistent.state.v\(Persistent.State.version)")

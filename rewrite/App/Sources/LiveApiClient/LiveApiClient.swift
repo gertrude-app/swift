@@ -2,6 +2,7 @@ import Dependencies
 import Foundation
 import MacAppRoute
 import Models
+import Shared
 
 extension ApiClient: DependencyKey {
   struct AccountInactive: Error {}
@@ -9,10 +10,10 @@ extension ApiClient: DependencyKey {
   public static let liveValue = Self(
     clearUserToken: { await userToken.setValue(nil) },
     connectUser: { input in
-      User(fromPairQL: try await output(
+      try await output(
         from: ConnectUser.self,
         withUnauthed: .connectUser(input)
-      ))
+      )
     },
     createKeystrokeLines: { input in
       guard await accountActive.value else { return }
@@ -86,12 +87,18 @@ extension ApiClient: DependencyKey {
           continuation.resume(returning: signed.webUrl)
         }.resume()
       }
+    },
+    userData: {
+      try await output(
+        from: GetUserData.self,
+        with: .getUserData
+      )
     }
   )
 }
 
 internal let accountActive = ActorIsolated<Bool>(true)
-internal let userToken = ActorIsolated<User.Token?>(nil)
+internal let userToken = ActorIsolated<UUID?>(nil)
 #if DEBUG
   internal let endpoint = ActorIsolated<URL>(.init(string: "http://127.0.0.1:8080/pairql")!)
 #else

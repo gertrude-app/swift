@@ -1,5 +1,6 @@
 import Foundation
 import PairQL
+import Shared
 
 // 🚀 BETA: for rewrite, not in use yet
 public struct ConnectUser: Pair {
@@ -36,34 +37,5 @@ public struct ConnectUser: Pair {
     }
   }
 
-  public struct Output: PairOutput {
-    public var id: UUID
-    public var token: UUID
-    public var deviceId: UUID
-    public var name: String
-    public var keyloggingEnabled: Bool
-    public var screenshotsEnabled: Bool
-    public var screenshotFrequency: Int
-    public var screenshotSize: Int
-
-    public init(
-      id: UUID,
-      token: UUID,
-      deviceId: UUID,
-      name: String,
-      keyloggingEnabled: Bool,
-      screenshotsEnabled: Bool,
-      screenshotFrequency: Int,
-      screenshotSize: Int
-    ) {
-      self.id = id
-      self.token = token
-      self.deviceId = deviceId
-      self.name = name
-      self.keyloggingEnabled = keyloggingEnabled
-      self.screenshotsEnabled = screenshotsEnabled
-      self.screenshotFrequency = screenshotFrequency
-      self.screenshotSize = screenshotSize
-    }
-  }
+  public typealias Output = UserData
 }

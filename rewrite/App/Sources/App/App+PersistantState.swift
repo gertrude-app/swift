@@ -1,5 +1,4 @@
 import Core
-import Models
 import Shared
 
 enum Persistent {
@@ -9,7 +8,7 @@ enum Persistent {
     static let version = 1
     var appVersion: String
     var appUpdateReleaseChannel: ReleaseChannel
-    var user: User?
+    var user: UserData?
   }
 }
 

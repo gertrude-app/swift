@@ -1,6 +1,6 @@
 import ComposableArchitecture
-import Models
 import PairQL
+import Shared
 
 enum UserConnectionFeature: Feature {
   enum State: Equatable {
@@ -12,7 +12,7 @@ enum UserConnectionFeature: Feature {
   }
 
   enum Action: Equatable, Sendable {
-    case connect(TaskResult<User>)
+    case connect(TaskResult<UserData>)
   }
 
   struct Reducer: FeatureReducer {

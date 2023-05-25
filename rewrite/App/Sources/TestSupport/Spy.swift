@@ -13,6 +13,12 @@ public struct Spy<T, Arg> {
   public var invoked: ActorIsolated<Bool>
 }
 
+public struct SpySync<T, Arg> {
+  public var fn: @Sendable (Arg) -> T
+  public var invocations: LockIsolated<[Arg]>
+  public var invoked: LockIsolated<Bool>
+}
+
 public struct Spy2<T, Arg1, Arg2> {
   public var fn: @Sendable (Arg1, Arg2) async -> T
   public var invocations: ActorIsolated<[Both<Arg1, Arg2>]>
@@ -117,6 +123,10 @@ public func spy<T, Arg>(on arg: Arg.Type, returning value: T) -> Spy<T, Arg> {
   spy(returning: [], then: value)
 }
 
+public func spySync<T, Arg>(on arg: Arg.Type, returning value: T) -> SpySync<T, Arg> {
+  spySync(returning: [], then: value)
+}
+
 public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Spy<T, Arg> {
   let returns = ActorIsolated<[T]>(values)
   let invocations = ActorIsolated<[Arg]>([])
@@ -132,6 +142,35 @@ public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Spy<T
         returnValue = current.removeFirst()
         let updated = current
         await returns.setValue(updated)
+      } else if let fallback {
+        returnValue = fallback
+      } else {
+        fatalError(
+          "spy<\(String(reflecting: T.self)), \(String(reflecting: Arg.self))> called more than expected number of times \(values.count)"
+        )
+      }
+      return returnValue
+    },
+    invocations: invocations,
+    invoked: invoked
+  )
+}
+
+public func spySync<T, Arg>(returning values: [T], then fallback: T? = nil) -> SpySync<T, Arg> {
+  let returns = LockIsolated<[T]>(values)
+  let invocations = LockIsolated<[Arg]>([])
+  let invoked = LockIsolated(false)
+  return .init(
+    fn: { arg in
+      let currentInvocations = invocations.value
+      invocations.setValue(currentInvocations + [arg])
+      invoked.setValue(true)
+      var current = returns.value
+      let returnValue: T
+      if current.count > 1 {
+        returnValue = current.removeFirst()
+        let updated = current
+        returns.setValue(updated)
       } else if let fallback {
         returnValue = fallback
       } else {

@@ -7,7 +7,7 @@ import XCTest
 import XExpect
 
 @testable import App
-@testable import Models
+@testable import Shared
 
 @MainActor final class AppReducerTests: XCTestCase {
   func testDidFinishLaunching_Exhaustive() async {
@@ -19,7 +19,7 @@ import XExpect
       return .installedButNotRunning
     }
 
-    let tokenSetSpy = ActorIsolated<User.Token?>(nil)
+    let tokenSetSpy = ActorIsolated<UUID?>(nil)
     store.deps.api.setUserToken = { await tokenSetSpy.setValue($0) }
 
     let filterStateSubject = PassthroughSubject<FilterExtensionState, Never>()
@@ -35,7 +35,7 @@ import XExpect
 
     await store.receive(.websocket(.connectedSuccessfully))
 
-    await expect(tokenSetSpy).toEqual(User.mock.token)
+    await expect(tokenSetSpy).toEqual(UserData.mock.token)
 
     await bgQueue.advance(by: .milliseconds(5))
     await expect(filterSetupSpy).toEqual(true)

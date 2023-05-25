@@ -5,7 +5,7 @@ import Shared
 
 public struct ApiClient: Sendable {
   public var clearUserToken: @Sendable () async -> Void
-  public var connectUser: @Sendable (ConnectUser.Input) async throws -> User
+  public var connectUser: @Sendable (ConnectUser.Input) async throws -> UserData
   public var createKeystrokeLines: @Sendable (CreateKeystrokeLines.Input) async throws -> Void
   public var createSuspendFilterRequest: @Sendable (CreateSuspendFilterRequest.Input) async throws
     -> Void
@@ -15,12 +15,13 @@ public struct ApiClient: Sendable {
   public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
   public var setAccountActive: @Sendable (Bool) async -> Void
   public var setEndpoint: @Sendable (URL) async -> Void
-  public var setUserToken: @Sendable (User.Token) async -> Void
+  public var setUserToken: @Sendable (UUID) async -> Void
   public var uploadScreenshot: @Sendable (Data, Int, Int) async throws -> URL
+  public var userData: @Sendable () async throws -> UserData
 
   public init(
     clearUserToken: @escaping @Sendable () async -> Void,
-    connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> User,
+    connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> UserData,
     createKeystrokeLines: @escaping @Sendable (CreateKeystrokeLines.Input) async throws -> Void,
     createSuspendFilterRequest: @escaping @Sendable (CreateSuspendFilterRequest.Input) async throws
       -> Void,
@@ -30,8 +31,9 @@ public struct ApiClient: Sendable {
     refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setEndpoint: @escaping @Sendable (URL) async -> Void,
-    setUserToken: @escaping @Sendable (User.Token) async -> Void,
-    uploadScreenshot: @escaping @Sendable (Data, Int, Int) async throws -> URL
+    setUserToken: @escaping @Sendable (UUID) async -> Void,
+    uploadScreenshot: @escaping @Sendable (Data, Int, Int) async throws -> URL,
+    userData: @escaping @Sendable () async throws -> UserData
   ) {
     self.clearUserToken = clearUserToken
     self.connectUser = connectUser
@@ -45,6 +47,7 @@ public struct ApiClient: Sendable {
     self.setEndpoint = setEndpoint
     self.setUserToken = setUserToken
     self.uploadScreenshot = uploadScreenshot
+    self.userData = userData
   }
 }
 
@@ -61,9 +64,30 @@ extension ApiClient: TestDependencyKey {
     setAccountActive: { _ in },
     setEndpoint: { _ in },
     setUserToken: { _ in },
-    uploadScreenshot: { _, _, _ in .init(string: "https://s3.buck.et/img.png")! }
+    uploadScreenshot: { _, _, _ in .init(string: "https://s3.buck.et/img.png")! },
+    userData: { .mock }
   )
 }
+
+#if DEBUG
+  public extension ApiClient {
+    static let failing = Self(
+      clearUserToken: unimplemented("ApiClient.clearUserToken"),
+      connectUser: unimplemented("ApiClient.connectUser"),
+      createKeystrokeLines: unimplemented("ApiClient.createKeystrokeLines"),
+      createSuspendFilterRequest: unimplemented("ApiClient.createSuspendFilterRequest"),
+      createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
+      getAdminAccountStatus: unimplemented("ApiClient.getAdminAccountStatus"),
+      latestAppVersion: unimplemented("ApiClient.latestAppVersion"),
+      refreshRules: unimplemented("ApiClient.refreshRules"),
+      setAccountActive: unimplemented("ApiClient.setAccountActive"),
+      setEndpoint: unimplemented("ApiClient.setEndpoint"),
+      setUserToken: unimplemented("ApiClient.setUserToken"),
+      uploadScreenshot: unimplemented("ApiClient.uploadScreenshot"),
+      userData: unimplemented("ApiClient.userData")
+    )
+  }
+#endif
 
 public extension DependencyValues {
   var api: ApiClient {

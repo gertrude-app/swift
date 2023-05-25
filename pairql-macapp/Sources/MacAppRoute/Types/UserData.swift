@@ -1,10 +1,9 @@
 import Foundation
-import Tagged
 
-public struct User: Equatable, Codable, Sendable {
-  public var id: Id
-  public var token: Token
-  public var deviceId: DeviceId
+public struct UserData: Equatable, Codable, Sendable, PairOutput {
+  public var id: UUID
+  public var token: UUID
+  public var deviceId: UUID
   public var name: String
   public var keyloggingEnabled: Bool
   public var screenshotsEnabled: Bool
@@ -13,9 +12,9 @@ public struct User: Equatable, Codable, Sendable {
   public var connectedAt: Date
 
   public init(
-    id: Id,
-    token: Token,
-    deviceId: DeviceId,
+    id: UUID,
+    token: UUID,
+    deviceId: UUID,
     name: String,
     keyloggingEnabled: Bool,
     screenshotsEnabled: Bool,
@@ -35,22 +34,8 @@ public struct User: Equatable, Codable, Sendable {
   }
 }
 
-// ids
-
-public extension User {
-  typealias Id = Tagged<User, UUID>
-  typealias Token = Tagged<(user: User, token: ()), UUID>
-  typealias DeviceId = Tagged<(user: User, deviceId: ()), UUID>
-}
-
-public extension Tagged where RawValue == UUID {
-  init() {
-    self.init(rawValue: .init())
-  }
-}
-
-extension User {
-  static let mock = User(
+public extension UserData {
+  static let mock = Self(
     id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
     token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
     deviceId: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,

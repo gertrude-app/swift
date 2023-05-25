@@ -4,7 +4,6 @@ import XCTest
 import XExpect
 
 @testable import App
-@testable import Models
 
 @MainActor final class HistoryUserConnectionTests: XCTestCase {
   func testHistoryUserConnectionHappyPath() async {
@@ -16,7 +15,7 @@ import XExpect
       savedState.setValue(state)
     }
 
-    let apiUserToken = ActorIsolated<User.Token?>(nil)
+    let apiUserToken = ActorIsolated<UUID?>(nil)
     store.deps.api.setUserToken = { await apiUserToken.setValue($0) }
 
     await store.send(.menuBar(.connectClicked)) {
@@ -35,7 +34,7 @@ import XExpect
     await store.receive(.websocket(.connectedSuccessfully))
 
     expect(savedState).toEqual(.mock)
-    await expect(apiUserToken).toEqual(User.mock.token)
+    await expect(apiUserToken).toEqual(UserData.mock.token)
 
     await store.send(.menuBar(.welcomeAdminClicked)) {
       $0.history.userConnection = .established(welcomeDismissed: true)

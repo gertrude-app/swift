@@ -1,4 +1,7 @@
 import ComposableArchitecture
+import MacAppRoute
+
+typealias UserData = GetUserData.Output
 
 @MainActor public struct App {
   var menuBarManager: MenuBarManager
