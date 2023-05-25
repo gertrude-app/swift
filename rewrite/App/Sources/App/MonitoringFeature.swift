@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import MacAppRoute
-import Models
+import Shared
 
 enum MonitoringFeature {
   enum Action: Equatable {
@@ -131,7 +131,7 @@ extension MonitoredUser {
   }
 }
 
-extension User: MonitoredUser {}
+extension UserData: MonitoredUser {}
 
 extension RefreshRules.Output: MonitoredUser {
   var screenshotSize: Int { screenshotsResolution }

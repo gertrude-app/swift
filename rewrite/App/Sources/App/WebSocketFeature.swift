@@ -112,7 +112,7 @@ extension WebSocketFeature.RootReducer {
     }
   }
 
-  func connect(_ user: User) -> Effect<Action> {
+  func connect(_ user: UserData) -> Effect<Action> {
     .run { send in
       if try await websocket.connect(with: user.token) == .connected {
         await send(.websocket(.connectedSuccessfully))
@@ -123,8 +123,8 @@ extension WebSocketFeature.RootReducer {
 
 extension WebSocketClient {
   @discardableResult
-  func connect(with token: User.Token, customUrl: URL? = nil) async throws -> State {
-    try await connect(token.rawValue, customUrl)
+  func connect(with token: UUID, customUrl: URL? = nil) async throws -> State {
+    try await connect(token, customUrl)
   }
 
   func sendFilterState(

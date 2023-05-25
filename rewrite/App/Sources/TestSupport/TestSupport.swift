@@ -12,6 +12,13 @@ public extension Task where Success == Never, Failure == Never {
 
 public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action, R.State, R.Action, Void>
 
+public extension UUID {
+  static let deadbeef = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
+  static let zeros = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+  static let ones = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
+  static let twos = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
+}
+
 public struct ControllingNow {
   public let generator: DateGenerator
   private let elapsed: LockIsolated<Int>
@@ -82,6 +89,12 @@ public extension TestStore {
 public extension ActorIsolated where Value: RangeReplaceableCollection {
   func append(_ newElement: Value.Element) async {
     value.append(newElement)
+  }
+}
+
+public extension LockIsolated where Value: RangeReplaceableCollection {
+  func append(_ newElement: Value.Element) {
+    withValue { $0.append(newElement) }
   }
 }
 

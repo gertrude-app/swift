@@ -7,7 +7,7 @@ func output<T: Pair>(
   from pair: T.Type,
   with route: AuthedUserRoute
 ) async throws -> T.Output {
-  guard let token = await userToken.value?.rawValue else {
+  guard let token = await userToken.value else {
     throw AppError("Missing user token")
   }
   return try await request(root: .userAuthed(token, route), pair: T.self)

@@ -9,6 +9,7 @@ public enum AuthedUserRoute: PairRoute {
   case createUnlockRequests(CreateUnlockRequests.Input)
   case createUnlockRequests_v2(CreateUnlockRequests_v2.Input)
   case getAccountStatus
+  case getUserData
   case refreshRules(RefreshRules.Input)
 }
 
@@ -40,6 +41,9 @@ public extension AuthedUserRoute {
     }
     Route(/Self.getAccountStatus) {
       Operation(GetAccountStatus.self)
+    }
+    Route(/Self.getUserData) {
+      Operation(GetUserData.self)
     }
     Route(/Self.refreshRules) {
       Operation(RefreshRules.self)

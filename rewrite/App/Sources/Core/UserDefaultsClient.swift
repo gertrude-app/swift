@@ -39,3 +39,13 @@ public extension DependencyValues {
     set { self[UserDefaultsClient.self] = newValue }
   }
 }
+
+#if DEBUG
+  public extension UserDefaultsClient {
+    static let failing = Self(
+      setString: unimplemented("UserDefaultsClient.setString"),
+      getString: unimplemented("UserDefaultsClient.getString"),
+      remove: unimplemented("UserDefaultsClient.remove")
+    )
+  }
+#endif
