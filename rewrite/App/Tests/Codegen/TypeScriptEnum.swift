@@ -30,7 +30,7 @@ extension TypeScriptEnum: CodeGenerator {
     ]
 
     if fileBody.contains("ReleaseChannel") {
-      headerLines.append("import Shared")
+      headerLines.append("import Gertie")
     }
 
     let header = headerLines.joined(separator: "\n")

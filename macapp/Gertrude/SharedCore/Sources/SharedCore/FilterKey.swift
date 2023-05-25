@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 public struct FilterKey: Equatable, Codable {
   public let id: UUID

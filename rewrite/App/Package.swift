@@ -29,7 +29,7 @@ let package = Package(
     .package(path: "../../x-kit"),
     .package(path: "../../pairql-macapp"),
     .package(path: "../../x-expect"),
-    .package(path: "../../shared"),
+    .package(path: "../../gertie"),
     .package(path: "../../typescript"),
   ],
   targets: [
@@ -44,7 +44,7 @@ let package = Package(
         "Core",
         "swift-tagged" => "Tagged",
         "pairql-macapp" => "MacAppRoute",
-        "shared" => "Shared",
+        "gertie" => "Gertie",
       ]
     ),
     .checkedTarget(
@@ -57,7 +57,7 @@ let package = Package(
     ),
     .checkedTarget(
       name: "LiveFilterXPCClient",
-      dependencies: [.dependencies, "Core", "ClientInterfaces", "shared" => "Shared"]
+      dependencies: [.dependencies, "Core", "ClientInterfaces", "gertie" => "Gertie"]
     ),
     .checkedTarget(
       name: "LiveFilterExtensionClient",
@@ -65,7 +65,7 @@ let package = Package(
     ),
     .checkedTarget(
       name: "LiveUpdaterClient",
-      dependencies: [.dependencies, "App", "Core", "shared" => "Shared", "Sparkle"]
+      dependencies: [.dependencies, "App", "Core", "gertie" => "Gertie", "Sparkle"]
     ),
     .checkedTarget(
       name: "LiveWebSocketClient",
@@ -73,7 +73,7 @@ let package = Package(
         .dependencies,
         "ClientInterfaces",
         "Core",
-        "shared" => "Shared",
+        "gertie" => "Gertie",
         "x-kit" => "XCore",
         "Starscream",
         "combine-schedulers" => "CombineSchedulers",
@@ -81,12 +81,12 @@ let package = Package(
     ),
     .checkedTarget(
       name: "Filter",
-      dependencies: [.tca, "Core", "x-kit" => "XCore", "shared" => "Shared"],
+      dependencies: [.tca, "Core", "x-kit" => "XCore", "gertie" => "Gertie"],
       linkerSettings: [.linkedLibrary("bsm")]
     ),
     .checkedTarget(
       name: "Core",
-      dependencies: [.dependencies, "shared" => "Shared"]
+      dependencies: [.dependencies, "gertie" => "Gertie"]
     ),
     .target(
       name: "TestSupport",
@@ -112,7 +112,7 @@ let package = Package(
       dependencies: [
         "LiveWebSocketClient",
         "Core",
-        "shared" => "Shared",
+        "gertie" => "Gertie",
         "TestSupport",
         "x-expect" => "XExpect",
         "x-kit" => "XCore",

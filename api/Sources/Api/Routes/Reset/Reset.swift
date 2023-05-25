@@ -1,5 +1,5 @@
 import DuetSQL
-import Shared
+import Gertie
 import Vapor
 import XCore
 
@@ -62,7 +62,7 @@ enum Reset {
     name: String,
     isPublic: Bool = false,
     description: String? = nil,
-    keys: [Shared.Key] = []
+    keys: [Gertie.Key] = []
   ) async throws -> Keychain {
     let keychain = try await Current.db.create(Keychain(
       id: id,

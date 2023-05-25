@@ -1,7 +1,7 @@
 import Combine
 import ComposableArchitecture
 import Core
-import Shared
+import Gertie
 import TestSupport
 import XCTest
 import XExpect

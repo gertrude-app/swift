@@ -3,7 +3,7 @@ import Combine
 import CombineSchedulers
 import Core
 import Foundation
-import Shared
+import Gertie
 import Starscream
 import XCore
 

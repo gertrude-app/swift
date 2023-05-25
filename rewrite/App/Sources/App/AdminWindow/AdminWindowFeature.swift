@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import Core
 import Foundation
-import Shared
+import Gertie
 import TaggedTime
 
 struct AdminWindowFeature: Feature {

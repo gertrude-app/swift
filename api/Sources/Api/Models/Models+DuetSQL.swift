@@ -1,5 +1,5 @@
 import DuetSQL
-import Shared
+import Gertie
 
 extension Admin: Model {
   public static let tableName = M1.tableName
@@ -319,7 +319,7 @@ extension Keychain: Model {
   }
 }
 
-extension Shared.Key: PostgresJsonable {}
+extension Gertie.Key: PostgresJsonable {}
 
 extension Key: Model {
   public static let tableName = M2.tableName

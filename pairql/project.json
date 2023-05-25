@@ -1,7 +1,7 @@
 {
   "root": "pairql",
   "projectType": "library",
-  "implicitDependencies": ["shared"],
+  "implicitDependencies": ["gertie"],
   "targets": {
     "build": {
       "command": "cd pairql && swift build"

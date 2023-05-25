@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 public struct DebugSession: Equatable, Codable {
   public var id: UUID

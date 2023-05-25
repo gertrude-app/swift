@@ -1,7 +1,7 @@
 {
   "root": "rewrite/App",
   "projectType": "library",
-  "implicitDependencies": ["shared", "x-kit"],
+  "implicitDependencies": ["gertie", "x-kit"],
   "targets": {
     "build": {
       "command": "cd rewrite/App && swift build"

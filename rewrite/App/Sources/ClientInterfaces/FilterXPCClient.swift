@@ -2,7 +2,7 @@ import Combine
 import Core
 import Dependencies
 import Foundation
-import Shared
+import Gertie
 import TaggedTime
 
 public struct FilterXPCClient: Sendable {

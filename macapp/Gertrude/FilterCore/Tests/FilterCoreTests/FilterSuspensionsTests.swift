@@ -1,5 +1,5 @@
 import FilterCore
-import Shared
+import Gertie
 import XCTest
 
 class FilterSuspensionsTests: XCTestCase {

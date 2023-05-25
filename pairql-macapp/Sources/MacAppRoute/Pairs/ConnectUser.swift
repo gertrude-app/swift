@@ -1,6 +1,6 @@
 import Foundation
 import PairQL
-import Shared
+import Gertie
 
 // 🚀 BETA: for rewrite, not in use yet
 public struct ConnectUser: Pair {

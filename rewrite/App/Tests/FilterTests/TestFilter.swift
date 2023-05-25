@@ -1,7 +1,7 @@
 import Core
 import Dependencies
 import Foundation
-import Shared
+import Gertie
 
 @testable import Filter
 
@@ -18,11 +18,11 @@ class TestFilter: NetworkFilter {
 
   @Dependency(\.security) var security
 
-  func appCache(get bundleId: String) -> Shared.AppDescriptor? {
+  func appCache(get bundleId: String) -> AppDescriptor? {
     state.appCache[bundleId]
   }
 
-  func appCache(insert: Shared.AppDescriptor, for bundleId: String) {
+  func appCache(insert: AppDescriptor, for bundleId: String) {
     state.appCache[bundleId] = insert
   }
 

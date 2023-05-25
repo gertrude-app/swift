@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 import SharedCore
 
 public enum FilterXPCDelegateEvent: LogMessagable {

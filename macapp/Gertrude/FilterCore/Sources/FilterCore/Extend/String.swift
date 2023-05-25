@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 public extension String {
   // "501,502" -> Set<uid_t> [501, 502]

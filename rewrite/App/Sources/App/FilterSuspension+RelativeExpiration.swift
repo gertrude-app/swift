@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 extension Date {
   func timeRemaining(until future: Date = Date()) -> String? {

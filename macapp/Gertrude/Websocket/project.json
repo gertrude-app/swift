@@ -1,7 +1,7 @@
 {
   "root": "macapp/Gertrude/Websocket",
   "projectType": "library",
-  "implicitDependencies": ["shared", "x-kit"],
+  "implicitDependencies": ["gertie", "x-kit"],
   "targets": {
     "build": {
       "command": "cd macapp/Gertrude/Websocket && swift build"

@@ -1,12 +1,12 @@
 import Combine
 import CombineSchedulers
 import Foundation
-import Shared
+import Gertie
 import Starscream
 import XCore
 
-public typealias IncomingMessage = Shared.WebsocketMsg.ApiToApp.Message
-public typealias OutgoingMessage = Shared.WebsocketMsg.AppToApi.Message
+public typealias IncomingMessage = Gertrude.WebsocketMsg.ApiToApp.Message
+public typealias OutgoingMessage = Gertrude.WebsocketMsg.AppToApi.Message
 
 public class WebsocketConnection: WebSocketDelegate {
   public var createSocket: () -> WebSocketClient

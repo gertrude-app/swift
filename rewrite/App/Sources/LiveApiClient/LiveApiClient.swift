@@ -2,7 +2,7 @@ import ClientInterfaces
 import Dependencies
 import Foundation
 import MacAppRoute
-import Shared
+import Gertie
 
 extension ApiClient: DependencyKey {
   public static let liveValue = Self(

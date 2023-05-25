@@ -1,5 +1,5 @@
 import Cocoa
-import Shared
+import Gertie
 import LaunchAtLogin
 import SharedCore
 import UserNotifications

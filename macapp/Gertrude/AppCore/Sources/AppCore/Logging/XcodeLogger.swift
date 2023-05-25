@@ -1,7 +1,7 @@
 #if DEBUG
 
   import Foundation
-  import Shared
+  import Gertie
   import SharedCore
 
   struct XcodeLogger: LoggerProtocol {

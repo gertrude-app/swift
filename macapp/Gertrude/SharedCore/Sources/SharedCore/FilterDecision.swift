@@ -1,5 +1,5 @@
 import Foundation
-import Shared
+import Gertie
 
 /**
  * FilterDecision is an entity-agnostic, stripped down version of a NetworkDecision.

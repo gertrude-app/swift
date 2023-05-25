@@ -1,5 +1,5 @@
 import DuetSQL
-import Shared
+import Gertie
 import Tagged
 
 extension RequestStatus: PostgresEnum {

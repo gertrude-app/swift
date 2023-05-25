@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 import SwiftUI
 
 struct HealthCheck: Identifiable {

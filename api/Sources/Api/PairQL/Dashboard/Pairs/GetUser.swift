@@ -1,7 +1,7 @@
 import DuetSQL
 import Foundation
+import Gertie
 import PairQL
-import Shared
 
 struct KeychainSummary: PairNestable {
   let id: Api.Keychain.Id

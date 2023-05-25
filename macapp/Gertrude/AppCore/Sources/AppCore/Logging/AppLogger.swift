@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 import SharedCore
 
 final class AppLogger: GertieLogger {

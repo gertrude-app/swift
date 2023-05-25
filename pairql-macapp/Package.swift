@@ -10,14 +10,14 @@ let package = Package(
   dependencies: [
     .package("pointfreeco/swift-url-routing@0.5.0"),
     .package(path: "../pairql"),
-    .package(path: "../shared"),
+    .package(path: "../gertie"),
     .package(path: "../x-expect"),
   ],
   targets: [
     .target(name: "MacAppRoute", dependencies: [
       .product(name: "URLRouting", package: "swift-url-routing"),
       .product(name: "PairQL", package: "pairql"),
-      .product(name: "Shared", package: "shared"),
+      .product(name: "Gertie", package: "gertie"),
     ]),
     .testTarget(name: "MacAppRouteTests", dependencies: [
       .target(name: "MacAppRoute"),

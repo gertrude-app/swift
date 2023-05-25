@@ -2,7 +2,7 @@ import ComposableArchitecture
 import Core
 import Foundation
 import MacAppRoute
-import Shared
+import Gertie
 
 struct BlockedRequestsFeature: Feature {
   struct State: Equatable, Sendable {

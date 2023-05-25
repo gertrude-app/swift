@@ -1,5 +1,5 @@
+import Gertie
 import PairQL
-import Shared
 
 struct UpdateUnlockRequest: Pair {
   static var auth: ClientAuth = .admin

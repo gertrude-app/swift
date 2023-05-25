@@ -43,9 +43,6 @@ migrate-up: build-api
 migrate-down: build-api
 	@just exec-api migrate --revert --yes
 
-codegen:
-  @cd api && CODEGEN_SWIFT=1 swift test --filter test_codegenSwift
-
 #infra
 
 deploy-prod:

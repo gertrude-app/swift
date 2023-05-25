@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import Core
-import Shared
+import Gertie
 import TaggedTime
 import TestSupport
 import XCTest

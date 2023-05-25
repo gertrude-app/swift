@@ -1,7 +1,7 @@
 import Core
 import Foundation
 import os.log // temp
-import Shared
+import Gertie
 
 public extension NetworkFilter {
 

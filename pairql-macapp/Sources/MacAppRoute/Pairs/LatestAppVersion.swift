@@ -1,5 +1,5 @@
 import PairQL
-import Shared
+import Gertie
 
 extension ReleaseChannel: PairInput {}
 

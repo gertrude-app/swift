@@ -1,7 +1,7 @@
 {
   "root": "macapp/Gertrude/AppCore",
   "projectType": "library",
-  "implicitDependencies": ["shared", "sharedcore", "pairql-macapp", "websocket"],
+  "implicitDependencies": ["gertie", "sharedcore", "pairql-macapp", "websocket"],
   "targets": {
     "build": {
       "command": "cd macapp/Gertrude/AppCore && swift build"

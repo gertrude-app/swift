@@ -1,6 +1,6 @@
 // auto-generated, do not edit
 import Foundation
-import Shared
+import Gertie
 
 extension AdminWindowFeature.State.HealthCheck.FilterStatus {
   private struct _NamedCase: Codable {

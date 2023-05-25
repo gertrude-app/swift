@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 
 actor LegacyAppConnections {
   typealias OutgoingMessage = WebsocketMsg.ApiToApp.Message

@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import MacAppRoute
-import Shared
+import Gertie
 
 enum MonitoringFeature {
   enum Action: Equatable {

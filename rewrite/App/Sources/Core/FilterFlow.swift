@@ -1,6 +1,6 @@
 import Foundation
 import Network
-import Shared
+import Gertie
 
 public struct FilterFlow: Equatable, Codable, Sendable {
   public var url: String?

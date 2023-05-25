@@ -3,7 +3,7 @@ import Combine
 import Core
 import Dependencies
 import Foundation
-import Shared
+import Gertie
 import Starscream
 
 extension ClientInterfaces.WebSocketClient: DependencyKey {

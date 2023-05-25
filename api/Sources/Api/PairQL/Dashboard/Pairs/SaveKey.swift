@@ -1,6 +1,6 @@
 import Foundation
+import Gertie
 import PairQL
-import Shared
 
 struct SaveKey: Pair {
   static var auth: ClientAuth = .admin
@@ -9,7 +9,7 @@ struct SaveKey: Pair {
     var isNew: Bool
     var id: Key.Id
     var keychainId: Keychain.Id
-    var key: Shared.Key
+    var key: Gertie.Key
     var comment: String?
     var expiration: Date?
   }

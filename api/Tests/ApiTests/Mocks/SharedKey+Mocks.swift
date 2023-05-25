@@ -1,5 +1,5 @@
 import DuetMock
-import Shared
+import Gertie
 
 extension Key: Mock {
   public static var mock: Key {

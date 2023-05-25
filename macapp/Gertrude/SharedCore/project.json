@@ -1,7 +1,7 @@
 {
   "root": "macapp/Gertrude/SharedCore",
   "projectType": "library",
-  "implicitDependencies": ["shared", "x-kit"],
+  "implicitDependencies": ["gertie", "x-kit"],
   "targets": {
     "build": {
       "command": "cd macapp/Gertrude/SharedCore && swift build"

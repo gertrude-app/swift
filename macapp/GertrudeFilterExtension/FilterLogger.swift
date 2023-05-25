@@ -1,5 +1,5 @@
 import FilterCore
-import Shared
+import Gertie
 import SharedCore
 
 final class FilterLogger: GertieLogger {

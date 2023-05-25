@@ -2,7 +2,7 @@ import ComposableArchitecture
 import Core
 import Foundation
 import os.log
-import Shared
+import Gertie
 
 public struct Filter: Reducer, Sendable {
   public struct State: Equatable, DecisionState {

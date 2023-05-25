@@ -1,5 +1,5 @@
 import Combine
-import Shared
+import Gertie
 
 extension AdminWindowState {
   struct HealthCheckState: Equatable {
