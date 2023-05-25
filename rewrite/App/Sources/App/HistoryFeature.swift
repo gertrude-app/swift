@@ -25,10 +25,10 @@ enum HistoryFeature: Feature {
   }
 
   struct RootReducer {
+    @Dependency(\.api) var api
+    @Dependency(\.app) var app
     @Dependency(\.device) var device
-    @Dependency(\.api.connectUser) var connectUser
-    @Dependency(\.app.installedVersion) var appVersion
-    @Dependency(\.storage.savePersistentState) var save
+    @Dependency(\.storage) var storage
   }
 }
 
@@ -48,7 +48,7 @@ extension HistoryFeature.RootReducer: RootReducing {
       state.history.userConnection = .connecting
       return .task {
         await .history(.userConnection(.connect(TaskResult {
-          try await connectUser(connectUserInput(code: code))
+          try await api.connectUser(connectUserInput(code: code))
         })))
       }
 
@@ -65,8 +65,8 @@ extension HistoryFeature.RootReducer: RootReducing {
 
     case .history(.userConnection(.connect(.success(let user)))):
       state.user = user
-      return .run { [persistedState = state.persistent] _ in
-        try await save(persistedState)
+      return .run { [persistent = state.persistent] _ in
+        try await storage.savePersistentState(persistent)
       }
 
     case .loadedPersistentState(let persisted):
@@ -87,7 +87,7 @@ extension HistoryFeature.RootReducer: RootReducing {
     }
     return ConnectUser.Input(
       verificationCode: code,
-      appVersion: appVersion() ?? "unknown",
+      appVersion: app.installedVersion() ?? "unknown",
       hostname: device.hostname(),
       modelIdentifier: device.modelIdentifier() ?? "unknown",
       username: device.username(),

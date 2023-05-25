@@ -1,6 +1,6 @@
 import ComposableArchitecture
-import MacAppRoute
 import Gertie
+import MacAppRoute
 
 struct UserFeature: Feature {
   typealias State = UserData
@@ -75,8 +75,8 @@ extension UserFeature.RootReducer: RootReducing {
       }
 
     case .user(.refreshRules(.success(let output), let userInitiated)):
-      return .run { [filterReachable = state.filter.extension.installed] _ in
-        guard filterReachable else {
+      return .run { [filterInstalled = state.filter.extension.installed] _ in
+        guard filterInstalled else {
           if userInitiated {
             // if filter was never installed, we don't want to show an error
             // message (or nothing), so consider this a success and notify

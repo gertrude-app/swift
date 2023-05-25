@@ -6,11 +6,11 @@ import XExpect
 
 @testable import App
 
-class MigratorTests: XCTestCase {
-  typealias V1 = Migrator.LegacyData.V1.StorageKey
+class AppMigratorTests: XCTestCase {
+  typealias V1 = AppMigrator.Legacy.V1.StorageKey
 
-  var testMigrator: Migrator {
-    Migrator(api: .failing, userDefaults: .failing)
+  var testMigrator: AppMigrator {
+    AppMigrator(api: .failing, userDefaults: .failing)
   }
 
   func testNoStoredDataAtAllReturnsNil() async {
