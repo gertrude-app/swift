@@ -16,16 +16,33 @@ public enum JSON {
     }
   }
 
-  public static func decode<T: Decodable>(_ json: String, as type: T.Type) throws -> T {
-    let decoder = JSONDecoder()
+  public struct DecodeOptions: OptionSet {
+    public let rawValue: Int
+    public static let isoDates = DecodeOptions(rawValue: 1 << 0)
+
+    public init(rawValue: Int) {
+      self.rawValue = rawValue
+    }
+  }
+
+  public static func decode<T: Decodable>(
+    _ json: String,
+    as type: T.Type,
+    _ options: DecodeOptions = []
+  ) throws -> T {
+    let decoder = decoder(from: options)
     guard let data = json.data(using: .utf8) else {
       throw Error.stringToDataConversionError
     }
     return try decoder.decode(type, from: data)
   }
 
-  public static func decode<T: Decodable>(_ data: Data, as type: T.Type) throws -> T {
-    let decoder = JSONDecoder()
+  public static func decode<T: Decodable>(
+    _ data: Data,
+    as type: T.Type,
+    _ options: DecodeOptions = []
+  ) throws -> T {
+    let decoder = decoder(from: options)
     return try decoder.decode(type, from: data)
   }
 
@@ -52,5 +69,13 @@ public enum JSON {
       encoder.outputFormatting = .prettyPrinted
     }
     return try encoder.encode(value)
+  }
+
+  private static func decoder(from options: DecodeOptions) -> JSONDecoder {
+    let decoder = JSONDecoder()
+    if options.contains(.isoDates) {
+      decoder.dateDecodingStrategy = .iso8601
+    }
+    return decoder
   }
 }

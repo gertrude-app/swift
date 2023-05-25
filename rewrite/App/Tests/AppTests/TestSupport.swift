@@ -1,7 +1,7 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Dependencies
 import Foundation
-import Models
 import TestSupport
 import XExpect
 

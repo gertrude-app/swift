@@ -1,5 +1,5 @@
+import ClientInterfaces
 import Dependencies
-import Models
 
 extension MenuBarFeature.State {
   enum View: Equatable, Encodable {

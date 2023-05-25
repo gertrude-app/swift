@@ -1,7 +1,7 @@
+import ClientInterfaces
 import Combine
 import Core
 import Foundation
-import Models
 
 @objc class ReceiveFilterMessage: NSObject, FilterMessageReceiving {
 

@@ -1,9 +1,9 @@
+import ClientInterfaces
 import Combine
 import ComposableArchitecture
 import Core
 import Foundation
 import MacAppRoute
-import Models
 import Shared
 
 struct AppReducer: Reducer, Sendable {

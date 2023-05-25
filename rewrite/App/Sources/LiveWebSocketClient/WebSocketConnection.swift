@@ -1,8 +1,8 @@
+import ClientInterfaces
 import Combine
 import CombineSchedulers
 import Core
 import Foundation
-import Models
 import Shared
 import Starscream
 import XCore
@@ -54,7 +54,7 @@ public class WebSocketConnection: WebSocketDelegate {
     socket.disconnect()
   }
 
-  public func clientState() -> Models.WebSocketClient.State {
+  public func clientState() -> ClientInterfaces.WebSocketClient.State {
     switch currentState {
     case .connected:
       return .connected

@@ -6,7 +6,7 @@ let package = Package(
   platforms: [.macOS(.v10_15)],
   products: [
     .library(name: "App", targets: ["App"]),
-    .library(name: "Models", targets: ["Models"]),
+    .library(name: "ClientInterfaces", targets: ["ClientInterfaces"]),
     .library(name: "Filter", targets: ["Filter"]),
     .library(name: "Core", targets: ["Core"]),
     .library(name: "LiveApiClient", targets: ["LiveApiClient"]),
@@ -35,10 +35,10 @@ let package = Package(
   targets: [
     .checkedTarget(
       name: "App",
-      dependencies: [.tca, "x-kit" => "XCore", "Core", "Models"]
+      dependencies: [.tca, "x-kit" => "XCore", "Core", "ClientInterfaces"]
     ),
     .checkedTarget(
-      name: "Models",
+      name: "ClientInterfaces",
       dependencies: [
         .dependencies,
         "Core",
@@ -49,19 +49,19 @@ let package = Package(
     ),
     .checkedTarget(
       name: "LiveApiClient",
-      dependencies: [.dependencies, "x-kit" => "XCore", "Models"]
+      dependencies: [.dependencies, "x-kit" => "XCore", "ClientInterfaces"]
     ),
     .checkedTarget(
       name: "LiveAppClient",
-      dependencies: [.dependencies, "LaunchAtLogin", "Models"]
+      dependencies: [.dependencies, "LaunchAtLogin", "ClientInterfaces"]
     ),
     .checkedTarget(
       name: "LiveFilterXPCClient",
-      dependencies: [.dependencies, "Core", "Models", "shared" => "Shared"]
+      dependencies: [.dependencies, "Core", "ClientInterfaces", "shared" => "Shared"]
     ),
     .checkedTarget(
       name: "LiveFilterExtensionClient",
-      dependencies: [.dependencies, "Core", "Models"]
+      dependencies: [.dependencies, "Core", "ClientInterfaces"]
     ),
     .checkedTarget(
       name: "LiveUpdaterClient",
@@ -71,7 +71,7 @@ let package = Package(
       name: "LiveWebSocketClient",
       dependencies: [
         .dependencies,
-        "Models",
+        "ClientInterfaces",
         "Core",
         "shared" => "Shared",
         "x-kit" => "XCore",
@@ -96,7 +96,7 @@ let package = Package(
       name: "AppTests",
       dependencies: [
         "App",
-        "Models",
+        "ClientInterfaces",
         "TestSupport",
         "x-expect" => "XExpect",
         "x-kit" => "XCore",

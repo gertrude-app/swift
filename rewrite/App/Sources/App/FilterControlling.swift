@@ -1,6 +1,6 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Foundation
-import Models
 
 protocol FilterControlling: RootReducing {
   var filter: FilterExtensionClient { get }
