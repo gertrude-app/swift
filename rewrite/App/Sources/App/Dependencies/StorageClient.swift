@@ -18,7 +18,7 @@ extension StorageClient: DependencyKey {
         userDefaults.setString(try JSON.encode(state), key)
       },
       loadPersistentState: {
-        await Migrator(api: api, userDefaults: userDefaults)
+        await AppMigrator(api: api, userDefaults: userDefaults)
           .migratePersistedState()
       },
       deleteAllPersistentState: {

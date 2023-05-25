@@ -2,8 +2,8 @@ import Combine
 import Core
 import Dependencies
 import Foundation
-import os.log // TODO: remove when logging in place
 import Gertie
+import os.log // TODO: remove when logging in place
 
 @objc class ReceiveAppMessage: NSObject, AppMessageReceiving {
   let subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>
@@ -76,7 +76,7 @@ import Gertie
         randomInt,
         userId
       )
-      let savedState = try storage.loadPersistentState()
+      let savedState = try storage.loadPersistentStateSync()
       let version = Bundle.main
         .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
       let ack = XPC.FilterAck(
@@ -126,7 +126,7 @@ import Gertie
   ) {
     do {
       os_log("[G•] xpc.receiveListExemptUserIdsRequest()")
-      let savedState = try storage.loadPersistentState()
+      let savedState = try storage.loadPersistentStateSync()
       let exemptUsers = Array(savedState?.exemptUsers ?? [])
       let data = try XPC.encode(exemptUsers)
       reply(data, nil)

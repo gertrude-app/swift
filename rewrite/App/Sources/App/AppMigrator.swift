@@ -1,36 +1,21 @@
 import ClientInterfaces
 import Core
-import os.log
 import Gertie
 import XCore
 
-struct Migrator {
+struct AppMigrator: Migrator {
   var api: ApiClient
   var userDefaults: UserDefaultsClient
+  var context = "App"
 
-  func migratePersistedState() async -> Persistent.State? {
-    // `v1` here means version 1 of Persistent.State, introduced in app 2.0.0
-    let key = "persistent.state.v1"
-    let current = try? userDefaults.getString(key).flatMap { json in
-      try JSON.decode(json, as: Persistent.State.self)
-    }
-    if let current {
-      os_log("[G•] Migrator: found current state, no migration necessary")
-      return current
-    } else if let migrated = await migrateV1() {
-      os_log("[G•] Migrator: migrated from V1 state - %{public}s", String(describing: migrated))
-      (try? JSON.encode(migrated)).map { userDefaults.setString(key, $0) }
-      return migrated
-    } else {
-      os_log("[G•] Migrator: no state found, no migration succeeded")
-      return nil
-    }
+  func migrateLastVersion() async -> Persistent.State? {
+    await migrateV1()
   }
 
   // v1 below refers to legacy 1.x version of the app
   // before ComposableArchitecture rewrite
   func migrateV1() async -> Persistent.State? {
-    typealias V1 = LegacyData.V1
+    typealias V1 = Legacy.V1
 
     guard let token = userDefaults
       .v1(.userToken)
@@ -38,11 +23,13 @@ struct Migrator {
       return nil
     }
 
+    log("found v1 token `\(token)`")
     await api.setUserToken(token)
     let user = try? await api.userData()
     let v1Version = userDefaults.v1(.installedAppVersion) ?? "unknown"
 
     if let user {
+      log("migrated v1 state from successful user api call")
       return Persistent.State(
         appVersion: v1Version,
         appUpdateReleaseChannel: .stable,
@@ -50,10 +37,13 @@ struct Migrator {
       )
     }
 
+    log("api call failed, migrating v1 state from storage")
+
     guard let userIdString = userDefaults.v1(.gertrudeUserId),
           let userId = UUID(uuidString: userIdString),
           let deviceIdString = userDefaults.v1(.gertrudeDeviceId),
           let deviceId = UUID(uuidString: deviceIdString) else {
+      log("missing required date to continue storage migration")
       return nil
     }
 
@@ -62,6 +52,7 @@ struct Migrator {
     let screenshotsFrequency = userDefaults.v1(.screenshotFrequency).flatMap(Int.init)
     let screenshotsSize = userDefaults.v1(.screenshotSize).flatMap(Int.init)
 
+    log("migrated v1 state from fallback storage")
     return Persistent.State(
       appVersion: v1Version,
       appUpdateReleaseChannel: .stable,
@@ -81,13 +72,13 @@ struct Migrator {
 }
 
 private extension UserDefaultsClient {
-  func v1(_ key: Migrator.LegacyData.V1.StorageKey) -> String? {
+  func v1(_ key: AppMigrator.Legacy.V1.StorageKey) -> String? {
     getString(key.namespaced)
   }
 }
 
-extension Migrator {
-  enum LegacyData {
+extension AppMigrator {
+  enum Legacy {
     enum V1 {
       enum StorageKey: String {
         case gertrudeUserId
