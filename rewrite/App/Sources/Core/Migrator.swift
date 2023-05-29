@@ -9,7 +9,7 @@ public protocol Migrator {
 }
 
 public extension Migrator {
-  func migratePersistedState() async -> State? {
+  func migrate() async -> State? {
     let key = "persistent.state.v\(State.version)"
     let current = try? userDefaults.getString(key).flatMap { json in
       try JSON.decode(json, as: State.self)
