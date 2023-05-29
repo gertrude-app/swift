@@ -1,5 +1,6 @@
 import Dependencies
 import Foundation
+import XCore
 
 public struct UserDefaultsClient: Sendable {
   public var setString: @Sendable (String, String) -> Void
@@ -14,6 +15,14 @@ public struct UserDefaultsClient: Sendable {
     self.setString = setString
     self.getString = getString
     self.remove = remove
+  }
+
+  public func loadJson<T: Decodable>(at key: String, decoding type: T.Type) throws -> T? {
+    try getString(key).flatMap { try JSON.decode($0, as: T.self) }
+  }
+
+  public func saveJson<T: Encodable>(from value: T, at key: String) throws {
+    setString(try JSON.encode(value), key)
   }
 }
 

@@ -14,22 +14,28 @@ struct StorageClient: Sendable {
 extension StorageClient: DependencyKey {
   static var liveValue: Self {
     @Dependency(\.userDefaults) var userDefaults
+    @Sendable func loadSync() throws -> Persistent.State? {
+      try userDefaults.loadJson(
+        at: Persistent.State.currentStorageKey,
+        decoding: Persistent.State.self
+      )
+    }
     return Self(
       savePersistentState: { state in
-        let key = "persistent.state.v\(Persistent.State.version)"
-        userDefaults.setString(try JSON.encode(state), key)
+        try userDefaults.saveJson(
+          from: state,
+          at: Persistent.State.currentStorageKey
+        )
       },
       loadPersistentState: {
-        await FilterMigrator(userDefaults: userDefaults).migratePersistedState()
+        if let current = try loadSync() { return current }
+        return await FilterMigrator(userDefaults: userDefaults).migrate()
       },
       loadPersistentStateSync: {
-        let key = "persistent.state.v\(Persistent.State.version)"
-        return try userDefaults.getString(key).flatMap { string in
-          try JSON.decode(string, as: Persistent.State.self)
-        }
+        try loadSync()
       },
       deleteAllPersistentState: {
-        userDefaults.remove("persistent.state.v\(Persistent.State.version)")
+        userDefaults.remove(Persistent.State.currentStorageKey)
       }
     )
   }

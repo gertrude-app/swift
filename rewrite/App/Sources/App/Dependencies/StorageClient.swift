@@ -14,15 +14,23 @@ extension StorageClient: DependencyKey {
     @Dependency(\.userDefaults) var userDefaults
     return Self(
       savePersistentState: { state in
-        let key = "persistent.state.v\(Persistent.State.version)"
-        userDefaults.setString(try JSON.encode(state), key)
+        try userDefaults.saveJson(
+          from: state,
+          at: Persistent.State.currentStorageKey
+        )
       },
       loadPersistentState: {
-        await AppMigrator(api: api, userDefaults: userDefaults)
-          .migratePersistedState()
+        if let current = try? userDefaults.loadJson(
+          at: Persistent.State.currentStorageKey,
+          decoding: Persistent.State.self
+        ) {
+          return current
+        }
+        let migrator = AppMigrator(api: api, userDefaults: userDefaults)
+        return await migrator.migrate()
       },
       deleteAllPersistentState: {
-        userDefaults.remove("persistent.state.v\(Persistent.State.version)")
+        userDefaults.remove(Persistent.State.currentStorageKey)
       }
     )
   }

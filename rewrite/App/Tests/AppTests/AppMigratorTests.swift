@@ -16,7 +16,7 @@ class AppMigratorTests: XCTestCase {
   func testNoStoredDataAtAllReturnsNil() async {
     var migrator = testMigrator
     migrator.userDefaults.getString = { _ in nil }
-    let result = await migrator.migratePersistedState()
+    let result = await migrator.migrate()
     expect(result).toBeNil()
   }
 
@@ -25,7 +25,7 @@ class AppMigratorTests: XCTestCase {
     let stateJson = try! JSON.encode(Persistent.State.mock)
     let getString = spySync(on: String.self, returning: stateJson)
     migrator.userDefaults.getString = getString.fn
-    let result = await migrator.migratePersistedState()
+    let result = await migrator.migrate()
     expect(result).toEqual(.mock)
     expect(getString.invocations.value).toEqual(["persistent.state.v1"])
   }
@@ -72,7 +72,7 @@ class AppMigratorTests: XCTestCase {
       }
     }
 
-    let result = await migrator.migratePersistedState()
+    let result = await migrator.migrate()
     await expect(setApiToken.invocations).toEqual([.deadbeef])
     await expect(getUser.invocations).toEqual(1)
     expect(getStringInvocations.value).toEqual([
@@ -138,7 +138,7 @@ class AppMigratorTests: XCTestCase {
       }
     }
 
-    let result = await migrator.migratePersistedState()
+    let result = await migrator.migrate()
     let expectedUser = UserData(
       id: .twos,
       token: .ones,
