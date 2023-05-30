@@ -1,6 +1,6 @@
 import Foundation
-import NIOWebSocket
 import Gertie
+import NIOWebSocket
 import Tagged
 import Vapor
 import XCore
@@ -47,7 +47,7 @@ class AppConnection {
     case .currentFilterState(let filterState):
       self.filterState = filterState
     case .goingOffline:
-      break // TODO: handle
+      Task { await Current.connectedApps.remove(self) }
     }
   }
 }

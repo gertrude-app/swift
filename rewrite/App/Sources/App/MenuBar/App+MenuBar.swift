@@ -31,7 +31,8 @@ extension AppReducer.State {
         return .enteringConnectionCode
       case .established(let welcomeDismissed):
         guard let user else {
-          return .connectionFailed(error: "Unexpected error, please reconnect") // TODO:
+          // TODO: log unexpected error
+          return .connectionFailed(error: "Unexpected error, please reconnect")
         }
         guard welcomeDismissed else {
           return .connectionSucceded(userName: user.name)

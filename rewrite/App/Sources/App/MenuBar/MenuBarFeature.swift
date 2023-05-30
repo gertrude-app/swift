@@ -23,7 +23,6 @@ enum MenuBarFeature: Feature {
 
   struct Reducer: FeatureReducer {
     @Dependency(\.device) var device
-    @Dependency(\.filterXpc) var xpc
   }
 }
 
@@ -45,12 +44,6 @@ extension MenuBarFeature.Reducer {
     case .connectFailedHelpClicked:
       return .run { _ in
         await device.openWebUrl(URL(string: "https://gertrude.app/contact")!)
-      }
-
-    // TODO: temporary
-    case .administrateClicked:
-      return .run { _ in
-        print("establish connection:", await xpc.establishConnection())
       }
 
     default:

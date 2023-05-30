@@ -1,8 +1,8 @@
 import ComposableArchitecture
 import Core
 import Foundation
-import MacAppRoute
 import Gertie
+import MacAppRoute
 
 struct BlockedRequestsFeature: Feature {
   struct State: Equatable, Sendable {
@@ -139,7 +139,7 @@ extension BlockedRequestsFeature.RootReducer {
     case .menuBar(.viewNetworkTrafficClicked):
       state.blockedRequests.windowOpen = true
       return .run { _ in
-        // TODO: handle error
+        // TODO: if not successful, log unexpected
         _ = await filterXpc.setBlockStreaming(true)
       }
 
