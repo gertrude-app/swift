@@ -51,7 +51,7 @@ struct AdminWindowFeature: Feature {
       var keystrokeMonitoringEnabled: Bool
       var installedAppVersion: String
       var releaseChannel: ReleaseChannel
-      var quitting: Bool // TODO: remove, use local state in react
+      var quitting: Bool
 
       struct ExemptableUser: Equatable, Codable {
         var id: uid_t
@@ -573,7 +573,8 @@ extension AdminWindowFeature.State.View {
     releaseChannel = rootState.appUpdates.releaseChannel
     quitting = featureState.quitting
 
-    // TODO: open issue, the ui is wierd and wonky
+    // TODO: this whole feature is not great
+    // @see https://github.com/gertrude-app/project/issues/156
     if screen == .advanced {
       advanced = .init(
         pairqlEndpointOverride: ApiClient.endpointOverride()?.absoluteString,

@@ -1,3 +1,4 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Core
 import Foundation
@@ -110,8 +111,8 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         if let current = Semver(current), let latest = Semver(latest) {
           shouldUpdate = latest > current
         } else {
-          // TODO: log unexpected
           shouldUpdate = latest != current
+          unexpectedError(id: "bbb7eeba")
         }
         if shouldUpdate {
           try await triggerUpdate(channel, persist)

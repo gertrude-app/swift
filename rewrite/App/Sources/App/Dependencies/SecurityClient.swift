@@ -1,3 +1,4 @@
+import ClientInterfaces
 import Dependencies
 import SecurityFoundation
 
@@ -14,7 +15,7 @@ extension SecurityClient: DependencyKey {
     public static var liveValue = Self(didAuthenticateAsAdmin: {
       guard let authorization = SFAuthorization.authorization() as? SFAuthorization,
             let right = NSString(string: kAuthorizationRuleAuthenticateAsAdmin).utf8String else {
-        // TODO: log unreachable
+        unexpectedError(id: "43f78286")
         return false
       }
 

@@ -16,6 +16,16 @@ public enum FilterExtensionState: Equatable, Sendable {
       return false
     }
   }
+
+  public var isXpcReachable: Bool {
+    switch self {
+    // xpc is reachable in both these states (same as `installed`)
+    case .installedAndRunning, .installedButNotRunning:
+      return true
+    case .unknown, .errorLoadingConfig, .notInstalled:
+      return false
+    }
+  }
 }
 
 public enum FilterInstallResult: Sendable {
