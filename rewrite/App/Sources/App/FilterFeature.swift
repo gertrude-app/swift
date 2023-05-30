@@ -67,7 +67,6 @@ extension FilterFeature.RootReducer {
       state.filter.extension = filterState
       return .none
 
-    // TODO: test
     case .menuBar(.turnOnFilterClicked),
          .adminWindow(.webview(.startFilterClicked)):
       if !state.filter.extension.installed {

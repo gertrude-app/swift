@@ -110,7 +110,8 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         if let current = Semver(current), let latest = Semver(latest) {
           shouldUpdate = latest > current
         } else {
-          shouldUpdate = latest != current // TODO: log unreachable
+          // TODO: log unexpected
+          shouldUpdate = latest != current
         }
         if shouldUpdate {
           try await triggerUpdate(channel, persist)

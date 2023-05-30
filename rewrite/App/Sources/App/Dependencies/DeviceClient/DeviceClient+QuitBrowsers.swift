@@ -24,7 +24,7 @@ private func terminate(
   }
 }
 
-// @TODO: should also test bundle identifiers,
+// TODO: should also test bundle identifiers,
 // and should pull this periodically from the API
 // so i can push hot-fixes to the list
 private let browserNames = [

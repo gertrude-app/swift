@@ -23,8 +23,8 @@ final class FilterManager: NSObject {
 
   func loadState() async -> FilterExtensionState {
     let loadResult = await system.loadFilterConfiguration()
-    if case .failed(let err) = loadResult {
-      print("error loading config: \(err)")
+    if case .failed = loadResult {
+      // TODO: log unexpected error (capture error above)
       return .errorLoadingConfig
     }
 
@@ -44,15 +44,16 @@ final class FilterManager: NSObject {
 
   func startFilter() async -> FilterExtensionState {
     let state = await loadState()
-    // TODO: maybe better options for some (non-.on) states, possible remediations?
     if state != .installedButNotRunning {
+      // TODO: log unexpected error, so that if it happens moderately
+      // often, you can implement better behaviors for other states
       return state
     }
 
     system.enableNEFilterManagerShared()
-    if let error = await system.saveNEFilterManagerShared() {
-      print("error saving config: \(error)")
-    }
+
+    // TODO: log unexpected error instead of ignoring
+    _ = await system.saveNEFilterManagerShared()
 
     // now that we've attempted to stop the filter, recheck the state completely
     return await loadState()
@@ -60,15 +61,16 @@ final class FilterManager: NSObject {
 
   func stopFilter() async -> FilterExtensionState {
     let state = await loadState()
-    // TODO: maybe better options for some (non-.off) states, possible remediations?
     if state != .installedAndRunning {
+      // TODO: log unexpected error, so that if it happens moderately
+      // often, you can implement better behaviors for other states
       return state
     }
 
     system.disableNEFilterManagerShared()
-    if let error = await system.saveNEFilterManagerShared() {
-      print("error saving config: \(error)")
-    }
+
+    // TODO: log unexpected error instead of ignoring
+    _ = await system.saveNEFilterManagerShared()
 
     // now that we've attempted to stop the filter, recheck the state completely
     return await loadState()
@@ -103,7 +105,6 @@ final class FilterManager: NSObject {
       if requestStatus == .succeeded {
         await activationRequest.setValue(.idle)
         return await configureFilter()
-        // TODO: handle error
       } else if waited > 60 {
         return .timedOutWaiting
       }

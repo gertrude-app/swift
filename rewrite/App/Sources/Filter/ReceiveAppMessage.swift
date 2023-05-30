@@ -3,7 +3,7 @@ import Core
 import Dependencies
 import Foundation
 import Gertie
-import os.log // TODO: remove when logging in place
+import os.log
 
 @objc class ReceiveAppMessage: NSObject, AppMessageReceiving {
   let subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>

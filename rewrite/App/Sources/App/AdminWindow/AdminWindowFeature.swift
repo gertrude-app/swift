@@ -573,6 +573,7 @@ extension AdminWindowFeature.State.View {
     releaseChannel = rootState.appUpdates.releaseChannel
     quitting = featureState.quitting
 
+    // TODO: open issue, the ui is wierd and wonky
     if screen == .advanced {
       advanced = .init(
         pairqlEndpointOverride: ApiClient.endpointOverride()?.absoluteString,

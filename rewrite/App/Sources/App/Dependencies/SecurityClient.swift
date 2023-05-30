@@ -18,7 +18,6 @@ extension SecurityClient: DependencyKey {
         return false
       }
 
-      // TODO: I could time this to test for the weird, pre-authed state
       defer { authorization.invalidateCredentials() }
       return await withCheckedContinuation { continuation in
         do {
