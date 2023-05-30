@@ -49,10 +49,6 @@ extension Date: TypescriptRepresentable {}
 
 extension Array: TypescriptRepresentable where Element: TypescriptRepresentable {}
 
-extension Dictionary: PairOutput where Key == String, Value == String {}
-
-extension Dictionary: PairInput where Key == String, Value == String {}
-
 extension Dictionary: TypescriptRepresentable where Key == String, Value == String {}
 
 extension UUID: TypescriptRepresentable {}

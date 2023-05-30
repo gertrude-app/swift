@@ -11,6 +11,10 @@ extension TypeInfo {
     kind == .struct && name.starts(with: "Array<") && genericTypes.count == 1
   }
 
+  var isDict: Bool {
+    kind == .struct && name.starts(with: "Dictionary<") && genericTypes.count == 2
+  }
+
   var isOptional: Bool {
     kind == .optional
   }

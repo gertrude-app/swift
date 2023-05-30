@@ -110,6 +110,29 @@ final class CodeGenTests: XCTestCase {
     )
   }
 
+  func testDictionaries() throws {
+    struct Bar {
+      var lol: Int
+      var rofl: Bool?
+    }
+    struct Foo {
+      var dict: [String: Int]
+      var complexDict: [String: Bar]?
+    }
+
+    expect(try CodeGen().declaration(for: Foo.self)).toEqual(
+      """
+      export type Foo = {
+        dict: { [key: string]: number };
+        complexDict?: { [key: string]: {
+          lol: number;
+          rofl?: boolean;
+        } };
+      }
+      """
+    )
+  }
+
   func testKitchenSink() throws {
     struct Foo {
       enum Bar {

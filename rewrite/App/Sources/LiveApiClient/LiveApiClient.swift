@@ -1,8 +1,8 @@
 import ClientInterfaces
 import Dependencies
 import Foundation
-import MacAppRoute
 import Gertie
+import MacAppRoute
 
 extension ApiClient: DependencyKey {
   public static let liveValue = Self(
@@ -49,6 +49,12 @@ extension ApiClient: DependencyKey {
         withUnauthed: .latestAppVersion(input)
       )
     },
+    recentAppVersions: {
+      try await output(
+        from: RecentAppVersions.self,
+        withUnauthed: .recentAppVersions
+      )
+    },
     refreshRules: { input in
       guard await accountActive.value else { throw Error.accountInactive }
       return try await output(
@@ -57,7 +63,6 @@ extension ApiClient: DependencyKey {
       )
     },
     setAccountActive: { await accountActive.setValue($0) },
-    setEndpoint: { await endpoint.setValue($0) },
     setUserToken: { await userToken.setValue($0) },
     uploadScreenshot: { jpegData, width, height in
       guard await accountActive.value else { throw Error.accountInactive }
@@ -96,8 +101,3 @@ extension ApiClient: DependencyKey {
 
 internal let accountActive = ActorIsolated<Bool>(true)
 internal let userToken = ActorIsolated<UUID?>(nil)
-#if DEBUG
-  internal let endpoint = ActorIsolated<URL>(.init(string: "http://127.0.0.1:8080/pairql")!)
-#else
-  internal let endpoint = ActorIsolated<URL>(.init(string: "https://api.gertrude.app/pairql")!)
-#endif

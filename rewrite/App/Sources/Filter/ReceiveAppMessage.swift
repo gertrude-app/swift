@@ -152,10 +152,10 @@ import os.log // TODO: remove when logging in place
     reply(nil)
   }
 
-  func prepareForUninstall(reply: @escaping (XPCErrorData?) -> Void) {
-    os_log("[G•] xpc.prepareForUninstall()")
+  func deleteAllStoredState(reply: @escaping (XPCErrorData?) -> Void) {
+    os_log("[G•] xpc.deleteAllStoredState()")
     subject.withValue {
-      $0.send(.receivedAppMessage(.prepareForUninstall))
+      $0.send(.receivedAppMessage(.deleteAllStoredState))
     }
     reply(nil)
   }

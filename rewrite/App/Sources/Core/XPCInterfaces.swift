@@ -40,7 +40,7 @@ public typealias XPCErrorData = Data
     for userId: uid_t,
     reply: @escaping (XPCErrorData?) -> Void
   )
-  func prepareForUninstall(
+  func deleteAllStoredState(
     reply: @escaping (XPCErrorData?) -> Void
   )
 }

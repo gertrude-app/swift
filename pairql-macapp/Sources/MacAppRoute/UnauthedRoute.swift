@@ -4,10 +4,11 @@ public enum UnauthedRoute: PairRoute {
   case connectApp(ConnectApp.Input)
   case connectUser(ConnectUser.Input)
   case latestAppVersion(LatestAppVersion.Input)
+  case recentAppVersions
 }
 
 public extension UnauthedRoute {
-  static let router = OneOf {
+  static let router: AnyParserPrinter<URLRequestData, UnauthedRoute> = OneOf {
     Route(/Self.connectApp) {
       Operation(ConnectApp.self)
       Body(.json(ConnectApp.Input.self))
@@ -20,5 +21,9 @@ public extension UnauthedRoute {
       Operation(LatestAppVersion.self)
       Body(.json(LatestAppVersion.Input.self))
     }
+    Route(/Self.recentAppVersions) {
+      Operation(RecentAppVersions.self)
+    }
   }
+  .eraseToAnyParserPrinter()
 }

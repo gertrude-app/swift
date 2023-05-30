@@ -1,6 +1,6 @@
+import Gertie
 import PairQL
 import Runtime
-import Gertie
 import TypescriptPairQL
 import XCTest
 import XExpect

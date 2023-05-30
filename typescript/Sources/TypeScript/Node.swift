@@ -5,6 +5,7 @@ indirect enum Node: Equatable {
   case primitive(Primitive)
   case array(Node)
   case object([Property])
+  case record(Node)
   case union([Node])
 
   enum Primitive: Equatable {
@@ -131,6 +132,10 @@ extension Node {
     switch type.kind {
     case .struct where type.isArray:
       self = .array(try Node(from: type.genericTypes[0]))
+    case .struct where type.isDict && type.genericTypes[0] == String.self:
+      self = .record(try Node(from: type.genericTypes[1]))
+    case .struct where type.isDict:
+      throw Error(message: "Dictionaries with non-string keys are not supported")
     case .struct:
       self = .object(try type.properties.map(Node.Property.init))
     case .optional:

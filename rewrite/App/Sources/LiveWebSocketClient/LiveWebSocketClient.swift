@@ -32,7 +32,7 @@ extension ClientInterfaces.WebSocketClient: DependencyKey {
     }
 
     return Self(
-      connect: { token, customUrl in
+      connect: { token in
         await tearDownCurrentConnection()
         let newConnection =
           WebSocketConnection(
@@ -47,18 +47,18 @@ extension ClientInterfaces.WebSocketClient: DependencyKey {
               #endif
             },
             messageSubject: messageSubject
-          ) { [token, customUrl] in
-            var request = URLRequest(url: customUrl ?? WS_URL)
+          ) { [token] in
+            var request = URLRequest(url: Self.endpoint)
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             return WebSocket(request: request)
           }
+
         connection.replace(with: newConnection)
 
         // seems to take a bit of time for connection to be fully established
-        // delay a bit so that when we return from this function, we know
+        // delay a bit and recheck so that when we return from this function, we know
         // we can immediately start sending messages
         try? await mainQueue.sleep(for: .seconds(1))
-
         let state = currentState()
         guard state != .connecting else { return state }
         try? await mainQueue.sleep(for: .milliseconds(500))
@@ -93,9 +93,3 @@ extension ClientInterfaces.WebSocketClient: DependencyKey {
 
 private let connection = Mutex<WebSocketConnection?>(nil)
 private let messageSubject = Mutex(PassthroughSubject<WebSocketMessage.FromApiToApp, Never>())
-
-#if DEBUG
-  internal let WS_URL = URL(string: "http://127.0.0.1:8080/app-websocket")!
-#else
-  internal let WS_URL = URL(string: "https://api.gertrude.app/app-websocket")!
-#endif

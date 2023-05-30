@@ -124,10 +124,10 @@ struct FilterXPC: Sendable {
     }
   }
 
-  func sendPrepareForUninstall() async throws {
+  func sendDeleteAllStoredState() async throws {
     try await establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
-      filterProxy.prepareForUninstall(reply: continuation.dataHandler)
+      filterProxy.deleteAllStoredState(reply: continuation.dataHandler)
     }
   }
 }

@@ -3,8 +3,8 @@ import Combine
 import ComposableArchitecture
 import Core
 import Foundation
-import MacAppRoute
 import Gertie
+import MacAppRoute
 
 struct AppReducer: Reducer, Sendable {
   struct State: Equatable, Sendable {

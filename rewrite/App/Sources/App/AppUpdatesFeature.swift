@@ -9,12 +9,6 @@ struct AppUpdatesFeature: Feature {
     var installedVersion: String
     var releaseChannel: ReleaseChannel = .stable
     var latestVersion: String?
-
-    #if DEBUG
-      var updateFeedUrl = URL(string: "http://127.0.0.1:8080/appcast.xml")!
-    #else
-      var updateFeedUrl = URL(string: "https://api.gertrude.app/appcast.xml")!
-    #endif
   }
 
   enum Action: Equatable, Sendable {
@@ -98,18 +92,17 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     case .adminWindow(.delegate(.triggerAppUpdate)),
          .adminWindow(.webview(.checkForAppUpdatesClicked)),
          .adminWindow(.webview(.reinstallAppClicked)):
+      state.adminWindow.windowOpen = false // so they can see sparkle update
       let channel = state.appUpdates.releaseChannel
-      let feedUrl = state.appUpdates.updateFeedUrl
       let persist = state.persistent
       let force = action == .adminWindow(.webview(.reinstallAppClicked)) ? true : nil
       return .run { _ in
-        try await triggerUpdate(channel, feedUrl, persist, force: force)
+        try await triggerUpdate(channel, persist, force: force)
       }
 
     case .heartbeat(.everySixHours):
       let current = state.appUpdates.installedVersion
       let channel = state.appUpdates.releaseChannel
-      let feedUrl = state.appUpdates.updateFeedUrl
       let persist = state.persistent
       return .run { _ in
         let latest = try await api.latestAppVersion(channel)
@@ -120,7 +113,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
           shouldUpdate = latest != current // TODO: log unreachable
         }
         if shouldUpdate {
-          try await triggerUpdate(channel, feedUrl, persist)
+          try await triggerUpdate(channel, persist)
         }
       }
 
@@ -130,6 +123,13 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         try await storage.savePersistentState(updated)
       }
 
+    case .adminWindow(.webview(.advanced(.forceUpdateToSpecificVersionClicked(let version)))):
+      state.adminWindow.windowOpen = false // so they can see sparkle update
+      let persist = state.persistent
+      return .run { _ in
+        try await triggerUpdate(.init(force: true, version: version), persist)
+      }
+
     default:
       return .none
     }
@@ -137,12 +137,18 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
 
   func triggerUpdate(
     _ channel: ReleaseChannel,
-    _ feedUrl: URL,
     _ persist: Persistent.State,
     force: Bool? = nil
   ) async throws {
     let query = AppcastQuery(channel: channel, force: force)
-    let feedUrl = "\(feedUrl.absoluteString)\(query.urlString)"
+    try await triggerUpdate(query, persist)
+  }
+
+  func triggerUpdate(
+    _ query: AppcastQuery,
+    _ persist: Persistent.State
+  ) async throws {
+    let feedUrl = "\(updater.endpoint.absoluteString)\(query.urlString)"
     try await storage.savePersistentState(persist)
     try await updater.triggerUpdate(feedUrl)
   }

@@ -77,6 +77,10 @@ extension Node: TypeScriptRepresentable {
     case .primitive(let primitive):
       return primitive.declaration(ctx)
 
+    case .record(let value):
+      let decl = value.declaration(ctx)
+      return "{ [key: string]: \(decl) }"
+
     case .union(let members):
       return members.declaration(ctx)
     }

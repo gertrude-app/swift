@@ -61,6 +61,78 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
   }
 }
 
+extension AdminWindowFeature.Action.View.AdvancedAction {
+  private struct _NamedCase: Codable {
+    var `case`: String
+    static func extract(from decoder: Decoder) throws -> String {
+      let container = try decoder.singleValueContainer()
+      return try container.decode(_NamedCase.self).case
+    }
+  }
+
+  private struct _TypeScriptDecodeError: Error {
+    var message: String
+  }
+
+  private struct _CasePairqlEndpointSet: Codable {
+    var `case` = "pairqlEndpointSet"
+    var url: String?
+  }
+
+  private struct _CaseWebsocketEndpointSet: Codable {
+    var `case` = "websocketEndpointSet"
+    var url: String?
+  }
+
+  private struct _CaseAppcastEndpointSet: Codable {
+    var `case` = "appcastEndpointSet"
+    var url: String?
+  }
+
+  private struct _CaseForceUpdateToSpecificVersionClicked: Codable {
+    var `case` = "forceUpdateToSpecificVersionClicked"
+    var version: String
+  }
+
+  func encode(to encoder: Encoder) throws {
+    switch self {
+    case .pairqlEndpointSet(let url):
+      try _CasePairqlEndpointSet(url: url).encode(to: encoder)
+    case .websocketEndpointSet(let url):
+      try _CaseWebsocketEndpointSet(url: url).encode(to: encoder)
+    case .appcastEndpointSet(let url):
+      try _CaseAppcastEndpointSet(url: url).encode(to: encoder)
+    case .forceUpdateToSpecificVersionClicked(let version):
+      try _CaseForceUpdateToSpecificVersionClicked(version: version).encode(to: encoder)
+    case .deleteAllDeviceStorageClicked:
+      try _NamedCase(case: "deleteAllDeviceStorageClicked").encode(to: encoder)
+    }
+  }
+
+  init(from decoder: Decoder) throws {
+    let caseName = try _NamedCase.extract(from: decoder)
+    let container = try decoder.singleValueContainer()
+    switch caseName {
+    case "pairqlEndpointSet":
+      let value = try container.decode(_CasePairqlEndpointSet.self)
+      self = .pairqlEndpointSet(url: value.url)
+    case "websocketEndpointSet":
+      let value = try container.decode(_CaseWebsocketEndpointSet.self)
+      self = .websocketEndpointSet(url: value.url)
+    case "appcastEndpointSet":
+      let value = try container.decode(_CaseAppcastEndpointSet.self)
+      self = .appcastEndpointSet(url: value.url)
+    case "forceUpdateToSpecificVersionClicked":
+      let value = try container.decode(_CaseForceUpdateToSpecificVersionClicked.self)
+      self = .forceUpdateToSpecificVersionClicked(version: value.version)
+    case "deleteAllDeviceStorageClicked":
+      self = .deleteAllDeviceStorageClicked
+    default:
+      throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
+    }
+  }
+}
+
 extension AdminWindowFeature.Action.View {
   private struct _NamedCase: Codable {
     var `case`: String
@@ -76,7 +148,12 @@ extension AdminWindowFeature.Action.View {
 
   private struct _CaseHealthCheck: Codable {
     var `case` = "healthCheck"
-    var action: AdminWindowFeature.Action.View.HealthCheckAction
+    var healthCheckAction: AdminWindowFeature.Action.View.HealthCheckAction
+  }
+
+  private struct _CaseAdvanced: Codable {
+    var `case` = "advanced"
+    var advancedAction: AdminWindowFeature.Action.View.AdvancedAction
   }
 
   private struct _CaseGotoScreenClicked: Codable {
@@ -102,8 +179,10 @@ extension AdminWindowFeature.Action.View {
 
   func encode(to encoder: Encoder) throws {
     switch self {
-    case .healthCheck(let action):
-      try _CaseHealthCheck(action: action).encode(to: encoder)
+    case .healthCheck(let healthCheckAction):
+      try _CaseHealthCheck(healthCheckAction: healthCheckAction).encode(to: encoder)
+    case .advanced(let advancedAction):
+      try _CaseAdvanced(advancedAction: advancedAction).encode(to: encoder)
     case .gotoScreenClicked(let screen):
       try _CaseGotoScreenClicked(screen: screen).encode(to: encoder)
     case .releaseChannelUpdated(let channel):
@@ -143,7 +222,10 @@ extension AdminWindowFeature.Action.View {
     switch caseName {
     case "healthCheck":
       let value = try container.decode(_CaseHealthCheck.self)
-      self = .healthCheck(action: value.action)
+      self = .healthCheck(healthCheckAction: value.healthCheckAction)
+    case "advanced":
+      let value = try container.decode(_CaseAdvanced.self)
+      self = .advanced(advancedAction: value.advancedAction)
     case "gotoScreenClicked":
       let value = try container.decode(_CaseGotoScreenClicked.self)
       self = .gotoScreenClicked(screen: value.screen)

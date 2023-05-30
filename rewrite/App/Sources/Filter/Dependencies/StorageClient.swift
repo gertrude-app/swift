@@ -9,6 +9,7 @@ struct StorageClient: Sendable {
   var loadPersistentState: @Sendable () async throws -> Persistent.State?
   var loadPersistentStateSync: @Sendable () throws -> Persistent.State?
   var deleteAllPersistentState: @Sendable () async -> Void
+  var deleteAll: @Sendable () async -> Void
 }
 
 extension StorageClient: DependencyKey {
@@ -36,6 +37,9 @@ extension StorageClient: DependencyKey {
       },
       deleteAllPersistentState: {
         userDefaults.remove(Persistent.State.currentStorageKey)
+      },
+      deleteAll: {
+        userDefaults.removeAll()
       }
     )
   }
@@ -46,7 +50,8 @@ extension StorageClient: TestDependencyKey {
     savePersistentState: { _ in },
     loadPersistentState: { nil },
     loadPersistentStateSync: { nil },
-    deleteAllPersistentState: {}
+    deleteAllPersistentState: {},
+    deleteAll: {}
   )
 }
 

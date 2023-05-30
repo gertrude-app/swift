@@ -1,3 +1,4 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Core
 import Foundation
@@ -9,6 +10,7 @@ struct AdminWindowFeature: Feature {
     case home
     case healthCheck
     case exemptUsers
+    case advanced
   }
 
   struct State: Equatable {
@@ -37,6 +39,7 @@ struct AdminWindowFeature: Feature {
     var quitting = false
     var exemptableUsers: Failable<[MacOSUser]>?
     var exemptUserIds: Failable<[uid_t]>?
+    var recentAppVersions: [String: String]?
 
     struct View: Equatable, Encodable {
       var windowOpen = false
@@ -48,7 +51,7 @@ struct AdminWindowFeature: Feature {
       var keystrokeMonitoringEnabled: Bool
       var installedAppVersion: String
       var releaseChannel: ReleaseChannel
-      var quitting: Bool
+      var quitting: Bool // TODO: remove, use local state in react
 
       struct ExemptableUser: Equatable, Codable {
         var id: uid_t
@@ -58,6 +61,18 @@ struct AdminWindowFeature: Feature {
       }
 
       var exemptableUsers: Failable<[ExemptableUser]>?
+
+      struct Advanced: Equatable, Codable {
+        var pairqlEndpointOverride: String?
+        var pairqlEndpointDefault: String
+        var websocketEndpointOverride: String?
+        var websocketEndpointDefault: String
+        var appcastEndpointOverride: String?
+        var appcastEndpointDefault: String
+        var appVersions: [String: String]?
+      }
+
+      var advanced: Advanced?
     }
   }
 
@@ -76,8 +91,17 @@ struct AdminWindowFeature: Feature {
         case zeroKeysRefreshRulesClicked
       }
 
+      enum AdvancedAction: Equatable, Sendable, Codable {
+        case pairqlEndpointSet(url: String?)
+        case websocketEndpointSet(url: String?)
+        case appcastEndpointSet(url: String?)
+        case forceUpdateToSpecificVersionClicked(version: String)
+        case deleteAllDeviceStorageClicked
+      }
+
       case closeWindow
-      case healthCheck(action: HealthCheckAction)
+      case healthCheck(healthCheckAction: HealthCheckAction)
+      case advanced(advancedAction: AdvancedAction)
       case gotoScreenClicked(screen: Screen)
       case stopFilterClicked
       case startFilterClicked
@@ -107,6 +131,7 @@ struct AdminWindowFeature: Feature {
     case setFilterStatus(State.HealthCheck.FilterStatus)
     case setExemptableUsers(Failable<[MacOSUser]>)
     case setExemptUserIds(Failable<[uid_t]>)
+    case receivedRecentAppVersions([String: String])
     case webview(View)
     case delegate(Delegate)
     case healthCheckTimeout
@@ -129,6 +154,8 @@ struct AdminWindowFeature: Feature {
     @Dependency(\.date.now) var now
     @Dependency(\.security) var security
     @Dependency(\.storage) var storage
+    @Dependency(\.updater) var updater
+    @Dependency(\.websocket) var websocket
   }
 }
 
@@ -192,6 +219,12 @@ extension AdminWindowFeature.RootReducer {
 
       switch adminWindowAction {
 
+      case .webview(.advanced(.forceUpdateToSpecificVersionClicked)):
+        return .none // handled by UpdaterFeature, no auth needed
+
+      case .webview(.advanced):
+        return adminAuthenticated(action)
+
       case .webview(.healthCheck(.recheckClicked)):
         return .none // handled above
 
@@ -203,6 +236,9 @@ extension AdminWindowFeature.RootReducer {
            .webview(.closeWindow):
         state.adminWindow.windowOpen = false
         return .none
+
+      case .webview(.gotoScreenClicked(.advanced)):
+        return adminAuthenticated(action)
 
       case .webview(.gotoScreenClicked(let screen)):
         state.adminWindow.screen = screen
@@ -305,6 +341,10 @@ extension AdminWindowFeature.RootReducer {
         state.adminWindow.healthCheck.setPendingChecksToError()
         return .none
 
+      case .receivedRecentAppVersions(let versions):
+        state.adminWindow.recentAppVersions = versions
+        return .none
+
       case .delegate:
         return .none
       }
@@ -373,6 +413,31 @@ extension AdminWindowFeature.RootReducer {
           _ = await xpc.setUserExemption(userId, enabled)
         }
 
+      case .webview(.advanced(let advancedAction)):
+        switch advancedAction {
+        case .appcastEndpointSet(let url):
+          return .run { _ in await updater.updateEndpointOverride(url) }
+        case .pairqlEndpointSet(let url):
+          return .run { _ in await api.updateEndpointOverride(url) }
+        case .websocketEndpointSet:
+          return .none // handled by WebsocketFeature
+        case .forceUpdateToSpecificVersionClicked:
+          return .none // handled by UpdaterFeature
+        case .deleteAllDeviceStorageClicked:
+          return .run { _ in
+            await storage.deleteAll()
+            _ = await xpc.sendDeleteAllStoredState()
+          }
+        }
+
+      case .webview(.gotoScreenClicked(.advanced)):
+        state.adminWindow.screen = .advanced
+        return .run { send in
+          if let versions = try? await api.recentAppVersions() {
+            await send(.adminWindow(.receivedRecentAppVersions(versions)))
+          }
+        }
+
       default:
         return .none
       }
@@ -422,7 +487,7 @@ extension AdminWindowFeature.RootReducer {
 
     return .merge(
       main,
-      action == .adminWindow(.webview(.healthCheck(action: .recheckClicked)))
+      action == .adminWindow(.webview(.healthCheck(healthCheckAction: .recheckClicked)))
         ? .cancel(id: CancelId.healthCheckTimeout) : .none
     )
   }
@@ -496,6 +561,7 @@ extension AdminWindowFeature.State.View {
   init(rootState: AppReducer.State) {
     @Dependency(\.app) var app
     let featureState = rootState.adminWindow
+
     windowOpen = featureState.windowOpen
     screen = featureState.screen
     healthCheck = featureState.healthCheck
@@ -506,6 +572,18 @@ extension AdminWindowFeature.State.View {
     installedAppVersion = app.installedVersion() ?? "0.0.0"
     releaseChannel = rootState.appUpdates.releaseChannel
     quitting = featureState.quitting
+
+    if screen == .advanced {
+      advanced = .init(
+        pairqlEndpointOverride: ApiClient.endpointOverride()?.absoluteString,
+        pairqlEndpointDefault: ApiClient.defaultEndpoint().absoluteString,
+        websocketEndpointOverride: WebSocketClient.endpointOverride()?.absoluteString,
+        websocketEndpointDefault: WebSocketClient.defaultEndpoint().absoluteString,
+        appcastEndpointOverride: UpdaterClient.endpointOverride()?.absoluteString,
+        appcastEndpointDefault: UpdaterClient.defaultEndpoint().absoluteString,
+        appVersions: featureState.recentAppVersions
+      )
+    }
 
     switch (featureState.exemptableUsers, featureState.exemptUserIds) {
     case (.ok(let users), .ok(let userIds)):

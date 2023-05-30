@@ -73,8 +73,8 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
       return .run { _ in
         await app.disableLaunchAtLogin()
         await api.clearUserToken()
-        await storage.deleteAllPersistentState()
-        _ = await xpc.sendPrepareForUninstall()
+        await storage.deleteAll()
+        _ = await xpc.sendDeleteAllStoredState()
         _ = await filter.uninstall()
         await app.quit()
       }

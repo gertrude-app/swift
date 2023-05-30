@@ -29,7 +29,7 @@ extension WebSocketFeature.RootReducer {
           return
         }
         // try to repair any broken/disconnected websocket connection status
-        if try await websocket.connect(with: user.token) == .connected {
+        if try await websocket.connect(user.token) == .connected {
           try await websocket.sendFilterState(state.filter)
         }
       }
@@ -107,6 +107,17 @@ extension WebSocketFeature.RootReducer {
         return .none
       }
 
+    case .adminAuthenticated(.adminWindow(.webview(.advanced(.websocketEndpointSet(let url))))):
+      let user = state.user
+      return .run { send in
+        await websocket.updateEndpointOverride(url)
+        try await websocket.send(.goingOffline)
+        try await websocket.disconnect()
+        if let user, try await websocket.connect(user.token) == .connected {
+          await send(.websocket(.connectedSuccessfully))
+        }
+      }
+
     default:
       return .none
     }
@@ -114,7 +125,7 @@ extension WebSocketFeature.RootReducer {
 
   func connect(_ user: UserData) -> Effect<Action> {
     .run { send in
-      if try await websocket.connect(with: user.token) == .connected {
+      if try await websocket.connect(user.token) == .connected {
         await send(.websocket(.connectedSuccessfully))
       }
     }
@@ -122,11 +133,6 @@ extension WebSocketFeature.RootReducer {
 }
 
 extension WebSocketClient {
-  @discardableResult
-  func connect(with token: UUID, customUrl: URL? = nil) async throws -> State {
-    try await connect(token, customUrl)
-  }
-
   func sendFilterState(
     _ state: FilterFeature.State,
     extensionState: FilterExtensionState? = nil

@@ -1,4 +1,3 @@
-import DuetSQL
 import MacAppRoute
 
 extension GetUserData: NoInputResolver {

@@ -17,6 +17,9 @@ extension MacAppRoute: RouteResponder {
       case .latestAppVersion(let input):
         let output = try await LatestAppVersion.resolve(with: input, in: context)
         return try await respond(with: output)
+      case .recentAppVersions:
+        let output = try await RecentAppVersions.resolve(in: context)
+        return try await respond(with: output)
       }
 
     case .userAuthed(let uuid, let userRoute):
