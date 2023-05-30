@@ -1,3 +1,4 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Core
 import Foundation
@@ -54,6 +55,15 @@ extension FilterFeature.RootReducer {
       }
       return .none
 
+    case .heartbeat(.everyFiveMinutes):
+      return .run { _ in
+        let filter = await filterExtension.state()
+        // attempt to reconnect, if necessary
+        if filter.isXpcReachable, await xpc.connected() == false {
+          _ = await xpc.establishConnection()
+        }
+      }
+
     case .adminWindow(.webview(.resumeFilterClicked)), .menuBar(.resumeFilterClicked):
       state.filter.currentSuspensionExpiration = nil
       return handleFilterSuspensionEnded(early: true)
@@ -70,10 +80,41 @@ extension FilterFeature.RootReducer {
     case .menuBar(.turnOnFilterClicked),
          .adminWindow(.webview(.startFilterClicked)):
       if !state.filter.extension.installed {
-        // TODO: handle install timout, error, etc
-        return .run { _ in _ = await filterExtension.install() }
+        return .run { _ in
+          switch await filterExtension.install() {
+          case .installedSuccessfully:
+            break
+          // TODO: on errors/timeout/cancel should we retry? notify?
+          // @see https://github.com/gertrude-app/project/issues/154
+          case .timedOutWaiting, .userCancelled:
+            break
+          case .failedToGetBundleIdentifier:
+            unexpectedError(id: "d4a652e9")
+          case .failedToLoadConfig:
+            unexpectedError(id: "bd04ba1a")
+          case .failedToSaveConfig:
+            unexpectedError(id: "161ed707")
+          case .alreadyInstalled:
+            unexpectedError(id: "ff51a770")
+          }
+        }
       } else {
-        return .run { _ in _ = await filterExtension.start() }
+        return .run { _ in
+          switch await filterExtension.start() {
+          case .installedAndRunning:
+            break
+          // TODO: on errors should we retry? notify?
+          // @see https://github.com/gertrude-app/project/issues/154
+          case .errorLoadingConfig:
+            unexpectedError(id: "c291bcef")
+          case .installedButNotRunning:
+            unexpectedError(id: "99f3465c")
+          case .notInstalled:
+            unexpectedError(id: "6e4f30ac")
+          case .unknown:
+            unexpectedError(id: "24f31d4c")
+          }
+        }
       }
     default:
       return .none
@@ -88,6 +129,7 @@ extension FilterFeature.RootReducer {
   }
 
   // TODO: make cancellable, cancel when new suspension created
+  // @see https://github.com/gertrude-app/project/issues/155
   func handleFilterSuspensionEnded(early endedEarly: Bool = false) -> Effect<Action> {
     .run { send in
       if endedEarly { _ = await xpc.endFilterSuspension() }

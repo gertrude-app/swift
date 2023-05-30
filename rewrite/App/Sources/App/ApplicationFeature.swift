@@ -58,8 +58,6 @@ extension ApplicationFeature.RootReducer: RootReducing {
         },
 
         .publisher {
-          // TODO: when filter goes _TO_ .notInstalled, the NSXPCConnection
-          // becomes useless, we should re-create/invalidate it then
           filterExtension.stateChanges()
             .map { .filter(.receivedState($0)) }
             .receive(on: mainQueue)

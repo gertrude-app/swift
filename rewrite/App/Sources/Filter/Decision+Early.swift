@@ -10,6 +10,7 @@ public extension NetworkFilter {
 
     // TODO: this should really be < 501, but would want to test first
     // as the 1.x.x version of the app has been using < 500 for a while
+    // @see https://github.com/gertrude-app/project/issues/152
     if userId < 500 { // system user
       return logged(.allow(.systemUser(userId)))
     }

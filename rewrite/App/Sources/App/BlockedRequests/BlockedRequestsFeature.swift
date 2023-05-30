@@ -1,3 +1,4 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Core
 import Foundation
@@ -139,8 +140,10 @@ extension BlockedRequestsFeature.RootReducer {
     case .menuBar(.viewNetworkTrafficClicked):
       state.blockedRequests.windowOpen = true
       return .run { _ in
-        // TODO: if not successful, log unexpected
-        _ = await filterXpc.setBlockStreaming(true)
+        let result = await filterXpc.setBlockStreaming(true)
+        if result.isFailure {
+          unexpectedError(id: "f2c3b277")
+        }
       }
 
     case .xpc(.receivedExtensionMessage(.blockedRequest(let request))):

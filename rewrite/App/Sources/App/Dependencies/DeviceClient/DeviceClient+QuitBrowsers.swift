@@ -27,6 +27,7 @@ private func terminate(
 // TODO: should also test bundle identifiers,
 // and should pull this periodically from the API
 // so i can push hot-fixes to the list
+// https://github.com/gertrude-app/project/issues/157
 private let browserNames = [
   "Safari",
   "Google Chrome",

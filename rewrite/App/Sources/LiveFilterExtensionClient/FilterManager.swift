@@ -23,8 +23,8 @@ final class FilterManager: NSObject {
 
   func loadState() async -> FilterExtensionState {
     let loadResult = await system.loadFilterConfiguration()
-    if case .failed = loadResult {
-      // TODO: log unexpected error (capture error above)
+    if case .failed(let error) = loadResult {
+      unexpectedError(id: "0738ecbd", error)
       return .errorLoadingConfig
     }
 
@@ -45,15 +45,16 @@ final class FilterManager: NSObject {
   func startFilter() async -> FilterExtensionState {
     let state = await loadState()
     if state != .installedButNotRunning {
-      // TODO: log unexpected error, so that if it happens moderately
-      // often, you can implement better behaviors for other states
+      // if happens moderately often, implement better behaviors for other states
+      unexpectedError(id: "02ee5d90")
       return state
     }
 
     system.enableNEFilterManagerShared()
 
-    // TODO: log unexpected error instead of ignoring
-    _ = await system.saveNEFilterManagerShared()
+    if let error = await system.saveNEFilterManagerShared() {
+      unexpectedError(id: "b787c1ff", error)
+    }
 
     // now that we've attempted to stop the filter, recheck the state completely
     return await loadState()
@@ -62,15 +63,16 @@ final class FilterManager: NSObject {
   func stopFilter() async -> FilterExtensionState {
     let state = await loadState()
     if state != .installedAndRunning {
-      // TODO: log unexpected error, so that if it happens moderately
-      // often, you can implement better behaviors for other states
+      // if happens moderately often, implement better behaviors for other states
+      unexpectedError(id: "6f5b0838")
       return state
     }
 
     system.disableNEFilterManagerShared()
 
-    // TODO: log unexpected error instead of ignoring
-    _ = await system.saveNEFilterManagerShared()
+    if let error = await system.saveNEFilterManagerShared() {
+      unexpectedError(id: "214df4cf", error)
+    }
 
     // now that we've attempted to stop the filter, recheck the state completely
     return await loadState()
@@ -95,6 +97,7 @@ final class FilterManager: NSObject {
     // it MIGHT work on initial install, but i need to re-think this
     // to work in both scenarios. probably poll the filter state or
     // connection instead of checking the activation request itself
+    // @see https://github.com/gertrude-app/project/issues/153
     var waited = 0
     while true {
       do {
