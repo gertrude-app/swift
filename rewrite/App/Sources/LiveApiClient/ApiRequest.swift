@@ -26,7 +26,7 @@ private func request<T: Pair>(
   root route: MacAppRoute,
   pair: T.Type
 ) async throws -> T.Output {
-  let router = App.router.baseURL(await endpoint.value.absoluteString)
+  let router = App.router.baseURL(ApiClient.endpoint.absoluteString)
   let request = try router.request(for: .wrap(route))
   let (data, response) = try await data(for: request)
   if let httpResponse = response as? HTTPURLResponse,

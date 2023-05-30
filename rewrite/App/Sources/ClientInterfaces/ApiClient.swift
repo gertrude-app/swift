@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
-import MacAppRoute
 import Gertie
+import MacAppRoute
 
 public struct ApiClient: Sendable {
   public var clearUserToken: @Sendable () async -> Void
@@ -12,9 +12,9 @@ public struct ApiClient: Sendable {
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void
   public var getAdminAccountStatus: @Sendable () async throws -> AdminAccountStatus
   public var latestAppVersion: @Sendable (ReleaseChannel) async throws -> String
+  public var recentAppVersions: @Sendable () async throws -> [String: String]
   public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
   public var setAccountActive: @Sendable (Bool) async -> Void
-  public var setEndpoint: @Sendable (URL) async -> Void
   public var setUserToken: @Sendable (UUID) async -> Void
   public var uploadScreenshot: @Sendable (Data, Int, Int) async throws -> URL
   public var userData: @Sendable () async throws -> UserData
@@ -28,9 +28,9 @@ public struct ApiClient: Sendable {
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void,
     getAdminAccountStatus: @escaping @Sendable () async throws -> AdminAccountStatus,
     latestAppVersion: @escaping @Sendable (ReleaseChannel) async throws -> String,
+    recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
-    setEndpoint: @escaping @Sendable (URL) async -> Void,
     setUserToken: @escaping @Sendable (UUID) async -> Void,
     uploadScreenshot: @escaping @Sendable (Data, Int, Int) async throws -> URL,
     userData: @escaping @Sendable () async throws -> UserData
@@ -42,13 +42,23 @@ public struct ApiClient: Sendable {
     self.createUnlockRequests = createUnlockRequests
     self.getAdminAccountStatus = getAdminAccountStatus
     self.latestAppVersion = latestAppVersion
+    self.recentAppVersions = recentAppVersions
     self.refreshRules = refreshRules
     self.setAccountActive = setAccountActive
-    self.setEndpoint = setEndpoint
     self.setUserToken = setUserToken
     self.uploadScreenshot = uploadScreenshot
     self.userData = userData
   }
+}
+
+extension ApiClient: EndpointOverridable {
+  #if DEBUG
+    public static let endpointDefault = URL(string: "http://127.0.0.1:8080/pairql")!
+  #else
+    public static let endpointDefault = URL(string: "https://api.gertrude.app/pairql")!
+  #endif
+
+  public static let endpointOverride = LockIsolated<URL?>(nil)
 }
 
 public extension ApiClient {
@@ -69,9 +79,9 @@ extension ApiClient: TestDependencyKey {
     createUnlockRequests: { _ in },
     getAdminAccountStatus: { .active },
     latestAppVersion: { _ in "1.0.0" },
+    recentAppVersions: { [:] },
     refreshRules: { _ in .mock },
     setAccountActive: { _ in },
-    setEndpoint: { _ in },
     setUserToken: { _ in },
     uploadScreenshot: { _, _, _ in .init(string: "https://s3.buck.et/img.png")! },
     userData: { .mock }
@@ -88,9 +98,9 @@ extension ApiClient: TestDependencyKey {
       createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
       getAdminAccountStatus: unimplemented("ApiClient.getAdminAccountStatus"),
       latestAppVersion: unimplemented("ApiClient.latestAppVersion"),
+      recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
       refreshRules: unimplemented("ApiClient.refreshRules"),
       setAccountActive: unimplemented("ApiClient.setAccountActive"),
-      setEndpoint: unimplemented("ApiClient.setEndpoint"),
       setUserToken: unimplemented("ApiClient.setUserToken"),
       uploadScreenshot: unimplemented("ApiClient.uploadScreenshot"),
       userData: unimplemented("ApiClient.userData")

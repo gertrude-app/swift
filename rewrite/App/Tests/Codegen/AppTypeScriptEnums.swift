@@ -29,6 +29,7 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
       name: "AdminWindowFeature",
       types: [
         AdminWindowFeature.State.HealthCheck.FilterStatus.self,
+        AdminWindowFeature.Action.View.AdvancedAction.self,
         AdminWindowFeature.Action.View.self,
       ]
     ),

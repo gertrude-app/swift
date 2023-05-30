@@ -1,8 +1,8 @@
 import ComposableArchitecture
 import Core
 import Foundation
-import os.log
 import Gertie
+import os.log
 
 public struct Filter: Reducer, Sendable {
   public struct State: Equatable, DecisionState {
@@ -154,10 +154,10 @@ public struct Filter: Reducer, Sendable {
       }
       return saving(state.persistent)
 
-    case .xpc(.receivedAppMessage(.prepareForUninstall)):
+    case .xpc(.receivedAppMessage(.deleteAllStoredState)):
       state = .init()
       return .run { _ in
-        await storage.deleteAllPersistentState()
+        await storage.deleteAll()
       }
 
     case .xpc(.decodingAppMessageDataFailed):

@@ -13,14 +13,14 @@ public struct WebSocketClient: Sendable {
     case connected
   }
 
-  public var connect: @Sendable (UUID, URL?) async throws -> State
+  public var connect: @Sendable (UUID) async throws -> State
   public var disconnect: @Sendable () async throws -> Void
   public var receive: @Sendable () -> AnyPublisher<Message.FromApiToApp, Never>
   public var send: @Sendable (Message.FromAppToApi) async throws -> Void
   public var state: @Sendable () async throws -> State
 
   public init(
-    connect: @escaping @Sendable (UUID, URL?) async throws -> State,
+    connect: @escaping @Sendable (UUID) async throws -> State,
     disconnect: @escaping @Sendable () async throws -> Void,
     receive: @escaping @Sendable () -> AnyPublisher<WebSocketClient.Message.FromApiToApp, Never>,
     send: @escaping @Sendable (WebSocketClient.Message.FromAppToApi) async throws -> Void,
@@ -34,9 +34,19 @@ public struct WebSocketClient: Sendable {
   }
 }
 
+extension WebSocketClient: EndpointOverridable {
+  #if DEBUG
+    public static let endpointDefault = URL(string: "http://127.0.0.1:8080/app-websocket")!
+  #else
+    public static let endpointDefault = URL(string: "https://api.gertrude.app/app-websocket")!
+  #endif
+
+  public static let endpointOverride = LockIsolated<URL?>(nil)
+}
+
 extension WebSocketClient: TestDependencyKey {
   public static let testValue = Self(
-    connect: { _, _ in .connected },
+    connect: { _ in .connected },
     disconnect: {},
     receive: { Empty().eraseToAnyPublisher() },
     send: { _ in },

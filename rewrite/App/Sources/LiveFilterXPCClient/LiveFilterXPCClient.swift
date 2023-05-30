@@ -27,8 +27,8 @@ extension FilterXPCClient: DependencyKey {
       requestExemptUserIds: { await .init {
         try await xpc.requestExemptUserIds()
       }},
-      sendPrepareForUninstall: { await .init {
-        try await xpc.sendPrepareForUninstall()
+      sendDeleteAllStoredState: { await .init {
+        try await xpc.sendDeleteAllStoredState()
       }},
       sendUserRules: { manifest, keys in await .init {
         try await xpc.sendUserRules(manifest: manifest, keys: keys)
@@ -94,7 +94,7 @@ actor ThreadSafeFilterXPC {
     try await filterXpc.requestExemptUserIds()
   }
 
-  func sendPrepareForUninstall() async throws {
-    try await filterXpc.sendPrepareForUninstall()
+  func sendDeleteAllStoredState() async throws {
+    try await filterXpc.sendDeleteAllStoredState()
   }
 }
