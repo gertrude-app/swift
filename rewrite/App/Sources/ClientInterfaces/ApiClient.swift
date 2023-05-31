@@ -80,7 +80,7 @@ extension ApiClient: TestDependencyKey {
     getAdminAccountStatus: { .active },
     latestAppVersion: { _ in "1.0.0" },
     recentAppVersions: { [:] },
-    refreshRules: { _ in .mock },
+    refreshRules: { _ in throw Error.missingUserToken },
     setAccountActive: { _ in },
     setUserToken: { _ in },
     uploadScreenshot: { _, _, _ in .init(string: "https://s3.buck.et/img.png")! },
