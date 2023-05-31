@@ -63,6 +63,12 @@ extension HistoryFeature.RootReducer: RootReducing {
       state.history.userConnection = .established(welcomeDismissed: true)
       return .none
 
+    // consider closing the menu bar the same as dismissing welcome with direct click
+    case .menuBar(.menuBarIconClicked)
+      where state.history.userConnection == .established(welcomeDismissed: false):
+      state.history.userConnection = .established(welcomeDismissed: true)
+      return .none
+
     case .history(.userConnection(.connect(.success(let user)))):
       state.user = user
       return .run { [persistent = state.persistent] _ in
