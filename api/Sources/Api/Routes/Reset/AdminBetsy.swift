@@ -157,13 +157,13 @@ enum AdminBetsy {
 
   private static func createUserActivity() async throws {
     async let j1: Void = Reset.createActivityItems(
-      140,
+      109,
       Ids.jimmysDevice,
       subtractingDays: 0,
       percentDeleted: 0
     )
     async let j2: Void = Reset.createActivityItems(
-      67,
+      23,
       Ids.jimmysDevice,
       subtractingDays: 1,
       percentDeleted: 33

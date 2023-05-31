@@ -24,7 +24,7 @@ public enum UserActivity {
   }
 }
 
-struct GetUserActivityDay: TypescriptPair {
+struct UserActivityFeed: TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
@@ -41,7 +41,7 @@ struct GetUserActivityDay: TypescriptPair {
 
 // resolver
 
-extension GetUserActivityDay: Resolver {
+extension UserActivityFeed: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     guard let (after, before) = input.range.dates else {
       throw Abort(.badRequest)

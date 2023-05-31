@@ -65,6 +65,18 @@ class ApiTestCase: XCTestCase {
     app.shutdown()
     sync { await SQL.resetPreparedStatements() }
   }
+
+  func context(_ admin: Admin) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin)
+  }
+
+  func context(_ admin: AdminEntities) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
+  }
+
+  func context(_ admin: AdminWithKeychainEntities) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
+  }
 }
 
 func sync(

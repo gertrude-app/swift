@@ -1,0 +1,187 @@
+import DuetMock
+import XCore
+import XCTest
+import XExpect
+
+@testable import Api
+
+final class UserActivityResolverTests: ApiTestCase {
+
+  func testGetActivityDay() async throws {
+    Current.date = { Date() }
+    let user = try await Entities.user().withDevice()
+    let screenshot = Screenshot.random
+    screenshot.deviceId = user.device.id
+    try await Current.db.create(screenshot)
+    let keystrokeLine = KeystrokeLine.random
+    keystrokeLine.deviceId = user.device.id
+    try await Current.db.create(keystrokeLine)
+
+    let output = try await UserActivityFeed.resolve(
+      with: .init(
+        userId: user.id,
+        range: .init(
+          start: Date(subtractingDays: 2).isoString,
+          end: Date(addingDays: 2).isoString
+        )
+      ),
+      in: context(user.admin)
+    )
+
+    expect(output.userName).toEqual(user.name)
+    expect(output.numDeleted).toEqual(0)
+    expect(output.items).toHaveCount(2)
+    let _ignoreDate = Date(subtractingDays: 2)
+
+    var firstItem = try XCTUnwrap(output.items.first?.t2)
+    firstItem.createdAt = _ignoreDate
+
+    expect(firstItem).toEqual(.init(
+      id: keystrokeLine.id,
+      ids: [keystrokeLine.id],
+      appName: keystrokeLine.appName,
+      line: keystrokeLine.line,
+      createdAt: _ignoreDate
+    ))
+
+    var secondItem = try XCTUnwrap(output.items.last?.t1)
+    secondItem.createdAt = _ignoreDate
+
+    expect(secondItem).toEqual(.init(
+      id: screenshot.id,
+      ids: [screenshot.id],
+      url: screenshot.url,
+      width: screenshot.width,
+      height: screenshot.height,
+      createdAt: _ignoreDate
+    ))
+  }
+
+  func testCombinedUserActivity() async throws {
+    Current.date = { Date() }
+    let _ignoreDate = Date(subtractingDays: 2)
+
+    let user1 = try await Entities.user().withDevice()
+    let screenshot = Screenshot.random
+    screenshot.deviceId = user1.device.id
+    try await Current.db.create(screenshot)
+    let keystrokeLine = KeystrokeLine.random
+    keystrokeLine.deviceId = user1.device.id
+    try await Current.db.create(keystrokeLine)
+
+    let user2 = try await Entities.user().withDevice()
+    user2.model.adminId = user1.adminId
+    try await Current.db.update(user2.model)
+    let screenshot2 = Screenshot.random
+    screenshot2.deviceId = user2.device.id
+    try await Current.db.create(screenshot2)
+    let keystrokeLine2 = KeystrokeLine.random
+    keystrokeLine2.deviceId = user2.device.id
+    try await Current.db.create(keystrokeLine2)
+    try await Current.db.delete(keystrokeLine2.id) // <-- soft-deleted
+
+    let dateRange = DateRange(
+      start: Date(subtractingDays: 2).isoString,
+      end: Date(addingDays: 2).isoString
+    )
+
+    // test getting the activity overview summaries
+
+    let summaryOutput = try await CombinedUsersActivitySummaries.resolve(
+      with: [dateRange],
+      in: context(user1.admin)
+    )
+
+    expect(summaryOutput).toHaveCount(2)
+    let userSummary1 = summaryOutput[0]
+    expect(userSummary1.userId).toEqual(user1.id)
+    expect(userSummary1.userName).toEqual(user1.name)
+    expect(userSummary1.days).toHaveCount(1)
+    expect(userSummary1.days[0].numApproved).toEqual(0)
+    expect(userSummary1.days[0].totalItems).toEqual(2)
+
+    let userSummary2 = summaryOutput[1]
+    expect(userSummary2.userId).toEqual(user2.id)
+    expect(userSummary2.userName).toEqual(user2.name)
+    expect(userSummary2.days).toHaveCount(1)
+    expect(userSummary2.days[0].numApproved).toEqual(1)
+    expect(userSummary2.days[0].totalItems).toEqual(2)
+
+    // test getting the activity day detail (screenshots and keystrokes)
+
+    let dayOutput = try await CombinedUsersActivityFeed.resolve(
+      with: .init(range: dateRange),
+      in: context(user1.admin)
+    )
+
+    expect(dayOutput).toHaveCount(2)
+    let userDay1 = dayOutput[0]
+    expect(userDay1.userName).toEqual(user1.name)
+    expect(userDay1.userId).toEqual(user1.id)
+    expect(userDay1.numDeleted).toEqual(0)
+    expect(userDay1.items).toHaveCount(2)
+
+    var firstItem = try XCTUnwrap(userDay1.items.first?.t2)
+    firstItem.createdAt = _ignoreDate
+
+    expect(firstItem).toEqual(.init(
+      id: keystrokeLine.id,
+      ids: [keystrokeLine.id],
+      appName: keystrokeLine.appName,
+      line: keystrokeLine.line,
+      createdAt: _ignoreDate
+    ))
+
+    var secondItem = try XCTUnwrap(userDay1.items.last?.t1)
+    secondItem.createdAt = _ignoreDate
+
+    expect(secondItem).toEqual(.init(
+      id: screenshot.id,
+      ids: [screenshot.id],
+      url: screenshot.url,
+      width: screenshot.width,
+      height: screenshot.height,
+      createdAt: _ignoreDate
+    ))
+
+    let userDay2 = dayOutput[1]
+    expect(userDay2.userName).toEqual(user2.name)
+    expect(userDay2.userId).toEqual(user2.id)
+    expect(userDay2.numDeleted).toEqual(1)
+    expect(userDay2.items).toHaveCount(1)
+
+    var user2Item = try XCTUnwrap(userDay2.items.first?.t1)
+    user2Item.createdAt = _ignoreDate
+
+    expect(user2Item).toEqual(.init(
+      id: screenshot2.id,
+      ids: [screenshot2.id],
+      url: screenshot2.url,
+      width: screenshot2.width,
+      height: screenshot2.height,
+      createdAt: _ignoreDate
+    ))
+  }
+
+  func testDeleteActivityItems_v2() async throws {
+    let user = try await Entities.user().withDevice()
+    let screenshot = Screenshot.random
+    screenshot.deviceId = user.device.id
+    try await Current.db.create(screenshot)
+    let keystrokeLine = KeystrokeLine.random
+    keystrokeLine.deviceId = user.device.id
+    try await Current.db.create(keystrokeLine)
+
+    let output = try await DeleteActivityItems_v2.resolve(
+      with: DeleteActivityItems_v2.Input(
+        keystrokeLineIds: [keystrokeLine.id],
+        screenshotIds: [screenshot.id]
+      ),
+      in: context(user.admin)
+    )
+
+    expect(output).toEqual(.success)
+    expect(try? await Current.db.find(keystrokeLine.id)).toBeNil()
+    expect(try? await Current.db.find(screenshot.id)).toBeNil()
+  }
+}
