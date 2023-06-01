@@ -49,3 +49,33 @@ spctl -a -t open --context context:primary-signature -v /Volumes/Gertrude/Gertru
 
 - See
   [here for more info](https://www.electrollama.net/blog/2017/4/7/login-items-in-macos-1011-and-newer)
+
+## how to symbolicate a crash report
+
+When investigating a crash of the filter, i was looking at stack trace lines like this:
+
+```
+10  com.myorg.app.filter-extension	0x000000010db2c5e3 0x10db02000 + 173539
+11  com.myorg.app.filter-extension	0x000000010dbbd708 0x10db02000 + 767752
+12  com.myorg.app.filter-extension	0x000000010db073cc 0x10db02000 + 21452
+```
+
+I was able to find out what those hex codes meant, by following these steps:
+
+1. locate the `.crash` report file by right-clicking crash within Console.app
+2. put the `.crash` file into a new folder
+3. in Xcode organizer, i clicked "Show in Finder" on the archive of the app version that
+   crashed, then, I right-clicked and chose "Show contents" on the `.xcarchive` file so I
+   could look inside.
+4. I _copied_ the filter extension executable (the crash was in the filter, not the app),
+   which was called `com.netrivet.gertrude.filter-extension.systemextension` (located in
+   some subdir), into the empty folder i created in step 2.
+5. Next I also _copied_ the `com.netrivet.gertrude.filter-extension.systemextension.dSYM`
+   debug symbols into the empty folder. (You have to have "Dwarf + DYSM" enabled in Xcode,
+   but it already was, and that shouldn't change)
+6. Once I had those three files, I opened a terminal session in the folder and ran this
+   basic command for each line (note that the two hex codes are switched, shorter first):
+
+```sh
+atos -o com.netrivet.gertrude.filter-extension.systemextension.dSYM/Contents/Resources/DWARF/com.netrivet.gertrude.filter-extension -l 0x10db02000 0x000000010db073cc
+```
