@@ -19,7 +19,7 @@ struct UserActivitySummaries: Pair, TypescriptPair {
     let days: [Day]
   }
 
-  struct Day: TypescriptNestable {
+  struct Day: PairOutput, TypescriptNestable {
     let date: Date
     let numApproved: Int
     let totalItems: Int

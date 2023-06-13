@@ -27,7 +27,7 @@ enum AuthedAdminRoute: PairRoute {
   case getUserUnlockRequests(GetUserUnlockRequests.Input)
   case saveKey(SaveKey.Input)
   case saveKeychain(SaveKeychain.Input)
-  case saveNotification_v0(SaveNotification_v0.Input)
+  case saveNotification(SaveNotification.Input)
   case saveUser(SaveUser.Input)
   case updateSuspendFilterRequest(UpdateSuspendFilterRequest.Input)
   case updateUnlockRequest(UpdateUnlockRequest.Input)
@@ -124,9 +124,9 @@ extension AuthedAdminRoute {
         Operation(SaveKeychain.self)
         Body(.dashboardInput(SaveKeychain.self))
       }
-      Route(/Self.saveNotification_v0) {
-        Operation(SaveNotification_v0.self)
-        Body(.dashboardInput(SaveNotification_v0.self))
+      Route(/Self.saveNotification) {
+        Operation(SaveNotification.self)
+        Body(.dashboardInput(SaveNotification.self))
       }
       Route(/Self.saveUser) {
         Operation(SaveUser.self)
@@ -184,8 +184,8 @@ extension AuthedAdminRoute: RouteResponder {
     case .getAdmin:
       let output = try await GetAdmin.resolve(in: context)
       return try await respond(with: output)
-    case .saveNotification_v0(let input):
-      let output = try await SaveNotification_v0.resolve(with: input, in: context)
+    case .saveNotification(let input):
+      let output = try await SaveNotification.resolve(with: input, in: context)
       return try await respond(with: output)
     case .getIdentifiedApps:
       let output = try await GetIdentifiedApps.resolve(in: context)

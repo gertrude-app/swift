@@ -188,13 +188,12 @@ final class AuthedAdminResolverTests: ApiTestCase {
       config: .email(email: "foo@bar.com")
     ))
 
-    let (id, _) = mockUUIDs()
-    let output = try await SaveNotification_v0.resolve(
-      with: .init(id: nil, methodId: method.id, trigger: .unlockRequestSubmitted),
+    let output = try await SaveNotification.resolve(
+      with: .init(id: .init(), isNew: true, methodId: method.id, trigger: .unlockRequestSubmitted),
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(id: .init(id)))
+    expect(output).toEqual(.success)
   }
 
   func testDeleteKeyNotifiesConnectedApps() async throws {
@@ -223,16 +222,17 @@ final class AuthedAdminResolverTests: ApiTestCase {
       trigger: .unlockRequestSubmitted
     ))
 
-    let output = try await SaveNotification_v0.resolve(
+    let output = try await SaveNotification.resolve(
       with: .init(
         id: notification.id,
+        isNew: false,
         methodId: text.id, // <-- new method
         trigger: .suspendFilterRequestSubmitted // <-- new trigger
       ),
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(id: notification.id))
+    expect(output).toEqual(.success)
 
     let retrieved = try await Current.db.find(notification.id)
     expect(retrieved.methodId).toEqual(text.id)

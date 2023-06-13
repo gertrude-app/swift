@@ -66,7 +66,7 @@ enum DashboardTsCodegenRoute {
         RequestMagicLink.name: ts(for: RequestMagicLink.self),
         SaveKey.name: ts(for: SaveKey.self),
         SaveKeychain.name: ts(for: SaveKeychain.self),
-        SaveNotification_v0.name: ts(for: SaveNotification_v0.self),
+        SaveNotification.name: ts(for: SaveNotification.self),
         SaveUser.name: ts(for: SaveUser.self),
         Signup.name: ts(for: Signup.self),
         UpdateSuspendFilterRequest.name: ts(for: UpdateSuspendFilterRequest.self),

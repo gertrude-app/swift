@@ -10,7 +10,6 @@ struct CombinedUsersActivityFeed: TypescriptPair {
   }
 
   struct UserDay: TypescriptPairOutput {
-    var userId: User.Id
     var userName: String
     var numDeleted: Int
     var items: [Union2<UserActivity.Screenshot, UserActivity.CoalescedKeystrokeLine>]
@@ -50,7 +49,6 @@ extension CombinedUsersActivityFeed: Resolver {
       let coalesced = try await coalesce(screenshots, keystrokes)
 
       return UserDay(
-        userId: user.id,
         userName: user.name,
         numDeleted: coalesced.lazy.filter(\.isDeleted).count,
         items: coalesced.lazy.filter(\.notDeleted)

@@ -92,20 +92,10 @@ final class UserActivityResolverTests: ApiTestCase {
       in: context(user1.admin)
     )
 
-    expect(summaryOutput).toHaveCount(2)
-    let userSummary1 = summaryOutput[0]
-    expect(userSummary1.userId).toEqual(user1.id)
-    expect(userSummary1.userName).toEqual(user1.name)
-    expect(userSummary1.days).toHaveCount(1)
-    expect(userSummary1.days[0].numApproved).toEqual(0)
-    expect(userSummary1.days[0].totalItems).toEqual(2)
-
-    let userSummary2 = summaryOutput[1]
-    expect(userSummary2.userId).toEqual(user2.id)
-    expect(userSummary2.userName).toEqual(user2.name)
-    expect(userSummary2.days).toHaveCount(1)
-    expect(userSummary2.days[0].numApproved).toEqual(1)
-    expect(userSummary2.days[0].totalItems).toEqual(2)
+    expect(summaryOutput).toHaveCount(1)
+    let day = summaryOutput[0]
+    expect(day.numApproved).toEqual(1)
+    expect(day.totalItems).toEqual(4)
 
     // test getting the activity day detail (screenshots and keystrokes)
 
@@ -117,7 +107,6 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(dayOutput).toHaveCount(2)
     let userDay1 = dayOutput[0]
     expect(userDay1.userName).toEqual(user1.name)
-    expect(userDay1.userId).toEqual(user1.id)
     expect(userDay1.numDeleted).toEqual(0)
     expect(userDay1.items).toHaveCount(2)
 
@@ -146,7 +135,6 @@ final class UserActivityResolverTests: ApiTestCase {
 
     let userDay2 = dayOutput[1]
     expect(userDay2.userName).toEqual(user2.name)
-    expect(userDay2.userId).toEqual(user2.id)
     expect(userDay2.numDeleted).toEqual(1)
     expect(userDay2.items).toHaveCount(1)
 
