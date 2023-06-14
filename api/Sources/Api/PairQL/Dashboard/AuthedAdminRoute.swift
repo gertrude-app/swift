@@ -2,26 +2,12 @@ import DuetSQL
 import PairQL
 import Vapor
 
-struct AdminContext: ResolverContext {
-  let requestId: String
-  let dashboardUrl: String
-  let admin: Admin
-
-  @discardableResult
-  func verifiedUser(from id: User.Id) async throws -> User {
-    try await Current.db.query(User.self)
-      .where(.id == id)
-      .where(.adminId == admin.id)
-      .first()
-  }
-}
-
 enum AuthedAdminRoute: PairRoute {
   case confirmPendingNotificationMethod(ConfirmPendingNotificationMethod.Input)
   case createBillingPortalSession
   case createPendingAppConnection(CreatePendingAppConnection.Input)
   case createPendingNotificationMethod(CreatePendingNotificationMethod.Input)
-  case deleteActivityItems(DeleteActivityItems.Input)
+  case deleteActivityItems_v2(DeleteActivityItems_v2.Input)
   case deleteEntity(DeleteEntity.Input)
   case getAdmin
   case getAdminKeychain(GetAdminKeychain.Input)
@@ -33,13 +19,15 @@ enum AuthedAdminRoute: PairRoute {
   case getUnlockRequest(GetUnlockRequest.Input)
   case getUnlockRequests
   case getUser(GetUser.Input)
-  case getUserActivityDay(GetUserActivityDay.Input)
-  case getUserActivityDays(GetUserActivityDays.Input)
+  case userActivityFeed(UserActivityFeed.Input)
+  case userActivitySummaries(UserActivitySummaries.Input)
+  case combinedUsersActivityFeed(CombinedUsersActivityFeed.Input)
+  case combinedUsersActivitySummaries(CombinedUsersActivitySummaries.Input)
   case getUsers
   case getUserUnlockRequests(GetUserUnlockRequests.Input)
   case saveKey(SaveKey.Input)
   case saveKeychain(SaveKeychain.Input)
-  case saveNotification_v0(SaveNotification_v0.Input)
+  case saveNotification(SaveNotification.Input)
   case saveUser(SaveUser.Input)
   case updateSuspendFilterRequest(UpdateSuspendFilterRequest.Input)
   case updateUnlockRequest(UpdateUnlockRequest.Input)
@@ -63,9 +51,9 @@ extension AuthedAdminRoute {
         Operation(CreatePendingNotificationMethod.self)
         Body(.dashboardInput(CreatePendingNotificationMethod.self))
       }
-      Route(/Self.deleteActivityItems) {
-        Operation(DeleteActivityItems.self)
-        Body(.dashboardInput(DeleteActivityItems.self))
+      Route(/Self.deleteActivityItems_v2) {
+        Operation(DeleteActivityItems_v2.self)
+        Body(.dashboardInput(DeleteActivityItems_v2.self))
       }
       Route(/Self.deleteEntity) {
         Operation(DeleteEntity.self)
@@ -107,23 +95,27 @@ extension AuthedAdminRoute {
         Operation(GetUser.self)
         Body(.dashboardInput(GetUser.self))
       }
-      Route(/Self.getUserActivityDays) {
-        Operation(GetUserActivityDays.self)
-        Body(.dashboardInput(GetUserActivityDays.self))
+      Route(/Self.userActivitySummaries) {
+        Operation(UserActivitySummaries.self)
+        Body(.dashboardInput(UserActivitySummaries.self))
       }
-      Route(/Self.getUserActivityDay) {
-        Operation(GetUserActivityDay.self)
-        Body(.dashboardInput(GetUserActivityDay.self))
+      Route(/Self.userActivityFeed) {
+        Operation(UserActivityFeed.self)
+        Body(.dashboardInput(UserActivityFeed.self))
+      }
+      Route(/Self.combinedUsersActivityFeed) {
+        Operation(CombinedUsersActivityFeed.self)
+        Body(.dashboardInput(CombinedUsersActivityFeed.self))
       }
       Route(/Self.getUsers) {
         Operation(GetUsers.self)
       }
+    }
+    OneOf {
       Route(/Self.getUserUnlockRequests) {
         Operation(GetUserUnlockRequests.self)
         Body(.dashboardInput(GetUserUnlockRequests.self))
       }
-    }
-    OneOf {
       Route(/Self.saveKey) {
         Operation(SaveKey.self)
         Body(.dashboardInput(SaveKey.self))
@@ -132,9 +124,9 @@ extension AuthedAdminRoute {
         Operation(SaveKeychain.self)
         Body(.dashboardInput(SaveKeychain.self))
       }
-      Route(/Self.saveNotification_v0) {
-        Operation(SaveNotification_v0.self)
-        Body(.dashboardInput(SaveNotification_v0.self))
+      Route(/Self.saveNotification) {
+        Operation(SaveNotification.self)
+        Body(.dashboardInput(SaveNotification.self))
       }
       Route(/Self.saveUser) {
         Operation(SaveUser.self)
@@ -147,6 +139,10 @@ extension AuthedAdminRoute {
       Route(/Self.updateUnlockRequest) {
         Operation(UpdateUnlockRequest.self)
         Body(.dashboardInput(UpdateUnlockRequest.self))
+      }
+      Route(/Self.combinedUsersActivitySummaries) {
+        Operation(CombinedUsersActivitySummaries.self)
+        Body(.dashboardInput(CombinedUsersActivitySummaries.self))
       }
     }
   }
@@ -167,8 +163,8 @@ extension AuthedAdminRoute: RouteResponder {
     case .deleteEntity(let input):
       let output = try await DeleteEntity.resolve(with: input, in: context)
       return try await respond(with: output)
-    case .getUserActivityDays(let input):
-      let output = try await GetUserActivityDays.resolve(with: input, in: context)
+    case .userActivitySummaries(let input):
+      let output = try await UserActivitySummaries.resolve(with: input, in: context)
       return try await respond(with: output)
     case .createBillingPortalSession:
       let output = try await CreateBillingPortalSession.resolve(in: context)
@@ -176,14 +172,20 @@ extension AuthedAdminRoute: RouteResponder {
     case .createPendingAppConnection(let input):
       let output = try await CreatePendingAppConnection.resolve(with: input, in: context)
       return try await respond(with: output)
-    case .getUserActivityDay(let input):
-      let output = try await GetUserActivityDay.resolve(with: input, in: context)
+    case .userActivityFeed(let input):
+      let output = try await UserActivityFeed.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .combinedUsersActivityFeed(let input):
+      let output = try await CombinedUsersActivityFeed.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .combinedUsersActivitySummaries(let input):
+      let output = try await CombinedUsersActivitySummaries.resolve(with: input, in: context)
       return try await respond(with: output)
     case .getAdmin:
       let output = try await GetAdmin.resolve(in: context)
       return try await respond(with: output)
-    case .saveNotification_v0(let input):
-      let output = try await SaveNotification_v0.resolve(with: input, in: context)
+    case .saveNotification(let input):
+      let output = try await SaveNotification.resolve(with: input, in: context)
       return try await respond(with: output)
     case .getIdentifiedApps:
       let output = try await GetIdentifiedApps.resolve(in: context)
@@ -230,8 +232,8 @@ extension AuthedAdminRoute: RouteResponder {
     case .saveKey(let input):
       let output = try await SaveKey.resolve(with: input, in: context)
       return try await respond(with: output)
-    case .deleteActivityItems(let input):
-      let output = try await DeleteActivityItems.resolve(with: input, in: context)
+    case .deleteActivityItems_v2(let input):
+      let output = try await DeleteActivityItems_v2.resolve(with: input, in: context)
       return try await respond(with: output)
     }
   }

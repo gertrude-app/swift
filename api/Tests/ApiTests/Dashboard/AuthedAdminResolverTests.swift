@@ -5,7 +5,7 @@ import XExpect
 
 @testable import Api
 
-final class DashboardAdminResolverTests: ApiTestCase {
+final class AuthedAdminResolverTests: ApiTestCase {
 
   func testCreateBillingPortalSessionHappyPath() async throws {
     let admin = try await Entities.admin {
@@ -38,41 +38,6 @@ final class DashboardAdminResolverTests: ApiTestCase {
     )
 
     expect(output).toEqual(.init(code: 1234))
-  }
-
-  func testGetActivityDay() async throws {
-    Current.date = { Date() }
-    let user = try await Entities.user().withDevice()
-    let screenshot = Screenshot.random
-    screenshot.deviceId = user.device.id
-    try await Current.db.create(screenshot)
-    let keystrokeLine = KeystrokeLine.random
-    keystrokeLine.deviceId = user.device.id
-    try await Current.db.create(keystrokeLine)
-
-    let output = try await GetUserActivityDay.resolve(
-      with: .init(
-        userId: user.id,
-        range: .init(
-          start: Date(subtractingDays: 2).isoString,
-          end: Date(addingDays: 2).isoString
-        )
-      ),
-      in: context(user.admin)
-    )
-
-    // date timezone issues preventing checking whole struct equality
-    expect(output.items).toHaveCount(2)
-    expect(output.items[0].t2?.id).toEqual(keystrokeLine.id)
-    expect(output.items[0].t2?.ids).toEqual([keystrokeLine.id])
-    expect(output.items[0].t2?.appName).toEqual(keystrokeLine.appName)
-    expect(output.items[0].t2?.line).toEqual(keystrokeLine.line)
-
-    expect(output.items[1].t1?.id).toEqual(screenshot.id)
-    expect(output.items[1].t1?.ids).toEqual([screenshot.id])
-    expect(output.items[1].t1?.url).toEqual(screenshot.url)
-    expect(output.items[1].t1?.width).toEqual(screenshot.width)
-    expect(output.items[1].t1?.height).toEqual(screenshot.height)
   }
 
   func testGetAdminWithNotifications() async throws {
@@ -223,13 +188,12 @@ final class DashboardAdminResolverTests: ApiTestCase {
       config: .email(email: "foo@bar.com")
     ))
 
-    let (id, _) = mockUUIDs()
-    let output = try await SaveNotification_v0.resolve(
-      with: .init(id: nil, methodId: method.id, trigger: .unlockRequestSubmitted),
+    let output = try await SaveNotification.resolve(
+      with: .init(id: .init(), isNew: true, methodId: method.id, trigger: .unlockRequestSubmitted),
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(id: .init(id)))
+    expect(output).toEqual(.success)
   }
 
   func testDeleteKeyNotifiesConnectedApps() async throws {
@@ -258,16 +222,17 @@ final class DashboardAdminResolverTests: ApiTestCase {
       trigger: .unlockRequestSubmitted
     ))
 
-    let output = try await SaveNotification_v0.resolve(
+    let output = try await SaveNotification.resolve(
       with: .init(
         id: notification.id,
+        isNew: false,
         methodId: text.id, // <-- new method
         trigger: .suspendFilterRequestSubmitted // <-- new trigger
       ),
       in: context(admin)
     )
 
-    expect(output).toEqual(.init(id: notification.id))
+    expect(output).toEqual(.success)
 
     let retrieved = try await Current.db.find(notification.id)
     expect(retrieved.methodId).toEqual(text.id)
@@ -517,42 +482,5 @@ final class DashboardAdminResolverTests: ApiTestCase {
         responseComment: "no way"
       )),
     ])
-  }
-
-  func testDeleteActivityItems() async throws {
-    let user = try await Entities.user().withDevice()
-    let screenshot = Screenshot.random
-    screenshot.deviceId = user.device.id
-    try await Current.db.create(screenshot)
-    let keystrokeLine = KeystrokeLine.random
-    keystrokeLine.deviceId = user.device.id
-    try await Current.db.create(keystrokeLine)
-
-    let output = try await DeleteActivityItems.resolve(
-      with: DeleteActivityItems.Input(
-        userId: user.id,
-        keystrokeLineIds: [keystrokeLine.id],
-        screenshotIds: [screenshot.id]
-      ),
-      in: context(user.admin)
-    )
-
-    expect(output).toEqual(.success)
-    expect(try? await Current.db.find(keystrokeLine.id)).toBeNil()
-    expect(try? await Current.db.find(screenshot.id)).toBeNil()
-  }
-
-  // helpers
-
-  private func context(_ admin: Admin) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin)
-  }
-
-  private func context(_ admin: AdminEntities) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
-  }
-
-  private func context(_ admin: AdminWithKeychainEntities) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
   }
 }

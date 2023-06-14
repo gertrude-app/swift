@@ -34,6 +34,7 @@ class ApiTestCase: XCTestCase {
     Current = .mock
     app = Application(.testing)
     try! Configure.app(app)
+    app.logger = .null
     try! app.autoRevert().wait()
     try! app.autoMigrate().wait()
   }
@@ -63,6 +64,18 @@ class ApiTestCase: XCTestCase {
   override static func tearDown() {
     app.shutdown()
     sync { await SQL.resetPreparedStatements() }
+  }
+
+  func context(_ admin: Admin) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin)
+  }
+
+  func context(_ admin: AdminEntities) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
+  }
+
+  func context(_ admin: AdminWithKeychainEntities) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
   }
 }
 

@@ -1,12 +1,12 @@
 import DuetSQL
 import TypescriptPairQL
 
-struct DateRange: TypescriptNestable {
+struct DateRange: TypescriptNestable, PairInput {
   let start: String
   let end: String
 }
 
-struct GetUserActivityDays: Pair, TypescriptPair {
+struct UserActivitySummaries: Pair, TypescriptPair {
   static var auth: ClientAuth = .admin
 
   struct Input: TypescriptPairInput {
@@ -19,7 +19,7 @@ struct GetUserActivityDays: Pair, TypescriptPair {
     let days: [Day]
   }
 
-  struct Day: TypescriptNestable {
+  struct Day: PairOutput, TypescriptNestable {
     let date: Date
     let numApproved: Int
     let totalItems: Int
@@ -28,7 +28,7 @@ struct GetUserActivityDays: Pair, TypescriptPair {
 
 // resolver
 
-extension GetUserActivityDays: Resolver {
+extension UserActivitySummaries: Resolver {
   static func resolve(
     with input: Input,
     in context: AdminContext
@@ -38,8 +38,8 @@ extension GetUserActivityDays: Resolver {
     let deviceIds = try await user.devices().map(\.id)
 
     let days = try await withThrowingTaskGroup(
-      of: GetUserActivityDays.Day.self
-    ) { group -> [GetUserActivityDays.Day] in
+      of: UserActivitySummaries.Day.self
+    ) { group -> [UserActivitySummaries.Day] in
       for (start, end) in dateRanges {
         group.addTask {
           async let screenshots = Current.db.query(Screenshot.self)
@@ -72,7 +72,7 @@ extension GetUserActivityDays: Resolver {
           )
         }
       }
-      var days: [GetUserActivityDays.Day] = []
+      var days: [UserActivitySummaries.Day] = []
       for try await rangeCount in group {
         days.append(rangeCount)
       }

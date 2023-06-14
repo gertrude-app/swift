@@ -17,6 +17,7 @@ extension GetSelectableKeychains: NoInputResolver {
     async let own = context.admin.keychains()
     async let `public` = Current.db.query(Api.Keychain.self)
       .where(.isPublic == true)
+      .where(.authorId != context.admin.id)
       .all()
     return try await .init(
       own: own.concurrentMap { try await .init(from: $0) },
