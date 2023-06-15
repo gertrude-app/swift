@@ -8,7 +8,7 @@ let package = Package(
     .library(name: "PairQL", targets: ["PairQL"]),
   ],
   dependencies: [
-    .package("pointfreeco/swift-url-routing@0.4.0"),
+    .package("pointfreeco/swift-url-routing@0.5.0"),
     .package(path: "../gertie"),
     .package(path: "../x-expect"),
   ],
