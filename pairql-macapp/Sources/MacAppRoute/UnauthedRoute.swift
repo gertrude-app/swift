@@ -5,10 +5,11 @@ public enum UnauthedRoute: PairRoute {
 }
 
 public extension UnauthedRoute {
-  static let router = OneOf {
+  static let router: AnyParserPrinter<URLRequestData, UnauthedRoute> = OneOf {
     Route(/Self.connectApp) {
       Operation(ConnectApp.self)
       Body(.json(ConnectApp.Input.self))
     }
   }
+  .eraseToAnyParserPrinter()
 }

@@ -8,7 +8,7 @@ let package = Package(
     .library(name: "MacAppRoute", targets: ["MacAppRoute"]),
   ],
   dependencies: [
-    .package("pointfreeco/swift-url-routing@0.4.0"),
+    .package("pointfreeco/swift-url-routing@0.5.0"),
     .package(path: "../pairql"),
     .package(path: "../shared"),
     .package(path: "../x-expect"),
