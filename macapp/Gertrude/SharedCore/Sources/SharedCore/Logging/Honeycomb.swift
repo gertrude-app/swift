@@ -1,4 +1,5 @@
 import Foundation
+import XCore
 
 public enum Honeycomb {
   public struct Event: Codable {

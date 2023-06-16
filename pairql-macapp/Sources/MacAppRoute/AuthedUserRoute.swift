@@ -12,7 +12,7 @@ public enum AuthedUserRoute: PairRoute {
 }
 
 public extension AuthedUserRoute {
-  static let router = OneOf {
+  static let router: AnyParserPrinter<URLRequestData, AuthedUserRoute> = OneOf {
     Route(/Self.createKeystrokeLines) {
       Operation(CreateKeystrokeLines.self)
       Body(.json(CreateKeystrokeLines.Input.self))
@@ -41,4 +41,5 @@ public extension AuthedUserRoute {
       Body(.json(RefreshRules.Input.self))
     }
   }
+  .eraseToAnyParserPrinter()
 }
