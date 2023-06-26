@@ -18,7 +18,7 @@ struct VerifySignupEmail: Pair {
 
 extension VerifySignupEmail: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    guard let adminId = await Current.ephemeral.adminIdFromMagicLinkToken(input.token) else {
+    guard let adminId = await Current.ephemeral.adminIdFromToken(input.token) else {
       throw Abort(.notFound)
     }
 

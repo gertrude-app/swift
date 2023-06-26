@@ -11,6 +11,8 @@ enum UnauthedRoute: PairRoute {
   case login(Login.Input)
   case loginMagicLink(LoginMagicLink.Input)
   case requestMagicLink(RequestMagicLink.Input)
+  case resetPassword(ResetPassword.Input)
+  case sendPasswordResetEmail(SendPasswordResetEmail.Input)
   case signup(Signup.Input)
   case verifySignupEmail(VerifySignupEmail.Input)
 
@@ -45,6 +47,14 @@ enum UnauthedRoute: PairRoute {
     Route(/Self.requestMagicLink) {
       Operation(RequestMagicLink.self)
       Body(.dashboardInput(RequestMagicLink.self))
+    }
+    Route(/Self.resetPassword) {
+      Operation(ResetPassword.self)
+      Body(.dashboardInput(ResetPassword.self))
+    }
+    Route(/Self.sendPasswordResetEmail) {
+      Operation(SendPasswordResetEmail.self)
+      Body(.dashboardInput(SendPasswordResetEmail.self))
     }
     Route(/Self.signup) {
       Operation(Signup.self)
@@ -89,6 +99,12 @@ extension UnauthedRoute: RouteResponder {
       return try await respond(with: output)
     case .requestMagicLink(let input):
       let output = try await RequestMagicLink.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .resetPassword(let input):
+      let output = try await ResetPassword.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .sendPasswordResetEmail(let input):
+      let output = try await SendPasswordResetEmail.resolve(with: input, in: context)
       return try await respond(with: output)
     }
   }

@@ -3,19 +3,19 @@ import Foundation
 // @SCOPE: when the API restarts, we'll lose all magic links, eventually
 // this should be backed by the DB or some sort of persistent storage
 actor Ephemeral {
-  private var magicLinks: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
+  private var adminIds: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
 
-  func createMagicLinkToken(
+  func createAdminIdToken(
     _ adminId: Admin.Id,
     expiration: Date = Current.date() + TWENTY_MINUTES
   ) -> UUID {
     let token = UUID.new()
-    magicLinks[token] = (adminId: adminId, expiration: expiration)
+    adminIds[token] = (adminId: adminId, expiration: expiration)
     return token
   }
 
-  func adminIdFromMagicLinkToken(_ token: UUID) -> Admin.Id? {
-    guard let (adminId, expiration) = magicLinks.removeValue(forKey: token),
+  func adminIdFromToken(_ token: UUID) -> Admin.Id? {
+    guard let (adminId, expiration) = adminIds.removeValue(forKey: token),
           expiration > Current.date() else {
       return nil
     }

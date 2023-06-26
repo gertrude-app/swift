@@ -26,7 +26,7 @@ extension RequestMagicLink: Resolver {
       return .success
     }
 
-    let token = await Current.ephemeral.createMagicLinkToken(admin.id)
+    let token = await Current.ephemeral.createAdminIdToken(admin.id)
     let subject = "Gertrude Dashboard Magic Link"
     var url = "\(context.dashboardUrl)/otp/\(token.lowercased)"
     if let redirect = input.redirect,

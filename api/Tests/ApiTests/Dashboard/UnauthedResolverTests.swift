@@ -55,7 +55,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
   func testVerifySignupEmailSetsSubsriptionStatusAndCreatesNotificationMethod() async throws {
     let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
-    let token = await Current.ephemeral.createMagicLinkToken(admin.id)
+    let token = await Current.ephemeral.createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
 
@@ -71,7 +71,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
   func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
     let admin = try await Entities.admin { $0.subscriptionStatus = .trialing } // <-- not pending
-    let token = await Current.ephemeral.createMagicLinkToken(admin.id)
+    let token = await Current.ephemeral.createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
 
@@ -142,7 +142,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
   func testLoginFromMagicLink() async throws {
     let admin = try await Current.db.create(Admin.random)
-    let token = await Current.ephemeral.createMagicLinkToken(admin.id)
+    let token = await Current.ephemeral.createAdminIdToken(admin.id)
     let (tokenId, tokenValue) = mockUUIDs()
 
     let output = try await LoginMagicLink.resolve(with: .init(token: token), in: context)
