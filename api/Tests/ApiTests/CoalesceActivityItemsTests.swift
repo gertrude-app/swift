@@ -16,10 +16,10 @@ class CoalesceMonitoringItemsTests: XCTestCase {
     let coalesced = coalesce([screenshot2, screenshot1], [keystroke2, keystroke1])
 
     XCTAssertEqual(coalesced.count, 4)
-    XCTAssertEqual(coalesced[0].t2?.ids, [keystroke2.id])
-    XCTAssertEqual(coalesced[1].t1?.id, screenshot2.id)
-    XCTAssertEqual(coalesced[2].t2?.ids, [keystroke1.id])
-    XCTAssertEqual(coalesced[3].t1?.id, screenshot1.id)
+    XCTAssertEqual(coalesced[0].keystrokeLine?.ids, [keystroke2.id])
+    XCTAssertEqual(coalesced[1].screenshot?.id, screenshot2.id)
+    XCTAssertEqual(coalesced[2].keystrokeLine?.ids, [keystroke1.id])
+    XCTAssertEqual(coalesced[3].screenshot?.id, screenshot1.id)
   }
 
   func testContiguousKeystrokesFromSameAppCoalesce() {
@@ -42,10 +42,10 @@ class CoalesceMonitoringItemsTests: XCTestCase {
     let coalesced = coalesce([screenshot2, screenshot1], [keystroke2, keystroke1])
 
     XCTAssertEqual(coalesced.count, 3)
-    XCTAssertEqual(coalesced[0].t1?.id, screenshot2.id)
-    XCTAssertEqual(coalesced[1].t2?.ids, [keystroke2.id, keystroke1.id])
-    XCTAssertEqual(coalesced[2].t1?.id, screenshot1.id)
-    XCTAssertEqual(coalesced[1].t2?.line, "Foo\nBar")
+    XCTAssertEqual(coalesced[0].screenshot?.id, screenshot2.id)
+    XCTAssertEqual(coalesced[1].keystrokeLine?.ids, [keystroke2.id, keystroke1.id])
+    XCTAssertEqual(coalesced[2].screenshot?.id, screenshot1.id)
+    XCTAssertEqual(coalesced[1].keystrokeLine?.line, "Foo\nBar")
   }
 
   func testDoesntCoalesceDeletedAndNonDeleted() {
@@ -85,9 +85,9 @@ class CoalesceMonitoringItemsTests: XCTestCase {
     let coalesced = coalesce([screenshot2, screenshot1], [keystroke2, keystroke1])
 
     XCTAssertEqual(coalesced.count, 4)
-    XCTAssertEqual(coalesced[0].t1?.id, screenshot2.id)
-    XCTAssertEqual(coalesced[1].t2?.ids, [keystroke2.id])
-    XCTAssertEqual(coalesced[2].t2?.ids, [keystroke1.id])
-    XCTAssertEqual(coalesced[3].t1?.id, screenshot1.id)
+    XCTAssertEqual(coalesced[0].screenshot?.id, screenshot2.id)
+    XCTAssertEqual(coalesced[1].keystrokeLine?.ids, [keystroke2.id])
+    XCTAssertEqual(coalesced[2].keystrokeLine?.ids, [keystroke1.id])
+    XCTAssertEqual(coalesced[3].screenshot?.id, screenshot1.id)
   }
 }

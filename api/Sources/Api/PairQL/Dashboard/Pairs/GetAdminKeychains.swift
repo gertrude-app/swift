@@ -1,11 +1,11 @@
 import Foundation
+import PairQL
 import Shared
-import TypescriptPairQL
 
-struct GetAdminKeychains: TypescriptPair {
+struct GetAdminKeychains: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Key: TypescriptNestable, GlobalType {
+  struct Key: PairNestable {
     let id: Api.Key.Id
     let keychainId: Api.Keychain.Id
     let comment: String?
@@ -13,7 +13,7 @@ struct GetAdminKeychains: TypescriptPair {
     let key: Shared.Key
   }
 
-  struct AdminKeychain: TypescriptNestable, PairOutput, GlobalType {
+  struct AdminKeychain: PairNestable, PairOutput {
     let summary: KeychainSummary
     let keys: [Key]
   }

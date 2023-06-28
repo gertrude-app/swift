@@ -1,11 +1,11 @@
 import Foundation
+import PairQL
 import Shared
-import TypescriptPairQL
 
-struct GetUnlockRequest: TypescriptPair {
+struct GetUnlockRequest: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Output: TypescriptPairOutput, GlobalType {
+  struct Output: PairOutput {
     let id: Api.UnlockRequest.Id
     let userId: Api.User.Id
     let userName: String
@@ -20,10 +20,6 @@ struct GetUnlockRequest: TypescriptPair {
     let appCategories: [String]
     let requestProtocol: String?
     let createdAt: Date
-
-    static var __typeName: String {
-      "UnlockRequest"
-    }
   }
 
   typealias Input = UnlockRequest.Id

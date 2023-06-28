@@ -1,10 +1,10 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct GetSelectableKeychains: TypescriptPair {
+struct GetSelectableKeychains: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     let own: [KeychainSummary]
     let `public`: [KeychainSummary]
   }

@@ -1,5 +1,7 @@
+import PairQL
 import Shared
-import TypescriptPairQL
+import Tagged
+import TypeScriptInterop
 import Vapor
 
 enum DashboardTsCodegenRoute {
@@ -13,76 +15,109 @@ enum DashboardTsCodegenRoute {
     var pairs: [String: Pair]
   }
 
-  static func handler(_ request: Request) async throws -> Response {
-    Response(
-      shared: [
-        "\(ClientAuth.self)": ClientAuth.ts,
-        "\(DeviceModelFamily.self)": DeviceModelFamily.ts,
-        "\(RequestStatus.self)": RequestStatus.ts,
-        AdminNotification.Trigger.__typeName: AdminNotification.Trigger.ts,
-        Shared.Key.__typeName: Shared.Key.ts,
-        "\(AppScope.self)": AppScope.ts,
-        AppScope.Single.__typeName: AppScope.Single.ts,
-        GetUnlockRequest.Output.__typeName: GetUnlockRequest.Output.ts,
-        "\(GetUser.User.self)": GetUser.User.ts,
-        "\(KeychainSummary.self)": KeychainSummary.ts,
-        "\(GetUser.Device.self)": GetUser.Device.ts,
-        GetSuspendFilterRequest.Output.__typeName: GetSuspendFilterRequest.Output.ts,
-        Admin.SubscriptionStatus.__typeName: Admin.SubscriptionStatus.ts,
-        "\(GetAdminKeychains.AdminKeychain.self)": GetAdminKeychains.AdminKeychain.ts,
-        "\(GetAdminKeychains.Key.self)": GetAdminKeychains.Key.ts,
-        PqlError.__typeName: PqlError.ts,
-      ],
-      pairs: [
-        AllowingSignups.name: ts(for: AllowingSignups.self),
-        ConfirmPendingNotificationMethod.name: ts(for: ConfirmPendingNotificationMethod.self),
-        CreateBillingPortalSession.name: ts(for: CreateBillingPortalSession.self),
-        CreatePendingAppConnection.name: ts(for: CreatePendingAppConnection.self),
-        CreatePendingNotificationMethod.name: ts(for: CreatePendingNotificationMethod.self),
-        DeleteActivityItems_v2.name: ts(for: DeleteActivityItems_v2.self),
-        DeleteEntity.name: ts(for: DeleteEntity.self),
-        GetAdmin.name: ts(for: GetAdmin.self),
-        GetAdminKeychain.name: ts(for: GetAdminKeychain.self),
-        GetAdminKeychains.name: ts(for: GetAdminKeychains.self),
-        GetCheckoutUrl.name: ts(for: GetCheckoutUrl.self),
-        GetDashboardWidgets.name: ts(for: GetDashboardWidgets.self),
-        GetIdentifiedApps.name: ts(for: GetIdentifiedApps.self),
-        GetSelectableKeychains.name: ts(for: GetSelectableKeychains.self),
-        GetSuspendFilterRequest.name: ts(for: GetSuspendFilterRequest.self),
-        GetUnlockRequest.name: ts(for: GetUnlockRequest.self),
-        GetUnlockRequests.name: ts(for: GetUnlockRequests.self),
-        GetUser.name: ts(for: GetUser.self),
-        UserActivityFeed.name: ts(for: UserActivityFeed.self),
-        CombinedUsersActivityFeed.name: ts(for: CombinedUsersActivityFeed.self),
-        UserActivitySummaries.name: ts(for: UserActivitySummaries.self),
-        CombinedUsersActivitySummaries.name: ts(for: CombinedUsersActivitySummaries.self),
-        GetUsers.name: ts(for: GetUsers.self),
-        GetUserUnlockRequests.name: ts(for: GetUserUnlockRequests.self),
-        HandleCheckoutCancel.name: ts(for: HandleCheckoutCancel.self),
-        HandleCheckoutSuccess.name: ts(for: HandleCheckoutSuccess.self),
-        JoinWaitlist.name: ts(for: JoinWaitlist.self),
-        Login.name: ts(for: Login.self),
-        LoginMagicLink.name: ts(for: LoginMagicLink.self),
-        RequestMagicLink.name: ts(for: RequestMagicLink.self),
-        SaveKey.name: ts(for: SaveKey.self),
-        SaveKeychain.name: ts(for: SaveKeychain.self),
-        SaveNotification.name: ts(for: SaveNotification.self),
-        SaveUser.name: ts(for: SaveUser.self),
-        Signup.name: ts(for: Signup.self),
-        UpdateSuspendFilterRequest.name: ts(for: UpdateSuspendFilterRequest.self),
-        UpdateUnlockRequest.name: ts(for: UpdateUnlockRequest.self),
-        VerifySignupEmail.name: ts(for: VerifySignupEmail.self),
-      ]
-    )
+  static var sharedTypes: [(String, Any.Type)] {
+    [
+      ("ServerPqlError", PqlError.self),
+      ("SingleAppScope", AppScope.Single.self),
+      ("AppScope", AppScope.self),
+      ("SharedKey", Shared.Key.self),
+      ("Key", GetAdminKeychains.Key.self),
+      ("SuccessOutput", SuccessOutput.self),
+      ("ClientAuth", ClientAuth.self),
+      ("DeviceModelFamily", DeviceModelFamily.self),
+      ("RequestStatus", RequestStatus.self),
+      ("UnlockRequest", GetUnlockRequest.Output.self),
+      ("KeychainSummary", KeychainSummary.self),
+      ("Device", GetUser.Device.self),
+      ("User", GetUser.User.self),
+      ("SuspendFilterRequest", GetSuspendFilterRequest.Output.self),
+      ("AdminKeychain", GetAdminKeychains.AdminKeychain.self),
+      ("UserActivityItem", UserActivity.Item.self),
+      ("AdminNotificationTrigger", AdminNotification.Trigger.self),
+      ("AdminSubscriptionStatus", Admin.SubscriptionStatus.self),
+      ("VerifiedNotificationMethod", GetAdmin.VerifiedNotificationMethod.self),
+      ("AdminNotification", GetAdmin.Notification.self),
+    ]
   }
 
-  private static func ts<P: TypescriptPair>(for type: P.Type) -> Response.Pair {
+  static var pairqlPairs: [any Pair.Type] {
+    [
+      UserActivityFeed.self,
+      GetAdmin.self,
+      AllowingSignups.self,
+      ConfirmPendingNotificationMethod.self,
+      CreateBillingPortalSession.self,
+      CreatePendingAppConnection.self,
+      CreatePendingNotificationMethod.self,
+      DeleteActivityItems_v2.self,
+      DeleteEntity.self,
+      GetAdmin.self,
+      GetAdminKeychain.self,
+      GetAdminKeychains.self,
+      GetCheckoutUrl.self,
+      GetDashboardWidgets.self,
+      GetIdentifiedApps.self,
+      GetSelectableKeychains.self,
+      GetSuspendFilterRequest.self,
+      GetUnlockRequest.self,
+      GetUnlockRequests.self,
+      GetUser.self,
+      UserActivityFeed.self,
+      CombinedUsersActivityFeed.self,
+      UserActivitySummaries.self,
+      CombinedUsersActivitySummaries.self,
+      GetUsers.self,
+      GetUserUnlockRequests.self,
+      HandleCheckoutCancel.self,
+      HandleCheckoutSuccess.self,
+      JoinWaitlist.self,
+      Login.self,
+      LoginMagicLink.self,
+      RequestMagicLink.self,
+      SaveKey.self,
+      SaveKeychain.self,
+      SaveNotification.self,
+      SaveUser.self,
+      Signup.self,
+      UpdateSuspendFilterRequest.self,
+      UpdateUnlockRequest.self,
+      VerifySignupEmail.self,
+    ]
+  }
+
+  static func handler(_ request: Request) async throws -> Response {
+    var shared: [String: String] = [:]
+    var sharedAliases: [Config.Alias] = [
+      .init(NoInput.self, as: "void"),
+      .init(Date.self, as: "ISODateString"),
+    ]
+    var config = Config(compact: true, aliasing: sharedAliases)
+
+    for (name, type) in sharedTypes {
+      shared[name] = try CodeGen(config: config).declaration(for: type, as: name)
+      sharedAliases.append(.init(type, as: name))
+      config = .init(compact: true, aliasing: sharedAliases)
+    }
+
+    var pairs: [String: Response.Pair] = [:]
+    for pairType in pairqlPairs {
+      pairs[pairType.name] = try ts(for: pairType, with: config)
+    }
+
+    return Response(shared: shared, pairs: pairs)
+  }
+
+  private static func ts<P: Pair>(
+    for type: P.Type,
+    with config: Config
+  ) throws -> Response.Pair {
+    let codegen = CodeGen(config: config)
     let name = "\(P.self)"
     var pair = """
     export namespace \(name) {
-      \(P.Input.inputTs)
+      \(try codegen.declaration(for: P.Input.self, as: "Input"))
 
-      \(P.Output.outputTs)
+      \(try codegen.declaration(for: P.Output.self, as: "Output"))
     }
     """
 
@@ -107,26 +142,8 @@ enum DashboardTsCodegenRoute {
 
 // extensions
 
-extension DeviceModelFamily: GlobalType {}
-extension AppScope: GlobalType {}
-extension RequestStatus: GlobalType {}
-extension ClientAuth: GlobalType {}
-extension AppScope: TypescriptRepresentable {}
-extension PqlError: TypescriptRepresentable {}
-extension AppScope.Single: TypescriptRepresentable {}
-extension Shared.Key: TypescriptRepresentable {}
-extension PqlError.Kind: TypescriptRepresentable {}
-extension PqlError.DashboardTag: TypescriptRepresentable {}
-extension PqlError.AppTag: TypescriptRepresentable {}
-
-extension PqlError: GlobalType {
-  public static var __typeName = "ServerPqlError"
-}
-
-extension AppScope.Single: GlobalType {
-  public static var __typeName = "SingleAppScope"
-}
-
-extension Shared.Key: GlobalType {
-  public static var __typeName = "SharedKey"
+extension Tagged: TypeScriptAliased where RawValue == UUID {
+  public static var typescriptAlias: String {
+    "UUID"
+  }
 }

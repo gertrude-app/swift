@@ -1,25 +1,25 @@
 import DuetSQL
 import Foundation
+import PairQL
 import Shared
-import TypescriptPairQL
 
-struct GetDashboardWidgets: TypescriptPair {
+struct GetDashboardWidgets: Pair {
   static var auth: ClientAuth = .admin
 
-  struct User: TypescriptNestable {
+  struct User: PairNestable {
     var id: Api.User.Id
     var name: String
     var isOnline: Bool
   }
 
-  struct UserActivitySummary: TypescriptNestable {
+  struct UserActivitySummary: PairNestable {
     var id: Api.User.Id
     var name: String
     var numUnreviewed: Int
     var numReviewed: Int
   }
 
-  struct UnlockRequest: TypescriptNestable {
+  struct UnlockRequest: PairNestable {
     var id: Api.UnlockRequest.Id
     var userId: Api.User.Id
     var userName: String
@@ -28,14 +28,14 @@ struct GetDashboardWidgets: TypescriptPair {
     var createdAt: Date
   }
 
-  struct RecentScreenshot: TypescriptNestable {
+  struct RecentScreenshot: PairNestable {
     var id: Screenshot.Id
     var userName: String
     var url: String
     var createdAt: Date
   }
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     var users: [User]
     var userActivitySummaries: [UserActivitySummary]
     var unlockRequests: [UnlockRequest]

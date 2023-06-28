@@ -1,25 +1,25 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct DateRange: TypescriptNestable, PairInput {
+struct DateRange: PairNestable, PairInput {
   let start: String
   let end: String
 }
 
-struct UserActivitySummaries: Pair, TypescriptPair {
+struct UserActivitySummaries: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let userId: User.Id
     let dateRanges: [DateRange]
   }
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     let userName: String
     let days: [Day]
   }
 
-  struct Day: PairOutput, TypescriptNestable {
+  struct Day: PairOutput, PairNestable {
     let date: Date
     let numApproved: Int
     let totalItems: Int

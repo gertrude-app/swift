@@ -1,7 +1,7 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct CombinedUsersActivitySummaries: TypescriptPair {
+struct CombinedUsersActivitySummaries: Pair {
   static var auth: ClientAuth = .admin
   typealias Input = [DateRange]
   typealias Output = [UserActivitySummaries.Day]

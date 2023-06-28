@@ -1,15 +1,15 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 import Vapor
 
-struct VerifySignupEmail: TypescriptPair {
+struct VerifySignupEmail: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let token: UUID
   }
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     let adminId: Admin.Id
   }
 }

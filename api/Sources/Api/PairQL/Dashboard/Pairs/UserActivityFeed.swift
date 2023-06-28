@@ -1,10 +1,10 @@
 import DuetSQL
 import Foundation
-import TypescriptPairQL
+import PairQL
 import Vapor
 
 public enum UserActivity {
-  public struct Screenshot: TypescriptNestable {
+  public struct Screenshot: PairNestable {
     var id: Api.Screenshot.Id
     var ids: [Api.Screenshot.Id]
     var url: String
@@ -14,7 +14,7 @@ public enum UserActivity {
     var deletedAt: Date?
   }
 
-  public struct CoalescedKeystrokeLine: TypescriptNestable {
+  public struct CoalescedKeystrokeLine: PairNestable {
     var id: KeystrokeLine.Id
     var ids: [KeystrokeLine.Id]
     var appName: String
@@ -22,20 +22,35 @@ public enum UserActivity {
     var createdAt: Date
     var deletedAt: Date?
   }
+
+  public enum Item: PairNestable {
+    case screenshot(Screenshot)
+    case keystrokeLine(CoalescedKeystrokeLine)
+
+    public var screenshot: Screenshot? {
+      guard case .screenshot(let screenshot) = self else { return nil }
+      return screenshot
+    }
+
+    public var keystrokeLine: CoalescedKeystrokeLine? {
+      guard case .keystrokeLine(let keystrokeLine) = self else { return nil }
+      return keystrokeLine
+    }
+  }
 }
 
-struct UserActivityFeed: TypescriptPair {
+struct UserActivityFeed: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var userId: User.Id
     var range: DateRange
   }
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     var userName: String
     var numDeleted: Int
-    var items: [Union2<UserActivity.Screenshot, UserActivity.CoalescedKeystrokeLine>]
+    var items: [UserActivity.Item]
   }
 }
 
@@ -78,28 +93,25 @@ extension UserActivityFeed: Resolver {
 
 // helpers
 
-func coalesce(
-  _ screenshots: [Screenshot],
-  _ keystrokes: [KeystrokeLine]
-) -> [Union2<UserActivity.Screenshot, UserActivity.CoalescedKeystrokeLine>] {
+func coalesce(_ screenshots: [Screenshot], _ keystrokes: [KeystrokeLine]) -> [UserActivity.Item] {
   var sorted: [Either<Screenshot, KeystrokeLine>] =
     screenshots.map(Either.init(_:)) + keystrokes.map(Either.init(_:))
   sorted.sort { $0.createdAt > $1.createdAt }
 
-  var coalesced: [Union2<UserActivity.Screenshot, UserActivity.CoalescedKeystrokeLine>] = []
+  var coalesced: [UserActivity.Item] = []
   for item in sorted {
     switch item {
     case .left(let screenshot):
-      coalesced.append(.t1(.init(from: screenshot)))
+      coalesced.append(.screenshot(.init(from: screenshot)))
     case .right(let keystroke):
-      if var coalescedKeystroke = coalesced.last?.t2,
+      if var coalescedKeystroke = coalesced.last?.keystrokeLine,
          coalescedKeystroke.deletedAt == keystroke.deletedAt,
          keystroke.appName == coalescedKeystroke.appName {
         coalescedKeystroke.line = "\(keystroke.line)\n\(coalescedKeystroke.line)"
         coalescedKeystroke.ids.append(keystroke.id)
-        coalesced[coalesced.count - 1] = .t2(coalescedKeystroke)
+        coalesced[coalesced.count - 1] = .keystrokeLine(coalescedKeystroke)
       } else {
-        coalesced.append(.t2(.init(from: keystroke)))
+        coalesced.append(.keystrokeLine(.init(from: keystroke)))
       }
     }
   }
@@ -109,17 +121,9 @@ func coalesce(
 
 // extensions
 
-extension Union2: NamedType where
-  T1 == UserActivity.Screenshot,
-  T2 == UserActivity.CoalescedKeystrokeLine {
-  public static var __typeName: String { "Item" }
-}
-
-extension Union2: HasOptionalDeletedAt where
-  T1 == UserActivity.Screenshot,
-  T2 == UserActivity.CoalescedKeystrokeLine {
+extension UserActivity.Item: HasOptionalDeletedAt {
   var deletedAt: Date? {
-    get { t1?.deletedAt ?? t2?.deletedAt }
+    get { screenshot?.deletedAt ?? keystrokeLine?.deletedAt }
     set {}
   }
 }

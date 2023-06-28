@@ -1,7 +1,6 @@
 import DuetSQL
 import Foundation
 import PairQL
-import TypescriptPairQL
 import Vapor
 
 enum DashboardRoute: PairRoute {

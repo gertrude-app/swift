@@ -1,9 +1,9 @@
 import DuetSQL
 import Foundation
+import PairQL
 import Shared
-import TypescriptPairQL
 
-struct KeychainSummary: TypescriptNestable, GlobalType {
+struct KeychainSummary: PairNestable {
   let id: Api.Keychain.Id
   let authorId: Admin.Id
   let name: String
@@ -12,10 +12,10 @@ struct KeychainSummary: TypescriptNestable, GlobalType {
   let numKeys: Int
 }
 
-struct GetUser: TypescriptPair {
+struct GetUser: Pair {
   static var auth: ClientAuth = .admin
 
-  struct User: TypescriptPairOutput, GlobalType {
+  struct User: PairOutput {
     var id: Api.User.Id
     var name: String
     var keyloggingEnabled: Bool
@@ -27,7 +27,7 @@ struct GetUser: TypescriptPair {
     var createdAt: Date
   }
 
-  struct Device: TypescriptNestable, GlobalType {
+  struct Device: PairNestable {
     let id: Api.Device.Id
     let isOnline: Bool
     let modelFamily: DeviceModelFamily

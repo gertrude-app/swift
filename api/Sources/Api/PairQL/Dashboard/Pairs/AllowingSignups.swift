@@ -1,7 +1,7 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct AllowingSignups: TypescriptPair {
+struct AllowingSignups: Pair {
   static var auth: ClientAuth = .none
 }
 

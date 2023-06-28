@@ -8,7 +8,7 @@ final class UsersResolversTests: ApiTestCase {
   func testDeleteUser() async throws {
     let user = try await Entities.user()
     let output = try await DeleteEntity.resolve(
-      with: .init(id: user.id.rawValue, type: "User"),
+      with: .init(id: user.id.rawValue, type: .user),
       in: user.admin.context
     )
     expect(output).toEqual(.success)

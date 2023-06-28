@@ -6,7 +6,7 @@
     "shared",
     "pairql",
     "pairql-macapp",
-    "pairql-typescript",
+    "ts-interop",
     "x-sendgrid"
   ],
   "targets": {

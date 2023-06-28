@@ -1,16 +1,16 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 
-struct GetIdentifiedApps: TypescriptPair {
+struct GetIdentifiedApps: Pair {
   static var auth: ClientAuth = .admin
 
-  struct App: TypescriptPairOutput {
-    struct BundleId: TypescriptNestable {
+  struct App: PairOutput {
+    struct BundleId: PairNestable {
       let id: AppBundleId.Id
       let bundleId: String
     }
 
-    struct Category: TypescriptNestable {
+    struct Category: PairNestable {
       let id: AppCategory.Id
       let name: String
       let slug: String

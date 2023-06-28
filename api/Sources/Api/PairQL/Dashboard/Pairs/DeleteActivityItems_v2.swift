@@ -1,10 +1,10 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct DeleteActivityItems_v2: TypescriptPair {
+struct DeleteActivityItems_v2: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let keystrokeLineIds: [KeystrokeLine.Id]
     let screenshotIds: [Screenshot.Id]
   }

@@ -1,14 +1,14 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 
-struct CreatePendingAppConnection: TypescriptPair {
+struct CreatePendingAppConnection: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var userId: User.Id
   }
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     var code: Int
   }
 }

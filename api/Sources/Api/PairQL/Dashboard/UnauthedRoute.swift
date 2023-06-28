@@ -1,5 +1,5 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 import Vapor
 
 enum UnauthedRoute: PairRoute {

@@ -1,16 +1,16 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 import Vapor
 import XStripe
 
-struct GetCheckoutUrl: TypescriptPair {
+struct GetCheckoutUrl: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var adminId: Admin.Id
   }
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     let url: String
   }
 }

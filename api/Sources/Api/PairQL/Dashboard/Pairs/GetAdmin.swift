@@ -1,48 +1,26 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 
-struct GetAdmin: TypescriptPair {
+struct GetAdmin: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Notification: TypescriptNestable, NamedType {
+  struct Notification: PairNestable {
     let id: AdminNotification.Id
     let trigger: AdminNotification.Trigger
     let methodId: AdminVerifiedNotificationMethod.Id
   }
 
-  struct VerifiedSlackMethod: TypescriptNestable {
+  struct VerifiedNotificationMethod: PairNestable {
     let id: AdminVerifiedNotificationMethod.Id
-    let channelId: String
-    let channelName: String
-    let token: String
+    let config: AdminVerifiedNotificationMethod.Config
   }
 
-  struct VerifiedEmailMethod: TypescriptNestable {
-    let id: AdminVerifiedNotificationMethod.Id
-    let email: String
-  }
-
-  struct VerifiedTextMethod: TypescriptNestable {
-    let id: AdminVerifiedNotificationMethod.Id
-    let phoneNumber: String
-  }
-
-  typealias VerifiedNotificationMethod = Union3<
-    VerifiedEmailMethod,
-    VerifiedSlackMethod,
-    VerifiedTextMethod
-  >
-
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     let id: Admin.Id
     let email: String
     let subscriptionStatus: Admin.SubscriptionStatus
     let notifications: [Notification]
-    let verifiedNotificationMethods: [Union3<
-      VerifiedEmailMethod,
-      VerifiedSlackMethod,
-      VerifiedTextMethod
-    >]
+    let verifiedNotificationMethods: [VerifiedNotificationMethod]
   }
 }
 
@@ -60,37 +38,9 @@ extension GetAdmin: NoInputResolver {
       notifications: notifications.map {
         .init(id: $0.id, trigger: $0.trigger, methodId: $0.methodId)
       },
-      verifiedNotificationMethods: methods.map { verifiedMethod in
-        switch verifiedMethod.config {
-        case .email(let email):
-          return .t1(.init(id: verifiedMethod.id, email: email))
-        case .slack(let channelId, let channelName, let token):
-          return .t2(.init(
-            id: verifiedMethod.id,
-            channelId: channelId,
-            channelName: channelName,
-            token: token
-          ))
-        case .text(let phoneNumber):
-          return .t3(.init(id: verifiedMethod.id, phoneNumber: phoneNumber))
-        }
+      verifiedNotificationMethods: methods.map {
+        .init(id: $0.id, config: $0.config)
       }
     )
   }
-}
-
-// extensions
-
-extension AdminNotification.Trigger: GlobalType {
-  static var __typeName: String { "AdminNotificationTrigger" }
-}
-
-extension Admin.SubscriptionStatus: TypescriptRepresentable {}
-
-extension Admin.SubscriptionStatus: GlobalType {
-  static var __typeName: String { "AdminSubscriptionStatus" }
-}
-
-extension GetAdmin.VerifiedNotificationMethod: NamedType {
-  public static var __typeName: String { "VerifiedNotificationMethod" }
 }

@@ -1,11 +1,11 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 import Vapor
 
-struct CreateBillingPortalSession: TypescriptPair {
+struct CreateBillingPortalSession: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     var url: String
   }
 }

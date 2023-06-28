@@ -1,10 +1,10 @@
+import PairQL
 import Shared
-import TypescriptPairQL
 
-struct UpdateUnlockRequest: TypescriptPair {
+struct UpdateUnlockRequest: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let id: UnlockRequest.Id
     let responseComment: String?
     let status: RequestStatus

@@ -1,11 +1,11 @@
 import Foundation
+import PairQL
 import Shared
-import TypescriptPairQL
 
-struct SaveKey: TypescriptPair {
+struct SaveKey: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var isNew: Bool
     var id: Key.Id
     var keychainId: Keychain.Id

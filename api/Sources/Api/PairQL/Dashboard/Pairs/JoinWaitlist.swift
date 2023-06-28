@@ -1,11 +1,11 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 import Vapor
 
-struct JoinWaitlist: TypescriptPair {
+struct JoinWaitlist: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var email: String
   }
 }

@@ -1,18 +1,18 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 import Vapor
 
-struct CombinedUsersActivityFeed: TypescriptPair {
+struct CombinedUsersActivityFeed: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var range: DateRange
   }
 
-  struct UserDay: TypescriptPairOutput {
+  struct UserDay: PairOutput {
     var userName: String
     var numDeleted: Int
-    var items: [Union2<UserActivity.Screenshot, UserActivity.CoalescedKeystrokeLine>]
+    var items: [UserActivity.Item]
   }
 
   typealias Output = [UserDay]

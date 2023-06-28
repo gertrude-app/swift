@@ -1,15 +1,15 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 
-struct AdminAuth: TypescriptPairOutput {
+struct AdminAuth: PairOutput {
   var token: AdminToken.Value
   var adminId: Admin.Id
 }
 
-struct HandleCheckoutSuccess: TypescriptPair {
+struct HandleCheckoutSuccess: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var stripeCheckoutSessionId: String
   }
 

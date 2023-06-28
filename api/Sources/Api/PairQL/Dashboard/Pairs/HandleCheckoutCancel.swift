@@ -1,10 +1,10 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 
-struct HandleCheckoutCancel: TypescriptPair {
+struct HandleCheckoutCancel: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var stripeCheckoutSessionId: String
   }
 }

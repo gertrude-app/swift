@@ -3,9 +3,8 @@ public enum AppScope: Equatable, Hashable, Codable {
   case webBrowsers
   case single(Single)
 
-  public static var customTs: String? {
+  public static var typescriptAlias: String {
     """
-    export type __self__ =
       | { type: 'unrestricted'  }
       | { type: 'webBrowsers'  }
       | { type: 'single'; single: SingleAppScope }
@@ -20,9 +19,8 @@ public extension AppScope {
     case identifiedAppSlug(String)
     case bundleId(String)
 
-    public static var customTs: String? {
+    public static var typescriptAlias: String {
       """
-      export type __self__ =
         | { type: 'bundleId'; bundleId: string; }
         | { type: 'identifiedAppSlug'; identifiedAppSlug: string; }
       """
