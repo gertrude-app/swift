@@ -23,10 +23,10 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - name: build-pairql-typescript
-        run: cd pairql-typescript && swift build
       - name: build-shared
         run: cd shared && swift build
+      - name: build-ts-interop
+        run: cd ts-interop && swift build
       - name: build-x-expect
         run: cd x-expect && swift build
       - name: build-x-http
@@ -61,8 +61,8 @@ jobs:
         uses: actions/checkout@v3
       - name: test-pairql-macapp
         run: cd pairql-macapp && swift test
-      - name: test-pairql-typescript
-        run: cd pairql-typescript && swift test
+      - name: test-ts-interop
+        run: cd ts-interop && swift test
       - name: test-shared
         run: cd shared && swift test
       - name: test-x-http

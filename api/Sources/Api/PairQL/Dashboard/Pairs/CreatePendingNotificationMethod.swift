@@ -1,57 +1,27 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 import Vapor
 
-struct CreatePendingNotificationMethod: TypescriptPair {
+struct CreatePendingNotificationMethod: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Email: TypescriptNestable {
-    let email: String
-  }
+  typealias Input = AdminVerifiedNotificationMethod.Config
 
-  struct Text: TypescriptNestable {
-    let phoneNumber: String
-  }
-
-  struct Slack: TypescriptNestable {
-    let token: String
-    let channelId: String
-    let channelName: String
-  }
-
-  typealias Input = Union3<Email, Text, Slack>
-
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     let methodId: AdminVerifiedNotificationMethod.Id
   }
 }
 
 // extensions
 
+extension AdminVerifiedNotificationMethod.Config: PairInput {}
+
 extension CreatePendingNotificationMethod: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    let config = AdminVerifiedNotificationMethod.Config(from: input)
+  static func resolve(with config: Input, in context: AdminContext) async throws -> Output {
     let model = AdminVerifiedNotificationMethod(adminId: context.admin.id, config: config)
     let code = await Current.ephemeral.createPendingNotificationMethod(model)
     try await sendVerification(code, for: config, in: context)
     return .init(methodId: model.id)
-  }
-}
-
-extension AdminVerifiedNotificationMethod.Config {
-  init(from: CreatePendingNotificationMethod.Input) {
-    switch from {
-    case .t1(let input):
-      self = .email(email: input.email)
-    case .t2(let input):
-      self = .text(phoneNumber: input.phoneNumber)
-    case .t3(let input):
-      self = .slack(
-        channelId: input.channelId,
-        channelName: input.channelName,
-        token: input.token
-      )
-    }
   }
 }
 

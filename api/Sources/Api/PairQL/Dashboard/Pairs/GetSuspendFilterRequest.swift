@@ -1,12 +1,12 @@
 import Foundation
+import PairQL
 import Shared
-import TypescriptPairQL
 
-struct GetSuspendFilterRequest: TypescriptPair {
+struct GetSuspendFilterRequest: Pair {
   static var auth: ClientAuth = .admin
   typealias Input = SuspendFilterRequest.Id
 
-  struct Output: TypescriptPairOutput, GlobalType {
+  struct Output: PairOutput {
     let id: Api.SuspendFilterRequest.Id
     let deviceId: Api.Device.Id
     let status: RequestStatus
@@ -15,10 +15,6 @@ struct GetSuspendFilterRequest: TypescriptPair {
     let requestComment: String?
     let responseComment: String?
     let createdAt: Date
-
-    static var __typeName: String {
-      "SuspendFilterRequest"
-    }
   }
 }
 

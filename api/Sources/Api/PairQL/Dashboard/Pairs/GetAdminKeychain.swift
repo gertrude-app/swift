@@ -1,7 +1,7 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct GetAdminKeychain: TypescriptPair {
+struct GetAdminKeychain: Pair {
   static var auth: ClientAuth = .admin
   typealias Input = Keychain.Id
   typealias Output = GetAdminKeychains.AdminKeychain

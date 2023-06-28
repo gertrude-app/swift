@@ -1,10 +1,10 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct RequestMagicLink: TypescriptPair {
+struct RequestMagicLink: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var email: String
     var redirect: String?
   }

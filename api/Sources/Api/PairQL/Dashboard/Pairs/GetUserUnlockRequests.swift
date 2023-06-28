@@ -1,7 +1,7 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct GetUserUnlockRequests: TypescriptPair {
+struct GetUserUnlockRequests: Pair {
   static var auth: ClientAuth = .admin
   typealias Input = User.Id
   typealias Output = [GetUnlockRequest.Output]

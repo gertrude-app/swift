@@ -1,19 +1,19 @@
 import DuetSQL
 import Foundation
-import TypescriptPairQL
+import PairQL
 import Vapor
 import XPostmark
 
-struct Signup: TypescriptPair {
+struct Signup: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var email: String
     var password: String
     var signupToken: String?
   }
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     let url: String?
   }
 }

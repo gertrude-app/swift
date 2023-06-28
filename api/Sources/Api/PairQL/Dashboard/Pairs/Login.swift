@@ -1,17 +1,17 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 import Vapor
 import XCore
 
-struct Login: TypescriptPair {
+struct Login: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let email: String
     let password: String
   }
 
-  struct Output: TypescriptPairOutput {
+  struct Output: PairOutput {
     let adminId: Admin.Id
     let token: AdminToken.Value
   }

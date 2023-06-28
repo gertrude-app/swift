@@ -1,10 +1,10 @@
+import PairQL
 import Shared
-import TypescriptPairQL
 
-struct UpdateSuspendFilterRequest: TypescriptPair {
+struct UpdateSuspendFilterRequest: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let id: SuspendFilterRequest.Id
     let durationInSeconds: Int
     let responseComment: String?

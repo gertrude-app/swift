@@ -63,7 +63,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
         trigger: notification.trigger,
         methodId: notification.methodId
       )],
-      verifiedNotificationMethods: [.t1(.init(id: method.id, email: "blob@blob.com"))]
+      verifiedNotificationMethods: [.init(id: method.id, config: method.config)]
     ))
   }
 
@@ -73,7 +73,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let (id, _) = mockUUIDs()
 
     let output = try await CreatePendingNotificationMethod.resolve(
-      with: .t2(.init(phoneNumber: "1234567890")),
+      with: .text(phoneNumber: "1234567890"),
       in: context(admin)
     )
 
@@ -111,7 +111,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let (id, _) = mockUUIDs()
 
     let output = try await CreatePendingNotificationMethod.resolve(
-      with: .t3(.init(token: "xoxb-123", channelId: "C123", channelName: "Foo")),
+      with: .slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"),
       in: context(admin)
     )
 
@@ -150,7 +150,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let (id, _) = mockUUIDs()
 
     let output = try await CreatePendingNotificationMethod.resolve(
-      with: .t1(.init(email: "blob@blob.com")),
+      with: .email(email: "blob@blob.com"),
       in: context(admin)
     )
 
@@ -199,7 +199,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testDeleteKeyNotifiesConnectedApps() async throws {
     let admin = try await Entities.admin().withKeychain()
     let output = try await DeleteEntity.resolve(
-      with: .init(id: admin.key.id.rawValue, type: "Key"),
+      with: .init(id: admin.key.id.rawValue, type: .key),
       in: context(admin)
     )
     expect(output).toEqual(.success)

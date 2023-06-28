@@ -1,12 +1,11 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 
-struct SaveUser: TypescriptPair {
+struct SaveUser: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var id: User.Id
-    // var adminId: Admin.Id
     var isNew: Bool
     var name: String
     var keyloggingEnabled: Bool

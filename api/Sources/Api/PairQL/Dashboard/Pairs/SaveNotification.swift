@@ -1,11 +1,11 @@
 import DuetSQL
 import Foundation
-import TypescriptPairQL
+import PairQL
 
-struct SaveNotification: TypescriptPair {
+struct SaveNotification: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let id: AdminNotification.Id
     let isNew: Bool
     let methodId: AdminVerifiedNotificationMethod.Id

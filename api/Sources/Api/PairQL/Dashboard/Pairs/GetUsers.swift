@@ -1,6 +1,6 @@
-import TypescriptPairQL
+import PairQL
 
-struct GetUsers: Pair, TypescriptPair {
+struct GetUsers: Pair {
   static var auth: ClientAuth = .admin
   typealias Output = [GetUser.User]
 }

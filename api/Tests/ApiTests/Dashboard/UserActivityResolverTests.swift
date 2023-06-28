@@ -33,7 +33,7 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(output.items).toHaveCount(2)
     let _ignoreDate = Date(subtractingDays: 2)
 
-    var firstItem = try XCTUnwrap(output.items.first?.t2)
+    var firstItem = try XCTUnwrap(output.items.first?.keystrokeLine)
     firstItem.createdAt = _ignoreDate
 
     expect(firstItem).toEqual(.init(
@@ -44,7 +44,7 @@ final class UserActivityResolverTests: ApiTestCase {
       createdAt: _ignoreDate
     ))
 
-    var secondItem = try XCTUnwrap(output.items.last?.t1)
+    var secondItem = try XCTUnwrap(output.items.last?.screenshot)
     secondItem.createdAt = _ignoreDate
 
     expect(secondItem).toEqual(.init(
@@ -110,7 +110,7 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(userDay1.numDeleted).toEqual(0)
     expect(userDay1.items).toHaveCount(2)
 
-    var firstItem = try XCTUnwrap(userDay1.items.first?.t2)
+    var firstItem = try XCTUnwrap(userDay1.items.first?.keystrokeLine)
     firstItem.createdAt = _ignoreDate
 
     expect(firstItem).toEqual(.init(
@@ -121,7 +121,7 @@ final class UserActivityResolverTests: ApiTestCase {
       createdAt: _ignoreDate
     ))
 
-    var secondItem = try XCTUnwrap(userDay1.items.last?.t1)
+    var secondItem = try XCTUnwrap(userDay1.items.last?.screenshot)
     secondItem.createdAt = _ignoreDate
 
     expect(secondItem).toEqual(.init(
@@ -138,7 +138,7 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(userDay2.numDeleted).toEqual(1)
     expect(userDay2.items).toHaveCount(1)
 
-    var user2Item = try XCTUnwrap(userDay2.items.first?.t1)
+    var user2Item = try XCTUnwrap(userDay2.items.first?.screenshot)
     user2Item.createdAt = _ignoreDate
 
     expect(user2Item).toEqual(.init(

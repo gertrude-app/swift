@@ -1,9 +1,9 @@
-import TypescriptPairQL
+import PairQL
 
-struct SaveKeychain: TypescriptPair {
+struct SaveKeychain: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let isNew: Bool
     let id: Keychain.Id
     let name: String

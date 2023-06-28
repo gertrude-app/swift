@@ -1,10 +1,10 @@
-import TypescriptPairQL
+import PairQL
 import Vapor
 
-struct LoginMagicLink: TypescriptPair {
+struct LoginMagicLink: Pair {
   static var auth: ClientAuth = .none
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     var token: UUID
   }
 

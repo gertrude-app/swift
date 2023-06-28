@@ -6,15 +6,14 @@ public enum Key: Hashable, Codable {
   case path(path: Path, scope: AppScope)
   case ipAddress(ipAddress: Ip, scope: AppScope)
 
-  public static var customTs: String? {
+  public static var typescriptAlias: String {
     """
-    export type __self__ =
       | { type: 'anySubdomain'; domain: string; scope: AppScope }
       | { type: 'domain'; domain: string; scope: AppScope }
       | { type: 'domainRegex'; pattern: string; scope: AppScope }
       | { type: 'skeleton'; scope: SingleAppScope }
       | { type: 'ipAddress'; ipAddress: string; scope: AppScope }
-      | { type: 'path'; path: string; scope: AppScope };
+      | { type: 'path'; path: string; scope: AppScope }
     """
   }
 }

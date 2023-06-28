@@ -1,13 +1,22 @@
 import DuetSQL
-import TypescriptPairQL
+import PairQL
 import Vapor
 
-struct DeleteEntity: TypescriptPair {
+struct DeleteEntity: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
+    enum EntityType: String, Codable {
+      case adminNotification
+      case adminVerifiedNotificationMethod
+      case device
+      case key
+      case keychain
+      case user
+    }
+
     let id: UUID
-    let type: String
+    let type: EntityType
   }
 }
 
@@ -17,24 +26,24 @@ extension DeleteEntity: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     switch input.type {
 
-    case "AdminNotification":
+    case .adminNotification:
       try await Current.db.query(AdminNotification.self)
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .delete()
 
-    case "AdminVerifiedNotificationMethod":
+    case .adminVerifiedNotificationMethod:
       try await Current.db.query(AdminVerifiedNotificationMethod.self)
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .delete()
 
-    case "Device":
+    case .device:
       let device = try await Current.db.find(Device.Id(input.id))
       try await context.verifiedUser(from: device.userId)
       try await Current.db.delete(device.id)
 
-    case "Key":
+    case .key:
       let key = try await Current.db.find(Key.Id(input.id))
       let keychain = try await key.keychain()
       guard keychain.authorId == context.admin.id else {
@@ -43,20 +52,17 @@ extension DeleteEntity: Resolver {
       try await Current.db.delete(key.id)
       try await Current.connectedApps.notify(.keychainUpdated(keychain.id))
 
-    case "Keychain":
+    case .keychain:
       try await Current.db.query(Keychain.self)
         .where(.id == input.id)
         .where(.authorId == context.admin.id)
         .delete()
 
-    case "User":
+    case .user:
       try await Current.db.query(User.self)
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .delete()
-
-    default:
-      throw Abort(.badRequest, reason: "[@client:invalidDeleteEntityType]")
     }
 
     return .success

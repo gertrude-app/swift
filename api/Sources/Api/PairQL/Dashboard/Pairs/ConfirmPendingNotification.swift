@@ -1,11 +1,11 @@
 import Foundation
-import TypescriptPairQL
+import PairQL
 import Vapor
 
-struct ConfirmPendingNotificationMethod: TypescriptPair {
+struct ConfirmPendingNotificationMethod: Pair {
   static var auth: ClientAuth = .admin
 
-  struct Input: TypescriptPairInput {
+  struct Input: PairInput {
     let id: AdminVerifiedNotificationMethod.Id
     let code: Int
   }
