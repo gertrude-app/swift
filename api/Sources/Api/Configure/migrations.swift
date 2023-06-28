@@ -11,5 +11,6 @@ extension Configure {
     app.migrations.add(AppTables())
     app.migrations.add(MiscTables())
     app.migrations.add(JobMetadataMigrate())
+    app.migrations.add(AdminVerifiedNotificationMethodCodableUpdate())
   }
 }
