@@ -24,6 +24,10 @@ struct FilterFeature: Feature {
     }
   }
 
+  enum CancelId {
+    case quitBrowsers
+  }
+
   struct RootReducer: RootReducing {
     @Dependency(\.date.now) var now
     @Dependency(\.device) var device
@@ -123,13 +127,12 @@ extension FilterFeature.RootReducer {
 
   func suspendFilter(for seconds: Seconds<Int>, with state: inout State) -> Effect<Action> {
     state.filter.currentSuspensionExpiration = now.advanced(by: Double(seconds.rawValue))
-    return .run { send in
-      _ = await xpc.suspendFilter(seconds)
-    }
+    return .merge(
+      .run { _ in _ = await xpc.suspendFilter(seconds) },
+      .cancel(id: FilterFeature.CancelId.quitBrowsers)
+    )
   }
 
-  // TODO: make cancellable, cancel when new suspension created
-  // @see https://github.com/gertrude-app/project/issues/155
   func handleFilterSuspensionEnded(early endedEarly: Bool = false) -> Effect<Action> {
     .run { send in
       if endedEarly { _ = await xpc.endFilterSuspension() }
@@ -138,5 +141,6 @@ extension FilterFeature.RootReducer {
       try await mainQueue.sleep(for: .seconds(60))
       await device.quitBrowsers()
     }
+    .cancellable(id: FilterFeature.CancelId.quitBrowsers, cancelInFlight: true)
   }
 }
