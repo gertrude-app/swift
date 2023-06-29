@@ -1,6 +1,6 @@
 import Foundation
+import Gertie
 import PairQL
-import Shared
 
 struct GetAdminKeychains: Pair {
   static var auth: ClientAuth = .admin
@@ -10,7 +10,7 @@ struct GetAdminKeychains: Pair {
     let keychainId: Api.Keychain.Id
     let comment: String?
     let expiration: Date?
-    let key: Shared.Key
+    let key: Gertie.Key
   }
 
   struct AdminKeychain: PairNestable, PairOutput {

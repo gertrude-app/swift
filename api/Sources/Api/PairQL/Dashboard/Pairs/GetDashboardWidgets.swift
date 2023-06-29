@@ -1,7 +1,7 @@
 import DuetSQL
 import Foundation
+import Gertie
 import PairQL
-import Shared
 
 struct GetDashboardWidgets: Pair {
   static var auth: ClientAuth = .admin

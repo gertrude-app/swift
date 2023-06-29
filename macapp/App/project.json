@@ -1,0 +1,13 @@
+{
+  "root": "macapp/App",
+  "projectType": "library",
+  "implicitDependencies": ["gertie", "x-kit"],
+  "targets": {
+    "build": {
+      "command": "cd macapp/App && swift build"
+    },
+    "test": {
+      "command": "cd macapp/App && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}

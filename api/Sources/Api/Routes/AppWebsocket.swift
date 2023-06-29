@@ -1,6 +1,7 @@
 import DuetSQL
-import Shared
+import Gertie
 import Vapor
+import WebSocketKit
 
 enum AppWebsocket {
   static func handler(_ request: Request, _ ws: WebSocket) {
@@ -8,16 +9,20 @@ enum AppWebsocket {
       do {
         try await establish(request, ws)
       } catch is UserTokenNotFound {
-        Current.logger.debug("WS: failed to establish connection: user token not found")
-        try await ws.close(code: .init(codeNumber: Int(WebsocketMsg.Error.USER_TOKEN_NOT_FOUND)))
+        Current.logger.debug("WS: connection error: user token not found")
+        let code = Int(WebSocketMessage.ErrorCode.userTokenNotFound.rawValue)
+        try await ws.close(code: .init(codeNumber: code))
       } catch {
-        Current.logger.error("websocket error: \(error)")
+        Current.logger.error("WS: unexpected connection error: \(error)")
         try await ws.close()
       }
     }
   }
 
-  private static func establish(_ request: Request, _ ws: WebSocket) async throws {
+  private static func establish(
+    _ request: Request,
+    _ ws: WebSocket
+  ) async throws {
     guard let token = try? await request.userToken(),
           let device = try? await token.device() else {
       throw UserTokenNotFound()
@@ -32,7 +37,7 @@ enum AppWebsocket {
       keychains: keychains.map(\.id)
     )
 
-    Current.logger.debug("WS: adding connection Device: \(device.id.lowercased)")
+    Current.logger.debug("WS: adding connection device: \(device.id.lowercased)")
     let connection = AppConnection(ws: ws, ids: entityIds)
     await Current.connectedApps.add(connection)
   }

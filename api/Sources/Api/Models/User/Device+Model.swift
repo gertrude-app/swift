@@ -1,4 +1,4 @@
-import Shared
+import Gertie
 
 extension Device {
   struct Model: Encodable {

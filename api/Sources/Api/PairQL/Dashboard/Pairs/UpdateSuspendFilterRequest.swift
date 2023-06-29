@@ -1,5 +1,5 @@
+import Gertie
 import PairQL
-import Shared
 
 struct UpdateSuspendFilterRequest: Pair {
   static var auth: ClientAuth = .admin
@@ -23,6 +23,14 @@ extension UpdateSuspendFilterRequest: Resolver {
     request.responseComment = input.responseComment
     request.status = input.status
     try await Current.db.update(request)
+
+    try await Current.legacyConnectedApps.notify(.suspendFilterRequestUpdated(.init(
+      deviceId: device.id,
+      status: request.status,
+      duration: request.duration,
+      requestComment: request.requestComment,
+      responseComment: request.responseComment
+    )))
 
     try await Current.connectedApps.notify(.suspendFilterRequestUpdated(.init(
       deviceId: device.id,

@@ -3,7 +3,7 @@
   "projectType": "app",
   "implicitDependencies": [
     "duet",
-    "shared",
+    "gertie",
     "pairql",
     "pairql-macapp",
     "ts-interop",

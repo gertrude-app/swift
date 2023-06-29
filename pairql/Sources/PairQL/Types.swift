@@ -5,11 +5,11 @@ import Foundation
 
 public protocol PairRoute: Equatable {}
 
-public typealias PairNestable = Codable & Equatable
+public typealias PairNestable = Codable & Equatable & Sendable
 
 public protocol PairInput: Codable, Equatable {}
 
-public protocol PairOutput: Codable, Equatable {
+public protocol PairOutput: Codable, Equatable, Sendable {
   func jsonData() throws -> Data
 }
 
@@ -54,6 +54,8 @@ public extension PairOutput {
 
 extension Array: PairOutput where Element: PairOutput {}
 extension Array: PairInput where Element: PairInput {}
+extension Dictionary: PairOutput where Key == String, Value: PairOutput {}
+extension Dictionary: PairInput where Key == String, Value: PairInput {}
 
 public struct NoInput: PairInput {
   public init() {}

@@ -3,19 +3,19 @@ import PackageDescription
 
 let package = Package(
   name: "PairQL",
-  platforms: [.macOS(.v11)],
+  platforms: [.macOS(.v10_15)],
   products: [
     .library(name: "PairQL", targets: ["PairQL"]),
   ],
   dependencies: [
     .package("pointfreeco/swift-url-routing@0.5.0"),
-    .package(path: "../shared"),
+    .package(path: "../gertie"),
     .package(path: "../x-expect"),
   ],
   targets: [
     .target(name: "PairQL", dependencies: [
       .product(name: "URLRouting", package: "swift-url-routing"),
-      .product(name: "Shared", package: "shared"),
+      .product(name: "Gertie", package: "gertie"),
     ]),
     .testTarget(name: "PairQLTests", dependencies: [
       .target(name: "PairQL"),

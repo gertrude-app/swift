@@ -7,6 +7,13 @@ public struct CollectionExpectation<T: Collection> {
   let file: StaticString
   let line: UInt
 
+  public init(collection: T, negated: Bool = false, file: StaticString, line: UInt) {
+    self.collection = collection
+    self.negated = negated
+    self.file = file
+    self.line = line
+  }
+
   public var not: Self {
     Self(collection: collection, negated: true, file: #file, line: #line)
   }
@@ -43,6 +50,12 @@ public struct ErrorExpectation<T> {
   let file: StaticString
   let line: UInt
 
+  public init(fn: @escaping () async throws -> T, file: StaticString, line: UInt) {
+    self.fn = fn
+    self.file = file
+    self.line = line
+  }
+
   public func toContain(_ substring: String) async throws {
     do {
       _ = try await fn()
@@ -58,6 +71,13 @@ public struct EquatableExpectation<T: Equatable> {
   var negated = false
   let file: StaticString
   let line: UInt
+
+  public init(value: T, negated: Bool = false, file: StaticString, line: UInt) {
+    self.value = value
+    self.negated = negated
+    self.file = file
+    self.line = line
+  }
 
   public var not: Self {
     Self(value: value, negated: true, file: #file, line: #line)
@@ -77,6 +97,13 @@ public struct EquatableOptionalExpectation<T: Equatable> {
   var negated = false
   let file: StaticString
   let line: UInt
+
+  public init(value: T? = nil, negated: Bool = false, file: StaticString, line: UInt) {
+    self.value = value
+    self.negated = negated
+    self.file = file
+    self.line = line
+  }
 
   public var not: Self {
     Self(value: value, negated: true, file: #file, line: #line)
@@ -104,6 +131,12 @@ public struct ResultExpectation<Success, Failure: Swift.Error> {
   let file: StaticString
   let line: UInt
 
+  public init(result: Result<Success, Failure>, file: StaticString, line: UInt) {
+    self.result = result
+    self.file = file
+    self.line = line
+  }
+
   public func toBeError(containing substring: String) {
     switch result {
     case .success(let value):
@@ -124,6 +157,12 @@ public struct OptionalExpectation {
   let file: StaticString
   let line: UInt
 
+  public init(value: Any? = nil, file: StaticString, line: UInt) {
+    self.value = value
+    self.file = file
+    self.line = line
+  }
+
   public func toBeNil() {
     XCTAssertNil(value, file: file, line: line)
   }
@@ -134,6 +173,13 @@ public struct StringExpectation {
   var negated = false
   let file: StaticString
   let line: UInt
+
+  public init(value: String, negated: Bool = false, file: StaticString, line: UInt) {
+    self.value = value
+    self.negated = negated
+    self.file = file
+    self.line = line
+  }
 
   public var not: Self {
     Self(value: value, negated: true, file: #file, line: #line)
@@ -170,6 +216,12 @@ public struct BoolExpectation {
   let value: Bool
   let file: StaticString
   let line: UInt
+
+  public init(value: Bool, file: StaticString, line: UInt) {
+    self.value = value
+    self.file = file
+    self.line = line
+  }
 
   public func toBeTrue() {
     XCTAssert(value, file: file, line: line)

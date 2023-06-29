@@ -1,5 +1,5 @@
+import Gertie
 import PairQL
-import Shared
 import Tagged
 import TypeScriptInterop
 import Vapor
@@ -20,7 +20,7 @@ enum DashboardTsCodegenRoute {
       ("ServerPqlError", PqlError.self),
       ("SingleAppScope", AppScope.Single.self),
       ("AppScope", AppScope.self),
-      ("SharedKey", Shared.Key.self),
+      ("SharedKey", Gertie.Key.self),
       ("Key", GetAdminKeychains.Key.self),
       ("SuccessOutput", SuccessOutput.self),
       ("ClientAuth", ClientAuth.self),

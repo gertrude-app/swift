@@ -1,5 +1,5 @@
 import Duet
-import Shared
+import Gertie
 
 final class NetworkDecision: Codable {
   var id: Id

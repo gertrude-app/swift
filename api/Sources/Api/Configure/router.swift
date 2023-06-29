@@ -4,7 +4,7 @@ import Vapor
 public extension Configure {
   static func router(_ app: Application) throws {
     app.webSocket(
-      "app",
+      "app-websocket",
       onUpgrade: AppWebsocket.handler(_:_:)
     )
 
@@ -46,6 +46,11 @@ public extension Configure {
     )
 
     // deprecated, legacy
+
+    app.webSocket(
+      "app",
+      onUpgrade: LegacyAppWebsocket.handler(_:_:)
+    )
 
     app.on(
       .POST,

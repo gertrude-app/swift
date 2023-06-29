@@ -1,6 +1,6 @@
 import Foundation
+import Gertie
 import PairQL
-import Shared
 
 public struct RefreshRules: Pair {
   public static var auth: ClientAuth = .user
@@ -15,21 +15,21 @@ public struct RefreshRules: Pair {
 
   public struct Key: PairNestable {
     public let id: UUID
-    public let key: Shared.Key
+    public let key: Gertie.Key
 
-    public init(id: UUID, key: Shared.Key) {
+    public init(id: UUID, key: Gertie.Key) {
       self.id = id
       self.key = key
     }
   }
 
   public struct Output: PairOutput {
-    public let appManifest: AppIdManifest
-    public let keyloggingEnabled: Bool
-    public let screenshotsEnabled: Bool
-    public let screenshotsFrequency: Int
-    public let screenshotsResolution: Int
-    public let keys: [Key]
+    public var appManifest: AppIdManifest
+    public var keyloggingEnabled: Bool
+    public var screenshotsEnabled: Bool
+    public var screenshotsFrequency: Int
+    public var screenshotsResolution: Int
+    public var keys: [Key]
 
     public init(
       appManifest: AppIdManifest,
@@ -48,3 +48,22 @@ public struct RefreshRules: Pair {
     }
   }
 }
+
+#if DEBUG
+  public extension RefreshRules.Output {
+    static let mock = Self(
+      appManifest: .init(),
+      keyloggingEnabled: true,
+      screenshotsEnabled: true,
+      screenshotsFrequency: 333,
+      screenshotsResolution: 555,
+      keys: []
+    )
+
+    static func mock(configure: (inout Self) -> Void) -> Self {
+      var mock = Self.mock
+      configure(&mock)
+      return mock
+    }
+  }
+#endif

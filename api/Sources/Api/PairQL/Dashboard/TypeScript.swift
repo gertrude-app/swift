@@ -1,6 +1,6 @@
-import Shared
+import Gertie
 import TypeScriptInterop
 
-extension Shared.Key: TypeScriptAliased {}
+extension Gertie.Key: TypeScriptAliased {}
 extension AppScope: TypeScriptAliased {}
 extension AppScope.Single: TypeScriptAliased {}

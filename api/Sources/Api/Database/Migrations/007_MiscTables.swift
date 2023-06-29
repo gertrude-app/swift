@@ -1,5 +1,5 @@
 import FluentSQL
-import Shared
+import Gertie
 
 struct MiscTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {

@@ -1,6 +1,6 @@
 import Foundation
+import Gertie
 import PairQL
-import Shared
 
 struct GetSuspendFilterRequest: Pair {
   static var auth: ClientAuth = .admin

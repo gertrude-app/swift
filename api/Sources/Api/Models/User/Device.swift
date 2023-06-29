@@ -59,6 +59,9 @@ extension Device {
 
 extension Device {
   func isOnline() async -> Bool {
-    await Current.connectedApps.isDeviceOnline(id)
+    if await Current.legacyConnectedApps.isDeviceOnline(id) {
+      return true
+    }
+    return await Current.connectedApps.isDeviceOnline(id)
   }
 }

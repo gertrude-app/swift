@@ -1,7 +1,7 @@
-import Shared
+import Gertie
 
 actor AppConnections {
-  typealias OutgoingMessage = WebsocketMsg.ApiToApp.Message
+  typealias OutgoingMessage = WebSocketMessage.FromApiToApp
   var connections: [AppConnection.Id: AppConnection] = [:]
 
   func start() async {
@@ -19,7 +19,7 @@ actor AppConnections {
     connections.removeValue(forKey: connection.id)
   }
 
-  func filterState(for deviceId: Device.Id) -> FilterState? {
+  func filterState(for deviceId: Device.Id) -> UserFilterState? {
     for connection in connections.values {
       if connection.ids.device == deviceId {
         return connection.filterState
@@ -49,14 +49,14 @@ actor AppConnections {
       try await currentConnections
         .filter { $0.ids.keychains.contains(keychainId) }
         .asyncForEach {
-          try await $0.ws.send(codable: OutgoingMessage(type: .userUpdated))
+          try await $0.ws.send(codable: OutgoingMessage.userUpdated)
         }
 
     case .userUpdated(let userId):
       try await currentConnections
         .filter { $0.ids.user == userId }
         .asyncForEach {
-          try await $0.ws.send(codable: OutgoingMessage(type: .userUpdated))
+          try await $0.ws.send(codable: OutgoingMessage.userUpdated)
         }
 
     case .unlockRequestUpdated(let payload):
@@ -65,11 +65,10 @@ actor AppConnections {
         .asyncForEach {
           try await $0.ws.send(
             codable:
-            OutgoingMessage.UnlockRequestUpdated(
+            OutgoingMessage.unlockRequestUpdated(
               status: payload.status,
               target: payload.target,
-              comment: payload.comment,
-              responseComment: payload.responseComment
+              parentComment: payload.responseComment
             )
           )
         }
@@ -81,9 +80,9 @@ actor AppConnections {
           .asyncForEach {
             try await $0.ws.send(
               codable:
-              OutgoingMessage.SuspendFilter(
-                suspension: .init(scope: .unrestricted, duration: payload.duration),
-                comment: payload.responseComment
+              OutgoingMessage.suspendFilter(
+                for: payload.duration,
+                parentComment: payload.responseComment
               )
             )
           }
@@ -93,9 +92,8 @@ actor AppConnections {
           .asyncForEach {
             try await $0.ws.send(
               codable:
-              OutgoingMessage.SuspendFilterRequestDenied(
-                requestComment: payload.requestComment,
-                responseComment: payload.responseComment
+              OutgoingMessage.suspendFilterRequestDenied(
+                parentComment: payload.responseComment
               )
             )
           }

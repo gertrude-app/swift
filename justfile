@@ -1,18 +1,27 @@
 _default:
   @just --choose
 
-# macapp (rewrite)
+# macapp
 
-watch-macapp pkg="App":
-  @just watch-swift rewrite/{{pkg}} 'build-macapp {{pkg}}'
+codegen-swift:
+  @cd macapp/App && CODEGEN_SWIFT=1 swift test --filter Codegen
+  @cd api && CODEGEN_SWIFT=1 swift test --filter Codegen
 
-build-macapp pkg="App":
-  @cd rewrite/{{pkg}} && swift build
+codegen-swift-unimplemented:
+  @cd macapp/App && CODEGEN_SWIFT=1 CODEGEN_UNIMPLEMENTED=1 swift test --filter Codegen
+
+codegen-typescript:
+  @cd macapp/App && CODEGEN_TYPESCRIPT=1 swift test --filter Codegen
+
+codegen: codegen-typescript codegen-swift
+
+xcode:
+  @open macapp/Xcode/Gertrude.xcodeproj
 
 # api
 
 watch-api:
-  @just watch-swift . 'just run-api' 'macapp/**/*' 'rewrite/**/*'
+  @just watch-swift . 'just run-api' 'macapp/**/*'
 
 run-api: build-api
 	@just exec-api serve
@@ -28,9 +37,6 @@ migrate-up: build-api
 
 migrate-down: build-api
 	@just exec-api migrate --revert --yes
-
-codegen:
-  @cd api && CODEGEN_SWIFT=1 swift test --filter test_codegenSwift
 
 #infra
 
@@ -75,7 +81,6 @@ clean: nx-reset
 	@rm -rf duet/.build
 	@rm -rf pairql/.build
 	@rm -rf pairql-macapp/.build
-	@rm -rf pairql-typescript/.build
 	@rm -rf shared/.build
 	@rm -rf x-kit/.build
 

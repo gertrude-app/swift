@@ -1,5 +1,5 @@
+import Gertie
 import PairQL
-import Shared
 
 struct UpdateUnlockRequest: Pair {
   static var auth: ClientAuth = .admin
@@ -22,6 +22,14 @@ extension UpdateUnlockRequest: Resolver {
     request.status = input.status
     try await Current.db.update(request)
     let decision = try await Current.db.find(request.networkDecisionId)
+
+    try await Current.legacyConnectedApps.notify(.unlockRequestUpdated(.init(
+      deviceId: device.id,
+      status: request.status,
+      target: decision.target ?? "",
+      comment: request.requestComment,
+      responseComment: request.responseComment
+    )))
 
     try await Current.connectedApps.notify(.unlockRequestUpdated(.init(
       deviceId: device.id,
