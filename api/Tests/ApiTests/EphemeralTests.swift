@@ -7,10 +7,10 @@ class EphemeralTests: XCTestCase {
   func testAddingAndRetrievingToken() async {
     let ephemeral = Ephemeral()
     let admin = Admin.mock
-    let token = await ephemeral.createMagicLinkToken(admin.id)
-    let retrieved = await ephemeral.adminIdFromMagicLinkToken(token)
+    let token = await ephemeral.createAdminIdToken(admin.id)
+    let retrieved = await ephemeral.adminIdFromToken(token)
     expect(retrieved).toEqual(admin.id)
-    let retrievedAgain = await ephemeral.adminIdFromMagicLinkToken(token)
+    let retrievedAgain = await ephemeral.adminIdFromToken(token)
     expect(retrievedAgain).toBeNil()
   }
 
@@ -18,8 +18,8 @@ class EphemeralTests: XCTestCase {
     Current.date = Date.init
     let ephemeral = Ephemeral()
     let admin = Admin.mock
-    let token = await ephemeral.createMagicLinkToken(admin.id, expiration: Date(subtractingDays: 5))
-    let retrieved = await ephemeral.adminIdFromMagicLinkToken(token)
+    let token = await ephemeral.createAdminIdToken(admin.id, expiration: Date(subtractingDays: 5))
+    let retrieved = await ephemeral.adminIdFromToken(token)
     expect(retrieved).toBeNil()
   }
 }

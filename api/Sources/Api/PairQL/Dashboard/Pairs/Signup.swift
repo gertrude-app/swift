@@ -59,7 +59,7 @@ extension Signup: Resolver {
       subscriptionStatus: .pendingEmailVerification
     ))
 
-    let token = await Current.ephemeral.createMagicLinkToken(admin.id)
+    let token = await Current.ephemeral.createAdminIdToken(admin.id)
     try await Current.postmark.send(verify(email, context.dashboardUrl, token))
 
     return Output(url: nil)
