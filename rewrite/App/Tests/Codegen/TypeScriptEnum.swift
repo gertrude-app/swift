@@ -1,5 +1,5 @@
 import Foundation
-import TypeScript
+import TypeScriptInterop
 
 struct TypeScriptEnum {
   let name: String
@@ -15,7 +15,7 @@ extension TypeScriptEnum: CodeGenerator {
 
   func write() throws {
     let decls = try types.map {
-      let enumType = try EnumType(from: $0)
+      let enumType = try EnumCodableGen.EnumType(from: $0)
       if ProcessInfo.processInfo.environment["CODEGEN_UNIMPLEMENTED"] != nil {
         return enumType.unimplementedConformance()
       } else {

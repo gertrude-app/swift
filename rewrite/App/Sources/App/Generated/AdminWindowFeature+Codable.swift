@@ -222,10 +222,10 @@ extension AdminWindowFeature.Action.View {
     switch caseName {
     case "healthCheck":
       let value = try container.decode(_CaseHealthCheck.self)
-      self = .healthCheck(healthCheckAction: value.healthCheckAction)
+      self = .healthCheck(action: value.healthCheckAction)
     case "advanced":
       let value = try container.decode(_CaseAdvanced.self)
-      self = .advanced(advancedAction: value.advancedAction)
+      self = .advanced(action: value.advancedAction)
     case "gotoScreenClicked":
       let value = try container.decode(_CaseGotoScreenClicked.self)
       self = .gotoScreenClicked(screen: value.screen)

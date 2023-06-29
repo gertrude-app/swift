@@ -1,4 +1,5 @@
 import Foundation
+import TypeScriptInterop
 
 @testable import App
 

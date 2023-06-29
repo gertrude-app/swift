@@ -100,8 +100,8 @@ struct AdminWindowFeature: Feature {
       }
 
       case closeWindow
-      case healthCheck(healthCheckAction: HealthCheckAction)
-      case advanced(advancedAction: AdvancedAction)
+      case healthCheck(action: HealthCheckAction)
+      case advanced(action: AdvancedAction)
       case gotoScreenClicked(screen: Screen)
       case stopFilterClicked
       case startFilterClicked
@@ -487,7 +487,7 @@ extension AdminWindowFeature.RootReducer {
 
     return .merge(
       main,
-      action == .adminWindow(.webview(.healthCheck(healthCheckAction: .recheckClicked)))
+      action == .adminWindow(.webview(.healthCheck(action: .recheckClicked)))
         ? .cancel(id: CancelId.healthCheckTimeout) : .none
     )
   }

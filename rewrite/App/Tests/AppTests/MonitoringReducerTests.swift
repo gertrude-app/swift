@@ -88,7 +88,7 @@ import XExpect
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
 
     // ...and send a health-check recheck event...
-    await store.send(.adminWindow(.webview(.healthCheck(healthCheckAction: .recheckClicked))))
+    await store.send(.adminWindow(.webview(.healthCheck(action: .recheckClicked))))
 
     // ...and now monitoring should start up
     await expect(keylogging.start.invoked).toEqual(true)

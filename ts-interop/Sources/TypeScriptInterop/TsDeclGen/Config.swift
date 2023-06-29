@@ -9,9 +9,9 @@ public struct Config {
     }
   }
 
-  let compact: Bool
-  let letsReadOnly: Bool
-  let aliases: [AnyType: String?]
+  public var compact: Bool
+  public var letsReadOnly: Bool
+  public var aliases: [AnyType: String?]
 
   public init(
     compact: Bool = false,
@@ -21,6 +21,10 @@ public struct Config {
     self.compact = compact
     self.letsReadOnly = letsReadOnly
     self.aliases = .init(uniqueKeysWithValues: aliases.map { ($0.type, $0.alias) })
+  }
+
+  public mutating func addAlias(_ alias: Alias) {
+    aliases[alias.type] = alias.alias
   }
 
   public func alias(for node: Node) -> String? {

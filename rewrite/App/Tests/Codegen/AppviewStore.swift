@@ -1,5 +1,5 @@
 import Foundation
-import TypeScript
+import TypeScriptInterop
 
 struct AppviewStore {
   struct SwiftType {
@@ -13,17 +13,23 @@ struct AppviewStore {
   }
 
   let path: String
+  let namedTypes: [SwiftType]
   let types: [SwiftType]
-  let aliases: [String: String]
+  let localAliases: [(Any.Type, String)]
+  let globalAliases: [(Any.Type, String)]
 
   init(
     at path: String,
-    generating types: [SwiftType],
-    aliasing aliases: [String: String] = [:]
+    namedTypes: [SwiftType] = [],
+    types: [SwiftType] = [],
+    localAliases: [(Any.Type, String)] = [],
+    globalAliases: [(Any.Type, String)] = []
   ) {
     self.path = path
+    self.namedTypes = namedTypes
     self.types = types
-    self.aliases = aliases
+    self.localAliases = localAliases
+    self.globalAliases = globalAliases
   }
 }
 
@@ -32,8 +38,26 @@ struct AppviewStore {
 extension AppviewStore: CodeGenerator {
   var decls: [String] {
     get throws {
-      let ts = CodeGen(config: .init(compact: true, aliasing: aliases, dateType: "ISODateString"))
-      return try types.map { try ts.declaration(for: $0.type, as: $0.alias) }
+      // generate named/extracted decls without all aliases
+      var config = Config(
+        compact: true,
+        aliasing: globalAliases.map { .init($0, as: $1) } + [.init(Date.self, as: "ISODateString")]
+      )
+      let namedDecls = try namedTypes.map {
+        let ts = CodeGen(config: config)
+        let decl = try ts.declaration(for: $0.type, as: $0.alias)
+        config.addAlias(.init($0.type, as: $0.alias))
+        return decl
+      }
+
+      // generate rest of decls using shared aliases
+      let ts = CodeGen(config: .init(
+        compact: true,
+        aliasing: localAliases.map { .init($0, as: $1) } + [.init(Date.self, as: "ISODateString")]
+      ))
+      let aliasedDecls = try types.map { try ts.declaration(for: $0.type, as: $0.alias) }
+
+      return namedDecls + aliasedDecls
     }
   }
 

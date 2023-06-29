@@ -30,7 +30,7 @@ let package = Package(
     .package(path: "../../pairql-macapp"),
     .package(path: "../../x-expect"),
     .package(path: "../../gertie"),
-    .package(path: "../../typescript"),
+    .package(path: "../../ts-interop"),
   ],
   targets: [
     .checkedTarget(
@@ -122,7 +122,7 @@ let package = Package(
     ),
     .testTarget(
       name: "Codegen",
-      dependencies: ["App", "typescript" => "TypeScript"]
+      dependencies: ["App", "ts-interop" => "TypeScriptInterop"]
     ),
   ]
 )
