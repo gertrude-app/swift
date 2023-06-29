@@ -21,7 +21,7 @@ codegen-typescript:
 codegen: codegen-typescript codegen-swift
 
 xcode:
-  @open rewrite/Xcode/Gertrude.xcodeproj
+  @open macapp/Xcode/Gertrude.xcodeproj
 
 # api
 

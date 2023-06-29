@@ -23,8 +23,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - name: build-shared
-        run: cd shared && swift build
+      - name: build-gertie
+        run: cd gertie && swift build
       - name: build-ts-interop
         run: cd ts-interop && swift build
       - name: build-x-expect
@@ -63,8 +63,8 @@ jobs:
         run: cd pairql-macapp && swift test
       - name: test-ts-interop
         run: cd ts-interop && swift test
-      - name: test-shared
-        run: cd shared && swift test
+      - name: test-gertie
+        run: cd gertie && swift test
       - name: test-x-http
         run: cd x-http && swift test
       - name: test-x-kit
@@ -113,7 +113,7 @@ jobs:
   files-changed:
     runs-on: ubuntu-latest
     outputs:
-      maclibs: ${{ steps.changes.outputs.maclibs }}
+      macapplib: ${{ steps.changes.outputs.macapplib }}
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -121,101 +121,29 @@ jobs:
         id: changes
         with:
           filters: |
-            maclibs:
-              - macapp/Gertrude/AppCore/**
-              - macapp/Gertrude/FilterCore/**
-              - macapp/Gertrude/SharedCore/**
-              - macapp/Gertrude/Websocket/**
-              - shared/Sources/**
-              - x-kit/Sources/XCore/**
+            macapplib:
+              - macapp/App/**
 
-  macos-appcore:
+  macapp-lib:
     needs: files-changed
-    if: needs.files-changed.outputs.maclibs == 'true'
-    runs-on: macos-12
+    if: needs.files-changed.outputs.macapplib == 'true'
+    runs-on: macos-13
     steps:
       - name: checkout
         uses: actions/checkout@v3
       - name: setup xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 14.2
+          xcode-version: 14.3.1
       - uses: actions/cache@v3
         with:
-          path: macapp/Gertrude/AppCore/.build
-          key: appcore-${{ hashFiles('macapp/Gertrude/AppCore/Package.resolved') }}
-          restore-keys: appcore-
-      - name: stub api keys
-        run:
-          printf "struct ApiKeys { static let HONEYCOMB_DEV = \"\"; static let
-          HONEYCOMB_PROD = \"\" }" > macapp/Gertrude/AppCore/Sources/AppCore/ApiKeys.swift
+          path: macapp/App/.build
+          key: macapp-spm--${{ hashFiles('macapp/App/Package.resolved') }}
+          restore-keys: macapp-spm--
       - name: build
-        run: cd macapp/Gertrude/AppCore && swift build
+        run: cd macapp/App && swift build
       - name: test
-        run: cd macapp/Gertrude/AppCore && swift test
-
-  macos-sharedcore:
-    needs: files-changed
-    if: needs.files-changed.outputs.maclibs == 'true'
-    runs-on: macos-12
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: setup xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: 14.2
-      - uses: actions/cache@v3
-        with:
-          path: macapp/Gertrude/SharedCore/.build
-          key: appcore-${{ hashFiles('macapp/Gertrude/SharedCore/Package.resolved') }}
-          restore-keys: appcore-
-      - name: build
-        run: cd macapp/Gertrude/SharedCore && swift build
-      - name: test
-        run: cd macapp/Gertrude/SharedCore && swift test
-
-  macos-filtercore:
-    needs: files-changed
-    if: needs.files-changed.outputs.maclibs == 'true'
-    runs-on: macos-12
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: setup xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: 14.2
-      - uses: actions/cache@v3
-        with:
-          path: macapp/Gertrude/FilterCore/.build
-          key: appcore-${{ hashFiles('macapp/Gertrude/FilterCore/Package.resolved') }}
-          restore-keys: appcore-
-      - name: build
-        run: cd macapp/Gertrude/FilterCore && swift build
-      - name: test
-        run: cd macapp/Gertrude/FilterCore && swift test
-
-  macos-websocket:
-    needs: files-changed
-    if: needs.files-changed.outputs.maclibs == 'true'
-    runs-on: macos-12
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: setup xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: 14.2
-      - uses: actions/cache@v3
-        with:
-          path: macapp/Gertrude/Websocket/.build
-          key: appcore-${{ hashFiles('macapp/Gertrude/Websocket/Package.resolved') }}
-          restore-keys: appcore-
-      - name: build
-        run: cd macapp/Gertrude/Websocket && swift build
-      - name: test
-        run: cd macapp/Gertrude/Websocket && swift test
+        run: cd macapp/App && swift test
 
 # env
 
