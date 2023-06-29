@@ -4,9 +4,8 @@ import TypeScriptInterop
 @testable import App
 
 struct AppTypeScriptEnums: AggregateCodeGenerator {
-
   var generators: [CodeGenerator] = [
-    TypeScriptEnum(
+    EnumCodableGen.EnumsGenerator(
       name: "MenuBarFeature",
       types: [
         FilterState.self,
@@ -14,19 +13,19 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
         MenuBarFeature.State.View.self,
       ]
     ),
-    TypeScriptEnum(
+    EnumCodableGen.EnumsGenerator(
       name: "BlockedRequestsFeature",
       types: [
         BlockedRequestsFeature.Action.View.self,
       ]
     ),
-    TypeScriptEnum(
+    EnumCodableGen.EnumsGenerator(
       name: "RequestSuspensionFeature",
       types: [
         RequestSuspensionFeature.Action.View.self,
       ]
     ),
-    TypeScriptEnum(
+    EnumCodableGen.EnumsGenerator(
       name: "AdminWindowFeature",
       types: [
         AdminWindowFeature.State.HealthCheck.FilterStatus.self,
@@ -40,8 +39,21 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
     let proc = Process()
     proc.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/swiftformat")
     proc.arguments = generators.compactMap { generator in
-      (generator as? TypeScriptEnum)?.path
+      (generator as? EnumCodableGen.EnumsGenerator)?.path
     }
     try proc.run()
+  }
+}
+
+// extensions
+
+extension EnumCodableGen.EnumsGenerator {
+  init(name: String, types: [Any.Type]) {
+    self.init(
+      path:
+      "/Users/jared/gertie/swift/macapp/App/Sources/App/Generated/\(name)+Codable.swift",
+      types: types.map { ($0, false) },
+      imports: ["ReleaseChannel": "Gertie"]
+    )
   }
 }

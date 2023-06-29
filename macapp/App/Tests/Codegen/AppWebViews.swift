@@ -53,9 +53,7 @@ struct AppWebViews: AggregateCodeGenerator {
       localAliases: [
         (AdminWindowFeature.State.HealthCheck.self, "HealthCheck"),
         (AdminWindowFeature.State.View.Advanced.self, "AdvancedState"),
-        // todo, rename in enum now with better ts codegen
         (AdminWindowFeature.Action.View.HealthCheckAction.self, "HealthCheckAction"),
-        // todo, rename in enum now with better ts codegen
         (AdminWindowFeature.Action.View.AdvancedAction.self, "AdvancedAction"),
         (AdminWindowFeature.Screen.self, "Screen"),
         (FilterState.self, "FilterState"),

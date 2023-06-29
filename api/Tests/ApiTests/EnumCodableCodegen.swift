@@ -6,9 +6,13 @@ import XCTest
 
 final class Codegen: XCTestCase {
   func test_codegenSwift() throws {
-    if ProcessInfo.processInfo.environment["CODEGEN_SWIFT"] != nil {
+    if envVarSet("CODEGEN_SWIFT") {
       try ApiTypeScriptEnumsCodableGenerator().write()
     }
+  }
+
+  func envVarSet(_ name: String) -> Bool {
+    ProcessInfo.processInfo.environment[name] != nil
   }
 }
 

@@ -148,12 +148,12 @@ extension AdminWindowFeature.Action.View {
 
   private struct _CaseHealthCheck: Codable {
     var `case` = "healthCheck"
-    var healthCheckAction: AdminWindowFeature.Action.View.HealthCheckAction
+    var action: AdminWindowFeature.Action.View.HealthCheckAction
   }
 
   private struct _CaseAdvanced: Codable {
     var `case` = "advanced"
-    var advancedAction: AdminWindowFeature.Action.View.AdvancedAction
+    var action: AdminWindowFeature.Action.View.AdvancedAction
   }
 
   private struct _CaseGotoScreenClicked: Codable {
@@ -179,10 +179,10 @@ extension AdminWindowFeature.Action.View {
 
   func encode(to encoder: Encoder) throws {
     switch self {
-    case .healthCheck(let healthCheckAction):
-      try _CaseHealthCheck(healthCheckAction: healthCheckAction).encode(to: encoder)
-    case .advanced(let advancedAction):
-      try _CaseAdvanced(advancedAction: advancedAction).encode(to: encoder)
+    case .healthCheck(let action):
+      try _CaseHealthCheck(action: action).encode(to: encoder)
+    case .advanced(let action):
+      try _CaseAdvanced(action: action).encode(to: encoder)
     case .gotoScreenClicked(let screen):
       try _CaseGotoScreenClicked(screen: screen).encode(to: encoder)
     case .releaseChannelUpdated(let channel):
@@ -222,10 +222,10 @@ extension AdminWindowFeature.Action.View {
     switch caseName {
     case "healthCheck":
       let value = try container.decode(_CaseHealthCheck.self)
-      self = .healthCheck(action: value.healthCheckAction)
+      self = .healthCheck(action: value.action)
     case "advanced":
       let value = try container.decode(_CaseAdvanced.self)
-      self = .advanced(action: value.advancedAction)
+      self = .advanced(action: value.action)
     case "gotoScreenClicked":
       let value = try container.decode(_CaseGotoScreenClicked.self)
       self = .gotoScreenClicked(screen: value.screen)
