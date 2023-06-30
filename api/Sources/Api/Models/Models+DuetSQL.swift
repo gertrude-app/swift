@@ -735,6 +735,42 @@ extension WaitlistedAdmin: Model {
   }
 }
 
+extension UnexpectedError: Model {
+  public static let tableName = UnexpectedError.M8.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .errorId:
+      return .string(errorId)
+    case .context:
+      return .string(context)
+    case .deviceId:
+      return .uuid(deviceId)
+    case .adminId:
+      return .uuid(adminId)
+    case .detail:
+      return .string(detail)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .errorId: .string(errorId),
+      .context: .string(context),
+      .deviceId: .uuid(deviceId),
+      .adminId: .uuid(adminId),
+      .detail: .string(detail),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
 extension StripeEvent: Model {
   public static let tableName = StripeEvent.M7.tableName
   public typealias ColumnName = CodingKeys

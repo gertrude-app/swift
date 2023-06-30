@@ -3,10 +3,10 @@
   "projectType": "library",
   "targets": {
     "build": {
-      "command": "cd typescript && swift build"
+      "command": "cd ts-interop && swift build"
     },
     "test": {
-      "command": "cd typescript && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+      "command": "cd ts-interop && SWIFT_DETERMINISTIC_HASHING=1 swift test"
     }
   }
 }

@@ -1,13 +1,13 @@
 {
-  "root": "shared",
+  "root": "gertie",
   "projectType": "library",
   "implicitDependencies": ["x-kit"],
   "targets": {
     "build": {
-      "command": "cd shared && swift build"
+      "command": "cd gertie && swift build"
     },
     "test": {
-      "command": "cd shared && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+      "command": "cd gertie && SWIFT_DETERMINISTIC_HASHING=1 swift test"
     }
   }
 }

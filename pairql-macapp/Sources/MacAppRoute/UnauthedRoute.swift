@@ -4,6 +4,7 @@ public enum UnauthedRoute: PairRoute {
   case connectApp(ConnectApp.Input)
   case connectUser(ConnectUser.Input)
   case latestAppVersion(LatestAppVersion.Input)
+  case logUnexpectedError(LogUnexpectedError.Input)
   case recentAppVersions
 }
 
@@ -20,6 +21,10 @@ public extension UnauthedRoute {
     Route(/Self.latestAppVersion) {
       Operation(LatestAppVersion.self)
       Body(.json(LatestAppVersion.Input.self))
+    }
+    Route(/Self.logUnexpectedError) {
+      Operation(LogUnexpectedError.self)
+      Body(.json(LogUnexpectedError.Input.self))
     }
     Route(/Self.recentAppVersions) {
       Operation(RecentAppVersions.self)

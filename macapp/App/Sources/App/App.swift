@@ -1,4 +1,6 @@
+import ClientInterfaces
 import ComposableArchitecture
+import Dependencies
 import MacAppRoute
 
 typealias UserData = GetUserData.Output
@@ -42,6 +44,19 @@ typealias UserData = GetUserData.Output
       state: { $0 },
       action: AppReducer.Action.requestSuspension
     ))
+
+    #if !DEBUG
+      setUnexpectedErrorReporter { errorId, error in
+        @Dependency(\.api) var apiClient
+        @Dependency(\.storage) var storageClient
+        let deviceId = try? await storageClient.loadPersistentState()?.user?.deviceId
+        await apiClient.logUnexpectedError(.init(
+          errorId: errorId,
+          deviceId: deviceId,
+          detail: error.map { String(describing: $0) }
+        ))
+      }
+    #endif
   }
 
   public func send(_ action: ApplicationAction) {

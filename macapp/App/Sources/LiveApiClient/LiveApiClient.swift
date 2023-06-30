@@ -49,6 +49,12 @@ extension ApiClient: DependencyKey {
         withUnauthed: .latestAppVersion(input)
       )
     },
+    logUnexpectedError: { input in
+      _ = try? await output(
+        from: LogUnexpectedError.self,
+        withUnauthed: .logUnexpectedError(input)
+      )
+    },
     recentAppVersions: {
       try await output(
         from: RecentAppVersions.self,

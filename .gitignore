@@ -2,6 +2,7 @@
 .env
 api/.env*
 node_modules/
+.vscode/*
 
 **/.build/
 **/.swiftpm/
