@@ -12,6 +12,7 @@ public struct ApiClient: Sendable {
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void
   public var getAdminAccountStatus: @Sendable () async throws -> AdminAccountStatus
   public var latestAppVersion: @Sendable (ReleaseChannel) async throws -> String
+  public var logUnexpectedError: @Sendable (LogUnexpectedError.Input) async -> Void
   public var recentAppVersions: @Sendable () async throws -> [String: String]
   public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
   public var setAccountActive: @Sendable (Bool) async -> Void
@@ -28,6 +29,7 @@ public struct ApiClient: Sendable {
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void,
     getAdminAccountStatus: @escaping @Sendable () async throws -> AdminAccountStatus,
     latestAppVersion: @escaping @Sendable (ReleaseChannel) async throws -> String,
+    logUnexpectedError: @escaping @Sendable (LogUnexpectedError.Input) async -> Void,
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
@@ -42,6 +44,7 @@ public struct ApiClient: Sendable {
     self.createUnlockRequests = createUnlockRequests
     self.getAdminAccountStatus = getAdminAccountStatus
     self.latestAppVersion = latestAppVersion
+    self.logUnexpectedError = logUnexpectedError
     self.recentAppVersions = recentAppVersions
     self.refreshRules = refreshRules
     self.setAccountActive = setAccountActive
@@ -79,6 +82,7 @@ extension ApiClient: TestDependencyKey {
     createUnlockRequests: { _ in },
     getAdminAccountStatus: { .active },
     latestAppVersion: { _ in "1.0.0" },
+    logUnexpectedError: { _ in },
     recentAppVersions: { [:] },
     refreshRules: { _ in throw Error.missingUserToken },
     setAccountActive: { _ in },
@@ -98,6 +102,7 @@ extension ApiClient: TestDependencyKey {
       createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
       getAdminAccountStatus: unimplemented("ApiClient.getAdminAccountStatus"),
       latestAppVersion: unimplemented("ApiClient.latestAppVersion"),
+      logUnexpectedError: unimplemented("ApiClient.logUnexpectedError"),
       recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
       refreshRules: unimplemented("ApiClient.refreshRules"),
       setAccountActive: unimplemented("ApiClient.setAccountActive"),

@@ -396,3 +396,18 @@ extension WaitlistedAdmin {
   }
 }
 
+extension UnexpectedError: Duet.Identifiable {
+  typealias Id = Tagged<UnexpectedError, UUID>
+}
+
+extension UnexpectedError {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case errorId
+    case context
+    case deviceId
+    case adminId
+    case detail
+    case createdAt
+  }
+}
