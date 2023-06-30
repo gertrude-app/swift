@@ -161,6 +161,7 @@ enum Reset {
 enum TimestampAdjustment {
   case subtracting(TimeInterval)
   case adding(TimeInterval)
+  case exact(Date)
 }
 
 extension DuetSQL.Model where Self: HasCreatedAt {
@@ -172,6 +173,8 @@ extension DuetSQL.Model where Self: HasCreatedAt {
       createdAt = createdAt.addingTimeInterval(-interval)
     case .adding(let interval):
       createdAt = createdAt.addingTimeInterval(interval)
+    case .exact(let date):
+      createdAt = date
     }
     guard let client = Current.db as? LiveClient else {
       throw Abort(.badRequest, reason: "Could not downcast Current.db to LiveClient")

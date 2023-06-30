@@ -7,8 +7,8 @@ final class Release: Codable {
   var channel: ReleaseChannel
   var signature: String
   var length: Int
-  var appRevision: GitCommitSha
-  var coreRevision: GitCommitSha
+  var revision: GitCommitSha
+  var requirementPace: Int?
   var createdAt = Date()
   var updatedAt = Date()
 
@@ -18,15 +18,15 @@ final class Release: Codable {
     channel: ReleaseChannel,
     signature: String,
     length: Int,
-    appRevision: GitCommitSha,
-    coreRevision: GitCommitSha
+    revision: GitCommitSha,
+    requirementPace: Int? = nil
   ) {
     self.id = id
     self.semver = semver
     self.channel = channel
     self.signature = signature
     self.length = length
-    self.appRevision = appRevision
-    self.coreRevision = coreRevision
+    self.revision = revision
+    self.requirementPace = requirementPace
   }
 }

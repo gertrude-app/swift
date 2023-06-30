@@ -11,7 +11,8 @@ public struct ApiClient: Sendable {
     -> Void
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void
   public var getAdminAccountStatus: @Sendable () async throws -> AdminAccountStatus
-  public var latestAppVersion: @Sendable (ReleaseChannel) async throws -> String
+  public var latestAppVersion: @Sendable (LatestAppVersion.Input) async throws -> LatestAppVersion
+    .Output
   public var logUnexpectedError: @Sendable (LogUnexpectedError.Input) async -> Void
   public var recentAppVersions: @Sendable () async throws -> [String: String]
   public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
@@ -28,7 +29,8 @@ public struct ApiClient: Sendable {
       -> Void,
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void,
     getAdminAccountStatus: @escaping @Sendable () async throws -> AdminAccountStatus,
-    latestAppVersion: @escaping @Sendable (ReleaseChannel) async throws -> String,
+    latestAppVersion: @escaping @Sendable (LatestAppVersion.Input) async throws -> LatestAppVersion
+      .Output,
     logUnexpectedError: @escaping @Sendable (LogUnexpectedError.Input) async -> Void,
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
@@ -81,7 +83,7 @@ extension ApiClient: TestDependencyKey {
     createSuspendFilterRequest: { _ in },
     createUnlockRequests: { _ in },
     getAdminAccountStatus: { .active },
-    latestAppVersion: { _ in "1.0.0" },
+    latestAppVersion: { _ in .init(semver: "1.0.0") },
     logUnexpectedError: { _ in },
     recentAppVersions: { [:] },
     refreshRules: { _ in throw Error.missingUserToken },

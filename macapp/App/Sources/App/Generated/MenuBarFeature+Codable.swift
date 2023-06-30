@@ -91,6 +91,12 @@ extension MenuBarFeature.Action {
       try _NamedCase(case: "welcomeAdminClicked").encode(to: encoder)
     case .turnOnFilterClicked:
       try _NamedCase(case: "turnOnFilterClicked").encode(to: encoder)
+    case .updateNagDismissClicked:
+      try _NamedCase(case: "updateNagDismissClicked").encode(to: encoder)
+    case .updateNagUpdateClicked:
+      try _NamedCase(case: "updateNagUpdateClicked").encode(to: encoder)
+    case .updateRequiredUpdateClicked:
+      try _NamedCase(case: "updateRequiredUpdateClicked").encode(to: encoder)
     }
   }
 
@@ -123,6 +129,12 @@ extension MenuBarFeature.Action {
       self = .welcomeAdminClicked
     case "turnOnFilterClicked":
       self = .turnOnFilterClicked
+    case "updateNagDismissClicked":
+      self = .updateNagDismissClicked
+    case "updateNagUpdateClicked":
+      self = .updateNagUpdateClicked
+    case "updateRequiredUpdateClicked":
+      self = .updateRequiredUpdateClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }
@@ -158,6 +170,7 @@ extension MenuBarFeature.State.View {
     var recordingScreen: Bool
     var recordingKeystrokes: Bool
     var adminAttentionRequired: Bool
+    var updateStatus: MenuBarFeature.State.View.Connected.UpdateStatus?
   }
 
   func encode(to encoder: Encoder) throws {
@@ -171,7 +184,8 @@ extension MenuBarFeature.State.View {
         filterState: unflat.filterState,
         recordingScreen: unflat.recordingScreen,
         recordingKeystrokes: unflat.recordingKeystrokes,
-        adminAttentionRequired: unflat.adminAttentionRequired
+        adminAttentionRequired: unflat.adminAttentionRequired,
+        updateStatus: unflat.updateStatus
       ).encode(to: encoder)
     case .notConnected:
       try _NamedCase(case: "notConnected").encode(to: encoder)
@@ -198,7 +212,8 @@ extension MenuBarFeature.State.View {
         filterState: value.filterState,
         recordingScreen: value.recordingScreen,
         recordingKeystrokes: value.recordingKeystrokes,
-        adminAttentionRequired: value.adminAttentionRequired
+        adminAttentionRequired: value.adminAttentionRequired,
+        updateStatus: value.updateStatus
       ))
     case "notConnected":
       self = .notConnected

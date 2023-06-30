@@ -3,13 +3,15 @@ import ComposableArchitecture
 import Core
 import Foundation
 import Gertie
+import MacAppRoute
 
 struct AppUpdatesFeature: Feature {
 
   struct State: Equatable {
     var installedVersion: String
     var releaseChannel: ReleaseChannel = .stable
-    var latestVersion: String?
+    var latestVersion: LatestAppVersion.Output?
+    var updateNagDismissedUntil: Date?
   }
 
   enum Action: Equatable, Sendable {
@@ -18,24 +20,13 @@ struct AppUpdatesFeature: Feature {
       case postUpdateFilterReplaceFailed
     }
 
-    case latestVersionResponse(TaskResult<String>)
+    case latestVersionResponse(TaskResult<LatestAppVersion.Output>)
     case delegate(Delegate)
   }
 
   struct Reducer: FeatureReducer {
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
-      switch action {
-
-      case .latestVersionResponse(.success(let version)):
-        state.latestVersion = version
-        return .none
-
-      case .latestVersionResponse(.failure):
-        return .none
-
-      case .delegate:
-        return .none
-      }
+      .none
     }
   }
 
@@ -44,6 +35,7 @@ struct AppUpdatesFeature: Feature {
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.date.now) var now
     @Dependency(\.storage) var storage
     @Dependency(\.updater) var updater
   }
@@ -92,8 +84,11 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     // don't need admin challenge, because sparkle can't update w/out admin auth
     case .adminWindow(.delegate(.triggerAppUpdate)),
          .adminWindow(.webview(.checkForAppUpdatesClicked)),
-         .adminWindow(.webview(.reinstallAppClicked)):
+         .adminWindow(.webview(.reinstallAppClicked)),
+         .menuBar(.updateNagUpdateClicked),
+         .menuBar(.updateRequiredUpdateClicked):
       state.adminWindow.windowOpen = false // so they can see sparkle update
+      state.menuBar.dropdownOpen = false // dismiss menubar overlay nags
       let channel = state.appUpdates.releaseChannel
       let persist = state.persistent
       let force = action == .adminWindow(.webview(.reinstallAppClicked)) ? true : nil
@@ -101,22 +96,40 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         try await triggerUpdate(channel, persist, force: force)
       }
 
-    case .heartbeat(.everySixHours):
+    case .appUpdates(.latestVersionResponse(.success(let latest))):
+      state.appUpdates.latestVersion = latest
       let current = state.appUpdates.installedVersion
       let channel = state.appUpdates.releaseChannel
       let persist = state.persistent
+      let shouldUpdate: Bool
+      if let current = Semver(current), let latest = Semver(latest.semver) {
+        shouldUpdate = latest > current
+      } else {
+        shouldUpdate = latest.semver != current
+        unexpectedError(id: "bbb7eeba")
+      }
       return .run { _ in
-        let latest = try await api.latestAppVersion(channel)
-        let shouldUpdate: Bool
-        if let current = Semver(current), let latest = Semver(latest) {
-          shouldUpdate = latest > current
-        } else {
-          shouldUpdate = latest != current
-          unexpectedError(id: "bbb7eeba")
-        }
         if shouldUpdate {
           try await triggerUpdate(channel, persist)
         }
+      }
+
+    case .heartbeat(.everyHour):
+      if let dismissal = state.appUpdates.updateNagDismissedUntil, now > dismissal {
+        state.appUpdates.updateNagDismissedUntil = nil
+      }
+      return .none
+
+    case .heartbeat(.everySixHours):
+      let current = state.appUpdates.installedVersion
+      let channel = state.appUpdates.releaseChannel
+      return .run { send in
+        await send(.appUpdates(.latestVersionResponse(TaskResult {
+          try await api.latestAppVersion(.init(
+            releaseChannel: channel,
+            currentVersion: current
+          ))
+        })))
       }
 
     case .adminWindow(.webview(.releaseChannelUpdated(let channel))):
@@ -131,6 +144,10 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       return .run { _ in
         try await triggerUpdate(.init(force: true, version: version), persist)
       }
+
+    case .menuBar(.updateNagDismissClicked):
+      state.appUpdates.updateNagDismissedUntil = now.advanced(by: .hours(26))
+      return .none
 
     default:
       return .none

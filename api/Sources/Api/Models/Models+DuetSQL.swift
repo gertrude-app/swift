@@ -455,10 +455,10 @@ extension Release: Model {
       return .string(signature)
     case .length:
       return .int(length)
-    case .appRevision:
-      return .string(appRevision.rawValue)
-    case .coreRevision:
-      return .string(coreRevision.rawValue)
+    case .revision:
+      return .string(revision.rawValue)
+    case .requirementPace:
+      return .int(requirementPace)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -473,8 +473,8 @@ extension Release: Model {
       .channel: .enum(channel),
       .signature: .string(signature),
       .length: .int(length),
-      .appRevision: .string(appRevision.rawValue),
-      .coreRevision: .string(coreRevision.rawValue),
+      .revision: .string(revision.rawValue),
+      .requirementPace: .int(requirementPace),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

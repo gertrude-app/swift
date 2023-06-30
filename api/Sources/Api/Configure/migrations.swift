@@ -12,5 +12,6 @@ extension Configure {
     app.migrations.add(MiscTables())
     app.migrations.add(JobMetadataMigrate())
     app.migrations.add(UnexpectedErrorTable())
+    app.migrations.add(AddReleaseRequirementPace())
   }
 }

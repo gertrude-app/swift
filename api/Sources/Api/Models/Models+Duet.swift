@@ -260,8 +260,8 @@ extension Release {
     case channel
     case signature
     case length
-    case appRevision
-    case coreRevision
+    case revision
+    case requirementPace
     case createdAt
     case updatedAt
   }

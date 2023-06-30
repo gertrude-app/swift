@@ -5,6 +5,7 @@ public enum ColumnType {
   case text
   case uuid
   case date
+  case int
   case bigint
   case boolean
   case jsonb
@@ -20,6 +21,7 @@ public enum ColumnType {
     case .text: return "text"
     case .uuid: return "uuid"
     case .date: return "date"
+    case .int: return "int"
     case .bigint: return "bigint"
     case .boolean: return "boolean"
     case .jsonb: return "jsonb"
@@ -33,6 +35,7 @@ struct Column {
   enum Default {
     case boolean(Bool)
     case text(String)
+    case int(Int)
     case enumValue(PostgresEnum)
 
     public var sql: String {
@@ -41,6 +44,8 @@ struct Column {
         return value ? "TRUE" : "FALSE"
       case .text(let value):
         return "'\(value)'"
+      case .int(let value):
+        return "\(value)"
       case .enumValue(let value):
         return "'\(value.rawValue)'::\(value.typeName)"
       }

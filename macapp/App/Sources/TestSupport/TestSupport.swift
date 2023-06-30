@@ -19,6 +19,10 @@ public extension UUID {
   static let twos = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
 }
 
+public extension Date {
+  static let epoch = Date(timeIntervalSince1970: 0)
+}
+
 public struct ControllingNow {
   public let generator: DateGenerator
   private let elapsed: LockIsolated<Int>
