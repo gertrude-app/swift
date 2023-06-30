@@ -19,6 +19,9 @@ enum MenuBarFeature: Feature {
     case connectFailedHelpClicked
     case welcomeAdminClicked
     case turnOnFilterClicked
+    case updateNagDismissClicked
+    case updateNagUpdateClicked
+    case updateRequiredUpdateClicked
   }
 
   struct Reducer: FeatureReducer {

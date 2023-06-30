@@ -33,6 +33,7 @@ enum Heartbeat {
     case everyMinute
     case everyFiveMinutes
     case everyTwentyMinutes
+    case everyHour
     case everySixHours
   }
 

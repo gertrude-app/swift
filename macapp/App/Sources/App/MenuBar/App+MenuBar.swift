@@ -1,13 +1,21 @@
 import ClientInterfaces
 import Dependencies
+import Gertie
 
 extension MenuBarFeature.State {
   enum View: Equatable, Encodable {
     struct Connected: Equatable, Encodable {
+      enum UpdateStatus: String, Equatable, Codable {
+        case available
+        case nag
+        case require
+      }
+
       var filterState: FilterState
       var recordingScreen: Bool
       var recordingKeystrokes: Bool
       var adminAttentionRequired: Bool
+      var updateStatus: UpdateStatus?
     }
 
     case notConnected
@@ -41,13 +49,45 @@ extension AppReducer.State {
           filterState: .init(self),
           recordingScreen: user.screenshotsEnabled,
           recordingKeystrokes: user.keyloggingEnabled,
-          adminAttentionRequired: somethingRequiresAdminAttention
+          adminAttentionRequired: somethingRequiresAdminAttention,
+          updateStatus: updateStatus
         ))
       case .notConnected:
         return .notConnected
       }
     }
     set {}
+  }
+
+  var updateStatus: MenuBarFeature.State.View.Connected.UpdateStatus? {
+    guard let latest = appUpdates.latestVersion else {
+      return nil
+    }
+    guard let latestSemver = Semver(latest.semver),
+          let current = Semver(appUpdates.installedVersion) else {
+      unexpectedError(id: "76c483a9")
+      return nil
+    }
+    guard latestSemver > current else {
+      return nil
+    }
+    guard let pace = latest.pace else {
+      return .available
+    }
+
+    // TODO: don't show nag if not connected to the internet
+
+    @Dependency(\.date.now) var now
+    if now <= pace.nagOn {
+      return .available
+    }
+    if now > pace.nagOn, now < pace.requireOn {
+      return now < (appUpdates.updateNagDismissedUntil ?? .distantPast) ? .available : .nag
+    }
+    if now >= pace.requireOn {
+      return .require
+    }
+    return nil
   }
 
   var somethingRequiresAdminAttention: Bool {

@@ -204,8 +204,8 @@ extension AdminWindowFeature.RootReducer {
       state.adminWindow.healthCheck.accountStatus = .error
       return state.adminWindow.healthCheck.checkCompletionEffect
 
-    case .appUpdates(.latestVersionResponse(.success(let version))):
-      state.adminWindow.healthCheck.latestAppVersion = .ok(value: version)
+    case .appUpdates(.latestVersionResponse(.success(let output))):
+      state.adminWindow.healthCheck.latestAppVersion = .ok(value: output.semver)
       return state.adminWindow.healthCheck.checkCompletionEffect
 
     case .user(.refreshRules(.success, _)):
@@ -452,15 +452,24 @@ extension AdminWindowFeature.RootReducer {
     let keyloggingEnabled = state.user?.keyloggingEnabled == true
     let screenRecordingEnabled = state.user?.screenshotsEnabled == true
     let releaseChannel = state.appUpdates.releaseChannel
+    let currentInstalledVersion = state.appUpdates.installedVersion
 
     let main = Effect<Action>.run { send in
       try await mainQueue.sleep(for: .seconds(1))
 
-      async let accountStatus = TaskResult { try await api.getAdminAccountStatus() }
-      async let latestAppVersion = TaskResult { try await api.latestAppVersion(releaseChannel) }
+      async let accountStatus = TaskResult {
+        try await api.getAdminAccountStatus()
+      }
+
+      async let latestAppVersionOutput = TaskResult {
+        try await api.latestAppVersion(.init(
+          releaseChannel: releaseChannel,
+          currentVersion: currentInstalledVersion
+        ))
+      }
 
       await send(.admin(.accountStatusResponse(accountStatus)))
-      await send(.appUpdates(.latestVersionResponse(latestAppVersion)))
+      await send(.appUpdates(.latestVersionResponse(latestAppVersionOutput)))
 
       await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
         keyloggingEnabled ? await monitoring.keystrokeRecordingPermissionGranted() : true

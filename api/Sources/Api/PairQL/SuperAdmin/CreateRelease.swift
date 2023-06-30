@@ -1,6 +1,6 @@
 import DuetSQL
-import PairQL
 import Gertie
+import PairQL
 
 struct CreateRelease: Pair {
   static var auth: ClientAuth = .superAdmin
@@ -10,8 +10,8 @@ struct CreateRelease: Pair {
     let channel: ReleaseChannel
     let signature: String
     let length: Int
-    let appRevision: String
-    let coreRevision: String
+    let revision: String
+    let requirementPace: Int?
   }
 
   struct Output: PairOutput {
@@ -23,6 +23,11 @@ struct CreateRelease: Pair {
 
 extension CreateRelease: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
+    guard Semver(input.semver) != nil else {
+      struct InvalidSemver: Error {}
+      throw InvalidSemver()
+    }
+
     // allow overwriting existing release, identified by semver string
     let existing = try? await Current.db.query(Release.self)
       .where(.semver == .string(input.semver))
@@ -32,8 +37,8 @@ extension CreateRelease: Resolver {
       existing.channel = input.channel
       existing.signature = input.signature
       existing.length = input.length
-      existing.appRevision = .init(rawValue: input.appRevision)
-      existing.coreRevision = .init(rawValue: input.coreRevision)
+      existing.revision = .init(rawValue: input.revision)
+      existing.requirementPace = input.requirementPace
       try await Current.db.update(existing)
       return .init(id: existing.id)
     }
@@ -43,8 +48,8 @@ extension CreateRelease: Resolver {
       channel: input.channel,
       signature: input.signature,
       length: input.length,
-      appRevision: .init(input.appRevision),
-      coreRevision: .init(input.coreRevision)
+      revision: .init(input.revision),
+      requirementPace: input.requirementPace
     ))
 
     return .init(id: release.id)
