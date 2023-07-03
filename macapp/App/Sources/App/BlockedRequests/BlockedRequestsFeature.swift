@@ -146,8 +146,11 @@ extension BlockedRequestsFeature.RootReducer {
         }
       }
 
-    case .xpc(.receivedExtensionMessage(.blockedRequest(let request))):
-      state.blockedRequests.requests.append(request)
+    case .xpc(.receivedExtensionMessage(.blockedRequest(let newReq))):
+      let recent = state.blockedRequests.requests.suffix(15)
+      if !recent.contains(where: { existing in existing.mergeable(with: newReq) }) {
+        state.blockedRequests.requests.append(newReq)
+      }
       return .none
 
     default:

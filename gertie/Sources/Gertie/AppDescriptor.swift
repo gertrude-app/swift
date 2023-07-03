@@ -47,3 +47,9 @@ extension AppDescriptor: CustomStringConvertible {
     return desc + subParts.compactMap { $0 }.joined(separator: ", ") + suffix
   }
 }
+
+#if DEBUG
+  public extension AppDescriptor {
+    static let mock = AppDescriptor(bundleId: "com.mock.app")
+  }
+#endif

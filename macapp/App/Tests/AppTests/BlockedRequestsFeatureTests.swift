@@ -7,25 +7,36 @@ import XExpect
 
 @testable import App
 
-@MainActor final class BlockedRequestsTests: XCTestCase {
+@MainActor final class BlockedRequestsFeatureTests: XCTestCase {
   func testBlockedReqsFromFilterAddedToState() async {
     let (store, _) = AppReducer.testStore()
+
+    let setBlockStreaming = spy(on: Bool.self, returning: Result<_, XPCErr>.success(()))
+    store.deps.filterXpc.setBlockStreaming = setBlockStreaming.fn
+
+    await store.send(.menuBar(.viewNetworkTrafficClicked)) {
+      $0.blockedRequests.windowOpen = true
+    }
+    await expect(setBlockStreaming.invocations).toEqual([true])
 
     let req = BlockedRequest.mock
     await store.send(.xpc(.receivedExtensionMessage(.blockedRequest(req)))) {
       $0.blockedRequests.requests = [req]
     }
+  }
 
-    let streamBlocksSpy = ActorIsolated<Bool?>(nil)
-    store.deps.filterXpc.setBlockStreaming = {
-      await streamBlocksSpy.setValue($0)
-      return .success(())
+  func testMergeableBlockedRequestNotAdded() async {
+    let (store, _) = AppReducer.testStore()
+
+    let req1 = BlockedRequest(app: .mock, url: "https://foo.com/1")
+    await store.send(.xpc(.receivedExtensionMessage(.blockedRequest(req1)))) {
+      $0.blockedRequests.requests = [req1]
     }
 
-    await store.send(.menuBar(.viewNetworkTrafficClicked)) {
-      $0.blockedRequests.windowOpen = true
+    let req2 = BlockedRequest(app: .mock, url: "https://foo.com/1") // <-- should merge
+    await store.send(.xpc(.receivedExtensionMessage(.blockedRequest(req2)))) {
+      $0.blockedRequests.requests = [req1]
     }
-    await expect(streamBlocksSpy).toEqual(true)
   }
 
   func testSimpleActions() async {
@@ -34,26 +45,23 @@ import XExpect
     state.requests = [req, .mock, .mock]
     let store = TestStore(initialState: state, reducer: BlockedRequestsFeature.Reducer())
 
-    let blockStreamSpy = ActorIsolated<[Bool]>([])
-    store.deps.filterXpc.setBlockStreaming = {
-      await blockStreamSpy.append($0)
-      return .success(())
-    }
+    let setBlockStreaming = spy(on: Bool.self, returning: Result<_, XPCErr>.success(()))
+    store.deps.filterXpc.setBlockStreaming = setBlockStreaming.fn
 
     await store.send(.openWindow) {
       $0.windowOpen = true
     }
-    await expect(blockStreamSpy).toEqual([true])
+    await expect(setBlockStreaming.invocations).toEqual([true])
 
     await store.send(.webview(.filterTextUpdated(text: "foo"))) {
       $0.filterText = "foo"
     }
-    await expect(blockStreamSpy).toEqual([true, true])
+    await expect(setBlockStreaming.invocations).toEqual([true, true])
 
     await store.send(.webview(.tcpOnlyToggled)) {
       $0.tcpOnly.toggle()
     }
-    await expect(blockStreamSpy).toEqual([true, true, true])
+    await expect(setBlockStreaming.invocations).toEqual([true, true, true])
 
     await store.send(.webview(.toggleRequestSelected(id: req.id))) {
       $0.selectedRequestIds = [req.id]
@@ -71,12 +79,12 @@ import XExpect
       $0.requests = []
       $0.selectedRequestIds = []
     }
-    await expect(blockStreamSpy).toEqual([true, true, true, true])
+    await expect(setBlockStreaming.invocations).toEqual([true, true, true, true])
 
     await store.send(.closeWindow) {
       $0.windowOpen = false
     }
-    await expect(blockStreamSpy).toEqual([true, true, true, true, false])
+    await expect(setBlockStreaming.invocations).toEqual([true, true, true, true, false])
   }
 
   func testSubmitUnlockRequests() async {
