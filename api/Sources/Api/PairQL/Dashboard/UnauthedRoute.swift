@@ -7,7 +7,6 @@ enum UnauthedRoute: PairRoute {
   case getCheckoutUrl(GetCheckoutUrl.Input)
   case handleCheckoutCancel(HandleCheckoutCancel.Input)
   case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
-  case joinWaitlist(JoinWaitlist.Input)
   case login(Login.Input)
   case loginMagicLink(LoginMagicLink.Input)
   case requestMagicLink(RequestMagicLink.Input)
@@ -31,10 +30,6 @@ enum UnauthedRoute: PairRoute {
     Route(/Self.handleCheckoutSuccess) {
       Operation(HandleCheckoutSuccess.self)
       Body(.dashboardInput(HandleCheckoutSuccess.self))
-    }
-    Route(/Self.joinWaitlist) {
-      Operation(JoinWaitlist.self)
-      Body(.dashboardInput(JoinWaitlist.self))
     }
     Route(/Self.login) {
       Operation(Login.self)
@@ -75,9 +70,6 @@ extension UnauthedRoute: RouteResponder {
       return try await respond(with: output)
     case .verifySignupEmail(let input):
       let output = try await VerifySignupEmail.resolve(with: input, in: context)
-      return try await respond(with: output)
-    case .joinWaitlist(let input):
-      let output = try await JoinWaitlist.resolve(with: input, in: context)
       return try await respond(with: output)
     case .allowingSignups:
       let output = try await AllowingSignups.resolve(in: context)

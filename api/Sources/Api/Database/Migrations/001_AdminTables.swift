@@ -187,7 +187,8 @@ extension AdminVerifiedNotificationMethod {
   }
 }
 
-extension WaitlistedAdmin {
+// used to be a model, converted to enum/namespace for migration history
+enum WaitlistedAdmin {
   enum M1: TableNamingMigration {
     static let tableName = "waitlisted_admins"
     static let email = FieldKey("email")

@@ -382,20 +382,6 @@ extension UserToken {
   }
 }
 
-extension WaitlistedAdmin: Duet.Identifiable {
-  typealias Id = Tagged<WaitlistedAdmin, UUID>
-}
-
-extension WaitlistedAdmin {
-  enum CodingKeys: String, CodingKey, CaseIterable {
-    case id
-    case email
-    case signupToken
-    case createdAt
-    case updatedAt
-  }
-}
-
 extension UnexpectedError: Duet.Identifiable {
   typealias Id = Tagged<UnexpectedError, UUID>
 }
