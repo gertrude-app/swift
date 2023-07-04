@@ -1,4 +1,6 @@
+import ClientInterfaces
 import NetworkExtension
+import os.log
 import SystemExtensions
 
 extension FilterManager: OSSystemExtensionRequestDelegate {
@@ -7,26 +9,28 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
     didFinishWithResult result: OSSystemExtensionRequest.Result
   ) {
     guard result == .completed else {
-      print("system extension request finished not completed")
       Task { @MainActor in
         await activationRequest.setValue(.failed)
+        unexpectedError(id: "d86437ed")
       }
       return
     }
 
-    print("system extension request finished successfully")
+    os_log("[G•] system extension request finished successfully")
     Task { @MainActor in
       await activationRequest.setValue(.succeeded)
     }
   }
 
   func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
-    print("system extension request needs user approval")
+    unexpectedError(id: "7bc4b55a")
   }
 
   func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
-    print("system extension request failed w/ error: \(error)")
-    // filterController.status = .error
+    Task { @MainActor in
+      await activationRequest.setValue(.failed)
+      unexpectedError(id: "2362df24", error)
+    }
   }
 
   func request(
@@ -36,7 +40,7 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
   ) -> OSSystemExtensionRequest.ReplacementAction {
     let old = existing.bundleShortVersion
     let new = `extension`.bundleShortVersion
-    print("system extension request replacing \(old) with \(new)")
+    os_log("[G•] system extension request replacing %{public}@ with %{public}@", old, new)
     return .replace
   }
 }
