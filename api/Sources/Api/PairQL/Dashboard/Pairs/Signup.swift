@@ -10,10 +10,10 @@ struct Signup: Pair {
   struct Input: PairInput {
     var email: String
     var password: String
-    var signupToken: String?
   }
 
   struct Output: PairOutput {
+    // relic of waitlist concept, unused, delete if this pair is modified
     let url: String?
   }
 }
@@ -30,12 +30,6 @@ extension Signup: Resolver {
     if email.starts(with: "e2e-test-"), email.contains("@gertrude.app") {
       return Output(url: nil)
     }
-
-    // ------ FUTURE ME --------
-    // if the input has a .signupToken, check it against the waitlisted_users table
-    // if we find it, create an admin with a pre-verified email, and send
-    // back stripe payment url. the web dashboard should redirect, skipping email verification
-    // -------------------------
 
     let existing = try? await Current.db.query(Admin.self)
       .where(.email == email)

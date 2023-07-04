@@ -70,11 +70,15 @@ extension ApiClient: DependencyKey {
     },
     setAccountActive: { await accountActive.setValue($0) },
     setUserToken: { await userToken.setValue($0) },
-    uploadScreenshot: { jpegData, width, height in
+    uploadScreenshot: { jpegData, width, height, createdAt in
       guard await accountActive.value else { throw Error.accountInactive }
       let signed = try await output(
         from: CreateSignedScreenshotUpload.self,
-        with: .createSignedScreenshotUpload(.init(width: width, height: height))
+        with: .createSignedScreenshotUpload(.init(
+          width: width,
+          height: height,
+          createdAt: createdAt
+        ))
       )
 
       var request = URLRequest(url: signed.uploadUrl, cachePolicy: .reloadIgnoringCacheData)

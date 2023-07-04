@@ -182,13 +182,14 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     expect(sent.emails.first!.text).toContain("/otp/\(token.lowercased)?redirect=%2Ffoo")
   }
 
-  func testSendMagicLinkToUnknownEmailReturnsSuccessEmittingNoEvent() async throws {
+  func testSendMagicLinkToUnknownEmailReturnsSuccessSendingNoAccountEmail() async throws {
     let output = try await RequestMagicLink.resolve(
       with: .init(email: "some@hacker.com", redirect: nil),
       in: context
     )
 
     expect(output).toEqual(.success)
-    expect(sent.emails).toBeEmpty()
+    expect(sent.emails).toHaveCount(1)
+    expect(sent.emails.first!.text).toContain("no Gertrude account exists")
   }
 }

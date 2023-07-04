@@ -13,6 +13,7 @@ struct UserFeature: Feature {
     @Dependency(\.api) var api
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var filterXpc
+    @Dependency(\.network) var network
   }
 
   struct Reducer: FeatureReducer {
@@ -48,7 +49,7 @@ extension UserFeature.RootReducer: RootReducing {
     switch action {
 
     case .heartbeat(.everyTwentyMinutes):
-      guard state.user != nil else { return .none }
+      guard state.user != nil, network.isConnected() else { return .none }
       return .task {
         await .user(.refreshRules(
           result: TaskResult { try await api.refreshUserRules() },
@@ -57,7 +58,6 @@ extension UserFeature.RootReducer: RootReducing {
       }
 
     case .websocket(.receivedMessage(.userUpdated)),
-         .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))),
          .websocket(.receivedMessage(.unlockRequestUpdated(.accepted, _, _))):
       return .task {
         await .user(.refreshRules(
@@ -66,12 +66,28 @@ extension UserFeature.RootReducer: RootReducing {
         ))
       }
 
+    case .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))):
+      return .run { send in
+        if !network.isConnected() {
+          await device.notifyNoInternet()
+        } else {
+          await send(.user(.refreshRules(
+            result: TaskResult { try await api.refreshUserRules() },
+            userInitiated: false
+          )))
+        }
+      }
+
     case .menuBar(.refreshRulesClicked):
-      return .task {
-        await .user(.refreshRules(
-          result: TaskResult { try await api.refreshUserRules() },
-          userInitiated: true
-        ))
+      return .run { send in
+        if !network.isConnected() {
+          await device.notifyNoInternet()
+        } else {
+          await send(.user(.refreshRules(
+            result: TaskResult { try await api.refreshUserRules() },
+            userInitiated: true
+          )))
+        }
       }
 
     case .user(.refreshRules(.success(let output), let userInitiated)):

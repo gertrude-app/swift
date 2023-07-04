@@ -375,7 +375,3 @@ extension FilterFlow {
     )
   }
 }
-
-extension AppDescriptor {
-  static let mock = AppDescriptor(bundleId: "com.mock.app")
-}

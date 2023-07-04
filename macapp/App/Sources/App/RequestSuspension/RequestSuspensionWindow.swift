@@ -6,7 +6,7 @@ import SwiftUI
 class RequestSuspensionWindow: AppWindow {
   typealias Feature = RequestSuspensionFeature
   typealias Action = Feature.Action
-  typealias State = Feature.State
+  typealias State = Feature.State.View
   typealias WebViewAction = Feature.Action.View
 
   var title = "Request Suspension"
@@ -27,7 +27,7 @@ class RequestSuspensionWindow: AppWindow {
   @Dependency(\.app) var appClient
 
   @MainActor init(store: Store<AppReducer.State, Feature.Action>) {
-    viewStore = ViewStore(store, observe: Feature.State.init)
+    viewStore = ViewStore(store, observe: Feature.State.View.init)
     openPublisher = viewStore.publisher.windowOpen
     bind()
   }

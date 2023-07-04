@@ -7,6 +7,7 @@ enum AppEvent: Equatable {
   case suspendFilterRequestUpdated(SuspendFilterRequestUpdated)
   case unlockRequestUpdated(UnlockRequestUpdated)
   case userUpdated(User.Id)
+  case userDeleted(User.Id)
 
   struct UnlockRequestUpdated: Equatable {
     let deviceId: Device.Id

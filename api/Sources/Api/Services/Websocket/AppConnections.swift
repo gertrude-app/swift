@@ -59,6 +59,13 @@ actor AppConnections {
           try await $0.ws.send(codable: OutgoingMessage.userUpdated)
         }
 
+    case .userDeleted(let userId):
+      try await currentConnections
+        .filter { $0.ids.user == userId }
+        .asyncForEach {
+          try await $0.ws.send(codable: OutgoingMessage.userDeleted)
+        }
+
     case .unlockRequestUpdated(let payload):
       try await currentConnections
         .filter { $0.ids.device == payload.deviceId }

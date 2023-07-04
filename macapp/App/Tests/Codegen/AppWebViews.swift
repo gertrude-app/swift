@@ -70,7 +70,7 @@ struct AppWebViews: AggregateCodeGenerator {
     AppviewStore(
       at: "RequestSuspension/requestsuspension-store.ts",
       types: [
-        .init(RequestSuspensionFeature.State.self, as: "AppState"),
+        .init(RequestSuspensionFeature.State.View.self, as: "AppState"),
         .init(RequestSuspensionFeature.Action.View.self, as: "AppEvent"),
       ],
       localAliases: [

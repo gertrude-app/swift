@@ -75,7 +75,10 @@ extension AppReducer.State {
       return .available
     }
 
-    // TODO: don't show nag if not connected to the internet
+    @Dependency(\.network) var network
+    if !network.isConnected() {
+      return .available
+    }
 
     @Dependency(\.date.now) var now
     if now <= pace.nagOn {

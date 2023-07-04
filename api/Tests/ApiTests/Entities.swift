@@ -104,6 +104,7 @@ extension UserEntities {
       $0.userId = model.id
     })
     token.deviceId = device.id
+    try await Current.db.update(token)
     return .init(model: model, device: device, token: token, admin: admin)
   }
 }

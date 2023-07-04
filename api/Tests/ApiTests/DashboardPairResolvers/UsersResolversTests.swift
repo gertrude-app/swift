@@ -14,6 +14,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(output).toEqual(.success)
     let retrieved = try? await Current.db.find(user.id)
     expect(retrieved).toBeNil()
+    expect(sent.appEvents).toEqual([.userDeleted(user.id)])
   }
 
   func testSaveNewUser() async throws {

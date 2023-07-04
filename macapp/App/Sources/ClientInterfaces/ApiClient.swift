@@ -18,7 +18,7 @@ public struct ApiClient: Sendable {
   public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
   public var setAccountActive: @Sendable (Bool) async -> Void
   public var setUserToken: @Sendable (UUID) async -> Void
-  public var uploadScreenshot: @Sendable (Data, Int, Int) async throws -> URL
+  public var uploadScreenshot: @Sendable (Data, Int, Int, Date) async throws -> URL
   public var userData: @Sendable () async throws -> UserData
 
   public init(
@@ -36,7 +36,7 @@ public struct ApiClient: Sendable {
     refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setUserToken: @escaping @Sendable (UUID) async -> Void,
-    uploadScreenshot: @escaping @Sendable (Data, Int, Int) async throws -> URL,
+    uploadScreenshot: @escaping @Sendable (Data, Int, Int, Date) async throws -> URL,
     userData: @escaping @Sendable () async throws -> UserData
   ) {
     self.clearUserToken = clearUserToken
@@ -89,7 +89,7 @@ extension ApiClient: TestDependencyKey {
     refreshRules: { _ in throw Error.missingUserToken },
     setAccountActive: { _ in },
     setUserToken: { _ in },
-    uploadScreenshot: { _, _, _ in .init(string: "https://s3.buck.et/img.png")! },
+    uploadScreenshot: { _, _, _, _ in .init(string: "https://s3.buck.et/img.png")! },
     userData: { .mock }
   )
 }

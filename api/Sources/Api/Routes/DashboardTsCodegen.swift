@@ -70,7 +70,6 @@ enum DashboardTsCodegenRoute {
       GetUserUnlockRequests.self,
       HandleCheckoutCancel.self,
       HandleCheckoutSuccess.self,
-      JoinWaitlist.self,
       Login.self,
       LoginMagicLink.self,
       RequestMagicLink.self,

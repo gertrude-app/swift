@@ -1,15 +1,16 @@
 import Cocoa
 import Core
 import CoreGraphics
+import Dependencies
 import Foundation
 import SystemConfiguration
 
-private let lastImage = Mutex<CGImage?>(nil)
+typealias ScreenshotData = (data: Data, width: Int, height: Int, createdAt: Date)
 
 @Sendable
-func takeScreenshot(width: Int) async throws -> (data: Data, width: Int, height: Int)? {
+func takeScreenshot(width: Int) async throws {
   guard currentUserProbablyHasScreen(), screensaverRunning() == false else {
-    return nil
+    return
   }
 
   guard let fullsize = CGWindowListCreateImage(
@@ -22,7 +23,7 @@ func takeScreenshot(width: Int) async throws -> (data: Data, width: Int, height:
   }
 
   guard !fullsize.isBlank else {
-    return nil
+    return
   }
 
   defer {
@@ -34,7 +35,7 @@ func takeScreenshot(width: Int) async throws -> (data: Data, width: Int, height:
   }
 
   guard !isNearlyIdentical else {
-    return nil
+    return
   }
 
   let tmpFilename = ".\(Date().timeIntervalSince1970).png"
@@ -53,7 +54,10 @@ func takeScreenshot(width: Int) async throws -> (data: Data, width: Int, height:
   }
 
   let height = Int(Double(fullsize.height) * (Double(width) / Double(fullsize.width)))
-  return (data: jpegData, width: width, height: height)
+
+  @Dependency(\.date.now) var now
+  let screenshot = (data: jpegData, width: width, height: height, createdAt: now)
+  await screenshotBuffer.append(screenshot)
 }
 
 enum ScreenshotError: Error {
@@ -113,3 +117,23 @@ func currentUserProbablyHasScreen() -> Bool {
   // `loginwindow` user, so consider the loginwindow the current user as well
   return uid == getuid() || uid == 0
 }
+
+private let lastImage = Mutex<CGImage?>(nil)
+
+internal actor ScreenshotBuffer {
+  private var buffer: [ScreenshotData] = []
+
+  func append(_ screenshot: ScreenshotData) {
+    if buffer.count > 100 {
+      buffer.removeFirst()
+    }
+    buffer.append(screenshot)
+  }
+
+  func removeAll() -> [ScreenshotData] {
+    defer { buffer.removeAll() }
+    return buffer
+  }
+}
+
+internal let screenshotBuffer = ScreenshotBuffer()

@@ -511,7 +511,7 @@ extension Screenshot: Model {
       .url: .string(url),
       .width: .int(width),
       .height: .int(height),
-      .createdAt: .currentTimestamp,
+      .createdAt: .date(createdAt),
     ]
   }
 }
@@ -699,36 +699,6 @@ extension UserToken: Model {
       .userId: .uuid(userId),
       .deviceId: .uuid(deviceId),
       .value: .uuid(value),
-      .createdAt: .currentTimestamp,
-      .updatedAt: .currentTimestamp,
-    ]
-  }
-}
-
-extension WaitlistedAdmin: Model {
-  public static let tableName = M1.tableName
-  public typealias ColumnName = CodingKeys
-
-  public func postgresData(for column: ColumnName) -> Postgres.Data {
-    switch column {
-    case .id:
-      return .id(self)
-    case .email:
-      return .string(email.rawValue)
-    case .signupToken:
-      return .uuid(signupToken)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
-    }
-  }
-
-  public var insertValues: [ColumnName: Postgres.Data] {
-    [
-      .id: .id(self),
-      .email: .string(email.rawValue),
-      .signupToken: .uuid(signupToken),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

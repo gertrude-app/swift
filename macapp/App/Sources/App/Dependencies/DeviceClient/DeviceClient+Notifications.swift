@@ -27,6 +27,13 @@ import UserNotifications
 }
 
 extension DeviceClient {
+  func notifyNoInternet() async {
+    await showNotification(
+      "⚠️ No internet connection",
+      "Please connect to the internet and try again."
+    )
+  }
+
   func notifyBrowsersQuitting() async {
     await showNotification(
       "⚠️ Web browsers quitting soon!",

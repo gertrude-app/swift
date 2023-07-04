@@ -8,6 +8,7 @@ import XExpect
 @testable import ClientInterfaces
 
 @MainActor final class MonitoringReducerTests: XCTestCase {
+
   func testLoadingUserStateOnLaunchStartsMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
@@ -18,7 +19,7 @@ import XExpect
       $0.user?.screenshotFrequency = 60
     } }
 
-    let (takeScreenshot, uploadScreenshot) = spyScreenshots(store)
+    let (takeScreenshot, uploadScreenshot, takePendingScreenshots) = spyScreenshots(store)
     let keylogging = spyKeylogging(store)
 
     store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
@@ -30,18 +31,20 @@ import XExpect
     await bgQueue.advance(by: .seconds(60))
     await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
     await expect(takeScreenshot.invocations).toEqual([1000])
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
+    await expect(takePendingScreenshots.invocations).toEqual(1)
 
     await bgQueue.advance(by: .seconds(59))
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
     await expect(takeScreenshot.invocations).toEqual([1000])
 
     await bgQueue.advance(by: .seconds(1))
     await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
     await expect(takeScreenshot.invocations).toEqual([1000, 1000])
+    await expect(takePendingScreenshots.invocations).toEqual(2)
     await expect(uploadScreenshot.invocations).toEqual([
-      .init(Data(), 999, 600),
-      .init(Data(), 999, 600),
+      .init(Data(), 999, 600, .epoch),
+      .init(Data(), 999, 600, .epoch),
     ])
 
     await expect(keylogging.take.invoked).toEqual(false)
@@ -67,7 +70,7 @@ import XExpect
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
 
     store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
-    let (takeScreenshot, uploadScreenshot) = spyScreenshots(store)
+    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
       returning: [nil],
       then: [.mock]
@@ -108,7 +111,7 @@ import XExpect
 
     store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
     store.deps.monitoring.takeScreenshot = { _ in fatalError() }
-    store.deps.api.uploadScreenshot = { _, _, _ in fatalError() }
+    store.deps.api.uploadScreenshot = { _, _, _, _ in fatalError() }
     let keylogging = spyKeylogging(store, keystrokes: mock(always: nil))
 
     await store.send(.application(.didFinishLaunching))
@@ -122,7 +125,7 @@ import XExpect
 
     store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
     store.deps.monitoring.takeScreenshot = { _ in fatalError() }
-    store.deps.api.uploadScreenshot = { _, _, _ in fatalError() }
+    store.deps.api.uploadScreenshot = { _, _, _, _ in fatalError() }
     let keylogging = spyKeylogging(store, keystrokes: mock(always: nil))
     store.deps.storage.loadPersistentState = { .mock {
       $0.user = nil // <-- no user!
@@ -147,7 +150,7 @@ import XExpect
       $0.screenshotsEnabled = false
       $0.keyloggingEnabled = false
     } }
-    let (takeScreenshot, uploadScreenshot) = spyScreenshots(store)
+    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
       returning: [nil],
       then: [.mock]
@@ -174,7 +177,7 @@ import XExpect
     await bgQueue.advance(by: .seconds(60))
     await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
     await expect(takeScreenshot.invocations).toEqual([1200])
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 3)) // advance to heartbeat
     await Task.repeatYield()
     await expect(keylogging.upload.invoked).toEqual(true)
@@ -197,7 +200,7 @@ import XExpect
       $0.screenshotsFrequency = 60
     } }
 
-    let (takeScreenshot, uploadScreenshot) = spyScreenshots(store)
+    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
       returning: [[.mock]],
       then: .some(nil)
@@ -208,7 +211,7 @@ import XExpect
     await bgQueue.advance(by: .seconds(60))
     await Task.repeatYield()
     await expect(takeScreenshot.invocations).toEqual([700])
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
     await expect(keylogging.upload.invocations.count).toEqual(1)
     await expect(takeScreenshot.invocations.count).toEqual(5)
@@ -234,7 +237,7 @@ import XExpect
     store.deps.storage.loadPersistentState = { nil }
     store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
 
-    let (takeScreenshot, uploadScreenshot) = spyScreenshots(store)
+    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
       returning: [nil],
       then: [.mock]
@@ -257,7 +260,7 @@ import XExpect
     // now we start getting screenshots, and keystrokes
     await bgQueue.advance(by: .seconds(60))
     await expect(takeScreenshot.invocations).toEqual([800])
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
     await Task.repeatYield()
     await expect(keylogging.upload.invocations.count).toEqual(1)
@@ -273,7 +276,7 @@ import XExpect
       $0.user?.screenshotFrequency = 60
     } }
 
-    let (takeScreenshot, uploadScreenshot) = spyScreenshots(store)
+    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
       returning: [[.mock]],
       then: .some(nil)
@@ -296,25 +299,80 @@ import XExpect
     await expect(keylogging.upload.invocations.count).toEqual(1)
   }
 
+  func testMonitoringItemsBufferedForLaterUploadWhenNoConnection() async {
+    let (store, bgQueue) = AppReducer.testStore()
+    store.deps.network.isConnected = { false } // <-- no internet connection
+    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
+    let takePendingScreenshots = mock(returning: [[
+      (Data(), 999, 600, Date.epoch),
+      (Data(), 999, 600, Date.epoch),
+      (Data(), 999, 600, Date.epoch),
+    ]])
+    store.deps.monitoring.takePendingScreenshots = takePendingScreenshots.fn
+
+    let keylogging = spyKeylogging(store, keystrokes: mock(
+      returning: [[.mock]],
+      then: .some(nil)
+    ))
+
+    store.deps.storage.loadPersistentState = { .mock {
+      $0.user?.keyloggingEnabled = true
+      $0.user?.screenshotsEnabled = true
+      $0.user?.screenshotSize = 1000
+      $0.user?.screenshotFrequency = 60
+    } }
+
+    store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
+    await store.send(.application(.didFinishLaunching))
+    await bgQueue.advance(by: .seconds(60))
+    await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
+    await bgQueue.advance(by: .seconds(60))
+    await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
+
+    // we took 2 screenshots, but didn't upload them, b/c no connection
+    await expect(takeScreenshot.invocations).toEqual([1000, 1000])
+    await expect(uploadScreenshot.invoked).toEqual(false)
+    await expect(takePendingScreenshots.invoked).toEqual(false)
+
+    // and we skip uploading keystrokes
+    await store.send(.heartbeat(.everyFiveMinutes))
+    await expect(keylogging.upload.invocations.count).toEqual(0)
+    await expect(keylogging.take.invocations).toEqual(0)
+
+    // internet comes back on...
+    store.deps.network.isConnected = { true }
+    await bgQueue.advance(by: .seconds(60))
+    await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
+    await expect(takeScreenshot.invocations).toEqual([1000, 1000, 1000])
+    // ...so we upload the buffered screenshots
+    await expect(uploadScreenshot.invocations.count).toEqual(3)
+    await expect(takePendingScreenshots.invocations).toEqual(1)
+
+    // and we upload buffered keystrokes
+    await store.send(.heartbeat(.everyFiveMinutes))
+    await expect(keylogging.upload.invocations.count).toEqual(1)
+    await expect(keylogging.take.invocations).toEqual(1)
+  }
+
   // helpers
 
   func spyScreenshots(_ store: TestStoreOf<AppReducer>)
     -> (
-      takeScreenshot: Spy<(data: Data, width: Int, height: Int), Int>,
-      uploadScreenshot: Spy3<URL, Data, Int, Int>
+      takeScreenshot: Spy<Void, Int>,
+      uploadScreenshot: Spy4<URL, Data, Int, Int, Date>,
+      takePendingScreenshots: Mock<[(Data, Int, Int, Date)], Int>
     ) {
-    let takeScreenshot = spy(
-      on: Int.self,
-      returning: (data: Data(), width: 999, height: 600)
-    )
+    let takeScreenshot = spy(on: Int.self, returning: ())
     store.deps.monitoring.takeScreenshot = takeScreenshot.fn
+    let takePendingScreenshots = mock(always: [(Data(), 999, 600, Date.epoch)])
+    store.deps.monitoring.takePendingScreenshots = takePendingScreenshots.fn
 
-    let uploadScreenshot = spy3(
-      on: (Data.self, Int.self, Int.self),
+    let uploadScreenshot = spy4(
+      on: (Data.self, Int.self, Int.self, Date.self),
       returning: URL(string: "/uploaded.png")!
     )
     store.deps.api.uploadScreenshot = uploadScreenshot.fn
-    return (takeScreenshot, uploadScreenshot)
+    return (takeScreenshot, uploadScreenshot, takePendingScreenshots)
   }
 
   struct Keylogging {

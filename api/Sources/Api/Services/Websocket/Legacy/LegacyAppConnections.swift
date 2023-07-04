@@ -59,6 +59,9 @@ actor LegacyAppConnections {
           try await $0.ws.send(codable: OutgoingMessage(type: .userUpdated))
         }
 
+    case .userDeleted:
+      break // not handled by legacy app
+
     case .unlockRequestUpdated(let payload):
       try await currentConnections
         .filter { $0.ids.device == payload.deviceId }
