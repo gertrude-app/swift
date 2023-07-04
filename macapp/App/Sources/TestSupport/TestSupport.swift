@@ -102,7 +102,7 @@ public extension LockIsolated where Value: RangeReplaceableCollection {
   }
 }
 
-// if/when tuples become Sendable, this (and `Three`) can be removed
+// if/when tuples become Sendable, this, `Three`, and `Four` can be removed
 public struct Both<A, B> {
   public var a: A
   public var b: B
@@ -123,7 +123,22 @@ public struct Three<A, B, C> {
   }
 }
 
+public struct Four<A, B, C, D> {
+  public var a: A
+  public var b: B
+  public var c: C
+  public var d: D
+  public init(_ a: A, _ b: B, _ c: C, _ d: D) {
+    self.a = a
+    self.b = b
+    self.c = c
+    self.d = d
+  }
+}
+
 extension Both: Sendable where A: Sendable, B: Sendable {}
 extension Both: Equatable where A: Equatable, B: Equatable {}
 extension Three: Sendable where A: Sendable, B: Sendable, C: Sendable {}
 extension Three: Equatable where A: Equatable, B: Equatable, C: Equatable {}
+extension Four: Sendable where A: Sendable, B: Sendable, C: Sendable, D: Sendable {}
+extension Four: Equatable where A: Equatable, B: Equatable, C: Equatable, D: Equatable {}

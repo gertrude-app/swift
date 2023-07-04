@@ -63,6 +63,22 @@ final class MacAppResolverTests: ApiTestCase {
     expect(retrieved2.count).toEqual(1)
   }
 
+  func testCreateKeystrokeLines() async throws {
+    let user = try await Entities.user().withDevice()
+    let (uuid, _) = mockUUIDs()
+
+    let output = try await CreateKeystrokeLines.resolve(
+      with: [.init(appName: "Xcode", line: "import Foundation", time: .epoch)],
+      in: context(user)
+    )
+
+    expect(output).toEqual(.success)
+    let inserted = try await Current.db.find(KeystrokeLine.Id(uuid))
+    expect(inserted.appName).toEqual("Xcode")
+    expect(inserted.line).toEqual("import Foundation")
+    expect(inserted.createdAt).toEqual(.epoch)
+  }
+
   func testCreateUnlockRequests() async throws {
     let user = try await Entities.user().withDevice()
     let decision = NetworkDecision.random
@@ -149,6 +165,22 @@ final class MacAppResolverTests: ApiTestCase {
 
     let afterCount = try await Current.db.query(Screenshot.self).all().count
     expect(afterCount).toEqual(beforeCount + 1)
+  }
+
+  func testCreateSignedScreenshotUploadWithDate() async throws {
+    let user = try await Entities.user().withDevice()
+
+    let (uuid, _) = mockUUIDs()
+    Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
+
+    _ = try await CreateSignedScreenshotUpload.resolve(
+      with: .init(width: 1116, height: 222, createdAt: .epoch),
+      in: context(user)
+    )
+
+    let screenshot = try await Current.db.find(Screenshot.Id(uuid))
+    expect(screenshot.width).toEqual(1116)
+    expect(screenshot.createdAt).toEqual(.epoch)
   }
 
   // helpers

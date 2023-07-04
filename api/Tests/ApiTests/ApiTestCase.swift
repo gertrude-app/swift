@@ -103,3 +103,7 @@ func sync(
     fatalError("Unexpected result waiting for \(exp.description)")
   }
 }
+
+public extension Date {
+  static let epoch = Date(timeIntervalSince1970: 0)
+}

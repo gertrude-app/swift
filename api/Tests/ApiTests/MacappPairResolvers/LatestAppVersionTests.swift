@@ -77,10 +77,6 @@ func createReleases(_ releases: [Release]) async throws {
   }
 }
 
-extension Date {
-  static var epoch: Date { Date(timeIntervalSince1970: 0) }
-}
-
 extension Release: HasCreatedAt {}
 
 extension Release {

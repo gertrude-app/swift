@@ -32,9 +32,11 @@ struct AppUpdatesFeature: Feature {
 
   struct RootReducer {
     @Dependency(\.api) var api
+    @Dependency(\.device) var device
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.network) var network
     @Dependency(\.date.now) var now
     @Dependency(\.storage) var storage
     @Dependency(\.updater) var updater
@@ -93,7 +95,11 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       let persist = state.persistent
       let force = action == .adminWindow(.webview(.reinstallAppClicked)) ? true : nil
       return .run { _ in
-        try await triggerUpdate(channel, persist, force: force)
+        if network.isConnected() {
+          try await triggerUpdate(channel, persist, force: force)
+        } else {
+          await device.notifyNoInternet()
+        }
       }
 
     case .appUpdates(.latestVersionResponse(.success(let latest))):
@@ -124,6 +130,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       let current = state.appUpdates.installedVersion
       let channel = state.appUpdates.releaseChannel
       return .run { send in
+        guard network.isConnected() else { return }
         await send(.appUpdates(.latestVersionResponse(TaskResult {
           try await api.latestAppVersion(.init(
             releaseChannel: channel,
@@ -142,7 +149,11 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       state.adminWindow.windowOpen = false // so they can see sparkle update
       let persist = state.persistent
       return .run { _ in
-        try await triggerUpdate(.init(force: true, version: version), persist)
+        if network.isConnected() {
+          try await triggerUpdate(.init(force: true, version: version), persist)
+        } else {
+          await device.notifyNoInternet()
+        }
       }
 
     case .menuBar(.updateNagDismissClicked):

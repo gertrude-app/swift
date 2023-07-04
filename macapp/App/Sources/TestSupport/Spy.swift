@@ -31,6 +31,12 @@ public struct Spy3<T, Arg1, Arg2, Arg3> {
   public var invoked: ActorIsolated<Bool>
 }
 
+public struct Spy4<T, Arg1, Arg2, Arg3, Arg4> {
+  public var fn: @Sendable (Arg1, Arg2, Arg3, Arg4) async throws -> T
+  public var invocations: ActorIsolated<[Four<Arg1, Arg2, Arg3, Arg4>]>
+  public var invoked: ActorIsolated<Bool>
+}
+
 public struct ThrowingSpy<T, Arg> {
   public var fn: @Sendable (Arg) async throws -> T
   public var invocations: ActorIsolated<[Arg]>
@@ -253,7 +259,47 @@ public func spy3<T, Arg1, Arg2, Arg3>(
       } else if let fallback {
         returnValue = fallback
       } else {
-        let types = [T.self, Arg1.self, Arg2.self]
+        let types = [T.self, Arg1.self, Arg2.self, Arg3.self]
+          .map(String.init(describing:))
+          .joined(separator: ", ")
+        fatalError("spy<\(types))> called more than expected number of times \(values.count)")
+      }
+      return returnValue
+    },
+    invocations: invocations,
+    invoked: invoked
+  )
+}
+
+public func spy4<T, Arg1, Arg2, Arg3, Arg4>(
+  on arg: (Arg1.Type, Arg2.Type, Arg3.Type, Arg4.Type),
+  returning value: T
+) -> Spy4<T, Arg1, Arg2, Arg3, Arg4> {
+  spy4(returning: [], then: value)
+}
+
+public func spy4<T, Arg1, Arg2, Arg3, Arg4>(
+  returning values: [T],
+  then fallback: T? = nil
+) -> Spy4<T, Arg1, Arg2, Arg3, Arg4> {
+  let returns = ActorIsolated<[T]>(values)
+  let invocations = ActorIsolated<[Four<Arg1, Arg2, Arg3, Arg4>]>([])
+  let invoked = ActorIsolated(false)
+  return .init(
+    fn: { arg1, arg2, arg3, arg4 in
+      let currentInvocations = await invocations.value
+      await invocations.setValue(currentInvocations + [Four(arg1, arg2, arg3, arg4)])
+      await invoked.setValue(true)
+      var current = await returns.value
+      let returnValue: T
+      if current.count > 1 {
+        returnValue = current.removeFirst()
+        let updated = current
+        await returns.setValue(updated)
+      } else if let fallback {
+        returnValue = fallback
+      } else {
+        let types = [T.self, Arg1.self, Arg2.self, Arg3.self, Arg4.self]
           .map(String.init(describing:))
           .joined(separator: ", ")
         fatalError("spy<\(types))> called more than expected number of times \(values.count)")

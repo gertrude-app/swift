@@ -6,7 +6,7 @@ final class Screenshot: Codable {
   var url: String
   var width: Int
   var height: Int
-  var createdAt = Current.date()
+  var createdAt: Date
   var deletedAt: Date?
 
   var device = Parent<Device>.notLoaded
@@ -16,13 +16,14 @@ final class Screenshot: Codable {
     deviceId: Device.Id,
     url: String,
     width: Int,
-    height: Int
+    height: Int,
+    createdAt: Date = Date()
   ) {
     self.id = id
     self.url = url
     self.width = width
     self.height = height
     self.deviceId = deviceId
+    self.createdAt = createdAt
   }
 }
-

@@ -151,6 +151,7 @@ struct AdminWindowFeature: Feature {
     @Dependency(\.filterExtension) var filter
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.monitoring) var monitoring
+    @Dependency(\.network) var network
     @Dependency(\.date.now) var now
     @Dependency(\.security) var security
     @Dependency(\.storage) var storage
@@ -433,6 +434,7 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.gotoScreenClicked(.advanced)):
         state.adminWindow.screen = .advanced
         return .run { send in
+          guard network.isConnected() else { return }
           if let versions = try? await api.recentAppVersions() {
             await send(.adminWindow(.receivedRecentAppVersions(versions)))
           }
@@ -457,19 +459,22 @@ extension AdminWindowFeature.RootReducer {
     let main = Effect<Action>.run { send in
       try await mainQueue.sleep(for: .seconds(1))
 
-      async let accountStatus = TaskResult {
-        try await api.getAdminAccountStatus()
+      if network.isConnected() {
+        async let accountStatus = TaskResult {
+          try await api.getAdminAccountStatus()
+        }
+        async let latestAppVersionOutput = TaskResult {
+          try await api.latestAppVersion(.init(
+            releaseChannel: releaseChannel,
+            currentVersion: currentInstalledVersion
+          ))
+        }
+        await send(.admin(.accountStatusResponse(accountStatus)))
+        await send(.appUpdates(.latestVersionResponse(latestAppVersionOutput)))
+      } else {
+        await send(.admin(.accountStatusResponse(.failure(NetworkClient.NotConnected()))))
+        await send(.appUpdates(.latestVersionResponse(.failure(NetworkClient.NotConnected()))))
       }
-
-      async let latestAppVersionOutput = TaskResult {
-        try await api.latestAppVersion(.init(
-          releaseChannel: releaseChannel,
-          currentVersion: currentInstalledVersion
-        ))
-      }
-
-      await send(.admin(.accountStatusResponse(accountStatus)))
-      await send(.appUpdates(.latestVersionResponse(latestAppVersionOutput)))
 
       await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
         keyloggingEnabled ? await monitoring.keystrokeRecordingPermissionGranted() : true

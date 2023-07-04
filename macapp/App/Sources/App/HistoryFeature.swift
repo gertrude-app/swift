@@ -28,6 +28,7 @@ enum HistoryFeature: Feature {
     @Dependency(\.api) var api
     @Dependency(\.app) var app
     @Dependency(\.device) var device
+    @Dependency(\.network) var network
     @Dependency(\.storage) var storage
   }
 }
@@ -44,6 +45,9 @@ extension HistoryFeature.RootReducer: RootReducing {
     case .menuBar(.connectSubmit(let code)):
       guard case .enteringConnectionCode = state.history.userConnection else {
         return .none
+      }
+      if !network.isConnected() {
+        return .run { _ in await device.notifyNoInternet() }
       }
       state.history.userConnection = .connecting
       return .task {

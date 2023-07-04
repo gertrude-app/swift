@@ -9,7 +9,8 @@ struct MonitoringClient: Sendable {
   var startLoggingKeystrokes: @Sendable () async -> Void
   var stopLoggingKeystrokes: @Sendable () async -> Void
   var takePendingKeystrokes: @Sendable () async -> CreateKeystrokeLines.Input?
-  var takeScreenshot: @Sendable (Int) async throws -> (data: Data, width: Int, height: Int)?
+  var takePendingScreenshots: @Sendable () async -> [ScreenshotData]
+  var takeScreenshot: @Sendable (Int) async throws -> Void
 }
 
 extension MonitoringClient: DependencyKey {
@@ -32,6 +33,7 @@ extension MonitoringClient: DependencyKey {
     startLoggingKeystrokes: startKeylogging,
     stopLoggingKeystrokes: stopKeylogging,
     takePendingKeystrokes: takeKeystrokes,
+    takePendingScreenshots: { await screenshotBuffer.removeAll() },
     takeScreenshot: takeScreenshot(width:)
   )
 }
@@ -43,7 +45,8 @@ extension MonitoringClient: TestDependencyKey {
     startLoggingKeystrokes: {},
     stopLoggingKeystrokes: {},
     takePendingKeystrokes: { [] },
-    takeScreenshot: { _ in (data: .init(), width: 900, height: 600) }
+    takePendingScreenshots: { [] },
+    takeScreenshot: { _ in }
   )
 }
 

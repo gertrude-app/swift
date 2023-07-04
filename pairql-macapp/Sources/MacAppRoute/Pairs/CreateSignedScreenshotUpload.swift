@@ -7,10 +7,12 @@ public struct CreateSignedScreenshotUpload: Pair {
   public struct Input: PairInput {
     public let width: Int
     public let height: Int
+    public let createdAt: Date?
 
-    public init(width: Int, height: Int) {
+    public init(width: Int, height: Int, createdAt: Date? = nil) {
       self.width = width
       self.height = height
+      self.createdAt = createdAt
     }
   }
 

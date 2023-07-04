@@ -1,6 +1,6 @@
 import ComposableArchitecture
-import MacAppRoute
 import Gertie
+import MacAppRoute
 
 enum MonitoringFeature {
   enum Action: Equatable {
@@ -11,6 +11,7 @@ enum MonitoringFeature {
     @Dependency(\.api) var api
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.monitoring) var monitoring
+    @Dependency(\.network) var network
   }
 }
 
@@ -34,8 +35,10 @@ extension MonitoringFeature.RootReducer {
     case .monitoring(.timerTriggeredTakeScreenshot):
       let width = state.user?.screenshotSize ?? 800
       return .run { _ in
-        if let image = try await monitoring.takeScreenshot(width) {
-          _ = try await api.uploadScreenshot(image.data, image.width, image.height)
+        try await monitoring.takeScreenshot(width)
+        guard network.isConnected() else { return }
+        for sc in await monitoring.takePendingScreenshots() {
+          _ = try await api.uploadScreenshot(sc.data, sc.width, sc.height, sc.createdAt)
         }
       }
 
@@ -45,6 +48,7 @@ extension MonitoringFeature.RootReducer {
     case .heartbeat(.everyFiveMinutes),
          .adminAuthenticated(.adminWindow(.webview(.quitAppClicked))):
       return .run { _ in
+        guard network.isConnected() else { return }
         if let keystrokes = await monitoring.takePendingKeystrokes() {
           _ = try await api.createKeystrokeLines(keystrokes)
         }

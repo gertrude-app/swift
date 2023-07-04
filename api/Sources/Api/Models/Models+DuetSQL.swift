@@ -511,7 +511,7 @@ extension Screenshot: Model {
       .url: .string(url),
       .width: .int(width),
       .height: .int(height),
-      .createdAt: .currentTimestamp,
+      .createdAt: .date(createdAt),
     ]
   }
 }

@@ -6,6 +6,13 @@ struct RequestSuspensionFeature: Feature {
     var windowOpen = false
     var request = RequestState<String>.idle
     var adminAccountStatus: AdminAccountStatus = .active
+
+    struct View: Equatable, Codable {
+      var windowOpen: Bool
+      var request: RequestState<String>
+      var adminAccountStatus: AdminAccountStatus
+      var internetConnected: Bool
+    }
   }
 
   enum Action: Equatable, Sendable {
@@ -88,10 +95,12 @@ extension RequestSuspensionFeature.RootReducer {
   }
 }
 
-extension RequestSuspensionFeature.State {
+extension RequestSuspensionFeature.State.View {
   init(_ state: AppReducer.State) {
+    @Dependency(\.network) var network
     windowOpen = state.requestSuspension.windowOpen
     request = state.requestSuspension.request
     adminAccountStatus = state.admin.accountStatus
+    internetConnected = network.isConnected()
   }
 }

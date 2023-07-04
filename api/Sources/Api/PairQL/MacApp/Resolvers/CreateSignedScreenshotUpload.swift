@@ -25,7 +25,8 @@ extension CreateSignedScreenshotUpload: Resolver {
       deviceId: device.id,
       url: webUrlString,
       width: input.width,
-      height: input.height
+      height: input.height,
+      createdAt: input.createdAt ?? Date()
     ))
 
     return .init(uploadUrl: signedUrl, webUrl: webUrl)
