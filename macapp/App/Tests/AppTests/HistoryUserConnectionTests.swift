@@ -27,7 +27,7 @@ import XExpect
     }
 
     await store.receive(.history(.userConnection(.connect(.success(.mock))))) {
-      $0.user = .mock
+      $0.user = .init(data: .mock)
       $0.history.userConnection = .established(welcomeDismissed: false)
     }
 

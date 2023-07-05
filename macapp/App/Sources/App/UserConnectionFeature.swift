@@ -13,6 +13,7 @@ enum UserConnectionFeature: Feature {
 
   enum Action: Equatable, Sendable {
     case connect(TaskResult<UserData>)
+    case disconnectMissingUser
   }
 
   struct Reducer: FeatureReducer {
@@ -39,6 +40,9 @@ extension UserConnectionFeature.Reducer {
       let codeNotFound = "Code not found, or expired. Try reentering, or create a new code."
       state = .connectFailed(error.userMessage([.connectionCodeNotFound: codeNotFound]))
       return .none
+
+    case .disconnectMissingUser:
+      return .none // handled by root reducer
     }
   }
 }
@@ -53,7 +57,8 @@ extension UserConnectionFeature.RootReducer {
       state.menuBar.dropdownOpen = true
       return disconnectUser(persisting: state.persistent)
 
-    case .websocket(.receivedMessage(.userDeleted)):
+    case .websocket(.receivedMessage(.userDeleted)),
+         .history(.userConnection(.disconnectMissingUser)):
       state.user = nil
       state.history.userConnection = .notConnected
       return .merge(
@@ -61,7 +66,7 @@ extension UserConnectionFeature.RootReducer {
         .run { send in
           await send(.focusedNotification(.text(
             "User deleted",
-            "Your parent deleted the user for this device. You'll need to connect to a different user, or quit the app."
+            "The user associated with this device was deleted. You'll need to connect to a different user, or quit the app."
           )))
         }
       )

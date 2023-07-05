@@ -54,7 +54,7 @@ struct AppReducer: Reducer, Sendable {
       switch action {
       case .loadedPersistentState(.some(let persistent)):
         guard let user = persistent.user else { return .none }
-        state.user = user
+        state.user = .init(data: user)
         return .run { send in
           await api.setUserToken(user.token)
           try await bgQueue.sleep(for: .milliseconds(10)) // <- unit test determinism
