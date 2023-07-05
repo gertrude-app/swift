@@ -20,11 +20,17 @@ struct AppReducer: Reducer, Sendable {
   }
 
   enum Action: Equatable, Sendable {
+    enum FocusedNotification: Equatable, Sendable {
+      case unexpectedError
+      case text(String, String)
+    }
+
     case admin(AdminFeature.Action)
     case adminWindow(AdminWindowFeature.Action)
     case application(ApplicationFeature.Action)
     case appUpdates(AppUpdatesFeature.Action)
     case filter(FilterFeature.Action)
+    case focusedNotification(FocusedNotification)
     case xpc(XPCEvent.App)
     case history(HistoryFeature.Action)
     case menuBar(MenuBarFeature.Action)
@@ -40,6 +46,7 @@ struct AppReducer: Reducer, Sendable {
   }
 
   @Dependency(\.api) var api
+  @Dependency(\.device) var device
   @Dependency(\.backgroundQueue) var bgQueue
 
   var body: some ReducerOf<Self> {
@@ -55,6 +62,21 @@ struct AppReducer: Reducer, Sendable {
             result: TaskResult { try await api.refreshUserRules() },
             userInitiated: false
           )))
+        }
+
+      case .focusedNotification(let notification):
+        // dismiss windows/dropdowns so notification is visible, i.e. "focused"
+        state.adminWindow.windowOpen = false
+        state.menuBar.dropdownOpen = false
+        state.blockedRequests.windowOpen = false
+        state.requestSuspension.windowOpen = false
+        return .run { _ in
+          switch notification {
+          case .unexpectedError:
+            await device.notifyUnexpectedError()
+          case .text(let title, let body):
+            await device.showNotification(title, body)
+          }
         }
 
       default:
