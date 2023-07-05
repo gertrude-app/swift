@@ -13,7 +13,7 @@ import XExpect
   func testReconnectUserClicked() async {
     let (store, _) = AppReducer.testStore {
       $0.adminWindow.windowOpen = true
-      $0.user = .mock
+      $0.user = .init(data: .mock)
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 

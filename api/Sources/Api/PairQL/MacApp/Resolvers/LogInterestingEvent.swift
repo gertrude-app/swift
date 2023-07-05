@@ -1,7 +1,7 @@
 import DuetSQL
 import MacAppRoute
 
-extension LogUnexpectedError: Resolver {
+extension LogInterestingEvent: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     // prevent FK error if device id deleted, or invalid
     let deviceId: Device.Id?
@@ -12,10 +12,15 @@ extension LogUnexpectedError: Resolver {
       deviceId = nil
     }
 
-    await Current.slack.sysLog("Unexpected macapp error: `\(input.errorId)`")
+    if input.kind == "unexpected error" {
+      await Current.slack.sysLog("Unexpected macapp error: `\(input.eventId)`")
+    } else {
+      await Current.slack.sysLog("Macapp interesting event: `\(input.eventId)`")
+    }
 
-    try await Current.db.create(UnexpectedError(
-      errorId: input.errorId,
+    try await Current.db.create(InterestingEvent(
+      eventId: input.eventId,
+      kind: input.kind,
       context: "macapp",
       deviceId: deviceId,
       adminId: nil,

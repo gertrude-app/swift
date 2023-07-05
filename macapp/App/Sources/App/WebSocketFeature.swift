@@ -23,7 +23,7 @@ extension WebSocketFeature.RootReducer {
 
     case .heartbeat(.everyFiveMinutes):
       guard state.admin.accountStatus != .inactive else { return .none }
-      guard let user = state.user else { return .none }
+      guard let user = state.user?.data else { return .none }
       return .run { [state] send in
         guard try await websocket.state() != .connected else {
           return
@@ -72,7 +72,7 @@ extension WebSocketFeature.RootReducer {
 
     case .application(.didWake):
       guard state.admin.accountStatus != .inactive else { return .none }
-      guard let user = state.user else { return .none }
+      guard let user = state.user?.data else { return .none }
       return connect(user)
 
     case .websocket(let websocketAction):
@@ -108,7 +108,7 @@ extension WebSocketFeature.RootReducer {
       }
 
     case .adminAuthenticated(.adminWindow(.webview(.advanced(.websocketEndpointSet(let url))))):
-      let user = state.user
+      let user = state.user?.data
       return .run { send in
         await websocket.updateEndpointOverride(url)
         try await websocket.send(.goingOffline)

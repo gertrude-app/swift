@@ -3,7 +3,10 @@ import Gertie
 import MacAppRoute
 
 struct UserFeature: Feature {
-  typealias State = UserData
+  struct State: Equatable, Sendable {
+    var data: UserData
+    var numTimesUserTokenNotFound = 0
+  }
 
   enum Action: Equatable, Sendable {
     case refreshRules(result: TaskResult<RefreshRules.Output>, userInitiated: Bool)
@@ -23,10 +26,10 @@ struct UserFeature: Feature {
       switch action {
 
       case .refreshRules(.success(let output), _):
-        state.screenshotSize = output.screenshotsResolution
-        state.screenshotFrequency = output.screenshotsFrequency
-        state.keyloggingEnabled = output.keyloggingEnabled
-        state.screenshotsEnabled = output.screenshotsEnabled
+        state.data.screenshotSize = output.screenshotsResolution
+        state.data.screenshotFrequency = output.screenshotsFrequency
+        state.data.keyloggingEnabled = output.keyloggingEnabled
+        state.data.screenshotsEnabled = output.screenshotsEnabled
         return .none
 
       case .refreshRules(result: .failure, userInitiated: true):
@@ -90,7 +93,17 @@ extension UserFeature.RootReducer: RootReducing {
         }
       }
 
+    case .user(.refreshRules(.failure(let err), false)):
+      if let pqlError = err as? PqlError, pqlError.appTag == .userTokenNotFound {
+        state.user?.numTimesUserTokenNotFound += 1
+      }
+      let timesTokenNotFound = state.user?.numTimesUserTokenNotFound ?? 0
+      return timesTokenNotFound > 4 ? .run { send in
+        await send(.history(.userConnection(.disconnectMissingUser)))
+      } : .none
+
     case .user(.refreshRules(.success(let output), let userInitiated)):
+      state.user?.numTimesUserTokenNotFound = 0
       return .run { [filterInstalled = state.filter.extension.installed] _ in
         guard filterInstalled else {
           if userInitiated {

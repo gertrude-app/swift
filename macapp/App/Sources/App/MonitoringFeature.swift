@@ -27,13 +27,13 @@ extension MonitoringFeature.RootReducer {
       return configureMonitoring(current: persistent.user, previous: nil)
 
     case .user(.refreshRules(.success(let output), _)):
-      return configureMonitoring(current: output, previous: state.user)
+      return configureMonitoring(current: output, previous: state.user?.data)
 
     case .history(.userConnection(.connect(.success(let user)))):
       return configureMonitoring(current: user, previous: nil)
 
     case .monitoring(.timerTriggeredTakeScreenshot):
-      let width = state.user?.screenshotSize ?? 800
+      let width = state.user?.data.screenshotSize ?? 800
       return .run { _ in
         try await monitoring.takeScreenshot(width)
         guard network.isConnected() else { return }
@@ -62,7 +62,7 @@ extension MonitoringFeature.RootReducer {
 
     // try to catch the moment when they've fixed monitoring permissions issues
     case .adminWindow(.webview(.healthCheck(.recheckClicked))):
-      return configureMonitoring(current: state.user, previous: nil, force: true)
+      return configureMonitoring(current: state.user?.data, previous: nil, force: true)
 
     default:
       return .none

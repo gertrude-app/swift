@@ -84,14 +84,17 @@ extension FilterFeature.RootReducer {
     case .menuBar(.turnOnFilterClicked),
          .adminWindow(.webview(.startFilterClicked)):
       if !state.filter.extension.installed {
-        return .run { _ in
+        return .run { send in
           switch await filterExtension.install() {
           case .installedSuccessfully:
             break
-          // TODO: on errors/timeout/cancel should we retry? notify?
-          // @see https://github.com/gertrude-app/project/issues/154
-          case .timedOutWaiting, .userCancelled:
-            break
+          case .timedOutWaiting:
+            interestingEvent(id: "9ffabfe5")
+            await send(.focusedNotification(.filterInstallTimeout))
+          case .userClickedDontAllow:
+            await send(.focusedNotification(.filterInstallDenied))
+          case .activationRequestFailed(let error):
+            unexpectedError(id: "61d0eda0", error)
           case .failedToGetBundleIdentifier:
             unexpectedError(id: "d4a652e9")
           case .failedToLoadConfig:
@@ -107,8 +110,6 @@ extension FilterFeature.RootReducer {
           switch await filterExtension.start() {
           case .installedAndRunning:
             break
-          // TODO: on errors should we retry? notify?
-          // @see https://github.com/gertrude-app/project/issues/154
           case .errorLoadingConfig:
             unexpectedError(id: "c291bcef")
           case .installedButNotRunning:
@@ -142,5 +143,21 @@ extension FilterFeature.RootReducer {
       await device.quitBrowsers()
     }
     .cancellable(id: FilterFeature.CancelId.quitBrowsers, cancelInFlight: true)
+  }
+}
+
+private extension AppReducer.Action.FocusedNotification {
+  static var filterInstallTimeout: Self {
+    .text(
+      "Filter install never completed",
+      "Try again, and be sure to allow Gertrude to install a system extension in \"System Settings > Privacy & Security\"."
+    )
+  }
+
+  static var filterInstallDenied: Self {
+    .text(
+      "Filter install failed",
+      "We couldn't install the filter, you may have refused permission. Please try again, clicking \"Allow\"."
+    )
   }
 }

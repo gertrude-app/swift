@@ -29,9 +29,10 @@ public enum FilterExtensionState: Equatable, Sendable {
 }
 
 public enum FilterInstallResult: Sendable {
+  case activationRequestFailed(Error?)
   case alreadyInstalled
   case installedSuccessfully
-  case userCancelled
+  case userClickedDontAllow
   case timedOutWaiting
   case failedToGetBundleIdentifier
   case failedToLoadConfig(Error)

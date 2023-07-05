@@ -389,15 +389,8 @@ extension AdminWindowFeature.RootReducer {
         return .run { _ in _ = await filter.stop() }
 
       case .webview(.reconnectUserClicked):
-        state.user = nil
-        state.history.userConnection = .notConnected
-        state.adminWindow.windowOpen = false
-        state.menuBar.dropdownOpen = true
-        return .run { [updated = state.persistent] _ in
-          await api.clearUserToken()
-          try await storage.savePersistentState(updated)
-          _ = await xpc.disconnectUser()
-        }
+        // handled by UserConnectionFeature
+        return .none
 
       case .webview(.setUserExemption(let userId, let enabled)):
         if case .ok(let exemptUserIds) = state.adminWindow.exemptUserIds {
@@ -451,8 +444,8 @@ extension AdminWindowFeature.RootReducer {
 
   func checkHealth(state: inout State, action: Action) -> Effect<Action> {
     state.adminWindow.healthCheck = .init()
-    let keyloggingEnabled = state.user?.keyloggingEnabled == true
-    let screenRecordingEnabled = state.user?.screenshotsEnabled == true
+    let keyloggingEnabled = state.user?.data.keyloggingEnabled == true
+    let screenRecordingEnabled = state.user?.data.screenshotsEnabled == true
     let releaseChannel = state.appUpdates.releaseChannel
     let currentInstalledVersion = state.appUpdates.installedVersion
 
@@ -580,9 +573,9 @@ extension AdminWindowFeature.State.View {
     screen = featureState.screen
     healthCheck = featureState.healthCheck
     filterState = .init(rootState)
-    userName = rootState.user?.name ?? ""
-    screenshotMonitoringEnabled = rootState.user?.screenshotsEnabled ?? false
-    keystrokeMonitoringEnabled = rootState.user?.keyloggingEnabled ?? false
+    userName = rootState.user?.data.name ?? ""
+    screenshotMonitoringEnabled = rootState.user?.data.screenshotsEnabled ?? false
+    keystrokeMonitoringEnabled = rootState.user?.data.keyloggingEnabled ?? false
     installedAppVersion = app.installedVersion() ?? "0.0.0"
     releaseChannel = rootState.appUpdates.releaseChannel
     quitting = featureState.quitting

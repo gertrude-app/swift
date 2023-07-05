@@ -46,14 +46,15 @@ typealias UserData = GetUserData.Output
     ))
 
     #if !DEBUG
-      setUnexpectedErrorReporter { errorId, error in
+      setEventReporter { kind, eventId, detail in
         @Dependency(\.api) var apiClient
         @Dependency(\.storage) var storageClient
         let deviceId = try? await storageClient.loadPersistentState()?.user?.deviceId
-        await apiClient.logUnexpectedError(.init(
-          errorId: errorId,
+        await apiClient.logInterestingEvent(.init(
+          eventId: eventId,
+          kind: kind,
           deviceId: deviceId,
-          detail: error.map { String(describing: $0) }
+          detail: detail
         ))
       }
     #endif

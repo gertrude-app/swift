@@ -1,8 +1,9 @@
 import Foundation
 
-final class UnexpectedError: Codable {
+final class InterestingEvent: Codable {
   var id: Id
-  var errorId: String
+  var eventId: String
+  var kind: String
   var context: String
   var deviceId: Device.Id?
   var adminId: Admin.Id?
@@ -11,14 +12,16 @@ final class UnexpectedError: Codable {
 
   init(
     id: Id = .init(),
-    errorId: String,
+    eventId: String,
+    kind: String,
     context: String,
     deviceId: Device.Id? = nil,
     adminId: Admin.Id? = nil,
     detail: String? = nil
   ) {
     self.id = id
-    self.errorId = errorId
+    self.eventId = eventId
+    self.kind = kind
     self.context = context
     self.deviceId = deviceId
     self.adminId = adminId

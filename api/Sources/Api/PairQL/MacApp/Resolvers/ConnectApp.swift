@@ -24,7 +24,7 @@ extension ConnectApp: Resolver {
       .where(.numericId == .int(input.numericId))
       .first()
 
-    if let existing = existing {
+    if let existing {
 
       // we get in here if the gertrude app was already installed for this macOS user
       // at some point in the past, so we will update the device to be attached to this

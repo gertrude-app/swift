@@ -41,6 +41,13 @@ extension DeviceClient {
     )
   }
 
+  func notifyUnexpectedError() async {
+    await showNotification(
+      "⚠️ Unexpected error",
+      "Sorry, please try again, or contact Gertrude support if the problem persists."
+    )
+  }
+
   func notifyFilterSuspensionDenied(with comment: String?) async {
     await showNotification(
       "⛔️ Suspend filter request DENIED",

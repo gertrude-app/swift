@@ -29,7 +29,7 @@ import XExpect
     await store.send(.application(.didFinishLaunching))
 
     await store.receive(.loadedPersistentState(.mock)) {
-      $0.user = .mock
+      $0.user = .init(data: .mock)
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
@@ -46,10 +46,10 @@ import XExpect
 
     await bgQueue.advance(by: .milliseconds(5))
     await store.receive(.user(.refreshRules(result: .success(.mock), userInitiated: false))) {
-      $0.user?.screenshotsEnabled = true
-      $0.user?.keyloggingEnabled = true
-      $0.user?.screenshotFrequency = 333
-      $0.user?.screenshotSize = 555
+      $0.user?.data.screenshotsEnabled = true
+      $0.user?.data.keyloggingEnabled = true
+      $0.user?.data.screenshotFrequency = 333
+      $0.user?.data.screenshotSize = 555
     }
 
     // refreshing rules causes the filter to be rechecked for user key count
@@ -111,11 +111,11 @@ import XExpect
     store.deps.api.refreshRules = { _ in newRules }
 
     await bgQueue.advance(by: 60 * 19)
-    expect(store.state.user?.screenshotSize).not.toEqual(999)
+    expect(store.state.user?.data.screenshotSize).not.toEqual(999)
 
     await bgQueue.advance(by: 60)
     await store.receive(.user(.refreshRules(result: .success(newRules), userInitiated: false))) {
-      $0.user?.screenshotSize = 999
+      $0.user?.data.screenshotSize = 999
     }
   }
 

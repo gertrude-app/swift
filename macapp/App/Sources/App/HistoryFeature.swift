@@ -74,7 +74,7 @@ extension HistoryFeature.RootReducer: RootReducing {
       return .none
 
     case .history(.userConnection(.connect(.success(let user)))):
-      state.user = user
+      state.user = .init(data: user)
       return .run { [persistent = state.persistent] _ in
         try await storage.savePersistentState(persistent)
       }

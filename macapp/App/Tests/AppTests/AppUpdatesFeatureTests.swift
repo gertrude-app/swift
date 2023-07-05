@@ -112,7 +112,7 @@ import XExpect
         let (store, _) = AppReducer.testStore {
           $0.appUpdates = state
           $0.history.userConnection = .established(welcomeDismissed: true)
-          $0.user = .mock
+          $0.user = .init(data: .mock)
         }
         return store.state.menuBarView
       }
@@ -166,7 +166,7 @@ import XExpect
     await expect(triggerUpdate.invoked).toEqual(false)
 
     await scheduler.advance(by: .seconds(1))
-    await Task.repeatYield(count: 15)
+    await Task.repeatYield(count: 30)
 
     await expect(latestAppVersion.invoked).toEqual(true)
     await expect(saveState.invoked).toEqual(true)

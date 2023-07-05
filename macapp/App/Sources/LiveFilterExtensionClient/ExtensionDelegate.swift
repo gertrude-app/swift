@@ -10,7 +10,7 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
   ) {
     guard result == .completed else {
       Task { @MainActor in
-        await activationRequest.setValue(.failed)
+        await activationRequest.setValue(.delegateRequestFailed(nil))
         unexpectedError(id: "d86437ed")
       }
       return
@@ -18,7 +18,7 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
 
     os_log("[G•] system extension request finished successfully")
     Task { @MainActor in
-      await activationRequest.setValue(.succeeded)
+      await activationRequest.setValue(.delegateRequestSucceeded)
     }
   }
 
@@ -28,7 +28,7 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
 
   func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
     Task { @MainActor in
-      await activationRequest.setValue(.failed)
+      await activationRequest.setValue(.delegateRequestFailed(error))
       unexpectedError(id: "2362df24", error)
     }
   }

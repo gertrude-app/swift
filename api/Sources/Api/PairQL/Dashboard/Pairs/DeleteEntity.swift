@@ -63,7 +63,7 @@ extension DeleteEntity: Resolver {
       try await Current.db.query(User.self)
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
-        .delete()
+        .delete(force: true)
       try await Current.connectedApps.notify(.userDeleted(.init(input.id)))
     }
 

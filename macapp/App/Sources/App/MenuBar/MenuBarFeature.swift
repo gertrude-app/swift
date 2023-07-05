@@ -16,16 +16,28 @@ enum MenuBarFeature: Feature {
     case connectClicked
     case connectSubmit(code: Int)
     case retryConnectClicked
+    case removeFilterClicked
     case connectFailedHelpClicked
     case welcomeAdminClicked
     case turnOnFilterClicked
     case updateNagDismissClicked
     case updateNagUpdateClicked
     case updateRequiredUpdateClicked
+    case quitForNowClicked
+    case quitForUninstallClicked
   }
 
   struct Reducer: FeatureReducer {
     @Dependency(\.device) var device
+  }
+
+  struct RootReducer: AdminAuthenticating {
+    @Dependency(\.app) var app
+    @Dependency(\.filterXpc) var xpc
+    @Dependency(\.filterExtension) var filter
+    @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.storage) var storage
+    @Dependency(\.security) var security
   }
 }
 
@@ -47,6 +59,40 @@ extension MenuBarFeature.Reducer {
     case .connectFailedHelpClicked:
       return .run { _ in
         await device.openWebUrl(URL(string: "https://gertrude.app/contact")!)
+      }
+
+    default:
+      return .none
+    }
+  }
+}
+
+extension MenuBarFeature.RootReducer {
+  func reduce(into state: inout State, action: Action) -> Effect<Action> {
+    switch action {
+
+    case .menuBar(.quitForNowClicked):
+      return adminAuthenticated(action)
+
+    case .adminAuthenticated(.menuBar(.quitForNowClicked)):
+      return .run { _ in await app.quit() }
+
+    case .menuBar(.removeFilterClicked):
+      return adminAuthenticated(action)
+
+    case .adminAuthenticated(.menuBar(.removeFilterClicked)):
+      return .run { _ in _ = await filter.uninstall() }
+
+    case .menuBar(.quitForUninstallClicked):
+      return adminAuthenticated(action)
+
+    case .adminAuthenticated(.menuBar(.quitForUninstallClicked)):
+      return .run { _ in
+        _ = await xpc.disconnectUser()
+        _ = await filter.uninstall()
+        await storage.deleteAllPersistentState()
+        try? await mainQueue.sleep(for: .milliseconds(100))
+        await app.quit()
       }
 
     default:

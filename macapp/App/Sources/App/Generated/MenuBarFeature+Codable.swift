@@ -85,6 +85,8 @@ extension MenuBarFeature.Action {
       try _NamedCase(case: "connectClicked").encode(to: encoder)
     case .retryConnectClicked:
       try _NamedCase(case: "retryConnectClicked").encode(to: encoder)
+    case .removeFilterClicked:
+      try _NamedCase(case: "removeFilterClicked").encode(to: encoder)
     case .connectFailedHelpClicked:
       try _NamedCase(case: "connectFailedHelpClicked").encode(to: encoder)
     case .welcomeAdminClicked:
@@ -97,6 +99,10 @@ extension MenuBarFeature.Action {
       try _NamedCase(case: "updateNagUpdateClicked").encode(to: encoder)
     case .updateRequiredUpdateClicked:
       try _NamedCase(case: "updateRequiredUpdateClicked").encode(to: encoder)
+    case .quitForNowClicked:
+      try _NamedCase(case: "quitForNowClicked").encode(to: encoder)
+    case .quitForUninstallClicked:
+      try _NamedCase(case: "quitForUninstallClicked").encode(to: encoder)
     }
   }
 
@@ -123,6 +129,8 @@ extension MenuBarFeature.Action {
       self = .connectClicked
     case "retryConnectClicked":
       self = .retryConnectClicked
+    case "removeFilterClicked":
+      self = .removeFilterClicked
     case "connectFailedHelpClicked":
       self = .connectFailedHelpClicked
     case "welcomeAdminClicked":
@@ -135,6 +143,10 @@ extension MenuBarFeature.Action {
       self = .updateNagUpdateClicked
     case "updateRequiredUpdateClicked":
       self = .updateRequiredUpdateClicked
+    case "quitForNowClicked":
+      self = .quitForNowClicked
+    case "quitForUninstallClicked":
+      self = .quitForUninstallClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }
@@ -152,6 +164,11 @@ extension MenuBarFeature.State.View {
 
   private struct _TypeScriptDecodeError: Error {
     var message: String
+  }
+
+  private struct _CaseNotConnected: Codable {
+    var `case` = "notConnected"
+    var filterInstalled: Bool
   }
 
   private struct _CaseConnectionFailed: Codable {
@@ -175,6 +192,8 @@ extension MenuBarFeature.State.View {
 
   func encode(to encoder: Encoder) throws {
     switch self {
+    case .notConnected(let filterInstalled):
+      try _CaseNotConnected(filterInstalled: filterInstalled).encode(to: encoder)
     case .connectionFailed(let error):
       try _CaseConnectionFailed(error: error).encode(to: encoder)
     case .connectionSucceded(let userName):
@@ -187,8 +206,6 @@ extension MenuBarFeature.State.View {
         adminAttentionRequired: unflat.adminAttentionRequired,
         updateStatus: unflat.updateStatus
       ).encode(to: encoder)
-    case .notConnected:
-      try _NamedCase(case: "notConnected").encode(to: encoder)
     case .enteringConnectionCode:
       try _NamedCase(case: "enteringConnectionCode").encode(to: encoder)
     case .connecting:
@@ -200,6 +217,9 @@ extension MenuBarFeature.State.View {
     let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {
+    case "notConnected":
+      let value = try container.decode(_CaseNotConnected.self)
+      self = .notConnected(filterInstalled: value.filterInstalled)
     case "connectionFailed":
       let value = try container.decode(_CaseConnectionFailed.self)
       self = .connectionFailed(error: value.error)
@@ -215,8 +235,6 @@ extension MenuBarFeature.State.View {
         adminAttentionRequired: value.adminAttentionRequired,
         updateStatus: value.updateStatus
       ))
-    case "notConnected":
-      self = .notConnected
     case "enteringConnectionCode":
       self = .enteringConnectionCode
     case "connecting":
