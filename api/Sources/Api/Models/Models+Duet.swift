@@ -382,14 +382,15 @@ extension UserToken {
   }
 }
 
-extension UnexpectedError: Duet.Identifiable {
-  typealias Id = Tagged<UnexpectedError, UUID>
+extension InterestingEvent: Duet.Identifiable {
+  typealias Id = Tagged<InterestingEvent, UUID>
 }
 
-extension UnexpectedError {
+extension InterestingEvent {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
-    case errorId
+    case eventId
+    case kind
     case context
     case deviceId
     case adminId

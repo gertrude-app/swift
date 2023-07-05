@@ -13,7 +13,7 @@ public struct ApiClient: Sendable {
   public var getAdminAccountStatus: @Sendable () async throws -> AdminAccountStatus
   public var latestAppVersion: @Sendable (LatestAppVersion.Input) async throws -> LatestAppVersion
     .Output
-  public var logUnexpectedError: @Sendable (LogUnexpectedError.Input) async -> Void
+  public var logInterestingEvent: @Sendable (LogInterestingEvent.Input) async -> Void
   public var recentAppVersions: @Sendable () async throws -> [String: String]
   public var refreshRules: @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output
   public var setAccountActive: @Sendable (Bool) async -> Void
@@ -31,7 +31,7 @@ public struct ApiClient: Sendable {
     getAdminAccountStatus: @escaping @Sendable () async throws -> AdminAccountStatus,
     latestAppVersion: @escaping @Sendable (LatestAppVersion.Input) async throws -> LatestAppVersion
       .Output,
-    logUnexpectedError: @escaping @Sendable (LogUnexpectedError.Input) async -> Void,
+    logInterestingEvent: @escaping @Sendable (LogInterestingEvent.Input) async -> Void,
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     refreshRules: @escaping @Sendable (RefreshRules.Input) async throws -> RefreshRules.Output,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
@@ -46,7 +46,7 @@ public struct ApiClient: Sendable {
     self.createUnlockRequests = createUnlockRequests
     self.getAdminAccountStatus = getAdminAccountStatus
     self.latestAppVersion = latestAppVersion
-    self.logUnexpectedError = logUnexpectedError
+    self.logInterestingEvent = logInterestingEvent
     self.recentAppVersions = recentAppVersions
     self.refreshRules = refreshRules
     self.setAccountActive = setAccountActive
@@ -84,7 +84,7 @@ extension ApiClient: TestDependencyKey {
     createUnlockRequests: { _ in },
     getAdminAccountStatus: { .active },
     latestAppVersion: { _ in .init(semver: "1.0.0") },
-    logUnexpectedError: { _ in },
+    logInterestingEvent: { _ in },
     recentAppVersions: { [:] },
     refreshRules: { _ in throw Error.missingUserToken },
     setAccountActive: { _ in },
@@ -104,7 +104,7 @@ extension ApiClient: TestDependencyKey {
       createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
       getAdminAccountStatus: unimplemented("ApiClient.getAdminAccountStatus"),
       latestAppVersion: unimplemented("ApiClient.latestAppVersion"),
-      logUnexpectedError: unimplemented("ApiClient.logUnexpectedError"),
+      logInterestingEvent: unimplemented("ApiClient.logInterestingEvent"),
       recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
       refreshRules: unimplemented("ApiClient.refreshRules"),
       setAccountActive: unimplemented("ApiClient.setAccountActive"),

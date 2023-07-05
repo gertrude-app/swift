@@ -89,10 +89,7 @@ extension FilterFeature.RootReducer {
           case .installedSuccessfully:
             break
           case .timedOutWaiting:
-            // not technically an UNEXPECTED error, but i'd like to know how often
-            // this happens to users. if frequently, perhaps the notification could
-            // link to a support webpage with detailed steps on checking permission, etc.
-            unexpectedError(id: "9ffabfe5")
+            interestingEvent(id: "9ffabfe5")
             await send(.focusedNotification(.filterInstallTimeout))
           case .userClickedDontAllow:
             await send(.focusedNotification(.filterInstallDenied))

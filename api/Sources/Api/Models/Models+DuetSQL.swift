@@ -705,16 +705,18 @@ extension UserToken: Model {
   }
 }
 
-extension UnexpectedError: Model {
-  public static let tableName = UnexpectedError.M8.tableName
+extension InterestingEvent: Model {
+  public static let tableName = InterestingEvent.M8.tableName
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id:
       return .id(self)
-    case .errorId:
-      return .string(errorId)
+    case .eventId:
+      return .string(eventId)
+    case .kind:
+      return .string(kind)
     case .context:
       return .string(context)
     case .deviceId:
@@ -731,7 +733,8 @@ extension UnexpectedError: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .errorId: .string(errorId),
+      .eventId: .string(eventId),
+      .kind: .string(kind),
       .context: .string(context),
       .deviceId: .uuid(deviceId),
       .adminId: .uuid(adminId),
