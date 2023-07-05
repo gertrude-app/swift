@@ -18,7 +18,7 @@ extension MenuBarFeature.State {
       var updateStatus: UpdateStatus?
     }
 
-    case notConnected
+    case notConnected(filterInstalled: Bool)
     case enteringConnectionCode
     case connecting
     case connectionFailed(error: String)
@@ -53,7 +53,7 @@ extension AppReducer.State {
           updateStatus: updateStatus
         ))
       case .notConnected:
-        return .notConnected
+        return .notConnected(filterInstalled: filter.extension.installed)
       }
     }
     set {}

@@ -96,6 +96,8 @@ struct AppReducer: Reducer, Sendable {
     MonitoringFeature.RootReducer()
     RequestSuspensionFeature.RootReducer()
     WebSocketFeature.RootReducer()
+    UserConnectionFeature.RootReducer()
+    MenuBarFeature.RootReducer()
 
     // feature reducers
     Scope(state: \.history, action: /Action.history) {

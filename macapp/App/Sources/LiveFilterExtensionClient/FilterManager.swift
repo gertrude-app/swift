@@ -65,7 +65,6 @@ final class FilterManager: NSObject {
     if state != .installedAndRunning {
       // if happens moderately often, implement better behaviors for other states
       unexpectedError(id: "6f5b0838")
-      return state
     }
 
     system.disableNEFilterManagerShared()

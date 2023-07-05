@@ -389,15 +389,8 @@ extension AdminWindowFeature.RootReducer {
         return .run { _ in _ = await filter.stop() }
 
       case .webview(.reconnectUserClicked):
-        state.user = nil
-        state.history.userConnection = .notConnected
-        state.adminWindow.windowOpen = false
-        state.menuBar.dropdownOpen = true
-        return .run { [updated = state.persistent] _ in
-          await api.clearUserToken()
-          try await storage.savePersistentState(updated)
-          _ = await xpc.disconnectUser()
-        }
+        // handled by UserConnectionFeature
+        return .none
 
       case .webview(.setUserExemption(let userId, let enabled)):
         if case .ok(let exemptUserIds) = state.adminWindow.exemptUserIds {
