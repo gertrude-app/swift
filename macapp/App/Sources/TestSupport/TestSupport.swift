@@ -102,6 +102,8 @@ public extension LockIsolated where Value: RangeReplaceableCollection {
   }
 }
 
+public let IS_CI = ProcessInfo.processInfo.environment["CI"] != nil
+
 // if/when tuples become Sendable, this, `Three`, and `Four` can be removed
 public struct Both<A, B> {
   public var a: A
