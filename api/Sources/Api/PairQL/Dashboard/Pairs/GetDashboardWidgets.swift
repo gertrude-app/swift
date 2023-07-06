@@ -10,6 +10,7 @@ struct GetDashboardWidgets: Pair {
     var id: Api.User.Id
     var name: String
     var isOnline: Bool
+    var numDevices: Int
   }
 
   struct UserActivitySummary: PairNestable {
@@ -97,7 +98,8 @@ extension GetDashboardWidgets: NoInputResolver {
       users: users.concurrentMap { user in .init(
         id: user.id,
         name: user.name,
-        isOnline: try await userOnline(user.id, devices)
+        isOnline: try await userOnline(user.id, devices),
+        numDevices: devices.filter { $0.userId == user.id }.count
       ) },
       userActivitySummaries: userActivitySummaries(
         users: users,
