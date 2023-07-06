@@ -41,6 +41,7 @@ struct GetDashboardWidgets: Pair {
     var userActivitySummaries: [UserActivitySummary]
     var unlockRequests: [UnlockRequest]
     var recentScreenshots: [RecentScreenshot]
+    var numAdminNotifications: Int
   }
 }
 
@@ -57,7 +58,8 @@ extension GetDashboardWidgets: NoInputResolver {
         users: [],
         userActivitySummaries: [],
         unlockRequests: [],
-        recentScreenshots: []
+        recentScreenshots: [],
+        numAdminNotifications: 0
       )
     }
 
@@ -92,6 +94,8 @@ extension GetDashboardWidgets: NoInputResolver {
       .withSoftDeleted()
       .all()
 
+    async let notifications = context.admin.notifications()
+
     let networkDecisions = try await awaitedNetworkDecisions
 
     return try await .init(
@@ -116,7 +120,8 @@ extension GetDashboardWidgets: NoInputResolver {
         users: users,
         map: deviceToUserMap,
         screenshots: try await screenshots
-      )
+      ),
+      numAdminNotifications: try await notifications.count
     )
   }
 }
