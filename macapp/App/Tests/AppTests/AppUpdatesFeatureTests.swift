@@ -166,7 +166,7 @@ import XExpect
     await expect(triggerUpdate.invoked).toEqual(false)
 
     await scheduler.advance(by: .seconds(1))
-    await Task.repeatYield(count: 30)
+    await Task.repeatYield(count: IS_CI ? 60 : 15)
 
     await expect(latestAppVersion.invoked).toEqual(true)
     await expect(saveState.invoked).toEqual(true)
