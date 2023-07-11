@@ -8,6 +8,7 @@ let package = Package(
     .library(name: "App", targets: ["App"]),
     .library(name: "ClientInterfaces", targets: ["ClientInterfaces"]),
     .library(name: "Filter", targets: ["Filter"]),
+    .library(name: "SyncArch", targets: ["SyncArch"]),
     .library(name: "Core", targets: ["Core"]),
     .library(name: "LiveApiClient", targets: ["LiveApiClient"]),
     .library(name: "LiveAppClient", targets: ["LiveAppClient"]),
@@ -21,6 +22,7 @@ let package = Package(
     .github("pointfreeco/swift-composable-architecture", branch: "prerelease/1.0"),
     .github("pointfreeco/swift-dependencies", from: "0.2.0"),
     .github("pointfreeco/combine-schedulers", from: "0.10.0"),
+    .github("pointfreeco/xctest-dynamic-overlay", from: "0.8.5"),
     .github("jaredh159/swift-tagged", from: "0.8.2"),
     .github("daltoniam/Starscream", from: "4.0.4"),
     .github("sindresorhus/LaunchAtLogin", from: "5.0.0"),
@@ -52,6 +54,10 @@ let package = Package(
       dependencies: [.dependencies, "x-kit" => "XCore", "ClientInterfaces"]
     ),
     .checkedTarget(
+      name: "SyncArch",
+      dependencies: []
+    ),
+    .checkedTarget(
       name: "LiveAppClient",
       dependencies: [.dependencies, "LaunchAtLogin", "ClientInterfaces"]
     ),
@@ -81,7 +87,13 @@ let package = Package(
     ),
     .checkedTarget(
       name: "Filter",
-      dependencies: [.tca, "Core", "x-kit" => "XCore", "gertie" => "Gertie"],
+      dependencies: [
+        "Core",
+        "SyncArch",
+        "x-kit" => "XCore",
+        "gertie" => "Gertie",
+        "xctest-dynamic-overlay" => "XCTestDynamicOverlay",
+      ],
       linkerSettings: [.linkedLibrary("bsm")]
     ),
     .checkedTarget(

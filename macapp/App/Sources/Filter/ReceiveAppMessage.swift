@@ -8,7 +8,8 @@ import os.log
 @objc class ReceiveAppMessage: NSObject, AppMessageReceiving {
   let subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>
 
-  @Dependency(\.storage) var storage
+  // TODO:
+  // @Dependency(\.storage) var storage
 
   init(subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>) {
     self.subject = subject
@@ -70,27 +71,28 @@ import os.log
     userId: uid_t,
     reply: @escaping (Data?, XPCErrorData?) -> Void
   ) {
-    do {
-      os_log(
-        "[G•] xpc.receiveAckRequest(randomInt: %{public}d, userId: %{public}d)",
-        randomInt,
-        userId
-      )
-      let savedState = try storage.loadPersistentStateSync()
-      let version = Bundle.main
-        .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
-      let ack = XPC.FilterAck(
-        randomInt: randomInt,
-        version: version,
-        userId: userId,
-        numUserKeys: savedState?.userKeys[userId]?.count ?? 0
-      )
-      let data = try XPC.encode(ack)
-      reply(data, nil)
-    } catch {
-      os_log("[G•] xpc.receiveAckRequest error: %{public}@", "\(error)")
-      reply(nil, XPC.errorData(error))
-    }
+    // do {
+    os_log(
+      "[G•] xpc.receiveAckRequest(randomInt: %{public}d, userId: %{public}d)",
+      randomInt,
+      userId
+    )
+    fatalError("TODO")
+    // let savedState = try storage.loadPersistentStateSync()
+    // let version = Bundle.main
+    //   .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+    // let ack = XPC.FilterAck(
+    //   randomInt: randomInt,
+    //   version: version,
+    //   userId: userId,
+    //   numUserKeys: savedState?.userKeys[userId]?.count ?? 0
+    // )
+    // let data = try XPC.encode(ack)
+    // reply(data, nil)
+    // } catch {
+    // os_log("[G•] xpc.receiveAckRequest error: %{public}@", "\(error)")
+    // reply(nil, XPC.errorData(error))
+    // }
   }
 
   func receiveUserRules(
@@ -124,16 +126,17 @@ import os.log
   func receiveListExemptUserIdsRequest(
     reply: @escaping (Data?, XPCErrorData?) -> Void
   ) {
-    do {
-      os_log("[G•] xpc.receiveListExemptUserIdsRequest()")
-      let savedState = try storage.loadPersistentStateSync()
-      let exemptUsers = Array(savedState?.exemptUsers ?? [])
-      let data = try XPC.encode(exemptUsers)
-      reply(data, nil)
-    } catch {
-      os_log("[G•] xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")
-      reply(nil, XPC.errorData(error))
-    }
+    // do {
+    os_log("[G•] xpc.receiveListExemptUserIdsRequest()")
+    // let savedState = try storage.loadPersistentStateSync()
+    // let exemptUsers = Array(savedState?.exemptUsers ?? [])
+    // let data = try XPC.encode(exemptUsers)
+    // reply(data, nil)
+    fatalError("TODO")
+    // } catch {
+    //   os_log("[G•] xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")
+    //   reply(nil, XPC.errorData(error))
+    // }
   }
 
   func setBlockStreaming(

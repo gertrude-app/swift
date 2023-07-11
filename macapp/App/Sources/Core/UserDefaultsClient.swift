@@ -1,5 +1,3 @@
-import Dependencies
-import Foundation
 import XCore
 
 public struct UserDefaultsClient: Sendable {
@@ -29,8 +27,8 @@ public struct UserDefaultsClient: Sendable {
   }
 }
 
-extension UserDefaultsClient: DependencyKey {
-  public static let liveValue = Self(
+public extension UserDefaultsClient {
+  static let liveValue = Self(
     setString: { UserDefaults.standard.set($0, forKey: $1) },
     getString: { UserDefaults.standard.string(forKey: $0) },
     remove: { UserDefaults.standard.removeObject(forKey: $0) },
@@ -41,30 +39,3 @@ extension UserDefaultsClient: DependencyKey {
     }
   )
 }
-
-extension UserDefaultsClient: TestDependencyKey {
-  public static let testValue = Self(
-    setString: { _, _ in },
-    getString: { _ in nil },
-    remove: { _ in },
-    removeAll: {}
-  )
-}
-
-public extension DependencyValues {
-  var userDefaults: UserDefaultsClient {
-    get { self[UserDefaultsClient.self] }
-    set { self[UserDefaultsClient.self] = newValue }
-  }
-}
-
-#if DEBUG
-  public extension UserDefaultsClient {
-    static let failing = Self(
-      setString: unimplemented("UserDefaultsClient.setString"),
-      getString: unimplemented("UserDefaultsClient.getString"),
-      remove: unimplemented("UserDefaultsClient.remove"),
-      removeAll: unimplemented("UserDefaultsClient.removeAll")
-    )
-  }
-#endif

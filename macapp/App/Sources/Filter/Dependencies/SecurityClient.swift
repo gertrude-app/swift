@@ -1,5 +1,6 @@
-import Dependencies
 import Foundation
+// import Dependencies
+import SyncArch
 import XCore
 
 public struct SecurityClient: Sendable {
@@ -16,8 +17,8 @@ public struct SecurityClient: Sendable {
   }
 }
 
-extension SecurityClient: DependencyKey {
-  public static var liveValue = Self(
+extension SecurityClient: SyncDeps {
+  public static let live = Self(
     userIdFromAuditToken: { auditToken in
       guard let auditToken, auditToken.count == MemoryLayout<audit_token_t>.size else {
         return nil
@@ -85,19 +86,31 @@ extension SecurityClient: DependencyKey {
   )
 }
 
-extension SecurityClient: TestDependencyKey {
-  public static let testValue = Self(
-    userIdFromAuditToken: { _ in nil },
-    rootAppFromAuditToken: { _ in (nil, nil) }
-  )
-}
+#if DEBUG
+  import XCTestDynamicOverlay
 
-public extension DependencyValues {
-  var security: SecurityClient {
-    get { self[SecurityClient.self] }
-    set { self[SecurityClient.self] = newValue }
+  extension SecurityClient: SyncTestDeps {
+    public static let failing = Self(
+      userIdFromAuditToken: { _ in
+        XCTFail("SecurityClient.userIdFromAuditToken unimplemented")
+        return nil
+      },
+      rootAppFromAuditToken: { _ in
+        XCTFail("SecurityClient.rootAppFromAuditToken unimplemented")
+        return (nil, nil)
+      }
+    )
   }
-}
+#endif
+
+// extension SecurityClient: TestDependencyKey {}
+
+// public extension DependencyValues {
+//   var security: SecurityClient {
+//     get { self[SecurityClient.self] }
+//     set { self[SecurityClient.self] = newValue }
+//   }
+// }
 
 // helpers
 

@@ -1,20 +1,34 @@
 import Core
-import Dependencies
 import Foundation
 import Gertie
+import SyncArch
 import XCore
 
-struct StorageClient: Sendable {
-  var savePersistentState: @Sendable (Persistent.State) async throws -> Void
-  var loadPersistentState: @Sendable () async throws -> Persistent.State?
-  var loadPersistentStateSync: @Sendable () throws -> Persistent.State?
-  var deleteAllPersistentState: @Sendable () async -> Void
-  var deleteAll: @Sendable () async -> Void
+public struct StorageClient: Sendable {
+  public var savePersistentState: @Sendable (Persistent.State) throws -> Void
+  public var loadPersistentState: @Sendable () throws -> Persistent.State?
+  public var loadPersistentStateSync: @Sendable () throws -> Persistent.State?
+  public var deleteAllPersistentState: @Sendable () -> Void
+  public var deleteAll: @Sendable () -> Void
+
+  public init(
+    savePersistentState: @Sendable @escaping (Persistent.State) throws -> Void,
+    loadPersistentState: @Sendable @escaping () throws -> Persistent.State?,
+    loadPersistentStateSync: @Sendable @escaping () throws -> Persistent.State?,
+    deleteAllPersistentState: @Sendable @escaping () -> Void,
+    deleteAll: @Sendable @escaping () -> Void
+  ) {
+    self.savePersistentState = savePersistentState
+    self.loadPersistentState = loadPersistentState
+    self.loadPersistentStateSync = loadPersistentStateSync
+    self.deleteAllPersistentState = deleteAllPersistentState
+    self.deleteAll = deleteAll
+  }
 }
 
-extension StorageClient: DependencyKey {
-  static var liveValue: Self {
-    @Dependency(\.userDefaults) var userDefaults
+extension StorageClient: SyncDeps {
+  public static var live: Self {
+    let userDefaults = UserDefaultsClient.live
     @Sendable func loadSync() throws -> Persistent.State? {
       try userDefaults.loadJson(
         at: Persistent.State.currentStorageKey,
@@ -30,7 +44,7 @@ extension StorageClient: DependencyKey {
       },
       loadPersistentState: {
         if let current = try loadSync() { return current }
-        return await FilterMigrator(userDefaults: userDefaults).migrate()
+        return FilterMigrator(userDefaults: userDefaults).migrate()
       },
       loadPersistentStateSync: {
         try loadSync()
@@ -45,19 +59,28 @@ extension StorageClient: DependencyKey {
   }
 }
 
-extension StorageClient: TestDependencyKey {
-  static let testValue = Self(
-    savePersistentState: { _ in },
-    loadPersistentState: { nil },
-    loadPersistentStateSync: { nil },
-    deleteAllPersistentState: {},
-    deleteAll: {}
-  )
-}
+#if DEBUG
+  import XCTestDynamicOverlay
 
-extension DependencyValues {
-  var storage: StorageClient {
-    get { self[StorageClient.self] }
-    set { self[StorageClient.self] = newValue }
+  extension StorageClient: SyncTestDeps {
+    public static let failing = Self(
+      savePersistentState: { _ in
+        XCTFail("StorageClient.savePersistentState not implemented")
+      },
+      loadPersistentState: {
+        XCTFail("StorageClient.loadPersistentState not implemented")
+        return nil
+      },
+      loadPersistentStateSync: {
+        XCTFail("StorageClient.loadPersistentStateSync not implemented")
+        return nil
+      },
+      deleteAllPersistentState: {
+        XCTFail("StorageClient.deleteAllPersistentState not implemented")
+      },
+      deleteAll: {
+        XCTFail("StorageClient.deleteAll not implemented")
+      }
+    )
   }
-}
+#endif

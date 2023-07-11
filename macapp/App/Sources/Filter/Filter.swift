@@ -1,11 +1,14 @@
-import ComposableArchitecture
 import Core
 import Foundation
 import Gertie
 import os.log
+// import ComposableArchitecture
+import SyncArch
 
-public struct Filter: Reducer, Sendable {
-  public struct State: Equatable, DecisionState {
+public struct Filter: SyncReducer, Sendable {
+  public typealias Deps = FilterDeps
+
+  public struct State: Equatable, DecisionState, Sendable, Codable {
     public var userKeys: [uid_t: [FilterKey]] = [:]
     public var appIdManifest = AppIdManifest()
     public var exemptUsers: Set<uid_t> = []
@@ -25,45 +28,48 @@ public struct Filter: Reducer, Sendable {
     case heartbeat
   }
 
-  @Dependency(\.xpc) var xpc
-  @Dependency(\.mainQueue) var mainQueue
-  @Dependency(\.date.now) var now
-  @Dependency(\.storage) var storage
-  @Dependency(\.uuid) var uuid
+  // @Dependency(\.xpc) var xpc
+  // @Dependency(\.mainQueue) var mainQueue
+  // @Dependency(\.date.now) var now
+  // @Dependency(\.storage) var storage
+  // @Dependency(\.uuid) var uuid
 
   private enum CancelId: Hashable {
     case suspension(for: uid_t)
     case heartbeat
   }
 
-  public func reduce(into state: inout State, action: Action) -> Effect<Action> {
+  public func reduce(into state: inout State, action: Action, deps: Deps) -> Effect<Action> {
     os_log("[G•] filter received action: %{public}@", String(describing: action))
     switch action {
     case .extensionStarted:
       return .merge(
-        .run { [startListener = xpc.startListener] _ in
-          await startListener()
-        },
-
-        .run { [load = storage.loadPersistentState] send in
-          await send(.loadedPersistentState(try load()))
-        },
+        // .run { [startListener = xpc.startListener] _ in
+        //   await startListener()
+        // },
 
         .run { send in
-          for await _ in mainQueue.timer(interval: .seconds(60)) {
-            await send(.heartbeat)
-          }
-        }.cancellable(id: CancelId.heartbeat, cancelInFlight: true),
-
-        .publisher {
-          xpc.events()
-            .map { .xpc($0) }
-            .receive(on: mainQueue)
+          send(.loadedPersistentState(try deps.storage.loadPersistentState()))
         }
+        // ,
+
+        // .run { send in
+        //   for await _ in mainQueue.timer(interval: .seconds(60)) {
+        //     await send(.heartbeat)
+        //   }
+        // }.cancellable(id: CancelId.heartbeat, cancelInFlight: true),
+
+        // .publisher {
+        //   xpc.events()
+        //     .map { .xpc($0) }
+        //     .receive(on: mainQueue)
+        // }
       )
+      // return .none
 
     case .extensionStopping:
-      return .cancel(id: CancelId.heartbeat)
+      // return .cancel(id: CancelId.heartbeat)
+      return .none
 
     case .loadedPersistentState(.some(let persisted)):
       state.userKeys = persisted.userKeys
@@ -75,32 +81,33 @@ public struct Filter: Reducer, Sendable {
       return .none
 
     case .flowBlocked(let flow, let app):
-      if let userId = flow.userId, let expiration = state.blockListeners[userId] {
-        if expiration < now {
-          state.blockListeners[userId] = nil
-          return .none
-        }
-        return .run { [send = xpc.sendBlockedRequest, uuid, now] _ in
-          try await send(userId, flow.blockedRequest(id: uuid(), time: now, app: app))
-        }
-      }
+      // if let userId = flow.userId, let expiration = state.blockListeners[userId] {
+      //   if expiration < now {
+      //     state.blockListeners[userId] = nil
+      //     return .none
+      //   }
+      //   return .run { [send = xpc.sendBlockedRequest, uuid, now] _ in
+      //     try await send(userId, flow.blockedRequest(id: uuid(), time: now, app: app))
+      //   }
+      // }
       return .none
 
     case .heartbeat:
-      var expiredSuspensionUserIds: [uid_t] = []
-      for (userId, suspension) in state.suspensions {
-        // 5 second cushion prevents race between heartbeat and expiration timer
-        // we want the expiration timer to do the work, this is only a failsafe
-        if suspension.expiresAt < now.advanced(by: .seconds(-5)) {
-          expiredSuspensionUserIds.append(userId)
-        }
-      }
-      return expiredSuspensionUserIds.isEmpty ? .none : .run { [expiredSuspensionUserIds] send in
-        for userId in expiredSuspensionUserIds {
-          try await xpc.notifyFilterSuspensionEnded(userId)
-          await send(.suspensionExpired(userId))
-        }
-      }
+      // var expiredSuspensionUserIds: [uid_t] = []
+      // for (userId, suspension) in state.suspensions {
+      //   // 5 second cushion prevents race between heartbeat and expiration timer
+      //   // we want the expiration timer to do the work, this is only a failsafe
+      //   if suspension.expiresAt < now.advanced(by: .seconds(-5)) {
+      //     expiredSuspensionUserIds.append(userId)
+      //   }
+      // }
+      // return expiredSuspensionUserIds.isEmpty ? .none : .run { [expiredSuspensionUserIds] send in
+      //   for userId in expiredSuspensionUserIds {
+      //     try await xpc.notifyFilterSuspensionEnded(userId)
+      //     await send(.suspensionExpired(userId))
+      //   }
+      // }
+      return .none
 
     case .suspensionExpired(let userId):
       state.suspensions[userId] = nil
@@ -111,7 +118,7 @@ public struct Filter: Reducer, Sendable {
       return .none
 
     case .xpc(.receivedAppMessage(.setBlockStreaming(true, let userId))):
-      state.blockListeners[userId] = now.advanced(by: FIVE_MINUTES_IN_SECONDS)
+      state.blockListeners[userId] = deps.now().advanced(by: FIVE_MINUTES_IN_SECONDS)
       return .none
 
     case .xpc(.receivedAppMessage(.setBlockStreaming(false, let userId))):
@@ -122,29 +129,31 @@ public struct Filter: Reducer, Sendable {
       state.userKeys[userId] = nil
       state.suspensions[userId] = nil
       state.exemptUsers.remove(userId)
-      return saving(state.persistent)
+      return saving(state.persistent, with: deps)
 
     case .xpc(.receivedAppMessage(.endFilterSuspension(let userId))):
       state.suspensions[userId] = nil
-      return .cancel(id: CancelId.suspension(for: userId))
+      // return .cancel(id: CancelId.suspension(for: userId))
+      return .none
 
     case .xpc(.receivedAppMessage(.suspendFilter(let userId, let duration))):
-      state.suspensions[userId] = .init(
-        scope: .unrestricted,
-        duration: duration,
-        now: now
-      )
-      return .run { send in
-        try await mainQueue.sleep(for: .seconds(duration.rawValue))
-        try await xpc.notifyFilterSuspensionEnded(userId)
-        await send(.suspensionExpired(userId))
-      }.cancellable(id: CancelId.suspension(for: userId), cancelInFlight: true)
+      // state.suspensions[userId] = .init(
+      //   scope: .unrestricted,
+      //   duration: duration,
+      //   now: now
+      // )
+      // return .run { send in
+      //   try await mainQueue.sleep(for: .seconds(duration.rawValue))
+      //   try await xpc.notifyFilterSuspensionEnded(userId)
+      //   await send(.suspensionExpired(userId))
+      // }.cancellable(id: CancelId.suspension(for: userId), cancelInFlight: true)
+      return .none
 
     case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
       state.userKeys[userId] = keys
       state.appIdManifest = manifest
       state.appCache = [:]
-      return saving(state.persistent)
+      return saving(state.persistent, with: deps)
 
     case .xpc(.receivedAppMessage(.setUserExemption(let userId, let enabled))):
       if enabled {
@@ -152,22 +161,20 @@ public struct Filter: Reducer, Sendable {
       } else {
         state.exemptUsers.remove(userId)
       }
-      return saving(state.persistent)
+      return saving(state.persistent, with: deps)
 
     case .xpc(.receivedAppMessage(.deleteAllStoredState)):
       state = .init()
-      return .run { _ in
-        await storage.deleteAll()
-      }
+      return .run { _ in deps.storage.deleteAll() }
 
     case .xpc(.decodingAppMessageDataFailed):
       return .none
     }
   }
 
-  func saving(_ state: Persistent.State) -> Effect<Action> {
-    .run { [save = storage.savePersistentState] _ in
-      try await save(state)
+  func saving(_ state: Persistent.State, with deps: Deps) -> Effect<Action> {
+    .run { _ in
+      try deps.storage.savePersistentState(state)
     }
   }
 }

@@ -1,34 +1,37 @@
 import Combine
-import ComposableArchitecture
 import Core
 import Foundation
 import Gertie
+// import ComposableArchitecture
+import SyncArch
 
 public struct FilterStore: NetworkFilter {
-  let store: StoreOf<Filter>
-  let viewStore: ViewStoreOf<Filter>
+  let store: Store<Filter>
+  private var deps = FilterDeps.live
 
-  public var state: Filter.State { viewStore.state }
+  // TODO: does this need to be public?
+  public var state: Filter.State { store.state }
 
-  @Dependency(\.security) public var security
+  public var security: SecurityClient {
+    deps.security
+  }
 
   public init() {
-    store = Store(initialState: Filter.State(), reducer: Filter())
-    viewStore = ViewStore(store, observe: { $0 })
-    viewStore.send(.extensionStarted)
+    store = Store(initialState: Filter.State(), reducer: Filter(), deps: .live)
+    store.send(.extensionStarted)
   }
 
   public func sendBlocked(_ flow: FilterFlow, auditToken: Data?) {
     let app = appDescriptor(for: flow.bundleId ?? "(no bundle id)", auditToken: auditToken)
-    viewStore.send(.flowBlocked(flow, app))
+    store.send(.flowBlocked(flow, app))
   }
 
   public func shouldSendBlockDecisions() -> AnyPublisher<Bool, Never> {
-    viewStore.publisher.blockListeners.map { !$0.isEmpty }.eraseToAnyPublisher()
+    store.publisher.blockListeners.map { !$0.isEmpty }.eraseToAnyPublisher()
   }
 
   public func appCache(insert descriptor: AppDescriptor, for bundleId: String) {
-    viewStore.send(.cacheAppDescriptor(bundleId, descriptor))
+    store.send(.cacheAppDescriptor(bundleId, descriptor))
   }
 
   public func appCache(get bundleId: String) -> AppDescriptor? {
@@ -36,6 +39,6 @@ public struct FilterStore: NetworkFilter {
   }
 
   public func sendExtensionStopping() {
-    viewStore.send(.extensionStopping)
+    store.send(.extensionStopping)
   }
 }

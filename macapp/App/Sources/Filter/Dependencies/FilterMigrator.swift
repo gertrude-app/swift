@@ -2,17 +2,16 @@ import Core
 import os.log
 import XCore
 
-struct FilterMigrator: Migrator {
+struct FilterMigrator {
   var userDefaults: UserDefaultsClient
-  var context = "Filter"
 
-  func migrateLastVersion() async -> Persistent.State? {
-    await migrateV1()
+  func migrateLastVersion() -> Persistent.State? {
+    migrateV1()
   }
 
   // v1 below refers to legacy 1.x version of the app
   // before ComposableArchitecture rewrite
-  func migrateV1() async -> Persistent.State? {
+  func migrateV1() -> Persistent.State? {
     guard let exemptUserIds = userDefaults.getString("exemptUsers") else {
       return nil
     }
@@ -22,6 +21,28 @@ struct FilterMigrator: Migrator {
       appIdManifest: .init(),
       exemptUsers: Legacy.V1.parseCommaSeparatedUserIds(exemptUserIds)
     )
+  }
+
+  func migrate() -> Persistent.State? {
+    let key = "persistent.state.v\(Persistent.State.version)"
+    let current = try? userDefaults.getString(key).flatMap { json in
+      try JSON.decode(json, as: Persistent.State.self)
+    }
+    if let current {
+      log("found current state, no migration necessary")
+      return current
+    } else if let migrated = migrateLastVersion() {
+      log("migrated from prior state, \(String(describing: migrated))")
+      (try? JSON.encode(migrated)).map { userDefaults.setString(key, $0) }
+      return migrated
+    } else {
+      log("no state found, or migration succeeded")
+      return nil
+    }
+  }
+
+  func log(_ message: String) {
+    os_log("[G•] FilterMigrator: %{public}s", message)
   }
 }
 

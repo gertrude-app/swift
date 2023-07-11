@@ -1,12 +1,12 @@
 import ClientInterfaces
 import Core
 import Gertie
+import os.log
 import XCore
 
-struct AppMigrator: Migrator {
+struct AppMigrator {
   var api: ApiClient
   var userDefaults: UserDefaultsClient
-  var context = "App"
 
   func migrateLastVersion() async -> Persistent.State? {
     await migrateV1()
@@ -68,6 +68,28 @@ struct AppMigrator: Migrator {
         connectedAt: Date(timeIntervalSince1970: 0)
       )
     )
+  }
+
+  func migrate() async -> Persistent.State? {
+    let key = "persistent.state.v\(Persistent.State.version)"
+    let current = try? userDefaults.getString(key).flatMap { json in
+      try JSON.decode(json, as: Persistent.State.self)
+    }
+    if let current {
+      log("found current state, no migration necessary")
+      return current
+    } else if let migrated = await migrateLastVersion() {
+      log("migrated from prior state, \(String(describing: migrated))")
+      (try? JSON.encode(migrated)).map { userDefaults.setString(key, $0) }
+      return migrated
+    } else {
+      log("no state found, or migration succeeded")
+      return nil
+    }
+  }
+
+  func log(_ message: String) {
+    os_log("[G•] AppMigrator: %{public}s", message)
   }
 }
 
