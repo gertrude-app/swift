@@ -1,7 +1,7 @@
 import Core
 import Foundation
-import os.log // temp
 import Gertie
+import os.log // temp
 
 public extension NetworkFilter {
 
@@ -131,13 +131,13 @@ public extension NetworkFilter {
         switch decision {
         case .block(let reason):
           os_log(
-            "[G•] filter decision: BLOCK %{public}@, reason: %{public}@",
+            "[G•] FILTER decision: BLOCK %{public}@, reason: %{public}@",
             flow.shortDescription,
             "\(reason)"
           )
         case .allow(let reason):
           os_log(
-            "[G•] filter decision: ALLOW %{public}@, reason: %{public}@",
+            "[G•] FILTER decision: ALLOW %{public}@, reason: %{public}@",
             flow.shortDescription,
             "\(reason)"
           )

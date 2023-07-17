@@ -52,7 +52,9 @@ struct AppReducer: Reducer, Sendable {
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
-      os_log("[G•] APP received action: %{public}@", String(describing: action))
+      #if !DEBUG
+        os_log("[G•] APP received action: %{public}@", String(describing: action))
+      #endif
       switch action {
       case .loadedPersistentState(.some(let persistent)):
         guard let user = persistent.user else { return .none }

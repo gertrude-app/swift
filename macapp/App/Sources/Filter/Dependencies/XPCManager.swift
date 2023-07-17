@@ -16,7 +16,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
       throw XPCErr.noConnection
     }
 
-    os_log("[G•] XPCManager: notifying filter suspension ended: %{public}d", userId)
+    os_log("[G•] FILTER XPCManager: notifying filter suspension ended: %{public}d", userId)
     try await withTimeout(connection: connection) { appProxy, continuation in
       appProxy.receiveUserFilterSuspensionEnded(userId: userId, reply: continuation.dataHandler)
     }
@@ -27,7 +27,10 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
       throw XPCErr.noConnection
     }
 
-    os_log("[G•] XPCManager: sending blocked request: %{public}@", String(describing: request))
+    os_log(
+      "[G•] FILTER XPCManager: sending blocked request: %{public}@",
+      String(describing: request)
+    )
     let requestData = try XPC.encode(request)
     try await withTimeout(connection: connection) { appProxy, continuation in
       appProxy.receiveBlockedRequest(requestData, userId: userId, reply: continuation.dataHandler)
@@ -39,7 +42,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     newListener.delegate = self
     newListener.resume()
     listener = newListener
-    os_log("[G•] XPCManager: started listener")
+    os_log("[G•] FILTER XPCManager: started listener")
   }
 
   func listener(

@@ -21,7 +21,7 @@ import os.log
     reply: @escaping (XPCErrorData?) -> Void
   ) {
     os_log(
-      "[G•] xpc.setUserExemption(%{public}d, enabled: %{public}s)",
+      "[G•] FILTER xpc.setUserExemption(%{public}d, enabled: %{public}s)",
       userId,
       enabled ? "true" : "false"
     )
@@ -32,7 +32,7 @@ import os.log
   }
 
   func disconnectUser(_ userId: uid_t, reply: @escaping (XPCErrorData?) -> Void) {
-    os_log("[G•] xpc.disconnectUser(for: %{public}d)", userId)
+    os_log("[G•] FILTER xpc.disconnectUser(for: %{public}d)", userId)
     subject.withValue {
       $0.send(.receivedAppMessage(.disconnectUser(userId: userId)))
     }
@@ -40,7 +40,7 @@ import os.log
   }
 
   func endSuspension(for userId: uid_t, reply: @escaping (XPCErrorData?) -> Void) {
-    os_log("[G•] xpc.endSuspension(for: %{public}d)", userId)
+    os_log("[G•] FILTER xpc.endSuspension(for: %{public}d)", userId)
     subject.withValue {
       $0.send(.receivedAppMessage(.endFilterSuspension(userId: userId)))
     }
@@ -53,7 +53,7 @@ import os.log
     reply: @escaping (XPCErrorData?) -> Void
   ) {
     os_log(
-      "[G•] xpc.suspendFilter(userId: %{public}d, seconds: %{public}d)",
+      "[G•] FILTER xpc.suspendFilter(userId: %{public}d, seconds: %{public}d)",
       userId,
       durationInSeconds
     )
@@ -73,7 +73,7 @@ import os.log
   ) {
     do {
       os_log(
-        "[G•] xpc.receiveAckRequest(randomInt: %{public}d, userId: %{public}d)",
+        "[G•] FILTER xpc.receiveAckRequest(randomInt: %{public}d, userId: %{public}d)",
         randomInt,
         userId
       )
@@ -87,7 +87,7 @@ import os.log
       let data = try XPC.encode(ack)
       reply(data, nil)
     } catch {
-      os_log("[G•] xpc.receiveAckRequest error: %{public}@", "\(error)")
+      os_log("[G•] FILTER xpc.receiveAckRequest error: %{public}@", "\(error)")
       reply(nil, XPC.errorData(error))
     }
   }
@@ -109,13 +109,13 @@ import os.log
         )))
       }
       os_log(
-        "[G•] xpc.receiveUserRules(userId: %{public}d,...) num keys: %{public}d",
+        "[G•] FILTER xpc.receiveUserRules(userId: %{public}d,...) num keys: %{public}d",
         userId,
         keys.count
       )
       reply(nil)
     } catch {
-      os_log("[G•] xpc.receiveUserRules error: %{public}@", "\(error)")
+      os_log("[G•] FILTER xpc.receiveUserRules error: %{public}@", "\(error)")
       reply(XPC.errorData(error))
     }
   }
@@ -124,13 +124,13 @@ import os.log
     reply: @escaping (Data?, XPCErrorData?) -> Void
   ) {
     do {
-      os_log("[G•] xpc.receiveListExemptUserIdsRequest()")
+      os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest()")
       let savedState = try storage.loadPersistentStateSync()
       let exemptUsers = Array(savedState?.exemptUsers ?? [])
       let data = try XPC.encode(exemptUsers)
       reply(data, nil)
     } catch {
-      os_log("[G•] xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")
+      os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")
       reply(nil, XPC.errorData(error))
     }
   }
@@ -141,7 +141,7 @@ import os.log
     reply: @escaping (XPCErrorData?) -> Void
   ) {
     os_log(
-      "[G•] xpc.setBlockStreaming(%{public}s, userId: %{public}d)",
+      "[G•] FILTER xpc.setBlockStreaming(%{public}s, userId: %{public}d)",
       enabled ? "true" : "false",
       userId
     )
@@ -152,7 +152,7 @@ import os.log
   }
 
   func deleteAllStoredState(reply: @escaping (XPCErrorData?) -> Void) {
-    os_log("[G•] xpc.deleteAllStoredState()")
+    os_log("[G•] FILTER xpc.deleteAllStoredState()")
     subject.withValue {
       $0.send(.receivedAppMessage(.deleteAllStoredState))
     }
