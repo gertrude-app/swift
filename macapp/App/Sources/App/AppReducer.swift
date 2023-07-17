@@ -5,6 +5,7 @@ import Core
 import Foundation
 import Gertie
 import MacAppRoute
+import os.log
 
 struct AppReducer: Reducer, Sendable {
   struct State: Equatable, Sendable {
@@ -51,11 +52,12 @@ struct AppReducer: Reducer, Sendable {
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
+      os_log("[G•] APP received action: %{public}@", String(describing: action))
       switch action {
       case .loadedPersistentState(.some(let persistent)):
         guard let user = persistent.user else { return .none }
         state.user = .init(data: user)
-        return .run { send in
+        return .exec { send in
           await api.setUserToken(user.token)
           try await bgQueue.sleep(for: .milliseconds(10)) // <- unit test determinism
           return await send(.user(.refreshRules(
@@ -70,7 +72,7 @@ struct AppReducer: Reducer, Sendable {
         state.menuBar.dropdownOpen = false
         state.blockedRequests.windowOpen = false
         state.requestSuspension.windowOpen = false
-        return .run { _ in
+        return .exec { _ in
           switch notification {
           case .unexpectedError:
             await device.notifyUnexpectedError()

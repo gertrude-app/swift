@@ -9,6 +9,7 @@ import os.log
   let subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>
 
   @Dependency(\.storage) var storage
+  @Dependency(\.filterExtension) var filterExtension
 
   init(subject: Mutex<PassthroughSubject<XPCEvent.Filter, Never>>) {
     self.subject = subject
@@ -77,11 +78,9 @@ import os.log
         userId
       )
       let savedState = try storage.loadPersistentStateSync()
-      let version = Bundle.main
-        .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
       let ack = XPC.FilterAck(
         randomInt: randomInt,
-        version: version,
+        version: filterExtension.version(),
         userId: userId,
         numUserKeys: savedState?.userKeys[userId]?.count ?? 0
       )

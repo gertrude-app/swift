@@ -48,7 +48,7 @@ extension FilterFeature.RootReducer {
     case .websocket(.receivedMessage(.suspendFilter(let seconds, let comment))):
       return .merge(
         suspendFilter(for: seconds, with: &state),
-        .run { _ in
+        .exec { _ in
           await device.notifyFilterSuspension(resuming: seconds, from: now, with: comment)
         }
       )
@@ -60,7 +60,7 @@ extension FilterFeature.RootReducer {
       return .none
 
     case .heartbeat(.everyFiveMinutes):
-      return .run { _ in
+      return .exec { _ in
         let filter = await filterExtension.state()
         // attempt to reconnect, if necessary
         if filter.isXpcReachable, await xpc.connected() == false {
@@ -84,7 +84,7 @@ extension FilterFeature.RootReducer {
     case .menuBar(.turnOnFilterClicked),
          .adminWindow(.webview(.startFilterClicked)):
       if !state.filter.extension.installed {
-        return .run { send in
+        return .exec { send in
           switch await filterExtension.install() {
           case .installedSuccessfully:
             break
@@ -106,7 +106,7 @@ extension FilterFeature.RootReducer {
           }
         }
       } else {
-        return .run { _ in
+        return .exec { _ in
           switch await filterExtension.start() {
           case .installedAndRunning:
             break
@@ -129,13 +129,13 @@ extension FilterFeature.RootReducer {
   func suspendFilter(for seconds: Seconds<Int>, with state: inout State) -> Effect<Action> {
     state.filter.currentSuspensionExpiration = now.advanced(by: Double(seconds.rawValue))
     return .merge(
-      .run { _ in _ = await xpc.suspendFilter(seconds) },
+      .exec { _ in _ = await xpc.suspendFilter(seconds) },
       .cancel(id: FilterFeature.CancelId.quitBrowsers)
     )
   }
 
   func handleFilterSuspensionEnded(early endedEarly: Bool = false) -> Effect<Action> {
-    .run { send in
+    .exec { send in
       if endedEarly { _ = await xpc.endFilterSuspension() }
       try? await websocket.send(.currentFilterState(.on))
       await device.notifyBrowsersQuitting()

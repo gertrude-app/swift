@@ -47,7 +47,7 @@ extension HistoryFeature.RootReducer: RootReducing {
         return .none
       }
       if !network.isConnected() {
-        return .run { _ in await device.notifyNoInternet() }
+        return .exec { _ in await device.notifyNoInternet() }
       }
       state.history.userConnection = .connecting
       return .task {
@@ -75,7 +75,7 @@ extension HistoryFeature.RootReducer: RootReducing {
 
     case .history(.userConnection(.connect(.success(let user)))):
       state.user = .init(data: user)
-      return .run { [persistent = state.persistent] _ in
+      return .exec { [persistent = state.persistent] _ in
         try await storage.savePersistentState(persistent)
       }
 

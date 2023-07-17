@@ -63,7 +63,7 @@ struct RequestSuspensionFeature: Feature {
 
       case .createSuspensionRequest(.success):
         state.request = .succeeded
-        return .run { send in
+        return .exec { send in
           try await bgQueue.sleep(for: .seconds(10))
           await send(.createSuspensionRequestSuccessTimedOut)
         }.cancellable(id: CancelId.successTimeout, cancelInFlight: true)

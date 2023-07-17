@@ -28,11 +28,11 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
     case .application(.didFinishLaunching):
       return .merge(
-        .run { send in
+        .exec { send in
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
         },
 
-        .run { send in
+        .exec { send in
           try await bgQueue.sleep(for: .milliseconds(5)) // <- unit test determinism
           let setupState = await filterExtension.setup()
           await send(.filter(.receivedState(setupState)))
@@ -41,7 +41,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
           }
         },
 
-        .run { send in
+        .exec { send in
           var numTicks = 0
           for await _ in bgQueue.timer(interval: .seconds(60)) {
             numTicks += 1
@@ -51,7 +51,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
           }
         }.cancellable(id: Heartbeat.CancelId.self),
 
-        .run { _ in
+        .exec { _ in
           if await app.isLaunchAtLoginEnabled() == false {
             await app.enableLaunchAtLogin()
           }

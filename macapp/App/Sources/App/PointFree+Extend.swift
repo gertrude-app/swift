@@ -1,3 +1,4 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Foundation
 
@@ -35,5 +36,26 @@ public extension _ReducerPrinter {
       target.write(diff(oldState, newState).map { "\($0)\n" } ?? "  (No state changes)\n")
       print(target)
     }
+  }
+}
+
+public extension EffectPublisher where Failure == Never {
+  static func exec(
+    priority: TaskPriority? = nil,
+    operation: @escaping @Sendable (Send<Action>) async throws -> Void,
+    fileID: StaticString = #fileID,
+    line: UInt = #line
+  ) -> Self {
+    @Dependency(\.app) var app
+    return .run(
+      priority: priority,
+      operation: operation,
+      catch: { error, _ in
+        let id = "exec--App_v\(app.installedVersion() ?? "unknown")--\(fileID):\(line)"
+        unexpectedError(id: id, error)
+      },
+      fileID: fileID,
+      line: line
+    )
   }
 }
