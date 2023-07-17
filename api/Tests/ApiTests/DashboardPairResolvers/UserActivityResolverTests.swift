@@ -11,10 +11,10 @@ final class UserActivityResolverTests: ApiTestCase {
     Current.date = { Date() }
     let user = try await Entities.user().withDevice()
     let screenshot = Screenshot.random
-    screenshot.deviceId = user.device.id
+    screenshot.userDeviceId = user.device.id
     try await Current.db.create(screenshot)
     let keystrokeLine = KeystrokeLine.random
-    keystrokeLine.deviceId = user.device.id
+    keystrokeLine.userDeviceId = user.device.id
     try await Current.db.create(keystrokeLine)
 
     let output = try await UserActivityFeed.resolve(
@@ -63,20 +63,20 @@ final class UserActivityResolverTests: ApiTestCase {
 
     let user1 = try await Entities.user().withDevice()
     let screenshot = Screenshot.random
-    screenshot.deviceId = user1.device.id
+    screenshot.userDeviceId = user1.device.id
     try await Current.db.create(screenshot)
     let keystrokeLine = KeystrokeLine.random
-    keystrokeLine.deviceId = user1.device.id
+    keystrokeLine.userDeviceId = user1.device.id
     try await Current.db.create(keystrokeLine)
 
     let user2 = try await Entities.user().withDevice()
     user2.model.adminId = user1.adminId
     try await Current.db.update(user2.model)
     let screenshot2 = Screenshot.random
-    screenshot2.deviceId = user2.device.id
+    screenshot2.userDeviceId = user2.device.id
     try await Current.db.create(screenshot2)
     let keystrokeLine2 = KeystrokeLine.random
-    keystrokeLine2.deviceId = user2.device.id
+    keystrokeLine2.userDeviceId = user2.device.id
     try await Current.db.create(keystrokeLine2)
     try await Current.db.delete(keystrokeLine2.id) // <-- soft-deleted
 
@@ -154,10 +154,10 @@ final class UserActivityResolverTests: ApiTestCase {
   func testDeleteActivityItems_v2() async throws {
     let user = try await Entities.user().withDevice()
     let screenshot = Screenshot.random
-    screenshot.deviceId = user.device.id
+    screenshot.userDeviceId = user.device.id
     try await Current.db.create(screenshot)
     let keystrokeLine = KeystrokeLine.random
-    keystrokeLine.deviceId = user.device.id
+    keystrokeLine.userDeviceId = user.device.id
     try await Current.db.create(keystrokeLine)
 
     let output = try await DeleteActivityItems_v2.resolve(

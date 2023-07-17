@@ -19,7 +19,7 @@ struct AdminContext: ResolverContext {
       .all()
   }
 
-  func userDevices() async throws -> [Device] {
+  func userDevices() async throws -> [UserDevice] {
     let users = try await users()
     return try await users
       .concurrentMap { try await $0.devices() }

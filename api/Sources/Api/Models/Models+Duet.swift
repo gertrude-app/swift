@@ -141,15 +141,29 @@ extension Device: Duet.Identifiable {
 extension Device {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
-    case userId
-    case appVersion
+    case adminId
     case customName
-    case hostname
     case modelIdentifier
+    case serialNumber
+    case appReleaseChannel
+    case createdAt
+    case updatedAt
+  }
+}
+
+extension UserDevice: Duet.Identifiable {
+  typealias Id = Tagged<UserDevice, UUID>
+}
+
+extension UserDevice {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case userId
+    case deviceId
+    case appVersion
     case username
     case fullUsername
     case numericId
-    case serialNumber
     case createdAt
     case updatedAt
   }
@@ -212,7 +226,7 @@ extension KeystrokeLine: Duet.Identifiable {
 extension KeystrokeLine {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
-    case deviceId
+    case userDeviceId
     case appName
     case line
     case createdAt
@@ -227,7 +241,7 @@ extension NetworkDecision: Duet.Identifiable {
 extension NetworkDecision {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
-    case deviceId
+    case userDeviceId
     case responsibleKeyId
     case verdict
     case reason
@@ -290,7 +304,7 @@ extension Screenshot: Duet.Identifiable {
 extension Screenshot {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
-    case deviceId
+    case userDeviceId
     case url
     case width
     case height
@@ -306,7 +320,7 @@ extension SuspendFilterRequest: Duet.Identifiable {
 extension SuspendFilterRequest {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
-    case deviceId
+    case userDeviceId
     case status
     case scope
     case duration
@@ -325,7 +339,7 @@ extension UnlockRequest {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
     case networkDecisionId
-    case deviceId
+    case userDeviceId
     case status
     case requestComment
     case responseComment
@@ -374,7 +388,7 @@ extension UserToken {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
     case userId
-    case deviceId
+    case userDeviceId
     case value
     case createdAt
     case updatedAt
@@ -392,7 +406,7 @@ extension InterestingEvent {
     case eventId
     case kind
     case context
-    case deviceId
+    case userDeviceId
     case adminId
     case detail
     case createdAt

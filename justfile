@@ -38,6 +38,9 @@ migrate-up: build-api
 migrate-down: build-api
 	@just exec-api migrate --revert --yes
 
+nuke-test-db:
+  @killall -q Postico; dropdb --if-exists gertrude_test; createdb gertrude_test
+
 #infra
 
 deploy-prod:

@@ -13,7 +13,7 @@ final class User: Codable {
   var deletedAt: Date?
 
   var admin = Parent<Admin>.notLoaded
-  var devices = Children<Device>.notLoaded
+  var devices = Children<UserDevice>.notLoaded
   var tokens = Children<UserToken>.notLoaded
   var keychains = Siblings<Keychain>.notLoaded
 
@@ -39,9 +39,10 @@ final class User: Codable {
 // loaders
 
 extension User {
-  func devices() async throws -> [Device] {
+
+  func devices() async throws -> [UserDevice] {
     try await devices.useLoaded(or: {
-      try await Current.db.query(Device.self)
+      try await Current.db.query(UserDevice.self)
         .where(.userId == id)
         .all()
     })

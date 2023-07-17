@@ -1,6 +1,6 @@
 import Foundation
-import NIOWebSocket
 import Gertie
+import NIOWebSocket
 import Tagged
 import Vapor
 import XCore
@@ -10,7 +10,7 @@ class LegacyAppConnection {
   typealias IncomingMessage = WebsocketMsg.AppToApi.Message
 
   struct Ids {
-    let device: Device.Id
+    let userDevice: UserDevice.Id
     let user: User.Id
     let keychains: [Keychain.Id]
   }
@@ -54,7 +54,7 @@ class LegacyAppConnection {
       }
       filterState = currentFilter.state
       Current.logger.debug(
-        "WS: received current filter state \(currentFilter) from \(ids.device)"
+        "WS: received current filter state \(currentFilter) from \(ids.userDevice)"
       )
     }
   }

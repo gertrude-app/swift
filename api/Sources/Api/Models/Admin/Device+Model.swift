@@ -1,7 +1,7 @@
 import Gertie
 
 extension Device {
-  struct Model: Encodable {
+  struct Model: Encodable, Equatable {
     var type: Kind
     var identifier: String
     var chip: Chip
@@ -29,6 +29,7 @@ extension Device {
 
 extension Device.Model {
   enum Kind: String, Encodable, CaseIterable {
+    case macBook = "MacBook"
     case macBookAir = "MacBook Air"
     case macBookPro = "MacBook Pro"
     case mini = "Mac mini"
@@ -60,6 +61,8 @@ extension Device.Model {
 extension Device.Model {
   var family: DeviceModelFamily {
     switch type {
+    case .macBook:
+      return .macBook
     case .macBookAir:
       return .macBookAir
     case .macBookPro:
@@ -83,6 +86,7 @@ extension Device.Model {
     case m2
     case m2Pro
     case m2Max
+    case m2Ultra
     case m1Max
     case m1Ultra
     case m1
@@ -99,7 +103,7 @@ extension Device.Model.Chip {
 
   var family: Family {
     switch self {
-    case .m2, .m2Pro, .m2Max:
+    case .m2, .m2Pro, .m2Max, .m2Ultra:
       return .m2
     case .m1Max, .m1Ultra, .m1:
       return .m1
@@ -252,8 +256,18 @@ extension Device {
         chip: .intel,
         manufactureDates: [.mid(2012)],
         screenSizeInInches: 13,
-        newestCompatibleOS: .catalina // lol for eden
+        newestCompatibleOS: .catalina
       )
+    case "MacBookAir5,1":
+      return .init(
+        type: .macBookAir,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.mid(2012)],
+        screenSizeInInches: 11,
+        newestCompatibleOS: .catalina
+      )
+
     // Macbook Pro @link https://support.apple.com/en-us/HT201300
     case "Mac14,5":
       return .init(
@@ -433,6 +447,43 @@ extension Device {
         screenSizeInInches: 13,
         newestCompatibleOS: .bigSur
       )
+    case "MacBookPro10,1":
+      return .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.late(2012), .early(2013)],
+        screenSizeInInches: 15,
+        newestCompatibleOS: .catalina
+      )
+    case "MacBookPro10,2":
+      return .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.late(2012), .early(2013)],
+        screenSizeInInches: 13,
+        newestCompatibleOS: .catalina
+      )
+    case "MacBookPro9,1":
+      return .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.mid(2012)],
+        screenSizeInInches: 15,
+        newestCompatibleOS: .catalina
+      )
+    case "MacBookPro9,2":
+      return .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.mid(2012)],
+        screenSizeInInches: 13,
+        newestCompatibleOS: .catalina
+      )
+
     // iMac @link https://support.apple.com/en-us/HT201634
     case "iMac21,1", "iMac21,2":
       return .init(
@@ -442,7 +493,7 @@ extension Device {
         manufactureDates: [2021],
         screenSizeInInches: 24
       )
-    case "iMac20,1, iMac20,2":
+    case "iMac20,1", "iMac20,2":
       return .init(
         type: .iMac,
         identifier: modelIdentifier,
@@ -523,6 +574,42 @@ extension Device {
         screenSizeInInches: 21.5,
         newestCompatibleOS: .bigSur
       )
+    case "iMac14,2":
+      return .init(
+        type: .iMac,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.late(2013)],
+        screenSizeInInches: 27,
+        newestCompatibleOS: .catalina
+      )
+    case "iMac14,1":
+      return .init(
+        type: .iMac,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.late(2013)],
+        screenSizeInInches: 21.5,
+        newestCompatibleOS: .catalina
+      )
+    case "iMac13,2":
+      return .init(
+        type: .iMac,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.late(2012)],
+        screenSizeInInches: 27,
+        newestCompatibleOS: .catalina
+      )
+    case "iMac13,1":
+      return .init(
+        type: .iMac,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.late(2012)],
+        screenSizeInInches: 21.5,
+        newestCompatibleOS: .catalina
+      )
 
     // Mac Mini @link https://support.apple.com/en-us/HT201894
     case "Mac14,12":
@@ -560,7 +647,30 @@ extension Device {
         chip: .intel,
         manufactureDates: [.late(2014)]
       )
+    case "Macmini6,1", "Macmini6,2":
+      return .init(
+        type: .mini,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.late(2012)],
+        newestCompatibleOS: .catalina
+      )
+
     // Mac Studio @link https://support.apple.com/en-us/HT213073
+    case "Mac14,13":
+      return .init(
+        type: .studio,
+        identifier: modelIdentifier,
+        chip: .m2Max,
+        manufactureDates: [2023]
+      )
+    case "Mac14,14":
+      return .init(
+        type: .studio,
+        identifier: modelIdentifier,
+        chip: .m2Ultra,
+        manufactureDates: [2023]
+      )
     case "Mac13,1":
       return .init(
         type: .studio,
@@ -575,7 +685,15 @@ extension Device {
         chip: .m1Ultra,
         manufactureDates: [2022]
       )
+
     // Mac Pro @link https://support.apple.com/en-us/HT202888
+    case "Mac14,8":
+      return .init(
+        type: .pro,
+        identifier: modelIdentifier,
+        chip: .m2Ultra,
+        manufactureDates: [2023]
+      )
     case "MacPro7,1":
       return .init(
         type: .pro,
@@ -590,6 +708,35 @@ extension Device {
         chip: .intel,
         manufactureDates: [.late(2013)]
       )
+
+    // Macbook @link https://support.apple.com/en-us/HT201608
+    case "Macbook10,1":
+      return .init(
+        type: .macBook,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [2017],
+        screenSizeInInches: 12
+      )
+    case "Macbook9,1":
+      return .init(
+        type: .macBook,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.early(2016)],
+        screenSizeInInches: 12,
+        newestCompatibleOS: .monterey
+      )
+    case "Macbook8,1":
+      return .init(
+        type: .macBook,
+        identifier: modelIdentifier,
+        chip: .intel,
+        manufactureDates: [.early(2015)],
+        screenSizeInInches: 12,
+        newestCompatibleOS: .bigSur
+      )
+
     default:
       return .unknown
     }

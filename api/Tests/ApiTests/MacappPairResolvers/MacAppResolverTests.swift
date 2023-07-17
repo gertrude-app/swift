@@ -19,7 +19,7 @@ final class MacAppResolverTests: ApiTestCase {
     expect(output).toEqual(.success)
 
     let suspendRequests = try await Current.db.query(SuspendFilterRequest.self)
-      .where(.deviceId == user.device.id)
+      .where(.userDeviceId == user.device.id)
       .all()
 
     expect(suspendRequests).toHaveCount(1)
@@ -31,7 +31,7 @@ final class MacAppResolverTests: ApiTestCase {
         adminId: user.adminId,
         event: .suspendFilterRequestSubmitted(.init(
           dashboardUrl: "",
-          deviceId: user.device.id,
+          userDeviceId: user.device.id,
           userName: user.name,
           duration: 1111,
           requestId: suspendRequests.first!.id,
@@ -82,7 +82,7 @@ final class MacAppResolverTests: ApiTestCase {
   func testCreateUnlockRequests() async throws {
     let user = try await Entities.user().withDevice()
     let decision = NetworkDecision.random
-    decision.deviceId = user.device.id
+    decision.userDeviceId = user.device.id
     try await Current.db.create(decision)
     let (uuid, _) = mockUUIDs()
 
@@ -136,7 +136,7 @@ final class MacAppResolverTests: ApiTestCase {
     let unlockReq = try await Current.db.find(UnlockRequest.Id(uuid2))
     expect(unlockReq.requestComment).toEqual("please dad!")
     expect(unlockReq.networkDecisionId).toEqual(networkDecision.id)
-    expect(unlockReq.deviceId).toEqual(user.device.id)
+    expect(unlockReq.userDeviceId).toEqual(user.device.id)
     expect(unlockReq.status).toEqual(.pending)
 
     expect(sent.adminNotifications).toEqual([.init(

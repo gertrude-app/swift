@@ -14,65 +14,76 @@ extension ConnectApp: Resolver {
       )
     }
 
-    let device: Device
+    let userDevice: UserDevice
     let user = try await Current.db.find(userId)
+
+    let adminDevice = try? await Current.db.query(Device.self)
+      .where(.serialNumber == input.serialNumber)
+      .first()
 
     // there should only ever be a single gertrude user
     // per computer + macOS user (represented by os user numeric id)
-    let existing = try? await Current.db.query(Device.self)
-      .where(.serialNumber == input.serialNumber)
-      .where(.numericId == .int(input.numericId))
-      .first()
+    var existingUserDevice: UserDevice?
+    if let adminDevice {
+      existingUserDevice = try? await Current.db.query(UserDevice.self)
+        .where(.deviceId == adminDevice.id)
+        .where(.numericId == .int(input.numericId))
+        .first()
+    }
 
-    if let existing {
-
+    if let existingUserDevice {
       // we get in here if the gertrude app was already installed for this macOS user
-      // at some point in the past, so we will update the device to be attached to this
+      // at some point in the past, so we will update the UserDevice to be attached to this
       // user, after double-checking below that the user belongs to the same admin acct
 
       // sanity check - we only "transfer" a device, if the admin accounts match
-      let existingUser = try await Current.db.find(existing.userId)
+      let existingUser = try await existingUserDevice.user()
       if existingUser.adminId != user.adminId {
         throw Abort(.forbidden, reason: "Device already registered to another admin's user")
       }
 
-      let oldUserId = existing.userId
-      existing.hostname = input.hostname
-      existing.username = input.username
-      existing.fullUsername = input.fullUsername
-      existing.numericId = input.numericId
-      existing.serialNumber = input.serialNumber
-      existing.userId = user.id
+      let oldUserId = existingUserDevice.userId
+      existingUserDevice.username = input.username
+      existingUserDevice.fullUsername = input.fullUsername
+      existingUserDevice.userId = user.id
 
       // update the device to be attached to the user issuing this request
-      device = try await Current.db.update(existing)
+      userDevice = try await Current.db.update(existingUserDevice)
 
       try await Current.db.query(UserToken.self)
-        .where(.deviceId == device.id)
+        .where(.userDeviceId == userDevice.id)
         .where(.userId == oldUserId)
         .delete()
 
     } else {
-      // create a brand new device for this user
-      device = try await Current.db.create(Device(
-        userId: user.id,
-        appVersion: input.appVersion,
-        hostname: input.hostname,
+      // create a brand new admin device for this user...
+      let adminDevice = try await Current.db.create(Device(
+        adminId: user.adminId,
         modelIdentifier: input.modelIdentifier,
+        serialNumber: input.serialNumber
+      ))
+
+      // ...and create the user device
+      userDevice = try await Current.db.create(UserDevice(
+        userId: user.id,
+        deviceId: adminDevice.id,
+        appVersion: input.appVersion,
         username: input.username,
         fullUsername: input.fullUsername,
-        numericId: input.numericId,
-        serialNumber: input.serialNumber
+        numericId: input.numericId
       ))
     }
 
-    let token = try await Current.db.create(UserToken(userId: user.id, deviceId: device.id))
+    let token = try await Current.db.create(UserToken(
+      userId: user.id,
+      userDeviceId: userDevice.id
+    ))
 
     return Output(
       userId: user.id.rawValue,
       userName: user.name,
       token: token.value.rawValue,
-      deviceId: device.id.rawValue
+      deviceId: userDevice.id.rawValue
     )
   }
 }

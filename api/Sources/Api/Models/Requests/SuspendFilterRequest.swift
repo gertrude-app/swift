@@ -4,7 +4,7 @@ import TaggedTime
 
 final class SuspendFilterRequest: Codable {
   var id: Id
-  var deviceId: Device.Id
+  var userDeviceId: UserDevice.Id
   var status: RequestStatus
   var scope: AppScope
   var duration: Seconds<Int>
@@ -13,11 +13,11 @@ final class SuspendFilterRequest: Codable {
   var createdAt = Date()
   var updatedAt = Date()
 
-  var device = Parent<Device>.notLoaded
+  var userDevice = Parent<UserDevice>.notLoaded
 
   init(
     id: Id = .init(),
-    deviceId: Device.Id,
+    userDeviceId: UserDevice.Id,
     status: RequestStatus = .pending,
     scope: AppScope,
     duration: Seconds<Int> = 180,
@@ -25,7 +25,7 @@ final class SuspendFilterRequest: Codable {
     responseComment: String? = nil
   ) {
     self.id = id
-    self.deviceId = deviceId
+    self.userDeviceId = userDeviceId
     self.status = status
     self.scope = scope
     self.duration = duration
@@ -37,10 +37,10 @@ final class SuspendFilterRequest: Codable {
 // loaders
 
 extension SuspendFilterRequest {
-  func device() async throws -> Device {
-    try await device.useLoaded(or: {
-      try await Current.db.query(Device.self)
-        .where(.id == deviceId)
+  func userDevice() async throws -> UserDevice {
+    try await userDevice.useLoaded(or: {
+      try await Current.db.query(UserDevice.self)
+        .where(.id == userDeviceId)
         .first()
     })
   }

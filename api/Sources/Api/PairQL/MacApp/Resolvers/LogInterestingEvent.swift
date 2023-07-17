@@ -4,12 +4,12 @@ import MacAppRoute
 extension LogInterestingEvent: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     // prevent FK error if device id deleted, or invalid
-    let deviceId: Device.Id?
+    let userDeviceId: UserDevice.Id?
     if let deviceIdInput = input.deviceId,
-       let device = try? await Current.db.find(Device.Id(deviceIdInput)) {
-      deviceId = device.id
+       let device = try? await Current.db.find(UserDevice.Id(deviceIdInput)) {
+      userDeviceId = device.id
     } else {
-      deviceId = nil
+      userDeviceId = nil
     }
 
     if input.kind == "unexpected error" {
@@ -22,7 +22,7 @@ extension LogInterestingEvent: Resolver {
       eventId: input.eventId,
       kind: input.kind,
       context: "macapp",
-      deviceId: deviceId,
+      userDeviceId: userDeviceId,
       adminId: nil,
       detail: input.detail
     ))

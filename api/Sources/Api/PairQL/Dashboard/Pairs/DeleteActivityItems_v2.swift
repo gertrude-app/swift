@@ -17,13 +17,13 @@ extension DeleteActivityItems_v2: Resolver {
     with input: Input,
     in context: AdminContext
   ) async throws -> Output {
-    let deviceIds = try await context.userDevices().map(\.id)
+    let userDeviceIds = try await context.userDevices().map(\.id)
     async let keystrokes = try await Current.db.query(KeystrokeLine.self)
-      .where(.deviceId |=| deviceIds)
+      .where(.userDeviceId |=| userDeviceIds)
       .where(.id |=| input.keystrokeLineIds)
       .delete()
     async let screenshots = Current.db.query(Screenshot.self)
-      .where(.deviceId |=| deviceIds)
+      .where(.userDeviceId |=| userDeviceIds)
       .where(.id |=| input.screenshotIds)
       .delete()
     _ = try await (keystrokes, screenshots)

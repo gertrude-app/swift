@@ -16,7 +16,8 @@
 
 @dynamicMemberLookup struct UserWithDeviceEntities {
   let model: User
-  let device: Device
+  let adminDevice: Device
+  let device: UserDevice
   let token: UserToken
   let admin: AdminEntities
 
@@ -97,14 +98,16 @@ extension AdminEntities {
 
 extension UserEntities {
   func withDevice(
-    config: (inout Device) -> Void = { _ in }
+    config: (inout UserDevice) -> Void = { _ in }
   ) async throws -> UserWithDeviceEntities {
-    let device = try await Current.db.create(Device.random {
+    let device = try await Current.db.create(Device.random { $0.adminId = admin.id })
+    let userDevice = try await Current.db.create(UserDevice.random {
       config(&$0)
       $0.userId = model.id
+      $0.deviceId = device.id
     })
-    token.deviceId = device.id
+    token.userDeviceId = userDevice.id
     try await Current.db.update(token)
-    return .init(model: model, device: device, token: token, admin: admin)
+    return .init(model: model, adminDevice: device, device: userDevice, token: token, admin: admin)
   }
 }

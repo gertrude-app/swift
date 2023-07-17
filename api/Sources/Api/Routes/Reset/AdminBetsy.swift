@@ -5,8 +5,8 @@ import XCore
 enum AdminBetsy {
   enum Ids {
     static let betsy = Admin.Id.from("BE000000-0000-0000-0000-000000000000")
-    static let jimmysDevice = Device.Id.from("DD000000-1111-0000-0000-000000000000")
-    static let sallysDevice = Device.Id.from("DD000000-2222-0000-0000-000000000000")
+    static let jimmysDevice = UserDevice.Id.from("DD000000-1111-0000-0000-000000000000")
+    static let sallysDevice = UserDevice.Id.from("DD000000-2222-0000-0000-000000000000")
     static let suspendFilter = SuspendFilterRequest.Id.from("AA000000-1111-0000-0000-000000000000")
   }
 
@@ -73,31 +73,39 @@ enum AdminBetsy {
       screenshotsEnabled: true
     ))
 
-    let device = try await Current.db.create(Device(
-      id: Ids.jimmysDevice,
-      userId: jimmy.id,
-      appVersion: "1.0.0",
-      customName: "pinky",
-      hostname: nil,
+    let macAir = try await Current.db.create(Device(
+      adminId: betsy.id,
+      customName: nil,
       modelIdentifier: "Mac14,2",
-      username: "jimmy",
-      fullUsername: "Jimmy McStandard",
-      numericId: 501,
       serialNumber: "JIMMY-AIR-123456"
     ))
 
-    try await createTransientRequests(device)
-
-    try await Current.db.create(Device(
+    let userDevice = try await Current.db.create(UserDevice(
       userId: jimmy.id,
-      appVersion: "1.0.0",
-      customName: "old iMac",
-      hostname: nil,
-      modelIdentifier: "iMac19,2",
+      deviceId: macAir.id,
+      appVersion: "2.0.0",
       username: "jimmy",
       fullUsername: "Jimmy McStandard",
-      numericId: 504,
+      numericId: 502
+    ))
+
+    try await createTransientRequests(userDevice)
+
+    let imac = try await Current.db.create(Device(
+      adminId: betsy.id,
+      customName: nil,
+      modelIdentifier: "iMac19,2",
       serialNumber: "JIMMY-IMAC-123456"
+    ))
+
+    try await Current.db.create(UserDevice(
+      id: Ids.jimmysDevice,
+      userId: jimmy.id,
+      deviceId: imac.id,
+      appVersion: "2.0.0",
+      username: "jimmy",
+      fullUsername: "Jimmy McStandard",
+      numericId: 504
     ))
 
     let sally = try await Current.db.create(User(
@@ -107,17 +115,21 @@ enum AdminBetsy {
       screenshotsEnabled: false
     ))
 
-    try await Current.db.create(Device(
+    let macbookPro = try await Current.db.create(Device(
+      adminId: betsy.id,
+      customName: "dads mbp",
+      modelIdentifier: "MacBookPro18,1",
+      serialNumber: "SALLY-MBP-123456"
+    ))
+
+    try await Current.db.create(UserDevice(
       id: Ids.sallysDevice,
       userId: sally.id,
-      appVersion: "1.0.0",
-      customName: "dads mbp",
-      hostname: nil,
-      modelIdentifier: "MacBookPro18,1",
+      deviceId: macbookPro.id,
+      appVersion: "2.0.0",
       username: "sally",
       fullUsername: "Sally McStandard",
-      numericId: 503,
-      serialNumber: "SALLY-MBP-123456"
+      numericId: 503
     ))
 
     // henry has no devices
@@ -183,9 +195,9 @@ enum AdminBetsy {
     _ = try await [j1, j2, j3, s1]
   }
 
-  private static func createTransientRequests(_ device: Device) async throws {
+  private static func createTransientRequests(_ userDevice: UserDevice) async throws {
     let nd1 = try await Current.db.create(NetworkDecision(
-      deviceId: device.id,
+      userDeviceId: userDevice.id,
       verdict: .block,
       reason: .defaultNotAllowed,
       hostname: "youtube.com",
@@ -196,7 +208,7 @@ enum AdminBetsy {
     ))
 
     let nd2 = try await Current.db.create(NetworkDecision(
-      deviceId: device.id,
+      userDeviceId: userDevice.id,
       verdict: .block,
       reason: .defaultNotAllowed,
       hostname: "someotherwebsite.com",
@@ -207,21 +219,21 @@ enum AdminBetsy {
 
     try await Current.db.create(UnlockRequest(
       networkDecisionId: nd1.id,
-      deviceId: device.id,
+      userDeviceId: userDevice.id,
       requestComment: "I want to watch a video",
       status: .pending
     ))
 
     try await Current.db.create(UnlockRequest(
       networkDecisionId: nd2.id,
-      deviceId: device.id,
+      userDeviceId: userDevice.id,
       requestComment: "Need this for my dinasours class, k thx",
       status: .pending
     ))
 
     try await Current.db.create(SuspendFilterRequest(
       id: Ids.suspendFilter,
-      deviceId: device.id,
+      userDeviceId: userDevice.id,
       status: .pending,
       scope: .webBrowsers,
       requestComment: "I want to watch a video"

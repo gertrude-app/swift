@@ -19,7 +19,7 @@ enum LegacyAppWebsocket {
 
   private static func establish(_ request: Request, _ ws: WebSocket) async throws {
     guard let token = try? await request.userToken(),
-          let device = try? await token.device() else {
+          let userDevice = try? await token.userDevice() else {
       throw UserTokenNotFound()
     }
 
@@ -27,12 +27,12 @@ enum LegacyAppWebsocket {
     let keychains = try await user.keychains()
 
     let entityIds = LegacyAppConnection.Ids(
-      device: device.id,
+      userDevice: userDevice.id,
       user: user.id,
       keychains: keychains.map(\.id)
     )
 
-    Current.logger.debug("WS: adding connection Device: \(device.id.lowercased)")
+    Current.logger.debug("WS: adding connection UserDevice: \(userDevice.id.lowercased)")
     let connection = LegacyAppConnection(ws: ws, ids: entityIds)
     await Current.legacyConnectedApps.add(connection)
   }

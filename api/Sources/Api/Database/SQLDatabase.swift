@@ -90,6 +90,18 @@ extension SQLDatabase {
     """)
   }
 
+  func addDefault(
+    of default: Column.Default,
+    to column: FieldKey,
+    on Migration: TableNamingMigration.Type
+  ) async throws {
+    try await execute("""
+      ALTER TABLE \(table: Migration.self)
+      ALTER COLUMN \(col: column)
+      SET DEFAULT \(raw: `default`.sql)
+    """)
+  }
+
   func create<T>(enum Enum: T.Type) async throws
     where T: PostgresEnum, T: RawRepresentable, T: CaseIterable {
     try await execute("""

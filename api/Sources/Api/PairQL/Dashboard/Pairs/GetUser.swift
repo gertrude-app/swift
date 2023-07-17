@@ -28,7 +28,7 @@ struct GetUser: Pair {
   }
 
   struct Device: PairNestable {
-    let id: Api.Device.Id
+    let id: Api.UserDevice.Id
     let isOnline: Bool
     let modelFamily: DeviceModelFamily
     let modelTitle: String
@@ -72,15 +72,16 @@ extension GetUser.User {
     async let userKeychains = user.keychains()
       .concurrentMap { try await KeychainSummary(from: $0) }
 
-    async let devices = Current.db.query(Device.self)
+    async let devices = Current.db.query(UserDevice.self)
       .where(.userId == user.id)
       .all()
-      .concurrentMap { device in
-        GetUser.Device(
-          id: device.id,
-          isOnline: await device.isOnline(),
-          modelFamily: device.model.family,
-          modelTitle: device.model.shortDescription
+      .concurrentMap { userDevice in
+        let adminDevice = try await userDevice.adminDevice()
+        return GetUser.Device(
+          id: userDevice.id,
+          isOnline: await userDevice.isOnline(),
+          modelFamily: adminDevice.model.family,
+          modelTitle: adminDevice.model.shortDescription
         )
       }
 

@@ -19,17 +19,17 @@ actor LegacyAppConnections {
     connections.removeValue(forKey: connection.id)
   }
 
-  func filterState(for deviceId: Device.Id) -> FilterState? {
+  func filterState(for userDeviceId: UserDevice.Id) -> FilterState? {
     for connection in connections.values {
-      if connection.ids.device == deviceId {
+      if connection.ids.userDevice == userDeviceId {
         return connection.filterState
       }
     }
     return nil
   }
 
-  func isDeviceOnline(_ id: Device.Id) -> Bool {
-    connections.values.contains { $0.ids.device == id }
+  func isUserDeviceOnline(_ id: UserDevice.Id) -> Bool {
+    connections.values.contains { $0.ids.userDevice == id }
   }
 
   private func flush() {
@@ -64,7 +64,7 @@ actor LegacyAppConnections {
 
     case .unlockRequestUpdated(let payload):
       try await currentConnections
-        .filter { $0.ids.device == payload.deviceId }
+        .filter { $0.ids.userDevice == payload.userDeviceId }
         .asyncForEach {
           try await $0.ws.send(
             codable:
@@ -80,7 +80,7 @@ actor LegacyAppConnections {
     case .suspendFilterRequestUpdated(let payload):
       if payload.status == .accepted {
         try await currentConnections
-          .filter { $0.ids.device == payload.deviceId }
+          .filter { $0.ids.userDevice == payload.userDeviceId }
           .asyncForEach {
             try await $0.ws.send(
               codable:
@@ -92,7 +92,7 @@ actor LegacyAppConnections {
           }
       } else {
         try await currentConnections
-          .filter { $0.ids.device == payload.deviceId }
+          .filter { $0.ids.userDevice == payload.userDeviceId }
           .asyncForEach {
             try await $0.ws.send(
               codable:

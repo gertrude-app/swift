@@ -4,25 +4,25 @@ import Tagged
 final class UserToken: Codable {
   var id: Id
   var userId: User.Id
-  var deviceId: Device.Id?
+  var userDeviceId: UserDevice.Id? // TODO: why is this nullable?
   var value: Value
   var createdAt = Date()
   var updatedAt = Date()
   var deletedAt: Date?
 
   var user = Parent<User>.notLoaded
-  var device = OptionalParent<Device>.notLoaded
+  var userDevice = OptionalParent<UserDevice>.notLoaded
 
   init(
     id: Id = .init(),
     userId: User.Id,
-    deviceId: Device.Id? = nil,
+    userDeviceId: UserDevice.Id? = nil,
     value: Value = .init(rawValue: UUID.new())
   ) {
     self.id = id
     self.value = value
     self.userId = userId
-    self.deviceId = deviceId
+    self.userDeviceId = userDeviceId
   }
 }
 
@@ -43,11 +43,11 @@ extension UserToken {
     })
   }
 
-  func device() async throws -> Device? {
-    try await device.useLoaded(or: { () async throws -> Device? in
-      guard let deviceId = deviceId else { return nil }
-      return try await Current.db.query(Device.self)
-        .where(.id == deviceId)
+  func userDevice() async throws -> UserDevice? {
+    try await userDevice.useLoaded(or: { () async throws -> UserDevice? in
+      guard let userDeviceId else { return nil }
+      return try await Current.db.query(UserDevice.self)
+        .where(.id == userDeviceId)
         .first()
     })
   }

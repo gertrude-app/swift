@@ -5,10 +5,10 @@ extension CreateKeystrokeLines: Resolver {
     with inputs: [KeystrokeLineInput],
     in context: UserContext
   ) async throws -> Output {
-    let device = try await context.device()
+    let userDevice = try await context.userDevice()
     let keystrokeLines = inputs.map { input in
       KeystrokeLine(
-        deviceId: device.id,
+        userDeviceId: userDevice.id,
         appName: input.appName,
         line: input.line,
         createdAt: input.time

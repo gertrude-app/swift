@@ -63,12 +63,12 @@ extension GetDashboardWidgets: NoInputResolver {
       )
     }
 
-    let devices = try await Current.db.query(Device.self)
+    let userDevices = try await Current.db.query(UserDevice.self)
       .where(.userId |=| users.map(\.id))
       .all()
 
     let unlockRequests = try await Current.db.query(Api.UnlockRequest.self)
-      .where(.deviceId |=| devices.map(\.id))
+      .where(.userDeviceId |=| userDevices.map(\.id))
       .where(.status == .enum(RequestStatus.pending))
       .all()
 
@@ -76,19 +76,19 @@ extension GetDashboardWidgets: NoInputResolver {
       .where(.id |=| unlockRequests.map(\.networkDecisionId))
       .all()
 
-    let deviceToUserMap: [Device.Id: Api.User] = devices.reduce(into: [:]) { map, device in
+    let deviceToUserMap: [UserDevice.Id: Api.User] = userDevices.reduce(into: [:]) { map, device in
       map[device.id] = users.first(where: { $0.id == device.userId })
     }
 
     async let keystrokes = Current.db.query(KeystrokeLine.self)
-      .where(.deviceId |=| devices.map(\.id))
+      .where(.userDeviceId |=| userDevices.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
       .all()
 
     async let screenshots = Current.db.query(Screenshot.self)
-      .where(.deviceId |=| devices.map(\.id))
+      .where(.userDeviceId |=| userDevices.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
@@ -102,8 +102,8 @@ extension GetDashboardWidgets: NoInputResolver {
       users: users.concurrentMap { user in .init(
         id: user.id,
         name: user.name,
-        isOnline: try await userOnline(user.id, devices),
-        numDevices: devices.filter { $0.userId == user.id }.count
+        isOnline: try await userOnline(user.id, userDevices),
+        numDevices: userDevices.filter { $0.userId == user.id }.count
       ) },
       userActivitySummaries: userActivitySummaries(
         users: users,
@@ -128,20 +128,20 @@ extension GetDashboardWidgets: NoInputResolver {
 
 // helpers
 
-func userOnline(_ userId: User.Id, _ devices: [Device]) async throws -> Bool {
-  try await devices.concurrentMap { await $0.isOnline() }.contains(true)
+func userOnline(_ userId: User.Id, _ userDevices: [UserDevice]) async throws -> Bool {
+  try await userDevices.concurrentMap { await $0.isOnline() }.contains(true)
 }
 
 func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],
-  map: [Device.Id: User],
+  map: [UserDevice.Id: User],
   networkDecisions: [NetworkDecision]
 ) -> [GetDashboardWidgets.UnlockRequest] {
   unlockRequests.map { unlockRequest in
     .init(
       id: unlockRequest.id,
-      userId: map[unlockRequest.deviceId]?.id ?? .init(),
-      userName: map[unlockRequest.deviceId]?.name ?? "",
+      userId: map[unlockRequest.userDeviceId]?.id ?? .init(),
+      userName: map[unlockRequest.userDeviceId]?.name ?? "",
       target: networkDecisions
         .first(where: { $0.id == unlockRequest.networkDecisionId })?
         .target ?? "",
@@ -153,25 +153,25 @@ func mapUnlockRequests(
 
 func recentScreenshots(
   users: [User],
-  map: [Device.Id: User],
+  map: [UserDevice.Id: User],
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.RecentScreenshot] {
   users.compactMap { user in
     screenshots
-      .first { map[$0.deviceId]?.id == user.id }
+      .first { map[$0.userDeviceId]?.id == user.id }
       .map { .init(id: $0.id, userName: user.name, url: $0.url, createdAt: $0.createdAt) }
   }
 }
 
 func userActivitySummaries(
   users: [User],
-  map: [Device.Id: User],
+  map: [UserDevice.Id: User],
   keystrokes: [KeystrokeLine],
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.UserActivitySummary] {
   users.map { user in
-    let userScreenshots = screenshots.filter { map[$0.deviceId]?.id == user.id }
-    let userKeystrokes = keystrokes.filter { map[$0.deviceId]?.id == user.id }
+    let userScreenshots = screenshots.filter { map[$0.userDeviceId]?.id == user.id }
+    let userKeystrokes = keystrokes.filter { map[$0.userDeviceId]?.id == user.id }
     return .init(
       id: user.id,
       name: user.name,

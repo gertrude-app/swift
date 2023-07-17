@@ -13,11 +13,11 @@ extension GetUnlockRequests: NoInputResolver {
     let users = try await Current.db.query(User.self)
       .where(.adminId == context.admin.id)
       .all()
-    let devices = try await Current.db.query(Device.self)
+    let userDevices = try await Current.db.query(UserDevice.self)
       .where(.userId |=| users.map { .id($0) })
       .all()
     let requests = try await Current.db.query(UnlockRequest.self)
-      .where(.deviceId |=| devices.map { .id($0) })
+      .where(.userDeviceId |=| userDevices.map { .id($0) })
       .all()
 
     // TODO: this is super inefficient, re-queries for same entities...

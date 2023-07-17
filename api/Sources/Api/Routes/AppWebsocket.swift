@@ -24,7 +24,7 @@ enum AppWebsocket {
     _ ws: WebSocket
   ) async throws {
     guard let token = try? await request.userToken(),
-          let device = try? await token.device() else {
+          let userDevice = try? await token.userDevice() else {
       throw UserTokenNotFound()
     }
 
@@ -32,12 +32,12 @@ enum AppWebsocket {
     let keychains = try await user.keychains()
 
     let entityIds = AppConnection.Ids(
-      device: device.id,
+      userDevice: userDevice.id,
       user: user.id,
       keychains: keychains.map(\.id)
     )
 
-    Current.logger.debug("WS: adding connection device: \(device.id.lowercased)")
+    Current.logger.debug("WS: adding connection user device: \(userDevice.id.lowercased)")
     let connection = AppConnection(ws: ws, ids: entityIds)
     await Current.connectedApps.add(connection)
   }

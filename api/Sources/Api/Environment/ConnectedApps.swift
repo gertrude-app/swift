@@ -3,8 +3,8 @@ import Gertie
 struct ConnectedApps {
   var add: (AppConnection) async -> Void
   var remove: (AppConnection) async -> Void
-  var filterState: (Device.Id) async -> UserFilterState?
-  var isDeviceOnline: (Device.Id) async -> Bool
+  var filterState: (UserDevice.Id) async -> UserFilterState?
+  var isUserDeviceOnline: (UserDevice.Id) async -> Bool
   var notify: (AppEvent) async throws -> Void
 }
 
@@ -16,7 +16,7 @@ extension ConnectedApps {
       add: { await connections.add($0) },
       remove: { await connections.remove($0) },
       filterState: { await connections.filterState(for: $0) },
-      isDeviceOnline: { await connections.isDeviceOnline($0) },
+      isUserDeviceOnline: { await connections.isUserDeviceOnline($0) },
       notify: { try await connections.notify($0) }
     )
   }
@@ -26,7 +26,7 @@ extension ConnectedApps {
       add: { _ in },
       remove: { _ in },
       filterState: { _ in nil },
-      isDeviceOnline: { _ in false },
+      isUserDeviceOnline: { _ in false },
       notify: { _ in }
     )
   }
@@ -37,8 +37,8 @@ extension ConnectedApps {
 struct LegacyConnectedApps {
   var add: (LegacyAppConnection) async -> Void
   var remove: (LegacyAppConnection) async -> Void
-  var filterState: (Device.Id) async -> FilterState?
-  var isDeviceOnline: (Device.Id) async -> Bool
+  var filterState: (UserDevice.Id) async -> FilterState?
+  var isUserDeviceOnline: (UserDevice.Id) async -> Bool
   var notify: (AppEvent) async throws -> Void
 }
 
@@ -50,7 +50,7 @@ extension LegacyConnectedApps {
       add: { await connections.add($0) },
       remove: { await connections.remove($0) },
       filterState: { await connections.filterState(for: $0) },
-      isDeviceOnline: { await connections.isDeviceOnline($0) },
+      isUserDeviceOnline: { await connections.isUserDeviceOnline($0) },
       notify: { try await connections.notify($0) }
     )
   }
@@ -60,7 +60,7 @@ extension LegacyConnectedApps {
       add: { _ in },
       remove: { _ in },
       filterState: { _ in nil },
-      isDeviceOnline: { _ in false },
+      isUserDeviceOnline: { _ in false },
       notify: { _ in }
     )
   }

@@ -10,7 +10,7 @@ enum AppEvent: Equatable {
   case userDeleted(User.Id)
 
   struct UnlockRequestUpdated: Equatable {
-    let deviceId: Device.Id
+    let userDeviceId: UserDevice.Id
     let status: RequestStatus
     let target: String
     let comment: String?
@@ -18,7 +18,7 @@ enum AppEvent: Equatable {
   }
 
   struct SuspendFilterRequestUpdated: Equatable {
-    let deviceId: Device.Id
+    let userDeviceId: UserDevice.Id
     let status: RequestStatus
     let duration: Seconds<Int>
     let requestComment: String?

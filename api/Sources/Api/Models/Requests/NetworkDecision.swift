@@ -3,7 +3,7 @@ import Gertie
 
 final class NetworkDecision: Codable {
   var id: Id
-  var deviceId: Device.Id
+  var userDeviceId: UserDevice.Id
   var responsibleKeyId: Key.Id?
   var verdict: NetworkDecisionVerdict
   var reason: NetworkDecisionReason
@@ -15,7 +15,7 @@ final class NetworkDecision: Codable {
   var count: Int
   var createdAt: Date
 
-  var device = Parent<Device>.notLoaded
+  var userDevice = Parent<UserDevice>.notLoaded
   var responsibleKey = OptionalParent<Key>.notLoaded
 
   var ipProtocol: IpProtocol? {
@@ -35,7 +35,7 @@ final class NetworkDecision: Codable {
 
   init(
     id: Id = .init(),
-    deviceId: Device.Id,
+    userDeviceId: UserDevice.Id,
     responsibleKeyId: Key.Id? = nil,
     verdict: NetworkDecisionVerdict,
     reason: NetworkDecisionReason,
@@ -48,7 +48,7 @@ final class NetworkDecision: Codable {
     createdAt: Date
   ) {
     self.id = id
-    self.deviceId = deviceId
+    self.userDeviceId = userDeviceId
     self.responsibleKeyId = responsibleKeyId
     self.verdict = verdict
     self.reason = reason

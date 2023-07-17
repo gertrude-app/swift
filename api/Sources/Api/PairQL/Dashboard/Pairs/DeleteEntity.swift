@@ -9,7 +9,7 @@ struct DeleteEntity: Pair {
     enum EntityType: String, Codable {
       case adminNotification
       case adminVerifiedNotificationMethod
-      case device
+      case userDevice
       case key
       case keychain
       case user
@@ -38,8 +38,8 @@ extension DeleteEntity: Resolver {
         .where(.adminId == context.admin.id)
         .delete()
 
-    case .device:
-      let device = try await Current.db.find(Device.Id(input.id))
+    case .userDevice:
+      let device = try await Current.db.find(UserDevice.Id(input.id))
       try await context.verifiedUser(from: device.userId)
       try await Current.db.delete(device.id)
 

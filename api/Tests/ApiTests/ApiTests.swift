@@ -67,7 +67,6 @@ final class ApiTests: ApiTestCase {
     let input = ConnectApp.Input(
       verificationCode: 0,
       appVersion: "1.0.0",
-      hostname: nil,
       modelIdentifier: "MacBookPro16,1",
       username: "kids",
       fullUsername: "kids",

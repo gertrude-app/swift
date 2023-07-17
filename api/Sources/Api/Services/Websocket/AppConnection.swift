@@ -7,7 +7,7 @@ import XCore
 
 class AppConnection {
   struct Ids {
-    let device: Device.Id
+    let userDevice: UserDevice.Id
     let user: User.Id
     let keychains: [Keychain.Id]
   }
@@ -41,7 +41,6 @@ class AppConnection {
       Current.logger.error("WS: failed to decode WebSocket message: `\(json)`")
       return
     }
-    Current.logger.notice("deviceid: \(ids.device.lowercased)")
     Current.logger.notice("WS: WebSocket \(id.lowercased) got message: \(message)")
     switch message {
     case .currentFilterState(let filterState):

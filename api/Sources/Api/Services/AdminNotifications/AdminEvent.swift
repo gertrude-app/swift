@@ -13,7 +13,7 @@ enum AdminEvent: Equatable {
 
   struct SuspendFilterRequestSubmitted: Equatable {
     let dashboardUrl: String
-    let deviceId: Device.Id
+    let userDeviceId: UserDevice.Id
     let userName: String
     let duration: Seconds<Int>
     let requestId: SuspendFilterRequest.Id

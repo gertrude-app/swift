@@ -9,11 +9,19 @@ public extension SQLRow {
 
 public extension SQLQueryString {
   mutating func appendInterpolation<T: RawRepresentable>(id: T) where T.RawValue == UUID {
-    appendInterpolation(raw: id.rawValue.uuidString)
+    appendInterpolation(uuid: id.rawValue)
+  }
+
+  mutating func appendInterpolation(uuid: UUID) {
+    appendInterpolation(raw: uuid.uuidString)
   }
 
   mutating func appendInterpolation<M: DuetSQL.Model>(table model: M.Type) {
     appendInterpolation(raw: model.tableName)
+  }
+
+  mutating func appendInterpolation(escaping string: String) {
+    appendInterpolation(raw: string.replacingOccurrences(of: "'", with: "''"))
   }
 
   mutating func appendInterpolation(col: FieldKey) {
@@ -24,10 +32,14 @@ public extension SQLQueryString {
     appendInterpolation(raw: col)
   }
 
+  mutating func appendInterpolation(timestamp date: Date) {
+    appendInterpolation(raw: date.postgresTimestampString)
+  }
+
   mutating func appendInterpolation(nullable: String?) {
     if let string = nullable {
       appendInterpolation(raw: "'")
-      appendInterpolation(raw: string)
+      appendInterpolation(raw: string.replacingOccurrences(of: "'", with: "''"))
       appendInterpolation(raw: "'")
     } else {
       appendInterpolation(raw: "NULL")

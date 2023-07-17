@@ -2,23 +2,23 @@ import Duet
 
 final class KeystrokeLine: Codable {
   var id: Id
-  var deviceId: Device.Id
+  var userDeviceId: UserDevice.Id
   var appName: String
   var line: String
   var createdAt: Date
   var deletedAt: Date?
 
-  var device = Parent<Device>.notLoaded
+  var userDevice = Parent<UserDevice>.notLoaded
 
   init(
     id: Id = .init(),
-    deviceId: Device.Id,
+    userDeviceId: UserDevice.Id,
     appName: String,
     line: String,
     createdAt: Date
   ) {
     self.id = id
-    self.deviceId = deviceId
+    self.userDeviceId = userDeviceId
     self.appName = appName
     self.line = line
     self.createdAt = createdAt

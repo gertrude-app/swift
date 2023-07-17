@@ -360,7 +360,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testGetSuspendFilterRequest() async throws {
     let user = try await Entities.user().withDevice()
     let request = SuspendFilterRequest.random
-    request.deviceId = user.device.id
+    request.userDeviceId = user.device.id
     try await Current.db.create(request)
 
     let output = try await GetSuspendFilterRequest.resolve(
@@ -379,12 +379,12 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let user = try await Entities.user().withDevice()
 
     let decision = NetworkDecision.random
-    decision.deviceId = user.device.id
+    decision.userDeviceId = user.device.id
     decision.appBundleId = "com.rofl.biz"
     try await Current.db.create(decision)
 
     let request = UnlockRequest.mock
-    request.deviceId = user.device.id
+    request.userDeviceId = user.device.id
     request.status = .pending
     request.requestComment = "please dad"
     request.networkDecisionId = decision.id
@@ -411,7 +411,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testUpdateSuspendFilterRequest() async throws {
     let user = try await Entities.user().withDevice()
     let request = SuspendFilterRequest.random
-    request.deviceId = user.device.id
+    request.userDeviceId = user.device.id
     request.status = .pending
     try await Current.db.create(request)
 
@@ -434,7 +434,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     expect(sent.appEvents).toEqual([
       .suspendFilterRequestUpdated(.init(
-        deviceId: user.device.id,
+        userDeviceId: user.device.id,
         status: .accepted,
         duration: 333,
         requestComment: request.requestComment,
@@ -447,12 +447,12 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let user = try await Entities.user().withDevice()
 
     let decision = NetworkDecision.random
-    decision.deviceId = user.device.id
+    decision.userDeviceId = user.device.id
     decision.appBundleId = "com.rofl.biz"
     try await Current.db.create(decision)
 
     let request = UnlockRequest.mock
-    request.deviceId = user.device.id
+    request.userDeviceId = user.device.id
     request.status = .pending
     request.requestComment = "please dad"
     request.networkDecisionId = decision.id
@@ -475,7 +475,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     expect(sent.appEvents).toEqual([
       .unlockRequestUpdated(.init(
-        deviceId: user.device.id,
+        userDeviceId: user.device.id,
         status: .rejected,
         target: decision.target ?? "",
         comment: "please dad",

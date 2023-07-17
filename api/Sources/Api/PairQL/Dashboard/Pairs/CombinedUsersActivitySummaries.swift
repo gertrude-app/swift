@@ -15,17 +15,17 @@ extension CombinedUsersActivitySummaries: Resolver {
     in context: AdminContext
   ) async throws -> Output {
     let dateRanges = input.compactMap(\.dates)
-    let deviceIds = try await context.userDevices().map(\.id)
+    let userDeviceIds = try await context.userDevices().map(\.id)
     return try await dateRanges.concurrentMap { start, end in
       async let screenshots = Current.db.query(Screenshot.self)
-        .where(.deviceId |=| deviceIds)
+        .where(.userDeviceId |=| userDeviceIds)
         .where(.createdAt <= .date(end))
         .where(.createdAt > .date(start))
         .orderBy(.createdAt, .desc)
         .withSoftDeleted()
         .all()
       async let keystrokeLines = Current.db.query(KeystrokeLine.self)
-        .where(.deviceId |=| deviceIds)
+        .where(.userDeviceId |=| userDeviceIds)
         .where(.createdAt <= .date(end))
         .where(.createdAt > .date(start))
         .orderBy(.createdAt, .desc)

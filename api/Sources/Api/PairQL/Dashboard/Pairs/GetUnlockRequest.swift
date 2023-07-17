@@ -36,9 +36,9 @@ extension GetUnlockRequest: Resolver {
 
 extension GetUnlockRequest.Output {
   init(from request: UnlockRequest, in context: AdminContext) async throws {
-    let device = try await request.device()
+    let userDevice = try await request.userDevice()
     let decision = try await request.networkDecision()
-    let user = try await context.verifiedUser(from: device.userId)
+    let user = try await context.verifiedUser(from: userDevice.userId)
 
     var app: AppDescriptor?
     if let bundleId = decision.appBundleId {
