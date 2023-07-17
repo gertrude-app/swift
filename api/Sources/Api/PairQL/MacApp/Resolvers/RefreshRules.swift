@@ -10,11 +10,11 @@ extension RefreshRules: Resolver {
     }.flatMap { $0 }
 
     // update the app version if it changed
-    if let device = try? await context.device(),
+    if let userDevice = try? await context.userDevice(),
        !input.appVersion.isEmpty,
-       input.appVersion != device.appVersion {
-      device.appVersion = input.appVersion
-      try await Current.db.update(device)
+       input.appVersion != userDevice.appVersion {
+      userDevice.appVersion = input.appVersion
+      try await Current.db.update(userDevice)
     }
 
     // ...merging in AUTO-INCLUDED Keychain

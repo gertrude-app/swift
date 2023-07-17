@@ -5,11 +5,11 @@ extension CreateNetworkDecisions: Resolver {
     with inputs: [DecisionInput],
     in context: UserContext
   ) async throws -> Output {
-    let device = try await context.device()
+    let userDevice = try await context.userDevice()
     let decisions = inputs.map { input in
       NetworkDecision(
         id: input.id.map { .init($0) } ?? .init(),
-        deviceId: device.id,
+        userDeviceId: userDevice.id,
         responsibleKeyId: input.responsibleKeyId.map { .init($0) },
         verdict: input.verdict,
         reason: input.reason,

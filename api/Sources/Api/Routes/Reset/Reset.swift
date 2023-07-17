@@ -86,7 +86,7 @@ enum Reset {
 
   static func createActivityItems(
     _ num: Int = Int.random(in: 15 ... 30),
-    _ deviceId: Device.Id,
+    _ deviceId: UserDevice.Id,
     subtractingDays: Int = 0,
     percentDeleted: Int = 0
   ) async throws {
@@ -125,13 +125,13 @@ enum Reset {
   }
 
   private static func createActivityItem(
-    _ deviceId: Device.Id,
+    _ userDeviceId: UserDevice.Id,
     subtractingDays: Int = 0
   ) -> Either<Screenshot, KeystrokeLine> {
     if [1, 2, 3].shuffled().first! != 1 {
       let (width, height) = [(800, 600), (900, 600), (800, 500), (900, 500)].shuffled().first!
       return .left(Screenshot(
-        deviceId: deviceId,
+        userDeviceId: userDeviceId,
         url: "https://placekitten.com/\(width)/\(height)",
         width: width,
         height: height
@@ -145,7 +145,7 @@ enum Reset {
         ("Notes", "dear diary,\ni know i haven't written in a long time.\nsorry!"),
       ].shuffled().first!
       return .right(KeystrokeLine(
-        deviceId: deviceId,
+        userDeviceId: userDeviceId,
         appName: app,
         line: line,
         createdAt: .init()

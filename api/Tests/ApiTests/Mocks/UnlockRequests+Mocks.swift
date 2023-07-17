@@ -4,14 +4,14 @@ import DuetMock
 
 extension UnlockRequest: Mock {
   public static var mock: UnlockRequest {
-    UnlockRequest(networkDecisionId: .init(), deviceId: .init())
+    UnlockRequest(networkDecisionId: .init(), userDeviceId: .init())
   }
 
   public static var empty: UnlockRequest {
-    UnlockRequest(networkDecisionId: .init(), deviceId: .init())
+    UnlockRequest(networkDecisionId: .init(), userDeviceId: .init())
   }
 
   public static var random: UnlockRequest {
-    UnlockRequest(networkDecisionId: .init(), deviceId: .init())
+    UnlockRequest(networkDecisionId: .init(), userDeviceId: .init())
   }
 }

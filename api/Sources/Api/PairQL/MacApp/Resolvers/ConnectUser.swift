@@ -7,7 +7,6 @@ extension ConnectUser: Resolver {
     let v1 = try await ConnectApp.resolve(with: .init(
       verificationCode: input.verificationCode,
       appVersion: input.appVersion,
-      hostname: input.hostname,
       modelIdentifier: input.modelIdentifier,
       username: input.username,
       fullUsername: input.fullUsername,

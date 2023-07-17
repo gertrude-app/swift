@@ -191,6 +191,48 @@ extension AppBundleId: Model {
   }
 }
 
+extension UserDevice: Model {
+  public static let tableName = "user_devices" // TODO: device-refactor
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .deviceId:
+      return .uuid(deviceId)
+    case .userId:
+      return .uuid(userId)
+    case .appVersion:
+      return .string(appVersion)
+    case .fullUsername:
+      return .string(fullUsername)
+    case .numericId:
+      return .int(numericId)
+    case .username:
+      return .string(username)
+    case .updatedAt:
+      return .date(updatedAt)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .userId: .uuid(userId),
+      .deviceId: .uuid(deviceId),
+      .appVersion: .string(appVersion),
+      .username: .string(username),
+      .fullUsername: .string(fullUsername),
+      .numericId: .int(numericId),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
 extension Device: Model {
   public static let tableName = M3.tableName
   public typealias ColumnName = CodingKeys
@@ -199,24 +241,16 @@ extension Device: Model {
     switch column {
     case .id:
       return .id(self)
-    case .userId:
-      return .uuid(userId)
-    case .appVersion:
-      return .string(appVersion)
+    case .adminId:
+      return .uuid(adminId)
     case .customName:
       return .string(customName)
-    case .hostname:
-      return .string(hostname)
     case .modelIdentifier:
       return .string(modelIdentifier)
-    case .username:
-      return .string(username)
-    case .fullUsername:
-      return .string(fullUsername)
-    case .numericId:
-      return .int(numericId)
     case .serialNumber:
       return .string(serialNumber)
+    case .appReleaseChannel:
+      return .enum(appReleaseChannel)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -227,15 +261,11 @@ extension Device: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userId: .uuid(userId),
-      .appVersion: .string(appVersion),
+      .adminId: .uuid(adminId),
       .customName: .string(customName),
-      .hostname: .string(hostname),
       .modelIdentifier: .string(modelIdentifier),
-      .username: .string(username),
-      .fullUsername: .string(fullUsername),
-      .numericId: .int(numericId),
       .serialNumber: .string(serialNumber),
+      .appReleaseChannel: .enum(appReleaseChannel),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -364,8 +394,8 @@ extension KeystrokeLine: Model {
     switch column {
     case .id:
       return .id(self)
-    case .deviceId:
-      return .uuid(deviceId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
     case .appName:
       return .string(appName)
     case .line:
@@ -380,7 +410,7 @@ extension KeystrokeLine: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .deviceId: .uuid(deviceId),
+      .userDeviceId: .uuid(userDeviceId),
       .appName: .string(appName),
       .line: .string(line),
       .createdAt: .date(createdAt),
@@ -396,8 +426,8 @@ extension NetworkDecision: Model {
     switch column {
     case .id:
       return .id(self)
-    case .deviceId:
-      return .uuid(deviceId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
     case .responsibleKeyId:
       return .uuid(responsibleKeyId)
     case .verdict:
@@ -424,7 +454,7 @@ extension NetworkDecision: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .deviceId: .uuid(deviceId),
+      .userDeviceId: .uuid(userDeviceId),
       .responsibleKeyId: .uuid(responsibleKeyId),
       .verdict: .enum(verdict),
       .reason: .enum(reason),
@@ -489,8 +519,8 @@ extension Screenshot: Model {
     switch column {
     case .id:
       return .id(self)
-    case .deviceId:
-      return .uuid(deviceId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
     case .url:
       return .string(url)
     case .width:
@@ -507,7 +537,7 @@ extension Screenshot: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .deviceId: .uuid(deviceId),
+      .userDeviceId: .uuid(userDeviceId),
       .url: .string(url),
       .width: .int(width),
       .height: .int(height),
@@ -526,8 +556,8 @@ extension SuspendFilterRequest: Model {
     switch column {
     case .id:
       return .id(self)
-    case .deviceId:
-      return .uuid(deviceId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
     case .status:
       return .enum(status)
     case .scope:
@@ -548,7 +578,7 @@ extension SuspendFilterRequest: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .deviceId: .uuid(deviceId),
+      .userDeviceId: .uuid(userDeviceId),
       .status: .enum(status),
       .scope: .json(scope.toPostgresJson),
       .duration: .int(duration.rawValue),
@@ -570,8 +600,8 @@ extension UnlockRequest: Model {
       return .id(self)
     case .networkDecisionId:
       return .uuid(networkDecisionId)
-    case .deviceId:
-      return .uuid(deviceId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
     case .status:
       return .enum(status)
     case .requestComment:
@@ -589,7 +619,7 @@ extension UnlockRequest: Model {
     [
       .id: .id(self),
       .networkDecisionId: .uuid(networkDecisionId),
-      .deviceId: .uuid(deviceId),
+      .userDeviceId: .uuid(userDeviceId),
       .status: .enum(status),
       .requestComment: .string(requestComment),
       .responseComment: .string(responseComment),
@@ -680,8 +710,8 @@ extension UserToken: Model {
       return .id(self)
     case .userId:
       return .uuid(userId)
-    case .deviceId:
-      return .uuid(deviceId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
     case .value:
       return .uuid(value)
     case .createdAt:
@@ -697,7 +727,7 @@ extension UserToken: Model {
     [
       .id: .id(self),
       .userId: .uuid(userId),
-      .deviceId: .uuid(deviceId),
+      .userDeviceId: .uuid(userDeviceId),
       .value: .uuid(value),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
@@ -719,8 +749,8 @@ extension InterestingEvent: Model {
       return .string(kind)
     case .context:
       return .string(context)
-    case .deviceId:
-      return .uuid(deviceId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
     case .adminId:
       return .uuid(adminId)
     case .detail:
@@ -736,7 +766,7 @@ extension InterestingEvent: Model {
       .eventId: .string(eventId),
       .kind: .string(kind),
       .context: .string(context),
-      .deviceId: .uuid(deviceId),
+      .userDeviceId: .uuid(userDeviceId),
       .adminId: .uuid(adminId),
       .detail: .string(detail),
       .createdAt: .currentTimestamp,

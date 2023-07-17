@@ -2,18 +2,18 @@ import Duet
 
 final class Screenshot: Codable {
   var id: Id
-  var deviceId: Device.Id
+  var userDeviceId: UserDevice.Id
   var url: String
   var width: Int
   var height: Int
   var createdAt: Date
   var deletedAt: Date?
 
-  var device = Parent<Device>.notLoaded
+  var userDevice = Parent<UserDevice>.notLoaded
 
   init(
     id: Id = .init(),
-    deviceId: Device.Id,
+    userDeviceId: UserDevice.Id,
     url: String,
     width: Int,
     height: Int,
@@ -23,7 +23,7 @@ final class Screenshot: Codable {
     self.url = url
     self.width = width
     self.height = height
-    self.deviceId = deviceId
+    self.userDeviceId = userDeviceId
     self.createdAt = createdAt
   }
 }

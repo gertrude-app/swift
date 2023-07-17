@@ -3,9 +3,9 @@ import Vapor
 
 extension CreateSuspendFilterRequest: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
-    let device = try await context.device()
+    let userDevice = try await context.userDevice()
     let request = try await Current.db.create(SuspendFilterRequest(
-      deviceId: device.id,
+      userDeviceId: userDevice.id,
       status: .pending,
       scope: .unrestricted,
       duration: .init(input.duration),
@@ -16,7 +16,7 @@ extension CreateSuspendFilterRequest: Resolver {
       context.user.adminId,
       .suspendFilterRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,
-        deviceId: device.id,
+        userDeviceId: userDevice.id,
         userName: context.user.name,
         duration: .init(input.duration),
         requestId: request.id,

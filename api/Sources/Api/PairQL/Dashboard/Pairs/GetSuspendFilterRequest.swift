@@ -8,7 +8,7 @@ struct GetSuspendFilterRequest: Pair {
 
   struct Output: PairOutput {
     let id: Api.SuspendFilterRequest.Id
-    let deviceId: Api.Device.Id
+    let deviceId: Api.UserDevice.Id
     let status: RequestStatus
     let userName: String
     let requestedDurationInSeconds: Int
@@ -23,11 +23,11 @@ struct GetSuspendFilterRequest: Pair {
 extension GetSuspendFilterRequest: Resolver {
   static func resolve(with id: Input, in context: AdminContext) async throws -> Output {
     let request = try await Current.db.find(id)
-    let device = try await request.device()
-    let user = try await device.user()
+    let userDevice = try await request.userDevice()
+    let user = try await userDevice.user()
     return Output(
       id: id,
-      deviceId: device.id,
+      deviceId: userDevice.id,
       status: request.status,
       userName: user.name,
       requestedDurationInSeconds: request.duration.rawValue,

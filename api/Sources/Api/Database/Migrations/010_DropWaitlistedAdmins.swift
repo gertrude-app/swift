@@ -1,5 +1,4 @@
 import FluentSQL
-import XCore
 
 struct DropWaitlistedAdmins: GertieMigration {
   func up(sql: SQLDatabase) async throws {

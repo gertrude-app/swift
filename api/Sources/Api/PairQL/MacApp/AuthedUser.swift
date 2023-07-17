@@ -7,11 +7,11 @@ struct UserContext: ResolverContext {
   let user: User
   let token: UserToken
 
-  func device() async throws -> Device {
-    guard let device = try await token.device() else {
-      throw Abort(.notFound, reason: "missing device")
+  func userDevice() async throws -> UserDevice {
+    guard let userDevice = try await token.userDevice() else {
+      throw Abort(.notFound, reason: "missing user device")
     }
-    return device
+    return userDevice
   }
 }
 

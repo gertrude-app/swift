@@ -6,16 +6,16 @@ import Gertie
 
 extension NetworkDecision: Mock {
   public static var mock: NetworkDecision {
-    NetworkDecision(deviceId: .init(), verdict: .block, reason: .systemUser, createdAt: Date())
+    NetworkDecision(userDeviceId: .init(), verdict: .block, reason: .systemUser, createdAt: Date())
   }
 
   public static var empty: NetworkDecision {
-    NetworkDecision(deviceId: .init(), verdict: .block, reason: .systemUser, createdAt: Date())
+    NetworkDecision(userDeviceId: .init(), verdict: .block, reason: .systemUser, createdAt: Date())
   }
 
   public static var random: NetworkDecision {
     NetworkDecision(
-      deviceId: .init(),
+      userDeviceId: .init(),
       verdict: NetworkDecisionVerdict.allCases.shuffled().first!,
       reason: NetworkDecisionReason.allCases.shuffled().first!,
       createdAt: Date()

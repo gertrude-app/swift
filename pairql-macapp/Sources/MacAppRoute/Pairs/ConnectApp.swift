@@ -7,7 +7,6 @@ public struct ConnectApp: Pair {
   public struct Input: PairInput {
     public var verificationCode: Int
     public var appVersion: String
-    public var hostname: String?
     public var modelIdentifier: String
     public var username: String
     public var fullUsername: String
@@ -17,7 +16,6 @@ public struct ConnectApp: Pair {
     public init(
       verificationCode: Int,
       appVersion: String,
-      hostname: String?,
       modelIdentifier: String,
       username: String,
       fullUsername: String,
@@ -26,7 +24,6 @@ public struct ConnectApp: Pair {
     ) {
       self.verificationCode = verificationCode
       self.appVersion = appVersion
-      self.hostname = hostname
       self.modelIdentifier = modelIdentifier
       self.username = username
       self.fullUsername = fullUsername

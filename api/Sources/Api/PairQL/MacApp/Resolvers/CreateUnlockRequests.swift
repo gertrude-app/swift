@@ -2,11 +2,11 @@ import MacAppRoute
 
 extension CreateUnlockRequests: Resolver {
   static func resolve(with inputs: Input, in context: UserContext) async throws -> Output {
-    let device = try await context.device()
+    let userDevice = try await context.userDevice()
     let requests = inputs.map {
       UnlockRequest(
         networkDecisionId: .init(rawValue: $0.networkDecisionId),
-        deviceId: device.id,
+        userDeviceId: userDevice.id,
         requestComment: $0.comment,
         status: .pending
       )

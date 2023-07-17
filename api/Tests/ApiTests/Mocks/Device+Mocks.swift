@@ -5,36 +5,27 @@ import DuetMock
 extension Device: Mock {
   public static var mock: Device {
     Device(
-      userId: .init(),
-      appVersion: "@mock appVersion",
+      adminId: .init(),
+      customName: "@mock customName",
       modelIdentifier: "@mock modelIdentifier",
-      username: "@mock username",
-      fullUsername: "@mock fullUsername",
-      numericId: 42,
       serialNumber: "@mock serialNumber"
     )
   }
 
   public static var empty: Device {
     Device(
-      userId: .init(),
-      appVersion: "",
+      adminId: .init(),
+      customName: nil,
       modelIdentifier: "",
-      username: "",
-      fullUsername: "",
-      numericId: 0,
       serialNumber: ""
     )
   }
 
   public static var random: Device {
     Device(
-      userId: .init(),
-      appVersion: "@random".random,
+      adminId: .init(),
+      customName: "@random".random,
       modelIdentifier: "@random".random,
-      username: "@random".random,
-      fullUsername: "@random".random,
-      numericId: Int.random,
       serialNumber: "@random".random
     )
   }
