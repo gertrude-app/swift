@@ -13,8 +13,9 @@ enum ApplicationFeature {
 
   struct RootReducer {
     @Dependency(\.app) var app
-    @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.backgroundQueue) var bgQueue
+    @Dependency(\.device) var device
+    @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.storage) var storage
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.filterExtension) var filterExtension
@@ -28,6 +29,13 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
     case .application(.didFinishLaunching):
       return .merge(
+        .exec { _ in
+          // requesting notification authorization at least once
+          // ensures that the system prefs panel will show Gertrude
+          // TODO: consider delaying this if no user connected
+          await device.requestNotificationAuthorization()
+        },
+
         .exec { send in
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
         },

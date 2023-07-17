@@ -26,6 +26,15 @@ import UserNotifications
   }
 }
 
+@Sendable func requestNotificationAuth() async {
+  {
+    // sync closure to avoid warning about preferring async version
+    UNUserNotificationCenter
+      .current()
+      .requestAuthorization(options: [.alert]) { _, _ in }
+  }()
+}
+
 extension DeviceClient {
   func notifyNoInternet() async {
     await showNotification(
