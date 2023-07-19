@@ -78,6 +78,18 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
             try await replaceFilter(send)
             if await xpc.notConnected() {
               await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
+            } else {
+
+              // refresh the rules post-update, or else health check will complain
+              await send(.user(.refreshRules(
+                result: TaskResult { try await api.refreshUserRules() },
+                userInitiated: false
+              )))
+
+              // big sur doesn't get notification pushed when filter restarts
+              // so check manually after attempting to replace the filter
+              try await mainQueue.sleep(for: .seconds(1))
+              await send(.filter(.receivedState(await filter.state())))
             }
           }
         }
