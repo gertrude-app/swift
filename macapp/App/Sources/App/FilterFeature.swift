@@ -81,46 +81,76 @@ extension FilterFeature.RootReducer {
       state.filter.extension = filterState
       return .none
 
+    case .adminAuthenticated(.adminWindow(.webview(.stopFilterClicked))):
+      // big sur (at least) doesn't get a notification pushed through the publisher for this event
+      // so optimistically set the extension state, and then recheck after 2 seconds
+      state.filter.extension = .installedButNotRunning
+      return .exec { send in
+        _ = await filterExtension.stop()
+        try await mainQueue.sleep(for: .seconds(2))
+        await send(.filter(.receivedState(await filterExtension.state())))
+      }
+
     case .menuBar(.turnOnFilterClicked),
          .adminWindow(.webview(.startFilterClicked)):
-      if !state.filter.extension.installed {
-        return .exec { send in
-          switch await filterExtension.install() {
-          case .installedSuccessfully:
-            break
-          case .timedOutWaiting:
-            interestingEvent(id: "9ffabfe5")
-            await send(.focusedNotification(.filterInstallTimeout))
-          case .userClickedDontAllow:
-            await send(.focusedNotification(.filterInstallDenied))
-          case .activationRequestFailed(let error):
-            unexpectedError(id: "61d0eda0", error)
-          case .failedToGetBundleIdentifier:
-            unexpectedError(id: "d4a652e9")
-          case .failedToLoadConfig:
-            unexpectedError(id: "bd04ba1a")
-          case .failedToSaveConfig:
-            unexpectedError(id: "161ed707")
-          case .alreadyInstalled:
-            unexpectedError(id: "ff51a770")
+      let extensionInstalled = state.filter.extension.installed
+      return .merge(
+        .exec { send in
+          if !extensionInstalled {
+            switch await filterExtension.install() {
+            case .installedSuccessfully:
+              break
+            case .timedOutWaiting:
+              interestingEvent(id: "9ffabfe5")
+              await send(.focusedNotification(.filterInstallTimeout))
+            case .userClickedDontAllow:
+              await send(.focusedNotification(.filterInstallDenied))
+            case .activationRequestFailed(let error):
+              unexpectedError(id: "61d0eda0", error)
+            case .failedToGetBundleIdentifier:
+              unexpectedError(id: "d4a652e9")
+            case .failedToLoadConfig:
+              unexpectedError(id: "bd04ba1a")
+            case .failedToSaveConfig:
+              unexpectedError(id: "161ed707")
+            case .alreadyInstalled:
+              unexpectedError(id: "ff51a770")
+            }
+          } else {
+            switch await filterExtension.start() {
+            case .installedAndRunning:
+              break
+            case .errorLoadingConfig:
+              unexpectedError(id: "c291bcef")
+            case .installedButNotRunning:
+              unexpectedError(id: "99f3465c")
+            case .notInstalled:
+              unexpectedError(id: "6e4f30ac")
+            case .unknown:
+              unexpectedError(id: "24f31d4c")
+            }
+          }
+        },
+        .exec { send in
+          // especially for the case of an admin re-starting the stopped extension
+          // on Big Sur, the extension state change doesn't get pushed through the publisher
+          // so we also poll the state to make sure the admin/user is getting good feedback
+          try await mainQueue.sleep(for: .milliseconds(200))
+          await send(.filter(.receivedState(await filterExtension.state())))
+          for _ in 1 ... 10 {
+            try await mainQueue.sleep(for: .seconds(1))
+            let state = await filterExtension.state()
+            await send(.filter(.receivedState(state)))
+            if state == .installedAndRunning { return }
+          }
+          for _ in 1 ... 10 {
+            try await mainQueue.sleep(for: .seconds(5))
+            let state = await filterExtension.state()
+            await send(.filter(.receivedState(state)))
+            if state == .installedAndRunning { return }
           }
         }
-      } else {
-        return .exec { _ in
-          switch await filterExtension.start() {
-          case .installedAndRunning:
-            break
-          case .errorLoadingConfig:
-            unexpectedError(id: "c291bcef")
-          case .installedButNotRunning:
-            unexpectedError(id: "99f3465c")
-          case .notInstalled:
-            unexpectedError(id: "6e4f30ac")
-          case .unknown:
-            unexpectedError(id: "24f31d4c")
-          }
-        }
-      }
+      )
     default:
       return .none
     }

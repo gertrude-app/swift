@@ -385,9 +385,6 @@ extension AdminWindowFeature.RootReducer {
           await app.quit()
         }
 
-      case .webview(.stopFilterClicked):
-        return .exec { _ in _ = await filter.stop() }
-
       case .webview(.reconnectUserClicked):
         // handled by UserConnectionFeature
         return .none
