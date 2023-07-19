@@ -144,8 +144,16 @@ final class FilterManager: NSObject {
 
   func replaceFilter() async -> FilterInstallResult {
     _ = await stopFilter()
+
+    // this disable/enable dance SEEMS to be the key to restoring good
+    // filter <-> app communication after replace. i can't explain why,
+    // and i'm not even 100% sure. i think i got the idea from here:
+    // https://developer.apple.com/forums/thread/711713
+    // see also old implementation, which seemed to _mostly_ work:
+    // https://github.com/gertrude-app/swift/blob/1b32b129288cd8130e4486e7de800d6be45a2eb6/macapp/Gertrude/AppCore/Sources/AppCore/FilterController.swift#L112
     system.disableNEFilterManagerShared()
     defer { system.enableNEFilterManagerShared() }
+
     return await activateExtension()
   }
 
