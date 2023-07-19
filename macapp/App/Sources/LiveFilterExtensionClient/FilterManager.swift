@@ -4,6 +4,7 @@ import Core
 import Dependencies
 import Foundation
 import NetworkExtension
+import os.log
 
 final class FilterManager: NSObject {
   private var cancellables = Set<AnyCancellable>()
@@ -46,7 +47,7 @@ final class FilterManager: NSObject {
     let state = await loadState()
     if state != .installedButNotRunning {
       // if happens moderately often, implement better behaviors for other states
-      unexpectedError(id: "02ee5d90")
+      unexpectedError(id: "02ee5d90", detail: "state: \(state)")
       return state
     }
 
@@ -64,7 +65,7 @@ final class FilterManager: NSObject {
     let state = await loadState()
     if state != .installedAndRunning {
       // if happens moderately often, implement better behaviors for other states
-      unexpectedError(id: "6f5b0838")
+      unexpectedError(id: "6f5b0838", detail: "state: \(state)")
     }
 
     system.disableNEFilterManagerShared()
@@ -80,15 +81,22 @@ final class FilterManager: NSObject {
   func installFilter() async -> FilterInstallResult {
     switch await loadState() {
     case .installedAndRunning, .installedButNotRunning:
+      os_log("[G•] APP FilterManager.installFilter() already installed #1")
       return .alreadyInstalled
     case .errorLoadingConfig, .notInstalled, .unknown:
       break
     }
 
     guard system.isNEFilterManagerSharedEnabled() == false else {
+      os_log("[G•] APP FilterManager.installFilter() already installed #2")
       return .alreadyInstalled
     }
 
+    return await activateExtension()
+  }
+
+  func activateExtension() async -> FilterInstallResult {
+    os_log("[G•] APP FilterManager.activateExtension()")
     system.requestExtensionActivation(self)
 
     // the delegate os system extension request almost always succeeds immediately
@@ -120,6 +128,7 @@ final class FilterManager: NSObject {
       // we got some kind of completion, we know what happened to the install request
       case .complete(let result):
         await activationRequest.setValue(.idle)
+        os_log("[G•] APP FilterManager.activateExtension() complete: %{public}@", "\(result)")
         return result
 
       // no resolution after 90 seconds, user probably confused, missed a step
@@ -135,17 +144,34 @@ final class FilterManager: NSObject {
 
   func replaceFilter() async -> FilterInstallResult {
     _ = await stopFilter()
-    return await installFilter()
+
+    // this disable/enable dance SEEMS to be the key to restoring good
+    // filter <-> app communication after replace. i can't explain why,
+    // and i'm not even 100% sure. i think i got the idea from here:
+    // https://developer.apple.com/forums/thread/711713
+    // see also old implementation, which seemed to _mostly_ work:
+    // https://github.com/gertrude-app/swift/blob/1b32b129288cd8130e4486e7de800d6be45a2eb6/macapp/Gertrude/AppCore/Sources/AppCore/FilterController.swift#L112
+    system.disableNEFilterManagerShared()
+    defer { system.enableNEFilterManagerShared() }
+
+    return await activateExtension()
   }
 
   func uninstallFilter() async -> Bool {
     _ = await stopFilter()
     return await system.removeFilterConfiguration() == nil
   }
+
+  /// replaces + removes config, so user has to click "allow" again
+  func reinstallFilter() async -> FilterInstallResult {
+    _ = await uninstallFilter()
+    return await installFilter()
+  }
 }
 
 @Sendable func configureFilter(_ system: SystemClient) async {
   guard system.isNEFilterManagerSharedEnabled() == false else {
+    os_log("[G•] APP FilterManager.configureFilter() already installed")
     await activationRequest.setValue(.complete(.alreadyInstalled))
     return
   }
@@ -153,18 +179,22 @@ final class FilterManager: NSObject {
   // check if there is an existing filter configuration
   let loadResult = await system.loadFilterConfiguration()
   if case .failed(let err) = loadResult {
+    os_log("[G•] APP FilterManager.configureFilter() config load err: %{public}@", "\(err)")
     await activationRequest.setValue(.complete(.failedToLoadConfig(err)))
     return
   }
 
   if system.filterProviderConfiguration() != nil {
-    // log?  or maybe removeFromPreferences()?
+    // i think we get into here when replacing a filter, so it already has a config
+    // if it turns out sometimes this is an error condition, consider removeFromPreferences()?
+    os_log("[G•] APP FilterManager.configureFilter() provider config exists")
   } else {
     let providerConfiguration = NEFilterProviderConfiguration()
     providerConfiguration.filterSockets = true
     providerConfiguration.filterPackets = false
     providerConfiguration.filterDataProviderBundleIdentifier = FILTER_EXT_BUNDLE_ID
     system.updateNEFilterManagerShared(providerConfiguration)
+    os_log("[G•] APP FilterManager.configureFilter() created provider config")
   }
 
   system.enableNEFilterManagerShared()
@@ -172,11 +202,13 @@ final class FilterManager: NSObject {
   // this is the suspension point where we spend the most time, while we wait
   // for the user to click "allow", and (i think) accept security & privacy
   if let error = await system.saveNEFilterManagerShared() {
+    os_log("[G•] APP FilterManager.configureFilter() save err: %{public}@", "\(error)")
     // if the user clicks "don't allow" the error is "permission denied"
     let result = error.localizedDescription == "permission denied"
       ? FilterInstallResult.userClickedDontAllow : .failedToSaveConfig(error)
     await activationRequest.setValue(.complete(result))
   } else {
+    os_log("[G•] APP FilterManager.configureFilter() installed successfully")
     await activationRequest.setValue(.complete(.installedSuccessfully))
   }
 }

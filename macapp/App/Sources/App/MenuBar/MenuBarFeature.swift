@@ -57,7 +57,7 @@ extension MenuBarFeature.Reducer {
       return .none
 
     case .connectFailedHelpClicked:
-      return .run { _ in
+      return .exec { _ in
         await device.openWebUrl(URL(string: "https://gertrude.app/contact")!)
       }
 
@@ -75,19 +75,19 @@ extension MenuBarFeature.RootReducer {
       return adminAuthenticated(action)
 
     case .adminAuthenticated(.menuBar(.quitForNowClicked)):
-      return .run { _ in await app.quit() }
+      return .exec { _ in await app.quit() }
 
     case .menuBar(.removeFilterClicked):
       return adminAuthenticated(action)
 
     case .adminAuthenticated(.menuBar(.removeFilterClicked)):
-      return .run { _ in _ = await filter.uninstall() }
+      return .exec { _ in _ = await filter.uninstall() }
 
     case .menuBar(.quitForUninstallClicked):
       return adminAuthenticated(action)
 
     case .adminAuthenticated(.menuBar(.quitForUninstallClicked)):
-      return .run { _ in
+      return .exec { _ in
         _ = await xpc.disconnectUser()
         _ = await filter.uninstall()
         await storage.deleteAllPersistentState()

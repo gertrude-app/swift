@@ -14,6 +14,7 @@ struct DeviceClient: Sendable {
   var openSystemPrefs: @Sendable (SystemPrefsLocation) async -> Void
   var openWebUrl: @Sendable (URL) async -> Void
   var quitBrowsers: @Sendable () async -> Void
+  var requestNotificationAuthorization: @Sendable () async -> Void
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
   var username: @Sendable () -> String
@@ -32,6 +33,7 @@ extension DeviceClient: DependencyKey {
     openSystemPrefs: openSystemPrefs(at:),
     openWebUrl: { NSWorkspace.shared.open($0) },
     quitBrowsers: quitAllBrowsers,
+    requestNotificationAuthorization: requestNotificationAuth,
     showNotification: showNotification(title:body:),
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
     username: { NSUserName() }
@@ -54,6 +56,7 @@ extension DeviceClient: TestDependencyKey {
     openSystemPrefs: { _ in },
     openWebUrl: { _ in },
     quitBrowsers: {},
+    requestNotificationAuthorization: {},
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },
     username: { "test-username" }

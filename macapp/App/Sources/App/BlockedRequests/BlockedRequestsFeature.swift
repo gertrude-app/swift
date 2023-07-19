@@ -112,7 +112,7 @@ struct BlockedRequestsFeature: Feature {
       case .createUnlockRequests(.success):
         state.createUnlockRequests = .succeeded
         state.selectedRequestIds = []
-        return .run { send in
+        return .exec { send in
           try await mainQueue.sleep(for: .seconds(10))
           await send(.createUnlockRequestsSuccessTimedOut)
         }.cancellable(id: CancelId.timeout, cancelInFlight: true)
@@ -140,7 +140,7 @@ extension BlockedRequestsFeature.RootReducer {
     switch action {
     case .menuBar(.viewNetworkTrafficClicked):
       state.blockedRequests.windowOpen = true
-      return .run { _ in
+      return .exec { _ in
         let result = await filterXpc.setBlockStreaming(true)
         if result.isFailure {
           unexpectedError(id: "f2c3b277")
@@ -224,7 +224,7 @@ extension BlockedRequestsFeature.Reducer {
   // shows they are still actively interested in the blocked requests, so
   // we restart the 5-minute expiration timer
   func restartBlockStreaming() -> Effect<Action> {
-    .run { [setBlockStreaming = filterXpc.setBlockStreaming] _ in
+    .exec { [setBlockStreaming = filterXpc.setBlockStreaming] _ in
       // probably ok to ignore error here, very unlikely to happen
       // we'll concentrate error handling for the initial window open event
       _ = await setBlockStreaming(true)
@@ -232,7 +232,7 @@ extension BlockedRequestsFeature.Reducer {
   }
 
   func endBlockStreaming() -> Effect<Action> {
-    .run { [setBlockStreaming = filterXpc.setBlockStreaming] _ in
+    .exec { [setBlockStreaming = filterXpc.setBlockStreaming] _ in
       // ok to ignore error here, worst that can happen is streaming expires on its own
       _ = await setBlockStreaming(false)
     }

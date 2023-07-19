@@ -1,16 +1,23 @@
 import Core
 import os.log
 
+public func unexpectedError(id: String, detail: String) {
+  os_log("[G•] APP unexpected error `%{public}s` %{public}s", id, detail)
+  _ = eventReporter.withValue { report in
+    Task { await report("unexpected error", id, detail) }
+  }
+}
+
 public func unexpectedError(id: String, _ error: Error? = nil) {
   let detail = error.map { String(describing: $0) }
-  os_log("[G•] unexpected error `%{public}s` %{public}s", id, detail ?? "")
+  os_log("[G•] APP unexpected error `%{public}s` %{public}s", id, detail ?? "")
   _ = eventReporter.withValue { report in
     Task { await report("unexpected error", id, detail) }
   }
 }
 
 public func interestingEvent(id: String, _ detail: String? = nil) {
-  os_log("[G•] interesting event `%{public}s` %{public}s", id, detail ?? "")
+  os_log("[G•] APP interesting event `%{public}s` %{public}s", id, detail ?? "")
   _ = eventReporter.withValue { report in
     Task { await report("event", id, detail) }
   }

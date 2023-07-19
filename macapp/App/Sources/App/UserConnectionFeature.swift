@@ -32,7 +32,7 @@ extension UserConnectionFeature.Reducer {
     switch action {
     case .connect(.success(let user)):
       state = .established(welcomeDismissed: false)
-      return .run { _ in
+      return .exec { _ in
         await api.setUserToken(user.token)
       }
 
@@ -63,7 +63,7 @@ extension UserConnectionFeature.RootReducer {
       state.history.userConnection = .notConnected
       return .merge(
         disconnectUser(persisting: state.persistent),
-        .run { send in
+        .exec { send in
           await send(.focusedNotification(.text(
             "User deleted",
             "The user associated with this device was deleted. You'll need to connect to a different user, or quit the app."
@@ -77,7 +77,7 @@ extension UserConnectionFeature.RootReducer {
   }
 
   func disconnectUser(persisting updatedState: Persistent.State) -> Effect<Action> {
-    .run { send in
+    .exec { send in
       await api.clearUserToken()
       try await storage.savePersistentState(updatedState)
       _ = await xpc.disconnectUser()

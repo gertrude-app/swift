@@ -69,8 +69,6 @@ import XExpect
 
     await store.send(.application(.didFinishLaunching))
 
-    await expect(replaceFilterMock.invocations).toEqual(1)
-    await scheduler.advance(by: .milliseconds(501))
     await expect(replaceFilterMock.invocations).toEqual(2)
     expect(store.state.adminWindow.windowOpen).toEqual(false)
   }
@@ -85,7 +83,7 @@ import XExpect
     store.deps.filterXpc.checkConnectionHealth = mockFn(always: .failure(.timeout))
 
     await store.send(.application(.didFinishLaunching))
-    await expect(replaceFilterMock.invocations).toEqual(2)
+    await expect(replaceFilterMock.invocations).toEqual(4)
 
     await store.receive(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
 

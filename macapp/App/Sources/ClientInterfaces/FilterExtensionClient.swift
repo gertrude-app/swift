@@ -6,6 +6,7 @@ public struct FilterExtensionClient: Sendable {
   public var setup: @Sendable () async -> FilterExtensionState
   public var start: @Sendable () async -> FilterExtensionState
   public var stop: @Sendable () async -> FilterExtensionState
+  public var reinstall: @Sendable () async -> FilterInstallResult
   public var restart: @Sendable () async -> FilterExtensionState
   public var replace: @Sendable () async -> FilterInstallResult
   public var state: @Sendable () async -> FilterExtensionState
@@ -17,6 +18,7 @@ public struct FilterExtensionClient: Sendable {
     setup: @escaping @Sendable () async -> FilterExtensionState,
     start: @escaping @Sendable () async -> FilterExtensionState,
     stop: @escaping @Sendable () async -> FilterExtensionState,
+    reinstall: @escaping @Sendable () async -> FilterInstallResult,
     restart: @escaping @Sendable () async -> FilterExtensionState,
     replace: @escaping @Sendable () async -> FilterInstallResult,
     state: @escaping @Sendable () async -> FilterExtensionState,
@@ -27,6 +29,7 @@ public struct FilterExtensionClient: Sendable {
     self.setup = setup
     self.start = start
     self.stop = stop
+    self.reinstall = reinstall
     self.restart = restart
     self.replace = replace
     self.state = state
@@ -41,6 +44,7 @@ extension FilterExtensionClient: TestDependencyKey {
     setup: { .installedAndRunning },
     start: { .installedAndRunning },
     stop: { .installedButNotRunning },
+    reinstall: { .installedSuccessfully },
     restart: { .installedAndRunning },
     replace: { .installedSuccessfully },
     state: { .installedAndRunning },

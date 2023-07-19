@@ -35,7 +35,7 @@ class FilterDataProvider: NEFilterDataProvider {
     }
 
     store.shouldSendBlockDecisions().sink { [weak self] in
-      os_log("[G•] data provider: toggle send block decisions %{public}d", $0)
+      os_log("[G•] FILTER data provider: toggle send block decisions %{public}d", $0)
       self?.sendingBlockDecisions = $0
     }.store(in: &cancellables)
   }

@@ -33,7 +33,7 @@ struct UserFeature: Feature {
         return .none
 
       case .refreshRules(result: .failure, userInitiated: true):
-        return .run { _ in
+        return .exec { _ in
           await device.showNotification(
             "Error refreshing rules",
             "Please try again, or contact support if the problem persists."
@@ -70,7 +70,7 @@ extension UserFeature.RootReducer: RootReducing {
       }
 
     case .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))):
-      return .run { send in
+      return .exec { send in
         if !network.isConnected() {
           await device.notifyNoInternet()
         } else {
@@ -82,7 +82,7 @@ extension UserFeature.RootReducer: RootReducing {
       }
 
     case .menuBar(.refreshRulesClicked):
-      return .run { send in
+      return .exec { send in
         if !network.isConnected() {
           await device.notifyNoInternet()
         } else {
@@ -98,13 +98,13 @@ extension UserFeature.RootReducer: RootReducing {
         state.user?.numTimesUserTokenNotFound += 1
       }
       let timesTokenNotFound = state.user?.numTimesUserTokenNotFound ?? 0
-      return timesTokenNotFound > 4 ? .run { send in
+      return timesTokenNotFound > 4 ? .exec { send in
         await send(.history(.userConnection(.disconnectMissingUser)))
       } : .none
 
     case .user(.refreshRules(.success(let output), let userInitiated)):
       state.user?.numTimesUserTokenNotFound = 0
-      return .run { [filterInstalled = state.filter.extension.installed] _ in
+      return .exec { [filterInstalled = state.filter.extension.installed] _ in
         guard filterInstalled else {
           if userInitiated {
             // if filter was never installed, we don't want to show an error

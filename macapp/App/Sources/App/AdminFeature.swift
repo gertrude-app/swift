@@ -18,7 +18,7 @@ struct AdminFeature: Feature {
 
       case .accountStatusResponse(.success(let status)):
         state.accountStatus = status
-        return .run { _ in
+        return .exec { _ in
           await api.setAccountActive(status == .active)
         }
 
@@ -45,7 +45,7 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
     switch action {
 
     case .heartbeat(.everySixHours):
-      return .run { send in
+      return .exec { send in
         guard network.isConnected() else { return }
         await send(.admin(.accountStatusResponse(TaskResult {
           try await api.getAdminAccountStatus()
@@ -55,7 +55,7 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
     case .adminWindow(.webview(.inactiveAccountRecheckClicked)),
          .blockedRequests(.webview(.inactiveAccountRecheckClicked)),
          .requestSuspension(.webview(.inactiveAccountRecheckClicked)):
-      return .run { send in
+      return .exec { send in
         guard network.isConnected() else {
           await device.notifyNoInternet()
           return
@@ -77,7 +77,7 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
       state.history.userConnection = .notConnected
       state.filter.extension = .notInstalled
       state.filter.currentSuspensionExpiration = nil
-      return .run { _ in
+      return .exec { _ in
         await app.disableLaunchAtLogin()
         await api.clearUserToken()
         await storage.deleteAll()

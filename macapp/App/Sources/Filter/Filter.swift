@@ -26,6 +26,7 @@ public struct Filter: Reducer, Sendable {
   }
 
   @Dependency(\.xpc) var xpc
+  @Dependency(\.filterExtension) var filterExtension
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.date.now) var now
   @Dependency(\.storage) var storage
@@ -37,7 +38,17 @@ public struct Filter: Reducer, Sendable {
   }
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    os_log("[G•] filter received action: %{public}@", String(describing: action))
+    switch action {
+    case .cacheAppDescriptor:
+      break
+    default:
+      os_log(
+        "[G•] FILTER (%{public}@) received action: %{public}@",
+        filterExtension.version(),
+        String(describing: action)
+      )
+    }
+
     switch action {
     case .extensionStarted:
       return .merge(

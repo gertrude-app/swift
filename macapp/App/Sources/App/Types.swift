@@ -37,7 +37,7 @@ enum Heartbeat {
     case everySixHours
   }
 
-  enum CancelId {}
+  enum CancelId { case interval }
 }
 
 enum NotificationsSetting: String, Equatable, Codable {

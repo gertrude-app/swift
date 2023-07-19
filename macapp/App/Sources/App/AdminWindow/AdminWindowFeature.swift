@@ -175,12 +175,12 @@ extension AdminWindowFeature.RootReducer {
       state.adminWindow.screen = .home
       state.adminWindow.windowOpen = true
       return .merge(
-        .run { send in
+        .exec { send in
           await send(.adminWindow(.setExemptableUsers(Failable {
             try await device.listExemptableUsers()
           })))
         },
-        .run { send in
+        .exec { send in
           await send(.adminWindow(.setExemptUserIds(Failable(
             result: await xpc.requestExemptUserIds()
           ))))
@@ -210,7 +210,7 @@ extension AdminWindowFeature.RootReducer {
       return state.adminWindow.healthCheck.checkCompletionEffect
 
     case .user(.refreshRules(.success, _)):
-      return .run { send in
+      return .exec { send in
         // wait for feature reducer to send rules to filter
         try await mainQueue.sleep(for: .milliseconds(10))
         await recheckFilter(send)
@@ -246,23 +246,23 @@ extension AdminWindowFeature.RootReducer {
         return .none
 
       case .webview(.healthCheck(.fixKeystrokeRecordingPermissionClicked)):
-        return .run { _ in
+        return .exec { _ in
           await device.openSystemPrefs(.security(.accessibility))
         }
 
       case .webview(.healthCheck(.fixScreenRecordingPermissionClicked)):
-        return .run { _ in
+        return .exec { _ in
           await device.openSystemPrefs(.security(.screenRecording))
         }
 
       case .webview(.healthCheck(.removeUserAdminPrivilegeClicked)),
            .webview(.administrateOSUserAccountsClicked):
-        return .run { _ in
+        return .exec { _ in
           await device.openSystemPrefs(.accounts)
         }
 
       case .webview(.healthCheck(.fixNotificationPermissionClicked)):
-        return .run { _ in
+        return .exec { _ in
           await device.openSystemPrefs(.notifications)
         }
 
@@ -272,7 +272,7 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.healthCheck(.installFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = .installing
         return .merge(
-          .run { try await installFilter($0) },
+          .exec { try await installFilter($0) },
           withTimeoutAfter(seconds: 60)
         )
 
@@ -356,37 +356,34 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.healthCheck(.repairOutOfDateFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = nil
         return .merge(
-          .run { try await replaceFilter($0, retryOnce: true) },
-          withTimeoutAfter(seconds: 5)
+          .exec { try await replaceFilter($0) },
+          withTimeoutAfter(seconds: 10)
         )
 
       case .webview(.healthCheck(.repairFilterCommunicationClicked)):
         return .merge(
-          .run { send in
+          .exec { send in
             try await restartFilter(send)
             try await mainQueue.sleep(for: .milliseconds(10))
             if await xpc.notConnected() {
-              try await replaceFilter(send, retryOnce: true)
+              try await replaceFilter(send)
             }
           },
-          withTimeoutAfter(seconds: 5)
+          withTimeoutAfter(seconds: 10)
         )
 
       case .webview(.healthCheck(.upgradeAppClicked)):
-        return .run {
+        return .exec {
           send in await send(.adminWindow(.delegate(.triggerAppUpdate)))
         }
 
       case .webview(.quitAppClicked):
         state.adminWindow.quitting = true
-        return .run { _ in
+        return .exec { _ in
           // give time for uploading keystrokes, websocket disconnect, etc
           try await mainQueue.sleep(for: .seconds(2))
           await app.quit()
         }
-
-      case .webview(.stopFilterClicked):
-        return .run { _ in _ = await filter.stop() }
 
       case .webview(.reconnectUserClicked):
         // handled by UserConnectionFeature
@@ -403,22 +400,22 @@ extension AdminWindowFeature.RootReducer {
         } else {
           state.adminWindow.exemptUserIds = .ok(value: [])
         }
-        return .run { send in
+        return .exec { send in
           _ = await xpc.setUserExemption(userId, enabled)
         }
 
       case .webview(.advanced(let advancedAction)):
         switch advancedAction {
         case .appcastEndpointSet(let url):
-          return .run { _ in await updater.updateEndpointOverride(url) }
+          return .exec { _ in await updater.updateEndpointOverride(url) }
         case .pairqlEndpointSet(let url):
-          return .run { _ in await api.updateEndpointOverride(url) }
+          return .exec { _ in await api.updateEndpointOverride(url) }
         case .websocketEndpointSet:
           return .none // handled by WebsocketFeature
         case .forceUpdateToSpecificVersionClicked:
           return .none // handled by UpdaterFeature
         case .deleteAllDeviceStorageClicked:
-          return .run { _ in
+          return .exec { _ in
             await storage.deleteAll()
             _ = await xpc.sendDeleteAllStoredState()
           }
@@ -426,7 +423,7 @@ extension AdminWindowFeature.RootReducer {
 
       case .webview(.gotoScreenClicked(.advanced)):
         state.adminWindow.screen = .advanced
-        return .run { send in
+        return .exec { send in
           guard network.isConnected() else { return }
           if let versions = try? await api.recentAppVersions() {
             await send(.adminWindow(.receivedRecentAppVersions(versions)))
@@ -449,7 +446,7 @@ extension AdminWindowFeature.RootReducer {
     let releaseChannel = state.appUpdates.releaseChannel
     let currentInstalledVersion = state.appUpdates.installedVersion
 
-    let main = Effect<Action>.run { send in
+    let main = Effect<Action>.exec { send in
       try await mainQueue.sleep(for: .seconds(1))
 
       if network.isConnected() {
@@ -504,7 +501,7 @@ extension AdminWindowFeature.RootReducer {
   }
 
   func withTimeoutAfter(seconds: Int) -> Effect<Action> {
-    .run { send in
+    .exec { send in
       try await mainQueue.sleep(for: .seconds(seconds))
       await send(.adminWindow(.healthCheckTimeout))
     }.cancellable(id: CancelId.healthCheckTimeout, cancelInFlight: true)

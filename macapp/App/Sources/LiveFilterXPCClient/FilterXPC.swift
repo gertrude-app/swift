@@ -4,6 +4,7 @@ import Core
 import Dependencies
 import Foundation
 import Gertie
+import os.log
 import TaggedTime
 
 struct FilterXPC: Sendable {
@@ -17,6 +18,7 @@ struct FilterXPC: Sendable {
     // stored connection can go bad if something happens on the filter side
     // recreating a new connection and sending a message can restore it
     await sharedConnection.replace(with: { newConnection() })
+    os_log("[G•] APP FilterXPC.establishConnection() replaced connection")
 
     // the xpc connection channel is created at the moment the app
     // first sends _ANY_ message to the listening filter extension

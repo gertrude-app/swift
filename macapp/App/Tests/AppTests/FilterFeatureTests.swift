@@ -9,7 +9,7 @@ import XExpect
 
 @MainActor final class FilterFeatureTests: XCTestCase {
   func testManualAdminWindowSuspensionLifecycle() async {
-    let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
+    let store = TestStore(initialState: AppReducer.State()) { AppReducer() }
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))
     let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
     store.deps.filterXpc.suspendFilter = suspendFilter.fn
@@ -42,9 +42,9 @@ import XExpect
     }
 
     await scheduler.advance(by: .seconds(59))
-    await expect(showNotification.invocations.count).toEqual(1)
+    await expect(showNotification.invocations.value).toHaveCount(1)
     await expect(quitBrowsers.invocations).toEqual(0)
-    await expect(showNotification.invocations[0].a).toContain("browsers quitting soon")
+    await expect(showNotification.invocations.value[0].a).toContain("browsers quitting soon")
 
     // after 60 seconds pass, we quit the browsers
     await scheduler.advance(by: .seconds(1))
@@ -55,7 +55,7 @@ import XExpect
     let store = TestStore(initialState: AppReducer.State(filter: .init(
       // start with 30 second suspension
       currentSuspensionExpiration: Date(timeIntervalSince1970: 30)
-    )), reducer: AppReducer())
+    )), reducer: { AppReducer() })
 
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))
     let scheduler = DispatchQueue.test
@@ -70,8 +70,8 @@ import XExpect
       $0.filter.currentSuspensionExpiration = nil
     }
 
-    await expect(showNotification.invocations.count).toEqual(1)
-    await expect(showNotification.invocations[0].a).toContain("browsers quitting soon")
+    await expect(showNotification.invocations.value.count).toEqual(1)
+    await expect(showNotification.invocations.value[0].a).toContain("browsers quitting soon")
 
     await scheduler.advance(by: .seconds(30))
 
@@ -96,9 +96,9 @@ import XExpect
     }
 
     // user notified again that browsers will quit
-    await expect(showNotification.invocations.count).toEqual(3)
-    await expect(showNotification.invocations[1].a).toContain("disabling filter")
-    await expect(showNotification.invocations[2].a).toContain("browsers quitting soon")
+    await expect(showNotification.invocations.value.count).toEqual(3)
+    await expect(showNotification.invocations.value[1].a).toContain("disabling filter")
+    await expect(showNotification.invocations.value[2].a).toContain("browsers quitting soon")
     await scheduler.advance(by: .seconds(30))
 
     // now, receive a SECOND MANUAL suspension, which stops timer

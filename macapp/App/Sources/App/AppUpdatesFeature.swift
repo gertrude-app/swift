@@ -58,7 +58,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .loadedPersistentState(.none):
-      return .run { [new = state.persistent] _ in
+      return .exec { [new = state.persistent] _ in
         try await storage.savePersistentState(new)
       }
 
@@ -67,17 +67,29 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         return .none
       }
       return .merge(
-        .run { [updated = state.persistent] _ in
+        .exec { [updated = state.persistent] _ in
           try await storage.savePersistentState(updated)
         },
-        .run { send in
+        .exec { send in
           switch await filter.state() {
           case .notInstalled:
             await send(.appUpdates(.delegate(.postUpdateFilterNotInstalled)))
           default:
-            try await replaceFilter(send, retryOnce: true)
+            try await replaceFilter(send)
             if await xpc.notConnected() {
               await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
+            } else {
+
+              // refresh the rules post-update, or else health check will complain
+              await send(.user(.refreshRules(
+                result: TaskResult { try await api.refreshUserRules() },
+                userInitiated: false
+              )))
+
+              // big sur doesn't get notification pushed when filter restarts
+              // so check manually after attempting to replace the filter
+              try await mainQueue.sleep(for: .seconds(1))
+              await send(.filter(.receivedState(await filter.state())))
             }
           }
         }
@@ -94,7 +106,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       let channel = state.appUpdates.releaseChannel
       let persist = state.persistent
       let force = action == .adminWindow(.webview(.reinstallAppClicked)) ? true : nil
-      return .run { _ in
+      return .exec { _ in
         if network.isConnected() {
           try await triggerUpdate(channel, persist, force: force)
         } else {
@@ -114,7 +126,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         shouldUpdate = latest.semver != current
         unexpectedError(id: "bbb7eeba")
       }
-      return .run { _ in
+      return .exec { _ in
         if shouldUpdate {
           try await triggerUpdate(channel, persist)
         }
@@ -129,7 +141,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     case .heartbeat(.everySixHours):
       let current = state.appUpdates.installedVersion
       let channel = state.appUpdates.releaseChannel
-      return .run { send in
+      return .exec { send in
         guard network.isConnected() else { return }
         await send(.appUpdates(.latestVersionResponse(TaskResult {
           try await api.latestAppVersion(.init(
@@ -141,14 +153,14 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
 
     case .adminWindow(.webview(.releaseChannelUpdated(let channel))):
       state.appUpdates.releaseChannel = channel
-      return .run { [updated = state.persistent] _ in
+      return .exec { [updated = state.persistent] _ in
         try await storage.savePersistentState(updated)
       }
 
     case .adminWindow(.webview(.advanced(.forceUpdateToSpecificVersionClicked(let version)))):
       state.adminWindow.windowOpen = false // so they can see sparkle update
       let persist = state.persistent
-      return .run { _ in
+      return .exec { _ in
         if network.isConnected() {
           try await triggerUpdate(.init(force: true, version: version), persist)
         } else {

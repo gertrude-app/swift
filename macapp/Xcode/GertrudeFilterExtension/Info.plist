@@ -23,7 +23,7 @@
     <key>LSMinimumSystemVersion</key>
     <string>$(MACOSX_DEPLOYMENT_TARGET)</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Copyright © 2021 NetRivet Inc. All rights reserved.</string>
+    <string>Copyright © 2023 NetRivet Inc. All rights reserved.</string>
     <key>NSSystemExtensionUsageDescription</key>
     <string>This system extension blocks selected network traffic for internet safety.</string>
     <key>NetworkExtension</key>

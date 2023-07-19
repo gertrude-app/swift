@@ -16,14 +16,17 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
       return
     }
 
-    os_log("[G•] system extension request finished successfully")
+    os_log("[G•] APP system extension request finished successfully")
     Task { @MainActor in
       await activationRequest.setValue(.delegateRequestSucceeded)
     }
   }
 
   func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
-    unexpectedError(id: "7bc4b55a")
+    // i'm pretty sure we only get in here when the user needs
+    // to accept the security & permissions prompt in system settings
+    // not an error state, so no need to log anything, but might be
+    // a hook for some future feature or help screen for that step
   }
 
   func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
@@ -40,7 +43,7 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
   ) -> OSSystemExtensionRequest.ReplacementAction {
     let old = existing.bundleShortVersion
     let new = `extension`.bundleShortVersion
-    os_log("[G•] system extension request replacing %{public}@ with %{public}@", old, new)
+    os_log("[G•] APP system extension request replacing %{public}@ with %{public}@", old, new)
     return .replace
   }
 }
