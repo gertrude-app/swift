@@ -57,6 +57,7 @@ struct AppReducer: Reducer, Sendable {
       #endif
       switch action {
       case .loadedPersistentState(.some(let persistent)):
+        state.appUpdates.releaseChannel = persistent.appUpdateReleaseChannel
         guard let user = persistent.user else { return .none }
         state.user = .init(data: user)
         return .exec { send in
