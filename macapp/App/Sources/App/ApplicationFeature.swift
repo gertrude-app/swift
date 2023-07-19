@@ -57,7 +57,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
               await send(.heartbeat(interval))
             }
           }
-        }.cancellable(id: Heartbeat.CancelId.self),
+        }.cancellable(id: Heartbeat.CancelId.interval),
 
         .exec { _ in
           if await app.isLaunchAtLoginEnabled() == false {
@@ -85,7 +85,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
       )
 
     case .application(.willTerminate):
-      return .cancel(id: Heartbeat.CancelId.self)
+      return .cancel(id: Heartbeat.CancelId.interval)
 
     default:
       return .none

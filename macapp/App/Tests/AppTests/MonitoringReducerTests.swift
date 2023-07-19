@@ -213,9 +213,9 @@ import XExpect
     await expect(takeScreenshot.invocations).toEqual([700])
     await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
-    await expect(keylogging.upload.invocations.count).toEqual(1)
-    await expect(takeScreenshot.invocations.count).toEqual(5)
-    await expect(uploadScreenshot.invocations.count).toEqual(5)
+    await expect(keylogging.upload.invocations.value.count).toEqual(1)
+    await expect(takeScreenshot.invocations.value.count).toEqual(5)
+    await expect(uploadScreenshot.invocations.value.count).toEqual(5)
 
     // simulate new rules came in, from user click
     await store.send(.user(.refreshRules(result: .success(.mock {
@@ -226,9 +226,9 @@ import XExpect
     await bgQueue.advance(by: .seconds(60 * 5))
 
     // no new invocations for any of these...
-    await expect(keylogging.upload.invocations.count).toEqual(1)
-    await expect(takeScreenshot.invocations.count).toEqual(5)
-    await expect(uploadScreenshot.invocations.count).toEqual(5)
+    await expect(keylogging.upload.invocations.value.count).toEqual(1)
+    await expect(takeScreenshot.invocations.value.count).toEqual(5)
+    await expect(uploadScreenshot.invocations.value.count).toEqual(5)
   }
 
   func testConnectingUserStartsMonitoring() async {
@@ -245,9 +245,9 @@ import XExpect
 
     await store.send(.application(.didFinishLaunching))
     await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
-    await expect(takeScreenshot.invocations.count).toEqual(0)
-    await expect(uploadScreenshot.invocations.count).toEqual(0)
-    await expect(keylogging.upload.invocations.count).toEqual(0)
+    await expect(takeScreenshot.invocations.value.count).toEqual(0)
+    await expect(uploadScreenshot.invocations.value.count).toEqual(0)
+    await expect(keylogging.upload.invocations.value.count).toEqual(0)
 
     // simulate user connect
     await store.send(.history(.userConnection(.connect(.success(.mock {
@@ -263,7 +263,7 @@ import XExpect
     await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
     await Task.repeatYield()
-    await expect(keylogging.upload.invocations.count).toEqual(1)
+    await expect(keylogging.upload.invocations.value.count).toEqual(1)
   }
 
   func testDisconnectingUserStopsMonitoring() async {
@@ -285,18 +285,18 @@ import XExpect
     await store.send(.application(.didFinishLaunching))
 
     await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
-    await expect(takeScreenshot.invocations.count).toEqual(5)
-    await expect(uploadScreenshot.invocations.count).toEqual(5)
-    await expect(keylogging.upload.invocations.count).toEqual(1)
+    await expect(takeScreenshot.invocations.value.count).toEqual(5)
+    await expect(uploadScreenshot.invocations.value.count).toEqual(5)
+    await expect(keylogging.upload.invocations.value.count).toEqual(1)
 
     // send disconnect
     await store.send(.adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))))
     await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
 
     // no new invocations for any of these...
-    await expect(takeScreenshot.invocations.count).toEqual(5)
-    await expect(uploadScreenshot.invocations.count).toEqual(5)
-    await expect(keylogging.upload.invocations.count).toEqual(1)
+    await expect(takeScreenshot.invocations.value.count).toEqual(5)
+    await expect(uploadScreenshot.invocations.value.count).toEqual(5)
+    await expect(keylogging.upload.invocations.value.count).toEqual(1)
   }
 
   func testMonitoringItemsBufferedForLaterUploadWhenNoConnection() async {
@@ -336,7 +336,7 @@ import XExpect
 
     // and we skip uploading keystrokes
     await store.send(.heartbeat(.everyFiveMinutes))
-    await expect(keylogging.upload.invocations.count).toEqual(0)
+    await expect(keylogging.upload.invocations.value.count).toEqual(0)
     await expect(keylogging.take.invocations).toEqual(0)
 
     // internet comes back on...
@@ -345,12 +345,12 @@ import XExpect
     await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
     await expect(takeScreenshot.invocations).toEqual([1000, 1000, 1000])
     // ...so we upload the buffered screenshots
-    await expect(uploadScreenshot.invocations.count).toEqual(3)
+    await expect(uploadScreenshot.invocations.value.count).toEqual(3)
     await expect(takePendingScreenshots.invocations).toEqual(1)
 
     // and we upload buffered keystrokes
     await store.send(.heartbeat(.everyFiveMinutes))
-    await expect(keylogging.upload.invocations.count).toEqual(1)
+    await expect(keylogging.upload.invocations.value.count).toEqual(1)
     await expect(keylogging.take.invocations).toEqual(1)
   }
 
