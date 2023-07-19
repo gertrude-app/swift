@@ -1,6 +1,7 @@
 import ClientInterfaces
 import ComposableArchitecture
 import Foundation
+import os.log
 
 protocol FilterControlling: RootReducing {
   var filter: FilterExtensionClient { get }
@@ -15,30 +16,47 @@ extension FilterControlling {
   func installFilter(_ send: Send<Action>) async throws {
     _ = await filter.install()
     try await mainQueue.sleep(for: .milliseconds(10))
-    _ = await xpc.establishConnection()
+    let result = await xpc.establishConnection()
+    os_log("[G•] APP FilterControlling.installFilter() result: %{public}s", "\(result)")
     await afterFilterChange(send)
   }
 
   func restartFilter(_ send: Send<Action>) async throws {
     _ = await filter.restart()
     try await mainQueue.sleep(for: .milliseconds(100))
-    _ = await xpc.establishConnection()
+    let result = await xpc.establishConnection()
+    os_log("[G•] APP FilterControlling.restartFilter() result: %{public}s", "\(result)")
     await afterFilterChange(send)
   }
 
-  func replaceFilter(_ send: Send<Action>, retryOnce retry: Bool = false) async throws {
+  func replaceFilter(
+    _ send: Send<Action>,
+    attempt: Int = 1,
+    reinstallOnFail: Bool = true
+  ) async throws {
     _ = await filter.replace()
-    try await mainQueue.sleep(for: .milliseconds(500))
-    _ = await xpc.establishConnection()
+    var result = await xpc.establishConnection()
+    os_log(
+      "[G•] APP FilterControlling.replaceFilter() attempt: %{public}d, result: %{public}s",
+      attempt,
+      "\(result)"
+    )
     await afterFilterChange(send)
-    if retry, await xpc.notConnected() {
-      try await replaceFilter(send, retryOnce: false)
-    }
-  }
 
-  func replaceFilterIfNotConnected(_ send: Send<Action>, retryOnce: Bool = false) async throws {
-    if await xpc.notConnected() {
-      try await replaceFilter(send, retryOnce: retryOnce)
+    // trying up to 4 times seems to get past some funky states fairly
+    // reliably, especially the one i observe locally only, where the filter
+    // shows up in an "orange" state in the system preferences pane
+    if attempt < 4, await xpc.notConnected() {
+      return try await replaceFilter(send, attempt: attempt + 1, reinstallOnFail: reinstallOnFail)
+    }
+
+    if reinstallOnFail, await xpc.notConnected() {
+      os_log("[G•] APP FilterControlling.replaceFilter() failed, reinstalling")
+      _ = await filter.reinstall()
+      try await mainQueue.sleep(for: .milliseconds(500))
+      result = await xpc.establishConnection()
+      os_log("[G•] APP FilterControlling.replaceFilter() final: %{public}s", "\(result)")
+      await afterFilterChange(send)
     }
   }
 }

@@ -12,6 +12,7 @@ extension FilterExtensionClient: DependencyKey {
       setup: { await manager.setup() },
       start: { await manager.startFilter() },
       stop: { await manager.stopFilter() },
+      reinstall: { await manager.reinstallFilter() },
       restart: {
         _ = await manager.stopFilter()
         return await manager.startFilter()
@@ -58,5 +59,9 @@ actor ThreadSafeFilterManager {
 
   func uninstallFilter() async -> Bool {
     await manager.uninstallFilter()
+  }
+
+  func reinstallFilter() async -> FilterInstallResult {
+    await manager.reinstallFilter()
   }
 }

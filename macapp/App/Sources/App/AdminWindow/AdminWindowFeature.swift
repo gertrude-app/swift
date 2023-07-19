@@ -356,8 +356,8 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.healthCheck(.repairOutOfDateFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = nil
         return .merge(
-          .exec { try await replaceFilter($0, retryOnce: true) },
-          withTimeoutAfter(seconds: 5)
+          .exec { try await replaceFilter($0) },
+          withTimeoutAfter(seconds: 10)
         )
 
       case .webview(.healthCheck(.repairFilterCommunicationClicked)):
@@ -366,10 +366,10 @@ extension AdminWindowFeature.RootReducer {
             try await restartFilter(send)
             try await mainQueue.sleep(for: .milliseconds(10))
             if await xpc.notConnected() {
-              try await replaceFilter(send, retryOnce: true)
+              try await replaceFilter(send)
             }
           },
-          withTimeoutAfter(seconds: 5)
+          withTimeoutAfter(seconds: 10)
         )
 
       case .webview(.healthCheck(.upgradeAppClicked)):

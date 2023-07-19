@@ -75,7 +75,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
           case .notInstalled:
             await send(.appUpdates(.delegate(.postUpdateFilterNotInstalled)))
           default:
-            try await replaceFilter(send, retryOnce: true)
+            try await replaceFilter(send)
             if await xpc.notConnected() {
               await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
             }
