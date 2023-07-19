@@ -131,13 +131,13 @@ public extension NetworkFilter {
         switch decision {
         case .block(let reason):
           os_log(
-            "[G•] FILTER decision: BLOCK %{public}@, reason: %{public}@",
+            "[D•] FILTER decision: BLOCK %{public}@, reason: %{public}@",
             flow.shortDescription,
             "\(reason)"
           )
         case .allow(let reason):
           os_log(
-            "[G•] FILTER decision: ALLOW %{public}@, reason: %{public}@",
+            "[D•] FILTER decision: ALLOW %{public}@, reason: %{public}@",
             flow.shortDescription,
             "\(reason)"
           )

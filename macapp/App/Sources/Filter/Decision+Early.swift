@@ -33,9 +33,9 @@ public extension NetworkFilter {
       if getuid() < 500 { // prevent logging when running tests
         switch decision {
         case .block(let reason):
-          os_log("[G•] FILTER early decision: BLOCK, reason: %{public}@", "\(reason)")
+          os_log("[D•] FILTER early decision: BLOCK, reason: %{public}@", "\(reason)")
         case .allow(let reason):
-          os_log("[G•] FILTER early decision: ALLOW, reason: %{public}@", "\(reason)")
+          os_log("[D•] FILTER early decision: ALLOW, reason: %{public}@", "\(reason)")
         case .none:
           break
         }

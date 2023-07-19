@@ -16,7 +16,7 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
       return
     }
 
-    os_log("[G•] system extension request finished successfully")
+    os_log("[G•] APP system extension request finished successfully")
     Task { @MainActor in
       await activationRequest.setValue(.delegateRequestSucceeded)
     }
@@ -40,7 +40,7 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
   ) -> OSSystemExtensionRequest.ReplacementAction {
     let old = existing.bundleShortVersion
     let new = `extension`.bundleShortVersion
-    os_log("[G•] system extension request replacing %{public}@ with %{public}@", old, new)
+    os_log("[G•] APP system extension request replacing %{public}@ with %{public}@", old, new)
     return .replace
   }
 }
