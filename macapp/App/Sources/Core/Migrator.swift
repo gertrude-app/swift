@@ -28,6 +28,6 @@ public extension Migrator {
   }
 
   func log(_ message: String) {
-    os_log("[G•] Migrator (%{public}s): %{public}s", context, message)
+    os_log("[G•] %{public}s Migrator: %{public}s", context.uppercased(), message)
   }
 }

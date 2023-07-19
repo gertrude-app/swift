@@ -38,11 +38,16 @@ public struct Filter: Reducer, Sendable {
   }
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
-    os_log(
-      "[G•] FILTER (%{public}@) received action: %{public}@",
-      filterExtension.version(),
-      String(describing: action)
-    )
+    switch action {
+    case .cacheAppDescriptor:
+      break
+    default:
+      os_log(
+        "[G•] FILTER (%{public}@) received action: %{public}@",
+        filterExtension.version(),
+        String(describing: action)
+      )
+    }
 
     switch action {
     case .extensionStarted:
