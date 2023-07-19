@@ -23,7 +23,10 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
   }
 
   func requestNeedsUserApproval(_ request: OSSystemExtensionRequest) {
-    unexpectedError(id: "7bc4b55a")
+    // i'm pretty sure we only get in here when the user needs
+    // to accept the security & permissions prompt in system settings
+    // not an error state, so no need to log anything, but might be
+    // a hook for some future feature or help screen for that step
   }
 
   func request(_ request: OSSystemExtensionRequest, didFailWithError error: Error) {
