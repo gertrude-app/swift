@@ -44,7 +44,6 @@ enum DashboardTsCodegenRoute {
     [
       UserActivityFeed.self,
       GetAdmin.self,
-      AllowingSignups.self,
       ConfirmPendingNotificationMethod.self,
       CreateBillingPortalSession.self,
       CreatePendingAppConnection.self,

@@ -9,18 +9,6 @@ import XStripe
 final class DasboardUnauthedResolverTests: ApiTestCase {
   let context = Context.mock
 
-  func testAllowingSignupsReturnsFalseWhenExceedingNumAllowed() async throws {
-    Current.env = .init(get: { _ in "0" })
-    let output = try await AllowingSignups.resolve(in: context)
-    expect(output).toEqual(.failure)
-  }
-
-  func testAllowingSignupsReturnsTrueWhenSignupsLessThanMax() async throws {
-    Current.env = .init(get: { _ in "10000000" })
-    let output = try await AllowingSignups.resolve(in: context)
-    expect(output).toEqual(.success)
-  }
-
   func testInitiateSignupWithBadEmailErrorsBadRequest() async throws {
     let result = await Signup.result(with: .init(email: "💩", password: ""), in: context)
     expect(result).toBeError(containing: "Bad Request")
