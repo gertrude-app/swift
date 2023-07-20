@@ -13,18 +13,22 @@ enum AuthedAdminRoute: PairRoute {
   case getAdminKeychain(GetAdminKeychain.Input)
   case getAdminKeychains
   case getDashboardWidgets
+  case getDevice(GetDevice.Input)
+  case getDevices
   case getIdentifiedApps
   case getSelectableKeychains
   case getSuspendFilterRequest(GetSuspendFilterRequest.Input)
   case getUnlockRequest(GetUnlockRequest.Input)
   case getUnlockRequests
   case getUser(GetUser.Input)
+  case latestAppVersions
   case userActivityFeed(UserActivityFeed.Input)
   case userActivitySummaries(UserActivitySummaries.Input)
   case combinedUsersActivityFeed(CombinedUsersActivityFeed.Input)
   case combinedUsersActivitySummaries(CombinedUsersActivitySummaries.Input)
   case getUsers
   case getUserUnlockRequests(GetUserUnlockRequests.Input)
+  case saveDevice(SaveDevice.Input)
   case saveKey(SaveKey.Input)
   case saveKeychain(SaveKeychain.Input)
   case saveNotification(SaveNotification.Input)
@@ -34,118 +38,127 @@ enum AuthedAdminRoute: PairRoute {
 }
 
 extension AuthedAdminRoute {
-  static let router = OneOf {
-    OneOf {
-      Route(/Self.confirmPendingNotificationMethod) {
-        Operation(ConfirmPendingNotificationMethod.self)
-        Body(.dashboardInput(ConfirmPendingNotificationMethod.self))
-      }
-      Route(/Self.createBillingPortalSession) {
-        Operation(CreateBillingPortalSession.self)
-      }
-      Route(/Self.createPendingAppConnection) {
-        Operation(CreatePendingAppConnection.self)
-        Body(.dashboardInput(CreatePendingAppConnection.self))
-      }
-      Route(/Self.createPendingNotificationMethod) {
-        Operation(CreatePendingNotificationMethod.self)
-        Body(.dashboardInput(CreatePendingNotificationMethod.self))
-      }
-      Route(/Self.deleteActivityItems_v2) {
-        Operation(DeleteActivityItems_v2.self)
-        Body(.dashboardInput(DeleteActivityItems_v2.self))
-      }
-      Route(/Self.deleteEntity) {
-        Operation(DeleteEntity.self)
-        Body(.dashboardInput(DeleteEntity.self))
-      }
-      Route(/Self.getAdmin) {
-        Operation(GetAdmin.self)
-      }
-      Route(/Self.getAdminKeychain) {
-        Operation(GetAdminKeychain.self)
-        Body(.dashboardInput(GetAdminKeychain.self))
-      }
-      Route(/Self.getAdminKeychains) {
-        Operation(GetAdminKeychains.self)
-      }
-      Route(/Self.getDashboardWidgets) {
-        Operation(GetDashboardWidgets.self)
-      }
+  static let router: AnyParserPrinter<URLRequestData, AuthedAdminRoute> = OneOf {
+    Route(/Self.confirmPendingNotificationMethod) {
+      Operation(ConfirmPendingNotificationMethod.self)
+      Body(.dashboardInput(ConfirmPendingNotificationMethod.self))
     }
-    OneOf {
-      Route(/Self.getIdentifiedApps) {
-        Operation(GetIdentifiedApps.self)
-      }
-      Route(/Self.getSelectableKeychains) {
-        Operation(GetSelectableKeychains.self)
-      }
-      Route(/Self.getSuspendFilterRequest) {
-        Operation(GetSuspendFilterRequest.self)
-        Body(.dashboardInput(GetSuspendFilterRequest.self))
-      }
-      Route(/Self.getUnlockRequest) {
-        Operation(GetUnlockRequest.self)
-        Body(.dashboardInput(GetUnlockRequest.self))
-      }
-      Route(/Self.getUnlockRequests) {
-        Operation(GetUnlockRequests.self)
-      }
-      Route(/Self.getUser) {
-        Operation(GetUser.self)
-        Body(.dashboardInput(GetUser.self))
-      }
-      Route(/Self.userActivitySummaries) {
-        Operation(UserActivitySummaries.self)
-        Body(.dashboardInput(UserActivitySummaries.self))
-      }
-      Route(/Self.userActivityFeed) {
-        Operation(UserActivityFeed.self)
-        Body(.dashboardInput(UserActivityFeed.self))
-      }
-      Route(/Self.combinedUsersActivityFeed) {
-        Operation(CombinedUsersActivityFeed.self)
-        Body(.dashboardInput(CombinedUsersActivityFeed.self))
-      }
-      Route(/Self.getUsers) {
-        Operation(GetUsers.self)
-      }
+    Route(/Self.createBillingPortalSession) {
+      Operation(CreateBillingPortalSession.self)
     }
-    OneOf {
-      Route(/Self.getUserUnlockRequests) {
-        Operation(GetUserUnlockRequests.self)
-        Body(.dashboardInput(GetUserUnlockRequests.self))
-      }
-      Route(/Self.saveKey) {
-        Operation(SaveKey.self)
-        Body(.dashboardInput(SaveKey.self))
-      }
-      Route(/Self.saveKeychain) {
-        Operation(SaveKeychain.self)
-        Body(.dashboardInput(SaveKeychain.self))
-      }
-      Route(/Self.saveNotification) {
-        Operation(SaveNotification.self)
-        Body(.dashboardInput(SaveNotification.self))
-      }
-      Route(/Self.saveUser) {
-        Operation(SaveUser.self)
-        Body(.dashboardInput(SaveUser.self))
-      }
-      Route(/Self.updateSuspendFilterRequest) {
-        Operation(UpdateSuspendFilterRequest.self)
-        Body(.dashboardInput(UpdateSuspendFilterRequest.self))
-      }
-      Route(/Self.updateUnlockRequest) {
-        Operation(UpdateUnlockRequest.self)
-        Body(.dashboardInput(UpdateUnlockRequest.self))
-      }
-      Route(/Self.combinedUsersActivitySummaries) {
-        Operation(CombinedUsersActivitySummaries.self)
-        Body(.dashboardInput(CombinedUsersActivitySummaries.self))
-      }
+    Route(/Self.createPendingAppConnection) {
+      Operation(CreatePendingAppConnection.self)
+      Body(.dashboardInput(CreatePendingAppConnection.self))
+    }
+    Route(/Self.createPendingNotificationMethod) {
+      Operation(CreatePendingNotificationMethod.self)
+      Body(.dashboardInput(CreatePendingNotificationMethod.self))
+    }
+    Route(/Self.deleteActivityItems_v2) {
+      Operation(DeleteActivityItems_v2.self)
+      Body(.dashboardInput(DeleteActivityItems_v2.self))
+    }
+    Route(/Self.deleteEntity) {
+      Operation(DeleteEntity.self)
+      Body(.dashboardInput(DeleteEntity.self))
+    }
+    Route(/Self.getAdmin) {
+      Operation(GetAdmin.self)
+    }
+    Route(/Self.getAdminKeychain) {
+      Operation(GetAdminKeychain.self)
+      Body(.dashboardInput(GetAdminKeychain.self))
+    }
+    Route(/Self.getAdminKeychains) {
+      Operation(GetAdminKeychains.self)
+    }
+    Route(/Self.getDashboardWidgets) {
+      Operation(GetDashboardWidgets.self)
+    }
+    Route(/Self.getDevice) {
+      Operation(GetDevice.self)
+      Body(.dashboardInput(GetDevice.self))
+    }
+    Route(/Self.getDevices) {
+      Operation(GetDevices.self)
+    }
+    Route(/Self.getIdentifiedApps) {
+      Operation(GetIdentifiedApps.self)
+    }
+    Route(/Self.getSelectableKeychains) {
+      Operation(GetSelectableKeychains.self)
+    }
+    Route(/Self.getSuspendFilterRequest) {
+      Operation(GetSuspendFilterRequest.self)
+      Body(.dashboardInput(GetSuspendFilterRequest.self))
+    }
+    Route(/Self.getUnlockRequest) {
+      Operation(GetUnlockRequest.self)
+      Body(.dashboardInput(GetUnlockRequest.self))
+    }
+    Route(/Self.getUnlockRequests) {
+      Operation(GetUnlockRequests.self)
+    }
+    Route(/Self.getUser) {
+      Operation(GetUser.self)
+      Body(.dashboardInput(GetUser.self))
+    }
+    Route(/Self.userActivitySummaries) {
+      Operation(UserActivitySummaries.self)
+      Body(.dashboardInput(UserActivitySummaries.self))
+    }
+    Route(/Self.userActivityFeed) {
+      Operation(UserActivityFeed.self)
+      Body(.dashboardInput(UserActivityFeed.self))
+    }
+    Route(/Self.combinedUsersActivityFeed) {
+      Operation(CombinedUsersActivityFeed.self)
+      Body(.dashboardInput(CombinedUsersActivityFeed.self))
+    }
+    Route(/Self.getUsers) {
+      Operation(GetUsers.self)
+    }
+    Route(/Self.getUserUnlockRequests) {
+      Operation(GetUserUnlockRequests.self)
+      Body(.dashboardInput(GetUserUnlockRequests.self))
+    }
+    Route(/Self.latestAppVersions) {
+      Operation(LatestAppVersions.self)
+    }
+    Route(/Self.saveDevice) {
+      Operation(SaveDevice.self)
+      Body(.dashboardInput(SaveDevice.self))
+    }
+    Route(/Self.saveKey) {
+      Operation(SaveKey.self)
+      Body(.dashboardInput(SaveKey.self))
+    }
+    Route(/Self.saveKeychain) {
+      Operation(SaveKeychain.self)
+      Body(.dashboardInput(SaveKeychain.self))
+    }
+    Route(/Self.saveNotification) {
+      Operation(SaveNotification.self)
+      Body(.dashboardInput(SaveNotification.self))
+    }
+    Route(/Self.saveUser) {
+      Operation(SaveUser.self)
+      Body(.dashboardInput(SaveUser.self))
+    }
+    Route(/Self.updateSuspendFilterRequest) {
+      Operation(UpdateSuspendFilterRequest.self)
+      Body(.dashboardInput(UpdateSuspendFilterRequest.self))
+    }
+    Route(/Self.updateUnlockRequest) {
+      Operation(UpdateUnlockRequest.self)
+      Body(.dashboardInput(UpdateUnlockRequest.self))
+    }
+    Route(/Self.combinedUsersActivitySummaries) {
+      Operation(CombinedUsersActivitySummaries.self)
+      Body(.dashboardInput(CombinedUsersActivitySummaries.self))
     }
   }
+  .eraseToAnyParserPrinter()
 }
 
 extension AuthedAdminRoute: RouteResponder {
@@ -184,6 +197,9 @@ extension AuthedAdminRoute: RouteResponder {
     case .getAdmin:
       let output = try await GetAdmin.resolve(in: context)
       return try await respond(with: output)
+    case .saveDevice(let input):
+      let output = try await SaveDevice.resolve(with: input, in: context)
+      return try await respond(with: output)
     case .saveNotification(let input):
       let output = try await SaveNotification.resolve(with: input, in: context)
       return try await respond(with: output)
@@ -193,6 +209,12 @@ extension AuthedAdminRoute: RouteResponder {
     case .getDashboardWidgets:
       let output = try await GetDashboardWidgets.resolve(in: context)
       return try await respond(with: output)
+    case .getDevice(let input):
+      let output = try await GetDevice.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .getDevices:
+      let output = try await GetDevices.resolve(in: context)
+      return try await respond(with: output)
     case .getSelectableKeychains:
       let output = try await GetSelectableKeychains.resolve(in: context)
       return try await respond(with: output)
@@ -201,6 +223,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .getAdminKeychain(let input):
       let output = try await GetAdminKeychain.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .latestAppVersions:
+      let output = try await LatestAppVersions.resolve(in: context)
       return try await respond(with: output)
     case .saveKeychain(let input):
       let output = try await SaveKeychain.resolve(with: input, in: context)
