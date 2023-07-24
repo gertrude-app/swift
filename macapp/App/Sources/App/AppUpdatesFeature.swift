@@ -78,6 +78,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
             try await replaceFilter(send)
             if await xpc.notConnected() {
               await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
+              unexpectedError(id: "cde231a0", detail: "state: \(await filter.state())")
             } else {
 
               // refresh the rules post-update, or else health check will complain
