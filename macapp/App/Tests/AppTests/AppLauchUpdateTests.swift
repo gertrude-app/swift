@@ -104,4 +104,24 @@ import XExpect
     expect(store.state.adminWindow.windowOpen).toEqual(true)
     expect(store.state.adminWindow.screen).toEqual(.healthCheck)
   }
+
+  func testAppLaunchDetectingUpdateJustOccurred_OpensHealthCheckOnFilterCommunicationBroken() async {
+    let (store, _) = AppReducer.testStore()
+    store.deps.storage.loadPersistentState = { .needsAppUpdate }
+
+    // filter replaces successfuly, and is known to be installed and running...
+    store.deps.filterExtension.replace = mockFn(always: .installedSuccessfully)
+    store.deps.filterExtension.state = { .installedAndRunning }
+
+    // ... but the xpc connection is now broken
+    store.deps.filterXpc.checkConnectionHealth = mockFn(always: .failure(.noConnection))
+    store.deps.filterXpc.establishConnection = mockFn(always: .failure(.noConnection))
+
+    await store.send(.application(.didFinishLaunching))
+    await store.receive(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
+
+    // ...so open up the health check screen, so they can repair/restart
+    expect(store.state.adminWindow.windowOpen).toEqual(true)
+    expect(store.state.adminWindow.screen).toEqual(.healthCheck)
+  }
 }

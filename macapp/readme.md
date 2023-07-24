@@ -5,6 +5,10 @@
 - `1.1.0` (1/17/23) pairql/monorepo refactor, no real new features, but ripped out api
   layer, and modules changed
 - `1.1.1` (2/8/23) new app icon and menu bar icon only
+- `2.0.0` (7/20/23) TCA rewrite
+- `2.0.1` (7/24/23)
+  - health check screen instructs to reboot computer on filter comm repair fail
+  - filter shouldn't cache app descriptors with empty bundle id
 
 ## Sparkle Releases
 

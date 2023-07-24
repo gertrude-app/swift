@@ -117,6 +117,9 @@ public struct Filter: Reducer, Sendable {
       state.suspensions[userId] = nil
       return .none
 
+    case .cacheAppDescriptor("", _):
+      return .none // don't cache empty bundle id
+
     case .cacheAppDescriptor(let bundleId, let descriptor):
       state.appCache[bundleId] = descriptor
       return .none
