@@ -33,6 +33,10 @@ import XExpect
     }
 
     let descriptor = AppDescriptor(bundleId: "com.foo")
+
+    // empty bundle ids are NOT cached
+    await store.send(.cacheAppDescriptor("", .mock))
+
     await store.send(.cacheAppDescriptor("com.foo", descriptor)) {
       $0.appCache["com.foo"] = descriptor
     }
@@ -349,7 +353,7 @@ extension Filter {
   ) -> (TestStoreOf<Filter>, TestSchedulerOf<DispatchQueue>) {
     var state = State()
     mutateState(&state)
-    let store = TestStore(initialState: state, reducer: Filter())
+    let store = TestStore(initialState: state, reducer: { Filter() })
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
