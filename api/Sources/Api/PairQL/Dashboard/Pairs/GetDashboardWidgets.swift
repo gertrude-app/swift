@@ -129,7 +129,10 @@ extension GetDashboardWidgets: NoInputResolver {
 // helpers
 
 func userOnline(_ userId: User.Id, _ userDevices: [UserDevice]) async throws -> Bool {
-  try await userDevices.concurrentMap { await $0.isOnline() }.contains(true)
+  try await userDevices
+    .filter { $0.userId == userId }
+    .concurrentMap { await $0.isOnline() }
+    .contains(true)
 }
 
 func mapUnlockRequests(
