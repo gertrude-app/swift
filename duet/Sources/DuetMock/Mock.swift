@@ -6,20 +6,20 @@ public protocol Mock {
 
 public extension Mock {
   static func mock(with config: (inout Self) -> Void) -> Self {
-    var admin = Self.random
-    config(&admin)
-    return admin
+    var model = Self.random
+    config(&model)
+    return model
   }
 
   static func empty(with config: (inout Self) -> Void) -> Self {
-    var admin = Self.random
-    config(&admin)
-    return admin
+    var model = Self.random
+    config(&model)
+    return model
   }
 
   static func random(with config: (inout Self) -> Void) -> Self {
-    var admin = Self.random
-    config(&admin)
-    return admin
+    var model = Self.random
+    config(&model)
+    return model
   }
 }

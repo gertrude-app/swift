@@ -11,6 +11,7 @@ final class Admin: Codable {
   var updatedAt = Date()
   var deletedAt: Date?
 
+  var devices = Children<Device>.notLoaded
   var keychains = Children<Keychain>.notLoaded
   var users = Children<User>.notLoaded
   var notifications = Children<AdminNotification>.notLoaded
@@ -53,6 +54,14 @@ extension Admin {
   func users() async throws -> [User] {
     try await users.useLoaded(or: {
       try await Current.db.query(User.self)
+        .where(.adminId == id)
+        .all()
+    })
+  }
+
+  func devices() async throws -> [Device] {
+    try await devices.useLoaded(or: {
+      try await Current.db.query(Device.self)
         .where(.adminId == id)
         .all()
     })

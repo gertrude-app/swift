@@ -3,8 +3,8 @@ import Foundation
 
 @testable import Api
 
-extension KeystrokeLine {
-  static var mock: KeystrokeLine {
+extension KeystrokeLine: Mock {
+  public static var mock: KeystrokeLine {
     KeystrokeLine(
       userDeviceId: .init(),
       appName: "@mock appName",
@@ -13,11 +13,11 @@ extension KeystrokeLine {
     )
   }
 
-  static var empty: KeystrokeLine {
+  public static var empty: KeystrokeLine {
     KeystrokeLine(userDeviceId: .init(), appName: "", line: "", createdAt: Date())
   }
 
-  static var random: KeystrokeLine {
+  public static var random: KeystrokeLine {
     KeystrokeLine(
       userDeviceId: .init(),
       appName: "@random".random,

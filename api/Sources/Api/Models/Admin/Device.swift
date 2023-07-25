@@ -41,4 +41,12 @@ extension Device {
         .first()
     })
   }
+
+  func userDevices() async throws -> [UserDevice] {
+    try await userDevices.useLoaded(or: {
+      try await Current.db.query(UserDevice.self)
+        .where(.deviceId == id)
+        .all()
+    })
+  }
 }

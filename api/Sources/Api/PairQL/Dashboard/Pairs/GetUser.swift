@@ -32,6 +32,8 @@ struct GetUser: Pair {
     let isOnline: Bool
     let modelFamily: DeviceModelFamily
     let modelTitle: String
+    let modelIdentifier: String
+    let customName: String?
   }
 
   typealias Input = Api.User.Id
@@ -81,7 +83,9 @@ extension GetUser.User {
           id: userDevice.id,
           isOnline: await userDevice.isOnline(),
           modelFamily: adminDevice.model.family,
-          modelTitle: adminDevice.model.shortDescription
+          modelTitle: adminDevice.model.shortDescription,
+          modelIdentifier: adminDevice.model.identifier,
+          customName: adminDevice.customName
         )
       }
 

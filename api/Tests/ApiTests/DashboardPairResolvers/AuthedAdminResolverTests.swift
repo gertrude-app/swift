@@ -483,4 +483,34 @@ final class AuthedAdminResolverTests: ApiTestCase {
       )),
     ])
   }
+
+  func testLatestAppVersions() async throws {
+    try await Release.deleteAll()
+    try await Release.create([
+      .mock {
+        $0.semver = "2.0.0"
+        $0.channel = .stable
+      },
+      .mock {
+        $0.semver = "2.2.0"
+        $0.channel = .stable
+      },
+      .mock {
+        $0.semver = "2.5.2"
+        $0.channel = .beta
+      },
+      .mock {
+        $0.semver = "2.5.0"
+        $0.channel = .beta
+      },
+      .mock {
+        $0.semver = "3.0.0"
+        $0.channel = .canary
+      },
+    ])
+
+    let output = try await LatestAppVersions.resolve(in: context(try await Entities.admin()))
+
+    expect(output).toEqual(.init(stable: "2.2.0", beta: "2.5.2", canary: "3.0.0"))
+  }
 }

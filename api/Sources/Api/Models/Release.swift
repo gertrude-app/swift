@@ -30,3 +30,10 @@ final class Release: Codable {
     self.requirementPace = requirementPace
   }
 }
+
+extension Semver {
+  init(_ release: Release) {
+    // releases are guaranteed to have a valid semver
+    self.init(release.semver)!
+  }
+}

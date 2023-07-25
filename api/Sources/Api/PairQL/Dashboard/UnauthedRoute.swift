@@ -3,7 +3,6 @@ import PairQL
 import Vapor
 
 enum UnauthedRoute: PairRoute {
-  case allowingSignups
   case getCheckoutUrl(GetCheckoutUrl.Input)
   case handleCheckoutCancel(HandleCheckoutCancel.Input)
   case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
@@ -16,9 +15,6 @@ enum UnauthedRoute: PairRoute {
   case verifySignupEmail(VerifySignupEmail.Input)
 
   static let router = OneOf {
-    Route(/Self.allowingSignups) {
-      Operation(AllowingSignups.self)
-    }
     Route(/Self.getCheckoutUrl) {
       Operation(GetCheckoutUrl.self)
       Body(.dashboardInput(GetCheckoutUrl.self))
@@ -70,9 +66,6 @@ extension UnauthedRoute: RouteResponder {
       return try await respond(with: output)
     case .verifySignupEmail(let input):
       let output = try await VerifySignupEmail.resolve(with: input, in: context)
-      return try await respond(with: output)
-    case .allowingSignups:
-      let output = try await AllowingSignups.resolve(in: context)
       return try await respond(with: output)
     case .getCheckoutUrl(let input):
       let output = try await GetCheckoutUrl.resolve(with: input, in: context)
