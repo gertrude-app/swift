@@ -25,7 +25,7 @@ let package = Package(
     .github("daltoniam/Starscream", from: "4.0.4"),
     .github("sindresorhus/LaunchAtLogin", from: "5.0.0"),
     // @see: https://gist.github.com/jaredh159/5fafcdc04de9234ab4bab52897da7334
-    .package(url: "https://github.com/jaredh159/Sparkle", exact: "2.2.556"),
+    .package(url: "https://github.com/jaredh159/Sparkle", exact: "2.2.557"),
     .package(path: "../../x-kit"),
     .package(path: "../../pairql-macapp"),
     .package(path: "../../x-expect"),

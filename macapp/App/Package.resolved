@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/jaredh159/Sparkle",
       "state" : {
-        "revision" : "d11c8024560fcf8c11e376a9ca289150f0cbe35c",
-        "version" : "2.2.556"
+        "revision" : "87157988aa59d41fe8ff5656d342f5c196e7068d",
+        "version" : "2.2.557"
       }
     },
     {
