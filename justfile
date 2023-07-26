@@ -3,6 +3,9 @@ _default:
 
 # macapp
 
+bump version:
+  @node macapp/bump.mjs {{version}}
+
 codegen-swift:
   @cd macapp/App && CODEGEN_SWIFT=1 swift test --filter Codegen
   @cd api && CODEGEN_SWIFT=1 swift test --filter Codegen
