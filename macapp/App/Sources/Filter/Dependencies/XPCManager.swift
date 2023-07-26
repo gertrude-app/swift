@@ -45,10 +45,18 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     os_log("[G•] FILTER XPCManager: started listener")
   }
 
+  func stopListener() {
+    listener?.invalidate()
+    listener = nil
+    connection = nil
+    os_log("[G•] FILTER XPCManager: stopped listener")
+  }
+
   func listener(
     _ listener: NSXPCListener,
     shouldAcceptNewConnection newConnection: NSXPCConnection
   ) -> Bool {
+    os_log("[G•] FILTER XPCManager: accepting new connection %{public}@", newConnection)
     // ⛔️⛔️⛔️ WARNING ⛔️⛔️⛔️ `newConnection` has been "moved" into
     // the Connection object, and may not be accessed again !!!
     connection = Connection(taking: Move(configure(connection: newConnection)))

@@ -74,7 +74,10 @@ public struct Filter: Reducer, Sendable {
       )
 
     case .extensionStopping:
-      return .cancel(id: CancelId.heartbeat)
+      return .merge(
+        .cancel(id: CancelId.heartbeat),
+        .run { _ in await xpc.stopListener() }
+      )
 
     case .loadedPersistentState(.some(let persisted)):
       state.userKeys = persisted.userKeys
