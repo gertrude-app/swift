@@ -20,4 +20,8 @@ public actor Connection {
   public func replace(with create: @Sendable () -> NSXPCConnection) {
     connection = create()
   }
+
+  deinit {
+    connection.invalidate()
+  }
 }

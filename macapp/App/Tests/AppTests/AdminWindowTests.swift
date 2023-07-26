@@ -87,4 +87,28 @@ import XExpect
     await scheduler.advance(by: 1)
     await expect(quitBrowsers.invoked).toEqual(true)
   }
+
+  func testLatestAppResponseFromHealthCheckDoesntTriggerUpdate() async {
+    let (store, _) = AppReducer.testStore {
+      $0.appUpdates.installedVersion = "1.0.0"
+    }
+
+    let triggerUpdate = spy(on: String.self, returning: ())
+    store.deps.updater.triggerUpdate = triggerUpdate.fn
+
+    await store.send(.appUpdates(.latestVersionResponse(
+      result: .success(.init(semver: "2.0.0", pace: nil)),
+      source: .healthCheck // <-- healthCheck, therefore no update
+    )))
+
+    await expect(triggerUpdate.invoked).toEqual(false)
+
+    // but a HEARTBEAT-triggered update DOES
+    await store.send(.appUpdates(.latestVersionResponse(
+      result: .success(.init(semver: "2.0.0", pace: nil)),
+      source: .heartbeat
+    )))
+
+    await expect(triggerUpdate.invoked).toEqual(true)
+  }
 }

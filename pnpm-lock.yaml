@@ -4,6 +4,7 @@ specifiers:
   '@friends-library/env': ^1.4.0
   '@types/node': ^18.11.18
   nx: ^15.7.1
+  semver: ^7.5.4
   x-chalk: ^1.0.1
   x-exec: ^1.2.0
 
@@ -11,6 +12,7 @@ devDependencies:
   '@friends-library/env': 1.4.0
   '@types/node': 18.11.18
   nx: 15.7.1
+  semver: 7.5.4
   x-chalk: 1.0.1
   x-exec: 1.2.0
 
@@ -784,6 +786,14 @@ packages:
 
   /semver/7.3.4:
     resolution: {integrity: sha512-tCfb2WLjqFAtXn4KEdxIhalnRtoKFN7nAwj0B3ZXCbQloV2tq5eDbcTmT68JJD3nRJq24/XgxtQKFIpQdtvmVw==}
+    engines: {node: '>=10'}
+    hasBin: true
+    dependencies:
+      lru-cache: 6.0.0
+    dev: true
+
+  /semver/7.5.4:
+    resolution: {integrity: sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:

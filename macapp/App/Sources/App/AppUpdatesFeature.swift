@@ -20,7 +20,15 @@ struct AppUpdatesFeature: Feature {
       case postUpdateFilterReplaceFailed
     }
 
-    case latestVersionResponse(TaskResult<LatestAppVersion.Output>)
+    enum LatestVersionRequestSource: Equatable, Sendable {
+      case heartbeat
+      case healthCheck
+    }
+
+    case latestVersionResponse(
+      result: TaskResult<LatestAppVersion.Output>,
+      source: LatestVersionRequestSource
+    )
     case delegate(Delegate)
   }
 
@@ -115,7 +123,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         }
       }
 
-    case .appUpdates(.latestVersionResponse(.success(let latest))):
+    case .appUpdates(.latestVersionResponse(.success(let latest), let source)):
       state.appUpdates.latestVersion = latest
       let current = state.appUpdates.installedVersion
       let channel = state.appUpdates.releaseChannel
@@ -128,7 +136,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         unexpectedError(id: "bbb7eeba")
       }
       return .exec { _ in
-        if shouldUpdate {
+        if source == .heartbeat, shouldUpdate {
           try await triggerUpdate(channel, persist)
         }
       }
@@ -144,12 +152,13 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       let channel = state.appUpdates.releaseChannel
       return .exec { send in
         guard network.isConnected() else { return }
-        await send(.appUpdates(.latestVersionResponse(TaskResult {
-          try await api.latestAppVersion(.init(
+        await send(.appUpdates(.latestVersionResponse(
+          result: TaskResult { try await api.latestAppVersion(.init(
             releaseChannel: channel,
             currentVersion: current
-          ))
-        })))
+          )) },
+          source: .heartbeat
+        )))
       }
 
     case .adminWindow(.webview(.releaseChannelUpdated(let channel))):

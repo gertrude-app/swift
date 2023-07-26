@@ -32,6 +32,12 @@ class FilterDataProvider: NEFilterDataProvider {
 
     apply(filterSettings) { errorOrNil in
       completionHandler(errorOrNil)
+      if let error = errorOrNil {
+        os_log(
+          "[G•] FILTER data provider: error applying filter settings: %{public}s",
+          error.localizedDescription
+        )
+      }
     }
 
     store.shouldSendBlockDecisions().sink { [weak self] in

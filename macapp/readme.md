@@ -9,6 +9,10 @@
 - `2.0.1` (7/24/23)
   - health check screen instructs to reboot computer on filter comm repair fail
   - filter shouldn't cache app descriptors with empty bundle id
+- `2.0.2` (7/26/23)
+  - attempt to fix post auto-update xpc comm connection
+  - fix duplicate keystroke logging
+  - fix update being triggered on admin window open
 
 ## Sparkle Releases
 

@@ -6,6 +6,7 @@ import Foundation
 struct XPCClient: Sendable {
   var notifyFilterSuspensionEnded: @Sendable (uid_t) async throws -> Void
   var startListener: @Sendable () async -> Void
+  var stopListener: @Sendable () async -> Void
   var sendBlockedRequest: @Sendable (uid_t, BlockedRequest) async throws -> Void
   var events: @Sendable () -> AnyPublisher<XPCEvent.Filter, Never>
 }
@@ -19,6 +20,9 @@ extension XPCClient: DependencyKey {
       },
       startListener: {
         await manager.startListener()
+      },
+      stopListener: {
+        await manager.stopListener()
       },
       sendBlockedRequest: { userId, request in
         try await manager.sendBlockedRequest(request, userId: userId)
@@ -36,6 +40,7 @@ extension XPCClient: TestDependencyKey {
   static let testValue = Self(
     notifyFilterSuspensionEnded: { _ in },
     startListener: {},
+    stopListener: {},
     sendBlockedRequest: { _, _ in },
     events: { Empty().eraseToAnyPublisher() }
   )
@@ -53,6 +58,10 @@ actor ThreadSafeXPCManager {
 
   func startListener() {
     manager.startListener()
+  }
+
+  func stopListener() {
+    manager.stopListener()
   }
 
   func sendBlockedRequest(_ request: BlockedRequest, userId: uid_t) async throws {
