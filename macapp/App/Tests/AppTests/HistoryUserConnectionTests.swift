@@ -7,7 +7,7 @@ import XExpect
 
 @MainActor final class HistoryUserConnectionTests: XCTestCase {
   func testHistoryUserConnectionHappyPath() async {
-    let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
+    let store = TestStore(initialState: AppReducer.State(), reducer: { AppReducer() })
     store.dependencies.api.connectUser = { _ in .mock }
 
     let savedState = LockIsolated<Persistent.State?>(nil)
@@ -42,7 +42,7 @@ import XExpect
   }
 
   func testHistoryUserConnectionError() async {
-    let store = TestStore(initialState: AppReducer.State(), reducer: AppReducer())
+    let store = TestStore(initialState: AppReducer.State(), reducer: { AppReducer() })
     store.dependencies.api.connectUser = { _ in throw TestErr("Oh no!") }
     let helpClickedSpy = ActorIsolated(false)
     store.dependencies.device.openWebUrl = { _ in await helpClickedSpy.setValue(true) }

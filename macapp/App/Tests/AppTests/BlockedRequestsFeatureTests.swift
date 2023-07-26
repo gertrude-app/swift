@@ -43,7 +43,7 @@ import XExpect
     var state = BlockedRequestsFeature.State()
     let req = BlockedRequest.mock
     state.requests = [req, .mock, .mock]
-    let store = TestStore(initialState: state, reducer: BlockedRequestsFeature.Reducer())
+    let store = TestStore(initialState: state, reducer: { BlockedRequestsFeature.Reducer() })
 
     let setBlockStreaming = spy(on: Bool.self, returning: Result<_, XPCErr>.success(()))
     store.deps.filterXpc.setBlockStreaming = setBlockStreaming.fn
@@ -92,7 +92,7 @@ import XExpect
     let blocked = BlockedRequest.mock
     state.requests = [blocked]
     state.selectedRequestIds = [blocked.id]
-    let store = TestStore(initialState: state, reducer: BlockedRequestsFeature.Reducer())
+    let store = TestStore(initialState: state, reducer: { BlockedRequestsFeature.Reducer() })
     store.deps.api.createUnlockRequests = { _ in }
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
@@ -122,7 +122,7 @@ import XExpect
     let req3 = BlockedRequest.mock
     state.requests = [req1, req2, req3]
     state.selectedRequestIds = [req1.id]
-    let store = TestStore(initialState: state, reducer: BlockedRequestsFeature.Reducer())
+    let store = TestStore(initialState: state, reducer: { BlockedRequestsFeature.Reducer() })
     store.deps.api.createUnlockRequests = { _ in }
     store.deps.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
 
