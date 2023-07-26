@@ -3,9 +3,6 @@ import PairQL
 import Vapor
 
 enum UnauthedRoute: PairRoute {
-  case getCheckoutUrl(GetCheckoutUrl.Input)
-  case handleCheckoutCancel(HandleCheckoutCancel.Input)
-  case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
   case login(Login.Input)
   case loginMagicLink(LoginMagicLink.Input)
   case requestMagicLink(RequestMagicLink.Input)
@@ -15,18 +12,6 @@ enum UnauthedRoute: PairRoute {
   case verifySignupEmail(VerifySignupEmail.Input)
 
   static let router = OneOf {
-    Route(/Self.getCheckoutUrl) {
-      Operation(GetCheckoutUrl.self)
-      Body(.dashboardInput(GetCheckoutUrl.self))
-    }
-    Route(/Self.handleCheckoutCancel) {
-      Operation(HandleCheckoutCancel.self)
-      Body(.dashboardInput(HandleCheckoutCancel.self))
-    }
-    Route(/Self.handleCheckoutSuccess) {
-      Operation(HandleCheckoutSuccess.self)
-      Body(.dashboardInput(HandleCheckoutSuccess.self))
-    }
     Route(/Self.login) {
       Operation(Login.self)
       Body(.dashboardInput(Login.self))
@@ -66,15 +51,6 @@ extension UnauthedRoute: RouteResponder {
       return try await respond(with: output)
     case .verifySignupEmail(let input):
       let output = try await VerifySignupEmail.resolve(with: input, in: context)
-      return try await respond(with: output)
-    case .getCheckoutUrl(let input):
-      let output = try await GetCheckoutUrl.resolve(with: input, in: context)
-      return try await respond(with: output)
-    case .handleCheckoutSuccess(let input):
-      let output = try await HandleCheckoutSuccess.resolve(with: input, in: context)
-      return try await respond(with: output)
-    case .handleCheckoutCancel(let input):
-      let output = try await HandleCheckoutCancel.resolve(with: input, in: context)
       return try await respond(with: output)
     case .login(let input):
       let output = try await Login.resolve(with: input, in: context)
