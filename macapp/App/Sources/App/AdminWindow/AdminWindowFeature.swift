@@ -205,7 +205,7 @@ extension AdminWindowFeature.RootReducer {
       state.adminWindow.healthCheck.accountStatus = .error
       return state.adminWindow.healthCheck.checkCompletionEffect
 
-    case .appUpdates(.latestVersionResponse(.success(let output))):
+    case .appUpdates(.latestVersionResponse(.success(let output), _)):
       state.adminWindow.healthCheck.latestAppVersion = .ok(value: output.semver)
       return state.adminWindow.healthCheck.checkCompletionEffect
 
@@ -460,10 +460,16 @@ extension AdminWindowFeature.RootReducer {
           ))
         }
         await send(.admin(.accountStatusResponse(accountStatus)))
-        await send(.appUpdates(.latestVersionResponse(latestAppVersionOutput)))
+        await send(.appUpdates(.latestVersionResponse(
+          result: latestAppVersionOutput,
+          source: .healthCheck
+        )))
       } else {
         await send(.admin(.accountStatusResponse(.failure(NetworkClient.NotConnected()))))
-        await send(.appUpdates(.latestVersionResponse(.failure(NetworkClient.NotConnected()))))
+        await send(.appUpdates(.latestVersionResponse(
+          result: .failure(NetworkClient.NotConnected()),
+          source: .healthCheck
+        )))
       }
 
       await send(.adminWindow(.setKeystrokeRecordingPermissionOk(

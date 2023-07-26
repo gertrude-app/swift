@@ -23,7 +23,10 @@ import XExpect
       )
     )
 
-    await store.send(.appUpdates(.latestVersionResponse(.success(response)))) {
+    await store.send(.appUpdates(.latestVersionResponse(
+      result: .success(response),
+      source: .heartbeat
+    ))) {
       $0.appUpdates.latestVersion = response
     }
 
