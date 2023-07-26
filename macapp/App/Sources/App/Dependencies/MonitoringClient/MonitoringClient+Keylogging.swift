@@ -26,6 +26,7 @@ class KeystrokeMonitor {
   private var appKeystrokes: [String: Keystrokes] = [:]
 
   func start() {
+    stop() // if we don't stop prior, we get duplicate keystrokes
     eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown]) { event in
       guard let keystroke = Keystroke(from: event),
             let appName = NSWorkspace.shared.frontmostApplication?.localizedName else {
