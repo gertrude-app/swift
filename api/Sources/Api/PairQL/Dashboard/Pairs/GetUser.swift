@@ -28,7 +28,7 @@ struct GetUser: Pair {
   }
 
   struct Device: PairNestable {
-    let id: Api.UserDevice.Id
+    let id: Api.Device.Id
     let isOnline: Bool
     let modelFamily: DeviceModelFamily
     let modelTitle: String
@@ -80,7 +80,7 @@ extension GetUser.User {
       .concurrentMap { userDevice in
         let adminDevice = try await userDevice.adminDevice()
         return GetUser.Device(
-          id: userDevice.id,
+          id: adminDevice.id,
           isOnline: await userDevice.isOnline(),
           modelFamily: adminDevice.model.family,
           modelTitle: adminDevice.model.shortDescription,
