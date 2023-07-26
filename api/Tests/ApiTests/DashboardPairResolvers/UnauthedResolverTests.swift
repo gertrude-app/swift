@@ -52,8 +52,8 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
       .where(.adminId == admin.id)
       .first()
 
-    expect(output).toEqual(.init(adminId: admin.id))
-    expect(retrieved.subscriptionStatus).toEqual(.emailVerified)
+    expect(output.adminId).toEqual(admin.id)
+    expect(retrieved.subscriptionStatus).toEqual(.trialing)
     expect(method.config).toEqual(.email(email: admin.email.rawValue))
   }
 
@@ -65,67 +65,8 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     let retrieved = try await Current.db.find(admin.id)
 
-    expect(output).toEqual(.init(adminId: admin.id))
+    expect(output.adminId).toEqual(admin.id)
     expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed
-  }
-
-  func testGetCheckoutUrl() async throws {
-    var sessionData: Stripe.CheckoutSessionData?
-    Current.stripe.createCheckoutSession = { data in
-      sessionData = data
-      return .init(id: "cs_123", url: "result-url", subscription: nil, clientReferenceId: nil)
-    }
-
-    let admin = try await Current.db.create(Admin.random)
-    let output = try await GetCheckoutUrl.resolve(
-      with: .init(adminId: admin.id),
-      in: context
-    )
-
-    expect(output).toEqual(.init(url: "result-url"))
-
-    expect(sessionData).toEqual(.init(
-      successUrl: "//checkout-success?session_id={CHECKOUT_SESSION_ID}",
-      cancelUrl: "//checkout-cancel?session_id={CHECKOUT_SESSION_ID}",
-      lineItems: [.init(quantity: 1, priceId: Env.STRIPE_SUBSCRIPTION_PRICE_ID)],
-      mode: .subscription,
-      clientReferenceId: admin.id.lowercased,
-      customerEmail: admin.email.rawValue,
-      trialPeriodDays: 60,
-      trialEndBehavior: .createInvoice,
-      paymentMethodCollection: .ifRequired
-    ))
-  }
-
-  func testHandleCheckoutSuccess() async throws {
-    let sessionId = "cs_123"
-    let admin = try await Current.db.create(Admin.random)
-    let (_, tokenValue) = mockUUIDs()
-
-    Current.stripe.getCheckoutSession = { id in
-      expect(id).toBe(sessionId)
-      return .init(
-        id: "cs_123",
-        url: nil,
-        subscription: "sub_123",
-        clientReferenceId: admin.id.lowercased
-      )
-    }
-
-    Current.stripe.getSubscription = { id in
-      expect(id).toBe("sub_123")
-      return .init(id: id, status: .trialing, customer: "cus_123")
-    }
-
-    let output = try await HandleCheckoutSuccess.resolve(
-      with: .init(stripeCheckoutSessionId: sessionId),
-      in: context
-    )
-
-    let retrieved = try await Current.db.find(admin.id)
-    expect(output).toEqual(.init(token: .init(tokenValue), adminId: admin.id))
-    expect(retrieved.subscriptionId).toEqual(.init(rawValue: "sub_123"))
-    expect(retrieved.subscriptionStatus).toEqual(.trialing)
   }
 
   func testLoginFromMagicLink() async throws {

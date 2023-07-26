@@ -91,7 +91,7 @@ extension Admin {
 
   enum SubscriptionStatus: String, Codable, Equatable, CaseIterable {
     case pendingEmailVerification
-    case emailVerified
+    case emailVerified // legacy, no longer used
     case signupCanceled
     case complimentary
 
