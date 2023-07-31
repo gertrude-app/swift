@@ -60,7 +60,7 @@ extension HistoryFeature.RootReducer: RootReducing {
       guard case .connectFailed = state.history.userConnection else {
         return .none
       }
-      state.history.userConnection = .enteringConnectionCode
+      state.history.userConnection = .notConnected
       return .none
 
     case .menuBar(.welcomeAdminClicked):

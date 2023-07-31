@@ -64,7 +64,7 @@ import XExpect
     await expect(helpClickedSpy).toEqual(true)
 
     await store.send(.menuBar(.retryConnectClicked)) {
-      $0.history.userConnection = .enteringConnectionCode
+      $0.history.userConnection = .notConnected
     }
   }
 }
