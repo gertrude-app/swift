@@ -204,14 +204,14 @@ import XExpect
 // helpers
 
 extension AppReducer {
-  static func testStore(
+  static func testStore<R: ReducerOf<AppReducer>>(
     exhaustive: Bool = false,
-    reducer: any ReducerOf<AppReducer> = AppReducer(),
+    reducer: R = AppReducer(),
     mutateState: @escaping (inout State) -> Void = { _ in }
   ) -> (TestStoreOf<AppReducer>, TestSchedulerOf<DispatchQueue>) {
     var state = State()
     mutateState(&state)
-    let store = TestStore(initialState: state, reducer: reducer)
+    let store = TestStore(initialState: state, reducer: { reducer })
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))

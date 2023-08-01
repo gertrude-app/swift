@@ -15,6 +15,11 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
     var message: String
   }
 
+  private struct _CaseCommunicationBroken: Codable {
+    var `case` = "communicationBroken"
+    var repairing: Bool
+  }
+
   private struct _CaseInstalled: Codable {
     var `case` = "installed"
     var version: String
@@ -23,6 +28,8 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
 
   func encode(to encoder: Encoder) throws {
     switch self {
+    case .communicationBroken(let repairing):
+      try _CaseCommunicationBroken(repairing: repairing).encode(to: encoder)
     case .installed(let version, let numUserKeys):
       try _CaseInstalled(version: version, numUserKeys: numUserKeys).encode(to: encoder)
     case .installing:
@@ -33,8 +40,6 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
       try _NamedCase(case: "notInstalled").encode(to: encoder)
     case .unexpected:
       try _NamedCase(case: "unexpected").encode(to: encoder)
-    case .communicationBroken:
-      try _NamedCase(case: "communicationBroken").encode(to: encoder)
     }
   }
 
@@ -42,6 +47,9 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
     let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {
+    case "communicationBroken":
+      let value = try container.decode(_CaseCommunicationBroken.self)
+      self = .communicationBroken(repairing: value.repairing)
     case "installed":
       let value = try container.decode(_CaseInstalled.self)
       self = .installed(version: value.version, numUserKeys: value.numUserKeys)
@@ -53,8 +61,6 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
       self = .notInstalled
     case "unexpected":
       self = .unexpected
-    case "communicationBroken":
-      self = .communicationBroken
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }

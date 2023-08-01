@@ -20,7 +20,7 @@ struct AdminWindowFeature: Feature {
         case installTimeout
         case notInstalled
         case unexpected
-        case communicationBroken
+        case communicationBroken(repairing: Bool)
         case installed(version: String, numUserKeys: Int)
       }
 
@@ -361,6 +361,7 @@ extension AdminWindowFeature.RootReducer {
         )
 
       case .webview(.healthCheck(.repairFilterCommunicationClicked)):
+        state.adminWindow.healthCheck.filterStatus = nil
         return .merge(
           .exec { send in
             try await restartFilter(send)
@@ -502,8 +503,8 @@ extension AdminWindowFeature.RootReducer {
     )
   }
 
-  func afterFilterChange(_ send: Send<Action>) async {
-    await recheckFilter(send)
+  func afterFilterChange(_ send: Send<Action>, repairing: Bool = false) async {
+    await recheckFilter(send, repairing: repairing)
   }
 
   func withTimeoutAfter(seconds: Int) -> Effect<Action> {
@@ -513,7 +514,7 @@ extension AdminWindowFeature.RootReducer {
     }.cancellable(id: CancelId.healthCheckTimeout, cancelInFlight: true)
   }
 
-  func recheckFilter(_ send: Send<Action>) async {
+  private func recheckFilter(_ send: Send<Action>, repairing: Bool = false) async {
     let filterState = await filter.state()
     await send(.adminWindow(.delegate(.healthCheckFilterExtensionState(filterState))))
     switch filterState {
@@ -534,7 +535,7 @@ extension AdminWindowFeature.RootReducer {
           .installed(version: ack.version, numUserKeys: 0)
         )))
       case .failure:
-        await send(.adminWindow(.setFilterStatus(.communicationBroken)))
+        await send(.adminWindow(.setFilterStatus(.communicationBroken(repairing: repairing))))
       }
     }
   }
