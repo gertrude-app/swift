@@ -24,7 +24,7 @@ extension WebSocketFeature.RootReducer {
     case .heartbeat(.everyFiveMinutes):
       guard state.admin.accountStatus != .inactive else { return .none }
       guard let user = state.user?.data else { return .none }
-      return .run { [state] send in
+      return .exec { [state] send in
         guard try await websocket.state() != .connected else {
           return
         }
@@ -40,7 +40,7 @@ extension WebSocketFeature.RootReducer {
       return connect(user)
 
     case .filter(.receivedState(let filterState)):
-      return .run { [state] _ in
+      return .exec { [state] _ in
         guard try await websocket.state() == .connected else { return }
         try await websocket.sendFilterState(state.filter, extensionState: filterState)
       }
@@ -52,21 +52,21 @@ extension WebSocketFeature.RootReducer {
          .application(.willTerminate),
          .adminAuthenticated(.adminWindow(.webview(.quitAppClicked))),
          .adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))):
-      return .run { _ in
+      return .exec { _ in
         guard try await websocket.state() == .connected else { return }
         try await websocket.send(.goingOffline)
         try await websocket.disconnect()
       }
 
     case .admin(.accountStatusResponse(.success(.inactive))):
-      return .run { _ in
+      return .exec { _ in
         try await websocket.disconnect()
       }
 
     case .adminAuthenticated(.adminWindow(.webview(.suspendFilterClicked))),
          .websocket(.receivedMessage(.suspendFilter)):
       guard state.admin.accountStatus != .inactive else { return .none }
-      return .run { _ in
+      return .exec { _ in
         try await websocket.send(.currentFilterState(.suspended))
       }
 
@@ -80,22 +80,22 @@ extension WebSocketFeature.RootReducer {
       switch websocketAction {
 
       case .connectedSuccessfully:
-        return .run { [state] _ in
+        return .exec { [state] _ in
           try await websocket.sendFilterState(state.filter)
         }
 
       case .receivedMessage(.currentFilterStateRequested):
-        return .run { [state] _ in
+        return .exec { [state] _ in
           try await websocket.sendFilterState(state.filter)
         }
 
       case .receivedMessage(.suspendFilterRequestDenied(let comment)):
-        return .run { _ in
+        return .exec { _ in
           await device.notifyFilterSuspensionDenied(with: comment)
         }
 
       case .receivedMessage(.unlockRequestUpdated(let status, let target, let comment)):
-        return .run { _ in
+        return .exec { _ in
           await device.notifyUnlockRequestUpdated(
             accepted: status == .accepted,
             target: target,
@@ -109,7 +109,7 @@ extension WebSocketFeature.RootReducer {
 
     case .adminAuthenticated(.adminWindow(.webview(.advanced(.websocketEndpointSet(let url))))):
       let user = state.user?.data
-      return .run { send in
+      return .exec { send in
         await websocket.updateEndpointOverride(url)
         try await websocket.send(.goingOffline)
         try await websocket.disconnect()
@@ -124,7 +124,7 @@ extension WebSocketFeature.RootReducer {
   }
 
   func connect(_ user: UserData) -> Effect<Action> {
-    .run { send in
+    .exec { send in
       if try await websocket.connect(user.token) == .connected {
         await send(.websocket(.connectedSuccessfully))
       }
