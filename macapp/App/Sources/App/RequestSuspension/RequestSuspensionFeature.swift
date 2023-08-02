@@ -52,13 +52,13 @@ struct RequestSuspensionFeature: Feature {
         return .cancel(id: CancelId.successTimeout)
 
       case .webview(.requestSubmitted(let durationInSeconds, let comment)):
-        return .task {
-          await .createSuspensionRequest(TaskResult {
+        return .exec { send in
+          await send(.createSuspensionRequest(TaskResult {
             try await api.createSuspendFilterRequest(.init(
               duration: durationInSeconds,
               comment: comment
             ))
-          })
+          }))
         }
 
       case .createSuspensionRequest(.success):

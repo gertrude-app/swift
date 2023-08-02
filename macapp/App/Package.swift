@@ -18,9 +18,12 @@ let package = Package(
     .library(name: "TestSupport", targets: ["TestSupport"]),
   ],
   dependencies: [
-    .github("pointfreeco/swift-composable-architecture", branch: "prerelease/1.0"),
-    .github("pointfreeco/swift-dependencies", from: "0.2.0"),
-    .github("pointfreeco/combine-schedulers", from: "0.10.0"),
+    .package(
+      url: "https://github.com/pointfreeco/swift-composable-architecture.git",
+      exact: "1.0.0"
+    ),
+    .github("pointfreeco/swift-dependencies", from: "1.0.0"),
+    .github("pointfreeco/combine-schedulers", from: "1.0.0"),
     .github("jaredh159/swift-tagged", from: "0.8.2"),
     .github("daltoniam/Starscream", from: "4.0.4"),
     .github("sindresorhus/LaunchAtLogin", from: "5.0.0"),

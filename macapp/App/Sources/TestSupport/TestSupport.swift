@@ -10,7 +10,7 @@ public extension Task where Success == Never, Failure == Never {
   }
 }
 
-public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action, R.State, R.Action, Void>
+public typealias TestStoreOf<R: Reducer> = TestStore<R.State, R.Action>
 
 public extension UUID {
   static let deadbeef = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!

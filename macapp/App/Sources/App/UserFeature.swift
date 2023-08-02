@@ -53,20 +53,20 @@ extension UserFeature.RootReducer: RootReducing {
 
     case .heartbeat(.everyTwentyMinutes):
       guard state.user != nil, network.isConnected() else { return .none }
-      return .task {
-        await .user(.refreshRules(
+      return .exec { send in
+        await send(.user(.refreshRules(
           result: TaskResult { try await api.refreshUserRules() },
           userInitiated: false
-        ))
+        )))
       }
 
     case .websocket(.receivedMessage(.userUpdated)),
          .websocket(.receivedMessage(.unlockRequestUpdated(.accepted, _, _))):
-      return .task {
-        await .user(.refreshRules(
+      return .exec { send in
+        await send(.user(.refreshRules(
           result: TaskResult { try await api.refreshUserRules() },
           userInitiated: false
-        ))
+        )))
       }
 
     case .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))):

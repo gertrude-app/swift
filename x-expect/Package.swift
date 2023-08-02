@@ -8,7 +8,7 @@ let package = Package(
     .library(name: "XExpect", targets: ["XExpect"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.3.0"),
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
   ],
   targets: [
     .target(

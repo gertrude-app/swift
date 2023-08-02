@@ -103,10 +103,10 @@ struct BlockedRequestsFeature: Feature {
             ipAddress: $0.ipAddress
           ) }
         // shouldn't need to check network connection, a blocked request should imply connected
-        return .task {
-          await .createUnlockRequests(TaskResult {
+        return .exec { send in
+          await send(.createUnlockRequests(TaskResult {
             try await api.createUnlockRequests(.init(blockedRequests: inputReqs, comment: comment))
-          })
+          }))
         }
 
       case .createUnlockRequests(.success):

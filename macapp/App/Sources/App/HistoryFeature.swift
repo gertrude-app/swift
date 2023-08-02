@@ -50,10 +50,10 @@ extension HistoryFeature.RootReducer: RootReducing {
         return .exec { _ in await device.notifyNoInternet() }
       }
       state.history.userConnection = .connecting
-      return .task {
-        await .history(.userConnection(.connect(TaskResult {
+      return .exec { send in
+        await send(.history(.userConnection(.connect(TaskResult {
           try await api.connectUser(connectUserInput(code: code))
-        })))
+        }))))
       }
 
     case .menuBar(.retryConnectClicked):
