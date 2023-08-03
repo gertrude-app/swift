@@ -42,16 +42,12 @@ extension FilterFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .adminAuthenticated(.adminWindow(.webview(.suspendFilterClicked(let seconds)))):
-      return suspendFilter(for: .init(seconds), with: &state)
-
     case .websocket(.receivedMessage(.suspendFilter(let seconds, let comment))):
-      return .merge(
-        suspendFilter(for: seconds, with: &state),
-        .exec { _ in
-          await device.notifyFilterSuspension(resuming: seconds, from: now, with: comment)
-        }
-      )
+      return suspendFilter(for: seconds, with: &state, comment: comment)
+
+    case .adminAuthenticated(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):
+      state.requestSuspension.windowOpen = false
+      return suspendFilter(for: .init(seconds), with: &state)
 
     case .heartbeat(.everyMinute):
       if let expiration = state.filter.currentSuspensionExpiration, expiration <= now {
@@ -69,6 +65,7 @@ extension FilterFeature.RootReducer {
       }
 
     case .adminWindow(.webview(.resumeFilterClicked)), .menuBar(.resumeFilterClicked):
+      state.menuBar.dropdownOpen = false
       state.filter.currentSuspensionExpiration = nil
       return handleFilterSuspensionEnded(early: true)
 
@@ -156,10 +153,19 @@ extension FilterFeature.RootReducer {
     }
   }
 
-  func suspendFilter(for seconds: Seconds<Int>, with state: inout State) -> Effect<Action> {
+  func suspendFilter(
+    for seconds: Seconds<Int>,
+    with state: inout State,
+    comment: String? = nil
+  ) -> Effect<Action> {
     state.filter.currentSuspensionExpiration = now.advanced(by: Double(seconds.rawValue))
     return .merge(
-      .exec { _ in _ = await xpc.suspendFilter(seconds) },
+      .exec { _ in
+        _ = await xpc.suspendFilter(seconds)
+      },
+      .exec { _ in
+        await device.notifyFilterSuspension(resuming: seconds, from: now, with: comment)
+      },
       .cancel(id: FilterFeature.CancelId.quitBrowsers)
     )
   }

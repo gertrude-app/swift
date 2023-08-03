@@ -109,7 +109,6 @@ struct AdminWindowFeature: Feature {
       case releaseChannelUpdated(channel: ReleaseChannel)
       case reinstallAppClicked
       case quitAppClicked
-      case suspendFilterClicked(durationInSeconds: Int)
       case reconnectUserClicked
       case administrateOSUserAccountsClicked
       case checkForAppUpdatesClicked
@@ -303,9 +302,6 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.startFilterClicked),
            .webview(.resumeFilterClicked):
         return .none // handled by FilterFeature
-
-      case .webview(.suspendFilterClicked):
-        return adminAuthenticated(action)
 
       case .webview(.setUserExemption):
         return adminAuthenticated(action)

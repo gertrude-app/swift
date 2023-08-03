@@ -17,8 +17,8 @@ class RequestSuspensionWindow: AppWindow {
   var viewStore: ViewStore<State, Action>
   var window: NSWindow?
   var closeWindowAction = Action.closeWindow
-  var initialSize = NSRect(x: 0, y: 0, width: 600, height: 380)
-  var minSize = NSSize(width: 600, height: 380)
+  var initialSize = NSRect(x: 0, y: 0, width: 680, height: 360)
+  var minSize = NSSize(width: 600, height: 360)
 
   // above almost everything, but below filter installation system prompt
   var windowLevel = NSWindow.Level.modalPanel

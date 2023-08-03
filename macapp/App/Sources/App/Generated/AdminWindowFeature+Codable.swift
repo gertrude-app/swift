@@ -172,11 +172,6 @@ extension AdminWindowFeature.Action.View {
     var channel: ReleaseChannel
   }
 
-  private struct _CaseSuspendFilterClicked: Codable {
-    var `case` = "suspendFilterClicked"
-    var durationInSeconds: Int
-  }
-
   private struct _CaseSetUserExemption: Codable {
     var `case` = "setUserExemption"
     var userId: UInt32
@@ -193,8 +188,6 @@ extension AdminWindowFeature.Action.View {
       try _CaseGotoScreenClicked(screen: screen).encode(to: encoder)
     case .releaseChannelUpdated(let channel):
       try _CaseReleaseChannelUpdated(channel: channel).encode(to: encoder)
-    case .suspendFilterClicked(let durationInSeconds):
-      try _CaseSuspendFilterClicked(durationInSeconds: durationInSeconds).encode(to: encoder)
     case .setUserExemption(let userId, let enabled):
       try _CaseSetUserExemption(userId: userId, enabled: enabled).encode(to: encoder)
     case .closeWindow:
@@ -238,9 +231,6 @@ extension AdminWindowFeature.Action.View {
     case "releaseChannelUpdated":
       let value = try container.decode(_CaseReleaseChannelUpdated.self)
       self = .releaseChannelUpdated(channel: value.channel)
-    case "suspendFilterClicked":
-      let value = try container.decode(_CaseSuspendFilterClicked.self)
-      self = .suspendFilterClicked(durationInSeconds: value.durationInSeconds)
     case "setUserExemption":
       let value = try container.decode(_CaseSetUserExemption.self)
       self = .setUserExemption(userId: value.userId, enabled: value.enabled)

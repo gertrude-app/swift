@@ -21,7 +21,9 @@ import XExpect
 
     // receive a manual suspension
     await store.send(
-      .adminAuthenticated(.adminWindow(.webview(.suspendFilterClicked(durationInSeconds: 30))))
+      .adminAuthenticated(
+        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
+      )
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
@@ -55,7 +57,7 @@ import XExpect
     let store = TestStore(initialState: AppReducer.State(filter: .init(
       // start with 30 second suspension
       currentSuspensionExpiration: Date(timeIntervalSince1970: 30)
-    )), reducer: { AppReducer() })
+    )), reducer: AppReducer.init)
 
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))
     let scheduler = DispatchQueue.test
@@ -80,15 +82,25 @@ import XExpect
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 120)
     }
 
+    // user notified of suspension
+    await expect(showNotification.invocations.value.count).toEqual(2)
+    await expect(showNotification.invocations.value[1].a).toContain("disabling filter")
+
     await scheduler.advance(by: .seconds(31))
     await expect(quitBrowsers.invocations).toEqual(0) // ...and browsers never quit!
 
     // now, receive a MANUAL suspension
     await store.send(
-      .adminAuthenticated(.adminWindow(.webview(.suspendFilterClicked(durationInSeconds: 30))))
+      .adminAuthenticated(
+        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
+      )
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
+
+    // user notified of suspension
+    await expect(showNotification.invocations.value.count).toEqual(3)
+    await expect(showNotification.invocations.value[2].a).toContain("disabling filter")
 
     // pretend 30 seconds passed and the filter notifies of suspension ending
     await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502)))) {
@@ -96,14 +108,15 @@ import XExpect
     }
 
     // user notified again that browsers will quit
-    await expect(showNotification.invocations.value.count).toEqual(3)
-    await expect(showNotification.invocations.value[1].a).toContain("disabling filter")
-    await expect(showNotification.invocations.value[2].a).toContain("browsers quitting soon")
+    await expect(showNotification.invocations.value.count).toEqual(4)
+    await expect(showNotification.invocations.value[3].a).toContain("browsers quitting soon")
     await scheduler.advance(by: .seconds(30))
 
     // now, receive a SECOND MANUAL suspension, which stops timer
     await store.send(
-      .adminAuthenticated(.adminWindow(.webview(.suspendFilterClicked(durationInSeconds: 30))))
+      .adminAuthenticated(
+        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
+      )
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }

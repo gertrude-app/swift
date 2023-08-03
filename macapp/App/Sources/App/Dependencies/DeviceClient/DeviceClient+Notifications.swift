@@ -84,7 +84,7 @@ extension DeviceClient {
     if let comment, !comment.isEmpty {
       body = "Parent comment: \"\(comment)\"\nFilter suspended, resuming \(resuming)"
     } else {
-      body = "Filter will resume normal blocking in \(resuming)"
+      body = "Filter will resume normal blocking \(resuming)"
     }
     await showNotification(title, body)
   }

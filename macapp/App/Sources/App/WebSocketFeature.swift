@@ -63,7 +63,7 @@ extension WebSocketFeature.RootReducer {
         try await websocket.disconnect()
       }
 
-    case .adminAuthenticated(.adminWindow(.webview(.suspendFilterClicked))),
+    case .adminAuthenticated(.requestSuspension(.webview(.grantSuspensionClicked))),
          .websocket(.receivedMessage(.suspendFilter)):
       guard state.admin.accountStatus != .inactive else { return .none }
       return .exec { _ in
