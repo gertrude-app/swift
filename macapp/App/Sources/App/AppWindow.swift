@@ -68,7 +68,6 @@ extension AppWindow {
     window?.title = "\(title)  |  Gertrude"
     window?.delegate = windowDelegate
     window?.tabbingMode = .disallowed
-    window?.alphaValue = 0.0
     window?.titlebarAppearsTransparent = true
     window?.isReleasedWhenClosed = false
     window?.level = windowLevel
@@ -107,7 +106,6 @@ extension AppWindow {
         wvc.updateColorScheme(self.appClient.colorScheme())
         // give a brief moment for appview to re-render
         self.mainQueue.schedule(after: .milliseconds(75)) { [weak self] in
-          self?.window?.alphaValue = 1.0
           // this exact order is required so that windows are not greyed out, hidden
           // and so that the webview focus/hover states etc. are immediately active
           // see: https://stackoverflow.com/questions/11160180
