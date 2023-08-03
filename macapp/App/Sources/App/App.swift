@@ -12,20 +12,18 @@ typealias UserData = GetUserData.Output
   var requestSuspensionWindow: RequestSuspensionWindow
   let store = Store(
     initialState: AppReducer.State(),
-    reducer: AppReducer()._printChanges(.filteredBy { action in
-      switch action {
-      case .user(.refreshRules(.success, _)):
-        print("received action:\n  .user(.refreshRules(.success(...)))\n")
-        return false
-      default:
-        return true
-      }
-    })
+    reducer: {
+      AppReducer()._printChanges(.filteredBy { action in
+        switch action {
+        case .user(.refreshRules(.success, _)):
+          print("received action:\n  .user(.refreshRules(.success(...)))\n")
+          return false
+        default:
+          return true
+        }
+      })
+    }
   )
-
-  var statelessViewStore: ViewStore<Void, AppReducer.Action> {
-    ViewStore(store.stateless)
-  }
 
   public init() {
     menuBarManager = MenuBarManager(store: store.scope(
@@ -63,13 +61,13 @@ typealias UserData = GetUserData.Output
   public func send(_ action: ApplicationAction) {
     switch action {
     case .didFinishLaunching:
-      statelessViewStore.send(.application(.didFinishLaunching))
+      store.send(.application(.didFinishLaunching))
     case .willSleep:
-      statelessViewStore.send(.application(.willSleep))
+      store.send(.application(.willSleep))
     case .didWake:
-      statelessViewStore.send(.application(.didWake))
+      store.send(.application(.didWake))
     case .willTerminate:
-      statelessViewStore.send(.application(.willTerminate))
+      store.send(.application(.willTerminate))
     }
   }
 }

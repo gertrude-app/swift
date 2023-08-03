@@ -34,7 +34,7 @@ extension MonitoringFeature.RootReducer {
 
     case .monitoring(.timerTriggeredTakeScreenshot):
       let width = state.user?.data.screenshotSize ?? 800
-      return .run { _ in
+      return .exec { _ in
         try await monitoring.takeScreenshot(width)
         guard network.isConnected() else { return }
         for sc in await monitoring.takePendingScreenshots() {
@@ -47,7 +47,7 @@ extension MonitoringFeature.RootReducer {
     // if we're not monitoring keystrokes, keystrokes will be nil
     case .heartbeat(.everyFiveMinutes),
          .adminAuthenticated(.adminWindow(.webview(.quitAppClicked))):
-      return .run { _ in
+      return .exec { _ in
         guard network.isConnected() else { return }
         if let keystrokes = await monitoring.takePendingKeystrokes() {
           _ = try await api.createKeystrokeLines(keystrokes)
@@ -88,14 +88,14 @@ extension MonitoringFeature.RootReducer {
     case (.none, .some, _):
       return .merge(
         .cancel(id: CancelId.screenshots),
-        .run { _ in await monitoring.stopLoggingKeystrokes() }
+        .exec { _ in await monitoring.stopLoggingKeystrokes() }
       )
 
     // current info changed (or we're forcing), reconfigure
     case (.some(let current), .some, _), (.some(let current), .none, _):
       return .merge(
         .cancel(id: CancelId.screenshots),
-        .run { _ in
+        .exec { _ in
           guard current.keyloggingEnabled else {
             await monitoring.stopLoggingKeystrokes()
             return
@@ -104,7 +104,7 @@ extension MonitoringFeature.RootReducer {
             ? await monitoring.startLoggingKeystrokes()
             : await monitoring.stopLoggingKeystrokes()
         },
-        .run { send in
+        .exec { send in
           guard current.screenshotsEnabled else {
             return
           }

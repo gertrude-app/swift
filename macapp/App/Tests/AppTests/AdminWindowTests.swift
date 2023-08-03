@@ -50,7 +50,9 @@ import XExpect
     store.deps.filterXpc.suspendFilter = suspendFilter.fn
 
     await store.send(
-      .adminAuthenticated(.adminWindow(.webview(.suspendFilterClicked(durationInSeconds: 90))))
+      .adminAuthenticated(
+        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 90)))
+      )
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
     }

@@ -13,7 +13,7 @@ public struct FilterStore: NetworkFilter {
   @Dependency(\.security) public var security
 
   public init() {
-    store = Store(initialState: Filter.State(), reducer: Filter())
+    store = Store(initialState: Filter.State(), reducer: { Filter() })
     viewStore = ViewStore(store, observe: { $0 })
     viewStore.send(.extensionStarted)
   }

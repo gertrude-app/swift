@@ -20,11 +20,18 @@ extension RequestSuspensionFeature.Action.View {
     var comment: String?
   }
 
+  private struct _CaseGrantSuspensionClicked: Codable {
+    var `case` = "grantSuspensionClicked"
+    var durationInSeconds: Int
+  }
+
   func encode(to encoder: Encoder) throws {
     switch self {
     case .requestSubmitted(let durationInSeconds, let comment):
       try _CaseRequestSubmitted(durationInSeconds: durationInSeconds, comment: comment)
         .encode(to: encoder)
+    case .grantSuspensionClicked(let durationInSeconds):
+      try _CaseGrantSuspensionClicked(durationInSeconds: durationInSeconds).encode(to: encoder)
     case .closeWindow:
       try _NamedCase(case: "closeWindow").encode(to: encoder)
     case .requestFailedTryAgainClicked:
@@ -43,6 +50,9 @@ extension RequestSuspensionFeature.Action.View {
     case "requestSubmitted":
       let value = try container.decode(_CaseRequestSubmitted.self)
       self = .requestSubmitted(durationInSeconds: value.durationInSeconds, comment: value.comment)
+    case "grantSuspensionClicked":
+      let value = try container.decode(_CaseGrantSuspensionClicked.self)
+      self = .grantSuspensionClicked(durationInSeconds: value.durationInSeconds)
     case "closeWindow":
       self = .closeWindow
     case "requestFailedTryAgainClicked":

@@ -7,11 +7,11 @@ protocol FilterControlling: RootReducing {
   var filter: FilterExtensionClient { get }
   var mainQueue: AnySchedulerOf<DispatchQueue> { get }
   var xpc: FilterXPCClient { get }
-  func afterFilterChange(_ send: Send<Action>) async
+  func afterFilterChange(_ send: Send<Action>, repairing: Bool) async
 }
 
 extension FilterControlling {
-  func afterFilterChange(_ send: Send<Action>) async {}
+  func afterFilterChange(_ send: Send<Action>, repairing: Bool = false) async {}
 
   func installFilter(_ send: Send<Action>) async throws {
     _ = await filter.install()
@@ -41,7 +41,7 @@ extension FilterControlling {
       attempt,
       "\(result)"
     )
-    await afterFilterChange(send)
+    await afterFilterChange(send, repairing: true)
 
     // trying up to 4 times seems to get past some funky states fairly
     // reliably, especially the one i observe locally only, where the filter
@@ -56,7 +56,7 @@ extension FilterControlling {
       try await mainQueue.sleep(for: .milliseconds(500))
       result = await xpc.establishConnection()
       os_log("[G•] APP FilterControlling.replaceFilter() final: %{public}s", "\(result)")
-      await afterFilterChange(send)
+      await afterFilterChange(send, repairing: false)
     }
   }
 }

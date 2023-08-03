@@ -22,6 +22,7 @@ struct RequestSuspensionFeature: Feature {
       case requestFailedTryAgainClicked
       case inactiveAccountRecheckClicked
       case inactiveAccountDisconnectAppClicked
+      case grantSuspensionClicked(durationInSeconds: Int)
     }
 
     case webview(View)
@@ -52,14 +53,17 @@ struct RequestSuspensionFeature: Feature {
         return .cancel(id: CancelId.successTimeout)
 
       case .webview(.requestSubmitted(let durationInSeconds, let comment)):
-        return .task {
-          await .createSuspensionRequest(TaskResult {
+        return .exec { send in
+          await send(.createSuspensionRequest(TaskResult {
             try await api.createSuspendFilterRequest(.init(
               duration: durationInSeconds,
               comment: comment
             ))
-          })
+          }))
         }
+
+      case .webview(.grantSuspensionClicked):
+        return .none // handled by root reducer
 
       case .createSuspensionRequest(.success):
         state.request = .succeeded
@@ -80,7 +84,9 @@ struct RequestSuspensionFeature: Feature {
     }
   }
 
-  struct RootReducer: RootReducing {}
+  struct RootReducer: AdminAuthenticating {
+    @Dependency(\.security) var security
+  }
 }
 
 extension RequestSuspensionFeature.RootReducer {
@@ -89,6 +95,10 @@ extension RequestSuspensionFeature.RootReducer {
     case .menuBar(.suspendFilterClicked):
       state.requestSuspension.windowOpen = true
       return .none
+
+    case .requestSuspension(.webview(.grantSuspensionClicked)):
+      return adminAuthenticated(action)
+
     default:
       return .none
     }

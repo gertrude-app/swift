@@ -15,6 +15,11 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
     var message: String
   }
 
+  private struct _CaseCommunicationBroken: Codable {
+    var `case` = "communicationBroken"
+    var repairing: Bool
+  }
+
   private struct _CaseInstalled: Codable {
     var `case` = "installed"
     var version: String
@@ -23,6 +28,8 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
 
   func encode(to encoder: Encoder) throws {
     switch self {
+    case .communicationBroken(let repairing):
+      try _CaseCommunicationBroken(repairing: repairing).encode(to: encoder)
     case .installed(let version, let numUserKeys):
       try _CaseInstalled(version: version, numUserKeys: numUserKeys).encode(to: encoder)
     case .installing:
@@ -33,8 +40,6 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
       try _NamedCase(case: "notInstalled").encode(to: encoder)
     case .unexpected:
       try _NamedCase(case: "unexpected").encode(to: encoder)
-    case .communicationBroken:
-      try _NamedCase(case: "communicationBroken").encode(to: encoder)
     }
   }
 
@@ -42,6 +47,9 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
     let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {
+    case "communicationBroken":
+      let value = try container.decode(_CaseCommunicationBroken.self)
+      self = .communicationBroken(repairing: value.repairing)
     case "installed":
       let value = try container.decode(_CaseInstalled.self)
       self = .installed(version: value.version, numUserKeys: value.numUserKeys)
@@ -53,8 +61,6 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
       self = .notInstalled
     case "unexpected":
       self = .unexpected
-    case "communicationBroken":
-      self = .communicationBroken
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }
@@ -166,11 +172,6 @@ extension AdminWindowFeature.Action.View {
     var channel: ReleaseChannel
   }
 
-  private struct _CaseSuspendFilterClicked: Codable {
-    var `case` = "suspendFilterClicked"
-    var durationInSeconds: Int
-  }
-
   private struct _CaseSetUserExemption: Codable {
     var `case` = "setUserExemption"
     var userId: UInt32
@@ -187,8 +188,6 @@ extension AdminWindowFeature.Action.View {
       try _CaseGotoScreenClicked(screen: screen).encode(to: encoder)
     case .releaseChannelUpdated(let channel):
       try _CaseReleaseChannelUpdated(channel: channel).encode(to: encoder)
-    case .suspendFilterClicked(let durationInSeconds):
-      try _CaseSuspendFilterClicked(durationInSeconds: durationInSeconds).encode(to: encoder)
     case .setUserExemption(let userId, let enabled):
       try _CaseSetUserExemption(userId: userId, enabled: enabled).encode(to: encoder)
     case .closeWindow:
@@ -232,9 +231,6 @@ extension AdminWindowFeature.Action.View {
     case "releaseChannelUpdated":
       let value = try container.decode(_CaseReleaseChannelUpdated.self)
       self = .releaseChannelUpdated(channel: value.channel)
-    case "suspendFilterClicked":
-      let value = try container.decode(_CaseSuspendFilterClicked.self)
-      self = .suspendFilterClicked(durationInSeconds: value.durationInSeconds)
     case "setUserExemption":
       let value = try container.decode(_CaseSetUserExemption.self)
       self = .setUserExemption(userId: value.userId, enabled: value.enabled)

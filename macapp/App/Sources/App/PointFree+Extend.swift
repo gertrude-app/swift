@@ -39,7 +39,7 @@ public extension _ReducerPrinter {
   }
 }
 
-public extension EffectPublisher where Failure == Never {
+public extension Effect {
   static func exec(
     priority: TaskPriority? = nil,
     operation: @escaping @Sendable (Send<Action>) async throws -> Void,
