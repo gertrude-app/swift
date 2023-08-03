@@ -96,6 +96,13 @@ import WebKit
     } else {
       guard let button = statusItem.button else { return }
       popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.maxY)
+
+      // This is probably not necessary - added to ensure Gertrude is front application
+      // when menu bar icon is clicked, so that webview hover/focus states always work.
+      // It also helps ensure that any spawned windows are focused, though they also
+      // take care to activate the app to ensure focus.
+      NSApp.activate(ignoringOtherApps: true)
+
       popover.contentViewController?.view.window?.becomeKey()
     }
   }
