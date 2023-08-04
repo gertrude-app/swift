@@ -1,7 +1,7 @@
+import AppKit
 import ClientInterfaces
 import Combine
 import ComposableArchitecture
-import SwiftUI
 
 protocol AppWindow: AnyObject {
   associatedtype State: Equatable, Encodable

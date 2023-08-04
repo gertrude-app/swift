@@ -1,5 +1,5 @@
+import AppKit
 import Dependencies
-import SwiftUI
 
 @Sendable func quitAllBrowsers() async {
   @Dependency(\.mainQueue) var mainQueue
