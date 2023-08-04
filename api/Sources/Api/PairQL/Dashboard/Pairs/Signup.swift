@@ -53,7 +53,11 @@ extension Signup: Resolver {
       subscriptionStatus: .pendingEmailVerification
     ))
 
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
+    let token = await Current.ephemeral.createAdminIdToken(
+      admin.id,
+      expiration: Current.date().advanced(by: .hours(24))
+    )
+
     try await Current.postmark.send(verify(email, context.dashboardUrl, token))
 
     return Output(url: nil)
@@ -84,6 +88,9 @@ private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> X
     html: """
     Please verify your email address by clicking \
     <a href="\(dashboardUrl)/verify-signup-email/\(token.lowercased)">here</a>.
+    <br />
+    <br />
+    This link will expire in 24 hours.
     """
   )
 }
