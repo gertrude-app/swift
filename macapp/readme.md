@@ -13,6 +13,14 @@
   - attempt to fix post auto-update xpc comm connection
   - fix duplicate keystroke logging
   - fix update being triggered on admin window open
+- `2.0.3` (8/3/23)
+  - first _stable_ 2.x release
+  - @see: https://github.com/gertrude-app/swift/pull/33
+  - menu bar returns to initial state after connect fail
+  - admin window health check keeps throbbing filter status during communication repair
+  - fix webview focus bug
+  - remove suspend filter from admin window, add button to suspend filter window
+  - rework suspend filter flow, starting with choose duration
 
 ## Sparkle Releases
 
