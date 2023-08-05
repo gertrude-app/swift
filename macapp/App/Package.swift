@@ -18,9 +18,11 @@ let package = Package(
     .library(name: "TestSupport", targets: ["TestSupport"]),
   ],
   dependencies: [
+    // pin to fork to prevent swiftui catalina crash, until some resolution to:
+    // https://github.com/pointfreeco/swift-composable-architecture/discussions/2351
     .package(
-      url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-      exact: "1.0.0"
+      url: "https://github.com/jaredh159/swift-composable-architecture.git",
+      revision: "639f2d1994c997c44680c6599c4f9a58b88f7960"
     ),
     .github("pointfreeco/swift-dependencies", from: "1.0.0"),
     .github("pointfreeco/combine-schedulers", from: "1.0.0"),

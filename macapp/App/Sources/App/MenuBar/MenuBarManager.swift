@@ -1,7 +1,6 @@
 import Cocoa
 import Combine
 import ComposableArchitecture
-import SwiftUI
 import WebKit
 
 @MainActor class MenuBarManager {

@@ -25,7 +25,9 @@ public class WebSocketConnection: WebSocketDelegate {
 
   public init(
     scheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .background),
-    pingInterval: IntervalInSeconds = 60 * 5, // five minutes
+    // use `300` literal instead of `60 * 5`, believe it or not, crashes in 10.15
+    // https://github.com/OpenCombine/OpenCombine/issues/214#issuecomment-888958786
+    pingInterval: IntervalInSeconds = 300, // five minutes
     log: @escaping @Sendable (String) -> Void = { _ in },
     logError: @escaping @Sendable (String) -> Void = { _ in },
     messageSubject: Mutex<PassthroughSubject<WebSocketMessage.FromApiToApp, Never>>,

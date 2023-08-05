@@ -29,7 +29,16 @@ extension MonitoringClient: DependencyKey {
         return AXIsProcessTrustedWithOptions(options)
       #endif
     },
-    screenRecordingPermissionGranted: { CGPreflightScreenCaptureAccess() },
+    screenRecordingPermissionGranted: {
+      if #available(macOS 11, *) {
+        // apple docs say available in 10.15, but that's not the case:
+        // https://developer.apple.com/forums/thread/683860
+        return CGPreflightScreenCaptureAccess()
+      } else {
+        // no way in Catalina to check this :/
+        return true
+      }
+    },
     startLoggingKeystrokes: startKeylogging,
     stopLoggingKeystrokes: stopKeylogging,
     takePendingKeystrokes: takeKeystrokes,

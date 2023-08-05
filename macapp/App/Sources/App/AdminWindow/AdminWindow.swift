@@ -1,7 +1,7 @@
+import AppKit
 import Combine
 import ComposableArchitecture
 import Foundation
-import SwiftUI
 
 class AdminWindow: AppWindow {
   typealias Feature = AdminWindowFeature

@@ -1,6 +1,6 @@
+import AppKit
 import Combine
 import ComposableArchitecture
-import SwiftUI
 
 class BlockedRequestsWindow: AppWindow {
   typealias Feature = BlockedRequestsFeature
