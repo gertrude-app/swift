@@ -30,7 +30,6 @@ extension Login: Resolver {
       throw context.error(
         "4b5bbea0",
         .unauthorized,
-        .loginBeforeEmailVerified,
         user: "You may not login until your email is verified. Please check your email for a new verification link."
       )
     }

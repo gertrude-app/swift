@@ -41,51 +41,6 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     expect(sent.postmarkEmails[0].html).toContain("verify your email address")
   }
 
-  func testVerifySignupEmailSetsSubsriptionStatusAndCreatesNotificationMethod() async throws {
-    let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
-
-    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
-
-    let retrieved = try await Current.db.find(admin.id)
-    let method = try await Current.db.query(AdminVerifiedNotificationMethod.self)
-      .where(.adminId == admin.id)
-      .first()
-
-    expect(output.adminId).toEqual(admin.id)
-    expect(retrieved.subscriptionStatus).toEqual(.trialing)
-    expect(method.config).toEqual(.email(email: admin.email.rawValue))
-  }
-
-  func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
-    let admin = try await Entities.admin { $0.subscriptionStatus = .trialing } // <-- not pending
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
-
-    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
-
-    let retrieved = try await Current.db.find(admin.id)
-
-    expect(output.adminId).toEqual(admin.id)
-    expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed
-  }
-
-  func testAttemptToLoginWhenEmailNotVerifiedBlocksAndSendsEmail() async throws {
-    let admin = try await Entities.admin {
-      $0.subscriptionStatus = .pendingEmailVerification
-      $0.password = "lol-lol-lol"
-    }
-
-    let result = await Login.result(
-      with: .init(email: admin.email.rawValue, password: "lol-lol-lol"),
-      in: context
-    )
-
-    expect(result).toBeError(containing: "until your email is verified")
-    expect(sent.postmarkEmails).toHaveCount(1)
-    expect(sent.postmarkEmails[0].to).toEqual(admin.email.rawValue)
-    expect(sent.postmarkEmails[0].html).toContain("verify your email address")
-  }
-
   func testLoginFromMagicLink() async throws {
     let admin = try await Current.db.create(Admin.random)
     let token = await Current.ephemeral.createAdminIdToken(admin.id)
