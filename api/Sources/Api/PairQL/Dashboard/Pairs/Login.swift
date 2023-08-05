@@ -25,6 +25,16 @@ extension Login: Resolver {
       .where(.email == .string(input.email.lowercased()))
       .first(orThrow: context |> error)
 
+    if admin.subscriptionStatus == .pendingEmailVerification {
+      try await sendVerificationEmail(to: admin, in: context)
+      throw context.error(
+        "4b5bbea0",
+        .unauthorized,
+        .loginBeforeEmailVerified,
+        user: "You may not login until your email is verified. Please check your email for a new verification link."
+      )
+    }
+
     let match: Bool
     switch Env.mode {
     case .test:

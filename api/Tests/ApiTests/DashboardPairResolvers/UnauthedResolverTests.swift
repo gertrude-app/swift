@@ -69,6 +69,23 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed
   }
 
+  func testAttemptToLoginWhenEmailNotVerifiedBlocksAndSendsEmail() async throws {
+    let admin = try await Entities.admin {
+      $0.subscriptionStatus = .pendingEmailVerification
+      $0.password = "lol-lol-lol"
+    }
+
+    let result = await Login.result(
+      with: .init(email: admin.email.rawValue, password: "lol-lol-lol"),
+      in: context
+    )
+
+    expect(result).toBeError(containing: "until your email is verified")
+    expect(sent.postmarkEmails).toHaveCount(1)
+    expect(sent.postmarkEmails[0].to).toEqual(admin.email.rawValue)
+    expect(sent.postmarkEmails[0].html).toContain("verify your email address")
+  }
+
   func testLoginFromMagicLink() async throws {
     let admin = try await Current.db.create(Admin.random)
     let token = await Current.ephemeral.createAdminIdToken(admin.id)

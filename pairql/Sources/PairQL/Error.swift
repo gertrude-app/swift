@@ -60,6 +60,7 @@ public extension PqlError {
   enum DashboardTag: String, Codable, CaseIterable {
     case magicLinkTokenNotFound
     case slackVerificationFailed
+    case loginBeforeEmailVerified
   }
 
   enum AppTag: String, Codable, CaseIterable {
