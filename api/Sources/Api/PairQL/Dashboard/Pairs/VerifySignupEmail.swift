@@ -21,23 +21,69 @@ struct VerifySignupEmail: Pair {
 
 extension VerifySignupEmail: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    guard let adminId = await Current.ephemeral.adminIdFromToken(input.token) else {
+    switch await Current.ephemeral.adminIdFromToken(input.token) {
+
+    // happy path: verification is successful
+    case .notExpired(let adminId):
+      let admin = try await Admin.find(adminId)
+      let token = try await AdminToken.create(.init(adminId: admin.id))
+      if admin.subscriptionStatus != .pendingEmailVerification {
+        return .init(token: token.value, adminId: admin.id)
+      }
+
+      admin.subscriptionStatus = .trialing
+      try await admin.save()
+
+      // they get a default "verified" notification method, since they verified their email
+      try await Current.db.create(AdminVerifiedNotificationMethod(
+        adminId: admin.id,
+        config: .email(email: admin.email.rawValue)
+      ))
+
+      if Env.mode == .prod {
+        Current.sendGrid.fireAndForget(.toJared("email verified", admin.email.rawValue))
+      }
+
+      return Output(token: token.value, adminId: admin.id)
+
+    case .notFound:
       throw Abort(.notFound)
-    }
 
-    let admin = try await Current.db.find(adminId)
-    let token = try await Current.db.create(AdminToken(adminId: admin.id))
-    if admin.subscriptionStatus != .pendingEmailVerification {
-      return .init(token: token.value, adminId: admin.id)
-    }
+    case .expired(let adminId):
+      let admin = try await Admin.find(adminId)
+      if admin.subscriptionStatus == .pendingEmailVerification {
+        try await sendVerificationEmail(to: admin, in: context)
+        throw context.error("84a6c609", .badRequest, user: EXPIRED_TOKEN_MSG)
+      } else {
+        throw context.error(
+          "beb1b493",
+          .badRequest,
+          "email already verified",
+          .emailAlreadyVerified
+        )
+      }
 
-    admin.subscriptionStatus = .trialing
-    try await admin.save()
-    // they get a default "verified" notification method, since they verified their email
-    try await Current.db.create(AdminVerifiedNotificationMethod(
-      adminId: admin.id,
-      config: .email(email: admin.email.rawValue)
-    ))
-    return Output(token: token.value, adminId: admin.id)
+    case .previouslyRetrieved(let adminId):
+      let admin = try await Admin.find(adminId)
+      if admin.subscriptionStatus == .pendingEmailVerification {
+        try await sendVerificationEmail(to: admin, in: context)
+        throw context.error("6257bfb9", .badRequest, user: UNEXPECTED_RESEND_MSG)
+      } else {
+        throw context.error(
+          "f2b70e49",
+          .badRequest,
+          "email already verified",
+          .emailAlreadyVerified
+        )
+      }
+    }
   }
 }
+
+// helpers
+
+private let EXPIRED_TOKEN_MSG =
+  "The link you clicked has expired, but we sent a new verification email. Please check your email and try again."
+
+private let UNEXPECTED_RESEND_MSG =
+  "Sorry, we couldn't verify you this time, but we sent a new verification email. Please check your email and try again."

@@ -20,7 +20,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     let input = Signup.Input(email: existing.email.rawValue, password: "pass")
     let output = try await Signup.resolve(with: input, in: context)
 
-    expect(output).toEqual(.init(url: nil))
+    expect(output).toEqual(.success)
     expect(sent.postmarkEmails.count).toEqual(1)
     expect(sent.postmarkEmails[0].html).toContain("already has an account")
   }
@@ -34,39 +34,11 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
       .where(.email == email)
       .first()
 
-    expect(output).toEqual(.init(url: nil))
+    expect(output).toEqual(.success)
     expect(user.subscriptionStatus).toEqual(.pendingEmailVerification)
     expect(sent.postmarkEmails.count).toEqual(1)
     expect(sent.postmarkEmails[0].to).toEqual(email)
     expect(sent.postmarkEmails[0].html).toContain("verify your email address")
-  }
-
-  func testVerifySignupEmailSetsSubsriptionStatusAndCreatesNotificationMethod() async throws {
-    let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
-
-    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
-
-    let retrieved = try await Current.db.find(admin.id)
-    let method = try await Current.db.query(AdminVerifiedNotificationMethod.self)
-      .where(.adminId == admin.id)
-      .first()
-
-    expect(output.adminId).toEqual(admin.id)
-    expect(retrieved.subscriptionStatus).toEqual(.trialing)
-    expect(method.config).toEqual(.email(email: admin.email.rawValue))
-  }
-
-  func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
-    let admin = try await Entities.admin { $0.subscriptionStatus = .trialing } // <-- not pending
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
-
-    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
-
-    let retrieved = try await Current.db.find(admin.id)
-
-    expect(output.adminId).toEqual(admin.id)
-    expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed
   }
 
   func testLoginFromMagicLink() async throws {

@@ -11,11 +11,6 @@ struct Signup: Pair {
     var email: String
     var password: String
   }
-
-  struct Output: PairOutput {
-    // relic of waitlist concept, unused, delete if this pair is modified
-    let url: String?
-  }
 }
 
 // resolver
@@ -27,24 +22,20 @@ extension Signup: Resolver {
       throw Abort(.badRequest)
     }
 
-    if email.starts(with: "e2e-test-"), email.contains("@gertrude.app") {
-      return Output(url: nil)
-    }
-
     let existing = try? await Current.db.query(Admin.self)
       .where(.email == email)
       .first()
 
     if existing != nil {
       if Env.mode == .prod {
-        Current.sendGrid.fireAndForget(.toJared("Gertrude signup [exists]", email))
+        Current.sendGrid.fireAndForget(.toJared("signup [exists]", email))
       }
       try await Current.postmark.send(accountExists(with: email))
-      return .init(url: nil)
+      return .success
     }
 
     if Env.mode == .prod {
-      Current.sendGrid.fireAndForget(.toJared("Gertrude signup", "email: \(email)"))
+      Current.sendGrid.fireAndForget(.toJared("signup", "email: \(email)"))
     }
 
     let admin = try await Current.db.create(Admin(
@@ -53,14 +44,21 @@ extension Signup: Resolver {
       subscriptionStatus: .pendingEmailVerification
     ))
 
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
-    try await Current.postmark.send(verify(email, context.dashboardUrl, token))
-
-    return Output(url: nil)
+    try await sendVerificationEmail(to: admin, in: context)
+    return .success
   }
 }
 
 // helpers
+
+func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
+  let token = await Current.ephemeral.createAdminIdToken(
+    admin.id,
+    expiration: Current.date().advanced(by: .hours(24))
+  )
+
+  try await Current.postmark.send(verify(admin.email.rawValue, context.dashboardUrl, token))
+}
 
 private func accountExists(with email: String) -> XPostmark.Email {
   .init(
@@ -83,7 +81,9 @@ private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> X
     subject: "Action Required: Confirm your email".withEmailSubjectDisambiguator,
     html: """
     Please verify your email address by clicking \
-    <a href="\(dashboardUrl)/verify-signup-email/\(token.lowercased)">here</a>.
+    <a href="\(dashboardUrl)/verify-signup-email/\(token.lowercased)">here</a>.\
+    <br /><br />
+    This link will expire in 24 hours.
     """
   )
 }

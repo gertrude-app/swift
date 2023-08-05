@@ -4,22 +4,53 @@ import Foundation
 // this should be backed by the DB or some sort of persistent storage
 actor Ephemeral {
   private var adminIds: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
+  private var retrievedAdminIds: [UUID: Admin.Id] = [:]
+
+  enum AdminId: Equatable {
+    case notFound
+    case notExpired(Admin.Id)
+    case expired(Admin.Id)
+    case previouslyRetrieved(Admin.Id)
+
+    var notExpired: Admin.Id? {
+      guard case .notExpired(let adminId) = self else { return nil }
+      return adminId
+    }
+  }
 
   func createAdminIdToken(
     _ adminId: Admin.Id,
-    expiration: Date = Current.date() + TWENTY_MINUTES
+    expiration: Date = Current.date() + ONE_HOUR
   ) -> UUID {
     let token = UUID.new()
     adminIds[token] = (adminId: adminId, expiration: expiration)
     return token
   }
 
-  func adminIdFromToken(_ token: UUID) -> Admin.Id? {
-    guard let (adminId, expiration) = adminIds.removeValue(forKey: token),
-          expiration > Current.date() else {
+  func unexpiredAdminIdFromToken(_ token: UUID) -> Admin.Id? {
+    switch adminIdFromToken(token) {
+    case .notExpired(let adminId):
+      return adminId
+    case .expired, .notFound, .previouslyRetrieved:
       return nil
     }
-    return adminId
+  }
+
+  func adminIdFromToken(_ token: UUID) -> AdminId {
+    if let (adminId, expiration) = adminIds.removeValue(forKey: token) {
+      if expiration > Current.date() {
+        retrievedAdminIds[token] = adminId
+        return .notExpired(adminId)
+      } else {
+        // put back, so if they try again, they know it's expired, not missing
+        adminIds[token] = (adminId, expiration)
+        return .expired(adminId)
+      }
+    } else if let adminId = retrievedAdminIds[token] {
+      return .previouslyRetrieved(adminId)
+    } else {
+      return .notFound
+    }
   }
 
   private var pendingMethods: [AdminVerifiedNotificationMethod.Id: (
@@ -30,7 +61,7 @@ actor Ephemeral {
 
   func createPendingNotificationMethod(
     _ model: AdminVerifiedNotificationMethod,
-    expiration: Date = Current.date() + TWENTY_MINUTES
+    expiration: Date = Current.date() + ONE_HOUR
   ) -> Int {
     let code = Current.verificationCode.generate()
     pendingMethods[model.id] = (model: model, code: code, expiration: expiration)
@@ -53,7 +84,7 @@ actor Ephemeral {
 
   func createPendingAppConnection(
     _ userId: User.Id,
-    expiration: Date = Current.date() + TWENTY_MINUTES
+    expiration: Date = Current.date() + ONE_HOUR
   ) -> Int {
     let code = Current.verificationCode.generate()
     if pendingAppConnections[code] != nil {
@@ -72,4 +103,4 @@ actor Ephemeral {
   }
 }
 
-private let TWENTY_MINUTES: TimeInterval = 60 * 20
+private let ONE_HOUR: TimeInterval = 60 * 60
