@@ -77,7 +77,6 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/jaredh159/swift-composable-architecture.git",
       "state" : {
-        "branch" : "catalina-crash",
         "revision" : "639f2d1994c997c44680c6599c4f9a58b88f7960"
       }
     },
