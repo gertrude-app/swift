@@ -33,11 +33,17 @@ extension VerifySignupEmail: Resolver {
 
     admin.subscriptionStatus = .trialing
     try await admin.save()
+
     // they get a default "verified" notification method, since they verified their email
     try await Current.db.create(AdminVerifiedNotificationMethod(
       adminId: admin.id,
       config: .email(email: admin.email.rawValue)
     ))
+
+    if Env.mode == .prod {
+      Current.sendGrid.fireAndForget(.toJared("email verified", admin.email.rawValue))
+    }
+
     return Output(token: token.value, adminId: admin.id)
   }
 }

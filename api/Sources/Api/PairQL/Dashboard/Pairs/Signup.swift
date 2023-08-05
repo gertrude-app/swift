@@ -11,11 +11,6 @@ struct Signup: Pair {
     var email: String
     var password: String
   }
-
-  struct Output: PairOutput {
-    // relic of waitlist concept, unused, delete if this pair is modified
-    let url: String?
-  }
 }
 
 // resolver
@@ -27,24 +22,20 @@ extension Signup: Resolver {
       throw Abort(.badRequest)
     }
 
-    if email.starts(with: "e2e-test-"), email.contains("@gertrude.app") {
-      return Output(url: nil)
-    }
-
     let existing = try? await Current.db.query(Admin.self)
       .where(.email == email)
       .first()
 
     if existing != nil {
       if Env.mode == .prod {
-        Current.sendGrid.fireAndForget(.toJared("Gertrude signup [exists]", email))
+        Current.sendGrid.fireAndForget(.toJared("signup [exists]", email))
       }
       try await Current.postmark.send(accountExists(with: email))
-      return .init(url: nil)
+      return .success
     }
 
     if Env.mode == .prod {
-      Current.sendGrid.fireAndForget(.toJared("Gertrude signup", "email: \(email)"))
+      Current.sendGrid.fireAndForget(.toJared("signup", "email: \(email)"))
     }
 
     let admin = try await Current.db.create(Admin(
@@ -54,7 +45,7 @@ extension Signup: Resolver {
     ))
 
     try await sendVerificationEmail(to: admin, in: context)
-    return Output(url: nil)
+    return .success
   }
 }
 

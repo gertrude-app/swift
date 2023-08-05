@@ -20,7 +20,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     let input = Signup.Input(email: existing.email.rawValue, password: "pass")
     let output = try await Signup.resolve(with: input, in: context)
 
-    expect(output).toEqual(.init(url: nil))
+    expect(output).toEqual(.success)
     expect(sent.postmarkEmails.count).toEqual(1)
     expect(sent.postmarkEmails[0].html).toContain("already has an account")
   }
@@ -34,7 +34,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
       .where(.email == email)
       .first()
 
-    expect(output).toEqual(.init(url: nil))
+    expect(output).toEqual(.success)
     expect(user.subscriptionStatus).toEqual(.pendingEmailVerification)
     expect(sent.postmarkEmails.count).toEqual(1)
     expect(sent.postmarkEmails[0].to).toEqual(email)

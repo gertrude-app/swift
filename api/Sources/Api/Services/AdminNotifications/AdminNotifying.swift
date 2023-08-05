@@ -50,7 +50,7 @@ extension Email {
     .init(
       to: .init(email: "jared@netrivet.com"),
       from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
-      subject: subject.withEmailSubjectDisambiguator,
+      subject: "Gertrude " + subject.withEmailSubjectDisambiguator,
       html: html
     )
   }
