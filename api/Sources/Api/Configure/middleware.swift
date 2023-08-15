@@ -12,7 +12,9 @@ extension Configure {
 
 private func corsMiddleware(_ app: Application) -> CORSMiddleware {
   let configuration = CORSMiddleware.Configuration(
-    allowedOrigin: app.environment == .production ? .any(["https://dash.gertrude.app"]) : .all,
+    allowedOrigin: app
+      .environment == .production ?
+      .any(["https://parents.gertrude.app", "https://dash.gertrude.app"]) : .all,
     allowedMethods: [.GET, .POST, .PUT, .OPTIONS, .DELETE, .PATCH],
     allowedHeaders: [
       .accept,
