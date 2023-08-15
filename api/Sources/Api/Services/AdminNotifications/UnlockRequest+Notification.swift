@@ -64,7 +64,7 @@ extension AdminEvent.UnlockRequestSubmitted {
   }
 
   private var userUnlockRequestsUrl: String {
-    "\(dashboardUrl)/users/\(userId.lowercased)/unlock-requests"
+    "\(dashboardUrl)/children/\(userId.lowercased)/unlock-requests"
   }
 
   private func individualRequestUrl(_ requestId: UnlockRequest.Id) -> String {
