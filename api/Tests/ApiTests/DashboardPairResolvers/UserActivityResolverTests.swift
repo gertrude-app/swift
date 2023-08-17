@@ -1,4 +1,3 @@
-import DuetMock
 import XCore
 import XCTest
 import XExpect

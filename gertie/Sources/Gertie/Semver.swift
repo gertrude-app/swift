@@ -84,6 +84,7 @@ extension Semver: Equatable {
   }
 }
 
+extension Semver: Sendable {}
 extension Semver: Hashable {}
 
 extension Semver: Comparable {
@@ -136,7 +137,6 @@ extension Semver: Codable {
 }
 
 extension Semver: LosslessStringConvertible {
-
   private static let semverRegexPattern =
     #"^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([\da-zA-Z\-]+(?:\.[\da-zA-Z\-]+)*))?$"#
   private static let semverRegex = try! NSRegularExpression(pattern: semverRegexPattern)
@@ -171,7 +171,6 @@ extension Semver: LosslessStringConvertible {
 }
 
 extension Semver: ExpressibleByStringLiteral {
-
   public init(stringLiteral value: StaticString) {
     guard let v = Semver(value.description) else {
       preconditionFailure("failed to initialize `Semver` using string literal '\(value)'.")
@@ -183,18 +182,9 @@ extension Semver: ExpressibleByStringLiteral {
 // MARK: Foundation Extensions
 
 public extension Bundle {
-
   /// Use `CFBundleShortVersionString` key
   var semanticVersion: Semver? {
     (infoDictionary?["CFBundleShortVersionString"] as? String).flatMap(Semver.init(_:))
-  }
-}
-
-public extension ProcessInfo {
-
-  var operatingSystemSemanticVersion: Semver {
-    let v = operatingSystemVersion
-    return Semver(major: v.majorVersion, minor: v.minorVersion, patch: v.patchVersion)
   }
 }
 
@@ -213,7 +203,6 @@ private func validateBuildMetadataIdentifier(_ str: String) -> Bool {
 }
 
 private extension CharacterSet {
-
   static let semverIdentifierAllowed: CharacterSet = {
     var set = CharacterSet(charactersIn: "0" ... "9")
     set.insert(charactersIn: "a" ... "z")
@@ -226,7 +215,6 @@ private extension CharacterSet {
 }
 
 private extension String {
-
   subscript(nsRange: NSRange) -> String? {
     guard let r = Range(nsRange, in: self) else {
       return nil
@@ -236,7 +224,6 @@ private extension String {
 }
 
 private extension NSRegularExpression {
-
   func matches(
     in string: String,
     options: NSRegularExpression.MatchingOptions = []

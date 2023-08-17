@@ -34,22 +34,32 @@ public struct UserData: Equatable, Codable, Sendable, PairOutput {
   }
 }
 
-public extension UserData {
-  static let mock = Self(
-    id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    deviceId: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
-    name: "Mock User",
-    keyloggingEnabled: false,
-    screenshotsEnabled: false,
-    screenshotFrequency: 60,
-    screenshotSize: 1000,
-    connectedAt: .init(timeIntervalSince1970: 0)
-  )
+#if DEBUG
+  import Gertie
 
-  static func mock(config: (inout Self) -> Void) -> Self {
-    var mock = Self.mock
-    config(&mock)
-    return mock
+  extension UserData: Mocked {
+    public static let mock = Self(
+      id: UUID(),
+      token: UUID(),
+      deviceId: UUID(),
+      name: "Mock User",
+      keyloggingEnabled: false,
+      screenshotsEnabled: false,
+      screenshotFrequency: 60,
+      screenshotSize: 1000,
+      connectedAt: .init(timeIntervalSince1970: 0)
+    )
+
+    public static let empty = Self(
+      id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+      token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+      deviceId: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+      name: "",
+      keyloggingEnabled: false,
+      screenshotsEnabled: false,
+      screenshotFrequency: 0,
+      screenshotSize: 0,
+      connectedAt: .init(timeIntervalSince1970: 0)
+    )
   }
-}
+#endif

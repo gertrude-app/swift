@@ -51,20 +51,25 @@ public struct RefreshRules: Pair {
 }
 
 #if DEBUG
-  public extension RefreshRules.Output {
-    static let mock = Self(
-      appManifest: .init(),
+  import Gertie
+
+  extension RefreshRules.Output: Mocked {
+    public static let mock = Self(
+      appManifest: .mock,
       keyloggingEnabled: true,
       screenshotsEnabled: true,
       screenshotsFrequency: 333,
       screenshotsResolution: 555,
-      keys: []
+      keys: [.init(id: UUID(), key: .mock)]
     )
 
-    static func mock(configure: (inout Self) -> Void) -> Self {
-      var mock = Self.mock
-      configure(&mock)
-      return mock
-    }
+    public static let empty = Self(
+      appManifest: .empty,
+      keyloggingEnabled: false,
+      screenshotsEnabled: false,
+      screenshotsFrequency: 0,
+      screenshotsResolution: 0,
+      keys: []
+    )
   }
 #endif

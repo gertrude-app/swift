@@ -110,7 +110,13 @@ let package = Package(
     ),
     .testTarget(
       name: "FilterTests",
-      dependencies: ["Filter", "Core", "TestSupport", "x-expect" => "XExpect"]
+      dependencies: [
+        "Filter",
+        "Core",
+        "TestSupport",
+        "x-expect" => "XExpect",
+        "gertie" => "Gertie",
+      ]
     ),
     .testTarget(
       name: "WebSocketTests",

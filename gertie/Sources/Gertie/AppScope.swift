@@ -42,16 +42,16 @@ public extension AppScope {
 }
 
 #if DEBUG
-  public extension AppScope {
-    static var mock: AppScope {
+  extension AppScope: RandomMocked {
+    public static var mock: AppScope {
       .webBrowsers
     }
 
-    static var empty: AppScope {
+    public static var empty: AppScope {
       .unrestricted
     }
 
-    static var random: AppScope {
+    public static var random: AppScope {
       switch Int.random(in: 1 ... 6) {
       case 1:
         return .webBrowsers
@@ -63,16 +63,16 @@ public extension AppScope {
     }
   }
 
-  public extension AppScope.Single {
-    static var mock: AppScope.Single {
+  extension AppScope.Single: RandomMocked {
+    public static var mock: AppScope.Single {
       .bundleId("com.foo")
     }
 
-    static var empty: AppScope.Single {
+    public static var empty: AppScope.Single {
       .bundleId("")
     }
 
-    static var random: AppScope.Single {
+    public static var random: AppScope.Single {
       if Bool.random() {
         return .bundleId("com.foo.\(Int.random(in: 10000 ... 99999))")
       } else {

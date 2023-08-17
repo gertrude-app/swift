@@ -1,9 +1,9 @@
-import DuetMock
 import Foundation
+import Gertie
 
 @testable import Api
 
-extension KeystrokeLine: Mock {
+extension KeystrokeLine: RandomMocked {
   public static var mock: KeystrokeLine {
     KeystrokeLine(
       userDeviceId: .init(),

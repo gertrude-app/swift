@@ -38,3 +38,32 @@ public extension Key {
     public let string: String
   }
 }
+
+#if DEBUG
+  extension Key.Domain: Mocked {
+    public static var mock: Key.Domain { .init(string: "example.com") }
+    public static var empty: Key.Domain { .init(string: "") }
+  }
+
+  extension Key: RandomMocked {
+    public static let mock = Self.domain(domain: .mock, scope: .mock)
+    public static let empty = Self.domain(domain: .empty, scope: .empty)
+
+    public static var random: Key {
+      switch Int.random(in: 1 ... 6) {
+      case 1:
+        return .domain(domain: .init("foo.com")!, scope: .random)
+      case 2:
+        return .anySubdomain(domain: .init("foo.com")!, scope: .random)
+      case 3:
+        return .skeleton(scope: .random)
+      case 4:
+        return .domainRegex(pattern: .init("foo-*.com")!, scope: .random)
+      case 5:
+        return .path(path: .init("foo.com/bar")!, scope: .random)
+      default:
+        return .ipAddress(ipAddress: .init("1.2.3.4")!, scope: .random)
+      }
+    }
+  }
+#endif

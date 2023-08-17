@@ -1,4 +1,5 @@
 import Dependencies
+import Gertie
 import TestSupport
 import XCore
 import XCTest
@@ -67,18 +68,16 @@ class FilterMigratorTests: XCTestCase {
   }
 }
 
-extension Persistent.State {
-  static func mock(config: (inout Self) -> Void) -> Self {
-    var state = Self.mock
-    config(&state)
-    return state
-  }
-
-  static var mock: Self {
+extension Persistent.State: Mocked {
+  public static var mock: Self {
     .init(
-      userKeys: [502: [.init(id: .deadbeef, key: .skeleton(scope: .mock))]],
-      appIdManifest: .init(),
+      userKeys: [502: [.init(id: .deadbeef, key: .mock)]],
+      appIdManifest: .empty,
       exemptUsers: [501]
     )
+  }
+
+  public static var empty: Self {
+    .init(userKeys: [:], appIdManifest: .empty, exemptUsers: [])
   }
 }

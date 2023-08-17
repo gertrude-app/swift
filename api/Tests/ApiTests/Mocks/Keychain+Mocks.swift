@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension Keychain: Mock {
+extension Keychain: RandomMocked {
   public static var mock: Keychain {
     Keychain(
       authorId: .init(),

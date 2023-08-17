@@ -1,10 +1,9 @@
-import DuetMock
 import Foundation
 import Gertie
 
 @testable import Api
 
-extension NetworkDecision: Mock {
+extension NetworkDecision: RandomMocked {
   public static var mock: NetworkDecision {
     NetworkDecision(userDeviceId: .init(), verdict: .block, reason: .systemUser, createdAt: Date())
   }

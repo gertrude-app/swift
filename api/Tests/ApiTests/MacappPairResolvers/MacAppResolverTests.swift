@@ -1,4 +1,3 @@
-import DuetMock
 import DuetSQL
 import MacAppRoute
 import XCTest

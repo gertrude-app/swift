@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension AdminNotification: Mock {
+extension AdminNotification: RandomMocked {
   public static var mock: AdminNotification {
     AdminNotification(adminId: .init(), methodId: .init(), trigger: .unlockRequestSubmitted)
   }

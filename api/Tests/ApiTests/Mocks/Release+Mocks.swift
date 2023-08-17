@@ -1,9 +1,9 @@
-import DuetMock
 import Foundation
+import Gertie
 
 @testable import Api
 
-extension Release: Mock {
+extension Release: RandomMocked {
   public static var mock: Release {
     Release(
       semver: "1.0.0",

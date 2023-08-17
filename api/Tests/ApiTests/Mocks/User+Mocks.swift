@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension User: Mock {
+extension User: RandomMocked {
   public static var mock: User {
     User(adminId: .init(), name: "@mock name")
   }

@@ -1,6 +1,7 @@
 import Core
 import Dependencies
 import Foundation
+import Gertie
 import MacAppRoute
 
 @testable import App
@@ -22,15 +23,13 @@ public extension CreateKeystrokeLines.KeystrokeLineInput {
   }
 }
 
-extension Persistent.State {
-  static func mock(config: (inout Self) -> Void) -> Self {
-    var state = Self.mock
-    config(&state)
-    return state
+extension Persistent.State: Mocked {
+  public static var mock: Self {
+    .init(appVersion: "1.0.0", appUpdateReleaseChannel: .stable, user: .mock)
   }
 
-  static var mock: Self {
-    .init(appVersion: "1.0.0", appUpdateReleaseChannel: .stable, user: .mock)
+  public static var empty: Self {
+    .init(appVersion: "", appUpdateReleaseChannel: .stable, user: .empty)
   }
 
   static var needsAppUpdate: Self {

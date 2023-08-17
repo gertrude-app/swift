@@ -6,7 +6,6 @@ struct DeviceClient: Sendable {
   var currentMacOsUserType: @Sendable () async throws -> MacOSUserType
   var currentUserId: @Sendable () -> uid_t
   var fullUsername: @Sendable () -> String
-  var hostname: @Sendable () -> String?
   var listMacOSUsers: @Sendable () async throws -> [MacOSUser]
   var modelIdentifier: @Sendable () -> String?
   var notificationsSetting: @Sendable () async -> NotificationsSetting
@@ -25,7 +24,6 @@ extension DeviceClient: DependencyKey {
     currentMacOsUserType: getCurrentMacOSUserType,
     currentUserId: { getuid() },
     fullUsername: { NSFullUserName() },
-    hostname: { Host.current().localizedName },
     listMacOSUsers: getAllMacOSUsers,
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
     notificationsSetting: getNotificationsSetting,
@@ -45,7 +43,6 @@ extension DeviceClient: TestDependencyKey {
     currentMacOsUserType: { .standard },
     currentUserId: { 502 },
     fullUsername: { "test-full-username" },
-    hostname: { "test-hostname" },
     listMacOSUsers: { [
       .init(id: 501, name: "Dad", type: .admin),
       .init(id: 502, name: "liljimmy", type: .standard),

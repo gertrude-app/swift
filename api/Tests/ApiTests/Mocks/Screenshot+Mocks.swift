@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension Screenshot: Mock {
+extension Screenshot: RandomMocked {
   public static var mock: Screenshot {
     Screenshot(userDeviceId: .init(), url: "@mock url", width: 42, height: 42)
   }

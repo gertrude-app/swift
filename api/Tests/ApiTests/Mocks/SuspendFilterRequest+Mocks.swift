@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension SuspendFilterRequest: Mock {
+extension SuspendFilterRequest: RandomMocked {
   public static var mock: SuspendFilterRequest {
     SuspendFilterRequest(userDeviceId: .init(), scope: .mock)
   }

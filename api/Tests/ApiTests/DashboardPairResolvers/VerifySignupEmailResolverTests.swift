@@ -1,4 +1,3 @@
-import DuetMock
 import DuetSQL
 import XCTest
 import XExpect
