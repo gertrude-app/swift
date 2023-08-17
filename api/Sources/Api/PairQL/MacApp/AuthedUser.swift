@@ -21,6 +21,9 @@ extension AuthedUserRoute: RouteResponder {
     in context: UserContext
   ) async throws -> Response {
     switch route {
+    case .checkIn(let input):
+      let output = try await CheckIn.resolve(with: input, in: context)
+      return try await respond(with: output)
     case .createSignedScreenshotUpload(let input):
       let output = try await CreateSignedScreenshotUpload.resolve(with: input, in: context)
       return try await respond(with: output)

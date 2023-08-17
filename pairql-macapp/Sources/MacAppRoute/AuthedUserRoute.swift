@@ -2,6 +2,7 @@ import Gertie
 import PairQL
 
 public enum AuthedUserRoute: PairRoute {
+  case checkIn(CheckIn.Input)
   case createKeystrokeLines(CreateKeystrokeLines.Input)
   case createSignedScreenshotUpload(CreateSignedScreenshotUpload.Input)
   case createSuspendFilterRequest(CreateSuspendFilterRequest.Input)
@@ -13,6 +14,10 @@ public enum AuthedUserRoute: PairRoute {
 
 public extension AuthedUserRoute {
   static let router: AnyParserPrinter<URLRequestData, AuthedUserRoute> = OneOf {
+    Route(/Self.checkIn) {
+      Operation(CheckIn.self)
+      Body(.json(CheckIn.Input.self))
+    }
     Route(/Self.createKeystrokeLines) {
       Operation(CreateKeystrokeLines.self)
       Body(.json(CreateKeystrokeLines.Input.self))

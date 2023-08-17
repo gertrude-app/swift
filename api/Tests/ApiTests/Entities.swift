@@ -98,9 +98,13 @@ extension AdminEntities {
 
 extension UserEntities {
   func withDevice(
-    config: (inout UserDevice) -> Void = { _ in }
+    config: (inout UserDevice) -> Void = { _ in },
+    adminDevice: (inout Device) -> Void = { _ in }
   ) async throws -> UserWithDeviceEntities {
-    let device = try await Current.db.create(Device.random { $0.adminId = admin.id })
+    let device = try await Current.db.create(Device.random {
+      adminDevice(&$0)
+      $0.adminId = admin.id
+    })
     let userDevice = try await Current.db.create(UserDevice.random {
       config(&$0)
       $0.userId = model.id
