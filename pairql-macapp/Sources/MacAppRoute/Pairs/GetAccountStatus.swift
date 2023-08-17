@@ -1,6 +1,7 @@
-import PairQL
 import Gertie
+import PairQL
 
+/// in use: v2.0.0 - present
 public struct GetAccountStatus: Pair {
   public static var auth: ClientAuth = .user
 

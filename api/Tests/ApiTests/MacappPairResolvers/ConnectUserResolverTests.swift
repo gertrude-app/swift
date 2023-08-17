@@ -1,23 +1,24 @@
 import DuetSQL
 import MacAppRoute
+import XCore
 import XCTest
 import XExpect
 
 @testable import Api
 
-final class ConnectAppResolversTests: ApiTestCase {
+final class ConnectUserResolversTests: ApiTestCase {
 
-  func testConnectApp_createNewDevice() async throws {
+  func testConnectUser_createNewDevice() async throws {
     let user = try await Entities.user()
     let code = await Current.ephemeral.createPendingAppConnection(user.id)
 
     let input = input(code)
-    let output = try await ConnectApp.resolve(with: input, in: context)
+    let userData = try await ConnectUser.resolve(with: input, in: context)
 
-    expect(output.userId).toEqual(user.id.rawValue)
-    expect(output.userName).toEqual(user.name)
+    expect(userData.id).toEqual(user.id.rawValue)
+    expect(userData.name).toEqual(user.name)
 
-    let userDevice = try await Current.db.find(UserDevice.Id(output.deviceId))
+    let userDevice = try await Current.db.find(UserDevice.Id(userData.deviceId))
     let device = try await Current.db.find(userDevice.deviceId)
 
     expect(userDevice.username).toEqual(input.username)
@@ -28,21 +29,21 @@ final class ConnectAppResolversTests: ApiTestCase {
     expect(device.modelIdentifier).toEqual(input.modelIdentifier)
 
     let token = try await Current.db.query(UserToken.self)
-      .where(.value == output.token)
+      .where(.value == userData.token)
       .first()
 
     expect(token.userId).toEqual(user.id)
   }
 
-  func testConnectDevice_verificationCodeNotFound() async throws {
+  func testConnectUser_verificationCodeNotFound() async throws {
     try await expectErrorFrom { [self] in
       let input = self.input(123)
-      _ = try await ConnectApp.resolve(with: input, in: self.context)
+      _ = try await ConnectUser.resolve(with: input, in: self.context)
     }.toContain("verification code not found")
   }
 
   // re-connect from a macOS user that has had gertrude installed before
-  func testConnectDevice_ReassignToDifferentUserOwnedBySameAdmin() async throws {
+  func testConnectUser_ReassignToDifferentUserOwnedBySameAdmin() async throws {
     let existingUser = try await Entities.user().withDevice()
     let existingUserToken = try await Current.db.create(UserToken(
       userId: existingUser.id,
@@ -63,10 +64,10 @@ final class ConnectAppResolversTests: ApiTestCase {
     input.numericId = existingUser.device.numericId
     input.serialNumber = existingUser.adminDevice.serialNumber
 
-    let output = try await ConnectApp.resolve(with: input, in: context)
+    let userData = try await ConnectUser.resolve(with: input, in: context)
 
-    expect(output.userId).toEqual(newUser.id.rawValue)
-    expect(output.userName).toEqual(newUser.name)
+    expect(userData.id).toEqual(newUser.id.rawValue)
+    expect(userData.name).toEqual(newUser.name)
 
     let retrievedDevice = try await Current.db.find(existingUser.device.id)
     expect(retrievedDevice.userId).toEqual(newUser.model.id)
@@ -76,7 +77,7 @@ final class ConnectAppResolversTests: ApiTestCase {
   }
 
   // test sanity check, computer/user registered to a different admin
-  func testConnectDevice_ExistingDeviceToDifferentUser_FailsIfDifferentAdmin() async throws {
+  func testConnectUser_ExistingDeviceToDifferentUser_FailsIfDifferentAdmin() async throws {
     let existingUser = try await Entities.user().withDevice()
     let existingUserToken = try await Current.db.create(UserToken(
       userId: existingUser.model.id,
@@ -93,7 +94,7 @@ final class ConnectAppResolversTests: ApiTestCase {
     input.serialNumber = existingUser.adminDevice.serialNumber
 
     try await expectErrorFrom { [self] in
-      _ = try await ConnectApp.resolve(with: input, in: self.context)
+      _ = try await ConnectUser.resolve(with: input, in: self.context)
     }.toContain("registered to another admin")
 
     // old token is not deleted
@@ -101,10 +102,27 @@ final class ConnectAppResolversTests: ApiTestCase {
     XCTAssertNotNil(retrievedOldToken)
   }
 
+  func testPre2_0_4AppSendingHostnameForConnectStillDecodes() {
+    let json = """
+    {
+      "verificationCode": 123,
+      "appVersion": "1.0.0",
+      "hostname": "kids-macbook-air",
+      "modelIdentifier": "MacBookAir7,1",
+      "username": "kids",
+      "fullUsername": "kids",
+      "numericId": 501,
+      "serialNumber": "X02VH0Y6JG5J"
+    }
+    """
+    let input = try? JSON.decode(json, as: ConnectUser.Input.self)
+    expect(input).not.toBeNil()
+  }
+
   // helpers
 
-  func input(_ code: Int) -> ConnectApp.Input {
-    ConnectApp.Input(
+  func input(_ code: Int) -> ConnectUser.Input {
+    ConnectUser.Input(
       verificationCode: code,
       appVersion: "1.0.0",
       modelIdentifier: "MacBookAir7,1",

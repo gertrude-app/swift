@@ -8,9 +8,6 @@ extension MacAppRoute: RouteResponder {
 
     case .unauthed(let unauthed):
       switch unauthed {
-      case .connectApp(let input):
-        let output = try await ConnectApp.resolve(with: input, in: context)
-        return try await respond(with: output)
       case .connectUser(let input):
         let output = try await ConnectUser.resolve(with: input, in: context)
         return try await respond(with: output)

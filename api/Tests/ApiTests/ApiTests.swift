@@ -64,7 +64,7 @@ final class ApiTests: ApiTestCase {
   }
 
   func testUnauthed() throws {
-    let input = ConnectApp.Input(
+    let input = ConnectUser.Input(
       verificationCode: 0,
       appVersion: "1.0.0",
       modelIdentifier: "MacBookPro16,1",
@@ -74,11 +74,11 @@ final class ApiTests: ApiTestCase {
       serialNumber: "X02VH0Y6JG5J"
     )
 
-    var request = URLRequest(url: URL(string: "macos-app/ConnectApp")!)
+    var request = URLRequest(url: URL(string: "macos-app/ConnectUser")!)
     request.httpMethod = "POST"
     request.httpBody = try JSON.encode(input).data(using: .utf8)
 
-    let expectedRoute = PairQLRoute.macApp(.unauthed(.connectApp(input)))
+    let expectedRoute = PairQLRoute.macApp(.unauthed(.connectUser(input)))
     let matched = try PairQLRoute.router.match(request: request)
     expect(matched).toEqual(expectedRoute)
   }

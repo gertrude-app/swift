@@ -2,8 +2,7 @@ import Foundation
 import Gertie
 import PairQL
 
-extension ReleaseChannel: PairInput {}
-
+/// in use: v2.0.0 - present
 public struct LatestAppVersion: Pair {
   public static var auth: ClientAuth = .user
 
@@ -37,3 +36,5 @@ public struct LatestAppVersion: Pair {
     }
   }
 }
+
+extension ReleaseChannel: PairInput {}

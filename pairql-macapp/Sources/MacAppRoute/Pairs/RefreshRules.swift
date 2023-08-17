@@ -2,6 +2,7 @@ import Foundation
 import Gertie
 import PairQL
 
+/// in use: v2.0.0 - present
 public struct RefreshRules: Pair {
   public static var auth: ClientAuth = .user
 

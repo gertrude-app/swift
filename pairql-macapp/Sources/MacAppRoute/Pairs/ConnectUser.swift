@@ -1,15 +1,14 @@
 import Foundation
-import PairQL
 import Gertie
+import PairQL
 
-// 🚀 BETA: for rewrite, not in use yet
+/// in use: v2.0.0 - present
 public struct ConnectUser: Pair {
   public static var auth: ClientAuth = .none
 
   public struct Input: PairInput, Sendable {
     public var verificationCode: Int
     public var appVersion: String
-    public var hostname: String?
     public var modelIdentifier: String
     public var username: String
     public var fullUsername: String
@@ -19,7 +18,6 @@ public struct ConnectUser: Pair {
     public init(
       verificationCode: Int,
       appVersion: String,
-      hostname: String?,
       modelIdentifier: String,
       username: String,
       fullUsername: String,
@@ -28,7 +26,6 @@ public struct ConnectUser: Pair {
     ) {
       self.verificationCode = verificationCode
       self.appVersion = appVersion
-      self.hostname = hostname
       self.modelIdentifier = modelIdentifier
       self.username = username
       self.fullUsername = fullUsername

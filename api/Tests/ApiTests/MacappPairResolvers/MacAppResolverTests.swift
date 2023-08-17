@@ -41,28 +41,6 @@ final class MacAppResolverTests: ApiTestCase {
     ])
   }
 
-  func testInsertNetworkDecisions() async throws {
-    let user = try await Entities.user().withDevice()
-    let (uuid, _) = mockUUIDs()
-    let clientId = UUID()
-
-    let output = try await CreateNetworkDecisions.resolve(
-      with: [
-        .init(verdict: .block, reason: .defaultNotAllowed, time: Date(), count: 333),
-        .init(id: clientId, verdict: .block, reason: .defaultNotAllowed, time: Date(), count: 1),
-      ],
-      in: context(user)
-    )
-
-    expect(output).toEqual(.success)
-
-    let retrieved = try await Current.db.find(NetworkDecision.Id(uuid))
-    expect(retrieved.count).toEqual(333)
-
-    let retrieved2 = try await Current.db.find(NetworkDecision.Id(clientId))
-    expect(retrieved2.count).toEqual(1)
-  }
-
   func testCreateKeystrokeLines() async throws {
     let user = try await Entities.user().withDevice()
     let (uuid, _) = mockUUIDs()
@@ -77,34 +55,6 @@ final class MacAppResolverTests: ApiTestCase {
     expect(inserted.appName).toEqual("Xcode")
     expect(inserted.line).toEqual("import Foundation")
     expect(inserted.createdAt).toEqual(.epoch)
-  }
-
-  func testCreateUnlockRequests() async throws {
-    let user = try await Entities.user().withDevice()
-    let decision = NetworkDecision.random
-    decision.userDeviceId = user.device.id
-    try await Current.db.create(decision)
-    let (uuid, _) = mockUUIDs()
-
-    let output = try await CreateUnlockRequests.resolve(
-      with: [.init(networkDecisionId: decision.id.rawValue, comment: "please dad!")],
-      in: context(user)
-    )
-
-    expect(output).toEqual(.success)
-
-    let retrieved = try await Current.db.find(UnlockRequest.Id(uuid))
-    expect(retrieved.requestComment).toEqual("please dad!")
-
-    expect(sent.adminNotifications).toEqual([.init(
-      adminId: user.adminId,
-      event: .unlockRequestSubmitted(.init(
-        dashboardUrl: "",
-        userId: user.id,
-        userName: user.name,
-        requestIds: [retrieved.id]
-      ))
-    )])
   }
 
   func testCreateUnlockRequests_v2() async throws {
