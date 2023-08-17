@@ -40,7 +40,6 @@ extension SaveKey: Resolver {
       key.deletedAt = input.expiration
       try await Current.db.update(key)
     }
-    try await Current.legacyConnectedApps.notify(.keychainUpdated(keychain.id))
     try await Current.connectedApps.notify(.keychainUpdated(keychain.id))
     return .success
   }

@@ -24,14 +24,6 @@ extension UpdateSuspendFilterRequest: Resolver {
     request.status = input.status
     try await Current.db.update(request)
 
-    try await Current.legacyConnectedApps.notify(.suspendFilterRequestUpdated(.init(
-      userDeviceId: userDevice.id,
-      status: request.status,
-      duration: request.duration,
-      requestComment: request.requestComment,
-      responseComment: request.responseComment
-    )))
-
     try await Current.connectedApps.notify(.suspendFilterRequestUpdated(.init(
       userDeviceId: userDevice.id,
       status: request.status,

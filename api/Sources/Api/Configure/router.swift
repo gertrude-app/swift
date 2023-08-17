@@ -44,24 +44,5 @@ public extension Configure {
       "test-inbox",
       use: TestEmailInboxRoute.handler(_:)
     )
-
-    // deprecated, legacy
-
-    app.webSocket(
-      "app",
-      onUpgrade: LegacyAppWebsocket.handler(_:_:)
-    )
-
-    app.on(
-      .POST,
-      "graphql", "macos-app-05-2022",
-      body: .collect(maxSize: "512kb"),
-      use: LegacyMacAppGraphQLRoute.handler(_:)
-    )
-
-    app.post(
-      "graphql",
-      use: LegacyMacAppGraphQLRoute.edensHandler(_:)
-    )
   }
 }
