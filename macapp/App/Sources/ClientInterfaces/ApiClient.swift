@@ -16,7 +16,6 @@ public struct ApiClient: Sendable {
   public var setAccountActive: @Sendable (Bool) async -> Void
   public var setUserToken: @Sendable (UUID) async -> Void
   public var uploadScreenshot: @Sendable (Data, Int, Int, Date) async throws -> URL
-  public var userData: @Sendable () async throws -> UserData
 
   public init(
     checkIn: @escaping @Sendable (CheckIn.Input) async throws -> CheckIn.Output,
@@ -30,8 +29,7 @@ public struct ApiClient: Sendable {
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setUserToken: @escaping @Sendable (UUID) async -> Void,
-    uploadScreenshot: @escaping @Sendable (Data, Int, Int, Date) async throws -> URL,
-    userData: @escaping @Sendable () async throws -> UserData
+    uploadScreenshot: @escaping @Sendable (Data, Int, Int, Date) async throws -> URL
   ) {
     self.checkIn = checkIn
     self.clearUserToken = clearUserToken
@@ -44,7 +42,6 @@ public struct ApiClient: Sendable {
     self.setAccountActive = setAccountActive
     self.setUserToken = setUserToken
     self.uploadScreenshot = uploadScreenshot
-    self.userData = userData
   }
 }
 
@@ -79,8 +76,7 @@ extension ApiClient: TestDependencyKey {
     recentAppVersions: { [:] },
     setAccountActive: { _ in },
     setUserToken: { _ in },
-    uploadScreenshot: { _, _, _, _ in .init(string: "https://s3.buck.et/img.png")! },
-    userData: { .mock }
+    uploadScreenshot: { _, _, _, _ in .init(string: "https://s3.buck.et/img.png")! }
   )
 }
 
@@ -97,8 +93,7 @@ extension ApiClient: TestDependencyKey {
       recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
       setAccountActive: unimplemented("ApiClient.setAccountActive"),
       setUserToken: unimplemented("ApiClient.setUserToken"),
-      uploadScreenshot: unimplemented("ApiClient.uploadScreenshot"),
-      userData: unimplemented("ApiClient.userData")
+      uploadScreenshot: unimplemented("ApiClient.uploadScreenshot")
     )
   }
 #endif

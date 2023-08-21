@@ -36,8 +36,6 @@ public struct RefreshRules: Pair {
 }
 
 #if DEBUG
-  import Gertie
-
   extension RefreshRules.Output: Mocked {
     public static let mock = Self(
       appManifest: .mock,

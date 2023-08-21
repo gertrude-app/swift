@@ -87,12 +87,6 @@ extension ApiClient: DependencyKey {
           continuation.resume(returning: signed.webUrl)
         }.resume()
       }
-    },
-    userData: {
-      try await output(
-        from: GetUserData.self,
-        with: .getUserData
-      )
     }
   )
 }
