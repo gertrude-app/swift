@@ -24,11 +24,31 @@ public struct CheckIn: Pair {
     }
   }
 
+  public struct LatestRelease: PairNestable {
+    public struct Pace: PairNestable {
+      public var nagOn: Date
+      public var requireOn: Date
+
+      public init(nagOn: Date, requireOn: Date) {
+        self.nagOn = nagOn
+        self.requireOn = requireOn
+      }
+    }
+
+    public var semver: String
+    public var pace: Pace?
+
+    public init(semver: String, pace: Pace? = nil) {
+      self.semver = semver
+      self.pace = pace
+    }
+  }
+
   public struct Output: PairOutput {
-    public let adminAccountStatus: AdminAccountStatus
+    public var adminAccountStatus: AdminAccountStatus
     public var appManifest: AppIdManifest
     public var keys: [Key]
-    public var latestRelease: Semver
+    public var latestRelease: LatestRelease
     public var updateReleaseChannel: ReleaseChannel
     public var userData: UserData
 
@@ -36,7 +56,7 @@ public struct CheckIn: Pair {
       adminAccountStatus: AdminAccountStatus,
       appManifest: AppIdManifest,
       keys: [Key],
-      latestRelease: Semver,
+      latestRelease: LatestRelease,
       updateReleaseChannel: ReleaseChannel,
       userData: UserData
     ) {
@@ -58,16 +78,21 @@ public struct CheckIn: Pair {
       adminAccountStatus: .active,
       appManifest: .mock,
       keys: [.init(id: UUID(), key: .mock)],
-      latestRelease: "2.0.4",
+      latestRelease: .init(semver: "2.0.4"),
       updateReleaseChannel: .stable,
-      userData: .mock
+      userData: .mock {
+        $0.keyloggingEnabled = true
+        $0.screenshotsEnabled = true
+        $0.screenshotFrequency = 333
+        $0.screenshotSize = 555
+      }
     )
 
     public static let empty = Self(
       adminAccountStatus: .active,
       appManifest: .empty,
       keys: [],
-      latestRelease: "2.0.4",
+      latestRelease: .init(semver: "2.0.4"),
       updateReleaseChannel: .stable,
       userData: .empty
     )

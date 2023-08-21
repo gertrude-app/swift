@@ -26,6 +26,7 @@ import XExpect
   func testAppLaunchDetectingUpdateJustOccurred_HappyPath() async {
     let (store, _) = AppReducer.testStore()
 
+    store.deps.api.checkIn = { _ in throw TestErr("stop 2nd savePersistentState()") }
     store.deps.storage.loadPersistentState = { .needsAppUpdate }
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn

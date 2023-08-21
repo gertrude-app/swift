@@ -45,7 +45,7 @@ extension FilterFeature.RootReducer {
     case .websocket(.receivedMessage(.suspendFilter(let seconds, let comment))):
       return suspendFilter(for: seconds, with: &state, comment: comment)
 
-    case .adminAuthenticated(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):
+    case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):
       state.requestSuspension.windowOpen = false
       return suspendFilter(for: .init(seconds), with: &state)
 
@@ -78,7 +78,7 @@ extension FilterFeature.RootReducer {
       state.filter.extension = filterState
       return .none
 
-    case .adminAuthenticated(.adminWindow(.webview(.stopFilterClicked))):
+    case .adminAuthed(.adminWindow(.webview(.stopFilterClicked))):
       // big sur (at least) doesn't get a notification pushed through the publisher for this event
       // so optimistically set the extension state, and then recheck after 2 seconds
       state.filter.extension = .installedButNotRunning

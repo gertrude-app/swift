@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Core
 import Gertie
+import MacAppRoute
 import TaggedTime
 import TestSupport
 import XCTest
@@ -24,9 +25,9 @@ import XExpect
     let filterNotify = mock(once: Result<Void, XPCErr>.success(()))
     store.deps.filterXpc.disconnectUser = filterNotify.fn
 
-    await store.send(.adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked)))) {
+    await store.send(.adminAuthed(.adminWindow(.webview(.reconnectUserClicked)))) {
       $0.history.userConnection = .notConnected
-      $0.user = nil
+      $0.user = .init()
       $0.adminWindow.windowOpen = false
       $0.menuBar.dropdownOpen = true
     }
@@ -50,9 +51,7 @@ import XExpect
     store.deps.filterXpc.suspendFilter = suspendFilter.fn
 
     await store.send(
-      .adminAuthenticated(
-        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 90)))
-      )
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 90))))
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
     }
@@ -98,19 +97,13 @@ import XExpect
     let triggerUpdate = spy(on: String.self, returning: ())
     store.deps.updater.triggerUpdate = triggerUpdate.fn
 
-    await store.send(.appUpdates(.latestVersionResponse(
-      result: .success(.init(semver: "2.0.0", pace: nil)),
-      source: .healthCheck // <-- healthCheck, therefore no update
-    )))
+    let checkInRes = CheckIn.Output.mock { $0.latestRelease = .init(semver: "2.0.0") }
 
+    await store.send(.checkIn(result: .success(checkInRes), reason: .healthCheck))
     await expect(triggerUpdate.invoked).toEqual(false)
 
-    // but a HEARTBEAT-triggered update DOES
-    await store.send(.appUpdates(.latestVersionResponse(
-      result: .success(.init(semver: "2.0.0", pace: nil)),
-      source: .heartbeat
-    )))
-
+    // but the heartbeat will pick up the new version and prompt
+    await store.send(.heartbeat(.everySixHours))
     await expect(triggerUpdate.invoked).toEqual(true)
   }
 }

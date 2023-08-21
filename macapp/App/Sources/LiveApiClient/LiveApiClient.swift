@@ -6,6 +6,13 @@ import MacAppRoute
 
 extension ApiClient: DependencyKey {
   public static let liveValue = Self(
+    checkIn: { input in
+      guard await accountActive.value else { throw Error.accountInactive }
+      return try await output(
+        from: CheckIn.self,
+        with: .checkIn(input)
+      )
+    },
     clearUserToken: { await userToken.setValue(nil) },
     connectUser: { input in
       try await output(
@@ -37,18 +44,6 @@ extension ApiClient: DependencyKey {
         with: .createUnlockRequests_v2(input)
       )
     },
-    getAdminAccountStatus: {
-      try await output(
-        from: GetAccountStatus.self,
-        with: .getAccountStatus
-      ).status
-    },
-    latestAppVersion: { input in
-      try await output(
-        from: LatestAppVersion.self,
-        withUnauthed: .latestAppVersion(input)
-      )
-    },
     logInterestingEvent: { input in
       _ = try? await output(
         from: LogInterestingEvent.self,
@@ -59,13 +54,6 @@ extension ApiClient: DependencyKey {
       try await output(
         from: RecentAppVersions.self,
         withUnauthed: .recentAppVersions
-      )
-    },
-    refreshRules: { input in
-      guard await accountActive.value else { throw Error.accountInactive }
-      return try await output(
-        from: RefreshRules.self,
-        with: .refreshRules(input)
       )
     },
     setAccountActive: { await accountActive.setValue($0) },

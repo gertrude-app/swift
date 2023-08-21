@@ -106,7 +106,6 @@ struct AdminWindowFeature: Feature {
       case stopFilterClicked
       case startFilterClicked
       case resumeFilterClicked
-      case releaseChannelUpdated(channel: ReleaseChannel)
       case reinstallAppClicked
       case quitAppClicked
       case reconnectUserClicked
@@ -170,7 +169,7 @@ extension AdminWindowFeature.RootReducer {
     case .menuBar(.administrateClicked):
       return adminAuthenticated(action)
 
-    case .adminAuthenticated(.menuBar(.administrateClicked)):
+    case .adminAuthed(.menuBar(.administrateClicked)):
       state.adminWindow.screen = .home
       state.adminWindow.windowOpen = true
       return .merge(
@@ -196,24 +195,22 @@ extension AdminWindowFeature.RootReducer {
       state.adminWindow.screen = .healthCheck
       return checkHealth(state: &state, action: action)
 
-    case .admin(.accountStatusResponse(.success(let status))):
-      state.adminWindow.healthCheck.accountStatus = .ok(value: status)
-      return state.adminWindow.healthCheck.checkCompletionEffect
+    case .checkIn(.success(result: let result), _) where state.adminWindow.windowOpen:
+      state.adminWindow.healthCheck.accountStatus = .ok(value: result.adminAccountStatus)
+      state.adminWindow.healthCheck.latestAppVersion = .ok(value: result.latestRelease.semver)
+      return .merge(
+        state.adminWindow.healthCheck.checkCompletionEffect,
+        .exec { send in
+          // wait for user feature reducer to send rules to filter
+          try await mainQueue.sleep(for: .milliseconds(10))
+          await recheckFilter(send)
+        }
+      )
 
-    case .admin(.accountStatusResponse(.failure)):
+    case .checkIn(.failure, _) where state.adminWindow.windowOpen:
       state.adminWindow.healthCheck.accountStatus = .error
+      state.adminWindow.healthCheck.latestAppVersion = .error
       return state.adminWindow.healthCheck.checkCompletionEffect
-
-    case .appUpdates(.latestVersionResponse(.success(let output), _)):
-      state.adminWindow.healthCheck.latestAppVersion = .ok(value: output.semver)
-      return state.adminWindow.healthCheck.checkCompletionEffect
-
-    case .user(.refreshRules(.success, _)):
-      return .exec { send in
-        // wait for feature reducer to send rules to filter
-        try await mainQueue.sleep(for: .milliseconds(10))
-        await recheckFilter(send)
-      }
 
     case .adminWindow(let adminWindowAction):
 
@@ -286,7 +283,6 @@ extension AdminWindowFeature.RootReducer {
         return adminAuthenticated(action)
 
       case .webview(.checkForAppUpdatesClicked),
-           .webview(.releaseChannelUpdated),
            .webview(.reinstallAppClicked):
         return .none // handled by AppUpdatesFeature
 
@@ -347,7 +343,7 @@ extension AdminWindowFeature.RootReducer {
       }
 
     // admin authenticated
-    case .adminAuthenticated(.adminWindow(let adminWindowAction)):
+    case .adminAuthed(.adminWindow(let adminWindowAction)):
       switch adminWindowAction {
       case .webview(.healthCheck(.repairOutOfDateFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = nil
@@ -437,37 +433,19 @@ extension AdminWindowFeature.RootReducer {
   }
 
   func checkHealth(state: inout State, action: Action) -> Effect<Action> {
-    state.adminWindow.healthCheck = .init()
-    let keyloggingEnabled = state.user?.data.keyloggingEnabled == true
-    let screenRecordingEnabled = state.user?.data.screenshotsEnabled == true
-    let releaseChannel = state.appUpdates.releaseChannel
-    let currentInstalledVersion = state.appUpdates.installedVersion
+    state.adminWindow.healthCheck = .init() // put all checks into checking state
+    let keyloggingEnabled = state.user.data?.keyloggingEnabled == true
+    let screenRecordingEnabled = state.user.data?.screenshotsEnabled == true
 
     let main = Effect<Action>.exec { send in
       try await mainQueue.sleep(for: .seconds(1))
 
-      if network.isConnected() {
-        async let accountStatus = TaskResult {
-          try await api.getAdminAccountStatus()
-        }
-        async let latestAppVersionOutput = TaskResult {
-          try await api.latestAppVersion(.init(
-            releaseChannel: releaseChannel,
-            currentVersion: currentInstalledVersion
-          ))
-        }
-        await send(.admin(.accountStatusResponse(accountStatus)))
-        await send(.appUpdates(.latestVersionResponse(
-          result: latestAppVersionOutput,
-          source: .healthCheck
-        )))
-      } else {
-        await send(.admin(.accountStatusResponse(.failure(NetworkClient.NotConnected()))))
-        await send(.appUpdates(.latestVersionResponse(
-          result: .failure(NetworkClient.NotConnected()),
-          source: .healthCheck
-        )))
-      }
+      await send(.checkIn(
+        result: network.isConnected()
+          ? TaskResult { try await api.appCheckIn() }
+          : .failure(NetworkClient.NotConnected()),
+        reason: .healthCheck
+      ))
 
       await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
         keyloggingEnabled ? await monitoring.keystrokeRecordingPermissionGranted() : true
@@ -573,9 +551,9 @@ extension AdminWindowFeature.State.View {
     screen = featureState.screen
     healthCheck = featureState.healthCheck
     filterState = .init(rootState)
-    userName = rootState.user?.data.name ?? ""
-    screenshotMonitoringEnabled = rootState.user?.data.screenshotsEnabled ?? false
-    keystrokeMonitoringEnabled = rootState.user?.data.keyloggingEnabled ?? false
+    userName = rootState.user.data?.name ?? ""
+    screenshotMonitoringEnabled = rootState.user.data?.screenshotsEnabled ?? false
+    keystrokeMonitoringEnabled = rootState.user.data?.keyloggingEnabled ?? false
     installedAppVersion = app.installedVersion() ?? "0.0.0"
     releaseChannel = rootState.appUpdates.releaseChannel
     quitting = featureState.quitting

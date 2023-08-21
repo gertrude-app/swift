@@ -1,7 +1,8 @@
 import Gertie
 import PairQL
 
-/// in use: v2.0.0 - present
+/// deprecated: v2.0.0 - v2.0.3
+/// remove when v2.0.4 is MSV
 public struct GetAccountStatus: Pair {
   public static var auth: ClientAuth = .user
 

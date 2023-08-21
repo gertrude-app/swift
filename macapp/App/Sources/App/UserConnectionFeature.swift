@@ -50,8 +50,8 @@ extension UserConnectionFeature.Reducer {
 extension UserConnectionFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-    case .adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))):
-      state.user = nil
+    case .adminAuthed(.adminWindow(.webview(.reconnectUserClicked))):
+      state.user = .init()
       state.history.userConnection = .notConnected
       state.adminWindow.windowOpen = false
       state.menuBar.dropdownOpen = true
@@ -59,14 +59,14 @@ extension UserConnectionFeature.RootReducer {
 
     case .websocket(.receivedMessage(.userDeleted)),
          .history(.userConnection(.disconnectMissingUser)):
-      state.user = nil
+      state.user = .init()
       state.history.userConnection = .notConnected
       return .merge(
         disconnectUser(persisting: state.persistent),
         .exec { send in
           await send(.focusedNotification(.text(
-            "User deleted",
-            "The user associated with this device was deleted. You'll need to connect to a different user, or quit the app."
+            "Child deleted",
+            "The child associated with this computer was deleted. You'll need to connect to a different child, or quit the app."
           )))
         }
       )

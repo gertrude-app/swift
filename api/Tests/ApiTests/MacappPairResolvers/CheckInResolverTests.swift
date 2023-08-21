@@ -40,7 +40,7 @@ final class CheckInResolverTests: ApiTestCase {
 
     expect(output.adminAccountStatus).toEqual(.needsAttention)
     expect(output.updateReleaseChannel).toEqual(.beta)
-    expect(output.latestRelease).toEqual("3.0.0")
+    expect(output.latestRelease.semver).toEqual("3.0.0")
   }
 
   func testCheckIn_AppManifest() async throws {

@@ -1,6 +1,5 @@
 // auto-generated, do not edit
 import Foundation
-import Gertie
 
 extension AdminWindowFeature.State.HealthCheck.FilterStatus {
   private struct _NamedCase: Codable {
@@ -167,11 +166,6 @@ extension AdminWindowFeature.Action.View {
     var screen: AdminWindowFeature.Screen
   }
 
-  private struct _CaseReleaseChannelUpdated: Codable {
-    var `case` = "releaseChannelUpdated"
-    var channel: ReleaseChannel
-  }
-
   private struct _CaseSetUserExemption: Codable {
     var `case` = "setUserExemption"
     var userId: UInt32
@@ -186,8 +180,6 @@ extension AdminWindowFeature.Action.View {
       try _CaseAdvanced(action: action).encode(to: encoder)
     case .gotoScreenClicked(let screen):
       try _CaseGotoScreenClicked(screen: screen).encode(to: encoder)
-    case .releaseChannelUpdated(let channel):
-      try _CaseReleaseChannelUpdated(channel: channel).encode(to: encoder)
     case .setUserExemption(let userId, let enabled):
       try _CaseSetUserExemption(userId: userId, enabled: enabled).encode(to: encoder)
     case .closeWindow:
@@ -228,9 +220,6 @@ extension AdminWindowFeature.Action.View {
     case "gotoScreenClicked":
       let value = try container.decode(_CaseGotoScreenClicked.self)
       self = .gotoScreenClicked(screen: value.screen)
-    case "releaseChannelUpdated":
-      let value = try container.decode(_CaseReleaseChannelUpdated.self)
-      self = .releaseChannelUpdated(channel: value.channel)
     case "setUserExemption":
       let value = try container.decode(_CaseSetUserExemption.self)
       self = .setUserExemption(userId: value.userId, enabled: value.enabled)

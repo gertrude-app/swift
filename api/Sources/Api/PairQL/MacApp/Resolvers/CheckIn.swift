@@ -16,7 +16,7 @@ extension CheckIn: Resolver {
       adminAccountStatus: try await admin.accountStatus,
       appManifest: try await v1.appManifest,
       keys: try await v1.keys,
-      latestRelease: Semver(try await latestRelease.semver)!,
+      latestRelease: try await latestRelease,
       updateReleaseChannel: channel,
       userData: .init(
         id: context.user.id.rawValue,

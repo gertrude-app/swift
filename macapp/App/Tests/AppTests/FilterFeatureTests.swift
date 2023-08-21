@@ -21,9 +21,7 @@ import XExpect
 
     // receive a manual suspension
     await store.send(
-      .adminAuthenticated(
-        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
-      )
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
@@ -91,9 +89,7 @@ import XExpect
 
     // now, receive a MANUAL suspension
     await store.send(
-      .adminAuthenticated(
-        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
-      )
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
@@ -114,9 +110,7 @@ import XExpect
 
     // now, receive a SECOND MANUAL suspension, which stops timer
     await store.send(
-      .adminAuthenticated(
-        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
-      )
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }

@@ -6,7 +6,6 @@ import Gertie
 import MacAppRoute
 
 struct AppUpdatesFeature: Feature {
-
   struct State: Equatable {
     var installedVersion: String
     var releaseChannel: ReleaseChannel = .stable
@@ -20,15 +19,6 @@ struct AppUpdatesFeature: Feature {
       case postUpdateFilterReplaceFailed
     }
 
-    enum LatestVersionRequestSource: Equatable, Sendable {
-      case heartbeat
-      case healthCheck
-    }
-
-    case latestVersionResponse(
-      result: TaskResult<LatestAppVersion.Output>,
-      source: LatestVersionRequestSource
-    )
     case delegate(Delegate)
   }
 
@@ -90,10 +80,10 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
             } else {
 
               // refresh the rules post-update, or else health check will complain
-              await send(.user(.refreshRules(
-                result: TaskResult { try await api.refreshUserRules() },
-                userInitiated: false
-              )))
+              await send(.checkIn(
+                result: TaskResult { try await api.appCheckIn() },
+                reason: .appLaunched
+              ))
 
               // big sur doesn't get notification pushed when filter restarts
               // so check manually after attempting to replace the filter
@@ -123,8 +113,10 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         }
       }
 
-    case .appUpdates(.latestVersionResponse(.success(let latest), let source)):
-      state.appUpdates.latestVersion = latest
+    // every 20 minutes we get updated latest version info from heartbeat check-in,
+    // but we want to prompt them to update at most every 6 hours
+    case .heartbeat(.everySixHours):
+      guard let latest = state.appUpdates.latestVersion else { return .none }
       let current = state.appUpdates.installedVersion
       let channel = state.appUpdates.releaseChannel
       let persist = state.persistent
@@ -136,7 +128,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         unexpectedError(id: "bbb7eeba")
       }
       return .exec { _ in
-        if source == .heartbeat, shouldUpdate {
+        if shouldUpdate {
           try await triggerUpdate(channel, persist)
         }
       }
@@ -146,26 +138,6 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         state.appUpdates.updateNagDismissedUntil = nil
       }
       return .none
-
-    case .heartbeat(.everySixHours):
-      let current = state.appUpdates.installedVersion
-      let channel = state.appUpdates.releaseChannel
-      return .exec { send in
-        guard network.isConnected() else { return }
-        await send(.appUpdates(.latestVersionResponse(
-          result: TaskResult { try await api.latestAppVersion(.init(
-            releaseChannel: channel,
-            currentVersion: current
-          )) },
-          source: .heartbeat
-        )))
-      }
-
-    case .adminWindow(.webview(.releaseChannelUpdated(let channel))):
-      state.appUpdates.releaseChannel = channel
-      return .exec { [updated = state.persistent] _ in
-        try await storage.savePersistentState(updated)
-      }
 
     case .adminWindow(.webview(.advanced(.forceUpdateToSpecificVersionClicked(let version)))):
       state.adminWindow.windowOpen = false // so they can see sparkle update
