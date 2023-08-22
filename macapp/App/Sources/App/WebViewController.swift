@@ -38,8 +38,9 @@ class WebViewController<State, Action>:
       webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
     #endif
 
+    let colorScheme = app.colorScheme()
     let filePathURL = URL(
-      fileURLWithPath: "Contents/Resources/WebViews/\(screen)/index.html",
+      fileURLWithPath: "Contents/Resources/WebViews/\(screen)/index.\(colorScheme).html",
       relativeTo: Bundle.main.bundleURL
     )
 
