@@ -13,6 +13,7 @@ struct BlockedRequestsFeature: Feature {
     var filterText = ""
     var tcpOnly = true
     var createUnlockRequests = RequestState<String>.idle
+    var filterCommunicationConfirmed: Bool?
   }
 
   enum Action: Equatable, Sendable {
@@ -26,13 +27,14 @@ struct BlockedRequestsFeature: Feature {
       case closeWindow
       case inactiveAccountRecheckClicked
       case inactiveAccountDisconnectAppClicked
+      case noFilterCommunicationAdministrateClicked
     }
 
-    case openWindow
     case closeWindow
     case webview(View)
     case createUnlockRequests(TaskResult<EquatableVoid>)
     case createUnlockRequestsSuccessTimedOut
+    case receivedFilterCommunicationConfirmation(Bool)
   }
 
   private enum CancelId { case timeout }
@@ -44,12 +46,10 @@ struct BlockedRequestsFeature: Feature {
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
-      case .openWindow:
-        state.windowOpen = true
-        return restartBlockStreaming()
 
       case .webview(.inactiveAccountRecheckClicked),
-           .webview(.inactiveAccountDisconnectAppClicked):
+           .webview(.inactiveAccountDisconnectAppClicked),
+           .webview(.noFilterCommunicationAdministrateClicked):
         return .none // handled by AdminFeature
 
       case .closeWindow, .webview(.closeWindow):
@@ -57,6 +57,10 @@ struct BlockedRequestsFeature: Feature {
         state.requests = []
         state.selectedRequestIds = []
         return endBlockStreaming()
+
+      case .receivedFilterCommunicationConfirmation(let connected):
+        state.filterCommunicationConfirmed = connected
+        return .none
 
       case .webview(.filterTextUpdated(let text)):
         state.filterText = text
@@ -140,9 +144,13 @@ extension BlockedRequestsFeature.RootReducer {
     switch action {
     case .menuBar(.viewNetworkTrafficClicked):
       state.blockedRequests.windowOpen = true
-      return .exec { _ in
-        let result = await filterXpc.setBlockStreaming(true)
-        if result.isFailure {
+      state.blockedRequests.filterCommunicationConfirmed = nil // re-test on each open
+      return .exec { send in
+        let connected = await filterXpc.connected(attemptRepair: true)
+        await send(.blockedRequests(.receivedFilterCommunicationConfirmation(connected)))
+        if !connected {
+          unexpectedError(id: "46d4be97")
+        } else if (await filterXpc.setBlockStreaming(true)).isFailure {
           unexpectedError(id: "f2c3b277")
         }
       }
@@ -169,6 +177,7 @@ extension BlockedRequestsFeature.State {
     var tcpOnly = false
     var createUnlockRequests = RequestState<String>.idle
     var adminAccountStatus: AdminAccountStatus = .active
+    var filterCommunicationConfirmed: Bool?
 
     init(state: AppReducer.State) {
       windowOpen = state.blockedRequests.windowOpen
@@ -178,6 +187,7 @@ extension BlockedRequestsFeature.State {
       createUnlockRequests = state.blockedRequests.createUnlockRequests
       selectedRequestIds = state.blockedRequests.selectedRequestIds
       adminAccountStatus = state.admin.accountStatus
+      filterCommunicationConfirmed = state.blockedRequests.filterCommunicationConfirmed
     }
   }
 }

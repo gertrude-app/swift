@@ -1,3 +1,4 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Gertie
 
@@ -6,12 +7,14 @@ struct RequestSuspensionFeature: Feature {
     var windowOpen = false
     var request = RequestState<String>.idle
     var adminAccountStatus: AdminAccountStatus = .active
+    var filterCommunicationConfirmed: Bool?
 
     struct View: Equatable, Codable {
       var windowOpen: Bool
       var request: RequestState<String>
       var adminAccountStatus: AdminAccountStatus
       var internetConnected: Bool
+      var filterCommunicationConfirmed: Bool?
     }
   }
 
@@ -23,12 +26,14 @@ struct RequestSuspensionFeature: Feature {
       case inactiveAccountRecheckClicked
       case inactiveAccountDisconnectAppClicked
       case grantSuspensionClicked(durationInSeconds: Int)
+      case noFilterCommunicationAdministrateClicked
     }
 
     case webview(View)
     case closeWindow
     case createSuspensionRequest(TaskResult<EquatableVoid>)
     case createSuspensionRequestSuccessTimedOut
+    case receivedFilterCommunicationConfirmation(Bool)
   }
 
   private enum CancelId { case successTimeout }
@@ -41,8 +46,13 @@ struct RequestSuspensionFeature: Feature {
       switch action {
 
       case .webview(.inactiveAccountRecheckClicked),
-           .webview(.inactiveAccountDisconnectAppClicked):
+           .webview(.inactiveAccountDisconnectAppClicked),
+           .webview(.noFilterCommunicationAdministrateClicked):
         return .none // handled by AdminFeature
+
+      case .receivedFilterCommunicationConfirmation(let confirmed):
+        state.filterCommunicationConfirmed = confirmed
+        return .none
 
       case .webview(.closeWindow), .closeWindow:
         state.windowOpen = false
@@ -85,6 +95,7 @@ struct RequestSuspensionFeature: Feature {
   }
 
   struct RootReducer: AdminAuthenticating {
+    @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.security) var security
   }
 }
@@ -93,8 +104,13 @@ extension RequestSuspensionFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Self.Action> {
     switch action {
     case .menuBar(.suspendFilterClicked):
+      state.requestSuspension.filterCommunicationConfirmed = nil
       state.requestSuspension.windowOpen = true
-      return .none
+      return .exec { send in
+        let connected = await filterXpc.connected(attemptRepair: true)
+        await send(.requestSuspension(.receivedFilterCommunicationConfirmation(connected)))
+        if !connected { unexpectedError(id: "9ed77176") }
+      }
 
     case .requestSuspension(.webview(.grantSuspensionClicked)):
       return adminAuthenticated(action)
@@ -112,5 +128,6 @@ extension RequestSuspensionFeature.State.View {
     request = state.requestSuspension.request
     adminAccountStatus = state.admin.accountStatus
     internetConnected = network.isConnected()
+    filterCommunicationConfirmed = state.requestSuspension.filterCommunicationConfirmed
   }
 }

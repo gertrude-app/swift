@@ -47,8 +47,14 @@ public struct FilterXPCClient: Sendable {
     self.events = events
   }
 
-  public func connected() async -> Bool {
-    await checkConnectionHealth().isSuccess
+  public func connected(attemptRepair: Bool = false) async -> Bool {
+    if await checkConnectionHealth().isSuccess {
+      return true
+    } else if attemptRepair {
+      return await establishConnection().isSuccess
+    } else {
+      return false
+    }
   }
 
   public func notConnected() async -> Bool {

@@ -49,6 +49,8 @@ extension BlockedRequestsFeature.Action.View {
       try _NamedCase(case: "inactiveAccountRecheckClicked").encode(to: encoder)
     case .inactiveAccountDisconnectAppClicked:
       try _NamedCase(case: "inactiveAccountDisconnectAppClicked").encode(to: encoder)
+    case .noFilterCommunicationAdministrateClicked:
+      try _NamedCase(case: "noFilterCommunicationAdministrateClicked").encode(to: encoder)
     }
   }
 
@@ -77,6 +79,8 @@ extension BlockedRequestsFeature.Action.View {
       self = .inactiveAccountRecheckClicked
     case "inactiveAccountDisconnectAppClicked":
       self = .inactiveAccountDisconnectAppClicked
+    case "noFilterCommunicationAdministrateClicked":
+      self = .noFilterCommunicationAdministrateClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }

@@ -23,7 +23,8 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
     switch action {
     case .adminWindow(.webview(.inactiveAccountDisconnectAppClicked)),
          .blockedRequests(.webview(.inactiveAccountDisconnectAppClicked)),
-         .requestSuspension(.webview(.inactiveAccountDisconnectAppClicked)):
+         .requestSuspension(.webview(.inactiveAccountDisconnectAppClicked)),
+         .blockedRequests(.webview(.noFilterCommunicationAdministrateClicked)):
       return adminAuthenticated(action)
 
     case .adminAuthed(.adminWindow(.webview(.inactiveAccountDisconnectAppClicked))),
@@ -41,6 +42,14 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
         _ = await filter.uninstall()
         await app.quit()
       }
+
+    case .adminAuthed(.blockedRequests(.webview(.noFilterCommunicationAdministrateClicked))),
+         .adminAuthed(.requestSuspension(.webview(.noFilterCommunicationAdministrateClicked))):
+      state.blockedRequests.windowOpen = false
+      state.requestSuspension.windowOpen = false
+      state.adminWindow.windowOpen = true
+      state.adminWindow.screen = .healthCheck
+      return .none
 
     default:
       return .none
