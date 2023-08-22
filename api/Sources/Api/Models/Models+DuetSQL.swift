@@ -489,6 +489,8 @@ extension Release: Model {
       return .string(revision.rawValue)
     case .requirementPace:
       return .int(requirementPace)
+    case .notes:
+      return .string(notes)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -505,6 +507,7 @@ extension Release: Model {
       .length: .int(length),
       .revision: .string(revision.rawValue),
       .requirementPace: .int(requirementPace),
+      .notes: .string(notes),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

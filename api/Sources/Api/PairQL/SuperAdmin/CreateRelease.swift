@@ -12,6 +12,7 @@ struct CreateRelease: Pair {
     let length: Int
     let revision: String
     let requirementPace: Int?
+    let notes: String?
   }
 
   struct Output: PairOutput {
@@ -39,6 +40,7 @@ extension CreateRelease: Resolver {
       existing.length = input.length
       existing.revision = .init(rawValue: input.revision)
       existing.requirementPace = input.requirementPace
+      existing.notes = input.notes
       try await Current.db.update(existing)
       return .init(id: existing.id)
     }
@@ -49,7 +51,8 @@ extension CreateRelease: Resolver {
       signature: input.signature,
       length: input.length,
       revision: .init(input.revision),
-      requirementPace: input.requirementPace
+      requirementPace: input.requirementPace,
+      notes: input.notes
     ))
 
     return .init(id: release.id)

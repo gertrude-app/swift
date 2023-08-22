@@ -305,6 +305,7 @@ extension Release {
     case length
     case revision
     case requirementPace
+    case notes
     case createdAt
     case updatedAt
   }

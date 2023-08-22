@@ -9,6 +9,7 @@ final class Release: Codable {
   var length: Int
   var revision: GitCommitSha
   var requirementPace: Int?
+  var notes: String?
   var createdAt = Date()
   var updatedAt = Date()
 
@@ -19,7 +20,8 @@ final class Release: Codable {
     signature: String,
     length: Int,
     revision: GitCommitSha,
-    requirementPace: Int? = nil
+    requirementPace: Int? = nil,
+    notes: String? = nil
   ) {
     self.id = id
     self.semver = semver
@@ -28,6 +30,7 @@ final class Release: Codable {
     self.length = length
     self.revision = revision
     self.requirementPace = requirementPace
+    self.notes = notes
   }
 }
 

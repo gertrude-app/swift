@@ -15,5 +15,6 @@ extension Configure {
     app.migrations.add(AddReleaseRequirementPace())
     app.migrations.add(DropWaitlistedAdmins())
     app.migrations.add(DeviceRefactor())
+    app.migrations.add(AddReleaseNotes())
   }
 }
