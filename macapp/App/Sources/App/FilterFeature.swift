@@ -64,7 +64,7 @@ extension FilterFeature.RootReducer {
         }
       }
 
-    case .adminWindow(.webview(.resumeFilterClicked)), .menuBar(.resumeFilterClicked):
+    case .menuBar(.resumeFilterClicked):
       state.menuBar.dropdownOpen = false
       state.filter.currentSuspensionExpiration = nil
       return handleFilterSuspensionEnded(early: true)
@@ -78,7 +78,7 @@ extension FilterFeature.RootReducer {
       state.filter.extension = filterState
       return .none
 
-    case .adminAuthed(.adminWindow(.webview(.stopFilterClicked))):
+    case .adminAuthed(.adminWindow(.webview(.confirmStopFilterClicked))):
       // big sur (at least) doesn't get a notification pushed through the publisher for this event
       // so optimistically set the extension state, and then recheck after 2 seconds
       state.filter.extension = .installedButNotRunning
@@ -88,8 +88,7 @@ extension FilterFeature.RootReducer {
         await send(.filter(.receivedState(await filterExtension.state())))
       }
 
-    case .menuBar(.turnOnFilterClicked),
-         .adminWindow(.webview(.startFilterClicked)):
+    case .menuBar(.turnOnFilterClicked):
       let extensionInstalled = state.filter.extension.installed
       return .merge(
         .exec { send in

@@ -46,7 +46,7 @@ extension MonitoringFeature.RootReducer {
     // so we don't have to worry about edge cases when we stop/restart.
     // if we're not monitoring keystrokes, keystrokes will be nil
     case .heartbeat(.everyFiveMinutes),
-         .adminAuthed(.adminWindow(.webview(.quitAppClicked))):
+         .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))):
       return .exec { _ in
         guard network.isConnected() else { return }
         if let keystrokes = await monitoring.takePendingKeystrokes() {

@@ -37,6 +37,8 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
       try _NamedCase(case: "installTimeout").encode(to: encoder)
     case .notInstalled:
       try _NamedCase(case: "notInstalled").encode(to: encoder)
+    case .disabled:
+      try _NamedCase(case: "disabled").encode(to: encoder)
     case .unexpected:
       try _NamedCase(case: "unexpected").encode(to: encoder)
     }
@@ -58,6 +60,8 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
       self = .installTimeout
     case "notInstalled":
       self = .notInstalled
+    case "disabled":
+      self = .disabled
     case "unexpected":
       self = .unexpected
     default:
@@ -184,16 +188,10 @@ extension AdminWindowFeature.Action.View {
       try _CaseSetUserExemption(userId: userId, enabled: enabled).encode(to: encoder)
     case .closeWindow:
       try _NamedCase(case: "closeWindow").encode(to: encoder)
-    case .stopFilterClicked:
-      try _NamedCase(case: "stopFilterClicked").encode(to: encoder)
-    case .startFilterClicked:
-      try _NamedCase(case: "startFilterClicked").encode(to: encoder)
-    case .resumeFilterClicked:
-      try _NamedCase(case: "resumeFilterClicked").encode(to: encoder)
-    case .reinstallAppClicked:
-      try _NamedCase(case: "reinstallAppClicked").encode(to: encoder)
-    case .quitAppClicked:
-      try _NamedCase(case: "quitAppClicked").encode(to: encoder)
+    case .confirmStopFilterClicked:
+      try _NamedCase(case: "confirmStopFilterClicked").encode(to: encoder)
+    case .confirmQuitAppClicked:
+      try _NamedCase(case: "confirmQuitAppClicked").encode(to: encoder)
     case .reconnectUserClicked:
       try _NamedCase(case: "reconnectUserClicked").encode(to: encoder)
     case .administrateOSUserAccountsClicked:
@@ -225,16 +223,10 @@ extension AdminWindowFeature.Action.View {
       self = .setUserExemption(userId: value.userId, enabled: value.enabled)
     case "closeWindow":
       self = .closeWindow
-    case "stopFilterClicked":
-      self = .stopFilterClicked
-    case "startFilterClicked":
-      self = .startFilterClicked
-    case "resumeFilterClicked":
-      self = .resumeFilterClicked
-    case "reinstallAppClicked":
-      self = .reinstallAppClicked
-    case "quitAppClicked":
-      self = .quitAppClicked
+    case "confirmStopFilterClicked":
+      self = .confirmStopFilterClicked
+    case "confirmQuitAppClicked":
+      self = .confirmQuitAppClicked
     case "reconnectUserClicked":
       self = .reconnectUserClicked
     case "administrateOSUserAccountsClicked":

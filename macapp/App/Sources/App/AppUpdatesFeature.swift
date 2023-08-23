@@ -9,7 +9,7 @@ struct AppUpdatesFeature: Feature {
   struct State: Equatable {
     var installedVersion: String
     var releaseChannel: ReleaseChannel = .stable
-    var latestVersion: LatestAppVersion.Output?
+    var latestVersion: CheckIn.LatestRelease?
     var updateNagDismissedUntil: Date?
   }
 
@@ -53,6 +53,7 @@ extension AppUpdatesFeature.State {
 }
 
 extension AppUpdatesFeature.RootReducer: FilterControlling {
+
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .loadedPersistentState(.none):
@@ -97,17 +98,15 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     // don't need admin challenge, because sparkle can't update w/out admin auth
     case .adminWindow(.delegate(.triggerAppUpdate)),
          .adminWindow(.webview(.checkForAppUpdatesClicked)),
-         .adminWindow(.webview(.reinstallAppClicked)),
          .menuBar(.updateNagUpdateClicked),
          .menuBar(.updateRequiredUpdateClicked):
       state.adminWindow.windowOpen = false // so they can see sparkle update
       state.menuBar.dropdownOpen = false // dismiss menubar overlay nags
       let channel = state.appUpdates.releaseChannel
       let persist = state.persistent
-      let force = action == .adminWindow(.webview(.reinstallAppClicked)) ? true : nil
       return .exec { _ in
         if network.isConnected() {
-          try await triggerUpdate(channel, persist, force: force)
+          try await triggerUpdate(channel, persist)
         } else {
           await device.notifyNoInternet()
         }
@@ -175,5 +174,9 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     let feedUrl = "\(updater.endpoint.absoluteString)\(query.urlString)"
     try await storage.savePersistentState(persist)
     try await updater.triggerUpdate(feedUrl)
+  }
+
+  func afterFilterChange(_ send: Send<Action>, repairing: Bool) async {
+    // noop. NB: providing this noop as a default protocol implementation caused problems
   }
 }

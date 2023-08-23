@@ -59,36 +59,6 @@ import XExpect
     await expect(suspendFilter.invocations).toEqual([.init(90)])
   }
 
-  func testResumeSuspension() async {
-    let (store, _) = AppReducer.testStore {
-      $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
-    }
-
-    let filterNotify = mock(once: Result<Void, XPCErr>.success(()))
-    store.deps.filterXpc.endFilterSuspension = filterNotify.fn
-    let notification = spy2(on: (String.self, String.self), returning: ())
-    store.deps.device.showNotification = notification.fn
-    let scheduler = DispatchQueue.test
-    store.deps.mainQueue = scheduler.eraseToAnyScheduler()
-    let quitBrowsers = mock(once: ())
-    store.deps.device.quitBrowsers = quitBrowsers.fn
-
-    await store.send(.adminWindow(.webview(.resumeFilterClicked))) {
-      $0.filter.currentSuspensionExpiration = nil
-    }
-
-    await expect(filterNotify.invoked).toEqual(true)
-    await expect(notification.invocations).toEqual([.init(
-      "⚠️ Web browsers quitting soon!",
-      "Filter suspension ended. All browsers will quit in 60 seconds. Save any important work NOW."
-    )])
-
-    await scheduler.advance(by: 59)
-    await expect(quitBrowsers.invoked).toEqual(false)
-    await scheduler.advance(by: 1)
-    await expect(quitBrowsers.invoked).toEqual(true)
-  }
-
   func testLatestAppResponseFromHealthCheckDoesntTriggerUpdate() async {
     let (store, _) = AppReducer.testStore {
       $0.appUpdates.installedVersion = "1.0.0"
