@@ -36,6 +36,10 @@ import UserNotifications
 }
 
 extension DeviceClient {
+  func notify(_ title: String, _ body: String = "") async {
+    await showNotification(title, body)
+  }
+
   func notifyNoInternet() async {
     await showNotification(
       "⚠️ No internet connection",

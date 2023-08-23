@@ -98,7 +98,6 @@ extension HistoryFeature.RootReducer: RootReducing {
     return ConnectUser.Input(
       verificationCode: code,
       appVersion: app.installedVersion() ?? "unknown",
-      hostname: device.hostname(),
       modelIdentifier: device.modelIdentifier() ?? "unknown",
       username: device.username(),
       fullUsername: device.fullUsername(),

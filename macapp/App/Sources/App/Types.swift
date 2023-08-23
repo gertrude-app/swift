@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Foundation
+import MacAppRoute
 
 typealias FeatureReducer = Reducer
 
@@ -7,6 +8,14 @@ protocol Feature {
   associatedtype State: Equatable
   associatedtype Action: Equatable, Sendable
   associatedtype Reducer: FeatureReducer
+}
+
+struct AbsurdReducer<State: Equatable, Sendable>: FeatureReducer {
+  func reduce(into state: inout State, action: Never) -> Effect<Never> {}
+}
+
+extension Feature where Action == Never {
+  typealias Reducer = AbsurdReducer<State, Action>
 }
 
 protocol RootReducing: Reducer {
@@ -22,7 +31,7 @@ extension AdminAuthenticating where Action == AppReducer.Action {
   func adminAuthenticated(_ action: Action) -> Effect<Action> {
     .run { [didAuthenticateAsAdmin = security.didAuthenticateAsAdmin] send in
       if await didAuthenticateAsAdmin() {
-        await send(.adminAuthenticated(action))
+        await send(.adminAuthed(action))
       }
     }
   }

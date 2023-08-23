@@ -2,8 +2,8 @@ import Foundation
 import Gertie
 import PairQL
 
-extension ReleaseChannel: PairInput {}
-
+/// deprecated: v2.0.0 - v2.0.3
+/// remove when v2.0.4 is MSV
 public struct LatestAppVersion: Pair {
   public static var auth: ClientAuth = .user
 
@@ -17,23 +17,9 @@ public struct LatestAppVersion: Pair {
     }
   }
 
-  public struct Output: PairOutput {
-    public struct Pace: PairOutput {
-      public var nagOn: Date
-      public var requireOn: Date
-
-      public init(nagOn: Date, requireOn: Date) {
-        self.nagOn = nagOn
-        self.requireOn = requireOn
-      }
-    }
-
-    public var semver: String
-    public var pace: Pace?
-
-    public init(semver: String, pace: Pace? = nil) {
-      self.semver = semver
-      self.pace = pace
-    }
-  }
+  public typealias Output = CheckIn.LatestRelease
 }
+
+extension CheckIn.LatestRelease: PairOutput {}
+
+extension ReleaseChannel: PairInput {}

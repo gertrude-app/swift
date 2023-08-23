@@ -1,17 +1,17 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension AppBundleId {
-  static var mock: AppBundleId {
+extension AppBundleId: RandomMocked {
+  public static var mock: AppBundleId {
     AppBundleId(identifiedAppId: .init(), bundleId: "@mock bundleId")
   }
 
-  static var empty: AppBundleId {
+  public static var empty: AppBundleId {
     AppBundleId(identifiedAppId: .init(), bundleId: "")
   }
 
-  static var random: AppBundleId {
+  public static var random: AppBundleId {
     AppBundleId(identifiedAppId: .init(), bundleId: "@random".random)
   }
 }

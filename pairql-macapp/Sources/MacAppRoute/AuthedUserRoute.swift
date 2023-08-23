@@ -1,12 +1,11 @@
-import PairQL
 import Gertie
+import PairQL
 
 public enum AuthedUserRoute: PairRoute {
+  case checkIn(CheckIn.Input)
   case createKeystrokeLines(CreateKeystrokeLines.Input)
-  case createNetworkDecisions(CreateNetworkDecisions.Input)
   case createSignedScreenshotUpload(CreateSignedScreenshotUpload.Input)
   case createSuspendFilterRequest(CreateSuspendFilterRequest.Input)
-  case createUnlockRequests(CreateUnlockRequests.Input)
   case createUnlockRequests_v2(CreateUnlockRequests_v2.Input)
   case getAccountStatus
   case getUserData
@@ -15,13 +14,13 @@ public enum AuthedUserRoute: PairRoute {
 
 public extension AuthedUserRoute {
   static let router: AnyParserPrinter<URLRequestData, AuthedUserRoute> = OneOf {
+    Route(/Self.checkIn) {
+      Operation(CheckIn.self)
+      Body(.json(CheckIn.Input.self))
+    }
     Route(/Self.createKeystrokeLines) {
       Operation(CreateKeystrokeLines.self)
       Body(.json(CreateKeystrokeLines.Input.self))
-    }
-    Route(/Self.createNetworkDecisions) {
-      Operation(CreateNetworkDecisions.self)
-      Body(.json(CreateNetworkDecisions.Input.self))
     }
     Route(/Self.createSignedScreenshotUpload) {
       Operation(CreateSignedScreenshotUpload.self)
@@ -30,10 +29,6 @@ public extension AuthedUserRoute {
     Route(/Self.createSuspendFilterRequest) {
       Operation(CreateSuspendFilterRequest.self)
       Body(.json(CreateSuspendFilterRequest.Input.self))
-    }
-    Route(/Self.createUnlockRequests) {
-      Operation(CreateUnlockRequests.self)
-      Body(.json(CreateUnlockRequests.Input.self))
     }
     Route(/Self.createUnlockRequests_v2) {
       Operation(CreateUnlockRequests_v2.self)

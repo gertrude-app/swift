@@ -22,7 +22,7 @@ import XExpect
     let (takeScreenshot, uploadScreenshot, takePendingScreenshots) = spyScreenshots(store)
     let keylogging = spyKeylogging(store)
 
-    store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
 
     await store.send(.application(.didFinishLaunching))
 
@@ -69,7 +69,7 @@ import XExpect
     store.deps.monitoring.screenRecordingPermissionGranted = { false }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
 
-    store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
       returning: [nil],
@@ -109,7 +109,7 @@ import XExpect
       $0.user?.keyloggingEnabled = false
     } }
 
-    store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     store.deps.monitoring.takeScreenshot = { _ in fatalError() }
     store.deps.api.uploadScreenshot = { _, _, _, _ in fatalError() }
     let keylogging = spyKeylogging(store, keystrokes: mock(always: nil))
@@ -123,7 +123,7 @@ import XExpect
   func testLoadingNilUserOnLaunchNoMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
-    store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     store.deps.monitoring.takeScreenshot = { _ in fatalError() }
     store.deps.api.uploadScreenshot = { _, _, _, _ in fatalError() }
     let keylogging = spyKeylogging(store, keystrokes: mock(always: nil))
@@ -140,15 +140,15 @@ import XExpect
   func testGettingNewRulesStartsMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
-    store.deps.storage.loadPersistentState = { .mock {
+    store.deps.storage.loadPersistentState = { .empty {
       $0.user?.screenshotsEnabled = false
       $0.user?.keyloggingEnabled = false
     } }
 
     // initial launch refresh, no screenshots
-    store.deps.api.refreshRules = { _ in .mock {
-      $0.screenshotsEnabled = false
-      $0.keyloggingEnabled = false
+    store.deps.api.checkIn = { _ in .empty {
+      $0.userData.screenshotsEnabled = false
+      $0.userData.keyloggingEnabled = false
     } }
     let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
@@ -164,12 +164,12 @@ import XExpect
     await expect(keylogging.upload.invoked).toEqual(false)
 
     // simulate new rules came in, from user click
-    await store.send(.user(.refreshRules(result: .success(.mock {
-      $0.keyloggingEnabled = true // <- enabled
-      $0.screenshotsEnabled = true // <- enabled
-      $0.screenshotsFrequency = 120 // <- every 2 minutes
-      $0.screenshotsResolution = 1200
-    }), userInitiated: true)))
+    await store.send(.checkIn(result: .success(.empty {
+      $0.userData.keyloggingEnabled = true // <- enabled
+      $0.userData.screenshotsEnabled = true // <- enabled
+      $0.userData.screenshotFrequency = 120 // <- every 2 minutes
+      $0.userData.screenshotSize = 1200
+    }), reason: .heartbeat))
 
     await bgQueue.advance(by: .seconds(60))
     await expect(takeScreenshot.invoked).toEqual(false)
@@ -193,11 +193,11 @@ import XExpect
       $0.user?.screenshotFrequency = 60
     } }
 
-    store.deps.api.refreshRules = { _ in .mock {
-      $0.keyloggingEnabled = true
-      $0.screenshotsEnabled = true
-      $0.screenshotsResolution = 700
-      $0.screenshotsFrequency = 60
+    store.deps.api.checkIn = { _ in .mock {
+      $0.userData.keyloggingEnabled = true
+      $0.userData.screenshotsEnabled = true
+      $0.userData.screenshotSize = 700
+      $0.userData.screenshotFrequency = 60
     } }
 
     let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
@@ -218,10 +218,10 @@ import XExpect
     await expect(uploadScreenshot.invocations.value.count).toEqual(5)
 
     // simulate new rules came in, from user click
-    await store.send(.user(.refreshRules(result: .success(.mock {
-      $0.keyloggingEnabled = false // <-- disabled
-      $0.screenshotsEnabled = false // <-- disabled
-    }), userInitiated: true)))
+    await store.send(.checkIn(result: .success(.mock {
+      $0.userData.keyloggingEnabled = false // <-- disabled
+      $0.userData.screenshotsEnabled = false // <-- disabled
+    }), reason: .heartbeat))
 
     await bgQueue.advance(by: .seconds(60 * 5))
 
@@ -235,7 +235,7 @@ import XExpect
     let (store, bgQueue) = AppReducer.testStore()
 
     store.deps.storage.loadPersistentState = { nil }
-    store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
 
     let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
@@ -269,7 +269,7 @@ import XExpect
   func testDisconnectingUserStopsMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
-    store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     store.deps.storage.loadPersistentState = { .mock {
       $0.user?.keyloggingEnabled = true
       $0.user?.screenshotsEnabled = true
@@ -290,7 +290,7 @@ import XExpect
     await expect(keylogging.upload.invocations.value.count).toEqual(1)
 
     // send disconnect
-    await store.send(.adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))))
+    await store.send(.adminAuthed(.adminWindow(.webview(.reconnectUserClicked))))
     await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
 
     // no new invocations for any of these...
@@ -322,7 +322,7 @@ import XExpect
       $0.user?.screenshotFrequency = 60
     } }
 
-    store.deps.api.refreshRules = { _ in throw TestErr("stop launch refresh") }
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     await store.send(.application(.didFinishLaunching))
     await bgQueue.advance(by: .seconds(60))
     await store.receive(.monitoring(.timerTriggeredTakeScreenshot))

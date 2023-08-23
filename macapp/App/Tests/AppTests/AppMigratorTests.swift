@@ -1,4 +1,5 @@
 import Dependencies
+import MacAppRoute
 import TestSupport
 import XCore
 import XCTest
@@ -45,8 +46,11 @@ class AppMigratorTests: XCTestCase {
       connectedAt: Date(timeIntervalSince1970: 33)
     )
 
-    let getUser = mock(once: apiUser)
-    migrator.api.userData = getUser.fn
+    let checkIn = spy(
+      on: CheckIn.Input.self,
+      returning: CheckIn.Output.mock { $0.userData = apiUser }
+    )
+    migrator.api.checkIn = checkIn.fn
 
     let setApiToken = spy(on: UUID.self, returning: ())
     migrator.api.setUserToken = setApiToken.fn
@@ -74,7 +78,7 @@ class AppMigratorTests: XCTestCase {
 
     let result = await migrator.migrate()
     await expect(setApiToken.invocations).toEqual([.deadbeef])
-    await expect(getUser.invocations).toEqual(1)
+    expect(await checkIn.invocations.value).toHaveCount(1)
     expect(getStringInvocations.value).toEqual([
       "persistent.state.v1",
       V1.userToken.namespaced,
@@ -100,7 +104,7 @@ class AppMigratorTests: XCTestCase {
 
     // simulate that we can't fetch the user from the api
     // so we need to pull all of the old info from storage
-    migrator.api.userData = { throw TestErr("oh noes") }
+    migrator.api.checkIn = { _ in throw TestErr("oh noes") }
 
     let setApiToken = spy(on: UUID.self, returning: ())
     migrator.api.setUserToken = setApiToken.fn

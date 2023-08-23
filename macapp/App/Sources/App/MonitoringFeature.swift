@@ -26,14 +26,14 @@ extension MonitoringFeature.RootReducer {
     case .loadedPersistentState(.some(let persistent)):
       return configureMonitoring(current: persistent.user, previous: nil)
 
-    case .user(.refreshRules(.success(let output), _)):
-      return configureMonitoring(current: output, previous: state.user?.data)
+    case .user(.updated(let previous)):
+      return configureMonitoring(current: state.user.data, previous: previous)
 
     case .history(.userConnection(.connect(.success(let user)))):
       return configureMonitoring(current: user, previous: nil)
 
     case .monitoring(.timerTriggeredTakeScreenshot):
-      let width = state.user?.data.screenshotSize ?? 800
+      let width = state.user.data?.screenshotSize ?? 800
       return .exec { _ in
         try await monitoring.takeScreenshot(width)
         guard network.isConnected() else { return }
@@ -46,7 +46,7 @@ extension MonitoringFeature.RootReducer {
     // so we don't have to worry about edge cases when we stop/restart.
     // if we're not monitoring keystrokes, keystrokes will be nil
     case .heartbeat(.everyFiveMinutes),
-         .adminAuthenticated(.adminWindow(.webview(.quitAppClicked))):
+         .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))):
       return .exec { _ in
         guard network.isConnected() else { return }
         if let keystrokes = await monitoring.takePendingKeystrokes() {
@@ -57,12 +57,12 @@ extension MonitoringFeature.RootReducer {
     case .application(.willTerminate):
       return .cancel(id: CancelId.screenshots)
 
-    case .adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))):
+    case .adminAuthed(.adminWindow(.webview(.reconnectUserClicked))):
       return .cancel(id: CancelId.screenshots)
 
     // try to catch the moment when they've fixed monitoring permissions issues
     case .adminWindow(.webview(.healthCheck(.recheckClicked))):
-      return configureMonitoring(current: state.user?.data, previous: nil, force: true)
+      return configureMonitoring(current: state.user.data, previous: nil, force: true)
 
     default:
       return .none
@@ -136,8 +136,3 @@ extension MonitoredUser {
 }
 
 extension UserData: MonitoredUser {}
-
-extension RefreshRules.Output: MonitoredUser {
-  var screenshotSize: Int { screenshotsResolution }
-  var screenshotFrequency: Int { screenshotsFrequency }
-}

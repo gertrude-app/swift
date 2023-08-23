@@ -17,10 +17,11 @@ struct AppReducer: Reducer, Sendable {
     var history = HistoryFeature.State()
     var menuBar = MenuBarFeature.State()
     var requestSuspension = RequestSuspensionFeature.State()
-    var user: UserFeature.State?
+    var user = UserFeature.State()
   }
 
   enum Action: Equatable, Sendable {
+
     enum FocusedNotification: Equatable, Sendable {
       case unexpectedError
       case text(String, String)
@@ -30,6 +31,7 @@ struct AppReducer: Reducer, Sendable {
     case adminWindow(AdminWindowFeature.Action)
     case application(ApplicationFeature.Action)
     case appUpdates(AppUpdatesFeature.Action)
+    case checkIn(result: TaskResult<CheckIn.Output>, reason: CheckIn.Reason)
     case filter(FilterFeature.Action)
     case focusedNotification(FocusedNotification)
     case xpc(XPCEvent.App)
@@ -43,7 +45,7 @@ struct AppReducer: Reducer, Sendable {
     case requestSuspension(RequestSuspensionFeature.Action)
     case websocket(WebSocketFeature.Action)
 
-    indirect case adminAuthenticated(Action)
+    indirect case adminAuthed(Action)
   }
 
   @Dependency(\.api) var api
@@ -63,10 +65,10 @@ struct AppReducer: Reducer, Sendable {
         return .exec { send in
           await api.setUserToken(user.token)
           try await bgQueue.sleep(for: .milliseconds(10)) // <- unit test determinism
-          return await send(.user(.refreshRules(
-            result: TaskResult { try await api.refreshUserRules() },
-            userInitiated: false
-          )))
+          return await send(.checkIn(
+            result: TaskResult { try await api.appCheckIn() },
+            reason: .appLaunched
+          ))
         }
 
       case .focusedNotification(let notification):
@@ -103,6 +105,7 @@ struct AppReducer: Reducer, Sendable {
     WebSocketFeature.RootReducer()
     UserConnectionFeature.RootReducer()
     MenuBarFeature.RootReducer()
+    CheckInFeature.RootReducer()
 
     // feature reducers
     Scope(state: \.history, action: /Action.history) {
@@ -126,7 +129,7 @@ struct AppReducer: Reducer, Sendable {
     Scope(state: \.requestSuspension, action: /Action.requestSuspension) {
       RequestSuspensionFeature.Reducer()
     }
-    .ifLet(\.user, action: /Action.user) {
+    Scope(state: \.user, action: /Action.user) {
       UserFeature.Reducer()
     }
   }

@@ -44,24 +44,18 @@ import XExpect
       $0.filter.extension = .installedButNotRunning
     }
 
+    let prevUser = store.state.user.data
+
     await bgQueue.advance(by: .milliseconds(5))
-    await store.receive(.user(.refreshRules(result: .success(.mock), userInitiated: false))) {
-      $0.user?.data.screenshotsEnabled = true
-      $0.user?.data.keyloggingEnabled = true
-      $0.user?.data.screenshotFrequency = 333
-      $0.user?.data.screenshotSize = 555
+    await store.receive(.checkIn(result: .success(.mock), reason: .appLaunched)) {
+      $0.appUpdates.latestVersion = .init(semver: "2.0.4")
+      $0.user.data?.screenshotsEnabled = true
+      $0.user.data?.keyloggingEnabled = true
+      $0.user.data?.screenshotFrequency = 333
+      $0.user.data?.screenshotSize = 555
     }
 
-    // refreshing rules causes the filter to be rechecked for user key count
-    // resulting in a delegate action being sent back to into the system
-    await store
-      .receive(.adminWindow(.delegate(.healthCheckFilterExtensionState(.installedAndRunning)))) {
-        $0.filter.extension = .installedAndRunning
-      }
-
-    await store.receive(.adminWindow(.setFilterStatus(.installed(version: "", numUserKeys: 0)))) {
-      $0.adminWindow.healthCheck.filterStatus = .installed(version: "", numUserKeys: 0)
-    }
+    await store.receive(.user(.updated(previous: prevUser)))
 
     filterStateSubject.send(.notInstalled)
     await store.receive(.filter(.receivedState(.notInstalled))) {
@@ -101,79 +95,6 @@ import XExpect
 
     await store.send(.application(.didFinishLaunching))
     await store.receive(.loadedPersistentState(nil))
-  }
-
-  func testRefreshRulesInHeartbeat() async {
-    let (store, bgQueue) = AppReducer.testStore()
-    await store.send(.application(.didFinishLaunching)) // start heartbeat
-
-    let newRules = RefreshRules.Output.mock { $0.screenshotsResolution = 999 }
-    store.deps.api.refreshRules = { _ in newRules }
-
-    await bgQueue.advance(by: 60 * 19)
-    expect(store.state.user?.data.screenshotSize).not.toEqual(999)
-
-    await bgQueue.advance(by: 60)
-    await store.receive(.user(.refreshRules(result: .success(newRules), userInitiated: false))) {
-      $0.user?.data.screenshotSize = 999
-    }
-  }
-
-  func testClickingRefreshRules_Success_FilterReachable() async {
-    let (store, bgQueue) = AppReducer.testStore()
-    let notifications = spyOnNotifications(store)
-    await store.send(.application(.didFinishLaunching))
-
-    await bgQueue.advance(by: .milliseconds(5))
-    await store.receive(.filter(.receivedState(.installedAndRunning)))
-
-    await store.send(.menuBar(.refreshRulesClicked))
-    await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
-  }
-
-  func testClickingRefreshRules_Success_FilterUnreachable() async {
-    let (store, bgQueue) = AppReducer.testStore()
-    store.deps.filterExtension.setup = { .notInstalled }
-    let notifications = spyOnNotifications(store)
-    await store.send(.application(.didFinishLaunching))
-
-    await bgQueue.advance(by: .milliseconds(5))
-    await store.receive(.filter(.receivedState(.notInstalled)))
-
-    await store.send(.menuBar(.refreshRulesClicked))
-    await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
-  }
-
-  func testClickingRefreshRules_FilterError() async {
-    let (store, bgQueue) = AppReducer.testStore()
-    let notifications = spyOnNotifications(store)
-    store.deps.filterXpc.sendUserRules = { _, _ in .failure(.unknownError("printer on fire")) }
-    await store.send(.application(.didFinishLaunching))
-
-    await bgQueue.advance(by: .milliseconds(5))
-    await store.receive(.filter(.receivedState(.installedAndRunning)))
-
-    await store.send(.menuBar(.refreshRulesClicked))
-    await expect(notifications).toEqual([.init(
-      "Error refreshing rules",
-      "We got updated rules, but there was an error sending them to the filter."
-    )])
-  }
-
-  func testClickingRefreshRules_ApiError() async {
-    let (store, bgQueue) = AppReducer.testStore()
-    store.deps.api.refreshRules = { _ in throw TestErr("Oh noes!") }
-    let notifications = spyOnNotifications(store)
-    await store.send(.application(.didFinishLaunching))
-
-    await bgQueue.advance(by: .milliseconds(5))
-    await store.receive(.filter(.receivedState(.installedAndRunning)))
-
-    await store.send(.menuBar(.refreshRulesClicked))
-    await expect(notifications).toEqual([.init(
-      "Error refreshing rules",
-      "Please try again, or contact support if the problem persists."
-    )])
   }
 
   func testHeartbeatClearSuspensionFallback() async {
@@ -218,7 +139,7 @@ extension AppReducer {
     store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
     store.deps.mainQueue = .immediate
     store.deps.storage.loadPersistentState = { .mock }
-    store.deps.api.refreshRules = { _ in .mock }
+    store.deps.api.checkIn = { _ in .mock }
     store.deps.filterExtension.setup = { .installedAndRunning }
     return (store, scheduler)
   }

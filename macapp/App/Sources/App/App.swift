@@ -15,8 +15,8 @@ typealias UserData = GetUserData.Output
     reducer: {
       AppReducer()._printChanges(.filteredBy { action in
         switch action {
-        case .user(.refreshRules(.success, _)):
-          print("received action:\n  .user(.refreshRules(.success(...)))\n")
+        case .checkIn(.success, _):
+          print("received action:\n  .checkIn(.success(...))\n")
           return false
         default:
           return true
@@ -71,3 +71,13 @@ typealias UserData = GetUserData.Output
     }
   }
 }
+
+#if DEBUG
+  import Darwin
+
+  func eprint(_ items: Any...) {
+    let s = items.map { "\($0)" }.joined(separator: " ")
+    fputs(s + "\n", stderr)
+    fflush(stderr)
+  }
+#endif

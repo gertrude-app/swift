@@ -1,5 +1,7 @@
 import ComposableArchitecture
+import MacAppRoute
 import PairQL
+import TestSupport
 import XCTest
 import XExpect
 
@@ -19,18 +21,22 @@ import XExpect
       appTag: .userTokenNotFound // <-- specific error, user token not found
     )
 
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
+    for _ in 1 ... 7 {
+      await store.send(.checkIn(result: .failure(error), reason: .heartbeat))
+    }
 
+    // seven failures not enough
+    expect(store.state.user.numTimesUserTokenNotFound).toEqual(7)
+    await store.send(.heartbeat(.everySixHours))
     expect(store.state.user).not.toBeNil()
 
-    // fifth failure triggers auto-disconnect
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
+    // checking heartbeat w/ > 8 failures triggers auto-disconnect
+    await store.send(.checkIn(result: .failure(error), reason: .heartbeat))
+    expect(store.state.user.numTimesUserTokenNotFound).toEqual(8)
+    await store.send(.heartbeat(.everySixHours))
 
     await store.receive(.history(.userConnection(.disconnectMissingUser))) {
-      $0.user = nil
+      $0.user = .init()
     }
   }
 
@@ -47,20 +53,22 @@ import XExpect
       appTag: .userTokenNotFound // <-- specific error, user token not found
     )
 
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
+    for _ in 1 ... 7 {
+      await store.send(.checkIn(result: .failure(error), reason: .heartbeat))
+    }
 
+    // seven failures...
+    expect(store.state.user.numTimesUserTokenNotFound).toEqual(7)
+    await store.send(.heartbeat(.everySixHours))
     expect(store.state.user).not.toBeNil()
 
     // success restarts count
-    await store.send(.user(.refreshRules(result: .success(.mock), userInitiated: false)))
+    await store.send(.checkIn(result: .success(.mock), reason: .heartbeat))
 
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
-    await store.send(.user(.refreshRules(result: .failure(error), userInitiated: false)))
+    await store.send(.checkIn(result: .failure(error), reason: .heartbeat))
+    expect(store.state.user.numTimesUserTokenNotFound).toEqual(1)
+    await store.send(.heartbeat(.everySixHours))
 
-    expect(store.state.user).not.toBeNil()
+    expect(store.state.user).not.toBeNil() // still not disconnected
   }
 }

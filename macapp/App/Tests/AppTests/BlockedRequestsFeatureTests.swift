@@ -8,6 +8,57 @@ import XExpect
 @testable import App
 
 @MainActor final class BlockedRequestsFeatureTests: XCTestCase {
+  func testFilterCommunicationConfirmationSucceeded() async {
+    let (store, _) = AppReducer.testStore {
+      $0.blockedRequests.filterCommunicationConfirmed = false
+    }
+
+    // can't connect, or repair connection
+    store.deps.filterXpc.checkConnectionHealth = { .success(()) }
+
+    await store.send(.menuBar(.viewNetworkTrafficClicked)) {
+      $0.blockedRequests.filterCommunicationConfirmed = nil // <-- nils out for fresh confirmation
+      $0.blockedRequests.windowOpen = true
+    }
+
+    await store.receive(.blockedRequests(.receivedFilterCommunicationConfirmation(true))) {
+      $0.blockedRequests.filterCommunicationConfirmed = true
+    }
+  }
+
+  func testFilterCommunicationConfirmationFailed() async {
+    let (store, _) = AppReducer.testStore {
+      $0.blockedRequests.filterCommunicationConfirmed = true
+    }
+
+    // can't connect, or repair connection
+    store.deps.filterXpc.checkConnectionHealth = { .failure(.unknownError("???")) }
+    store.deps.filterXpc.establishConnection = { .failure(.unknownError("???")) }
+
+    await store.send(.menuBar(.viewNetworkTrafficClicked)) {
+      $0.blockedRequests.filterCommunicationConfirmed = nil // <-- nils out for fresh confirmation
+      $0.blockedRequests.windowOpen = true
+    }
+
+    await store.receive(.blockedRequests(.receivedFilterCommunicationConfirmation(false))) {
+      $0.blockedRequests.filterCommunicationConfirmed = false
+    }
+  }
+
+  func testClickingAdministrateFromFilterCommFailureOpensAdmin() async {
+    let (store, _) = AppReducer.testStore {
+      $0.adminWindow.windowOpen = false
+      $0.blockedRequests.windowOpen = true
+    }
+
+    await store
+      .send(.adminAuthed(.blockedRequests(.webview(.noFilterCommunicationAdministrateClicked)))) {
+        $0.adminWindow.windowOpen = true
+        $0.adminWindow.screen = .healthCheck
+        $0.blockedRequests.windowOpen = false
+      }
+  }
+
   func testBlockedReqsFromFilterAddedToState() async {
     let (store, _) = AppReducer.testStore()
 
@@ -40,49 +91,49 @@ import XExpect
   }
 
   func testSimpleActions() async {
-    var state = BlockedRequestsFeature.State()
     let req = BlockedRequest.mock
-    state.requests = [req, .mock, .mock]
-    let store = TestStore(initialState: state, reducer: { BlockedRequestsFeature.Reducer() })
+    let (store, _) = AppReducer.testStore {
+      $0.blockedRequests.requests = [req, .mock, .mock]
+    }
 
     let setBlockStreaming = spy(on: Bool.self, returning: Result<_, XPCErr>.success(()))
     store.deps.filterXpc.setBlockStreaming = setBlockStreaming.fn
 
-    await store.send(.openWindow) {
-      $0.windowOpen = true
+    await store.send(.menuBar(.viewNetworkTrafficClicked)) {
+      $0.blockedRequests.windowOpen = true
     }
     await expect(setBlockStreaming.invocations).toEqual([true])
 
-    await store.send(.webview(.filterTextUpdated(text: "foo"))) {
-      $0.filterText = "foo"
+    await store.send(.blockedRequests(.webview(.filterTextUpdated(text: "foo")))) {
+      $0.blockedRequests.filterText = "foo"
     }
     await expect(setBlockStreaming.invocations).toEqual([true, true])
 
-    await store.send(.webview(.tcpOnlyToggled)) {
-      $0.tcpOnly.toggle()
+    await store.send(.blockedRequests(.webview(.tcpOnlyToggled))) {
+      $0.blockedRequests.tcpOnly = false
     }
     await expect(setBlockStreaming.invocations).toEqual([true, true, true])
 
-    await store.send(.webview(.toggleRequestSelected(id: req.id))) {
-      $0.selectedRequestIds = [req.id]
+    await store.send(.blockedRequests(.webview(.toggleRequestSelected(id: req.id)))) {
+      $0.blockedRequests.selectedRequestIds = [req.id]
     }
 
-    await store.send(.webview(.toggleRequestSelected(id: req.id))) {
-      $0.selectedRequestIds = []
+    await store.send(.blockedRequests(.webview(.toggleRequestSelected(id: req.id)))) {
+      $0.blockedRequests.selectedRequestIds = []
     }
 
-    await store.send(.webview(.toggleRequestSelected(id: req.id))) {
-      $0.selectedRequestIds = [req.id]
+    await store.send(.blockedRequests(.webview(.toggleRequestSelected(id: req.id)))) {
+      $0.blockedRequests.selectedRequestIds = [req.id]
     }
 
-    await store.send(.webview(.clearRequestsClicked)) {
-      $0.requests = []
-      $0.selectedRequestIds = []
+    await store.send(.blockedRequests(.webview(.clearRequestsClicked))) {
+      $0.blockedRequests.requests = []
+      $0.blockedRequests.selectedRequestIds = []
     }
     await expect(setBlockStreaming.invocations).toEqual([true, true, true, true])
 
-    await store.send(.closeWindow) {
-      $0.windowOpen = false
+    await store.send(.blockedRequests(.closeWindow)) {
+      $0.blockedRequests.windowOpen = false
     }
     await expect(setBlockStreaming.invocations).toEqual([true, true, true, true, false])
   }

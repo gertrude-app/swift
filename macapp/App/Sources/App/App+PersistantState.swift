@@ -17,7 +17,7 @@ extension AppReducer.State {
     .init(
       appVersion: appUpdates.installedVersion,
       appUpdateReleaseChannel: appUpdates.releaseChannel,
-      user: user?.data
+      user: user.data
     )
   }
 }

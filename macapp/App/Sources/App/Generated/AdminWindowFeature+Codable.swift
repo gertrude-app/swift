@@ -1,6 +1,5 @@
 // auto-generated, do not edit
 import Foundation
-import Gertie
 
 extension AdminWindowFeature.State.HealthCheck.FilterStatus {
   private struct _NamedCase: Codable {
@@ -38,6 +37,8 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
       try _NamedCase(case: "installTimeout").encode(to: encoder)
     case .notInstalled:
       try _NamedCase(case: "notInstalled").encode(to: encoder)
+    case .disabled:
+      try _NamedCase(case: "disabled").encode(to: encoder)
     case .unexpected:
       try _NamedCase(case: "unexpected").encode(to: encoder)
     }
@@ -59,6 +60,8 @@ extension AdminWindowFeature.State.HealthCheck.FilterStatus {
       self = .installTimeout
     case "notInstalled":
       self = .notInstalled
+    case "disabled":
+      self = .disabled
     case "unexpected":
       self = .unexpected
     default:
@@ -167,11 +170,6 @@ extension AdminWindowFeature.Action.View {
     var screen: AdminWindowFeature.Screen
   }
 
-  private struct _CaseReleaseChannelUpdated: Codable {
-    var `case` = "releaseChannelUpdated"
-    var channel: ReleaseChannel
-  }
-
   private struct _CaseSetUserExemption: Codable {
     var `case` = "setUserExemption"
     var userId: UInt32
@@ -186,22 +184,14 @@ extension AdminWindowFeature.Action.View {
       try _CaseAdvanced(action: action).encode(to: encoder)
     case .gotoScreenClicked(let screen):
       try _CaseGotoScreenClicked(screen: screen).encode(to: encoder)
-    case .releaseChannelUpdated(let channel):
-      try _CaseReleaseChannelUpdated(channel: channel).encode(to: encoder)
     case .setUserExemption(let userId, let enabled):
       try _CaseSetUserExemption(userId: userId, enabled: enabled).encode(to: encoder)
     case .closeWindow:
       try _NamedCase(case: "closeWindow").encode(to: encoder)
-    case .stopFilterClicked:
-      try _NamedCase(case: "stopFilterClicked").encode(to: encoder)
-    case .startFilterClicked:
-      try _NamedCase(case: "startFilterClicked").encode(to: encoder)
-    case .resumeFilterClicked:
-      try _NamedCase(case: "resumeFilterClicked").encode(to: encoder)
-    case .reinstallAppClicked:
-      try _NamedCase(case: "reinstallAppClicked").encode(to: encoder)
-    case .quitAppClicked:
-      try _NamedCase(case: "quitAppClicked").encode(to: encoder)
+    case .confirmStopFilterClicked:
+      try _NamedCase(case: "confirmStopFilterClicked").encode(to: encoder)
+    case .confirmQuitAppClicked:
+      try _NamedCase(case: "confirmQuitAppClicked").encode(to: encoder)
     case .reconnectUserClicked:
       try _NamedCase(case: "reconnectUserClicked").encode(to: encoder)
     case .administrateOSUserAccountsClicked:
@@ -228,24 +218,15 @@ extension AdminWindowFeature.Action.View {
     case "gotoScreenClicked":
       let value = try container.decode(_CaseGotoScreenClicked.self)
       self = .gotoScreenClicked(screen: value.screen)
-    case "releaseChannelUpdated":
-      let value = try container.decode(_CaseReleaseChannelUpdated.self)
-      self = .releaseChannelUpdated(channel: value.channel)
     case "setUserExemption":
       let value = try container.decode(_CaseSetUserExemption.self)
       self = .setUserExemption(userId: value.userId, enabled: value.enabled)
     case "closeWindow":
       self = .closeWindow
-    case "stopFilterClicked":
-      self = .stopFilterClicked
-    case "startFilterClicked":
-      self = .startFilterClicked
-    case "resumeFilterClicked":
-      self = .resumeFilterClicked
-    case "reinstallAppClicked":
-      self = .reinstallAppClicked
-    case "quitAppClicked":
-      self = .quitAppClicked
+    case "confirmStopFilterClicked":
+      self = .confirmStopFilterClicked
+    case "confirmQuitAppClicked":
+      self = .confirmQuitAppClicked
     case "reconnectUserClicked":
       self = .reconnectUserClicked
     case "administrateOSUserAccountsClicked":

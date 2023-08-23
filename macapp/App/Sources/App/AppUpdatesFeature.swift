@@ -6,11 +6,10 @@ import Gertie
 import MacAppRoute
 
 struct AppUpdatesFeature: Feature {
-
   struct State: Equatable {
     var installedVersion: String
     var releaseChannel: ReleaseChannel = .stable
-    var latestVersion: LatestAppVersion.Output?
+    var latestVersion: CheckIn.LatestRelease?
     var updateNagDismissedUntil: Date?
   }
 
@@ -20,15 +19,6 @@ struct AppUpdatesFeature: Feature {
       case postUpdateFilterReplaceFailed
     }
 
-    enum LatestVersionRequestSource: Equatable, Sendable {
-      case heartbeat
-      case healthCheck
-    }
-
-    case latestVersionResponse(
-      result: TaskResult<LatestAppVersion.Output>,
-      source: LatestVersionRequestSource
-    )
     case delegate(Delegate)
   }
 
@@ -63,6 +53,7 @@ extension AppUpdatesFeature.State {
 }
 
 extension AppUpdatesFeature.RootReducer: FilterControlling {
+
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .loadedPersistentState(.none):
@@ -90,10 +81,10 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
             } else {
 
               // refresh the rules post-update, or else health check will complain
-              await send(.user(.refreshRules(
-                result: TaskResult { try await api.refreshUserRules() },
-                userInitiated: false
-              )))
+              await send(.checkIn(
+                result: TaskResult { try await api.appCheckIn() },
+                reason: .appLaunched
+              ))
 
               // big sur doesn't get notification pushed when filter restarts
               // so check manually after attempting to replace the filter
@@ -107,24 +98,24 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     // don't need admin challenge, because sparkle can't update w/out admin auth
     case .adminWindow(.delegate(.triggerAppUpdate)),
          .adminWindow(.webview(.checkForAppUpdatesClicked)),
-         .adminWindow(.webview(.reinstallAppClicked)),
          .menuBar(.updateNagUpdateClicked),
          .menuBar(.updateRequiredUpdateClicked):
       state.adminWindow.windowOpen = false // so they can see sparkle update
       state.menuBar.dropdownOpen = false // dismiss menubar overlay nags
       let channel = state.appUpdates.releaseChannel
       let persist = state.persistent
-      let force = action == .adminWindow(.webview(.reinstallAppClicked)) ? true : nil
       return .exec { _ in
         if network.isConnected() {
-          try await triggerUpdate(channel, persist, force: force)
+          try await triggerUpdate(channel, persist)
         } else {
           await device.notifyNoInternet()
         }
       }
 
-    case .appUpdates(.latestVersionResponse(.success(let latest), let source)):
-      state.appUpdates.latestVersion = latest
+    // every 20 minutes we get updated latest version info from heartbeat check-in,
+    // but we want to prompt them to update at most every 6 hours
+    case .heartbeat(.everySixHours):
+      guard let latest = state.appUpdates.latestVersion else { return .none }
       let current = state.appUpdates.installedVersion
       let channel = state.appUpdates.releaseChannel
       let persist = state.persistent
@@ -136,7 +127,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         unexpectedError(id: "bbb7eeba")
       }
       return .exec { _ in
-        if source == .heartbeat, shouldUpdate {
+        if shouldUpdate {
           try await triggerUpdate(channel, persist)
         }
       }
@@ -146,26 +137,6 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         state.appUpdates.updateNagDismissedUntil = nil
       }
       return .none
-
-    case .heartbeat(.everySixHours):
-      let current = state.appUpdates.installedVersion
-      let channel = state.appUpdates.releaseChannel
-      return .exec { send in
-        guard network.isConnected() else { return }
-        await send(.appUpdates(.latestVersionResponse(
-          result: TaskResult { try await api.latestAppVersion(.init(
-            releaseChannel: channel,
-            currentVersion: current
-          )) },
-          source: .heartbeat
-        )))
-      }
-
-    case .adminWindow(.webview(.releaseChannelUpdated(let channel))):
-      state.appUpdates.releaseChannel = channel
-      return .exec { [updated = state.persistent] _ in
-        try await storage.savePersistentState(updated)
-      }
 
     case .adminWindow(.webview(.advanced(.forceUpdateToSpecificVersionClicked(let version)))):
       state.adminWindow.windowOpen = false // so they can see sparkle update
@@ -203,5 +174,9 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     let feedUrl = "\(updater.endpoint.absoluteString)\(query.urlString)"
     try await storage.savePersistentState(persist)
     try await updater.triggerUpdate(feedUrl)
+  }
+
+  func afterFilterChange(_ send: Send<Action>, repairing: Bool) async {
+    // noop. NB: providing this noop as a default protocol implementation caused problems
   }
 }

@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension UserDevice: Mock {
+extension UserDevice: RandomMocked {
   public static var mock: UserDevice {
     UserDevice(
       userId: .init(),

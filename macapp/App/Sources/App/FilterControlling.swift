@@ -11,14 +11,13 @@ protocol FilterControlling: RootReducing {
 }
 
 extension FilterControlling {
-  func afterFilterChange(_ send: Send<Action>, repairing: Bool = false) async {}
 
   func installFilter(_ send: Send<Action>) async throws {
     _ = await filter.install()
     try await mainQueue.sleep(for: .milliseconds(10))
     let result = await xpc.establishConnection()
     os_log("[G•] APP FilterControlling.installFilter() result: %{public}s", "\(result)")
-    await afterFilterChange(send)
+    await afterFilterChange(send, repairing: false)
   }
 
   func restartFilter(_ send: Send<Action>) async throws {
@@ -26,7 +25,15 @@ extension FilterControlling {
     try await mainQueue.sleep(for: .milliseconds(100))
     let result = await xpc.establishConnection()
     os_log("[G•] APP FilterControlling.restartFilter() result: %{public}s", "\(result)")
-    await afterFilterChange(send)
+    await afterFilterChange(send, repairing: false)
+  }
+
+  func startFilter(_ send: Send<Action>) async throws {
+    _ = await filter.start()
+    try await mainQueue.sleep(for: .milliseconds(100))
+    let result = await xpc.establishConnection()
+    os_log("[G•] APP FilterControlling.startFilter() result: %{public}s", "\(result)")
+    await afterFilterChange(send, repairing: false)
   }
 
   func replaceFilter(

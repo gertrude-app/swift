@@ -38,7 +38,7 @@ extension AppReducer.State {
       case .enteringConnectionCode:
         return .enteringConnectionCode
       case .established(let welcomeDismissed):
-        guard let user = user?.data else {
+        guard let user = user.data else {
           unexpectedError(id: "ad104cdc")
           return .connectionFailed(error: "Unexpected error, please reconnect")
         }

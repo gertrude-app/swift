@@ -7,7 +7,6 @@ let package = Package(
   products: [
     .library(name: "Duet", targets: ["Duet"]),
     .library(name: "DuetSQL", targets: ["DuetSQL"]),
-    .library(name: "DuetMock", targets: ["DuetMock"]),
   ],
   dependencies: [
     .package(path: "../x-kit"),
@@ -34,7 +33,6 @@ let package = Package(
         .product(name: "Tagged", package: "swift-tagged"),
       ]
     ),
-    .target(name: "DuetMock", dependencies: ["Duet"]),
     .testTarget(
       name: "DuetSQLTests",
       dependencies: ["DuetSQL", .product(name: "XExpect", package: "x-expect")]

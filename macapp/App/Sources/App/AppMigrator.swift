@@ -25,7 +25,7 @@ struct AppMigrator: Migrator {
 
     log("found v1 token `\(token)`")
     await api.setUserToken(token)
-    let user = try? await api.userData()
+    let user = (try? await api.appCheckIn())?.userData
     let v1Version = userDefaults.v1(.installedAppVersion) ?? "unknown"
 
     if let user {

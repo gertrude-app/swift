@@ -38,7 +38,7 @@ extension RefreshRules: Resolver {
       screenshotsFrequency: user.screenshotsFrequency,
       screenshotsResolution: user.screenshotsResolution,
       keys: keys.map { key in
-        Key(id: key.id.rawValue, key: key.key)
+        .init(id: key.id.rawValue, key: key.key)
       }
     )
   }

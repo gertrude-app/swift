@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension AppCategory: Mock {
+extension AppCategory: RandomMocked {
   public static var mock: AppCategory {
     AppCategory(name: "@mock name", slug: "mock-slug")
   }

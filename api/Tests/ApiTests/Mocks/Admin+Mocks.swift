@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension Admin: Mock {
+extension Admin: RandomMocked {
   public static var mock: Admin {
     Admin(email: "mock@mock.com", password: "@mock password")
   }

@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension AdminVerifiedNotificationMethod: Mock {
+extension AdminVerifiedNotificationMethod: RandomMocked {
   public static var mock: AdminVerifiedNotificationMethod {
     AdminVerifiedNotificationMethod(adminId: .init(), config: .mock)
   }
@@ -16,9 +16,13 @@ extension AdminVerifiedNotificationMethod: Mock {
   }
 }
 
-extension AdminVerifiedNotificationMethod.Config: Mock {
+extension AdminVerifiedNotificationMethod.Config: RandomMocked {
   public static var mock: Self {
     .email(email: "bob".random + "@example.com")
+  }
+
+  public static var empty: Self {
+    .slack(channelId: "", channelName: "", token: "")
   }
 
   public static var random: Self {
@@ -34,9 +38,5 @@ extension AdminVerifiedNotificationMethod.Config: Mock {
     default:
       return .text(phoneNumber: "555-555-" + "\(Int.random)")
     }
-  }
-
-  public static var empty: Self {
-    .slack(channelId: "", channelName: "", token: "")
   }
 }

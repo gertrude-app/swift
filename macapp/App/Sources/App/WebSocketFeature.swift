@@ -23,7 +23,7 @@ extension WebSocketFeature.RootReducer {
 
     case .heartbeat(.everyFiveMinutes):
       guard state.admin.accountStatus != .inactive else { return .none }
-      guard let user = state.user?.data else { return .none }
+      guard let user = state.user.data else { return .none }
       return .exec { [state] send in
         guard try await websocket.state() != .connected else {
           return
@@ -50,20 +50,20 @@ extension WebSocketFeature.RootReducer {
 
     case .application(.willSleep),
          .application(.willTerminate),
-         .adminAuthenticated(.adminWindow(.webview(.quitAppClicked))),
-         .adminAuthenticated(.adminWindow(.webview(.reconnectUserClicked))):
+         .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))),
+         .adminAuthed(.adminWindow(.webview(.reconnectUserClicked))):
       return .exec { _ in
         guard try await websocket.state() == .connected else { return }
         try await websocket.send(.goingOffline)
         try await websocket.disconnect()
       }
 
-    case .admin(.accountStatusResponse(.success(.inactive))):
+    case .checkIn(result: .success(let res), _) where res.adminAccountStatus == .inactive:
       return .exec { _ in
         try await websocket.disconnect()
       }
 
-    case .adminAuthenticated(.requestSuspension(.webview(.grantSuspensionClicked))),
+    case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked))),
          .websocket(.receivedMessage(.suspendFilter)):
       guard state.admin.accountStatus != .inactive else { return .none }
       return .exec { _ in
@@ -72,7 +72,7 @@ extension WebSocketFeature.RootReducer {
 
     case .application(.didWake):
       guard state.admin.accountStatus != .inactive else { return .none }
-      guard let user = state.user?.data else { return .none }
+      guard let user = state.user.data else { return .none }
       return connect(user)
 
     case .websocket(let websocketAction):
@@ -107,8 +107,8 @@ extension WebSocketFeature.RootReducer {
         return .none
       }
 
-    case .adminAuthenticated(.adminWindow(.webview(.advanced(.websocketEndpointSet(let url))))):
-      let user = state.user?.data
+    case .adminAuthed(.adminWindow(.webview(.advanced(.websocketEndpointSet(let url))))):
+      let user = state.user.data
       return .exec { send in
         await websocket.updateEndpointOverride(url)
         try await websocket.send(.goingOffline)

@@ -1,6 +1,7 @@
 import Foundation
 import PairQL
 
+/// in use: v2.0.0 - present
 public struct CreateSignedScreenshotUpload: Pair {
   public static let auth: ClientAuth = .user
 

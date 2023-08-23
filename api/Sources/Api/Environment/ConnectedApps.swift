@@ -31,37 +31,3 @@ extension ConnectedApps {
     )
   }
 }
-
-// legacy
-
-struct LegacyConnectedApps {
-  var add: (LegacyAppConnection) async -> Void
-  var remove: (LegacyAppConnection) async -> Void
-  var filterState: (UserDevice.Id) async -> FilterState?
-  var isUserDeviceOnline: (UserDevice.Id) async -> Bool
-  var notify: (AppEvent) async throws -> Void
-}
-
-extension LegacyConnectedApps {
-  static var live: Self {
-    let connections = LegacyAppConnections()
-    Task { await connections.start() }
-    return LegacyConnectedApps(
-      add: { await connections.add($0) },
-      remove: { await connections.remove($0) },
-      filterState: { await connections.filterState(for: $0) },
-      isUserDeviceOnline: { await connections.isUserDeviceOnline($0) },
-      notify: { try await connections.notify($0) }
-    )
-  }
-
-  static var mock: Self {
-    LegacyConnectedApps(
-      add: { _ in },
-      remove: { _ in },
-      filterState: { _ in nil },
-      isUserDeviceOnline: { _ in false },
-      notify: { _ in }
-    )
-  }
-}

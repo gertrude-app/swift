@@ -1,4 +1,3 @@
-import DuetMock
 import DuetSQL
 import MacAppRoute
 import XCTest
@@ -6,6 +5,7 @@ import XExpect
 
 @testable import Api
 
+// deprecated: when RefreshRules is removed, this file can be removed
 final class RefreshResolverTests: ApiTestCase {
 
   func testRefreshRules_UserProps() async throws {
@@ -56,24 +56,4 @@ final class RefreshResolverTests: ApiTestCase {
     let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
     expect(output.keys.contains(.init(id: autoKey.id.rawValue, key: autoKey.key))).toBeTrue()
   }
-}
-
-// helpers
-
-@discardableResult
-func createAutoIncludeKeychain() async throws -> (Keychain, Key) {
-  let admin = try await Entities.admin()
-  try await Current.db.query(Keychain.self)
-    .where(.name == "__auto_included__")
-    .delete()
-
-  let keychain = try await Current.db.create(Keychain(
-    authorId: admin.model.id,
-    name: "__auto_included__"
-  ))
-  let key = try await Current.db.create(Key(
-    keychainId: keychain.id,
-    key: .domain(domain: "foo.com", scope: .webBrowsers)
-  ))
-  return (keychain, key)
 }

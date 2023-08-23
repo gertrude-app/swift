@@ -55,9 +55,9 @@ public extension DependencyValues {
 }
 
 public extension ApiClient {
-  func refreshUserRules() async throws -> RefreshRules.Output {
+  func appCheckIn() async throws -> CheckIn.Output {
     @Dependency(\.app) var appClient
-    return try await refreshRules(
+    return try await checkIn(
       .init(appVersion: appClient.installedVersion() ?? "unknown")
     )
   }

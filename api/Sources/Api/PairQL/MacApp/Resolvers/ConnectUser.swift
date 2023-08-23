@@ -4,22 +4,83 @@ import Vapor
 
 extension ConnectUser: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    let v1 = try await ConnectApp.resolve(with: .init(
-      verificationCode: input.verificationCode,
-      appVersion: input.appVersion,
-      modelIdentifier: input.modelIdentifier,
-      username: input.username,
-      fullUsername: input.fullUsername,
-      numericId: input.numericId,
-      serialNumber: input.serialNumber
-    ), in: context)
+    guard let userId = await Current.ephemeral.getPendingAppConnection(input.verificationCode)
+    else { throw context.error(
+      id: "6e7fc234",
+      type: .unauthorized,
+      debugMessage: "ConnectApp verification code not found",
+      appTag: .connectionCodeNotFound
+    ) }
 
-    let user = try await Current.db.find(User.Id(v1.userId))
+    let userDevice: UserDevice
+    let user = try await Current.db.find(userId)
+
+    let adminDevice = try? await Current.db.query(Device.self)
+      .where(.serialNumber == input.serialNumber)
+      .first()
+
+    // there should only ever be a single gertrude user
+    // per computer + macOS user (represented by os user numeric id)
+    var existingUserDevice: UserDevice?
+    if let adminDevice {
+      existingUserDevice = try? await Current.db.query(UserDevice.self)
+        .where(.deviceId == adminDevice.id)
+        .where(.numericId == .int(input.numericId))
+        .first()
+    }
+
+    if let existingUserDevice {
+      // we get in here if the gertrude app was already installed for this macOS user
+      // at some point in the past, so we will update the UserDevice to be attached to this
+      // user, after double-checking below that the user belongs to the same admin acct
+
+      // sanity check - we only "transfer" a device, if the admin accounts match
+      let existingUser = try await existingUserDevice.user()
+      if existingUser.adminId != user.adminId {
+        throw Abort(.forbidden, reason: "Device already registered to another admin's user")
+      }
+
+      let oldUserId = existingUserDevice.userId
+      existingUserDevice.username = input.username
+      existingUserDevice.fullUsername = input.fullUsername
+      existingUserDevice.userId = user.id
+
+      // update the device to be attached to the user issuing this request
+      userDevice = try await Current.db.update(existingUserDevice)
+
+      try await Current.db.query(UserToken.self)
+        .where(.userDeviceId == userDevice.id)
+        .where(.userId == oldUserId)
+        .delete()
+
+    } else {
+      // create a brand new admin device for this user...
+      let adminDevice = try await Current.db.create(Device(
+        adminId: user.adminId,
+        modelIdentifier: input.modelIdentifier,
+        serialNumber: input.serialNumber
+      ))
+
+      // ...and create the user device
+      userDevice = try await Current.db.create(UserDevice(
+        userId: user.id,
+        deviceId: adminDevice.id,
+        appVersion: input.appVersion,
+        username: input.username,
+        fullUsername: input.fullUsername,
+        numericId: input.numericId
+      ))
+    }
+
+    let token = try await Current.db.create(UserToken(
+      userId: user.id,
+      userDeviceId: userDevice.id
+    ))
 
     return Output(
       id: user.id.rawValue,
-      token: v1.token,
-      deviceId: v1.deviceId,
+      token: token.value.rawValue,
+      deviceId: userDevice.id.rawValue,
       name: user.name,
       keyloggingEnabled: user.keyloggingEnabled,
       screenshotsEnabled: user.screenshotsEnabled,

@@ -1,8 +1,8 @@
-import DuetMock
+import Gertie
 
 @testable import Api
 
-extension IdentifiedApp: Mock {
+extension IdentifiedApp: RandomMocked {
   public static var mock: IdentifiedApp {
     IdentifiedApp(name: "@mock name", slug: "mock-slug", selectable: true)
   }

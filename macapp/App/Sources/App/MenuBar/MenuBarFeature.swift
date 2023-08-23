@@ -74,19 +74,19 @@ extension MenuBarFeature.RootReducer {
     case .menuBar(.quitForNowClicked):
       return adminAuthenticated(action)
 
-    case .adminAuthenticated(.menuBar(.quitForNowClicked)):
+    case .adminAuthed(.menuBar(.quitForNowClicked)):
       return .exec { _ in await app.quit() }
 
     case .menuBar(.removeFilterClicked):
       return adminAuthenticated(action)
 
-    case .adminAuthenticated(.menuBar(.removeFilterClicked)):
+    case .adminAuthed(.menuBar(.removeFilterClicked)):
       return .exec { _ in _ = await filter.uninstall() }
 
     case .menuBar(.quitForUninstallClicked):
       return adminAuthenticated(action)
 
-    case .adminAuthenticated(.menuBar(.quitForUninstallClicked)):
+    case .adminAuthed(.menuBar(.quitForUninstallClicked)):
       return .exec { _ in
         _ = await xpc.disconnectUser()
         _ = await filter.uninstall()

@@ -8,7 +8,34 @@ import XExpect
 @testable import App
 
 @MainActor final class FilterFeatureTests: XCTestCase {
-  func testManualAdminWindowSuspensionLifecycle() async {
+  func testResumeSuspension() async {
+    let (store, _) = AppReducer.testStore {
+      $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
+    }
+
+    let filterNotify = mock(once: Result<Void, XPCErr>.success(()))
+    store.deps.filterXpc.endFilterSuspension = filterNotify.fn
+    let notification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = notification.fn
+    let scheduler = DispatchQueue.test
+    store.deps.mainQueue = scheduler.eraseToAnyScheduler()
+    let quitBrowsers = mock(once: ())
+    store.deps.device.quitBrowsers = quitBrowsers.fn
+
+    await store.send(.menuBar(.resumeFilterClicked)) {
+      $0.filter.currentSuspensionExpiration = nil
+    }
+
+    await expect(filterNotify.invoked).toEqual(true)
+    await expect(notification.invocations.value[0].a).toContain("browsers quitting soon")
+
+    await scheduler.advance(by: 59)
+    await expect(quitBrowsers.invoked).toEqual(false)
+    await scheduler.advance(by: 1)
+    await expect(quitBrowsers.invoked).toEqual(true)
+  }
+
+  func testManualAdminSuspensionLifecycle() async {
     let store = TestStore(initialState: AppReducer.State()) { AppReducer() }
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))
     let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
@@ -21,9 +48,7 @@ import XExpect
 
     // receive a manual suspension
     await store.send(
-      .adminAuthenticated(
-        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
-      )
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
@@ -91,9 +116,7 @@ import XExpect
 
     // now, receive a MANUAL suspension
     await store.send(
-      .adminAuthenticated(
-        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
-      )
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
@@ -114,9 +137,7 @@ import XExpect
 
     // now, receive a SECOND MANUAL suspension, which stops timer
     await store.send(
-      .adminAuthenticated(
-        .requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))
-      )
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }

@@ -1,8 +1,8 @@
-import DuetMock
+import protocol Gertie.RandomMocked
 
 @testable import Api
 
-extension Key: Mock {
+extension Key: RandomMocked {
   public static var mock: Key {
     Key(keychainId: .init(), key: .mock)
   }

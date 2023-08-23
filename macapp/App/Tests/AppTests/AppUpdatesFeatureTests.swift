@@ -7,7 +7,7 @@ import XExpect
 @testable import App
 
 @MainActor final class AppUpdatesFeatureTests: XCTestCase {
-  func testReceivingLatestVersionSetsRequiredPace() async {
+  func testReceivingLatestVersionFromCheckInSetsLatestReleaseAndChannel() async {
     let (store, _) = AppReducer.testStore {
       $0.appUpdates.releaseChannel = .stable
       $0.appUpdates.installedVersion = "1.0.0"
@@ -15,7 +15,7 @@ import XExpect
     }
     store.deps.date = .constant(.epoch)
 
-    let response = LatestAppVersion.Output(
+    let latestRelease = CheckIn.LatestRelease(
       semver: "1.1.0",
       pace: .init(
         nagOn: .epoch.advanced(by: .days(10)),
@@ -23,11 +23,14 @@ import XExpect
       )
     )
 
-    await store.send(.appUpdates(.latestVersionResponse(
-      result: .success(response),
-      source: .heartbeat
-    ))) {
-      $0.appUpdates.latestVersion = response
+    let checkInRes = CheckIn.Output.mock {
+      $0.latestRelease = latestRelease
+      $0.updateReleaseChannel = .beta
+    }
+
+    await store.send(.checkIn(result: .success(checkInRes), reason: .heartbeat)) {
+      $0.appUpdates.latestVersion = latestRelease
+      $0.appUpdates.releaseChannel = .beta
     }
 
     await store.send(.menuBar(.updateNagDismissClicked)) {
@@ -71,7 +74,7 @@ import XExpect
           latestVersion: .init(
             semver: "1.1.0",
             pace: .init(
-              nagOn: .epoch.advanced(by: .days(15)), // <-- within nag period yet
+              nagOn: .epoch.advanced(by: .days(15)), // <-- within nag period
               requireOn: .epoch.advanced(by: .days(30))
             )
           )
@@ -84,11 +87,11 @@ import XExpect
           latestVersion: .init(
             semver: "1.1.0",
             pace: .init(
-              nagOn: .epoch.advanced(by: .days(15)), // <-- within nag period yet
+              nagOn: .epoch.advanced(by: .days(15)), // <-- within nag period...
               requireOn: .epoch.advanced(by: .days(30))
             )
           ),
-          updateNagDismissedUntil: .epoch.advanced(by: .days(21)) // <-- dismissed
+          updateNagDismissedUntil: .epoch.advanced(by: .days(21)) // <-- ...but dismissed
         ),
         .available
       ),
@@ -151,52 +154,46 @@ import XExpect
   }
 
   func testHeartbeatCheck_TriggersUpdateSavingStateWhenBehind() async {
-    let (store, scheduler) = AppReducer.testStore()
-    let latestAppVersion = spy(
-      on: LatestAppVersion.Input.self,
-      returning: LatestAppVersion.Output(semver: "3.9.99")
-    )
-    store.deps.api.latestAppVersion = latestAppVersion.fn
+    let (store, scheduler) = AppReducer.testStore {
+      $0.appUpdates.latestVersion = .init(semver: "3.9.0") // <-- update available
+    }
+
+    // every successful app check-in saves state, which complicates asserting that
+    // trigging an update also saves state, so disable all check-ins by throwing
+    store.deps.api.checkIn = { _ in throw TestErr("stop check-in") }
+
+    store.deps.storage.loadPersistentState = { .mock { $0.appUpdateReleaseChannel = .beta } }
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
     let triggerUpdate = spy(on: String.self, returning: ())
     store.deps.updater.triggerUpdate = triggerUpdate.fn
 
-    await store.send(.application(.didFinishLaunching))
+    await store.send(.application(.didFinishLaunching)) // <-- start the heartbeat
     await scheduler.advance(by: .seconds(60 * 60 * 6 - 1)) // one second before 6 hours
-    await expect(latestAppVersion.invoked).toEqual(false)
     await expect(saveState.invoked).toEqual(false)
     await expect(triggerUpdate.invoked).toEqual(false)
 
     await scheduler.advance(by: .seconds(1))
     await Task.repeatYield(count: IS_CI ? 60 : 25)
 
-    await expect(latestAppVersion.invoked).toEqual(true)
     await expect(saveState.invoked).toEqual(true)
     await expect(triggerUpdate.invocations)
-      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=stable"])
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta"])
   }
 
   func testHeartbeatCheck_DoesntTriggerUpdateWhenUpToDate() async {
     let (store, scheduler) = AppReducer.testStore()
-    store.deps.api.latestAppVersion = { _ in .init(semver: "1.0.0") } // <-- same as current
+
+    store.deps.api.checkIn = { _ in .mock {
+      $0.latestRelease = .init(semver: "1.0.0") // <-- same as current
+    } }
+
     let triggerUpdate = spy(on: String.self, returning: ())
     store.deps.updater.triggerUpdate = triggerUpdate.fn
 
-    await store.send(.application(.didFinishLaunching))
+    await store.send(.application(.didFinishLaunching)) // <-- start the heartbeat
     await scheduler.advance(by: .seconds(60 * 60 * 6))
 
     await expect(triggerUpdate.invoked).toEqual(false)
-  }
-
-  func testUpdatingReleaseChannelSetsStateAndSavesPersistent() async {
-    let (store, _) = AppReducer.testStore()
-    let saveState = spy(on: Persistent.State.self, returning: ())
-    store.deps.storage.savePersistentState = saveState.fn
-
-    await store.send(.adminWindow(.webview(.releaseChannelUpdated(channel: .beta)))) {
-      $0.appUpdates.releaseChannel = .beta
-    }
-    await expect(saveState.invoked).toEqual(true)
   }
 }

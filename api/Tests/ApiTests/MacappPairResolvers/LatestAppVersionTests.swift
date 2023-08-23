@@ -22,7 +22,6 @@ final class LatestAppVersionTests: ApiTestCase {
   }
 
   func testAppBehindOne() async throws {
-    try await Current.db.deleteAll(Release.self)
     try await createReleases([
       Release("1.0.0", pace: 10, createdAt: .epoch),
       Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),
@@ -44,7 +43,6 @@ final class LatestAppVersionTests: ApiTestCase {
   }
 
   func testAppBehindTwoUsesFirstPace() async throws {
-    try await Current.db.deleteAll(Release.self)
     try await createReleases([
       Release("1.0.0", pace: 10, createdAt: .epoch),
       Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),

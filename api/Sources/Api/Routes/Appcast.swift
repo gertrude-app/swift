@@ -41,6 +41,7 @@ func feedXml(for releases: [Release], force: Bool = false) -> String {
 
 extension Release {
   func sparkleItemXml(forceUpdate: Bool = false) -> String {
+    let description = notes.map { "\n  <description><![CDATA[\($0)]]></description>" } ?? ""
     let formatter = DateFormatter()
     formatter.timeZone = .init(abbreviation: "UTC")
     formatter.dateFormat = "E, d MMM yyyy HH:mm:ss Z"
@@ -56,7 +57,7 @@ extension Release {
         length="\(length)"
         type="application/octet-stream"
         sparkle:edSignature="\(signature)"
-      />
+      />\(description)
     </item>
     """
   }

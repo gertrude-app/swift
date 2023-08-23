@@ -65,3 +65,19 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
     return slugs
   }
 }
+
+#if DEBUG
+  extension AppIdManifest: Mocked {
+    public static var mock: AppIdManifest {
+      .init(
+        apps: ["xcode": ["com.apple.xcode"]],
+        displayNames: ["come.apple.xcode": "Xcode"],
+        categories: ["coding": ["xcode"]]
+      )
+    }
+
+    public static var empty: AppIdManifest {
+      .init()
+    }
+  }
+#endif
