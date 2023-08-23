@@ -6,7 +6,11 @@ import Dependencies
   for app in NSWorkspace.shared.runningApplications {
     guard let appName = app.localizedName else { continue }
     if browserNames.contains(appName) {
-      await terminate(app, on: mainQueue)
+      #if DEBUG
+        print("* (DEBUG) not terminating browser: `\(appName)`")
+      #else
+        await terminate(app, on: mainQueue)
+      #endif
     }
   }
 }
@@ -29,10 +33,15 @@ private func terminate(
 // so i can push hot-fixes to the list
 // https://github.com/gertrude-app/project/issues/157
 private let browserNames = [
+  "Arc",
+  "Brave Browser",
+  "Brave Browser Beta",
+  "Brave Browser Nightly",
   "Safari",
   "Google Chrome",
   "Google Chrome Beta",
   "Google Chrome Canary",
+  "Google Chrome for Testing",
   "Firefox",
   "Firefox Nightly",
   "Firefox Developer Edition",
