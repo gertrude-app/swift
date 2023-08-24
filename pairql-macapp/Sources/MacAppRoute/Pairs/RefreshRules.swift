@@ -7,7 +7,13 @@ import PairQL
 public struct RefreshRules: Pair {
   public static var auth: ClientAuth = .user
 
-  public typealias Input = CheckIn.Input
+  public struct Input: PairInput {
+    public var appVersion: String
+
+    public init(appVersion: String) {
+      self.appVersion = appVersion
+    }
+  }
 
   public struct Output: PairOutput {
     public var appManifest: AppIdManifest

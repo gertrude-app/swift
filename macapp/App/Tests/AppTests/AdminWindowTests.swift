@@ -25,7 +25,7 @@ import XExpect
     let filterNotify = mock(once: Result<Void, XPCErr>.success(()))
     store.deps.filterXpc.disconnectUser = filterNotify.fn
 
-    await store.send(.adminAuthed(.adminWindow(.webview(.reconnectUserClicked)))) {
+    await store.send(.adminAuthed(.adminWindow(.webview(.disconnectUserClicked)))) {
       $0.history.userConnection = .notConnected
       $0.user = .init()
       $0.adminWindow.windowOpen = false
@@ -37,6 +37,7 @@ import XExpect
     await expect(saveState.invocations).toEqual([.init(
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .stable,
+      filterVersion: "1.0.0",
       user: nil
     )])
   }

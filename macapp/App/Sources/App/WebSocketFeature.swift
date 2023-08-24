@@ -51,7 +51,7 @@ extension WebSocketFeature.RootReducer {
     case .application(.willSleep),
          .application(.willTerminate),
          .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))),
-         .adminAuthed(.adminWindow(.webview(.reconnectUserClicked))):
+         .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
       return .exec { _ in
         guard try await websocket.state() == .connected else { return }
         try await websocket.send(.goingOffline)

@@ -9,12 +9,28 @@ struct AppMigrator: Migrator {
   var context = "App"
 
   func migrateLastVersion() async -> Persistent.State? {
-    await migrateV1()
+    await migrateV2()
+  }
+
+  func migrateV2() async -> Persistent.V2? {
+    var v1 = try? userDefaults.getString(Persistent.V1.storageKey).flatMap { json in
+      try JSON.decode(json, as: Persistent.V1.self)
+    }
+    if v1 == nil {
+      v1 = await migrateV1()
+    }
+    guard let v1 else { return nil }
+    return .init(
+      appVersion: v1.appVersion,
+      appUpdateReleaseChannel: v1.appUpdateReleaseChannel,
+      filterVersion: v1.appVersion,
+      user: v1.user
+    )
   }
 
   // v1 below refers to legacy 1.x version of the app
   // before ComposableArchitecture rewrite
-  func migrateV1() async -> Persistent.State? {
+  func migrateV1() async -> Persistent.V1? {
     typealias V1 = Legacy.V1
 
     guard let token = userDefaults
@@ -25,12 +41,12 @@ struct AppMigrator: Migrator {
 
     log("found v1 token `\(token)`")
     await api.setUserToken(token)
-    let user = (try? await api.appCheckIn())?.userData
+    let user = (try? await api.appCheckIn(nil))?.userData
     let v1Version = userDefaults.v1(.installedAppVersion) ?? "unknown"
 
     if let user {
       log("migrated v1 state from successful user api call")
-      return Persistent.State(
+      return Persistent.V1(
         appVersion: v1Version,
         appUpdateReleaseChannel: .stable,
         user: user
@@ -53,7 +69,7 @@ struct AppMigrator: Migrator {
     let screenshotsSize = userDefaults.v1(.screenshotSize).flatMap(Int.init)
 
     log("migrated v1 state from fallback storage")
-    return Persistent.State(
+    return Persistent.V1(
       appVersion: v1Version,
       appUpdateReleaseChannel: .stable,
       user: UserData(

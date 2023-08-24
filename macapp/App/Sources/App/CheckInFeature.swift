@@ -15,19 +15,34 @@ extension CheckInFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .heartbeat(.everyTwentyMinutes):
-      return checkIn(reason: .heartbeat, notifyNoInternet: false)
+    case .heartbeat(.everyTwentyMinutes) where state.admin.accountStatus != .inactive:
+      return checkIn(
+        reason: .heartbeat,
+        filterVersion: state.filter.version,
+        notifyNoInternet: false
+      )
+
+    case .heartbeat(.everySixHours) where state.admin.accountStatus == .inactive:
+      return checkIn(
+        reason: .heartbeat,
+        filterVersion: state.filter.version,
+        notifyNoInternet: false
+      )
 
     case .menuBar(.refreshRulesClicked),
          .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))):
-      return checkIn(reason: .userRefreshedRules)
+      return checkIn(reason: .userRefreshedRules, filterVersion: state.filter.version)
 
     case .adminWindow(.webview(.inactiveAccountRecheckClicked)),
          .blockedRequests(.webview(.inactiveAccountRecheckClicked)),
          .requestSuspension(.webview(.inactiveAccountRecheckClicked)):
-      return checkIn(reason: .inactiveAccountRechecked)
+      return checkIn(reason: .inactiveAccountRechecked, filterVersion: state.filter.version)
 
     case .checkIn(.success(let output), let reason):
+      guard output.adminAccountStatus != .inactive else {
+        state.admin.accountStatus = output.adminAccountStatus
+        return .exec { _ in await api.setAccountActive(false) }
+      }
       let previousUserData = state.user.data
       state.user.data = output.userData
       state.user.numTimesUserTokenNotFound = 0
@@ -90,7 +105,11 @@ extension CheckInFeature.RootReducer {
     }
   }
 
-  func checkIn(reason: CheckIn.Reason, notifyNoInternet: Bool = true) -> Effect<Action> {
+  func checkIn(
+    reason: CheckIn.Reason,
+    filterVersion: String,
+    notifyNoInternet: Bool = true
+  ) -> Effect<Action> {
     .exec { send in
       if !network.isConnected() {
         if notifyNoInternet {
@@ -98,7 +117,7 @@ extension CheckInFeature.RootReducer {
         }
       } else {
         await send(.checkIn(
-          result: TaskResult { try await api.appCheckIn() },
+          result: TaskResult { try await api.appCheckIn(filterVersion) },
           reason: reason
         ))
       }

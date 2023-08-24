@@ -22,7 +22,7 @@ final class StorageClientTests: XCTestCase {
 
     let loaded = try await client.loadPersistentState()
     expect(loaded).toEqual(state)
-    expect(observedKey.value).toEqual("persistent.state.v1")
+    expect(observedKey.value).toEqual(Persistent.State.storageKey)
   }
 
   func testSavePersistentState() async throws {
@@ -39,7 +39,7 @@ final class StorageClientTests: XCTestCase {
 
     let state = Persistent.State.mock
     try await client.savePersistentState(state)
-    expect(observed.value.key).toEqual("persistent.state.v1")
+    expect(observed.value.key).toEqual(Persistent.State.storageKey)
     expect(observed.value.json).toEqual(try! JSON.encode(state))
   }
 }

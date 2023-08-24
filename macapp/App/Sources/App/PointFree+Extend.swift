@@ -1,6 +1,7 @@
 import ClientInterfaces
 import ComposableArchitecture
 import Foundation
+import os.log
 
 struct EquatableVoid: Equatable {}
 
@@ -52,10 +53,32 @@ public extension Effect {
       operation: operation,
       catch: { error, _ in
         let id = "exec--App_v\(app.installedVersion() ?? "unknown")--\(fileID):\(line)"
+        if shouldIgnoreError(error) {
+          #if !DEBUG
+            os_log("[G•] APP ignoring error `%{public}s` %{public}s", id, "\(error)")
+          #endif
+          return
+        }
         unexpectedError(id: id, error)
       },
       fileID: fileID,
       line: line
     )
   }
+}
+
+private func shouldIgnoreError(_ error: Error) -> Bool {
+  if let apiError = error as? ApiClient.Error, apiError == .accountInactive {
+    return true
+  }
+
+  let errorString = String(describing: error)
+  let ignoreFrags = ["The network connection was lost.", "The request timed out."]
+  for frag in ignoreFrags {
+    if errorString.contains(frag) {
+      return true
+    }
+  }
+
+  return false
 }

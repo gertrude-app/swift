@@ -10,8 +10,7 @@ public protocol Migrator {
 
 public extension Migrator {
   func migrate() async -> State? {
-    let key = "persistent.state.v\(State.version)"
-    let current = try? userDefaults.getString(key).flatMap { json in
+    let current = try? userDefaults.getString(State.storageKey).flatMap { json in
       try JSON.decode(json, as: State.self)
     }
     if let current {
@@ -19,10 +18,10 @@ public extension Migrator {
       return current
     } else if let migrated = await migrateLastVersion() {
       log("migrated from prior state, \(String(describing: migrated))")
-      (try? JSON.encode(migrated)).map { userDefaults.setString(key, $0) }
+      (try? JSON.encode(migrated)).map { userDefaults.setString(State.storageKey, $0) }
       return migrated
     } else {
-      log("no state found, or migration succeeded")
+      log("no state found, or no migration succeeded")
       return nil
     }
   }

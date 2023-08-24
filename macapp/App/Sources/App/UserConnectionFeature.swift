@@ -50,7 +50,7 @@ extension UserConnectionFeature.Reducer {
 extension UserConnectionFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-    case .adminAuthed(.adminWindow(.webview(.reconnectUserClicked))):
+    case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
       state.user = .init()
       state.history.userConnection = .notConnected
       state.adminWindow.windowOpen = false

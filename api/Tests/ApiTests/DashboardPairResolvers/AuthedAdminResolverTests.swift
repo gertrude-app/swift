@@ -215,6 +215,16 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(retrieved).toBeNil()
   }
 
+  func testDeletingUserDeletesOrphanedDevice() async throws {
+    let user = try await Entities.user().withDevice()
+    _ = try await DeleteEntity.resolve(
+      with: .init(id: user.id.rawValue, type: .user),
+      in: context(user.admin)
+    )
+    let retrieved = try? await Device.find(user.adminDevice.id)
+    expect(retrieved).toBeNil()
+  }
+
   func testUpdateAdminNotification() async throws {
     let admin = try await Entities.admin()
     let email = try await Current.db.create(AdminVerifiedNotificationMethod(

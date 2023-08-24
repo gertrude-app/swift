@@ -56,7 +56,7 @@ extension ApiClient: EndpointOverridable {
 }
 
 public extension ApiClient {
-  enum Error: Swift.Error {
+  enum Error: Swift.Error, Equatable {
     case accountInactive
     case missingUserToken
     case missingDataOrResponse
@@ -66,9 +66,9 @@ public extension ApiClient {
 
 extension ApiClient: TestDependencyKey {
   public static let testValue = Self(
-    checkIn: { _ in .mock },
+    checkIn: { _ in throw Error.unexpectedError(statusCode: 999) },
     clearUserToken: {},
-    connectUser: { _ in .mock },
+    connectUser: { _ in throw Error.unexpectedError(statusCode: 888) },
     createKeystrokeLines: { _ in },
     createSuspendFilterRequest: { _ in },
     createUnlockRequests: { _ in },

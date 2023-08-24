@@ -7,11 +7,14 @@ import TaggedTime
 struct FilterFeature: Feature {
   struct State: Equatable {
     var currentSuspensionExpiration: Date?
-    var `extension`: FilterExtensionState = .unknown
+    var `extension`: FilterExtensionState
+    var version: String
   }
 
   enum Action: Equatable, Sendable {
     case receivedState(FilterExtensionState)
+    case receivedVersion(String)
+    case replacedFilterVersion(String)
   }
 
   struct Reducer: FeatureReducer {
@@ -19,6 +22,11 @@ struct FilterFeature: Feature {
       switch action {
       case .receivedState(let extensionState):
         state.extension = extensionState
+        return .none
+
+      case .receivedVersion(let version),
+           .replacedFilterVersion(let version):
+        state.version = version
         return .none
       }
     }
@@ -35,6 +43,17 @@ struct FilterFeature: Feature {
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.websocket) var websocket
+  }
+}
+
+extension FilterFeature.State {
+  init() {
+    @Dependency(\.app) var appClient
+    self.init(
+      currentSuspensionExpiration: nil,
+      extension: .unknown,
+      version: appClient.installedVersion() ?? "unknown"
+    )
   }
 }
 
@@ -56,11 +75,14 @@ extension FilterFeature.RootReducer {
       return .none
 
     case .heartbeat(.everyFiveMinutes):
-      return .exec { _ in
+      return .exec { send in
         let filter = await filterExtension.state()
+        guard filter.isXpcReachable else { return }
         // attempt to reconnect, if necessary
-        if filter.isXpcReachable, await xpc.connected() == false {
+        if await xpc.connected() == false {
           _ = await xpc.establishConnection()
+        } else if case .success(let acc) = await xpc.requestAck() {
+          await send(.filter(.receivedVersion(acc.version)))
         }
       }
 

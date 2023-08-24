@@ -65,10 +65,19 @@ extension DeleteEntity: Resolver {
         .delete()
 
     case .user:
-      try await Current.db.query(User.self)
+      let deviceIds = try await context.userDevices().map(\.deviceId)
+      try await User.query()
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .delete(force: true)
+      let devices = try await Device.query()
+        .where(.id |=| deviceIds)
+        .all()
+      for device in devices {
+        if try await device.userDevices().isEmpty {
+          try await Current.db.delete(device.id)
+        }
+      }
       try await Current.connectedApps.notify(.userDeleted(.init(input.id)))
     }
 

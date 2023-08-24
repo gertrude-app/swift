@@ -69,7 +69,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         .exec { [updated = state.persistent] _ in
           try await storage.savePersistentState(updated)
         },
-        .exec { send in
+        .exec { [version = state.appUpdates.installedVersion] send in
           switch await filter.state() {
           case .notInstalled:
             await send(.appUpdates(.delegate(.postUpdateFilterNotInstalled)))
@@ -79,10 +79,11 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
               await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
               unexpectedError(id: "cde231a0", detail: "state: \(await filter.state())")
             } else {
+              await send(.filter(.replacedFilterVersion(version)))
 
               // refresh the rules post-update, or else health check will complain
               await send(.checkIn(
-                result: TaskResult { try await api.appCheckIn() },
+                result: TaskResult { try await api.appCheckIn(version) },
                 reason: .appLaunched
               ))
 
@@ -97,7 +98,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
 
     // don't need admin challenge, because sparkle can't update w/out admin auth
     case .adminWindow(.delegate(.triggerAppUpdate)),
-         .adminWindow(.webview(.checkForAppUpdatesClicked)),
+         .adminWindow(.webview(.updateAppNowClicked)),
          .menuBar(.updateNagUpdateClicked),
          .menuBar(.updateRequiredUpdateClicked):
       state.adminWindow.windowOpen = false // so they can see sparkle update

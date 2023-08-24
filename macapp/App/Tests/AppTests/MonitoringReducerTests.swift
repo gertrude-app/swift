@@ -290,7 +290,7 @@ import XExpect
     await expect(keylogging.upload.invocations.value.count).toEqual(1)
 
     // send disconnect
-    await store.send(.adminAuthed(.adminWindow(.webview(.reconnectUserClicked))))
+    await store.send(.adminAuthed(.adminWindow(.webview(.disconnectUserClicked))))
     await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
 
     // no new invocations for any of these...

@@ -57,7 +57,7 @@ extension MonitoringFeature.RootReducer {
     case .application(.willTerminate):
       return .cancel(id: CancelId.screenshots)
 
-    case .adminAuthed(.adminWindow(.webview(.reconnectUserClicked))):
+    case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
       return .cancel(id: CancelId.screenshots)
 
     // try to catch the moment when they've fixed monitoring permissions issues

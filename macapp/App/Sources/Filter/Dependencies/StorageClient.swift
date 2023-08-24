@@ -17,7 +17,7 @@ extension StorageClient: DependencyKey {
     @Dependency(\.userDefaults) var userDefaults
     @Sendable func loadSync() throws -> Persistent.State? {
       try userDefaults.loadJson(
-        at: Persistent.State.currentStorageKey,
+        at: Persistent.State.storageKey,
         decoding: Persistent.State.self
       )
     }
@@ -25,7 +25,7 @@ extension StorageClient: DependencyKey {
       savePersistentState: { state in
         try userDefaults.saveJson(
           from: state,
-          at: Persistent.State.currentStorageKey
+          at: Persistent.State.storageKey
         )
       },
       loadPersistentState: {
@@ -36,7 +36,7 @@ extension StorageClient: DependencyKey {
         try loadSync()
       },
       deleteAllPersistentState: {
-        userDefaults.remove(Persistent.State.currentStorageKey)
+        userDefaults.remove(Persistent.State.storageKey)
       },
       deleteAll: {
         userDefaults.removeAll()
