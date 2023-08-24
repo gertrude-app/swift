@@ -8,9 +8,11 @@ public struct CheckIn: Pair {
 
   public struct Input: PairInput {
     public var appVersion: String
+    public var filterVersion: String?
 
-    public init(appVersion: String) {
+    public init(appVersion: String, filterVersion: String?) {
       self.appVersion = appVersion
+      self.filterVersion = filterVersion
     }
   }
 

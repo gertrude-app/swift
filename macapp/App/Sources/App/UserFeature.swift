@@ -24,9 +24,9 @@ extension UserFeature.RootReducer: RootReducing {
     // these websocket messages mean we need to check back in for updated data
     case .websocket(.receivedMessage(.userUpdated)),
          .websocket(.receivedMessage(.unlockRequestUpdated(.accepted, _, _))):
-      return .exec { send in
+      return .exec { [filterVersion = state.filter.version] send in
         await send(.checkIn(
-          result: TaskResult { try await api.appCheckIn() },
+          result: TaskResult { try await api.appCheckIn(filterVersion) },
           reason: .receivedWebsocketMessage
         ))
       }

@@ -143,7 +143,7 @@ import XExpect
       .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=stable"])
   }
 
-  func testTriggeredUpdateSavesToCorrectChannel() async {
+  func testTriggeredUpdateChecksCorrectChannel() async {
     let (store, _) = AppReducer.testStore { $0.appUpdates.releaseChannel = .beta }
     let triggerUpdate = spy(on: String.self, returning: ())
     store.deps.updater.triggerUpdate = triggerUpdate.fn

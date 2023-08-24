@@ -28,10 +28,57 @@ class AppMigratorTests: XCTestCase {
     migrator.userDefaults.getString = getString.fn
     let result = await migrator.migrate()
     expect(result).toEqual(.mock)
-    expect(getString.invocations.value).toEqual(["persistent.state.v1"])
+    expect(getString.invocations.value).toEqual([Persistent.State.storageKey])
   }
 
-  func testMigratesV1DataFromApiCallSuccess() async {
+  func testMigratesV1Data() async {
+    var migrator = testMigrator
+
+    let setStringInvocations = LockIsolated<[Both<String, String>]>([])
+    migrator.userDefaults.setString = { key, value in
+      setStringInvocations.append(.init(key, value))
+    }
+
+    let getStringInvocations = LockIsolated<[String]>([])
+    migrator.userDefaults.getString = { key in
+      getStringInvocations.append(key)
+      switch key {
+      case "persistent.state.v2":
+        return nil
+      case "persistent.state.v1":
+        return try! JSON.encode(Persistent.V1(
+          appVersion: "2.0.2",
+          appUpdateReleaseChannel: .stable,
+          user: .empty
+        ))
+      default:
+        XCTFail("Unexpected key: \(key)")
+        return nil
+      }
+    }
+
+    let result = await migrator.migrate()
+    expect(getStringInvocations.value).toEqual(["persistent.state.v2", "persistent.state.v1"])
+    expect(result).toEqual(.init(
+      appVersion: "2.0.2",
+      appUpdateReleaseChannel: .stable,
+      filterVersion: "2.0.2",
+      user: .empty
+    ))
+    expect(setStringInvocations.value).toEqual([
+      Both(
+        "persistent.state.v2",
+        try! JSON.encode(Persistent.V2(
+          appVersion: "2.0.2",
+          appUpdateReleaseChannel: .stable,
+          filterVersion: "2.0.2", // <-- transferred
+          user: .empty
+        ))
+      ),
+    ])
+  }
+
+  func testMigratesLegacyV1DataFromApiCallSuccess() async {
     var migrator = testMigrator
 
     let apiUser = UserData(
@@ -66,6 +113,8 @@ class AppMigratorTests: XCTestCase {
       switch key {
       case "persistent.state.v1":
         return nil
+      case "persistent.state.v2":
+        return nil
       case V1.userToken.namespaced:
         return UUID.deadbeef.uuidString
       case V1.installedAppVersion.namespaced:
@@ -80,6 +129,7 @@ class AppMigratorTests: XCTestCase {
     await expect(setApiToken.invocations).toEqual([.deadbeef])
     expect(await checkIn.invocations.value).toHaveCount(1)
     expect(getStringInvocations.value).toEqual([
+      "persistent.state.v2",
       "persistent.state.v1",
       V1.userToken.namespaced,
       V1.installedAppVersion.namespaced,
@@ -87,19 +137,23 @@ class AppMigratorTests: XCTestCase {
     expect(result).toEqual(.init(
       appVersion: "1.77.88",
       appUpdateReleaseChannel: .stable,
+      filterVersion: "1.77.88",
       user: apiUser
     ))
-    expect(setStringInvocations.value).toEqual([Both(
-      "persistent.state.v1",
-      try! JSON.encode(Persistent.State(
-        appVersion: "1.77.88",
-        appUpdateReleaseChannel: .stable,
-        user: apiUser
-      ))
-    )])
+    expect(setStringInvocations.value).toEqual([
+      Both(
+        "persistent.state.v2",
+        try! JSON.encode(Persistent.V2(
+          appVersion: "1.77.88",
+          appUpdateReleaseChannel: .stable,
+          filterVersion: "1.77.88",
+          user: apiUser
+        ))
+      ),
+    ])
   }
 
-  func testMigratesV1DataWhenApiCallFails() async {
+  func testMigratesLegacyV1DataWhenApiCallFails() async {
     var migrator = testMigrator
 
     // simulate that we can't fetch the user from the api
@@ -119,6 +173,8 @@ class AppMigratorTests: XCTestCase {
       getStringInvocations.append(key)
       switch key {
       case "persistent.state.v1":
+        return nil
+      case "persistent.state.v2":
         return nil
       case V1.userToken.namespaced:
         return UUID.ones.uuidString
@@ -157,6 +213,7 @@ class AppMigratorTests: XCTestCase {
 
     await expect(setApiToken.invocations).toEqual([.ones])
     expect(getStringInvocations.value).toEqual([
+      "persistent.state.v2",
       "persistent.state.v1",
       V1.userToken.namespaced,
       V1.installedAppVersion.namespaced,
@@ -170,13 +227,15 @@ class AppMigratorTests: XCTestCase {
     expect(result).toEqual(.init(
       appVersion: "1.77.88",
       appUpdateReleaseChannel: .stable,
+      filterVersion: "1.77.88",
       user: expectedUser
     ))
     expect(setStringInvocations.value).toEqual([Both(
-      "persistent.state.v1",
-      try! JSON.encode(Persistent.State(
+      "persistent.state.v2",
+      try! JSON.encode(Persistent.V2(
         appVersion: "1.77.88",
         appUpdateReleaseChannel: .stable,
+        filterVersion: "1.77.88",
         user: expectedUser
       ))
     )])

@@ -55,10 +55,13 @@ public extension DependencyValues {
 }
 
 public extension ApiClient {
-  func appCheckIn() async throws -> CheckIn.Output {
+  func appCheckIn(_ filterVersion: String?) async throws -> CheckIn.Output {
     @Dependency(\.app) var appClient
     return try await checkIn(
-      .init(appVersion: appClient.installedVersion() ?? "unknown")
+      .init(
+        appVersion: appClient.installedVersion() ?? "unknown",
+        filterVersion: filterVersion
+      )
     )
   }
 }

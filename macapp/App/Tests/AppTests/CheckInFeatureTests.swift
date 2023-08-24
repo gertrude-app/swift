@@ -56,6 +56,7 @@ import XExpect
     await expect(saveState.invocations).toEqual([.init(
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .canary,
+      filterVersion: "1.0.0",
       user: checkInResult.userData
     )])
   }

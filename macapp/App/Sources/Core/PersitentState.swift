@@ -3,5 +3,5 @@ public protocol PersistentState: Codable, Equatable {
 }
 
 public extension PersistentState {
-  static var currentStorageKey: String { "persistent.state.v\(version)" }
+  static var storageKey: String { "persistent.state.v\(version)" }
 }

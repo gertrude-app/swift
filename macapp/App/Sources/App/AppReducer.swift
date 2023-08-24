@@ -60,13 +60,14 @@ struct AppReducer: Reducer, Sendable {
       switch action {
       case .loadedPersistentState(.some(let persistent)):
         state.appUpdates.releaseChannel = persistent.appUpdateReleaseChannel
+        state.filter.version = persistent.filterVersion
         guard let user = persistent.user else { return .none }
         state.user = .init(data: user)
-        return .exec { send in
+        return .exec { [filterVersion = state.filter.version] send in
           await api.setUserToken(user.token)
           try await bgQueue.sleep(for: .milliseconds(10)) // <- unit test determinism
           return await send(.checkIn(
-            result: TaskResult { try await api.appCheckIn() },
+            result: TaskResult { try await api.appCheckIn(filterVersion) },
             reason: .appLaunched
           ))
         }

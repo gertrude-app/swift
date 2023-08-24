@@ -35,6 +35,27 @@ import XExpect
     await expect(quitBrowsers.invoked).toEqual(true)
   }
 
+  func testHeartbeatUpdatesFilterVersionIfPossible() async {
+    let (store, _) = AppReducer.testStore {
+      $0.filter.version = "1.3.3" // <-- out of date
+    }
+
+    store.deps.filterExtension.state = { .installedAndRunning }
+    store.deps.filterXpc.checkConnectionHealth = { .success(()) }
+    store.deps.filterXpc.requestAck = { .success(.init(
+      randomInt: 333,
+      version: "1.3.4", // <-- filter version from ack
+      userId: 502,
+      numUserKeys: 33
+    )) }
+
+    await store.send(.heartbeat(.everyFiveMinutes))
+
+    await store.receive(.filter(.receivedVersion("1.3.4"))) {
+      $0.filter.version = "1.3.4"
+    }
+  }
+
   func testManualAdminSuspensionLifecycle() async {
     let store = TestStore(initialState: AppReducer.State()) { AppReducer() }
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))
@@ -79,10 +100,9 @@ import XExpect
   }
 
   func testReceivingSuspensionDuring60SecondCountdownCancelsTimer() async {
-    let store = TestStore(initialState: AppReducer.State(filter: .init(
-      // start with 30 second suspension
-      currentSuspensionExpiration: Date(timeIntervalSince1970: 30)
-    )), reducer: AppReducer.init)
+    let (store, _) = AppReducer.testStore {
+      $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
+    }
 
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))
     let scheduler = DispatchQueue.test

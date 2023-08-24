@@ -3,7 +3,7 @@ import MacAppRoute
 
 extension CheckIn: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
-    async let v1 = RefreshRules.resolve(with: input, in: context)
+    async let v1 = RefreshRules.resolve(with: .init(appVersion: input.appVersion), in: context)
     async let admin = context.user.admin()
     async let userDevice = context.userDevice()
     let channel = try await userDevice.adminDevice().appReleaseChannel
@@ -11,6 +11,9 @@ extension CheckIn: Resolver {
       with: .init(releaseChannel: channel, currentVersion: input.appVersion),
       in: .init(requestId: context.requestId, dashboardUrl: context.dashboardUrl)
     )
+
+    // TODO: use `input.filterVersion`
+    // https://github.com/gertrude-app/project/issues/185
 
     return Output(
       adminAccountStatus: try await admin.accountStatus,

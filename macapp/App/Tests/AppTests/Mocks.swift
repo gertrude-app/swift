@@ -25,14 +25,29 @@ public extension CreateKeystrokeLines.KeystrokeLineInput {
 
 extension Persistent.State: Mocked {
   public static var mock: Self {
-    .init(appVersion: "1.0.0", appUpdateReleaseChannel: .stable, user: .mock)
+    .init(
+      appVersion: "1.0.0",
+      appUpdateReleaseChannel: .stable,
+      filterVersion: "1.0.0",
+      user: .mock
+    )
   }
 
   public static var empty: Self {
-    .init(appVersion: "", appUpdateReleaseChannel: .stable, user: .empty)
+    .init(
+      appVersion: "",
+      appUpdateReleaseChannel: .stable,
+      filterVersion: "",
+      user: .empty
+    )
   }
 
   static var needsAppUpdate: Self {
-    .init(appVersion: "0.9.9", appUpdateReleaseChannel: .stable, user: .mock)
+    .init(
+      appVersion: "0.9.9",
+      appUpdateReleaseChannel: .stable,
+      filterVersion: "0.9.9",
+      user: .mock
+    )
   }
 }

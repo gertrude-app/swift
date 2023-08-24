@@ -450,6 +450,7 @@ extension AdminWindowFeature.RootReducer {
 
   func checkHealth(state: inout State, action: Action) -> Effect<Action> {
     state.adminWindow.healthCheck = .init() // put all checks into checking state
+    let filterVersion = state.filter.version
     let keyloggingEnabled = state.user.data?.keyloggingEnabled == true
     let screenRecordingEnabled = state.user.data?.screenshotsEnabled == true
 
@@ -458,7 +459,7 @@ extension AdminWindowFeature.RootReducer {
 
       await send(.checkIn(
         result: network.isConnected()
-          ? TaskResult { try await api.appCheckIn() }
+          ? TaskResult { try await api.appCheckIn(filterVersion) }
           : .failure(NetworkClient.NotConnected()),
         reason: .healthCheck
       ))
