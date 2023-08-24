@@ -66,9 +66,9 @@ public extension ApiClient {
 
 extension ApiClient: TestDependencyKey {
   public static let testValue = Self(
-    checkIn: { _ in .mock },
+    checkIn: { _ in throw Error.unexpectedError(statusCode: 999) },
     clearUserToken: {},
-    connectUser: { _ in .mock },
+    connectUser: { _ in throw Error.unexpectedError(statusCode: 888) },
     createKeystrokeLines: { _ in },
     createSuspendFilterRequest: { _ in },
     createUnlockRequests: { _ in },
