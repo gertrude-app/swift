@@ -192,12 +192,12 @@ extension AdminWindowFeature.Action.View {
       try _NamedCase(case: "confirmStopFilterClicked").encode(to: encoder)
     case .confirmQuitAppClicked:
       try _NamedCase(case: "confirmQuitAppClicked").encode(to: encoder)
-    case .reconnectUserClicked:
-      try _NamedCase(case: "reconnectUserClicked").encode(to: encoder)
+    case .disconnectUserClicked:
+      try _NamedCase(case: "disconnectUserClicked").encode(to: encoder)
     case .administrateOSUserAccountsClicked:
       try _NamedCase(case: "administrateOSUserAccountsClicked").encode(to: encoder)
-    case .checkForAppUpdatesClicked:
-      try _NamedCase(case: "checkForAppUpdatesClicked").encode(to: encoder)
+    case .updateAppNowClicked:
+      try _NamedCase(case: "updateAppNowClicked").encode(to: encoder)
     case .inactiveAccountRecheckClicked:
       try _NamedCase(case: "inactiveAccountRecheckClicked").encode(to: encoder)
     case .inactiveAccountDisconnectAppClicked:
@@ -227,12 +227,12 @@ extension AdminWindowFeature.Action.View {
       self = .confirmStopFilterClicked
     case "confirmQuitAppClicked":
       self = .confirmQuitAppClicked
-    case "reconnectUserClicked":
-      self = .reconnectUserClicked
+    case "disconnectUserClicked":
+      self = .disconnectUserClicked
     case "administrateOSUserAccountsClicked":
       self = .administrateOSUserAccountsClicked
-    case "checkForAppUpdatesClicked":
-      self = .checkForAppUpdatesClicked
+    case "updateAppNowClicked":
+      self = .updateAppNowClicked
     case "inactiveAccountRecheckClicked":
       self = .inactiveAccountRecheckClicked
     case "inactiveAccountDisconnectAppClicked":

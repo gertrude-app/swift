@@ -117,9 +117,9 @@ struct AdminWindowFeature: Feature {
       case gotoScreenClicked(screen: Screen)
       case confirmStopFilterClicked
       case confirmQuitAppClicked
-      case reconnectUserClicked
+      case disconnectUserClicked
       case administrateOSUserAccountsClicked
-      case checkForAppUpdatesClicked
+      case updateAppNowClicked
       case setUserExemption(userId: uid_t, enabled: Bool)
       case inactiveAccountRecheckClicked
       case inactiveAccountDisconnectAppClicked
@@ -303,7 +303,7 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.healthCheck(.upgradeAppClicked)):
         return adminAuthenticated(action)
 
-      case .webview(.checkForAppUpdatesClicked):
+      case .webview(.updateAppNowClicked):
         return .none // handled by AppUpdatesFeature
 
       case .webview(.confirmQuitAppClicked):
@@ -312,7 +312,7 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.confirmStopFilterClicked):
         return adminAuthenticated(action)
 
-      case .webview(.reconnectUserClicked):
+      case .webview(.disconnectUserClicked):
         return adminAuthenticated(action)
 
       case .webview(.setUserExemption):
@@ -394,7 +394,7 @@ extension AdminWindowFeature.RootReducer {
           await app.quit()
         }
 
-      case .webview(.reconnectUserClicked):
+      case .webview(.disconnectUserClicked):
         // handled by UserConnectionFeature
         return .none
 

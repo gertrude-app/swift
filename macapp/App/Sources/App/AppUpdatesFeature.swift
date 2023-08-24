@@ -97,7 +97,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
 
     // don't need admin challenge, because sparkle can't update w/out admin auth
     case .adminWindow(.delegate(.triggerAppUpdate)),
-         .adminWindow(.webview(.checkForAppUpdatesClicked)),
+         .adminWindow(.webview(.updateAppNowClicked)),
          .menuBar(.updateNagUpdateClicked),
          .menuBar(.updateRequiredUpdateClicked):
       state.adminWindow.windowOpen = false // so they can see sparkle update
