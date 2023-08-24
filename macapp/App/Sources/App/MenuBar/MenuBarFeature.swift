@@ -52,6 +52,7 @@ extension MenuBarFeature.Reducer {
     case .refreshRulesClicked,
          .administrateClicked,
          .viewNetworkTrafficClicked,
+         .turnOnFilterClicked,
          .suspendFilterClicked:
       state.dropdownOpen = false
       return .none
