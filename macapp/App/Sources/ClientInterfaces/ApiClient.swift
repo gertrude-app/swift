@@ -56,7 +56,7 @@ extension ApiClient: EndpointOverridable {
 }
 
 public extension ApiClient {
-  enum Error: Swift.Error {
+  enum Error: Swift.Error, Equatable {
     case accountInactive
     case missingUserToken
     case missingDataOrResponse

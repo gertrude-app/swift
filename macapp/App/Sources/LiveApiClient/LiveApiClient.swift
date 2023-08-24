@@ -7,8 +7,7 @@ import MacAppRoute
 extension ApiClient: DependencyKey {
   public static let liveValue = Self(
     checkIn: { input in
-      guard await accountActive.value else { throw Error.accountInactive }
-      return try await output(
+      try await output(
         from: CheckIn.self,
         with: .checkIn(input)
       )

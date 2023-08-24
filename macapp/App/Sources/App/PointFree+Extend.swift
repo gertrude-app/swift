@@ -51,6 +51,9 @@ public extension Effect {
       priority: priority,
       operation: operation,
       catch: { error, _ in
+        if let apiError = error as? ApiClient.Error, apiError == .accountInactive {
+          return // don't report account inactive errors
+        }
         let id = "exec--App_v\(app.installedVersion() ?? "unknown")--\(fileID):\(line)"
         unexpectedError(id: id, error)
       },

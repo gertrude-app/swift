@@ -132,4 +132,52 @@ import XExpect
       "Please try again, or contact support if the problem persists."
     )])
   }
+
+  func testCheckingInAndInactiveAccounts() async {
+    let (store, _) = AppReducer.testStore {
+      $0.filter.extension = .installedAndRunning
+      $0.admin.accountStatus = .inactive
+      $0.user.data = .mock { $0.name = "old name" }
+    }
+
+    let setAccountActive = spy(on: Bool.self, returning: ())
+    store.deps.api.setAccountActive = setAccountActive.fn
+    store.deps.filterXpc.sendUserRules = { _, _ in fatalError() }
+
+    let output1 = CheckIn.Output.mock {
+      $0.adminAccountStatus = .inactive
+      $0.userData.name = "new name"
+    }
+    let checkIn1 = spy(on: CheckIn.Input.self, returning: output1)
+    store.deps.api.checkIn = checkIn1.fn
+
+    await store.send(.heartbeat(.everyTwentyMinutes))
+    await expect(checkIn1.invoked).toEqual(false)
+
+    await store.send(.heartbeat(.everySixHours))
+    await expect(checkIn1.invoked).toEqual(true)
+
+    // we don't update anything if the account is inactive
+    await store.receive(.checkIn(result: .success(output1), reason: .heartbeat)) {
+      $0.user.data?.name = "old name"
+    }
+    await expect(setAccountActive.invocations).toEqual([false])
+
+    // now, simulate the account owner fixing the issue
+    let output2 = CheckIn.Output.mock {
+      $0.adminAccountStatus = .active // <-- account is now active
+      $0.userData.name = "new name"
+    }
+    let checkIn2 = spy(on: CheckIn.Input.self, returning: output2)
+    store.deps.api.checkIn = checkIn2.fn
+    store.deps.filterXpc.sendUserRules = { _, _ in .success(()) }
+
+    await store.send(.heartbeat(.everySixHours))
+    await expect(checkIn2.invoked).toEqual(true)
+
+    await store.receive(.checkIn(result: .success(output2), reason: .heartbeat)) {
+      $0.user.data?.name = "new name" // update data since account back to good
+    }
+    await expect(setAccountActive.invocations).toEqual([false, true])
+  }
 }

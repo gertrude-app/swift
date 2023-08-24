@@ -15,7 +15,10 @@ extension CheckInFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .heartbeat(.everyTwentyMinutes):
+    case .heartbeat(.everyTwentyMinutes) where state.admin.accountStatus != .inactive:
+      return checkIn(reason: .heartbeat, notifyNoInternet: false)
+
+    case .heartbeat(.everySixHours) where state.admin.accountStatus == .inactive:
       return checkIn(reason: .heartbeat, notifyNoInternet: false)
 
     case .menuBar(.refreshRulesClicked),
@@ -28,6 +31,10 @@ extension CheckInFeature.RootReducer {
       return checkIn(reason: .inactiveAccountRechecked)
 
     case .checkIn(.success(let output), let reason):
+      guard output.adminAccountStatus != .inactive else {
+        state.admin.accountStatus = output.adminAccountStatus
+        return .exec { _ in await api.setAccountActive(false) }
+      }
       let previousUserData = state.user.data
       state.user.data = output.userData
       state.user.numTimesUserTokenNotFound = 0
