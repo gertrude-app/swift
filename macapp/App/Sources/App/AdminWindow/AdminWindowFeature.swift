@@ -575,6 +575,7 @@ extension AdminWindowFeature.State.View {
   init(rootState: AppReducer.State) {
     @Dependency(\.app) var app
     let featureState = rootState.adminWindow
+    let installedVersion = app.installedVersion() ?? "0.0.0"
 
     windowOpen = featureState.windowOpen
     screen = featureState.screen
@@ -585,11 +586,12 @@ extension AdminWindowFeature.State.View {
       screenshotMonitoringEnabled: user.screenshotsEnabled,
       keystrokeMonitoringEnabled: user.keyloggingEnabled
     ) }
-    installedAppVersion = app.installedVersion() ?? "0.0.0"
+    installedAppVersion = installedVersion
     releaseChannel = rootState.appUpdates.releaseChannel
     quitting = featureState.quitting
-    availableAppUpdate = rootState.appUpdates.latestVersion.map { latest in
-      .init(
+
+    if let latest = rootState.appUpdates.latestVersion, latest.semver > installedVersion {
+      availableAppUpdate = .init(
         semver: latest.semver,
         required: latest.pace.map { pace in
           @Dependency(\.date.now) var now
