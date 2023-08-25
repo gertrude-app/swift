@@ -17,5 +17,6 @@ extension Configure {
     app.migrations.add(DeviceRefactor())
     app.migrations.add(AddReleaseNotes())
     app.migrations.add(DeviceIdForeignKey())
+    app.migrations.add(DeviceFilterVersion())
   }
 }

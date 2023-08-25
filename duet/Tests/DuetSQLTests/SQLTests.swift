@@ -359,7 +359,7 @@ final class SqlTests: XCTestCase {
 
     let query = """
     UPDATE "things"
-    SET "int" = $1, "updated_at" = $2, "bool" = $3, "optional_string" = $4, "custom_enum" = $5, "optional_custom_enum" = $6, "string" = $7, "optional_int" = $8;
+    SET "int" = $1, "updated_at" = $2, "bool" = $3, "optional_string" = $4, "custom_enum" = $5, "optional_custom_enum" = $6, "version" = $7, "string" = $8, "optional_int" = $9;
     """
 
     expect(statement.query).toEqual(query)

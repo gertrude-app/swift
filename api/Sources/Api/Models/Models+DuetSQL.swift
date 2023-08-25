@@ -251,6 +251,8 @@ extension Device: Model {
       return .string(serialNumber)
     case .appReleaseChannel:
       return .enum(appReleaseChannel)
+    case .filterVersion:
+      return .varchar(filterVersion?.string)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -266,6 +268,7 @@ extension Device: Model {
       .modelIdentifier: .string(modelIdentifier),
       .serialNumber: .string(serialNumber),
       .appReleaseChannel: .enum(appReleaseChannel),
+      .filterVersion: .varchar(filterVersion?.string),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

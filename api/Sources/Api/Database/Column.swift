@@ -9,6 +9,7 @@ public enum ColumnType {
   case bigint
   case boolean
   case jsonb
+  case varchar(Int)
   case custom(String)
   case timestampWithTimezone
 
@@ -25,6 +26,7 @@ public enum ColumnType {
     case .bigint: return "bigint"
     case .boolean: return "boolean"
     case .jsonb: return "jsonb"
+    case .varchar(let length): return "varchar(\(length))"
     case .timestampWithTimezone: return "timestamp with time zone"
     case .custom(let type): return type
     }

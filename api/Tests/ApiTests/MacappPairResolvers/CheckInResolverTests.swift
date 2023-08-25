@@ -16,7 +16,7 @@ final class CheckInResolverTests: ApiTestCase {
     }).withDevice()
 
     let output = try await CheckIn.resolve(
-      with: .init(appVersion: "1.0.0", filterVersion: nil),
+      with: .init(appVersion: "1.0.0", filterVersion: "3.3.3"),
       in: user.context
     )
     expect(output.userData.name).toBe(user.name)
@@ -24,6 +24,9 @@ final class CheckInResolverTests: ApiTestCase {
     expect(output.userData.screenshotsEnabled).toBeTrue()
     expect(output.userData.screenshotFrequency).toEqual(376)
     expect(output.userData.screenshotSize).toEqual(1081)
+
+    let device = try await Device.find(user.adminDevice.id)
+    expect(device.filterVersion).toEqual("3.3.3")
   }
 
   func testCheckIn_OtherProps() async throws {

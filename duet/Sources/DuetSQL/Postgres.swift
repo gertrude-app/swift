@@ -45,6 +45,7 @@ public enum Postgres {
   public enum Data {
     case id(UUIDIdentifiable)
     case string(String?)
+    case varchar(String?)
     case intArray([Int]?)
     case int(Int?)
     case int64(Int64?)
@@ -63,6 +64,8 @@ public enum Postgres {
       case .id, .currentTimestamp, .null:
         return false
       case .string(let wrapped):
+        return wrapped == nil
+      case .varchar(let wrapped):
         return wrapped == nil
       case .intArray(let wrapped):
         return wrapped == nil
@@ -91,6 +94,8 @@ public enum Postgres {
       switch self {
       case .string:
         return "text"
+      case .varchar:
+        return "varchar"
       case .int, .int64, .double, .float:
         return "numeric"
       case .intArray:
@@ -117,6 +122,8 @@ public enum Postgres {
       case .enum(let enumVal):
         return nullable(enumVal?.rawValue)
       case .string(let string):
+        return nullable(string)
+      case .varchar(let string):
         return nullable(string)
       case .int64(let int64):
         return nullable(int64)

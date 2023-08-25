@@ -8,7 +8,7 @@ extension Model {
     try await Current.db.update(self)
   }
 
-  static func find<M: Model>(_ id: Tagged<M, UUID>) async throws -> Self {
+  static func find(_ id: Tagged<Self, UUID>) async throws -> Self {
     try await Current.db.query(Self.self).byId(id).first()
   }
 
@@ -175,6 +175,7 @@ extension Device {
     case modelIdentifier
     case serialNumber
     case appReleaseChannel
+    case filterVersion
     case createdAt
     case updatedAt
   }

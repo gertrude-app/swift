@@ -6,14 +6,20 @@ extension CheckIn: Resolver {
     async let v1 = RefreshRules.resolve(with: .init(appVersion: input.appVersion), in: context)
     async let admin = context.user.admin()
     async let userDevice = context.userDevice()
-    let channel = try await userDevice.adminDevice().appReleaseChannel
+    let adminDevice = try await userDevice.adminDevice()
+    let channel = adminDevice.appReleaseChannel
+
     async let latestRelease = LatestAppVersion.resolve(
       with: .init(releaseChannel: channel, currentVersion: input.appVersion),
       in: .init(requestId: context.requestId, dashboardUrl: context.dashboardUrl)
     )
 
-    // TODO: use `input.filterVersion`
-    // https://github.com/gertrude-app/project/issues/185
+    if let filterVersionSemver = input.filterVersion,
+       let filterVersion = Semver(filterVersionSemver),
+       filterVersion != adminDevice.filterVersion {
+      adminDevice.filterVersion = filterVersion
+      try await adminDevice.save()
+    }
 
     return Output(
       adminAccountStatus: try await admin.accountStatus,

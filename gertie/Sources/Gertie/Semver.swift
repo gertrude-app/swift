@@ -168,6 +168,8 @@ extension Semver: LosslessStringConvertible {
     }
     return result
   }
+
+  public var string: String { description }
 }
 
 extension Semver: ExpressibleByStringLiteral {
