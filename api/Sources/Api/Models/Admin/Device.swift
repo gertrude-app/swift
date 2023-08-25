@@ -8,6 +8,7 @@ final class Device: Codable {
   var modelIdentifier: String
   var serialNumber: String
   var appReleaseChannel: ReleaseChannel
+  var filterVersion: Semver?
   var createdAt = Date()
   var updatedAt = Date()
 
@@ -19,6 +20,7 @@ final class Device: Codable {
     adminId: Admin.Id,
     customName: String? = nil,
     appReleaseChannel: ReleaseChannel = .stable,
+    filterVersion: Semver? = nil,
     modelIdentifier: String,
     serialNumber: String
   ) {
@@ -28,6 +30,7 @@ final class Device: Codable {
     self.appReleaseChannel = appReleaseChannel
     self.modelIdentifier = modelIdentifier
     self.serialNumber = serialNumber
+    self.filterVersion = filterVersion
   }
 }
 

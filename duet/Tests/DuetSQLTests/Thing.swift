@@ -9,6 +9,7 @@ final class Thing: Codable {
 
   var id: Id
   var string: String
+  var version: String
   var int: Int
   var bool: Bool
   var customEnum: CustomEnum
@@ -22,6 +23,7 @@ final class Thing: Codable {
   init(
     id: Id = .init(),
     string: String = "foo",
+    version: String = "1.0.0",
     int: Int = 123,
     bool: Bool = true,
     customEnum: CustomEnum = .foo,
@@ -34,6 +36,7 @@ final class Thing: Codable {
   ) {
     self.id = id
     self.string = string
+    self.version = version
     self.int = int
     self.bool = bool
     self.customEnum = customEnum
@@ -57,6 +60,7 @@ extension Thing {
     [
       .id: .id(self),
       .string: .string(string),
+      .version: .varchar(version),
       .int: .int(int),
       .bool: .bool(bool),
       .optionalInt: .int(optionalInt),
@@ -73,6 +77,7 @@ extension Thing {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
     case string
+    case version
     case int
     case bool
     case optionalInt
@@ -95,6 +100,8 @@ extension Thing: Model {
       return .id(self)
     case .string:
       return .string(string)
+    case .version:
+      return .varchar(version)
     case .int:
       return .int(int)
     case .bool:
