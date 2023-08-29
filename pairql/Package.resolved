@@ -37,15 +37,6 @@
       }
     },
     {
-      "identity" : "swift-tagged",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/jaredh159/swift-tagged.git",
-      "state" : {
-        "revision" : "cb4284055f6e9cc5576ff9be13723b3a039905a5",
-        "version" : "0.8.2"
-      }
-    },
-    {
       "identity" : "swift-url-routing",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-url-routing.git",
