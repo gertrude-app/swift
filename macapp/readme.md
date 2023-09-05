@@ -76,13 +76,14 @@ When investigating a crash of the filter, i was looking at stack trace lines lik
 12  com.myorg.app.filter-extension	0x000000010db073cc 0x10db02000 + 21452
 ```
 
-I was able to find out what those hex codes meant, by following these steps:
-
 1. locate the `.crash` report file by right-clicking crash within Console.app
 2. put the `.crash` file into a new folder
 3. in Xcode organizer, i clicked "Show in Finder" on the archive of the app version that
    crashed, then, I right-clicked and chose "Show contents" on the `.xcarchive` file so I
    could look inside.
+
+### for crash in FILTER
+
 4. I _copied_ the filter extension executable (the crash was in the filter, not the app),
    which was called `com.netrivet.gertrude.filter-extension.systemextension` (located in
    some subdir), into the empty folder i created in step 2.
@@ -92,6 +93,28 @@ I was able to find out what those hex codes meant, by following these steps:
 6. Once I had those three files, I opened a terminal session in the folder and ran this
    basic command for each line (note that the two hex codes are switched, shorter first):
 
+_NB: the `atos` command needs to be run ON the computer (or at least OS + arch???) where
+the crash happened, or you will get spurious results_
+
 ```sh
 atos -o com.netrivet.gertrude.filter-extension.systemextension.dSYM/Contents/Resources/DWARF/com.netrivet.gertrude.filter-extension -l 0x10db02000 0x000000010db073cc
+```
+
+### for crash in APP
+
+4. I _copied_ the app executable (if the crash was in the app, not the filter), which was
+   called `Gertrude` (located in `Products/Applications/Gertrude.app/Contents/MacOS`--you
+   need to expand the inner `Gertrude.app` package contents as wll), into the empty folder
+   i created in step 2.
+5. Next I also _copied_ the `dSYMs/Gertrude.app.dYSM` debug symbols into the empty folder.
+   (You have to have "Dwarf + DYSM" enabled in Xcode, but it already was, and that
+   shouldn't change)
+6. Once I had those three files, I opened a terminal session in the folder and ran this
+   basic command for each line (note that the two hex codes are switched, shorter first):
+
+_NB: the `atos` command needs to be run ON the computer (or at least OS + arch???) where
+the crash happened, or you will get spurious results_
+
+```sh
+atos -o Gertrude.app.dSYM/Contents/Resources/DWARF/Gertrude -l 0x10db02000 0x000000010db073cc
 ```
