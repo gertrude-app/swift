@@ -21,6 +21,15 @@
   - fix webview focus bug
   - remove suspend filter from admin window, add button to suspend filter window
   - rework suspend filter flow, starting with choose duration
+- `2.0.4` (8/24/23)
+  - health check new default admin screen w/ redesigned "actions" screen
+  - disable "view network requests" and "suspend filter" menu bar btns when filter off
+  - "view network requests" and "suspend filter" screens warn if filter connection broken
+  - remove release channel from app admin window, controlled by parents website
+  - add browsers for force quit (including brave and arc)
+  - fix flash of light theme when loading app windows in dark mode
+  - fixed long blocked urls in catalina
+  - fixed app window scrollbars in dark mode
 
 ## Sparkle Releases
 
