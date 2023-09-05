@@ -1,4 +1,5 @@
 import Foundation
+import Gertie
 import TypeScriptInterop
 import XCTest
 
@@ -28,6 +29,12 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
       replacements: [
         "Foundation.UUID": "UUID",
         "Tagged.Tagged": "Tagged",
+      ]
+    ),
+    EnumCodableGen.EnumsGenerator(
+      path: "/Users/jared/gertie/swift/gertie/Sources/Gertie/Enums+Codable.swift",
+      types: [
+        (FilterSuspensionDecision.self, true),
       ]
     ),
   ]

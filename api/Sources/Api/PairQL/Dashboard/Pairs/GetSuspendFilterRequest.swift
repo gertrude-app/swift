@@ -7,14 +7,15 @@ struct GetSuspendFilterRequest: Pair {
   typealias Input = SuspendFilterRequest.Id
 
   struct Output: PairOutput {
-    let id: Api.SuspendFilterRequest.Id
-    let deviceId: Api.UserDevice.Id
-    let status: RequestStatus
-    let userName: String
-    let requestedDurationInSeconds: Int
-    let requestComment: String?
-    let responseComment: String?
-    let createdAt: Date
+    var id: Api.SuspendFilterRequest.Id
+    var deviceId: Api.UserDevice.Id
+    var status: RequestStatus
+    var userName: String
+    var requestedDurationInSeconds: Int
+    var requestComment: String?
+    var responseComment: String?
+    var canDoubleScreenshots: Bool
+    var createdAt: Date
   }
 }
 
@@ -33,6 +34,8 @@ extension GetSuspendFilterRequest: Resolver {
       requestedDurationInSeconds: request.duration.rawValue,
       requestComment: request.requestComment,
       responseComment: request.responseComment,
+      canDoubleScreenshots: Semver(userDevice.appVersion)! >= .init("2.1.0")!
+        && user.screenshotsEnabled,
       createdAt: request.createdAt
     )
   }
