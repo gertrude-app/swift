@@ -234,8 +234,14 @@ import XExpect
   func testConnectingUserStartsMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
-    store.deps.storage.loadPersistentState = { nil }
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+    store.deps.storage.loadPersistentState = { .init(
+      appVersion: "1.0.0",
+      appUpdateReleaseChannel: .stable,
+      filterVersion: "1.0.0",
+      user: nil, // <-- no user
+      onboardingStep: nil
+    ) }
 
     let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(
@@ -262,7 +268,9 @@ import XExpect
     await expect(takeScreenshot.invocations).toEqual([800])
     await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
-    await Task.repeatYield()
+    // await Task.repeatYield()
+    // await Task.repeatYield()
+    // await store.skipReceivedActions()
     await expect(keylogging.upload.invocations.value.count).toEqual(1)
   }
 

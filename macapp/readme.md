@@ -30,6 +30,9 @@
   - fix flash of light theme when loading app windows in dark mode
   - fixed long blocked urls in catalina
   - fixed app window scrollbars in dark mode
+- `2.0.5` (9/6/23)
+  - fixed domains resolved from outbound bytes not showing up in blocked requests window
+  - fixed double browser quit from computer sleep during filter suspension
 
 ## Sparkle Releases
 

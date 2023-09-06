@@ -41,7 +41,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
         },
 
         .exec { send in
-          try await bgQueue.sleep(for: .milliseconds(5)) // <- unit test determinism
+          // try await bgQueue.sleep(for: .milliseconds(5)) // <- unit test determinism
           let setupState = await filterExtension.setup()
           await send(.filter(.receivedState(setupState)))
           if setupState.installed {
@@ -49,17 +49,8 @@ extension ApplicationFeature.RootReducer: RootReducing {
           }
         },
 
-        .exec { send in
-          var numTicks = 0
-          for await _ in bgQueue.timer(interval: .seconds(60)) {
-            numTicks += 1
-            for interval in heartbeatIntervals(for: numTicks) {
-              await send(.heartbeat(interval))
-            }
-          }
-        }.cancellable(id: Heartbeat.CancelId.interval),
-
         .exec { _ in
+          // TODO: should be part of onboarding...
           if await app.isLaunchAtLoginEnabled() == false {
             await app.enableLaunchAtLogin()
           }
@@ -91,21 +82,21 @@ extension ApplicationFeature.RootReducer: RootReducing {
       return .none
     }
   }
+}
 
-  func heartbeatIntervals(for tick: Int) -> [Heartbeat.Interval] {
-    var intervals: [Heartbeat.Interval] = [.everyMinute]
-    if tick % 5 == 0 {
-      intervals.append(.everyFiveMinutes)
-    }
-    if tick % 20 == 0 {
-      intervals.append(.everyTwentyMinutes)
-    }
-    if tick % 60 == 0 {
-      intervals.append(.everyHour)
-    }
-    if tick % 360 == 0 {
-      intervals.append(.everySixHours)
-    }
-    return intervals
+func heartbeatIntervals(for tick: Int) -> [Heartbeat.Interval] {
+  var intervals: [Heartbeat.Interval] = [.everyMinute]
+  if tick % 5 == 0 {
+    intervals.append(.everyFiveMinutes)
   }
+  if tick % 20 == 0 {
+    intervals.append(.everyTwentyMinutes)
+  }
+  if tick % 60 == 0 {
+    intervals.append(.everyHour)
+  }
+  if tick % 360 == 0 {
+    intervals.append(.everySixHours)
+  }
+  return intervals
 }

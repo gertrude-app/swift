@@ -39,20 +39,22 @@ public struct FilterExtensionClient: Sendable {
   }
 }
 
-extension FilterExtensionClient: TestDependencyKey {
-  public static let testValue = Self(
-    setup: { .installedAndRunning },
-    start: { .installedAndRunning },
-    stop: { .installedButNotRunning },
-    reinstall: { .installedSuccessfully },
-    restart: { .installedAndRunning },
-    replace: { .installedSuccessfully },
-    state: { .installedAndRunning },
-    install: { .installedSuccessfully },
-    stateChanges: { Empty().eraseToAnyPublisher() },
-    uninstall: { true }
-  )
-}
+#if DEBUG
+  extension FilterExtensionClient: TestDependencyKey {
+    public static let testValue = Self(
+      setup: { .installedAndRunning },
+      start: { .installedAndRunning },
+      stop: { .installedButNotRunning },
+      reinstall: { .installedSuccessfully },
+      restart: { .installedAndRunning },
+      replace: { .installedSuccessfully },
+      state: { .installedAndRunning },
+      install: { .installedSuccessfully },
+      stateChanges: { Empty().eraseToAnyPublisher() },
+      uninstall: { true }
+    )
+  }
+#endif
 
 public extension DependencyValues {
   var filterExtension: FilterExtensionClient {

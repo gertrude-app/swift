@@ -217,7 +217,7 @@ import XExpect
     await mainQueue.advance(by: .seconds(1))
     await expect(notifyExpired.invocations).toEqual([502])
 
-    await store.receive(.suspensionExpired(502)) {
+    await store.receive(.suspensionTimerEnded(502)) {
       $0.suspensions[502] = nil
     }
   }
@@ -283,7 +283,7 @@ import XExpect
     await mainQueue.advance(by: .seconds(100))
     await expect(notifyExpired.invocations).toEqual([504])
 
-    await store.receive(.suspensionExpired(504)) {
+    await store.receive(.suspensionTimerEnded(504)) {
       $0.suspensions = [
         502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
         503: .init(scope: .unrestricted, duration: 400, now: store.deps.date.now),
@@ -301,29 +301,13 @@ import XExpect
     // last remaining suspension expires
     await mainQueue.advance(by: .seconds(200))
     await expect(notifyExpired.invocations).toEqual([504, 502])
-    await store.receive(.suspensionExpired(502)) {
+    await store.receive(.suspensionTimerEnded(502)) {
       $0.suspensions = [:]
     }
   }
 
-  // set up so we have an expired suspension in state
-  // this can happen when the computer SLEEPS for some of the suspension
-  // during which time, the timer is not running, so when it wakes
-  // the timer shows time remaining, but the suspension has expired
-  // in this case, we want to notify the app asap
-  // NB: filter always checks suspension absolute time, so there's no danger
-  // of a wrongly prolonged suspension, just that we need to kill the browsers
-  func testHeartbeatCleansUpDanglingSuspension() async {
-    let (store, mainQueue) = Filter.testStore {
-      // by setting the suspension into state during setup,
-      // we bypass the expiration timer being set, which allows
-      // to get into the state where the heartbeat will clean up
-      $0.suspensions[502] = .init(
-        scope: .unrestricted,
-        duration: 60 * 10 + 30, // <-- expires 10.5 minutes after 1970
-        now: Date(timeIntervalSince1970: 0)
-      )
-    }
+  func testHeartbeatCleansUpDanglingSuspensionFromSleepConfusingTimer() async {
+    let (store, mainQueue) = Filter.testStore()
 
     let time = ControllingNow(starting: Date(timeIntervalSince1970: 0), with: mainQueue)
     store.deps.date = time.generator
@@ -333,13 +317,42 @@ import XExpect
 
     await store.send(.extensionStarted) // start hearbeat
 
-    await time.advance(seconds: 60 * 10)
+    await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 630)))) {
+      $0.suspensions = [
+        502: .init(
+          scope: .unrestricted,
+          duration: 60 * 10 + 30, // <-- expires 10.5 minutes after 1970
+          now: Date(timeIntervalSince1970: 0)
+        ),
+      ]
+    }
+
+    await time.advance(seconds: 60 * 1) // advance 1 of 10 minutes and then..
+
+    // ... the user puts the computer to sleep for an hour
+    // upon wakeup, suspension is over, but the timer still has 9 minutes left.
+    // the filter should notify the app immediately, so it can quit browsers
+    // and the dangling timer should be cancelled so we don't quit twice
+    time.simulateComputerSleep(seconds: 60 * 60)
+
+    // on waking up, the suspension is still in memory, but it is now expired
     expect(store.state.suspensions[502]).not.toBeNil()
 
-    await time.advance(seconds: 60)
-    await store.receive(.suspensionExpired(502)) {
+    // advance to next heartbeat, which should trigger cleanup logic
+    await time.advance(seconds: 60 * 1)
+
+    // assert that action is emitted, and suspension is removed from state...
+    await store.receive(.staleSuspensionFound(502)) {
       $0.suspensions = [:]
     }
+
+    // ... and we have notified the app so browsers can be quit
+    await expect(notifyExpired.invocations).toEqual([502])
+
+    // now advance long enough that the confused timer would expire...
+    await time.advance(seconds: 60 * 10)
+
+    // and assert that we haven't notified the app again
     await expect(notifyExpired.invocations).toEqual([502])
   }
 }

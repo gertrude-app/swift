@@ -52,6 +52,15 @@ public struct ControllingNow {
     )
   }
 
+  /// advance the time, but not the scheduler.
+  /// this simulates when the computer is asleep, when timers spun up
+  /// by mainQueue.sleep(for:) are suspended (because i can't use ContinuousClock)
+  /// but real wall-clock time is advancing
+  public func simulateComputerSleep(seconds advance: Int) {
+    let current = elapsed.value
+    elapsed.setValue(current + advance)
+  }
+
   public func advance(seconds advance: Int) async {
     let current = elapsed.value
     elapsed.setValue(current + advance)

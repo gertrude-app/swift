@@ -47,6 +47,13 @@ public func mock<T>(once value: T) -> Mock<T, Int> {
   mock(returning: [value])
 }
 
+public func mock<T, R>(
+  once value: T,
+  at keyPath: WritableKeyPath <R, @Sendable () async -> T>
+) -> Mock<T, Int> {
+  mock(returning: [value])
+}
+
 public func mock<T>(always value: T) -> Mock<T, Int> {
   mock(returning: [], then: value)
 }

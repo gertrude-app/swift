@@ -95,7 +95,7 @@ class FilterDataProvider: NEFilterDataProvider {
         withFilterInbound: false,
         peekInboundBytes: Int.max,
         filterOutbound: true,
-        peekOutboundBytes: 250
+        peekOutboundBytes: 1024
       )
     }
   }
@@ -112,9 +112,9 @@ class FilterDataProvider: NEFilterDataProvider {
       flowUserIds = [:]
     }
 
-    let filterFlow = FilterFlow(flow, userId: userId)
+    var filterFlow = FilterFlow(flow, userId: userId)
     let decision = store.completedFlowDecision(
-      filterFlow,
+      &filterFlow,
       readBytes: readBytes,
       auditToken: flow.sourceAppAuditToken
     )

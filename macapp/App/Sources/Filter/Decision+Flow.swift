@@ -1,7 +1,7 @@
 import Core
 import Foundation
 import Gertie
-import os.log // temp
+import os.log
 
 public extension NetworkFilter {
 
@@ -14,11 +14,10 @@ public extension NetworkFilter {
   }
 
   func completedFlowDecision(
-    _ flow: FilterFlow,
+    _ flow: inout FilterFlow,
     readBytes: Data,
     auditToken: Data? = nil
   ) -> FilterDecision.FromFlow {
-    var flow = flow
     if flow.url == nil {
       flow.parseOutboundData(byteString: bytesToString(readBytes))
     }
