@@ -54,83 +54,87 @@ final class CompletedFlowDecisionTests: XCTestCase {
 
     // // user 1
     var filter = TestFilter.scenario(userKeys: [502: [key1], 503: [key2]])
-    let flow1 = FilterFlow.test(hostname: "one.com", userId: 502)
-    expect(filter.completedDecision(flow1)).toEqual(.allow(.permittedByKey(key1.id)))
-    let flow2 = FilterFlow.test(hostname: "two.com", userId: 502)
-    expect(filter.completedDecision(flow2)).toEqual(.block(.defaultNotAllowed))
+    var flow1 = FilterFlow.test(hostname: "one.com", userId: 502)
+    expect(filter.completedDecision(&flow1)).toEqual(.allow(.permittedByKey(key1.id)))
+    var flow2 = FilterFlow.test(hostname: "two.com", userId: 502)
+    expect(filter.completedDecision(&flow2)).toEqual(.block(.defaultNotAllowed))
 
     // user 2
     filter = TestFilter.scenario(userKeys: [502: [key1], 503: [key2]])
-    let flow3 = FilterFlow.test(hostname: "one.com", userId: 503)
-    expect(filter.completedDecision(flow3)).toEqual(.block(.defaultNotAllowed))
-    let flow4 = FilterFlow.test(hostname: "two.com", userId: 503)
-    expect(filter.completedDecision(flow4)).toEqual(.allow(.permittedByKey(key2.id)))
+    var flow3 = FilterFlow.test(hostname: "one.com", userId: 503)
+    expect(filter.completedDecision(&flow3)).toEqual(.block(.defaultNotAllowed))
+    var flow4 = FilterFlow.test(hostname: "two.com", userId: 503)
+    expect(filter.completedDecision(&flow4)).toEqual(.allow(.permittedByKey(key2.id)))
   }
 
   func testWeNolongerAllowIpAddressesAuthedByPriorHostnameAllowance() {
     let key = FilterKey(key: .domain(domain: "safe.com", scope: .unrestricted))
-    let flow = FilterFlow.test(ipAddress: "1.2.3.4", hostname: "safe.com")
+    var flow = FilterFlow.test(ipAddress: "1.2.3.4", hostname: "safe.com")
     let filter = TestFilter.scenario(userKeys: [502: [key]])
-    let decision1 = filter.completedDecision(flow)
+    let decision1 = filter.completedDecision(&flow)
     expect(decision1).toEqual(.allow(.permittedByKey(key.id)))
 
     // same ip address, unknown hostname
-    let flow2 = FilterFlow.test(ipAddress: "1.2.3.4", hostname: nil)
-    let decision2 = filter.completedDecision(flow2)
+    var flow2 = FilterFlow.test(ipAddress: "1.2.3.4", hostname: nil)
+    let decision2 = filter.completedDecision(&flow2)
     expect(decision2).toEqual(.block(.defaultNotAllowed))
 
     // same ip address, different hostname
-    let flow3 = FilterFlow.test(ipAddress: "1.2.3.4", hostname: "bad.com")
-    let decision3 = filter.completedDecision(flow3)
+    var flow3 = FilterFlow.test(ipAddress: "1.2.3.4", hostname: "bad.com")
+    let decision3 = filter.completedDecision(&flow3)
     expect(decision3).toEqual(.block(.defaultNotAllowed))
   }
 
   func testUdpRequestFromUnrestrictedAppAllowed() {
     let key = FilterKey(key: .skeleton(scope: .bundleId("com.skype")))
     let filter = TestFilter.scenario(userKeys: [502: [key]])
-    let unrestrictedAppFlow = FilterFlow.test(
+    var unrestrictedAppFlow = FilterFlow.test(
       hostname: "foo.com",
       bundleId: "com.skype",
       port: .other(333),
       ipProtocol: .udp(Int32(IPPROTO_UDP))
     )
-    let decision = filter.completedDecision(unrestrictedAppFlow)
+    let decision = filter.completedDecision(&unrestrictedAppFlow)
     expect(decision).toEqual(.allow(.permittedByKey(key.id)))
 
     // but some other app is still blocked from making same request
-    let otherAppFlow = FilterFlow.test(
+    var otherAppFlow = FilterFlow.test(
       hostname: "foo.com",
       bundleId: "com.acme.widget",
       port: .other(333),
       ipProtocol: .udp(Int32(IPPROTO_UDP))
     )
-    let otherAppDecision = filter.completedDecision(otherAppFlow)
+    let otherAppDecision = filter.completedDecision(&otherAppFlow)
     expect(otherAppDecision).toEqual(.block(.defaultNotAllowed))
   }
 
   func testFlowAllowedImmediatelyWhenFilterCompletelySuspended() {
     let filter = TestFilter
       .scenario(suspensions: [502: .init(scope: .unrestricted, duration: 1000)])
-    let decision = filter.completedDecision(.test(hostname: "radsite.com"))
+    var flow = FilterFlow.test(hostname: "radsite.com")
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.allow(.filterSuspended))
   }
 
   func testWebBrowsersOnlySuspensionAllowsBrowserRequest() {
     let filter = TestFilter
       .scenario(suspensions: [502: .init(scope: .webBrowsers, duration: 1000)])
-    let decision = filter.completedDecision(.test(hostname: "radsite.com"))
+    var flow = FilterFlow.test(hostname: "radsite.com")
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.allow(.filterSuspended))
   }
 
   func testWebBrowsersOnlySuspensionDoesNotAllowWrongUser() {
     let filter = TestFilter.scenario(suspensions: [504: .init(scope: .webBrowsers, duration: 1000)])
-    let decision = filter.completedDecision(.test(hostname: "radsite.com", userId: 502))
+    var flow = FilterFlow.test(hostname: "radsite.com", userId: 502)
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.block(.defaultNotAllowed))
   }
 
   func testWebBrowsersSuspensionDoesNotAllowNonWebBrowserRequest() {
     let filter = TestFilter.scenario(suspensions: [502: .init(scope: .webBrowsers, duration: 1000)])
-    let decision = filter.completedDecision(.test(hostname: "radsite.com", bundleId: "com.xcode"))
+    var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.xcode")
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.block(.defaultNotAllowed))
   }
 
@@ -139,7 +143,8 @@ final class CompletedFlowDecisionTests: XCTestCase {
       scope: .single(.identifiedAppSlug("chrome")),
       duration: 1000
     )])
-    let decision = filter.completedDecision(.test(hostname: "radsite.com", bundleId: "com.chrome"))
+    var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.chrome")
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.allow(.filterSuspended))
   }
 
@@ -148,7 +153,8 @@ final class CompletedFlowDecisionTests: XCTestCase {
       scope: .single(.identifiedAppSlug("chrome")),
       duration: 1000
     )])
-    let decision = filter.completedDecision(.test(hostname: "radsite.com", bundleId: "com.xcode"))
+    var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.xcode")
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.block(.defaultNotAllowed))
   }
 
@@ -157,7 +163,8 @@ final class CompletedFlowDecisionTests: XCTestCase {
       scope: .single(.bundleId("com.chrome")),
       duration: 1000
     )])
-    let decision = filter.completedDecision(.test(hostname: "radsite.com", bundleId: "com.chrome"))
+    var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.chrome")
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.allow(.filterSuspended))
   }
 
@@ -166,7 +173,8 @@ final class CompletedFlowDecisionTests: XCTestCase {
       scope: .single(.bundleId("com.chrome")),
       duration: 1000
     )])
-    let decision = filter.completedDecision(.test(hostname: "radsite.com", bundleId: "com.xcode"))
+    var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.xcode")
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.block(.defaultNotAllowed))
   }
 
@@ -185,33 +193,33 @@ final class CompletedFlowDecisionTests: XCTestCase {
       let pattern = Key.DomainRegexPattern(patternStr)!
       // ALLOWS any matching hostname when scope = .unrestricted
       var key = FilterKey(key: .domainRegex(pattern: pattern, scope: .unrestricted))
-      let flow = FilterFlow.test(hostname: hostname, bundleId: "com.\(UUID())")
+      var flow = FilterFlow.test(hostname: hostname, bundleId: "com.\(UUID())")
       var filter = TestFilter.scenario(userKeys: [502: [key]])
-      expect(filter.completedDecision(flow)).toEqual(.allow(.permittedByKey(key.id)))
+      expect(filter.completedDecision(&flow)).toEqual(.allow(.permittedByKey(key.id)))
 
       // when scope = .webBrowsers, only allows web browsers
       key = FilterKey(key: .domainRegex(pattern: pattern, scope: .webBrowsers))
       filter = TestFilter.scenario(userKeys: [502: [key]])
-      let browserFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
-      expect(filter.completedDecision(browserFlow)).toEqual(.allow(.permittedByKey(key.id)))
-      let xcodeFlow = FilterFlow.test(hostname: hostname, bundleId: "com.xcode")
-      expect(filter.completedDecision(xcodeFlow)).toEqual(.block(.defaultNotAllowed))
+      var browserFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
+      expect(filter.completedDecision(&browserFlow)).toEqual(.allow(.permittedByKey(key.id)))
+      var xcodeFlow = FilterFlow.test(hostname: hostname, bundleId: "com.xcode")
+      expect(filter.completedDecision(&xcodeFlow)).toEqual(.block(.defaultNotAllowed))
 
       // when scope = .single(.identifiedAppSlug), only allows matching app
       key = .init(key: .domainRegex(pattern: pattern, scope: .single(.identifiedAppSlug("chrome"))))
       filter = TestFilter.scenario(userKeys: [502: [key]])
-      let appSlugFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
-      expect(filter.completedDecision(appSlugFlow)).toEqual(.allow(.permittedByKey(key.id)))
-      let slackFlow = FilterFlow.test(hostname: hostname, bundleId: "com.slack")
-      expect(filter.completedDecision(slackFlow)).toEqual(.block(.defaultNotAllowed))
+      var appSlugFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
+      expect(filter.completedDecision(&appSlugFlow)).toEqual(.allow(.permittedByKey(key.id)))
+      var slackFlow = FilterFlow.test(hostname: hostname, bundleId: "com.slack")
+      expect(filter.completedDecision(&slackFlow)).toEqual(.block(.defaultNotAllowed))
 
       // when scope = .single(.bundleId), only allows matching app
       key = .init(key: .domainRegex(pattern: pattern, scope: .single(.bundleId("com.chrome"))))
       filter = TestFilter.scenario(userKeys: [502: [key]])
-      let bundleFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
-      expect(filter.completedDecision(bundleFlow)).toEqual(.allow(.permittedByKey(key.id)))
-      let skypeFlow = FilterFlow.test(hostname: hostname, bundleId: "com.skype")
-      expect(filter.completedDecision(skypeFlow)).toEqual(.block(.defaultNotAllowed))
+      var bundleFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
+      expect(filter.completedDecision(&bundleFlow)).toEqual(.allow(.permittedByKey(key.id)))
+      var skypeFlow = FilterFlow.test(hostname: hostname, bundleId: "com.skype")
+      expect(filter.completedDecision(&skypeFlow)).toEqual(.block(.defaultNotAllowed))
     }
   }
 
@@ -229,22 +237,41 @@ final class CompletedFlowDecisionTests: XCTestCase {
     for (pattern, hostname) in cases {
       let key = FilterKey(key: .domainRegex(pattern: .init(pattern)!, scope: .unrestricted))
       let filter = TestFilter.scenario(userKeys: [502: [key]])
-      let decision = filter.completedDecision(.test(hostname: hostname))
+      var flow = FilterFlow.test(hostname: hostname)
+      let decision = filter.completedDecision(&flow)
       expect(decision).toEqual(.block(.defaultNotAllowed))
     }
   }
 
   func testUnknownIpAddressAndHostNamedBlocked() {
-    let flow = FilterFlow.test(ipAddress: "5.5.5.5", hostname: "unknown.com")
+    var flow = FilterFlow.test(ipAddress: "5.5.5.5", hostname: "unknown.com")
     let filter = TestFilter.scenario()
-    let decision = filter.completedDecision(flow)
+    let decision = filter.completedDecision(&flow)
     expect(decision).toEqual(.block(.defaultNotAllowed))
+  }
+
+  func testHostnameResolvedFromBytesUpdatesInoutFlowForTransmittal() {
+    var flow = FilterFlow.test(ipAddress: "5.5.5.5", hostname: nil)
+    let filter = TestFilter.scenario()
+    expect(flow.hostname).toBeNil()
+
+    _ = filter.completedDecision(&flow, bytes: "••••••••••parents.gertrude.app•••••")
+
+    // the flow is inout because looking at the outbound bytes sets more
+    // data on the flow, which is used to make the decision.
+    // in v2.0.0 -- v2.0.4, we were making the correct decision, but the
+    // blocked requests transmitted to the app via xpc were missing
+    // the resolved hostname, making that window full of bare ip addresses.
+    expect(flow.hostname).toEqual("parents.gertrude.app")
   }
 }
 
 extension NetworkFilter {
-  func completedDecision(_ flow: FilterFlow) -> FilterDecision.FromFlow {
-    completedFlowDecision(flow, readBytes: .init())
+  func completedDecision(
+    _ flow: inout FilterFlow,
+    bytes: String? = nil
+  ) -> FilterDecision.FromFlow {
+    completedFlowDecision(&flow, readBytes: bytes?.data(using: .utf8) ?? .init())
   }
 }
 
@@ -266,7 +293,7 @@ extension CompletedFlowDecisionTests {
   func assertDecisions(_ cases: [(TestCase.Input, TestCase.Decision)]) {
     for (input, decision) in cases {
       let key: FilterKey
-      let flow: FilterFlow
+      var flow: FilterFlow
       switch input {
       case .domain(let keyDomain, let flowHostname):
         key = FilterKey(key: .domain(domain: .init(keyDomain)!, scope: .unrestricted))
@@ -284,7 +311,7 @@ extension CompletedFlowDecisionTests {
       let filter = TestFilter.scenario(userKeys: [502: [key]])
       let flowDecision = decision == .allow ? FilterDecision.FromFlow
         .allow(.permittedByKey(key.id)) : .block(.defaultNotAllowed)
-      expect(filter.completedFlowDecision(flow, readBytes: .init())).toEqual(flowDecision)
+      expect(filter.completedFlowDecision(&flow, readBytes: .init())).toEqual(flowDecision)
     }
   }
 }
