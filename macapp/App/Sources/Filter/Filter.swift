@@ -21,7 +21,8 @@ public struct Filter: Reducer, Sendable {
     case flowBlocked(FilterFlow, AppDescriptor)
     case cacheAppDescriptor(String, AppDescriptor)
     case loadedPersistentState(Persistent.State?)
-    case suspensionExpired(uid_t)
+    case suspensionTimerEnded(uid_t)
+    case staleSuspensionFound(uid_t)
     case heartbeat
   }
 
@@ -33,8 +34,8 @@ public struct Filter: Reducer, Sendable {
   @Dependency(\.uuid) var uuid
 
   private enum CancelId: Hashable {
-    case suspension(for: uid_t)
     case heartbeat
+    case suspensionTimer(for: uid_t)
   }
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
@@ -111,14 +112,20 @@ public struct Filter: Reducer, Sendable {
       }
       return expiredSuspensionUserIds.isEmpty ? .none : .run { [expiredSuspensionUserIds] send in
         for userId in expiredSuspensionUserIds {
-          try await xpc.notifyFilterSuspensionEnded(userId)
-          await send(.suspensionExpired(userId))
+          await send(.staleSuspensionFound(userId))
         }
       }
 
-    case .suspensionExpired(let userId):
+    case .suspensionTimerEnded(let userId):
       state.suspensions[userId] = nil
-      return .none
+      return .run { _ in try await xpc.notifyFilterSuspensionEnded(userId) }
+
+    case .staleSuspensionFound(let userId):
+      state.suspensions[userId] = nil
+      return .merge(
+        .cancel(id: CancelId.suspensionTimer(for: userId)),
+        .run { _ in try await xpc.notifyFilterSuspensionEnded(userId) }
+      )
 
     case .cacheAppDescriptor("", _):
       return .none // don't cache empty bundle id
@@ -143,7 +150,7 @@ public struct Filter: Reducer, Sendable {
 
     case .xpc(.receivedAppMessage(.endFilterSuspension(let userId))):
       state.suspensions[userId] = nil
-      return .cancel(id: CancelId.suspension(for: userId))
+      return .cancel(id: CancelId.suspensionTimer(for: userId))
 
     case .xpc(.receivedAppMessage(.suspendFilter(let userId, let duration))):
       state.suspensions[userId] = .init(
@@ -152,10 +159,12 @@ public struct Filter: Reducer, Sendable {
         now: now
       )
       return .run { send in
+        // NB: this sleep pauses (and thus becomes incorrect) when the computer is asleep
+        // ideally we should use ContinuousClock instead, but it's not available for our targets
+        // so we check for stale suspensions in the heartbeat, cancelling the timer
         try await mainQueue.sleep(for: .seconds(duration.rawValue))
-        try await xpc.notifyFilterSuspensionEnded(userId)
-        await send(.suspensionExpired(userId))
-      }.cancellable(id: CancelId.suspension(for: userId), cancelInFlight: true)
+        await send(.suspensionTimerEnded(userId))
+      }.cancellable(id: CancelId.suspensionTimer(for: userId), cancelInFlight: true)
 
     case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
       state.userKeys[userId] = keys
@@ -190,3 +199,13 @@ public struct Filter: Reducer, Sendable {
 }
 
 let FIVE_MINUTES_IN_SECONDS = 60.0 * 5.0
+
+#if DEBUG
+  import Darwin
+
+  func eprint(_ items: Any...) {
+    let s = items.map { "\($0)" }.joined(separator: " ")
+    fputs(s + "\n", stderr)
+    fflush(stderr)
+  }
+#endif
