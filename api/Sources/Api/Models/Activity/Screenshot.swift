@@ -6,6 +6,7 @@ final class Screenshot: Codable {
   var url: String
   var width: Int
   var height: Int
+  var filterSuspended: Bool
   var createdAt: Date
   var deletedAt: Date?
 
@@ -17,13 +18,15 @@ final class Screenshot: Codable {
     url: String,
     width: Int,
     height: Int,
+    filterSuspended: Bool = false,
     createdAt: Date = Date()
   ) {
     self.id = id
+    self.userDeviceId = userDeviceId
     self.url = url
     self.width = width
     self.height = height
-    self.userDeviceId = userDeviceId
+    self.filterSuspended = filterSuspended
     self.createdAt = createdAt
   }
 }

@@ -8,11 +8,18 @@ public struct CreateSignedScreenshotUpload: Pair {
   public struct Input: PairInput {
     public let width: Int
     public let height: Int
+    public var filterSuspended: Bool?
     public let createdAt: Date?
 
-    public init(width: Int, height: Int, createdAt: Date? = nil) {
+    public init(
+      width: Int,
+      height: Int,
+      filterSuspended: Bool? = false,
+      createdAt: Date? = nil
+    ) {
       self.width = width
       self.height = height
+      self.filterSuspended = filterSuspended
       self.createdAt = createdAt
     }
   }

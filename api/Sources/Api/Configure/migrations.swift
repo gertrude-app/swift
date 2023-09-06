@@ -18,5 +18,6 @@ extension Configure {
     app.migrations.add(AddReleaseNotes())
     app.migrations.add(DeviceIdForeignKey())
     app.migrations.add(DeviceFilterVersion())
+    app.migrations.add(DuringSuspensionActivity())
   }
 }

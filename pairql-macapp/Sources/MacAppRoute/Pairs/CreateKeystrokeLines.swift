@@ -10,11 +10,13 @@ public struct CreateKeystrokeLines: Pair {
   public struct KeystrokeLineInput: PairInput, Sendable {
     public var appName: String
     public var line: String
+    public var filterSuspended: Bool?
     public var time: Date
 
-    public init(appName: String, line: String, time: Date) {
+    public init(appName: String, line: String, filterSuspended: Bool?, time: Date) {
       self.appName = appName
       self.line = line
+      self.filterSuspended = filterSuspended
       self.time = time
     }
   }

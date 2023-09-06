@@ -18,6 +18,7 @@ public extension CreateKeystrokeLines.KeystrokeLineInput {
     .init(
       appName: "Xcode",
       line: "import Foundation",
+      filterSuspended: false,
       time: Date(timeIntervalSince1970: 0)
     )
   }

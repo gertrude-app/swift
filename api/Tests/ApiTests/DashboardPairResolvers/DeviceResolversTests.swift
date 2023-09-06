@@ -5,6 +5,7 @@ import XExpect
 
 final class DeviceResolversTests: ApiTestCase {
   func testGetDevices() async throws {
+    try await Device.deleteAll()
     let user = try await Entities.user().withDevice { $0.appVersion = "2.2.2" }
     let device = user.adminDevice
     device.appReleaseChannel = .canary

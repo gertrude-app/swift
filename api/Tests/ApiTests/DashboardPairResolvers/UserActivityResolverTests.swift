@@ -40,6 +40,7 @@ final class UserActivityResolverTests: ApiTestCase {
       ids: [keystrokeLine.id],
       appName: keystrokeLine.appName,
       line: keystrokeLine.line,
+      duringSuspension: keystrokeLine.filterSuspended,
       createdAt: _ignoreDate
     ))
 
@@ -52,6 +53,7 @@ final class UserActivityResolverTests: ApiTestCase {
       url: screenshot.url,
       width: screenshot.width,
       height: screenshot.height,
+      duringSuspension: screenshot.filterSuspended,
       createdAt: _ignoreDate
     ))
   }
@@ -117,6 +119,7 @@ final class UserActivityResolverTests: ApiTestCase {
       ids: [keystrokeLine.id],
       appName: keystrokeLine.appName,
       line: keystrokeLine.line,
+      duringSuspension: keystrokeLine.filterSuspended,
       createdAt: _ignoreDate
     ))
 
@@ -129,6 +132,7 @@ final class UserActivityResolverTests: ApiTestCase {
       url: screenshot.url,
       width: screenshot.width,
       height: screenshot.height,
+      duringSuspension: screenshot.filterSuspended,
       createdAt: _ignoreDate
     ))
 
@@ -146,6 +150,7 @@ final class UserActivityResolverTests: ApiTestCase {
       url: screenshot2.url,
       width: screenshot2.width,
       height: screenshot2.height,
+      duringSuspension: screenshot2.filterSuspended,
       createdAt: _ignoreDate
     ))
   }

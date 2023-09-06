@@ -45,7 +45,12 @@ final class MacAppResolverTests: ApiTestCase {
     let (uuid, _) = mockUUIDs()
 
     let output = try await CreateKeystrokeLines.resolve(
-      with: [.init(appName: "Xcode", line: "import Foundation", time: .epoch)],
+      with: [.init(
+        appName: "Xcode",
+        line: "import Foundation",
+        filterSuspended: false,
+        time: .epoch
+      )],
       in: context(user)
     )
 

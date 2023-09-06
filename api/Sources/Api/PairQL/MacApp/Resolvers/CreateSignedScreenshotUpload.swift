@@ -26,6 +26,7 @@ extension CreateSignedScreenshotUpload: Resolver {
       url: webUrlString,
       width: input.width,
       height: input.height,
+      filterSuspended: input.filterSuspended ?? false,
       createdAt: input.createdAt ?? Date()
     ))
 

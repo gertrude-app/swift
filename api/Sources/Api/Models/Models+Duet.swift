@@ -264,6 +264,7 @@ extension KeystrokeLine {
     case userDeviceId
     case appName
     case line
+    case filterSuspended
     case createdAt
     case deletedAt
   }
@@ -344,6 +345,7 @@ extension Screenshot {
     case url
     case width
     case height
+    case filterSuspended
     case createdAt
     case deletedAt
   }

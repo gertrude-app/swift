@@ -83,6 +83,7 @@ public extension UserActivity.Item {
     var url: String
     var width: Int
     var height: Int
+    var duringSuspension: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -93,6 +94,7 @@ public extension UserActivity.Item {
     var ids: [Tagged<Api.KeystrokeLine, UUID>]
     var appName: String
     var line: String
+    var duringSuspension: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -106,6 +108,7 @@ public extension UserActivity.Item {
         url: unflat.url,
         width: unflat.width,
         height: unflat.height,
+        duringSuspension: unflat.duringSuspension,
         createdAt: unflat.createdAt,
         deletedAt: unflat.deletedAt
       ).encode(to: encoder)
@@ -115,6 +118,7 @@ public extension UserActivity.Item {
         ids: unflat.ids,
         appName: unflat.appName,
         line: unflat.line,
+        duringSuspension: unflat.duringSuspension,
         createdAt: unflat.createdAt,
         deletedAt: unflat.deletedAt
       ).encode(to: encoder)
@@ -133,6 +137,7 @@ public extension UserActivity.Item {
         url: value.url,
         width: value.width,
         height: value.height,
+        duringSuspension: value.duringSuspension,
         createdAt: value.createdAt,
         deletedAt: value.deletedAt
       ))
@@ -143,6 +148,7 @@ public extension UserActivity.Item {
         ids: value.ids,
         appName: value.appName,
         line: value.line,
+        duringSuspension: value.duringSuspension,
         createdAt: value.createdAt,
         deletedAt: value.deletedAt
       ))
