@@ -28,6 +28,6 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
   }
 
   var url: String {
-    "\(dashboardUrl)/suspend-filter-requests/\(requestId.lowercased)"
+    "\(dashboardUrl)/children/\(userId.lowercased)/suspend-filter-requests/\(requestId.lowercased)"
   }
 }

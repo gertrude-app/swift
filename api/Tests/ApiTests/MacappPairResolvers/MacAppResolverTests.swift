@@ -32,6 +32,7 @@ final class MacAppResolverTests: ApiTestCase {
         event: .suspendFilterRequestSubmitted(.init(
           dashboardUrl: "",
           userDeviceId: user.device.id,
+          userId: user.id,
           userName: user.name,
           duration: 1111,
           requestId: suspendRequests.first!.id,
