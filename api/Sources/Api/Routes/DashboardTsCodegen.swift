@@ -86,6 +86,7 @@ enum DashboardTsCodegenRoute {
       DecideFilterSuspensionRequest.self,
       UpdateUnlockRequest.self,
       VerifySignupEmail.self,
+      HollandTalkSubscription.self,
     ]
   }
 
