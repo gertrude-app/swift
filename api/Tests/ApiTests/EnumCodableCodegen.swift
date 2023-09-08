@@ -23,18 +23,13 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
       path: "/Users/jared/gertie/swift/api/Sources/Api/Extend/Enums+Codable.swift",
       types: [
         (AdminVerifiedNotificationMethod.Config.self, false),
+        (DecideFilterSuspensionRequest.Decision.self, false),
         (UserActivity.Item.self, true),
       ],
       imports: ["Tagged": "Tagged"],
       replacements: [
         "Foundation.UUID": "UUID",
         "Tagged.Tagged": "Tagged",
-      ]
-    ),
-    EnumCodableGen.EnumsGenerator(
-      path: "/Users/jared/gertie/swift/gertie/Sources/Gertie/Enums+Codable.swift",
-      types: [
-        (FilterSuspensionDecision.self, true),
       ]
     ),
   ]

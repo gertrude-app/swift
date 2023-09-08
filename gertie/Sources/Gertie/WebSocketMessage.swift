@@ -4,7 +4,7 @@ import TaggedTime
 public enum WebSocketMessage {
   public enum FromApiToApp: Codable, Equatable, Sendable {
     case currentFilterStateRequested
-    case filterSuspensionRequestDecided(FilterSuspensionDecision)
+    case filterSuspensionRequestDecided(decision: FilterSuspensionDecision, comment: String?)
     case unlockRequestUpdated(status: RequestStatus, target: String, parentComment: String?)
     case userDeleted
     case userUpdated

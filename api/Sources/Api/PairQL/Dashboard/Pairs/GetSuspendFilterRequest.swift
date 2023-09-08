@@ -14,7 +14,7 @@ struct GetSuspendFilterRequest: Pair {
     var requestedDurationInSeconds: Int
     var requestComment: String?
     var responseComment: String?
-    var canDoubleScreenshots: Bool
+    var extraMonitoringOptions: [String: String]
     var createdAt: Date
   }
 }
@@ -26,6 +26,10 @@ extension GetSuspendFilterRequest: Resolver {
     let request = try await Current.db.find(id)
     let userDevice = try await request.userDevice()
     let user = try await userDevice.user()
+    var extraMonitoringOptions: [String: String] = [:]
+    if Semver(userDevice.appVersion)! >= .init("2.1.0")! {
+      extraMonitoringOptions = user.extraMonitoringOptions.mapKeys(\.magicString)
+    }
     return Output(
       id: id,
       deviceId: userDevice.id,
@@ -34,8 +38,7 @@ extension GetSuspendFilterRequest: Resolver {
       requestedDurationInSeconds: request.duration.rawValue,
       requestComment: request.requestComment,
       responseComment: request.responseComment,
-      canDoubleScreenshots: Semver(userDevice.appVersion)! >= .init("2.1.0")!
-        && user.screenshotsEnabled,
+      extraMonitoringOptions: extraMonitoringOptions,
       createdAt: request.createdAt
     )
   }

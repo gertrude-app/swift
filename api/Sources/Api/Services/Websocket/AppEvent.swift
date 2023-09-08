@@ -4,7 +4,7 @@ import TaggedTime
 
 enum AppEvent: Equatable {
   case keychainUpdated(Keychain.Id)
-  case suspendFilterRequestDecided(UserDevice.Id, FilterSuspensionDecision)
+  case suspendFilterRequestDecided(UserDevice.Id, FilterSuspensionDecision, String?)
   case unlockRequestUpdated(UnlockRequestUpdated)
   case userUpdated(User.Id)
   case userDeleted(User.Id)

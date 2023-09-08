@@ -428,15 +428,15 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testDecideSuspendFilterRequest_Accepted() async throws {
-    let user = try await Entities.user().withDevice { $0.appVersion = "2.0.0" } // <-- old event
+    let user = try await Entities.user().withDevice { $0.appVersion = "2.1.2" } // <-- new event
     let request = try await Current.db.create(SuspendFilterRequest.random {
       $0.userDeviceId = user.device.id
       $0.status = .pending
     })
 
-    let decision: FilterSuspensionDecision = .accepted(
+    let decision: DecideFilterSuspensionRequest.Decision = .accepted(
       durationInSeconds: 333,
-      doubledScreenshots: nil
+      extraMonitoring: "@55+k"
     )
 
     let output = try await DecideFilterSuspensionRequest.resolve(
@@ -452,18 +452,19 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(retrieved.status).toEqual(.accepted)
 
     expect(sent.appEvents).toEqual([
-      .suspendFilterRequestUpdated(.init( // <-- old event
-        userDeviceId: user.device.id,
-        status: .accepted,
-        duration: 333,
-        requestComment: request.requestComment,
-        responseComment: "ok"
-      )),
+      .suspendFilterRequestDecided( // <-- new event
+        user.device.id,
+        .accepted(
+          duration: 333,
+          extraMonitoring: .addKeyloggingAndSetScreenshotFreq(55)
+        ),
+        "ok"
+      ),
     ])
   }
 
   func testDecideSuspendFilterRequest_Rejected() async throws {
-    let user = try await Entities.user().withDevice { $0.appVersion = "2.1.2" } // <-- new event
+    let user = try await Entities.user().withDevice { $0.appVersion = "2.0.2" } // <-- old event
     let request = try await Current.db.create(SuspendFilterRequest.random {
       $0.duration = .init(100)
       $0.userDeviceId = user.device.id
@@ -482,7 +483,13 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(retrieved.status).toEqual(.rejected)
 
     expect(sent.appEvents).toEqual([
-      .suspendFilterRequestDecided(user.device.id, .rejected), // <-- new event
+      .suspendFilterRequestUpdated(.init( // <-- old event
+        userDeviceId: user.device.id,
+        status: .rejected,
+        duration: 100,
+        requestComment: request.requestComment,
+        responseComment: nil
+      )),
     ])
   }
 

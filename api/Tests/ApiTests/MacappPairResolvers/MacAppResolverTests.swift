@@ -1,5 +1,6 @@
 import DuetSQL
 import MacAppRoute
+import XCore
 import XCTest
 import XExpect
 
@@ -135,6 +136,28 @@ final class MacAppResolverTests: ApiTestCase {
     let screenshot = try await Current.db.find(Screenshot.Id(uuid))
     expect(screenshot.width).toEqual(1116)
     expect(screenshot.createdAt).toEqual(.epoch)
+  }
+
+  func testPre_2_1_0_AppSendingMonitoringItemsWithoutFilterSuspendedBool() {
+    var json = """
+    [{
+      "appName": "Xcode",
+      "line": "import Foundation",
+      "time": 0.0
+    }]
+    """
+    let keystrokes = try? JSON.decode(json, as: CreateKeystrokeLines.Input.self)
+    expect(keystrokes).not.toBeNil()
+
+    json = """
+    {
+      "width": 333,
+      "height": 444,
+      "createdAt": 0.0
+    }
+    """
+    let screenshot = try? JSON.decode(json, as: CreateSignedScreenshotUpload.Input.self)
+    expect(screenshot).not.toBeNil()
   }
 
   // helpers

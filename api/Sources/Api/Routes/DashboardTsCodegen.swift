@@ -39,7 +39,6 @@ enum DashboardTsCodegenRoute {
       ("AdminSubscriptionStatus", Admin.SubscriptionStatus.self),
       ("VerifiedNotificationMethod", GetAdmin.VerifiedNotificationMethod.self),
       ("AdminNotification", GetAdmin.Notification.self),
-      ("FilterSuspensionDecision", FilterSuspensionDecision.self),
     ]
   }
 
