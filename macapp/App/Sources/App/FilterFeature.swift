@@ -55,13 +55,36 @@ extension FilterFeature.State {
       version: appClient.installedVersion() ?? "unknown"
     )
   }
+
+  var filterState: FilterState {
+    FilterState(
+      extensionState: self.extension,
+      currentSuspensionExpiration: currentSuspensionExpiration
+    )
+  }
+
+  var isSuspended: Bool {
+    filterState.isSuspended
+  }
 }
 
 extension FilterFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
+    case .websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      .accepted(let seconds, _),
+      let comment
+    ))):
+      return suspendFilter(for: seconds, with: &state, comment: comment)
+
+    case .websocket(.receivedMessage(.filterSuspensionRequestDecided(.rejected, let comment))):
+      return .exec { _ in
+        await device.notifyFilterSuspensionDenied(with: comment)
+      }
+
     case .websocket(.receivedMessage(.suspendFilter(let seconds, let comment))):
+      unexpectedError(id: "64635783") // api should not send this legacy event
       return suspendFilter(for: seconds, with: &state, comment: comment)
 
     case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):

@@ -8,7 +8,6 @@ import XExpect
 @testable import ClientInterfaces
 
 @MainActor final class MonitoringReducerTests: XCTestCase {
-
   func testLoadingUserStateOnLaunchStartsMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
@@ -31,11 +30,11 @@ import XExpect
     await bgQueue.advance(by: .seconds(60))
     await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
     await expect(takeScreenshot.invocations).toEqual([1000])
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, false, .epoch)])
     await expect(takePendingScreenshots.invocations).toEqual(1)
 
     await bgQueue.advance(by: .seconds(59))
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, false, .epoch)])
     await expect(takeScreenshot.invocations).toEqual([1000])
 
     await bgQueue.advance(by: .seconds(1))
@@ -43,8 +42,8 @@ import XExpect
     await expect(takeScreenshot.invocations).toEqual([1000, 1000])
     await expect(takePendingScreenshots.invocations).toEqual(2)
     await expect(uploadScreenshot.invocations).toEqual([
-      .init(Data(), 999, 600, .epoch),
-      .init(Data(), 999, 600, .epoch),
+      .init(Data(), 999, 600, false, .epoch),
+      .init(Data(), 999, 600, false, .epoch),
     ])
 
     await expect(keylogging.take.invoked).toEqual(false)
@@ -52,6 +51,95 @@ import XExpect
     await bgQueue.advance(by: .seconds(60 * 3))
     await expect(keylogging.take.invoked).toEqual(true)
     await expect(keylogging.upload.invoked).toEqual(true)
+  }
+
+  func testMonitoringItemsRecordFilterSuspensionState() async {
+    let (store, bgQueue) = AppReducer.testStore()
+
+    store.deps.storage.loadPersistentState = { .mock {
+      $0.user?.keyloggingEnabled = true
+      $0.user?.screenshotsEnabled = true
+      $0.user?.screenshotSize = 1000
+      $0.user?.screenshotFrequency = 60
+    } }
+
+    let (_, uploadScreenshot, _) = spyScreenshots(store)
+    let keylogging = spyKeylogging(store)
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+
+    await store.send(.application(.didFinishLaunching)) // start heartbeat
+
+    // first screenshot NOT taken during filter suspension
+    await bgQueue.advance(by: .seconds(60))
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, false, .epoch)])
+    await expect(keylogging.commit.invoked).toEqual(false)
+    await expect(keylogging.take.invoked).toEqual(false)
+
+    // now, they get a filter suspension
+    await store
+      .send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(decision: .accepted(
+        duration: 300,
+        extraMonitoring: nil
+      ), comment: nil))))
+
+    // suspending the filter triggers flushing of all pending screenshots as "not during suspension"
+    await expect(keylogging.commit.invocations).toEqual([false])
+    await expect(keylogging.take.invocations).toEqual(1)
+    await expect(keylogging.upload.invocations).toEqual([[.mock]])
+
+    await bgQueue.advance(by: .seconds(60))
+    await expect(uploadScreenshot.invocations).toEqual([
+      .init(Data(), 999, 600, false, .epoch),
+      .init(Data(), 999, 600, true, .epoch), // <-- second screenshot taken during suspension
+    ])
+
+    await store.send(.menuBar(.resumeFilterClicked))
+
+    await expect(keylogging.commit.invocations).toEqual([
+      false,
+      true, // <-- resuming filter commits pending screenshots as "during suspension"
+    ])
+    await expect(keylogging.take.invocations).toEqual(2)
+    await expect(keylogging.upload.invocations.value).toHaveCount(2)
+
+    await bgQueue.advance(by: .seconds(60))
+    await expect(uploadScreenshot.invocations).toEqual([
+      .init(Data(), 999, 600, false, .epoch),
+      .init(Data(), 999, 600, true, .epoch),
+      .init(Data(), 999, 600, false, .epoch), // <-- third screenshot after resuming
+    ])
+
+    await bgQueue.advance(by: .seconds(120)) // <-- advance to 5 min heartbeat
+    await expect(keylogging.commit.invocations).toEqual([
+      false,
+      true,
+      false, // <-- back to not suspended
+    ])
+    await expect(keylogging.take.invocations).toEqual(3)
+    await expect(keylogging.upload.invocations.value).toHaveCount(3)
+  }
+
+  func testCommittingAndTakingKeystrokesFromMonitorClass() {
+    let monitor = KeystrokeMonitor()
+    monitor.receive(keystroke: "l", from: "Xcode")
+    monitor.receive(keystroke: "o", from: "Xcode")
+    monitor.receive(keystroke: "l", from: "Xcode")
+    monitor.commitPendingKeystrokes(filterSuspended: false)
+    monitor.receive(keystroke: "h", from: "Xcode")
+    monitor.receive(keystroke: "i", from: "Xcode")
+    monitor.commitPendingKeystrokes(filterSuspended: true)
+    let pending = monitor.takeKeystrokes().map {
+      CreateKeystrokeLines.KeystrokeLineInput(
+        appName: $0.appName,
+        line: $0.line,
+        filterSuspended: $0.filterSuspended,
+        time: .epoch
+      )
+    }
+    expect(pending).toEqual([
+      .init(appName: "Xcode", line: "lol", filterSuspended: false, time: .epoch),
+      .init(appName: "Xcode", line: "hi", filterSuspended: true, time: .epoch),
+    ])
   }
 
   func testNotGrantedPermissionsThenFixed() async {
@@ -101,6 +189,17 @@ import XExpect
     await expect(uploadScreenshot.invoked).toEqual(true)
   }
 
+  func testPendingKeystrokesRestoredIfApiRequestFails() async {
+    let (store, _) = AppReducer.testStore()
+    _ = spyKeylogging(store)
+    let restore = spy(on: CreateKeystrokeLines.Input.self, returning: ())
+    store.deps.monitoring.restorePendingKeystrokes = restore.fn
+    store.deps.api.createKeystrokeLines = { _ in throw TestErr("oh noes!") }
+    await store.send(.heartbeat(.everyFiveMinutes))
+    // pending keystrokes are restored
+    await expect(restore.invocations).toEqual([[.mock]])
+  }
+
   func testLoadingUserStateOnLaunchNoMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
@@ -111,7 +210,7 @@ import XExpect
 
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     store.deps.monitoring.takeScreenshot = { _ in fatalError() }
-    store.deps.api.uploadScreenshot = { _, _, _, _ in fatalError() }
+    store.deps.api.uploadScreenshot = { _ in fatalError() }
     let keylogging = spyKeylogging(store, keystrokes: mock(always: nil))
 
     await store.send(.application(.didFinishLaunching))
@@ -125,7 +224,7 @@ import XExpect
 
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     store.deps.monitoring.takeScreenshot = { _ in fatalError() }
-    store.deps.api.uploadScreenshot = { _, _, _, _ in fatalError() }
+    store.deps.api.uploadScreenshot = { _ in fatalError() }
     let keylogging = spyKeylogging(store, keystrokes: mock(always: nil))
     store.deps.storage.loadPersistentState = { .mock {
       $0.user = nil // <-- no user!
@@ -177,7 +276,7 @@ import XExpect
     await bgQueue.advance(by: .seconds(60))
     await store.receive(.monitoring(.timerTriggeredTakeScreenshot))
     await expect(takeScreenshot.invocations).toEqual([1200])
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, false, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 3)) // advance to heartbeat
     await Task.repeatYield()
     await expect(keylogging.upload.invoked).toEqual(true)
@@ -211,7 +310,7 @@ import XExpect
     await bgQueue.advance(by: .seconds(60))
     await Task.repeatYield()
     await expect(takeScreenshot.invocations).toEqual([700])
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, false, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
     await expect(keylogging.upload.invocations.value.count).toEqual(1)
     await expect(takeScreenshot.invocations.value.count).toEqual(5)
@@ -260,7 +359,7 @@ import XExpect
     // now we start getting screenshots, and keystrokes
     await bgQueue.advance(by: .seconds(60))
     await expect(takeScreenshot.invocations).toEqual([800])
-    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, .epoch)])
+    await expect(uploadScreenshot.invocations).toEqual([.init(Data(), 999, 600, false, .epoch)])
     await bgQueue.advance(by: .seconds(60 * 4)) // <- to heartbeat
     await Task.repeatYield()
     await expect(keylogging.upload.invocations.value.count).toEqual(1)
@@ -359,7 +458,7 @@ import XExpect
   func spyScreenshots(_ store: TestStoreOf<AppReducer>)
     -> (
       takeScreenshot: Spy<Void, Int>,
-      uploadScreenshot: Spy4<URL, Data, Int, Int, Date>,
+      uploadScreenshot: Spy<URL, ApiClient.UploadScreenshotData>,
       takePendingScreenshots: Mock<[(Data, Int, Int, Date)], Int>
     ) {
     let takeScreenshot = spy(on: Int.self, returning: ())
@@ -367,8 +466,8 @@ import XExpect
     let takePendingScreenshots = mock(always: [(Data(), 999, 600, Date.epoch)])
     store.deps.monitoring.takePendingScreenshots = takePendingScreenshots.fn
 
-    let uploadScreenshot = spy4(
-      on: (Data.self, Int.self, Int.self, Date.self),
+    let uploadScreenshot = spy(
+      on: ApiClient.UploadScreenshotData.self,
       returning: URL(string: "/uploaded.png")!
     )
     store.deps.api.uploadScreenshot = uploadScreenshot.fn
@@ -378,6 +477,7 @@ import XExpect
   struct Keylogging {
     var start: Mock<Void, Int>
     var stop: Mock<Void, Int>
+    var commit: Spy<Void, Bool>
     var take: Mock<CreateKeystrokeLines.Input?, Int>
     var upload: Spy<Void, CreateKeystrokeLines.Input>
   }
@@ -393,6 +493,26 @@ import XExpect
     store.deps.monitoring.takePendingKeystrokes = take.fn
     let upload = spy(on: CreateKeystrokeLines.Input.self, returning: ())
     store.deps.api.createKeystrokeLines = upload.fn
-    return Keylogging(start: start, stop: stop, take: take, upload: upload)
+    let commit = spy(on: Bool.self, returning: ())
+    store.deps.monitoring.commitPendingKeystrokes = commit.fn
+    return Keylogging(start: start, stop: stop, commit: commit, take: take, upload: upload)
+  }
+}
+
+extension ApiClient.UploadScreenshotData {
+  init(
+    _ image: Data,
+    _ width: Int,
+    _ height: Int,
+    _ filterSuspended: Bool = false,
+    _ createdAt: Date
+  ) {
+    self.init(
+      image: image,
+      width: width,
+      height: height,
+      filterSuspended: filterSuspended,
+      createdAt: createdAt
+    )
   }
 }

@@ -34,11 +34,18 @@ extension MonitoringFeature.RootReducer {
 
     case .monitoring(.timerTriggeredTakeScreenshot):
       let width = state.user.data?.screenshotSize ?? 800
+      let filterSuspended = state.filter.isSuspended
       return .exec { _ in
         try await monitoring.takeScreenshot(width)
         guard network.isConnected() else { return }
-        for sc in await monitoring.takePendingScreenshots() {
-          _ = try await api.uploadScreenshot(sc.data, sc.width, sc.height, sc.createdAt)
+        for image in await monitoring.takePendingScreenshots() {
+          _ = try await api.uploadScreenshot(.init(
+            image: image.data,
+            width: image.width,
+            height: image.height,
+            filterSuspended: filterSuspended,
+            createdAt: image.createdAt
+          ))
         }
       }
 
@@ -46,16 +53,18 @@ extension MonitoringFeature.RootReducer {
     // so we don't have to worry about edge cases when we stop/restart.
     // if we're not monitoring keystrokes, keystrokes will be nil
     case .heartbeat(.everyFiveMinutes),
+         .application(.willSleep),
          .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))):
-      return .exec { _ in
-        guard network.isConnected() else { return }
-        if let keystrokes = await monitoring.takePendingKeystrokes() {
-          _ = try await api.createKeystrokeLines(keystrokes)
-        }
-      }
+      return flushKeystrokes(state.filter.isSuspended)
+
+    case .delegate(.filterSuspendedChanged(let wasSuspended, _)):
+      return flushKeystrokes(wasSuspended)
 
     case .application(.willTerminate):
-      return .cancel(id: CancelId.screenshots)
+      return .merge(
+        .cancel(id: CancelId.screenshots),
+        flushKeystrokes(state.filter.isSuspended)
+      )
 
     case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
       return .cancel(id: CancelId.screenshots)
@@ -66,6 +75,20 @@ extension MonitoringFeature.RootReducer {
 
     default:
       return .none
+    }
+  }
+
+  func flushKeystrokes(_ filterSuspended: Bool) -> Effect<Action> {
+    .exec { _ in
+      await monitoring.commitPendingKeystrokes(filterSuspended)
+      guard network.isConnected(),
+            let keystrokes = await monitoring.takePendingKeystrokes() else { return }
+      do {
+        try await api.createKeystrokeLines(keystrokes)
+      } catch {
+        await monitoring.restorePendingKeystrokes(keystrokes)
+        throw error
+      }
     }
   }
 

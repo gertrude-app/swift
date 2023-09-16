@@ -57,14 +57,15 @@ extension ApiClient: DependencyKey {
     },
     setAccountActive: { await accountActive.setValue($0) },
     setUserToken: { await userToken.setValue($0) },
-    uploadScreenshot: { jpegData, width, height, createdAt in
+    uploadScreenshot: { data in
       guard await accountActive.value else { throw Error.accountInactive }
       let signed = try await output(
         from: CreateSignedScreenshotUpload.self,
         with: .createSignedScreenshotUpload(.init(
-          width: width,
-          height: height,
-          createdAt: createdAt
+          width: data.width,
+          height: data.height,
+          filterSuspended: data.filterSuspended,
+          createdAt: data.createdAt
         ))
       )
 
@@ -74,7 +75,7 @@ extension ApiClient: DependencyKey {
       request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type")
 
       return try await withCheckedThrowingContinuation { continuation in
-        URLSession.shared.uploadTask(with: request, from: jpegData) { data, response, error in
+        URLSession.shared.uploadTask(with: request, from: data.image) { data, response, error in
           if let error {
             continuation.resume(throwing: error)
             return

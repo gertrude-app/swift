@@ -92,6 +92,7 @@ extension WebSocketFeature.RootReducer {
       case .receivedMessage(.suspendFilterRequestDenied(let comment)):
         return .exec { _ in
           await device.notifyFilterSuspensionDenied(with: comment)
+          unexpectedError(id: "2b1c3cf3") // api should not be sending this legacy event
         }
 
       case .receivedMessage(.unlockRequestUpdated(let status, let target, let comment)):

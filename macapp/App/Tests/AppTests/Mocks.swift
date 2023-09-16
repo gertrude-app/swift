@@ -13,11 +13,20 @@ public extension BlockedRequest {
   }
 }
 
-public extension CreateKeystrokeLines.KeystrokeLineInput {
-  static var mock: Self {
+extension CreateKeystrokeLines.KeystrokeLineInput: Mocked {
+  public static var mock: Self {
     .init(
       appName: "Xcode",
       line: "import Foundation",
+      filterSuspended: false,
+      time: Date(timeIntervalSince1970: 0)
+    )
+  }
+
+  public static var empty: Self {
+    .init(
+      appName: "",
+      line: "",
       filterSuspended: false,
       time: Date(timeIntervalSince1970: 0)
     )

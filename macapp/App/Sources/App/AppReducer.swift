@@ -21,6 +21,9 @@ struct AppReducer: Reducer, Sendable {
   }
 
   enum Action: Equatable, Sendable {
+    enum Delegate: Equatable, Sendable {
+      case filterSuspendedChanged(was: Bool, is: Bool)
+    }
 
     enum FocusedNotification: Equatable, Sendable {
       case unexpectedError
@@ -32,6 +35,7 @@ struct AppReducer: Reducer, Sendable {
     case application(ApplicationFeature.Action)
     case appUpdates(AppUpdatesFeature.Action)
     case checkIn(result: TaskResult<CheckIn.Output>, reason: CheckIn.Reason)
+    case delegate(Delegate)
     case filter(FilterFeature.Action)
     case focusedNotification(FocusedNotification)
     case xpc(XPCEvent.App)
@@ -100,7 +104,9 @@ struct AppReducer: Reducer, Sendable {
     AppUpdatesFeature.RootReducer()
     AdminFeature.RootReducer()
     AdminWindowFeature.RootReducer()
-    FilterFeature.RootReducer()
+    FilterFeature.RootReducer().onChange(of: \.filter.isSuspended) { old, new in
+      Reduce { _, _ in .send(.delegate(.filterSuspendedChanged(was: old, is: new))) }
+    }
     MonitoringFeature.RootReducer()
     RequestSuspensionFeature.RootReducer()
     WebSocketFeature.RootReducer()

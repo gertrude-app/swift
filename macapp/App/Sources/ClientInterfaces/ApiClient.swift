@@ -15,7 +15,7 @@ public struct ApiClient: Sendable {
   public var recentAppVersions: @Sendable () async throws -> [String: String]
   public var setAccountActive: @Sendable (Bool) async -> Void
   public var setUserToken: @Sendable (UUID) async -> Void
-  public var uploadScreenshot: @Sendable (Data, Int, Int, Date) async throws -> URL
+  public var uploadScreenshot: @Sendable (UploadScreenshotData) async throws -> URL
 
   public init(
     checkIn: @escaping @Sendable (CheckIn.Input) async throws -> CheckIn.Output,
@@ -29,7 +29,7 @@ public struct ApiClient: Sendable {
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setUserToken: @escaping @Sendable (UUID) async -> Void,
-    uploadScreenshot: @escaping @Sendable (Data, Int, Int, Date) async throws -> URL
+    uploadScreenshot: @escaping @Sendable (UploadScreenshotData) async throws -> URL
   ) {
     self.checkIn = checkIn
     self.clearUserToken = clearUserToken
@@ -56,6 +56,24 @@ extension ApiClient: EndpointOverridable {
 }
 
 public extension ApiClient {
+  struct UploadScreenshotData: Sendable, Equatable {
+    public var image: Data
+    public var width: Int
+    public var height: Int
+    public var filterSuspended: Bool
+    public var createdAt: Date
+
+    public init(image: Data, width: Int, height: Int, filterSuspended: Bool, createdAt: Date) {
+      self.image = image
+      self.width = width
+      self.height = height
+      self.filterSuspended = filterSuspended
+      self.createdAt = createdAt
+    }
+  }
+}
+
+public extension ApiClient {
   enum Error: Swift.Error, Equatable {
     case accountInactive
     case missingUserToken
@@ -76,7 +94,7 @@ extension ApiClient: TestDependencyKey {
     recentAppVersions: { [:] },
     setAccountActive: { _ in },
     setUserToken: { _ in },
-    uploadScreenshot: { _, _, _, _ in .init(string: "https://s3.buck.et/img.png")! }
+    uploadScreenshot: { _ in .init(string: "https://s3.buck.et/img.png")! }
   )
 }
 

@@ -99,6 +99,83 @@ import XExpect
     await expect(quitBrowsers.invocations).toEqual(1)
   }
 
+  func testFilterSuspensionWebsocketLifecycle() async {
+    let (store, _) = AppReducer.testStore()
+
+    let showNotification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = showNotification.fn
+    let scheduler = DispatchQueue.test
+    store.deps.mainQueue = scheduler.eraseToAnyScheduler()
+    let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
+    store.deps.filterXpc.suspendFilter = suspendFilter.fn
+    let quitBrowsers = mock(always: ())
+    store.deps.device.quitBrowsers = quitBrowsers.fn
+    let resumeFilter = mock(returning: [Result<Void, XPCErr>.success(())])
+    store.deps.filterXpc.endFilterSuspension = resumeFilter.fn
+
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      decision: .accepted(duration: 120, extraMonitoring: nil),
+      comment: "yup!"
+    )))) {
+      $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 120)
+    }
+
+    await expect(suspendFilter.invocations).toEqual([120])
+    await expect(showNotification.invocations.value).toHaveCount(1)
+    await expect(showNotification.invocations.value[0].a).toContain("disabling filter")
+    await expect(showNotification.invocations.value[0].b).toContain("yup!")
+    await expect(showNotification.invocations.value[0].b).toContain("2 minutes from now")
+
+    await scheduler.advance(by: .seconds(120))
+    await expect(showNotification.invocations.value).toHaveCount(1)
+
+    // simulate filter sending notice that suspension is ending
+    await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502)))) {
+      $0.filter.currentSuspensionExpiration = nil
+    }
+
+    await expect(showNotification.invocations.value).toHaveCount(2)
+    await expect(showNotification.invocations.value[1].a).toContain("browsers quitting soon")
+
+    await scheduler.advance(by: .seconds(59))
+    await expect(quitBrowsers.invocations).toEqual(0)
+    await scheduler.advance(by: .seconds(1))
+    await expect(quitBrowsers.invocations).toEqual(1)
+
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      decision: .rejected,
+      comment: "nope!"
+    ))))
+
+    await expect(showNotification.invocations.value).toHaveCount(3)
+    await expect(showNotification.invocations.value[2].a).toContain("request DENIED")
+    await expect(showNotification.invocations.value[2].b).toContain("nope!")
+    await expect(suspendFilter.invocations).toEqual([120]) // <-- no new suspension sent
+
+    // still handles legacy event (though this should never be received)
+    await store.send(.websocket(.receivedMessage(.suspendFilter(for: 90, parentComment: "OK")))) {
+      $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
+    }
+    await expect(suspendFilter.invocations).toEqual([120, 90])
+    await expect(showNotification.invocations.value).toHaveCount(4)
+    await expect(showNotification.invocations.value[3].a).toContain("disabling filter")
+
+    await scheduler.advance(by: .seconds(30))
+    await expect(resumeFilter.invocations).toEqual(0)
+
+    await store.send(.menuBar(.resumeFilterClicked)) {
+      $0.filter.currentSuspensionExpiration = nil
+    }
+    await expect(resumeFilter.invocations).toEqual(1)
+    await expect(showNotification.invocations.value).toHaveCount(5)
+    await expect(showNotification.invocations.value[4].a).toContain("browsers quitting soon")
+
+    await scheduler.advance(by: .seconds(59))
+    await expect(quitBrowsers.invocations).toEqual(1)
+    await scheduler.advance(by: .seconds(1))
+    await expect(quitBrowsers.invocations).toEqual(2)
+  }
+
   func testReceivingSuspensionDuring60SecondCountdownCancelsTimer() async {
     let (store, _) = AppReducer.testStore {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
@@ -120,10 +197,12 @@ import XExpect
     await expect(showNotification.invocations.value.count).toEqual(1)
     await expect(showNotification.invocations.value[0].a).toContain("browsers quitting soon")
 
+    // 30 seconds from notification re: quitting browsers, dad sends another suspension!
     await scheduler.advance(by: .seconds(30))
-
-    // 30 seconds from quitting browsers, dad sends another suspension!
-    await store.send(.websocket(.receivedMessage(.suspendFilter(for: 120, parentComment: nil)))) {
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      decision: .accepted(duration: 120, extraMonitoring: nil),
+      comment: nil
+    )))) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 120)
     }
 

@@ -160,9 +160,3 @@ class KeystrokeTests: XCTestCase {
 func c(_ ch: Character, delay: TimeInterval = 0, keyCode: UInt16 = 0) -> Keystroke {
   Keystroke(char: ch, keyCode: keyCode, modifiers: [], timestamp: delay)
 }
-
-extension Keystroke: ExpressibleByStringLiteral {
-  public init(stringLiteral value: String) {
-    self.init(char: Character(value))
-  }
-}
