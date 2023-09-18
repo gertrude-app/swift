@@ -11,7 +11,7 @@ class AppMigratorTests: XCTestCase {
   typealias V1 = AppMigrator.Legacy.V1.StorageKey
 
   var testMigrator: AppMigrator {
-    AppMigrator(api: .failing, userDefaults: .failing)
+    AppMigrator(api: .testValue, userDefaults: .failing)
   }
 
   func testNoStoredDataAtAllReturnsNil() async {

@@ -41,9 +41,8 @@ import XExpect
   }
 
   func testSuccessfulApiRequestsRestartsCount() async {
-    let (store, _) = AppReducer.testStore {
-      $0.user = .init(data: .mock)
-    }
+    let (store, _) = AppReducer.testStore { $0.user = .init(data: .mock) }
+    store.deps.updater = .mock
 
     let error = PqlError(
       id: "123",

@@ -29,12 +29,12 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
     case .application(.didFinishLaunching):
       return .merge(
-        .exec { _ in
-          // requesting notification authorization at least once
-          // ensures that the system prefs panel will show Gertrude
-          // TODO: consider delaying this if no user connected
-          await device.requestNotificationAuthorization()
-        },
+        // .exec { _ in
+        //   // requesting notification authorization at least once
+        //   // ensures that the system prefs panel will show Gertrude
+        //   // TODO: consider delaying this if no user connected
+        //   await device.requestNotificationAuthorization()
+        // },
 
         .exec { send in
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
@@ -51,9 +51,9 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
         .exec { _ in
           // TODO: should be part of onboarding...
-          if await app.isLaunchAtLoginEnabled() == false {
-            await app.enableLaunchAtLogin()
-          }
+          // if await app.isLaunchAtLoginEnabled() == false {
+          //   await app.enableLaunchAtLogin()
+          // }
         },
 
         .publisher {

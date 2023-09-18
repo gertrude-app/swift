@@ -16,6 +16,9 @@ extension ExtensionClient: DependencyKey {
 
 extension ExtensionClient: TestDependencyKey {
   static let testValue = Self(
+    version: unimplemented("ExtensionClient.version")
+  )
+  static let mock = Self(
     version: { "1.0.0" }
   )
 }

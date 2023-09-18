@@ -11,14 +11,19 @@ struct AppReducer: Reducer, Sendable {
   struct State: Equatable, Sendable {
     var admin = AdminFeature.State()
     var adminWindow = AdminWindowFeature.State()
-    var appUpdates = AppUpdatesFeature.State()
+    var appUpdates: AppUpdatesFeature.State
     var blockedRequests = BlockedRequestsFeature.State()
-    var filter = FilterFeature.State()
+    var filter: FilterFeature.State
     var history = HistoryFeature.State()
     var menuBar = MenuBarFeature.State()
     var onboarding = OnboardingFeature.State()
     var requestSuspension = RequestSuspensionFeature.State()
     var user = UserFeature.State()
+
+    init(appVersion: String?) {
+      appUpdates = .init(installedVersion: appVersion)
+      filter = .init(appVersion: appVersion)
+    }
   }
 
   enum Action: Equatable, Sendable {
@@ -64,14 +69,18 @@ struct AppReducer: Reducer, Sendable {
       #endif
 
       switch action {
-      case .loadedPersistentState(nil):
+      case .loadedPersistentState(.none):
         state.onboarding.windowOpen = true
-        return .none
+        return .exec { [new = state.persistent] _ in
+          try await storage.savePersistentState(new)
+        }
 
       case .loadedPersistentState(.some(let persistent)) where persistent.onboardingStep != nil:
         state.onboarding.windowOpen = true
         state.onboarding.step = persistent.onboardingStep ?? .welcome
-        return .none
+        return .exec { [persist = state.persistent] _ in
+          try await storage.savePersistentState(persist)
+        }
 
       case .loadedPersistentState(.some(let persisted)):
         state.appUpdates.releaseChannel = persisted.appUpdateReleaseChannel

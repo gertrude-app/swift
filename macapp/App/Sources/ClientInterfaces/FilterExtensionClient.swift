@@ -39,22 +39,33 @@ public struct FilterExtensionClient: Sendable {
   }
 }
 
-#if DEBUG
-  extension FilterExtensionClient: TestDependencyKey {
-    public static let testValue = Self(
-      setup: { .installedAndRunning },
-      start: { .installedAndRunning },
-      stop: { .installedButNotRunning },
-      reinstall: { .installedSuccessfully },
-      restart: { .installedAndRunning },
-      replace: { .installedSuccessfully },
-      state: { .installedAndRunning },
-      install: { .installedSuccessfully },
-      stateChanges: { Empty().eraseToAnyPublisher() },
-      uninstall: { true }
-    )
-  }
-#endif
+extension FilterExtensionClient: TestDependencyKey {
+  public static let testValue = Self(
+    setup: unimplemented("FilterExtensionClient.setup"),
+    start: unimplemented("FilterExtensionClient.start"),
+    stop: unimplemented("FilterExtensionClient.stop"),
+    reinstall: unimplemented("FilterExtensionClient.reinstall"),
+    restart: unimplemented("FilterExtensionClient.restart"),
+    replace: unimplemented("FilterExtensionClient.replace"),
+    state: unimplemented("FilterExtensionClient.state"),
+    install: unimplemented("FilterExtensionClient.install"),
+    stateChanges: unimplemented("FilterExtensionClient.stateChanges"),
+    uninstall: unimplemented("FilterExtensionClient.uninstall")
+  )
+
+  public static let mock = Self(
+    setup: { .installedAndRunning },
+    start: { .installedAndRunning },
+    stop: { .installedButNotRunning },
+    reinstall: { .installedSuccessfully },
+    restart: { .installedAndRunning },
+    replace: { .installedSuccessfully },
+    state: { .installedAndRunning },
+    install: { .installedSuccessfully },
+    stateChanges: { Empty().eraseToAnyPublisher() },
+    uninstall: { true }
+  )
+}
 
 public extension DependencyValues {
   var filterExtension: FilterExtensionClient {

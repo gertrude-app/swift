@@ -28,14 +28,14 @@ import XExpect
 
     await store.send(.application(.didFinishLaunching))
 
-    await expect(filterSetupSpy).toEqual(true)
-    await store.receive(.filter(.receivedState(.installedButNotRunning))) {
-      $0.filter.extension = .installedButNotRunning
-    }
-
     await store.receive(.loadedPersistentState(.mock)) {
       $0.user = .init(data: .mock)
       $0.history.userConnection = .established(welcomeDismissed: true)
+    }
+
+    await expect(filterSetupSpy).toEqual(true)
+    await store.receive(.filter(.receivedState(.installedButNotRunning))) {
+      $0.filter.extension = .installedButNotRunning
     }
 
     await store.receive(.websocket(.connectedSuccessfully))
@@ -139,7 +139,7 @@ extension AppReducer {
     reducer: R = AppReducer(),
     mutateState: @escaping (inout State) -> Void = { _ in }
   ) -> (TestStoreOf<AppReducer>, TestSchedulerOf<DispatchQueue>) {
-    var state = State()
+    var state = State(appVersion: "1.0.0")
     mutateState(&state)
     let store = TestStore(initialState: state, reducer: { reducer })
     store.useMainSerialExecutor = true
@@ -149,9 +149,16 @@ extension AppReducer {
       store.deps.date = .constant(Date(timeIntervalSince1970: 0))
       store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
       store.deps.mainQueue = .immediate
+      store.deps.monitoring = .mock
+      store.deps.storage = .mock
       store.deps.storage.loadPersistentState = { .mock }
+      store.deps.app = .mock
+      store.deps.api = .mock
+      store.deps.device = .mock
       store.deps.api.checkIn = { _ in .mock }
-      store.deps.filterExtension.setup = { .installedAndRunning }
+      store.deps.filterExtension = .mock
+      store.deps.filterXpc = .mock
+      store.deps.websocket = .mock
     }
     return (store, scheduler)
   }

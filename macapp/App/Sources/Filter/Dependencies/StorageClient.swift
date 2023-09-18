@@ -47,6 +47,13 @@ extension StorageClient: DependencyKey {
 
 extension StorageClient: TestDependencyKey {
   static let testValue = Self(
+    savePersistentState: unimplemented("StorageClient.savePersistentState"),
+    loadPersistentState: unimplemented("StorageClient.loadPersistentState"),
+    loadPersistentStateSync: unimplemented("StorageClient.loadPersistentStateSync"),
+    deleteAllPersistentState: unimplemented("StorageClient.deleteAllPersistentState"),
+    deleteAll: unimplemented("StorageClient.deleteAll")
+  )
+  static let mock = Self(
     savePersistentState: { _ in },
     loadPersistentState: { nil },
     loadPersistentStateSync: { nil },

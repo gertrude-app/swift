@@ -2,7 +2,7 @@ import ComposableArchitecture
 import Foundation
 
 struct OnboardingFeature: Feature {
-  struct State: Equatable, Encodable {
+  struct State: Equatable, Encodable, Sendable {
     struct MacUser: Equatable, Encodable {
       var id: uid_t
       var name: String
@@ -20,6 +20,7 @@ struct OnboardingFeature: Feature {
     var step: Step = .welcome
     var userRemediationStep: MacUser.RemediationStep?
     var currentUser: MacUser?
+    var connectChildRequest: PayloadRequestState<String, String> = .idle
     var users: [MacUser] = []
   }
 
@@ -30,6 +31,7 @@ struct OnboardingFeature: Feature {
       case chooseSwitchToNonAdminUserClicked
       case chooseCreateNonAdminClicked
       case chooseDemoteAdminClicked
+      case connectChildSubmitted(Int)
     }
 
     enum Delegate: Equatable, Sendable {
@@ -39,9 +41,11 @@ struct OnboardingFeature: Feature {
     case webview(Webview)
     case delegate(Delegate)
     case receivedUserData(uid_t, [MacOSUser])
+    case connectUser(TaskResult<UserData>)
   }
 
   struct Reducer: FeatureReducer {
+    @Dependency(\.api) var api
     @Dependency(\.app) var app
     @Dependency(\.device) var device
     @Dependency(\.storage) var storage
@@ -100,6 +104,43 @@ struct OnboardingFeature: Feature {
 
       case .webview(.chooseSwitchToNonAdminUserClicked):
         state.userRemediationStep = .switch
+        return .none
+
+      case .webview(.primaryBtnClicked) where step == .getChildConnectionCode:
+        state.step = .connectChild
+        return .none
+
+      case .webview(.connectChildSubmitted(let code)):
+        state.connectChildRequest = .ongoing
+        return .exec { send in
+          await send(.connectUser((TaskResult {
+            try await api.connectUser(.init(code: code, device: device, app: app))
+          })))
+        }
+
+      case .connectUser(.success(let user)):
+        state.connectChildRequest = .succeeded(payload: user.name)
+        return .none
+
+      case .connectUser(.failure(let error)):
+        state.connectChildRequest = .failed(error: error.userMessage())
+        return .none
+
+      case .webview(.primaryBtnClicked)
+        where step == .connectChild && state.connectChildRequest.isFailed:
+        state.connectChildRequest = .idle
+        state.step = .getChildConnectionCode
+        return .none
+
+      case .webview(.secondaryBtnClicked)
+        where step == .connectChild && state.connectChildRequest.isFailed:
+        return .exec { _ in
+          await device.openWebUrl(.contact)
+        }
+
+      case .webview(.primaryBtnClicked)
+        where step == .connectChild && state.connectChildRequest.isSucceeded:
+        state.step = .allowNotifications_start
         return .none
 
       case .webview(.primaryBtnClicked):
