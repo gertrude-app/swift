@@ -84,6 +84,20 @@ public extension ApiClient {
 
 extension ApiClient: TestDependencyKey {
   public static let testValue = Self(
+    checkIn: unimplemented("ApiClient.checkIn"),
+    clearUserToken: unimplemented("ApiClient.clearUserToken"),
+    connectUser: unimplemented("ApiClient.connectUser"),
+    createKeystrokeLines: unimplemented("ApiClient.createKeystrokeLines"),
+    createSuspendFilterRequest: unimplemented("ApiClient.createSuspendFilterRequest"),
+    createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
+    logInterestingEvent: unimplemented("ApiClient.logInterestingEvent"),
+    recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
+    setAccountActive: unimplemented("ApiClient.setAccountActive"),
+    setUserToken: unimplemented("ApiClient.setUserToken"),
+    uploadScreenshot: unimplemented("ApiClient.uploadScreenshot")
+  )
+
+  public static let mock = Self(
     checkIn: { _ in throw Error.unexpectedError(statusCode: 999) },
     clearUserToken: {},
     connectUser: { _ in throw Error.unexpectedError(statusCode: 888) },
@@ -97,24 +111,6 @@ extension ApiClient: TestDependencyKey {
     uploadScreenshot: { _ in .init(string: "https://s3.buck.et/img.png")! }
   )
 }
-
-#if DEBUG
-  public extension ApiClient {
-    static let failing = Self(
-      checkIn: unimplemented("ApiClient.checkIn"),
-      clearUserToken: unimplemented("ApiClient.clearUserToken"),
-      connectUser: unimplemented("ApiClient.connectUser"),
-      createKeystrokeLines: unimplemented("ApiClient.createKeystrokeLines"),
-      createSuspendFilterRequest: unimplemented("ApiClient.createSuspendFilterRequest"),
-      createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
-      logInterestingEvent: unimplemented("ApiClient.logInterestingEvent"),
-      recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
-      setAccountActive: unimplemented("ApiClient.setAccountActive"),
-      setUserToken: unimplemented("ApiClient.setUserToken"),
-      uploadScreenshot: unimplemented("ApiClient.uploadScreenshot")
-    )
-  }
-#endif
 
 public extension DependencyValues {
   var api: ApiClient {

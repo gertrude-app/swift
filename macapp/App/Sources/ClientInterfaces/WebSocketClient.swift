@@ -46,6 +46,14 @@ extension WebSocketClient: EndpointOverridable {
 
 extension WebSocketClient: TestDependencyKey {
   public static let testValue = Self(
+    connect: unimplemented("WebSocketClient.connect"),
+    disconnect: unimplemented("WebSocketClient.disconnect"),
+    receive: unimplemented("WebSocketClient.receive"),
+    send: unimplemented("WebSocketClient.send"),
+    state: unimplemented("WebSocketClient.state")
+  )
+
+  public static let mock = Self(
     connect: { _ in .connected },
     disconnect: {},
     receive: { Empty().eraseToAnyPublisher() },

@@ -47,12 +47,11 @@ struct FilterFeature: Feature {
 }
 
 extension FilterFeature.State {
-  init() {
-    @Dependency(\.app) var appClient
+  init(appVersion: String?) {
     self.init(
       currentSuspensionExpiration: nil,
       extension: .unknown,
-      version: appClient.installedVersion() ?? "unknown"
+      version: appVersion ?? "unknown"
     )
   }
 

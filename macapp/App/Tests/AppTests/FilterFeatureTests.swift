@@ -57,7 +57,11 @@ import XExpect
   }
 
   func testManualAdminSuspensionLifecycle() async {
-    let store = TestStore(initialState: AppReducer.State()) { AppReducer() }
+    let store = TestStore(initialState: AppReducer.State(appVersion: "1.0.0")) {
+      AppReducer()
+    }
+    store.deps.websocket = .mock
+    store.deps.device = .mock
     store.deps.date = .constant(Date(timeIntervalSince1970: 0))
     let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
     store.deps.filterXpc.suspendFilter = suspendFilter.fn

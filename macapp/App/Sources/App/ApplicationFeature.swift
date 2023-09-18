@@ -29,12 +29,12 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
     case .application(.didFinishLaunching):
       return .merge(
-        .exec { _ in
-          // requesting notification authorization at least once
-          // ensures that the system prefs panel will show Gertrude
-          // TODO: consider delaying this if no user connected
-          await device.requestNotificationAuthorization()
-        },
+        // .exec { _ in
+        //   // requesting notification authorization at least once
+        //   // ensures that the system prefs panel will show Gertrude
+        //   // TODO: consider delaying this if no user connected
+        //   await device.requestNotificationAuthorization()
+        // },
 
         .exec { send in
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
@@ -60,9 +60,10 @@ extension ApplicationFeature.RootReducer: RootReducing {
         }.cancellable(id: Heartbeat.CancelId.interval),
 
         .exec { _ in
-          if await app.isLaunchAtLoginEnabled() == false {
-            await app.enableLaunchAtLogin()
-          }
+          // TODO: should be part of onboarding...
+          // if await app.isLaunchAtLoginEnabled() == false {
+          //   await app.enableLaunchAtLogin()
+          // }
         },
 
         .publisher {
@@ -91,21 +92,21 @@ extension ApplicationFeature.RootReducer: RootReducing {
       return .none
     }
   }
+}
 
-  func heartbeatIntervals(for tick: Int) -> [Heartbeat.Interval] {
-    var intervals: [Heartbeat.Interval] = [.everyMinute]
-    if tick % 5 == 0 {
-      intervals.append(.everyFiveMinutes)
-    }
-    if tick % 20 == 0 {
-      intervals.append(.everyTwentyMinutes)
-    }
-    if tick % 60 == 0 {
-      intervals.append(.everyHour)
-    }
-    if tick % 360 == 0 {
-      intervals.append(.everySixHours)
-    }
-    return intervals
+func heartbeatIntervals(for tick: Int) -> [Heartbeat.Interval] {
+  var intervals: [Heartbeat.Interval] = [.everyMinute]
+  if tick % 5 == 0 {
+    intervals.append(.everyFiveMinutes)
   }
+  if tick % 20 == 0 {
+    intervals.append(.everyTwentyMinutes)
+  }
+  if tick % 60 == 0 {
+    intervals.append(.everyHour)
+  }
+  if tick % 360 == 0 {
+    intervals.append(.everySixHours)
+  }
+  return intervals
 }

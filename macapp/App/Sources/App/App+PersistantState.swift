@@ -11,6 +11,8 @@ enum Persistent {
     var appUpdateReleaseChannel: ReleaseChannel
     var filterVersion: String
     var user: UserData?
+    // not present until `2.1.0` but backwards compatible
+    var onboardingStep: OnboardingFeature.State.Step?
   }
 
   // v2.0.0 - v2.0.3

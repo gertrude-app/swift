@@ -37,6 +37,9 @@ extension SecurityClient: DependencyKey {
 
 extension SecurityClient: TestDependencyKey {
   public static let testValue = Self(
+    didAuthenticateAsAdmin: unimplemented("SecurityClient.didAuthenticateAsAdmin")
+  )
+  public static let mock = Self(
     didAuthenticateAsAdmin: { false }
   )
 }

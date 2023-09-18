@@ -65,6 +65,23 @@ public struct FilterXPCClient: Sendable {
 extension FilterXPCClient: TestDependencyKey {
   public static var testValue: Self {
     .init(
+      establishConnection: unimplemented("FilterXPCClient.establishConnection"),
+      checkConnectionHealth: unimplemented("FilterXPCClient.checkConnectionHealth"),
+      disconnectUser: unimplemented("FilterXPCClient.disconnectUser"),
+      endFilterSuspension: unimplemented("FilterXPCClient.endFilterSuspension"),
+      requestAck: unimplemented("FilterXPCClient.requestAck"),
+      requestExemptUserIds: unimplemented("FilterXPCClient.requestExemptUserIds"),
+      sendDeleteAllStoredState: unimplemented("FilterXPCClient.sendDeleteAllStoredState"),
+      sendUserRules: unimplemented("FilterXPCClient.sendUserRules"),
+      setBlockStreaming: unimplemented("FilterXPCClient.setBlockStreaming"),
+      setUserExemption: unimplemented("FilterXPCClient.setUserExemption"),
+      suspendFilter: unimplemented("FilterXPCClient.suspendFilter"),
+      events: unimplemented("FilterXPCClient.events")
+    )
+  }
+
+  public static var mock: Self {
+    .init(
       establishConnection: { .success(()) },
       checkConnectionHealth: { .success(()) },
       disconnectUser: { .success(()) },

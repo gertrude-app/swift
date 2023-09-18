@@ -37,6 +37,15 @@ public struct AppClient: Sendable {
 
 extension AppClient: TestDependencyKey {
   public static let testValue = Self(
+    colorScheme: unimplemented("AppClient.colorScheme"),
+    colorSchemeChanges: unimplemented("AppClient.colorSchemeChanges"),
+    disableLaunchAtLogin: unimplemented("AppClient.disableLaunchAtLogin"),
+    enableLaunchAtLogin: unimplemented("AppClient.enableLaunchAtLogin"),
+    isLaunchAtLoginEnabled: unimplemented("AppClient.isLaunchAtLoginEnabled"),
+    installedVersion: unimplemented("AppClient.installedVersion"),
+    quit: unimplemented("AppClient.quit")
+  )
+  public static let mock = Self(
     colorScheme: { .light },
     colorSchemeChanges: { Empty().eraseToAnyPublisher() },
     disableLaunchAtLogin: {},
@@ -56,10 +65,11 @@ public extension DependencyValues {
 
 public extension ApiClient {
   func appCheckIn(_ filterVersion: String?) async throws -> CheckIn.Output {
-    @Dependency(\.app) var appClient
-    return try await checkIn(
+    // @Dependency(\.app) var appClient
+    try await checkIn(
       .init(
-        appVersion: appClient.installedVersion() ?? "unknown",
+        // appVersion: appClient.installedVersion() ?? "unknown",
+        appVersion: "1.0.0",
         filterVersion: filterVersion
       )
     )

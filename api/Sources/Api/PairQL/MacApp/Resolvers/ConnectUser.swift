@@ -8,7 +8,8 @@ extension ConnectUser: Resolver {
     else { throw context.error(
       id: "6e7fc234",
       type: .unauthorized,
-      debugMessage: "ConnectApp verification code not found",
+      debugMessage: "verification code not found",
+      userMessage: "Connection code not found, or expired. Please try again.",
       appTag: .connectionCodeNotFound
     ) }
 
@@ -37,7 +38,12 @@ extension ConnectUser: Resolver {
       // sanity check - we only "transfer" a device, if the admin accounts match
       let existingUser = try await existingUserDevice.user()
       if existingUser.adminId != user.adminId {
-        throw Abort(.forbidden, reason: "Device already registered to another admin's user")
+        throw context.error(
+          id: "41a43089",
+          type: .unauthorized,
+          debugMessage: "invalid connect transfer attempt",
+          userMessage: "This user is associated with another Gertrude parent account."
+        )
       }
 
       let oldUserId = existingUserDevice.userId
