@@ -18,6 +18,9 @@ typealias UserData = GetUserData.Output
         case .checkIn(.success, _):
           print("received action:\n  .checkIn(.success(...))\n")
           return false
+        case .menuBar(.menuBarIconClicked):
+          print("received action:\n  .menuBar(.menuBarIconClicked)\n")
+          return false
         default:
           return true
         }

@@ -96,6 +96,7 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase {
       (.addKeylogging, "k"),
       (.setScreenshotFreq(88), "@88"),
       (.addKeyloggingAndSetScreenshotFreq(88), "@88+k"),
+      (.addKeyloggingAndSetScreenshotFreq(30), "@30+k"),
     ]
     for (extra, magicString) in cases {
       expect(.init(magicString: magicString)!).toEqual(extra)

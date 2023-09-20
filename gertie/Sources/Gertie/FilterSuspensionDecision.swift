@@ -32,6 +32,15 @@ public extension FilterSuspensionDecision.ExtraMonitoring {
     }
   }
 
+  var setsScreenshotFrequency: Bool {
+    switch self {
+    case .addKeylogging:
+      return false
+    case .setScreenshotFreq, .addKeyloggingAndSetScreenshotFreq:
+      return true
+    }
+  }
+
   var addsKeylogging: Bool {
     switch self {
     case .addKeylogging, .addKeyloggingAndSetScreenshotFreq:

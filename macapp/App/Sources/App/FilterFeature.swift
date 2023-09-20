@@ -73,10 +73,15 @@ extension FilterFeature.RootReducer {
     switch action {
 
     case .websocket(.receivedMessage(.filterSuspensionRequestDecided(
-      .accepted(let seconds, _),
+      .accepted(let seconds, let extraMonitoring),
       let comment
     ))):
-      return suspendFilter(for: seconds, with: &state, comment: comment)
+      return suspendFilter(
+        for: seconds,
+        with: &state,
+        comment: comment,
+        extraMonitoring: extraMonitoring != nil
+      )
 
     case .websocket(.receivedMessage(.filterSuspensionRequestDecided(.rejected, let comment))):
       return .exec { _ in
@@ -200,7 +205,8 @@ extension FilterFeature.RootReducer {
   func suspendFilter(
     for seconds: Seconds<Int>,
     with state: inout State,
-    comment: String? = nil
+    comment: String? = nil,
+    extraMonitoring: Bool = false
   ) -> Effect<Action> {
     state.filter.currentSuspensionExpiration = now.advanced(by: Double(seconds.rawValue))
     return .merge(
@@ -208,7 +214,12 @@ extension FilterFeature.RootReducer {
         _ = await xpc.suspendFilter(seconds)
       },
       .exec { _ in
-        await device.notifyFilterSuspension(resuming: seconds, from: now, with: comment)
+        await device.notifyFilterSuspension(
+          resuming: seconds,
+          from: now,
+          with: comment,
+          extraMonitoring: extraMonitoring
+        )
       },
       .cancel(id: FilterFeature.CancelId.quitBrowsers)
     )

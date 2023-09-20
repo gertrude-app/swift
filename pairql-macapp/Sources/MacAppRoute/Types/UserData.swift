@@ -50,6 +50,24 @@ public struct UserData: Equatable, Codable, Sendable, PairOutput {
       connectedAt: .init(timeIntervalSince1970: 0)
     )
 
+    public static var monitored: UserData {
+      .mock {
+        $0.keyloggingEnabled = true
+        $0.screenshotsEnabled = true
+        $0.screenshotFrequency = 60
+        $0.screenshotSize = 1000
+      }
+    }
+
+    public static var notMonitored: UserData {
+      .mock {
+        $0.keyloggingEnabled = false
+        $0.screenshotsEnabled = false
+        $0.screenshotFrequency = 60
+        $0.screenshotSize = 1000
+      }
+    }
+
     public static let empty = Self(
       id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
       token: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,

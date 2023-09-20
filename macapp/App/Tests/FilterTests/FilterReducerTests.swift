@@ -309,7 +309,7 @@ import XExpect
   func testHeartbeatCleansUpDanglingSuspensionFromSleepConfusingTimer() async {
     let (store, mainQueue) = Filter.testStore()
 
-    let time = ControllingNow(starting: Date(timeIntervalSince1970: 0), with: mainQueue)
+    let time = ControllingNow(starting: .epoch, with: mainQueue)
     store.deps.date = time.generator
 
     let notifyExpired = spy(on: uid_t.self, returning: ())

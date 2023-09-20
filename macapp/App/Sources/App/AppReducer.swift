@@ -16,6 +16,7 @@ struct AppReducer: Reducer, Sendable {
     var filter = FilterFeature.State()
     var history = HistoryFeature.State()
     var menuBar = MenuBarFeature.State()
+    var monitoring = MonitoringFeature.State()
     var requestSuspension = RequestSuspensionFeature.State()
     var user = UserFeature.State()
   }
@@ -105,7 +106,11 @@ struct AppReducer: Reducer, Sendable {
     AdminFeature.RootReducer()
     AdminWindowFeature.RootReducer()
     FilterFeature.RootReducer().onChange(of: \.filter.isSuspended) { old, new in
-      Reduce { _, _ in .send(.delegate(.filterSuspendedChanged(was: old, is: new))) }
+      Reduce { _, _ in .run { send in
+        // NB: changing this to the (synchronous?) `.send()` (without .run + async)
+        // caused this action not to be seen by other reducers (when running app)
+        await send(.delegate(.filterSuspendedChanged(was: old, is: new)))
+      }}
     }
     MonitoringFeature.RootReducer()
     RequestSuspensionFeature.RootReducer()

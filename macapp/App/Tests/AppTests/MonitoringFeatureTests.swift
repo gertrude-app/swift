@@ -1,3 +1,4 @@
+import Dependencies
 import Gertie
 import MacAppRoute
 import TestSupport
@@ -7,7 +8,7 @@ import XExpect
 @testable import App
 @testable import ClientInterfaces
 
-@MainActor final class MonitoringReducerTests: XCTestCase {
+@MainActor final class MonitoringFeatureTests: XCTestCase {
   func testLoadingUserStateOnLaunchStartsMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
@@ -140,6 +141,289 @@ import XExpect
       .init(appName: "Xcode", line: "lol", filterSuspended: false, time: .epoch),
       .init(appName: "Xcode", line: "hi", filterSuspended: true, time: .epoch),
     ])
+  }
+
+  func testAddKeyloggingAndScreenshotsToUnMonitoredDuringSuspension() async {
+    await withDependencies {
+      $0.date = .constant(.epoch) // for testing menu bar state
+    } operation: {
+      let (store, bgQueue) = AppReducer.testStore()
+      store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+      let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
+      let keylogging = spyKeylogging(store)
+
+      // user is NOT monitored...
+      store.deps.storage.loadPersistentState = { .mock { $0.user = .notMonitored } }
+
+      await store.send(.application(.didFinishLaunching))
+      await store.skipReceivedActions()
+
+      // without extra monitoring, no monitoring happens
+      await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
+      await expect(keylogging.start.invocations).toEqual(0)
+      await expect(takeScreenshot.invoked).toEqual(false)
+      await expect(uploadScreenshot.invoked).toEqual(false)
+      await expect(keylogging.stop.invocations).toEqual(1) // called on initial configure
+
+      if case .connected(let connectedState) = store.state.menuBarView {
+        expect(connectedState.recordingScreen).toEqual(false)
+        expect(connectedState.recordingKeystrokes).toEqual(false)
+      } else {
+        XCTFail("expected menubar state to be .connected")
+      }
+
+      // now they receive a filter suspension with extra monitoring
+      await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+        decision: .accepted(
+          duration: 60 * 4,
+          extraMonitoring: .addKeyloggingAndSetScreenshotFreq(60)
+        ),
+        comment: nil
+      )))) {
+        $0.monitoring.suspensionMonitoring = .init(
+          keyloggingEnabled: true,
+          screenshotsEnabled: true,
+          screenshotSize: 1000,
+          screenshotFrequency: 60
+        )
+      }
+
+      await expect(keylogging.start.invocations).toEqual(1)
+      await expect(keylogging.stop.invocations).toEqual(1)
+
+      if case .connected(let connectedState) = store.state.menuBarView {
+        expect(connectedState.recordingScreen).toEqual(true)
+        expect(connectedState.recordingKeystrokes).toEqual(true)
+      } else {
+        XCTFail("expected menubar state to be .connected")
+      }
+
+      // simulate the filter sends a message when the suspension is over
+      await bgQueue.advance(by: .seconds(60 * 4))
+      await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502))))
+
+      await store.receive(.delegate(.filterSuspendedChanged(was: true, is: false))) {
+        $0.monitoring.suspensionMonitoring = nil
+      }
+
+      await expect(keylogging.stop.invocations).toEqual(2) // keylogging stopped
+      await expect(keylogging.start.invocations).toEqual(1) // and didn't restart
+
+      await bgQueue.advance(by: .seconds(60 * 5)) // <-- to well past suspension end...
+
+      // ...but we've still only taken the 4 screenshots during suspension
+      await expect(takeScreenshot.invocations.value).toHaveCount(4)
+      await expect(uploadScreenshot.invocations.value).toHaveCount(4)
+
+      await store.send(.application(.didFinishLaunching))
+    }
+  }
+
+  func testAddOnlyKeyloggingToUnMonitoredDuringSuspension() async {
+    let (store, bgQueue) = AppReducer.testStore()
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+    let (takeScreenshot, _, _) = spyScreenshots(store)
+    let keylogging = spyKeylogging(store)
+
+    // user is NOT monitored...
+    store.deps.storage.loadPersistentState = { .mock { $0.user = .notMonitored } }
+
+    await store.send(.application(.didFinishLaunching))
+
+    // without extra monitoring, no monitoring happens
+    await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
+    await expect(keylogging.start.invoked).toEqual(false)
+    await expect(takeScreenshot.invoked).toEqual(false)
+    await expect(keylogging.stop.invocations).toEqual(1) // called on initial configure
+
+    // now they receive a filter suspension with extra monitoring, adding only keylogging
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      decision: .accepted(duration: 60 * 4, extraMonitoring: .addKeylogging),
+      comment: nil
+    )))) {
+      $0.monitoring.suspensionMonitoring = .init(
+        keyloggingEnabled: true,
+        screenshotsEnabled: false,
+        screenshotSize: 1000,
+        screenshotFrequency: 60
+      )
+    }
+
+    await expect(keylogging.start.invocations).toEqual(1) // <-- keylogging started
+    await expect(keylogging.stop.invocations).toEqual(1)
+
+    // simulate the filter sends a message when the suspension is over
+    await bgQueue.advance(by: .seconds(60 * 4))
+    await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502))))
+
+    await expect(keylogging.stop.invocations).toEqual(2) // keylogging stopped
+    await expect(keylogging.start.invocations).toEqual(1) // and didn't restart
+
+    await bgQueue.advance(by: .seconds(60 * 5)) // <-- to well past suspension end...
+
+    // ...but we've still never taken screenshots
+    await expect(takeScreenshot.invoked).toEqual(false)
+
+    await store.send(.application(.didFinishLaunching))
+  }
+
+  func testIncreaseScreenshotsDuringSuspension() async {
+    let (store, bgQueue) = AppReducer.testStore()
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+    let (takeScreenshot, _, _) = spyScreenshots(store)
+    let keylogging = spyKeylogging(store)
+
+    // user already has screenshots
+    store.deps.storage.loadPersistentState = { .mock {
+      $0.user?.keyloggingEnabled = false
+      $0.user?.screenshotsEnabled = true
+      $0.user?.screenshotFrequency = 60
+    } }
+
+    await store.send(.application(.didFinishLaunching))
+
+    // without extra monitoring, no monitoring happens
+    await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
+    await expect(keylogging.start.invoked).toEqual(false)
+    await expect(takeScreenshot.invocations.value).toHaveCount(5) // 1/minute
+
+    // now they receive a filter suspension with increased screenshots
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      decision: .accepted(duration: 60 * 2, extraMonitoring: .setScreenshotFreq(30)),
+      comment: nil
+    )))) {
+      $0.monitoring.suspensionMonitoring = .init(
+        keyloggingEnabled: false,
+        screenshotsEnabled: true,
+        screenshotSize: 1000,
+        screenshotFrequency: 30
+      )
+    }
+
+    // simulate the filter sends a message when the suspension is over
+    await bgQueue.advance(by: .seconds(60 * 2))
+    await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502))))
+
+    // 5 in first 5 minutes, 4 more in next 2 minutes
+    await expect(takeScreenshot.invocations.value).toHaveCount(9)
+    await expect(keylogging.start.invoked).toEqual(false)
+
+    await bgQueue.advance(by: .seconds(60 * 5)) // five more minutes
+    await expect(takeScreenshot.invocations.value).toHaveCount(14) // back to normal
+
+    await store.send(.application(.didFinishLaunching))
+  }
+
+  func testHeartbeatFallbackCleansUpExpiredSuspensionMonitoring() async {
+    let (store, bgQueue) = AppReducer.testStore()
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+    let time = ControllingNow(starting: .epoch, with: bgQueue)
+    store.deps.date = time.generator
+    let (takeScreenshot, _, _) = spyScreenshots(store)
+    let keylogging = spyKeylogging(store)
+
+    // user is NOT monitored...
+    store.deps.storage.loadPersistentState = { .mock { $0.user = .notMonitored } }
+
+    await store.send(.application(.didFinishLaunching))
+
+    // they receive a filter suspension with extra monitoring
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      decision: .accepted(
+        duration: 60 * 3,
+        extraMonitoring: .setScreenshotFreq(60)
+      ),
+      comment: nil
+    )))) {
+      $0.monitoring.suspensionMonitoring = .init(
+        keyloggingEnabled: false,
+        screenshotsEnabled: true,
+        screenshotSize: 1000,
+        screenshotFrequency: 60
+      )
+    }
+
+    // but 60 seconds past due, we've never received word from filter
+    await time.advance(seconds: 60 * 4)
+    // so the store still has the suspension config...
+    expect(store.state.monitoring.suspensionMonitoring).not.toBeNil()
+    // ...and we've taken 1 too many screenshots
+    await expect(takeScreenshot.invocations.value).toHaveCount(4)
+
+    // but the 5 minute heartbeat should clean up
+    await time.advance(seconds: 60)
+    await store.receive(.heartbeat(.everyFiveMinutes)) {
+      $0.monitoring.suspensionMonitoring = nil
+    }
+
+    await time.advance(seconds: 60 * 10) // far past cleanup...
+
+    // and we've not taken another screenshot
+    await expect(takeScreenshot.invocations.value).toHaveCount(4)
+    await expect(keylogging.start.invoked).toEqual(false)
+
+    await store.send(.application(.didFinishLaunching))
+  }
+
+  func testReusesLastExtraMonitoringForAdminGrantedSuspensions() async {
+    let (store, bgQueue) = AppReducer.testStore()
+    store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+    store.deps.storage.loadPersistentState = { .mock { $0.user = .notMonitored } }
+    let (takeScreenshot, _, _) = spyScreenshots(store)
+
+    await store.send(.application(.didFinishLaunching))
+
+    // now they receive a filter suspension with increased screenshots
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      decision: .accepted(duration: 60 * 2, extraMonitoring: .setScreenshotFreq(30)),
+      comment: nil
+    ))))
+
+    // simulate the filter sends a message when the suspension is over
+    await bgQueue.advance(by: .seconds(60 * 2))
+    await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502))))
+    await store.skipReceivedActions()
+    await expect(takeScreenshot.invocations.value).toHaveCount(4) // 2/minute
+
+    // now the admin grants a suspension...
+    await store.send(
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 120))))
+    ) {
+      $0.monitoring.suspensionMonitoring = .init(
+        keyloggingEnabled: false,
+        screenshotsEnabled: true, // <-- from prev suspension extra monitoring
+        screenshotSize: 1000,
+        screenshotFrequency: 30 // < -- and this
+      )
+    }
+
+    // simulate the filter sends a message when the suspension is over
+    await bgQueue.advance(by: .seconds(60 * 2))
+    await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502))))
+    await store.skipReceivedActions()
+    await expect(takeScreenshot.invocations.value).toHaveCount(8)
+
+    // now they receive a filter suspension with NO extra monitoring
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      decision: .accepted(duration: 60 * 2, extraMonitoring: nil),
+      comment: nil
+    ))))
+
+    // simulate the filter sends a message when the suspension is over
+    await bgQueue.advance(by: .seconds(60 * 2))
+    await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502))))
+    await store.skipReceivedActions()
+    await expect(takeScreenshot.invocations.value).toHaveCount(8) // still 8
+
+    // now the admin grants another suspension...
+    await store.send(
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 120))))
+    ) {
+      // ...and we re-use the fact that the last suspension had no extra monitoring
+      $0.monitoring.suspensionMonitoring = nil
+    }
+
+    await store.send(.application(.didFinishLaunching))
   }
 
   func testNotGrantedPermissionsThenFixed() async {

@@ -47,8 +47,10 @@ extension AppReducer.State {
         }
         return .connected(.init(
           filterState: .init(self),
-          recordingScreen: user.screenshotsEnabled,
-          recordingKeystrokes: user.keyloggingEnabled,
+          recordingScreen: monitoring.suspensionMonitoring?.screenshotsEnabled
+            ?? user.screenshotsEnabled,
+          recordingKeystrokes: monitoring.suspensionMonitoring?.keyloggingEnabled
+            ?? user.keyloggingEnabled,
           adminAttentionRequired: somethingRequiresAdminAttention,
           updateStatus: updateStatus
         ))
