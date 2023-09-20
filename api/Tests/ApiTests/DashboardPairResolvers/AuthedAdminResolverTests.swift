@@ -1,3 +1,4 @@
+import Gertie
 import XCore
 import XCTest
 import XExpect
@@ -5,7 +6,6 @@ import XExpect
 @testable import Api
 
 final class AuthedAdminResolverTests: ApiTestCase {
-
   func testCreateBillingPortalSessionHappyPath() async throws {
     let admin = try await Entities.admin {
       $0.subscriptionId = .init(rawValue: "sub_123")
@@ -427,20 +427,20 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(userList).toEqual([output])
   }
 
-  func testUpdateSuspendFilterRequest() async throws {
-    let user = try await Entities.user().withDevice()
-    let request = SuspendFilterRequest.random
-    request.userDeviceId = user.device.id
-    request.status = .pending
-    try await Current.db.create(request)
+  func testDecideSuspendFilterRequest_Accepted() async throws {
+    let user = try await Entities.user().withDevice { $0.appVersion = "2.1.2" } // <-- new event
+    let request = try await Current.db.create(SuspendFilterRequest.random {
+      $0.userDeviceId = user.device.id
+      $0.status = .pending
+    })
 
-    let output = try await UpdateSuspendFilterRequest.resolve(
-      with: UpdateSuspendFilterRequest.Input(
-        id: request.id,
-        durationInSeconds: 333,
-        responseComment: "ok",
-        status: .accepted
-      ),
+    let decision: DecideFilterSuspensionRequest.Decision = .accepted(
+      durationInSeconds: 333,
+      extraMonitoring: "@55+k"
+    )
+
+    let output = try await DecideFilterSuspensionRequest.resolve(
+      with: .init(id: request.id, decision: decision, responseComment: "ok"),
       in: context(user.admin)
     )
 
@@ -452,12 +452,43 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(retrieved.status).toEqual(.accepted)
 
     expect(sent.appEvents).toEqual([
-      .suspendFilterRequestUpdated(.init(
+      .suspendFilterRequestDecided( // <-- new event
+        user.device.id,
+        .accepted(
+          duration: 333,
+          extraMonitoring: .addKeyloggingAndSetScreenshotFreq(55)
+        ),
+        "ok"
+      ),
+    ])
+  }
+
+  func testDecideSuspendFilterRequest_Rejected() async throws {
+    let user = try await Entities.user().withDevice { $0.appVersion = "2.0.2" } // <-- old event
+    let request = try await Current.db.create(SuspendFilterRequest.random {
+      $0.duration = .init(100)
+      $0.userDeviceId = user.device.id
+      $0.status = .pending
+    })
+
+    let output = try await DecideFilterSuspensionRequest.resolve(
+      with: .init(id: request.id, decision: .rejected, responseComment: nil),
+      in: context(user.admin)
+    )
+
+    expect(output).toEqual(.success)
+
+    let retrieved = try await Current.db.find(request.id)
+    expect(retrieved.responseComment).toBeNil()
+    expect(retrieved.status).toEqual(.rejected)
+
+    expect(sent.appEvents).toEqual([
+      .suspendFilterRequestUpdated(.init( // <-- old event
         userDeviceId: user.device.id,
-        status: .accepted,
-        duration: 333,
+        status: .rejected,
+        duration: 100,
         requestComment: request.requestComment,
-        responseComment: "ok"
+        responseComment: nil
       )),
     ])
   }

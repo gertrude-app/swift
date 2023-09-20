@@ -1,4 +1,5 @@
 import Foundation
+import Gertie
 import TypeScriptInterop
 import XCTest
 
@@ -22,6 +23,7 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
       path: "/Users/jared/gertie/swift/api/Sources/Api/Extend/Enums+Codable.swift",
       types: [
         (AdminVerifiedNotificationMethod.Config.self, false),
+        (DecideFilterSuspensionRequest.Decision.self, false),
         (UserActivity.Item.self, true),
       ],
       imports: ["Tagged": "Tagged"],

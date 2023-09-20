@@ -82,9 +82,10 @@ enum DashboardTsCodegenRoute {
       SaveUser.self,
       SendPasswordResetEmail.self,
       Signup.self,
-      UpdateSuspendFilterRequest.self,
+      DecideFilterSuspensionRequest.self,
       UpdateUnlockRequest.self,
       VerifySignupEmail.self,
+      HollandTalkSubscription.self,
     ]
   }
 

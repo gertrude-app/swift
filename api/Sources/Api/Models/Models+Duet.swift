@@ -8,6 +8,11 @@ extension Model {
     try await Current.db.update(self)
   }
 
+  @discardableResult
+  func create() async throws -> Self {
+    try await Current.db.create(self)
+  }
+
   static func find(_ id: Tagged<Self, UUID>) async throws -> Self {
     try await Current.db.query(Self.self).byId(id).first()
   }
@@ -259,6 +264,7 @@ extension KeystrokeLine {
     case userDeviceId
     case appName
     case line
+    case filterSuspended
     case createdAt
     case deletedAt
   }
@@ -339,6 +345,7 @@ extension Screenshot {
     case url
     case width
     case height
+    case filterSuspended
     case createdAt
     case deletedAt
   }

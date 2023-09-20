@@ -9,6 +9,7 @@ import XSlack
 
 class ApiTestCase: XCTestCase {
   static var app: Application!
+  static var migrated = false
 
   struct Sent {
     struct AdminNotification: Equatable {
@@ -35,8 +36,12 @@ class ApiTestCase: XCTestCase {
     app = Application(.testing)
     try! Configure.app(app)
     app.logger = .null
-    try! app.autoRevert().wait()
-    try! app.autoMigrate().wait()
+    // doing this once per test run gives about a 10x speedup when running all tests
+    if !migrated {
+      try! app.autoRevert().wait()
+      try! app.autoMigrate().wait()
+      migrated = true
+    }
   }
 
   override func setUp() {

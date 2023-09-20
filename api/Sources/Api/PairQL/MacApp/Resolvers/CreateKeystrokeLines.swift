@@ -11,6 +11,7 @@ extension CreateKeystrokeLines: Resolver {
         userDeviceId: userDevice.id,
         appName: input.appName,
         line: input.line,
+        filterSuspended: input.filterSuspended ?? false,
         createdAt: input.time
       )
     }

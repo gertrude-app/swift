@@ -4,7 +4,7 @@ import TaggedTime
 
 enum AppEvent: Equatable {
   case keychainUpdated(Keychain.Id)
-  case suspendFilterRequestUpdated(SuspendFilterRequestUpdated)
+  case suspendFilterRequestDecided(UserDevice.Id, FilterSuspensionDecision, String?)
   case unlockRequestUpdated(UnlockRequestUpdated)
   case userUpdated(User.Id)
   case userDeleted(User.Id)
@@ -17,6 +17,8 @@ enum AppEvent: Equatable {
     let responseComment: String?
   }
 
+  // deprecated, remove when app MSV is 2.1.0
+  case suspendFilterRequestUpdated(SuspendFilterRequestUpdated)
   struct SuspendFilterRequestUpdated: Equatable {
     let userDeviceId: UserDevice.Id
     let status: RequestStatus

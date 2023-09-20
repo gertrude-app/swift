@@ -10,6 +10,7 @@ public enum UserActivity {
     var url: String
     var width: Int
     var height: Int
+    var duringSuspension: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -19,6 +20,7 @@ public enum UserActivity {
     var ids: [KeystrokeLine.Id]
     var appName: String
     var line: String
+    var duringSuspension: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -135,6 +137,7 @@ extension UserActivity.Screenshot {
     url = screenshot.url
     width = screenshot.width
     height = screenshot.height
+    duringSuspension = screenshot.filterSuspended
     createdAt = screenshot.createdAt
     deletedAt = screenshot.deletedAt
   }
@@ -146,6 +149,7 @@ extension UserActivity.CoalescedKeystrokeLine {
     ids = [keystroke.id]
     appName = keystroke.appName
     line = keystroke.line
+    duringSuspension = keystroke.filterSuspended
     createdAt = keystroke.createdAt
     deletedAt = keystroke.deletedAt
   }

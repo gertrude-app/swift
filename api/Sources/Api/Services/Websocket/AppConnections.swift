@@ -80,6 +80,16 @@ actor AppConnections {
           )
         }
 
+    case .suspendFilterRequestDecided(let userDeviceId, let decision, let comment):
+      try await currentConnections
+        .filter { $0.ids.userDevice == userDeviceId }
+        .asyncForEach {
+          try await $0.ws.send(
+            codable:
+            OutgoingMessage.filterSuspensionRequestDecided(decision: decision, comment: comment)
+          )
+        }
+
     case .suspendFilterRequestUpdated(let payload):
       if payload.status == .accepted {
         try await currentConnections

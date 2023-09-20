@@ -57,7 +57,12 @@ class KeystrokeMonitor {
         if line.trimmingCharacters(in: .whitespaces).isEmpty {
           return nil
         }
-        return .init(appName: appName, line: line, time: date)
+        return .init(
+          appName: appName,
+          line: line,
+          filterSuspended: nil, // TODO: real value for filter suspended
+          time: date
+        )
       }
     }
   }

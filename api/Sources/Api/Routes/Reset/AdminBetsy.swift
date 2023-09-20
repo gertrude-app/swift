@@ -5,6 +5,7 @@ import XCore
 enum AdminBetsy {
   enum Ids {
     static let betsy = Admin.Id.from("BE000000-0000-0000-0000-000000000000")
+    static let jimmysId = User.Id.from("00000000-1111-4444-0000-000000000000")
     static let jimmysDevice = UserDevice.Id.from("DD000000-1111-0000-0000-000000000000")
     static let sallysDevice = UserDevice.Id.from("DD000000-2222-0000-0000-000000000000")
     static let suspendFilter = SuspendFilterRequest.Id.from("AA000000-1111-0000-0000-000000000000")
@@ -67,6 +68,7 @@ enum AdminBetsy {
 
   private static func createUsers(_ betsy: Admin) async throws -> (User, User, User) {
     let jimmy = try await Current.db.create(User(
+      id: Ids.jimmysId,
       adminId: betsy.id,
       name: "Little Jimmy",
       keyloggingEnabled: true,

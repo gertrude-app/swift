@@ -403,6 +403,8 @@ extension KeystrokeLine: Model {
       return .string(appName)
     case .line:
       return .string(line)
+    case .filterSuspended:
+      return .bool(filterSuspended)
     case .createdAt:
       return .date(createdAt)
     case .deletedAt:
@@ -416,6 +418,7 @@ extension KeystrokeLine: Model {
       .userDeviceId: .uuid(userDeviceId),
       .appName: .string(appName),
       .line: .string(line),
+      .filterSuspended: .bool(filterSuspended),
       .createdAt: .date(createdAt),
     ]
   }
@@ -533,6 +536,8 @@ extension Screenshot: Model {
       return .int(width)
     case .height:
       return .int(height)
+    case .filterSuspended:
+      return .bool(filterSuspended)
     case .createdAt:
       return .date(createdAt)
     case .deletedAt:
@@ -547,6 +552,7 @@ extension Screenshot: Model {
       .url: .string(url),
       .width: .int(width),
       .height: .int(height),
+      .filterSuspended: .bool(filterSuspended),
       .createdAt: .date(createdAt),
     ]
   }

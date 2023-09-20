@@ -5,6 +5,7 @@ final class KeystrokeLine: Codable {
   var userDeviceId: UserDevice.Id
   var appName: String
   var line: String
+  var filterSuspended: Bool
   var createdAt: Date
   var deletedAt: Date?
 
@@ -15,12 +16,14 @@ final class KeystrokeLine: Codable {
     userDeviceId: UserDevice.Id,
     appName: String,
     line: String,
-    createdAt: Date
+    filterSuspended: Bool = false,
+    createdAt: Date = Date()
   ) {
     self.id = id
     self.userDeviceId = userDeviceId
     self.appName = appName
     self.line = line
+    self.filterSuspended = filterSuspended
     self.createdAt = createdAt
   }
 }

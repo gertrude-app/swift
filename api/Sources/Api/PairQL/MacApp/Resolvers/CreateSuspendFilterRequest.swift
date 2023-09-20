@@ -17,6 +17,7 @@ extension CreateSuspendFilterRequest: Resolver {
       .suspendFilterRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,
         userDeviceId: userDevice.id,
+        userId: context.user.id,
         userName: context.user.name,
         duration: .init(input.duration),
         requestId: request.id,

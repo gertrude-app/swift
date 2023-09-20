@@ -63,6 +63,53 @@ extension AdminVerifiedNotificationMethod.Config {
   }
 }
 
+extension DecideFilterSuspensionRequest.Decision {
+  private struct _NamedCase: Codable {
+    var `case`: String
+    static func extract(from decoder: Decoder) throws -> String {
+      let container = try decoder.singleValueContainer()
+      return try container.decode(_NamedCase.self).case
+    }
+  }
+
+  private struct _TypeScriptDecodeError: Error {
+    var message: String
+  }
+
+  private struct _CaseAccepted: Codable {
+    var `case` = "accepted"
+    var durationInSeconds: Int
+    var extraMonitoring: String?
+  }
+
+  func encode(to encoder: Encoder) throws {
+    switch self {
+    case .accepted(let durationInSeconds, let extraMonitoring):
+      try _CaseAccepted(durationInSeconds: durationInSeconds, extraMonitoring: extraMonitoring)
+        .encode(to: encoder)
+    case .rejected:
+      try _NamedCase(case: "rejected").encode(to: encoder)
+    }
+  }
+
+  init(from decoder: Decoder) throws {
+    let caseName = try _NamedCase.extract(from: decoder)
+    let container = try decoder.singleValueContainer()
+    switch caseName {
+    case "accepted":
+      let value = try container.decode(_CaseAccepted.self)
+      self = .accepted(
+        durationInSeconds: value.durationInSeconds,
+        extraMonitoring: value.extraMonitoring
+      )
+    case "rejected":
+      self = .rejected
+    default:
+      throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
+    }
+  }
+}
+
 public extension UserActivity.Item {
   private struct _NamedCase: Codable {
     var `case`: String
@@ -83,6 +130,7 @@ public extension UserActivity.Item {
     var url: String
     var width: Int
     var height: Int
+    var duringSuspension: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -93,6 +141,7 @@ public extension UserActivity.Item {
     var ids: [Tagged<Api.KeystrokeLine, UUID>]
     var appName: String
     var line: String
+    var duringSuspension: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -106,6 +155,7 @@ public extension UserActivity.Item {
         url: unflat.url,
         width: unflat.width,
         height: unflat.height,
+        duringSuspension: unflat.duringSuspension,
         createdAt: unflat.createdAt,
         deletedAt: unflat.deletedAt
       ).encode(to: encoder)
@@ -115,6 +165,7 @@ public extension UserActivity.Item {
         ids: unflat.ids,
         appName: unflat.appName,
         line: unflat.line,
+        duringSuspension: unflat.duringSuspension,
         createdAt: unflat.createdAt,
         deletedAt: unflat.deletedAt
       ).encode(to: encoder)
@@ -133,6 +184,7 @@ public extension UserActivity.Item {
         url: value.url,
         width: value.width,
         height: value.height,
+        duringSuspension: value.duringSuspension,
         createdAt: value.createdAt,
         deletedAt: value.deletedAt
       ))
@@ -143,6 +195,7 @@ public extension UserActivity.Item {
         ids: value.ids,
         appName: value.appName,
         line: value.line,
+        duringSuspension: value.duringSuspension,
         createdAt: value.createdAt,
         deletedAt: value.deletedAt
       ))

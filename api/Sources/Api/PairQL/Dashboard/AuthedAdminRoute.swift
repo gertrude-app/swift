@@ -7,6 +7,7 @@ enum AuthedAdminRoute: PairRoute {
   case createBillingPortalSession
   case createPendingAppConnection(CreatePendingAppConnection.Input)
   case createPendingNotificationMethod(CreatePendingNotificationMethod.Input)
+  case decideFilterSuspensionRequest(DecideFilterSuspensionRequest.Input)
   case deleteActivityItems_v2(DeleteActivityItems_v2.Input)
   case deleteEntity(DeleteEntity.Input)
   case getAdmin
@@ -33,7 +34,6 @@ enum AuthedAdminRoute: PairRoute {
   case saveKeychain(SaveKeychain.Input)
   case saveNotification(SaveNotification.Input)
   case saveUser(SaveUser.Input)
-  case updateSuspendFilterRequest(UpdateSuspendFilterRequest.Input)
   case updateUnlockRequest(UpdateUnlockRequest.Input)
 }
 
@@ -53,6 +53,10 @@ extension AuthedAdminRoute {
     Route(/Self.createPendingNotificationMethod) {
       Operation(CreatePendingNotificationMethod.self)
       Body(.dashboardInput(CreatePendingNotificationMethod.self))
+    }
+    Route(/Self.decideFilterSuspensionRequest) {
+      Operation(DecideFilterSuspensionRequest.self)
+      Body(.dashboardInput(DecideFilterSuspensionRequest.self))
     }
     Route(/Self.deleteActivityItems_v2) {
       Operation(DeleteActivityItems_v2.self)
@@ -145,10 +149,6 @@ extension AuthedAdminRoute {
       Operation(SaveUser.self)
       Body(.dashboardInput(SaveUser.self))
     }
-    Route(/Self.updateSuspendFilterRequest) {
-      Operation(UpdateSuspendFilterRequest.self)
-      Body(.dashboardInput(UpdateSuspendFilterRequest.self))
-    }
     Route(/Self.updateUnlockRequest) {
       Operation(UpdateUnlockRequest.self)
       Body(.dashboardInput(UpdateUnlockRequest.self))
@@ -184,6 +184,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .createPendingAppConnection(let input):
       let output = try await CreatePendingAppConnection.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .decideFilterSuspensionRequest(let input):
+      let output = try await DecideFilterSuspensionRequest.resolve(with: input, in: context)
       return try await respond(with: output)
     case .userActivityFeed(let input):
       let output = try await UserActivityFeed.resolve(with: input, in: context)
@@ -250,9 +253,6 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .updateUnlockRequest(let input):
       let output = try await UpdateUnlockRequest.resolve(with: input, in: context)
-      return try await respond(with: output)
-    case .updateSuspendFilterRequest(let input):
-      let output = try await UpdateSuspendFilterRequest.resolve(with: input, in: context)
       return try await respond(with: output)
     case .saveKey(let input):
       let output = try await SaveKey.resolve(with: input, in: context)

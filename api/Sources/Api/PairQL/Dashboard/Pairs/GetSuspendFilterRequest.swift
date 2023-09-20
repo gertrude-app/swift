@@ -7,14 +7,15 @@ struct GetSuspendFilterRequest: Pair {
   typealias Input = SuspendFilterRequest.Id
 
   struct Output: PairOutput {
-    let id: Api.SuspendFilterRequest.Id
-    let deviceId: Api.UserDevice.Id
-    let status: RequestStatus
-    let userName: String
-    let requestedDurationInSeconds: Int
-    let requestComment: String?
-    let responseComment: String?
-    let createdAt: Date
+    var id: Api.SuspendFilterRequest.Id
+    var deviceId: Api.UserDevice.Id
+    var status: RequestStatus
+    var userName: String
+    var requestedDurationInSeconds: Int
+    var requestComment: String?
+    var responseComment: String?
+    var extraMonitoringOptions: [String: String]
+    var createdAt: Date
   }
 }
 
@@ -25,6 +26,10 @@ extension GetSuspendFilterRequest: Resolver {
     let request = try await Current.db.find(id)
     let userDevice = try await request.userDevice()
     let user = try await userDevice.user()
+    var extraMonitoringOptions: [String: String] = [:]
+    if Semver(userDevice.appVersion)! >= .init("2.1.0")! {
+      extraMonitoringOptions = user.extraMonitoringOptions.mapKeys(\.magicString)
+    }
     return Output(
       id: id,
       deviceId: userDevice.id,
@@ -33,6 +38,7 @@ extension GetSuspendFilterRequest: Resolver {
       requestedDurationInSeconds: request.duration.rawValue,
       requestComment: request.requestComment,
       responseComment: request.responseComment,
+      extraMonitoringOptions: extraMonitoringOptions,
       createdAt: request.createdAt
     )
   }
