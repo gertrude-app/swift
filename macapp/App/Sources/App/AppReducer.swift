@@ -16,11 +16,15 @@ struct AppReducer: Reducer, Sendable {
     var filter = FilterFeature.State()
     var history = HistoryFeature.State()
     var menuBar = MenuBarFeature.State()
+    var monitoring = MonitoringFeature.State()
     var requestSuspension = RequestSuspensionFeature.State()
     var user = UserFeature.State()
   }
 
   enum Action: Equatable, Sendable {
+    enum Delegate: Equatable, Sendable {
+      case filterSuspendedChanged(was: Bool, is: Bool)
+    }
 
     enum FocusedNotification: Equatable, Sendable {
       case unexpectedError
@@ -32,6 +36,7 @@ struct AppReducer: Reducer, Sendable {
     case application(ApplicationFeature.Action)
     case appUpdates(AppUpdatesFeature.Action)
     case checkIn(result: TaskResult<CheckIn.Output>, reason: CheckIn.Reason)
+    case delegate(Delegate)
     case filter(FilterFeature.Action)
     case focusedNotification(FocusedNotification)
     case xpc(XPCEvent.App)
@@ -100,7 +105,13 @@ struct AppReducer: Reducer, Sendable {
     AppUpdatesFeature.RootReducer()
     AdminFeature.RootReducer()
     AdminWindowFeature.RootReducer()
-    FilterFeature.RootReducer()
+    FilterFeature.RootReducer().onChange(of: \.filter.isSuspended) { old, new in
+      Reduce { _, _ in .run { send in
+        // NB: changing this to the (synchronous?) `.send()` (without .run + async)
+        // caused this action not to be seen by other reducers (when running app)
+        await send(.delegate(.filterSuspendedChanged(was: old, is: new)))
+      }}
+    }
     MonitoringFeature.RootReducer()
     RequestSuspensionFeature.RootReducer()
     WebSocketFeature.RootReducer()

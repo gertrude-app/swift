@@ -12,6 +12,12 @@ import MacAppRoute
   monitor.withValue { $0.stop() }
 }
 
+@Sendable func commitKestrokes(filterSuspended: Bool) async {
+  monitor.withValue {
+    $0.commitPendingKeystrokes(filterSuspended: filterSuspended)
+  }
+}
+
 @Sendable func takeKeystrokes() async -> CreateKeystrokeLines.Input? {
   monitor.withValue {
     let keystrokes = $0.takeKeystrokes()
@@ -19,11 +25,16 @@ import MacAppRoute
   }
 }
 
+@Sendable func restoreKeystrokes(_ keystrokes: CreateKeystrokeLines.Input) async {
+  monitor.withValue { $0.appendBufferedApiInput(keystrokes) }
+}
+
 private let monitor = Mutex(KeystrokeMonitor())
 
 class KeystrokeMonitor {
   private var eventMonitor: Any?
   private var appKeystrokes: [String: Keystrokes] = [:]
+  private var bufferedApiInput: CreateKeystrokeLines.Input = []
 
   func start() {
     stop() // if we don't stop prior, we get duplicate keystrokes
@@ -46,10 +57,19 @@ class KeystrokeMonitor {
     keystrokes.receive(keystroke)
   }
 
-  func takeKeystrokes() -> CreateKeystrokeLines.Input {
+  func appendBufferedApiInput(_ input: CreateKeystrokeLines.Input) {
+    bufferedApiInput.append(contentsOf: input)
+    if bufferedApiInput.count > 2000 {
+      @Dependency(\.date.now) var now
+      let sevenDaysAgo = Date(subtractingDays: 7, from: now)
+      bufferedApiInput = bufferedApiInput.filter { $0.time > sevenDaysAgo }
+    }
+  }
+
+  func commitPendingKeystrokes(filterSuspended: Bool) {
     let keystrokes = appKeystrokes
     appKeystrokes = [:]
-    return keystrokes.flatMap { appName, keystrokes in
+    appendBufferedApiInput(keystrokes.flatMap { appName, keystrokes in
       keystrokes.lines.compactMap { timestamp, line in
         guard let date = keystrokes.lineDates[timestamp] else {
           return nil
@@ -57,19 +77,20 @@ class KeystrokeMonitor {
         if line.trimmingCharacters(in: .whitespaces).isEmpty {
           return nil
         }
-        return .init(
-          appName: appName,
-          line: line,
-          filterSuspended: nil, // TODO: real value for filter suspended
-          time: date
-        )
+        return .init(appName: appName, line: line, filterSuspended: filterSuspended, time: date)
       }
-    }
+    })
+  }
+
+  func takeKeystrokes() -> CreateKeystrokeLines.Input {
+    defer { bufferedApiInput = [] }
+    return bufferedApiInput
   }
 
   func stop() {
     if let eventMonitor {
       NSEvent.removeMonitor(eventMonitor)
+      self.eventMonitor = nil
     }
   }
 }

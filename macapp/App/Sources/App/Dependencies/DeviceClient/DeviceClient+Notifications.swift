@@ -80,15 +80,18 @@ extension DeviceClient {
   func notifyFilterSuspension(
     resuming seconds: Seconds<Int>,
     from now: Date = Date(),
-    with comment: String?
+    with comment: String? = nil,
+    extraMonitoring: Bool = false
   ) async {
-    let title = "🟠 Temporarily disabling filter"
-    let resuming = now.timeRemaining(until: now.advanced(by: .init(seconds.rawValue))) ?? "soo"
-    let body: String
+    let title = extraMonitoring
+      ? "👀 Temporarily disabling filter"
+      : "🟠 Temporarily disabling filter"
+    let resuming = now.timeRemaining(until: now.advanced(by: .init(seconds.rawValue))) ?? "soon"
+    var body = extraMonitoring ? "With INCREASED monitoring. " : ""
     if let comment, !comment.isEmpty {
-      body = "Parent comment: \"\(comment)\"\nFilter suspended, resuming \(resuming)"
+      body += "Parent comment: \"\(comment)\" Filter suspended, resuming \(resuming)."
     } else {
-      body = "Filter will resume normal blocking \(resuming)"
+      body += "Filter will resume normal blocking \(resuming)."
     }
     await showNotification(title, body)
   }

@@ -73,6 +73,14 @@ struct Keystroke {
   }
 }
 
+#if DEBUG
+  extension Keystroke: ExpressibleByStringLiteral {
+    init(stringLiteral value: String) {
+      self.init(char: Character(value))
+    }
+  }
+#endif
+
 class Keystrokes {
   private static let SAMELINE_DELTA = 3.75
   private static let BACKSPACE_DELTA = 0.75

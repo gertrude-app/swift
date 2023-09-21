@@ -7,6 +7,15 @@ enum FilterState: Equatable, Codable {
   case off
   case on
   case suspended(resuming: String)
+
+  var isSuspended: Bool {
+    switch self {
+    case .suspended:
+      return true
+    case .off, .on:
+      return false
+    }
+  }
 }
 
 extension FilterState {

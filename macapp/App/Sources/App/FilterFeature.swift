@@ -55,13 +55,41 @@ extension FilterFeature.State {
       version: appClient.installedVersion() ?? "unknown"
     )
   }
+
+  var filterState: FilterState {
+    FilterState(
+      extensionState: self.extension,
+      currentSuspensionExpiration: currentSuspensionExpiration
+    )
+  }
+
+  var isSuspended: Bool {
+    filterState.isSuspended
+  }
 }
 
 extension FilterFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
+    case .websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      .accepted(let seconds, let extraMonitoring),
+      let comment
+    ))):
+      return suspendFilter(
+        for: seconds,
+        with: &state,
+        comment: comment,
+        extraMonitoring: extraMonitoring != nil
+      )
+
+    case .websocket(.receivedMessage(.filterSuspensionRequestDecided(.rejected, let comment))):
+      return .exec { _ in
+        await device.notifyFilterSuspensionDenied(with: comment)
+      }
+
     case .websocket(.receivedMessage(.suspendFilter(let seconds, let comment))):
+      unexpectedError(id: "64635783") // api should not send this legacy event
       return suspendFilter(for: seconds, with: &state, comment: comment)
 
     case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):
@@ -177,7 +205,8 @@ extension FilterFeature.RootReducer {
   func suspendFilter(
     for seconds: Seconds<Int>,
     with state: inout State,
-    comment: String? = nil
+    comment: String? = nil,
+    extraMonitoring: Bool = false
   ) -> Effect<Action> {
     state.filter.currentSuspensionExpiration = now.advanced(by: Double(seconds.rawValue))
     return .merge(
@@ -185,7 +214,12 @@ extension FilterFeature.RootReducer {
         _ = await xpc.suspendFilter(seconds)
       },
       .exec { _ in
-        await device.notifyFilterSuspension(resuming: seconds, from: now, with: comment)
+        await device.notifyFilterSuspension(
+          resuming: seconds,
+          from: now,
+          with: comment,
+          extraMonitoring: extraMonitoring
+        )
       },
       .cancel(id: FilterFeature.CancelId.quitBrowsers)
     )

@@ -4,7 +4,9 @@ import Foundation
 import MacAppRoute
 
 struct MonitoringClient: Sendable {
+  var commitPendingKeystrokes: @Sendable (Bool) async -> Void
   var keystrokeRecordingPermissionGranted: @Sendable () async -> Bool
+  var restorePendingKeystrokes: @Sendable (CreateKeystrokeLines.Input) async -> Void
   var screenRecordingPermissionGranted: @Sendable () async -> Bool
   var startLoggingKeystrokes: @Sendable () async -> Void
   var stopLoggingKeystrokes: @Sendable () async -> Void
@@ -15,12 +17,13 @@ struct MonitoringClient: Sendable {
 
 extension MonitoringClient: DependencyKey {
   static let liveValue = Self(
+    commitPendingKeystrokes: commitKestrokes(filterSuspended:),
     keystrokeRecordingPermissionGranted: {
       #if DEBUG
         // prevent warning while developing
         return true
       #else
-        // no way to make this not a concurrency warning (that i can figure out)
+        // no way to make this NOT a concurrency warning (that i can figure out)
         // as it's a global mutable CFString variable, but this thread is interesting:
         // https://developer.apple.com/forums/thread/707680 - maybe i could use that
         // api, and possibly restore sandboxing
@@ -29,6 +32,7 @@ extension MonitoringClient: DependencyKey {
         return AXIsProcessTrustedWithOptions(options)
       #endif
     },
+    restorePendingKeystrokes: restoreKeystrokes(_:),
     screenRecordingPermissionGranted: {
       if #available(macOS 11, *) {
         // apple docs say available in 10.15, but that's not the case:
@@ -49,7 +53,9 @@ extension MonitoringClient: DependencyKey {
 
 extension MonitoringClient: TestDependencyKey {
   static let testValue = Self(
+    commitPendingKeystrokes: { _ in },
     keystrokeRecordingPermissionGranted: { true },
+    restorePendingKeystrokes: { _ in },
     screenRecordingPermissionGranted: { true },
     startLoggingKeystrokes: {},
     stopLoggingKeystrokes: {},
