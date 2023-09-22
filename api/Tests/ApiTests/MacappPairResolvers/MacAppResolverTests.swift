@@ -63,6 +63,25 @@ final class MacAppResolverTests: ApiTestCase {
     expect(inserted.createdAt).toEqual(.epoch)
   }
 
+  func testInsertKeystrokeLineWithNullByte() async throws {
+    let user = try await Entities.user().withDevice()
+    let (uuid, _) = mockUUIDs()
+
+    let output = try await CreateKeystrokeLines.resolve(
+      with: [.init(
+        appName: "Xcode",
+        line: "Hello\0World", // <-- causes postgres to choke
+        filterSuspended: false,
+        time: .epoch
+      )],
+      in: context(user)
+    )
+
+    expect(output).toEqual(.success)
+    let inserted = try await Current.db.find(KeystrokeLine.Id(uuid))
+    expect(inserted.line).toEqual("Hello�World")
+  }
+
   func testCreateUnlockRequests_v2() async throws {
     let user = try await Entities.user().withDevice()
     let blocked = CreateUnlockRequests_v2.Input.BlockedRequest(
