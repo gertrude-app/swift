@@ -10,7 +10,7 @@ extension CreateKeystrokeLines: Resolver {
       KeystrokeLine(
         userDeviceId: userDevice.id,
         appName: input.appName,
-        line: input.line,
+        line: input.line.replacingOccurrences(of: "\0", with: "\u{FFFD}"),
         filterSuspended: input.filterSuspended ?? false,
         createdAt: input.time
       )
