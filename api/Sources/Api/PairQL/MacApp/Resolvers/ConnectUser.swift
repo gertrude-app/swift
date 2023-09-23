@@ -15,7 +15,7 @@ extension ConnectUser: Resolver {
     let userDevice: UserDevice
     let user = try await Current.db.find(userId)
 
-    let adminDevice = try? await Current.db.query(Device.self)
+    var adminDevice = try? await Current.db.query(Device.self)
       .where(.serialNumber == input.serialNumber)
       .first()
 
@@ -54,17 +54,19 @@ extension ConnectUser: Resolver {
         .delete()
 
     } else {
-      // create a brand new admin device for this user...
-      let adminDevice = try await Current.db.create(Device(
-        adminId: user.adminId,
-        modelIdentifier: input.modelIdentifier,
-        serialNumber: input.serialNumber
-      ))
+      if adminDevice == nil {
+        // create new admin device if we don't have one
+        adminDevice = try await Current.db.create(Device(
+          adminId: user.adminId,
+          modelIdentifier: input.modelIdentifier,
+          serialNumber: input.serialNumber
+        ))
+      }
 
       // ...and create the user device
       userDevice = try await Current.db.create(UserDevice(
         userId: user.id,
-        deviceId: adminDevice.id,
+        deviceId: adminDevice?.id ?? .init(),
         appVersion: input.appVersion,
         username: input.username,
         fullUsername: input.fullUsername,

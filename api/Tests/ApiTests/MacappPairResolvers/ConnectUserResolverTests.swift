@@ -35,6 +35,25 @@ final class ConnectUserResolversTests: ApiTestCase {
     expect(token.userId).toEqual(user.id)
   }
 
+  func testConnectUser_twoUsersSameComputer() async throws {
+    Current.verificationCode = .live
+    try await Device.deleteAll()
+    let user1 = try await Entities.user()
+    let code1 = await Current.ephemeral.createPendingAppConnection(user1.id)
+
+    let user2 = try await Entities.user { $0.adminId = user1.admin.id }
+    let code2 = await Current.ephemeral.createPendingAppConnection(user2.id)
+
+    var input1 = input(code1)
+    input1.numericId = 501
+    _ = try await ConnectUser.resolve(with: input1, in: context)
+
+    var input2 = input(code2)
+    input2.numericId = 502 // <-- same computer, different user
+    // should not throw...
+    _ = try await ConnectUser.resolve(with: input2, in: context)
+  }
+
   func testConnectUser_verificationCodeNotFound() async throws {
     try await expectErrorFrom { [self] in
       let input = self.input(123)
