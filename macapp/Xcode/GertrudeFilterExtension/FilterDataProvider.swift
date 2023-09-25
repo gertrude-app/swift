@@ -72,16 +72,10 @@ class FilterDataProvider: NEFilterDataProvider {
     let decision = store.newFlowDecision(filterFlow, auditToken: flow.sourceAppAuditToken)
 
     switch decision {
-    case .block(.defaultNotAllowed):
+    case .block:
       if sendingBlockDecisions {
         store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
-      #if DEBUG
-        return .allow()
-      #else
-        return .drop()
-      #endif
-    case .block:
       #if DEBUG
         return .allow()
       #else
@@ -120,16 +114,10 @@ class FilterDataProvider: NEFilterDataProvider {
     )
 
     switch decision {
-    case .block(.defaultNotAllowed):
+    case .block:
       if sendingBlockDecisions {
         store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
-      #if DEBUG
-        return .allow()
-      #else
-        return .drop()
-      #endif
-    case .block:
       #if DEBUG
         return .allow()
       #else
