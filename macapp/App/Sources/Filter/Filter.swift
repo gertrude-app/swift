@@ -110,11 +110,21 @@ public struct Filter: Reducer, Sendable {
           expiredSuspensionUserIds.append(userId)
         }
       }
-      return expiredSuspensionUserIds.isEmpty ? .none : .run { [expiredSuspensionUserIds] send in
-        for userId in expiredSuspensionUserIds {
-          await send(.staleSuspensionFound(userId))
-        }
+
+      // enable additional debug logging when we're streaming blocks
+      // which is currently our simple proxy for additional filter logging
+      // until we expose some sort of app -> extension message to log verbose
+      if !state.blockListeners.isEmpty {
+        os_log("[D•] FILTER state in heartbeat: %{public}@", "\(state.debug)")
       }
+
+      return expiredSuspensionUserIds.isEmpty
+        ? .none
+        : .run { [expiredSuspensionUserIds] send in
+          for userId in expiredSuspensionUserIds {
+            await send(.staleSuspensionFound(userId))
+          }
+        }
 
     case .suspensionTimerEnded(let userId):
       state.suspensions[userId] = nil
@@ -195,6 +205,30 @@ public struct Filter: Reducer, Sendable {
     .run { [save = storage.savePersistentState] _ in
       try await save(state)
     }
+  }
+}
+
+public extension Filter.State {
+  struct Debug {
+    public var userKeys: [uid_t: Int] = [:]
+    public var numAppsInManifest: Int
+    public var exemptUsers: Set<uid_t> = []
+    public var suspensions: [uid_t: FilterSuspension] = [:]
+    public var numAppsInCache: Int
+    public var blockListeners: [uid_t: Date] = [:]
+  }
+
+  var debug: Debug {
+    .init(
+      userKeys: userKeys.reduce(into: [:]) { acc, item in
+        acc[item.key] = item.value.count
+      },
+      numAppsInManifest: appIdManifest.apps.count,
+      exemptUsers: exemptUsers,
+      suspensions: suspensions,
+      numAppsInCache: appCache.count,
+      blockListeners: blockListeners
+    )
   }
 }
 
