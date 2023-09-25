@@ -17,6 +17,11 @@ class FilterDataProvider: NEFilterDataProvider {
   // for the normal case is important
   var sendingBlockDecisions = false
 
+  // right now we just log in verbose mode whenever we're streaming blocks
+  // but in the future, we might have a separate boolean and an app->filter message
+  // to enable this for a specific period
+  var verboseLogging: Bool { sendingBlockDecisions }
+
   override func startFilter(completionHandler: @escaping (Error?) -> Void) {
     let networkRule = NENetworkRule(
       remoteNetwork: nil,
@@ -55,7 +60,12 @@ class FilterDataProvider: NEFilterDataProvider {
 
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
     let userId: uid_t
-    switch store.earlyUserDecision(auditToken: flow.sourceAppAuditToken) {
+    let earlyUserDecision = store.earlyUserDecision(auditToken: flow.sourceAppAuditToken)
+    if verboseLogging {
+      os_log("[D•] FILTER received new flow: %{public}s", "\(flow.description)")
+      os_log("[D•] FILTER early user decision: %{public}@", "\(earlyUserDecision)")
+    }
+    switch earlyUserDecision {
     case .block:
       #if DEBUG
         return .allow()
@@ -70,18 +80,20 @@ class FilterDataProvider: NEFilterDataProvider {
 
     let filterFlow = FilterFlow(flow, userId: userId)
     let decision = store.newFlowDecision(filterFlow, auditToken: flow.sourceAppAuditToken)
+    if verboseLogging {
+      switch decision {
+      case .some(let decision):
+        os_log("[D•] FILTER new flow decision: %{public}@", "\(decision)")
+      case .none:
+        os_log("[D•] FILTER new flow decision: DEFER")
+      }
+    }
 
     switch decision {
-    case .block(.defaultNotAllowed):
+    case .block:
       if sendingBlockDecisions {
         store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
-      #if DEBUG
-        return .allow()
-      #else
-        return .drop()
-      #endif
-    case .block:
       #if DEBUG
         return .allow()
       #else
@@ -119,17 +131,17 @@ class FilterDataProvider: NEFilterDataProvider {
       auditToken: flow.sourceAppAuditToken
     )
 
+    if verboseLogging {
+      os_log("[D•] FILTER outbound flow: %{public}s", "\(filterFlow.shortDescription)")
+      os_log("[D•] FILTER outbound flow decision: %{public}@", "\(decision)")
+      os_log("[D•] FILTER outbound flow bytes: %{public}s", bytesToAscii(readBytes))
+    }
+
     switch decision {
-    case .block(.defaultNotAllowed):
+    case .block:
       if sendingBlockDecisions {
         store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
-      #if DEBUG
-        return .allow()
-      #else
-        return .drop()
-      #endif
-    case .block:
       #if DEBUG
         return .allow()
       #else

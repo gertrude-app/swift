@@ -4,13 +4,11 @@ import Gertie
 import os.log
 
 public extension NetworkFilter {
-
-  func newFlowDecision(_ flow: FilterFlow, auditToken: Data? = nil) -> FilterDecision
-    .FromFlow? {
-    if let decision = flowDecision(flow, auditToken: auditToken, canDefer: true) {
-      return logged(decision, from: flow)
-    }
-    return nil
+  func newFlowDecision(
+    _ flow: FilterFlow,
+    auditToken: Data? = nil
+  ) -> FilterDecision.FromFlow? {
+    flowDecision(flow, auditToken: auditToken, canDefer: true)
   }
 
   func completedFlowDecision(
@@ -19,11 +17,10 @@ public extension NetworkFilter {
     auditToken: Data? = nil
   ) -> FilterDecision.FromFlow {
     if flow.url == nil {
-      flow.parseOutboundData(byteString: bytesToString(readBytes))
+      flow.parseOutboundData(byteString: bytesToAscii(readBytes))
     }
-    let decision = flowDecision(flow, auditToken: auditToken, canDefer: false) ??
+    return flowDecision(flow, auditToken: auditToken, canDefer: false) ??
       .block(.defaultNotAllowed)
-    return logged(decision, from: flow)
   }
 
   private func flowDecision(
@@ -119,35 +116,9 @@ public extension NetworkFilter {
     }
     return suspension.scope.permits(app)
   }
-
-  private func logged(
-    _ decision: FilterDecision.FromFlow,
-    from flow: FilterFlow
-  ) -> FilterDecision
-    .FromFlow {
-    #if DEBUG
-      if getuid() < 500 { // prevent logging during tests
-        switch decision {
-        case .block(let reason):
-          os_log(
-            "[D•] FILTER decision: BLOCK %{public}@, reason: %{public}@",
-            flow.shortDescription,
-            "\(reason)"
-          )
-        case .allow(let reason):
-          os_log(
-            "[D•] FILTER decision: ALLOW %{public}@, reason: %{public}@",
-            flow.shortDescription,
-            "\(reason)"
-          )
-        }
-      }
-    #endif
-    return decision
-  }
 }
 
-private func bytesToString(_ bytes: Data) -> String {
+public func bytesToAscii(_ bytes: Data) -> String {
   var str = ""
   bytes.forEach { byte in
     switch byte {
