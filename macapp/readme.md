@@ -64,7 +64,7 @@ spctl -a -t open --context context:primary-signature -v /Volumes/Gertrude/Gertru
   all of the copies are by running this command:
 
 ```bash
-/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -dump | grep .*path.*ertrude
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -dump | grep ".*path.*ertrude"
 ```
 
 - Then, `sudo rm -rf` all of those to get to a clean slate.
