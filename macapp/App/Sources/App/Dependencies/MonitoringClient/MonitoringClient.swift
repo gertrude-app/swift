@@ -40,6 +40,7 @@ extension MonitoringClient: DependencyKey {
         return CGPreflightScreenCaptureAccess()
       } else {
         // no way in Catalina to check this :/
+        // @see https://www.ryanthomson.net/articles/screen-recording-permissions-catalina-mess/
         return true
       }
     },
