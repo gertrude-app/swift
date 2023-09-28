@@ -147,7 +147,7 @@ extension FilterFeature.RootReducer {
             case .installedSuccessfully:
               break
             case .timedOutWaiting:
-              interestingEvent(id: "9ffabfe5")
+              // event `9ffabfe5` logged w/ more detail in FilterFeature.swift
               await send(.focusedNotification(.filterInstallTimeout))
             case .userClickedDontAllow:
               await send(.focusedNotification(.filterInstallDenied))

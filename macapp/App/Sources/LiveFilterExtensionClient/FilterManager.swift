@@ -111,7 +111,8 @@ final class FilterManager: NSObject {
       try? await scheduler.sleep(for: .seconds(1))
       waited += 1
 
-      switch await activationRequest.value {
+      let currentStatus = await activationRequest.value
+      switch currentStatus {
 
       // the user has to do several steps at this point, like allowing
       // installation of extension in security & privacy settings,
@@ -135,6 +136,7 @@ final class FilterManager: NSObject {
       case .idle, .configuring, .waitingForDelegateRequest:
         if waited > 90 {
           configureTask?.cancel()
+          interestingEvent(id: "9ffabfe5", "status: \(currentStatus)")
           await activationRequest.setValue(.idle)
           return .timedOutWaiting
         }
