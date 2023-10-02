@@ -11,7 +11,7 @@ import XExpect
 
 @MainActor final class AppReducerTests: XCTestCase {
   func testDidFinishLaunching_Exhaustive() async {
-    let (store, bgQueue) = AppReducer.testStore(exhaustive: true)
+    let (store, _) = AppReducer.testStore(exhaustive: true)
 
     let filterSetupSpy = ActorIsolated(false)
     store.deps.filterExtension.setup = {
@@ -33,20 +33,20 @@ import XExpect
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
-    await store.receive(.websocket(.connectedSuccessfully))
-
-    await expect(tokenSetSpy).toEqual(UserData.mock.token)
-
-    await bgQueue.advance(by: .milliseconds(5))
     await expect(filterSetupSpy).toEqual(true)
 
     await store.receive(.filter(.receivedState(.installedButNotRunning))) {
       $0.filter.extension = .installedButNotRunning
     }
 
+    await store.receive(.websocket(.connectedSuccessfully))
+
+    await expect(tokenSetSpy).toEqual(UserData.mock.token)
+
+    await store.receive(.startHeartbeat)
+
     let prevUser = store.state.user.data
 
-    await bgQueue.advance(by: .milliseconds(5))
     await store.receive(.checkIn(result: .success(.mock), reason: .appLaunched)) {
       $0.appUpdates.latestVersion = .init(semver: "2.0.4")
       $0.user.data?.screenshotsEnabled = true
@@ -69,6 +69,16 @@ import XExpect
 
     filterStateSubject.send(completion: .finished)
     await store.send(.application(.willTerminate)) // cancel heartbeat
+  }
+
+  func testOnboardingDelegateSaveStepPersists() async {
+    let (store, _) = AppReducer.testStore()
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+
+    await store.send(.onboarding(.delegate(.saveCurrentStep(.macosUserAccountType))))
+    await expect(saveState.invocations.value[0].resumeOnboarding)
+      .toEqual(.at(step: .macosUserAccountType))
   }
 
   func testDidFinishLaunching_EstablishesConnectionIfFilterOn() async {
@@ -127,20 +137,31 @@ import XExpect
 extension AppReducer {
   static func testStore<R: ReducerOf<AppReducer>>(
     exhaustive: Bool = false,
+    mockDeps: Bool = true,
     reducer: R = AppReducer(),
     mutateState: @escaping (inout State) -> Void = { _ in }
   ) -> (TestStoreOf<AppReducer>, TestSchedulerOf<DispatchQueue>) {
-    var state = State()
+    var state = State(appVersion: "1.0.0")
     mutateState(&state)
     let store = TestStore(initialState: state, reducer: { reducer })
+    store.useMainSerialExecutor = true
     store.exhaustivity = exhaustive ? .on : .off
     let scheduler = DispatchQueue.test
-    store.deps.date = .constant(Date(timeIntervalSince1970: 0))
-    store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
-    store.deps.mainQueue = .immediate
-    store.deps.storage.loadPersistentState = { .mock }
-    store.deps.api.checkIn = { _ in .mock }
-    store.deps.filterExtension.setup = { .installedAndRunning }
+    if mockDeps {
+      store.deps.date = .constant(Date(timeIntervalSince1970: 0))
+      store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
+      store.deps.mainQueue = .immediate
+      store.deps.monitoring = .mock
+      store.deps.storage = .mock
+      store.deps.storage.loadPersistentState = { .mock }
+      store.deps.app = .mock
+      store.deps.api = .mock
+      store.deps.device = .mock
+      store.deps.api.checkIn = { _ in .mock }
+      store.deps.filterExtension = .mock
+      store.deps.filterXpc = .mock
+      store.deps.websocket = .mock
+    }
     return (store, scheduler)
   }
 }

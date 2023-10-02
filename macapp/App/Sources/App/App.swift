@@ -11,7 +11,10 @@ typealias UserData = GetUserData.Output
   var adminWindow: AdminWindow
   var requestSuspensionWindow: RequestSuspensionWindow
   let store = Store(
-    initialState: AppReducer.State(),
+    initialState: AppReducer.State(appVersion: {
+      @Dependency(\.app) var appClient
+      return appClient.installedVersion()
+    }()),
     reducer: {
       AppReducer()._printChanges(.filteredBy { action in
         switch action {

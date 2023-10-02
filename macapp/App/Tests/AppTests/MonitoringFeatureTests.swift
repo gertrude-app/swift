@@ -617,8 +617,14 @@ import XExpect
   func testConnectingUserStartsMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
-    store.deps.storage.loadPersistentState = { nil }
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+    store.deps.storage.loadPersistentState = { .init(
+      appVersion: "1.0.0",
+      appUpdateReleaseChannel: .stable,
+      filterVersion: "1.0.0",
+      user: nil, // <-- no user
+      resumeOnboarding: nil
+    ) }
 
     let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
     let keylogging = spyKeylogging(store, keystrokes: mock(

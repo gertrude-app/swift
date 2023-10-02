@@ -54,6 +54,21 @@ extension MonitoringClient: DependencyKey {
 
 extension MonitoringClient: TestDependencyKey {
   static let testValue = Self(
+    commitPendingKeystrokes: unimplemented("MonitoringClient.commitPendingKeystrokes"),
+    keystrokeRecordingPermissionGranted: unimplemented(
+      "MonitoringClient.keystrokeRecordingPermissionGranted"
+    ),
+    restorePendingKeystrokes: unimplemented("MonitoringClient.restorePendingKeystrokes"),
+    screenRecordingPermissionGranted: unimplemented(
+      "MonitoringClient.screenRecordingPermissionGranted"
+    ),
+    startLoggingKeystrokes: unimplemented("MonitoringClient.startLoggingKeystrokes"),
+    stopLoggingKeystrokes: unimplemented("MonitoringClient.stopLoggingKeystrokes"),
+    takePendingKeystrokes: unimplemented("MonitoringClient.takePendingKeystrokes"),
+    takePendingScreenshots: unimplemented("MonitoringClient.takePendingScreenshots"),
+    takeScreenshot: unimplemented("MonitoringClient.takeScreenshot")
+  )
+  static let mock = Self(
     commitPendingKeystrokes: { _ in },
     keystrokeRecordingPermissionGranted: { true },
     restorePendingKeystrokes: { _ in },

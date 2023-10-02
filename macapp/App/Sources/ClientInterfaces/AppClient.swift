@@ -37,6 +37,15 @@ public struct AppClient: Sendable {
 
 extension AppClient: TestDependencyKey {
   public static let testValue = Self(
+    colorScheme: unimplemented("AppClient.colorScheme"),
+    colorSchemeChanges: unimplemented("AppClient.colorSchemeChanges"),
+    disableLaunchAtLogin: unimplemented("AppClient.disableLaunchAtLogin"),
+    enableLaunchAtLogin: unimplemented("AppClient.enableLaunchAtLogin"),
+    isLaunchAtLoginEnabled: unimplemented("AppClient.isLaunchAtLoginEnabled"),
+    installedVersion: unimplemented("AppClient.installedVersion"),
+    quit: unimplemented("AppClient.quit")
+  )
+  public static let mock = Self(
     colorScheme: { .light },
     colorSchemeChanges: { Empty().eraseToAnyPublisher() },
     disableLaunchAtLogin: {},

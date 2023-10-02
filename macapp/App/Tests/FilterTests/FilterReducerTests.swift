@@ -12,7 +12,9 @@ import XExpect
   func testExtensionStarted_Exhaustive() async {
     let (store, mainQueue) = Filter.testStore(exhaustive: true)
     let subject = PassthroughSubject<XPCEvent.Filter, Never>()
+    store.deps.filterExtension = .mock
     store.deps.xpc.events = { subject.eraseToAnyPublisher() }
+    store.deps.xpc.stopListener = {}
     let startListener = mock(always: ())
     store.deps.xpc.startListener = startListener.fn
     store.deps.storage.loadPersistentState = { .init(
@@ -73,6 +75,7 @@ import XExpect
 
   func testStreamBlockedRequests() async {
     let (store, _) = Filter.testStore(exhaustive: true)
+    store.deps.filterExtension = .mock
 
     // user not streaming, so we won't send the request
     store.deps.xpc.sendBlockedRequest = { _, _ in fatalError() }
@@ -114,6 +117,7 @@ import XExpect
     let (store, _) = Filter.testStore()
     let sendBlocked = spy2(on: (uid_t.self, BlockedRequest.self), returning: ())
     store.deps.xpc.sendBlockedRequest = sendBlocked.fn
+    store.deps.filterExtension = .mock
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: true,
@@ -159,6 +163,7 @@ import XExpect
 
     let save = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = save.fn
+    store.deps.filterExtension = .mock
 
     await store.send(.xpc(.receivedAppMessage(.disconnectUser(userId: 502)))) {
       $0.userKeys = [503: [key2]]
@@ -174,9 +179,8 @@ import XExpect
   }
 
   func testSetUserExemption() async {
-    let (store, _) = Filter.testStore {
-      $0.exemptUsers = [501]
-    }
+    let (store, _) = Filter.testStore { $0.exemptUsers = [501] }
+    store.deps.filterExtension = .mock
 
     let save = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = save.fn
@@ -200,6 +204,7 @@ import XExpect
     let (store, mainQueue) = Filter.testStore {
       $0.suspensions = [503: otherUserSuspension]
     }
+    store.deps.filterExtension = .mock
 
     let notifyExpired = spy(on: uid_t.self, returning: ())
     store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
@@ -230,6 +235,7 @@ import XExpect
 
     let notifyExpired = spy(on: uid_t.self, returning: ())
     store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
+    store.deps.filterExtension = .mock
 
     await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
       $0.suspensions = [
@@ -251,6 +257,7 @@ import XExpect
 
     let notifyExpired = spy(on: uid_t.self, returning: ())
     store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
+    store.deps.filterExtension = .mock
 
     await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
       $0.suspensions = [
@@ -308,6 +315,10 @@ import XExpect
 
   func testHeartbeatCleansUpDanglingSuspensionFromSleepConfusingTimer() async {
     let (store, mainQueue) = Filter.testStore()
+    store.deps.filterExtension = .mock
+    store.deps.xpc.events = XPCClient.mock.events
+    store.deps.xpc.startListener = {}
+    store.deps.storage.loadPersistentState = StorageClient.mock.loadPersistentState
 
     let time = ControllingNow(starting: .epoch, with: mainQueue)
     store.deps.date = time.generator

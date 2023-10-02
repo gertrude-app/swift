@@ -52,7 +52,7 @@ extension HistoryFeature.RootReducer: RootReducing {
       state.history.userConnection = .connecting
       return .exec { send in
         await send(.history(.userConnection(.connect(TaskResult {
-          try await api.connectUser(connectUserInput(code: code))
+          try await api.connectUser(.init(code: code, device: device, app: app))
         }))))
       }
 
@@ -73,7 +73,8 @@ extension HistoryFeature.RootReducer: RootReducing {
       state.history.userConnection = .established(welcomeDismissed: true)
       return .none
 
-    case .history(.userConnection(.connect(.success(let user)))):
+    case .history(.userConnection(.connect(.success(let user)))),
+         .onboarding(.connectUser(.success(let user))):
       state.user = .init(data: user)
       return .exec { [persistent = state.persistent] _ in
         try await storage.savePersistentState(persistent)
@@ -89,13 +90,15 @@ extension HistoryFeature.RootReducer: RootReducing {
       return .none
     }
   }
+}
 
-  private func connectUserInput(code: Int) throws -> ConnectUser.Input {
+extension ConnectUser.Input {
+  init(code: Int, device: DeviceClient, app: AppClient) throws {
     guard let serialNumber = device.serialNumber() else {
       struct NoSerialNumber: Error {}
       throw NoSerialNumber()
     }
-    return ConnectUser.Input(
+    self.init(
       verificationCode: code,
       appVersion: app.installedVersion() ?? "unknown",
       modelIdentifier: device.modelIdentifier() ?? "unknown",

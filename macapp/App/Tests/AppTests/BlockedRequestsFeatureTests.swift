@@ -200,8 +200,9 @@ import XExpect
     }
 
     await store.receive(.createUnlockRequests(.failure(TestErr("")))) {
-      $0.createUnlockRequests =
-        .failed(error: "Please try again, or contact help if the problem persists.")
+      $0.createUnlockRequests = .failed(
+        error: "Sorry, something went wrong. Please try again, or contact help if the problem persists."
+      )
     }
 
     // toggling a request brings back to idle so the user can try again

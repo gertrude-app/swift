@@ -74,6 +74,19 @@ extension SystemClient: DependencyKey {
 
 extension SystemClient: TestDependencyKey {
   static let testValue = Self(
+    loadFilterConfiguration: unimplemented("SystemClient.loadFilterConfiguration"),
+    isNEFilterManagerSharedEnabled: unimplemented("SystemClient.isNEFilterManagerSharedEnabled"),
+    enableNEFilterManagerShared: unimplemented("SystemClient.enableNEFilterManagerShared"),
+    disableNEFilterManagerShared: unimplemented("SystemClient.disableNEFilterManagerShared"),
+    filterProviderConfiguration: unimplemented("SystemClient.filterProviderConfiguration"),
+    removeFilterConfiguration: unimplemented("SystemClient.removeFilterConfiguration"),
+    requestExtensionActivation: unimplemented("SystemClient.requestExtensionActivation"),
+    updateNEFilterManagerShared: unimplemented("SystemClient.updateNEFilterManagerShared"),
+    saveNEFilterManagerShared: unimplemented("SystemClient.saveNEFilterManagerShared"),
+    filterDidChangePublisher: unimplemented("SystemClient.filterDidChangePublisher")
+  )
+
+  static let mock = Self(
     loadFilterConfiguration: { .doesNotExistOrLoadedSuccessfully },
     isNEFilterManagerSharedEnabled: { true },
     enableNEFilterManagerShared: {},

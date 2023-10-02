@@ -38,7 +38,8 @@ import XExpect
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
-      user: nil
+      user: nil,
+      resumeOnboarding: nil
     )])
   }
 

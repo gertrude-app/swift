@@ -54,3 +54,7 @@ enum NotificationsSetting: String, Equatable, Codable {
   case banner
   case alert
 }
+
+extension URL {
+  static let contact = URL(string: "https://gertrude.app/contact")!
+}

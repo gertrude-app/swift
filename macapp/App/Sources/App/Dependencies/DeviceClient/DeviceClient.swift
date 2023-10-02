@@ -40,6 +40,25 @@ extension DeviceClient: DependencyKey {
 
 extension DeviceClient: TestDependencyKey {
   static let testValue = Self(
+    currentMacOsUserType: unimplemented("DeviceClient.currentMacOsUserType"),
+    currentUserId: unimplemented("DeviceClient.currentUserId"),
+    fullUsername: unimplemented("DeviceClient.fullUsername"),
+    listMacOSUsers: unimplemented("DeviceClient.listMacOSUsers"),
+    modelIdentifier: unimplemented("DeviceClient.modelIdentifier"),
+    notificationsSetting: unimplemented("DeviceClient.notificationsSetting"),
+    numericUserId: unimplemented("DeviceClient.numericUserId"),
+    openSystemPrefs: unimplemented("DeviceClient.openSystemPrefs"),
+    openWebUrl: unimplemented("DeviceClient.openWebUrl"),
+    quitBrowsers: unimplemented("DeviceClient.quitBrowsers"),
+    requestNotificationAuthorization: unimplemented(
+      "DeviceClient.requestNotificationAuthorization"
+    ),
+    showNotification: unimplemented("DeviceClient.showNotification"),
+    serialNumber: unimplemented("DeviceClient.serialNumber"),
+    username: unimplemented("DeviceClient.username")
+  )
+
+  static let mock = Self(
     currentMacOsUserType: { .standard },
     currentUserId: { 502 },
     fullUsername: { "test-full-username" },

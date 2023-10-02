@@ -57,7 +57,9 @@ import XExpect
 
     await store.receive(.history(.userConnection(.connect(.failure(TestErr("Oh no!")))))) {
       $0.history.userConnection =
-        .connectFailed("Please try again, or contact help if the problem persists.")
+        .connectFailed(
+          "Sorry, something went wrong. Please try again, or contact help if the problem persists."
+        )
     }
 
     await store.send(.menuBar(.connectFailedHelpClicked))

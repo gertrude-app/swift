@@ -38,6 +38,13 @@ extension XPCClient: DependencyKey {
 
 extension XPCClient: TestDependencyKey {
   static let testValue = Self(
+    notifyFilterSuspensionEnded: unimplemented("XPCClient.notifyFilterSuspensionEnded"),
+    startListener: unimplemented("XPCClient.startListener"),
+    stopListener: unimplemented("XPCClient.stopListener"),
+    sendBlockedRequest: unimplemented("XPCClient.sendBlockedRequest"),
+    events: unimplemented("XPCClient.events")
+  )
+  static let mock = Self(
     notifyFilterSuspensionEnded: { _ in },
     startListener: {},
     stopListener: {},

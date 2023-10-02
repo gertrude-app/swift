@@ -47,12 +47,11 @@ struct FilterFeature: Feature {
 }
 
 extension FilterFeature.State {
-  init() {
-    @Dependency(\.app) var appClient
+  init(appVersion: String?) {
     self.init(
       currentSuspensionExpiration: nil,
       extension: .unknown,
-      version: appClient.installedVersion() ?? "unknown"
+      version: appVersion ?? "unknown"
     )
   }
 
@@ -143,37 +142,33 @@ extension FilterFeature.RootReducer {
       return .merge(
         .exec { send in
           if !extensionInstalled {
-            switch await filterExtension.install() {
+            let installResult = await filterExtension.install()
+            switch installResult {
             case .installedSuccessfully:
               break
             case .timedOutWaiting:
               // event `9ffabfe5` logged w/ more detail in FilterFeature.swift
               await send(.focusedNotification(.filterInstallTimeout))
             case .userClickedDontAllow:
+              interestingEvent(id: "01f94ff3")
               await send(.focusedNotification(.filterInstallDenied))
-            case .activationRequestFailed(let error):
-              unexpectedError(id: "61d0eda0", error)
-            case .failedToGetBundleIdentifier:
-              unexpectedError(id: "d4a652e9")
-            case .failedToLoadConfig:
-              unexpectedError(id: "bd04ba1a")
-            case .failedToSaveConfig:
-              unexpectedError(id: "161ed707")
-            case .alreadyInstalled:
-              unexpectedError(id: "ff51a770")
+            case .activationRequestFailed,
+                 .failedToGetBundleIdentifier,
+                 .failedToLoadConfig,
+                 .failedToSaveConfig,
+                 .alreadyInstalled:
+              unexpectedError(id: "8a8762e7", detail: "result: \(installResult)")
             }
           } else {
-            switch await filterExtension.start() {
+            let state = await filterExtension.start()
+            switch state {
             case .installedAndRunning:
               break
-            case .errorLoadingConfig:
-              unexpectedError(id: "c291bcef")
-            case .installedButNotRunning:
-              unexpectedError(id: "99f3465c")
-            case .notInstalled:
-              unexpectedError(id: "6e4f30ac")
-            case .unknown:
-              unexpectedError(id: "24f31d4c")
+            case .errorLoadingConfig,
+                 .installedButNotRunning,
+                 .notInstalled,
+                 .unknown:
+              unexpectedError(id: "cb2a0564", detail: "state: \(state)")
             }
           }
         },

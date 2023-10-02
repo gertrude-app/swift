@@ -11,6 +11,9 @@ enum Persistent {
     var appUpdateReleaseChannel: ReleaseChannel
     var filterVersion: String
     var user: UserData?
+
+    // added for v2.1.0, but is backwards compatible
+    var resumeOnboarding: OnboardingFeature.Resume?
   }
 
   // v2.0.0 - v2.0.3
@@ -28,7 +31,8 @@ extension AppReducer.State {
       appVersion: appUpdates.installedVersion,
       appUpdateReleaseChannel: appUpdates.releaseChannel,
       filterVersion: filter.version,
-      user: user.data
+      user: user.data,
+      resumeOnboarding: nil
     )
   }
 }
