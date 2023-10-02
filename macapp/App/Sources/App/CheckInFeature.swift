@@ -142,7 +142,7 @@ extension CheckIn {
       switch source {
       case .persistence:
         self = .loadedPersistedUser
-      case .newConnection:
+      case .onboardingConnection, .menuBarConnection:
         self = .userConnected
       }
     }

@@ -40,13 +40,6 @@ extension ApplicationFeature.RootReducer: RootReducing {
           }
         },
 
-        .exec { _ in
-          // TODO: should be part of onboarding...
-          // if await app.isLaunchAtLoginEnabled() == false {
-          //   await app.enableLaunchAtLogin()
-          // }
-        },
-
         .publisher {
           filterExtension.stateChanges()
             .map { .filter(.receivedState($0)) }

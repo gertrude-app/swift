@@ -22,6 +22,7 @@ enum UserConnectionFeature: Feature {
 
   struct RootReducer: RootReducing {
     @Dependency(\.api) var api
+    @Dependency(\.app) var app
     @Dependency(\.storage) var storage
     @Dependency(\.filterXpc) var xpc
   }
@@ -74,12 +75,17 @@ extension UserConnectionFeature.RootReducer {
     }
   }
 
-  func disconnectUser(persisting updatedState: Persistent.State) -> Effect<Action> {
-    .exec { send in
-      await api.clearUserToken()
-      try await storage.savePersistentState(updatedState)
-      _ = await xpc.disconnectUser()
-    }
+  func disconnectUser(persisting updated: Persistent.State) -> Effect<Action> {
+    .merge(
+      .exec { _ in
+        await api.clearUserToken()
+        try await storage.savePersistentState(updated)
+        _ = await xpc.disconnectUser()
+        await app.disableLaunchAtLogin()
+      },
+      .cancel(id: AppReducer.CancelId.heartbeatInterval),
+      .cancel(id: AppReducer.CancelId.websocketMessages)
+    )
   }
 }
 

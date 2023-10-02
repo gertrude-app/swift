@@ -125,7 +125,9 @@ extension MonitoringFeature.RootReducer {
         flushKeystrokes(state.filter.isSuspended)
       )
 
-    case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
+    case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))),
+         .history(.userConnection(.disconnectMissingUser)),
+         .websocket(.receivedMessage(.userDeleted)):
       return .cancel(id: CancelId.screenshots)
 
     // try to catch the moment when they've fixed monitoring permissions issues

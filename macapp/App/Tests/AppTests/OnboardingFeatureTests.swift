@@ -115,7 +115,7 @@ import XExpect
       $0.onboarding.connectChildRequest = .succeeded(payload: "lil suzy")
     }
 
-    await store.receive(.startProtecting(user: user, from: .newConnection))
+    await store.receive(.startProtecting(user: user, from: .onboardingConnection))
     await store.receive(.checkIn(result: .success(checkInResult), reason: .userConnected)) {
       $0.appUpdates.latestVersion = checkInResult.latestRelease
     }
@@ -252,6 +252,15 @@ import XExpect
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.step = .finish // ...and go to finish
     }
+
+    // primary button on finish screen closes window, enables launch at login
+    store.deps.app.isLaunchAtLoginEnabled = { false }
+    let enableLaunchAtLogin = mock(always: ())
+    store.deps.app.enableLaunchAtLogin = enableLaunchAtLogin.fn
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.windowOpen = false
+    }
+    await expect(enableLaunchAtLogin.invocations).toEqual(1)
 
     // shutdown tries fo flush keystrokes
     store.deps.monitoring = .mock

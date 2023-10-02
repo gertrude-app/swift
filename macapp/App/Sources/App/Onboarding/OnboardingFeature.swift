@@ -54,6 +54,7 @@ struct OnboardingFeature: Feature {
     )
     case connectUser(TaskResult<UserData>)
     case setStep(State.Step)
+    case closeWindow
   }
 
   struct Reducer: FeatureReducer {
@@ -334,6 +335,15 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .howToUseGertrude:
         state.step = .finish
         return .none
+
+      case .webview(.primaryBtnClicked) where step == .finish, .closeWindow:
+        state.windowOpen = false
+        let userConnected = state.connectChildRequest.isSucceeded
+        return .exec { _ in
+          if userConnected, (await app.isLaunchAtLoginEnabled()) == false {
+            await app.enableLaunchAtLogin()
+          }
+        }
 
       case .webview(.primaryBtnClicked):
         // TODO: debug assert, and error log

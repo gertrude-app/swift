@@ -13,18 +13,16 @@ import XExpect
   func testDidFinishLaunching_Exhaustive() async {
     let (store, _) = AppReducer.testStore(exhaustive: true)
 
-    let filterSetupSpy = ActorIsolated(false)
-    store.deps.filterExtension.setup = {
-      await filterSetupSpy.setValue(true)
-      return .installedButNotRunning
-    }
-
-    let tokenSetSpy = ActorIsolated<UUID?>(nil)
-    store.deps.api.setUserToken = { await tokenSetSpy.setValue($0) }
-
+    let extSetup = mock(always: FilterExtensionState.installedButNotRunning)
+    store.deps.filterExtension.setup = extSetup.fn
+    let setUserToken = spy(on: UUID.self, returning: ())
+    store.deps.api.setUserToken = setUserToken.fn
     let filterStateSubject = PassthroughSubject<FilterExtensionState, Never>()
     store.deps.filterExtension.stateChanges = { filterStateSubject.eraseToAnyPublisher() }
     store.deps.storage.loadPersistentState = { .mock }
+    store.deps.app.isLaunchAtLoginEnabled = { false }
+    let enableLaunchAtLogin = mock(always: ())
+    store.deps.app.enableLaunchAtLogin = enableLaunchAtLogin.fn
 
     await store.send(.application(.didFinishLaunching))
 
@@ -33,7 +31,7 @@ import XExpect
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
-    await expect(filterSetupSpy).toEqual(true)
+    await expect(extSetup.invocations).toEqual(1)
 
     await store.receive(.filter(.receivedState(.installedButNotRunning))) {
       $0.filter.extension = .installedButNotRunning
@@ -42,7 +40,8 @@ import XExpect
     await store.receive(.startProtecting(user: .mock, from: .persistence))
     await store.receive(.websocket(.connectedSuccessfully))
 
-    await expect(tokenSetSpy).toEqual(UserData.mock.token)
+    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
+    await expect(enableLaunchAtLogin.invocations).toEqual(1)
 
     let prevUser = store.state.user.data
 

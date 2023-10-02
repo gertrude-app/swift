@@ -44,7 +44,8 @@ struct AppReducer: Reducer, Sendable {
 
     enum StartUserProtectionSource: Equatable, Sendable {
       case persistence
-      case newConnection
+      case onboardingConnection
+      case menuBarConnection
     }
 
     case admin(AdminFeature.Action)
@@ -72,6 +73,7 @@ struct AppReducer: Reducer, Sendable {
   }
 
   @Dependency(\.api) var api
+  @Dependency(\.app) var app
   @Dependency(\.device) var device
   @Dependency(\.backgroundQueue) var bgQueue
   @Dependency(\.mainQueue) var mainQueue
@@ -123,12 +125,18 @@ struct AppReducer: Reducer, Sendable {
               reason: .init(source)
             ))
           },
-          // todo, launch at login
-          // .publisher {
-          //   websocket.receive()
-          //     .map { .websocket(.receivedMessage($0)) }
-          //     .receive(on: mainQueue)
-          // }.cancellable(id: CancelId.websocketMessages),
+          .exec { _ in
+            // when we're onboarding, we delay enabling this, to avoid yet another notification
+            // that might confuse them. it is enabled when they close the onboarding window
+            if source != .onboardingConnection, (await app.isLaunchAtLoginEnabled()) == false {
+              await app.enableLaunchAtLogin()
+            }
+          },
+          .publisher {
+            websocket.receive()
+              .map { .websocket(.receivedMessage($0)) }
+              .receive(on: mainQueue)
+          }.cancellable(id: CancelId.websocketMessages),
           .exec { send in
             var numTicks = 0
             for await _ in bgQueue.timer(interval: .seconds(60)) {

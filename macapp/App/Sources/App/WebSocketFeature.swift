@@ -50,6 +50,8 @@ extension WebSocketFeature.RootReducer {
 
     case .application(.willSleep),
          .application(.willTerminate),
+         .websocket(.receivedMessage(.userDeleted)),
+         .history(.userConnection(.disconnectMissingUser)),
          .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))),
          .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
       return .exec { _ in
