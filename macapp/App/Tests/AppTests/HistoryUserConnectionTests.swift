@@ -10,13 +10,12 @@ import XExpect
     let (store, _) = AppReducer.testStore()
     store.dependencies.api.connectUser = { _ in .mock }
 
-    let savedState = LockIsolated<Persistent.State?>(nil)
-    store.dependencies.storage.savePersistentState = { state in
-      savedState.setValue(state)
-    }
+    store.deps.api.checkIn = { _ in throw TestErr("stop check in") }
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
 
-    let apiUserToken = ActorIsolated<UUID?>(nil)
-    store.deps.api.setUserToken = { await apiUserToken.setValue($0) }
+    let setUserToken = spy(on: UUID.self, returning: ())
+    store.deps.api.setUserToken = setUserToken.fn
 
     await store.send(.menuBar(.connectClicked)) {
       $0.history.userConnection = .enteringConnectionCode
@@ -33,8 +32,8 @@ import XExpect
 
     await store.receive(.websocket(.connectedSuccessfully))
 
-    expect(savedState).toEqual(.mock)
-    await expect(apiUserToken).toEqual(UserData.mock.token)
+    await expect(saveState.invocations).toEqual([.mock])
+    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
 
     await store.send(.menuBar(.welcomeAdminClicked)) {
       $0.history.userConnection = .established(welcomeDismissed: true)

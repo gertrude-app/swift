@@ -129,11 +129,22 @@ extension CheckInFeature.RootReducer {
 
 extension CheckIn {
   enum Reason: Equatable, Sendable {
-    case appLaunched
+    case appUpdated
     case healthCheck
     case heartbeat
+    case loadedPersistedUser
+    case userConnected
     case inactiveAccountRechecked
     case receivedWebsocketMessage
     case userRefreshedRules
+
+    init(_ source: AppReducer.Action.StartUserProtectionSource) {
+      switch source {
+      case .persistence:
+        self = .loadedPersistedUser
+      case .newConnection:
+        self = .userConnected
+      }
+    }
   }
 }

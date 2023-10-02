@@ -1,6 +1,7 @@
 import Combine
 import ComposableArchitecture
 import Core
+import Gertie
 import MacAppRoute
 import TestSupport
 import XCTest
@@ -11,13 +12,11 @@ import XExpect
 @MainActor final class OnboardingFeatureTests: XCTestCase {
   func testFirstBootOnboardingHappyPathExhaustive() async {
     let (store, _) = AppReducer.testStore(exhaustive: true, mockDeps: false)
+    let scheduler = DispatchQueue.test
+    store.deps.backgroundQueue = scheduler.eraseToAnyScheduler()
     store.deps.mainQueue = .immediate
-
-    // TODO: this is a little weird that i have to mock these, seems like
-    // maybe some listeners shouldn't initialize until we start the heartbeat? or something?
     store.deps.filterExtension.stateChanges = { Empty().eraseToAnyPublisher() }
     store.deps.filterXpc.events = { Empty().eraseToAnyPublisher() }
-    store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
     store.deps.websocket.state = { .notConnected }
 
     store.deps.device.currentUserId = { 502 }
@@ -82,12 +81,22 @@ import XExpect
       $0.onboarding.connectChildRequest = .idle
     }
 
+    // lots happens when the user connection is made...
     let user = UserData.mock { $0.name = "lil suzy" }
     let connectUser = spy(on: ConnectUser.Input.self, returning: user)
     store.deps.api.connectUser = connectUser.fn
+    let setUserToken = spy(on: UUID.self, returning: ())
+    store.deps.api.setUserToken = setUserToken.fn
+    let setAccountActive = spy(on: Bool.self, returning: ())
+    store.deps.api.setAccountActive = setAccountActive.fn
+    let checkInResult = CheckIn.Output.empty { $0.userData = user }
+    let checkIn = spy(on: CheckIn.Input.self, returning: checkInResult)
+    store.deps.api.checkIn = checkIn.fn
     store.deps.app.installedVersion = { "1.0.0" }
     await expect(saveState.invocations.value).toHaveCount(1)
     store.deps.device = .mock // lots of data used by connect user request
+    store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
+
     // they enter code `123456` and click submit...
     await store.send(.onboarding(.webview(.connectChildSubmitted(123_456)))) {
       $0.onboarding.step = .connectChild
@@ -96,6 +105,9 @@ import XExpect
 
     await expect(connectUser.invocations.value).toHaveCount(1)
     await expect(connectUser.invocations.value[0].verificationCode).toEqual(123_456)
+    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
+    await expect(setAccountActive.invocations).toEqual([true])
+    await expect(checkIn.invocations).toEqual([.init(appVersion: "1.0.0", filterVersion: "1.0.0")])
 
     await store.receive(.onboarding(.connectUser(.success(user)))) {
       $0.user.data = user
@@ -103,8 +115,14 @@ import XExpect
       $0.onboarding.connectChildRequest = .succeeded(payload: "lil suzy")
     }
 
+    await store.receive(.startProtecting(user: user, from: .newConnection))
+    await store.receive(.checkIn(result: .success(checkInResult), reason: .userConnected)) {
+      $0.appUpdates.latestVersion = checkInResult.latestRelease
+    }
+    await store.receive(.user(.updated(previous: user)))
+
     // we persisted the user data
-    await expect(saveState.invocations.value).toHaveCount(2)
+    await expect(saveState.invocations.value).toHaveCount(3)
     await expect(saveState.invocations.value[1].user).toEqual(user)
 
     // they click "next" on the connected child success screen...
@@ -234,6 +252,11 @@ import XExpect
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.step = .finish // ...and go to finish
     }
+
+    // shutdown tries fo flush keystrokes
+    store.deps.monitoring = .mock
+    store.deps.monitoring.takePendingKeystrokes = { nil }
+    await store.send(.application(.willTerminate))
   }
 
   func testClickingTryAgainPrimaryFromInstallSysExtFailed() async {

@@ -30,11 +30,9 @@ enum UserConnectionFeature: Feature {
 extension UserConnectionFeature.Reducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-    case .connect(.success(let user)):
+    case .connect(.success):
       state = .established(welcomeDismissed: false)
-      return .exec { _ in
-        await api.setUserToken(user.token)
-      }
+      return .none
 
     case .connect(.failure(let error)):
       let codeNotFound = "Code not found, or expired. Try reentering, or create a new code."

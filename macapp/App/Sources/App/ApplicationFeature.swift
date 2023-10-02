@@ -15,11 +15,10 @@ enum ApplicationFeature {
     @Dependency(\.app) var app
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.device) var device
-    @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.storage) var storage
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.filterExtension) var filterExtension
-    @Dependency(\.websocket) var websocket
+    @Dependency(\.mainQueue) var mainQueue
   }
 }
 
@@ -29,35 +28,17 @@ extension ApplicationFeature.RootReducer: RootReducing {
 
     case .application(.didFinishLaunching):
       return .merge(
-        // .exec { _ in
-        //   // requesting notification authorization at least once
-        //   // ensures that the system prefs panel will show Gertrude
-        //   // TODO: consider delaying this if no user connected
-        // await device.requestNotificationAuthorization()
-        // },
-
         .exec { send in
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
         },
 
         .exec { send in
-          // try await bgQueue.sleep(for: .milliseconds(5)) // <- unit test determinism
           let setupState = await filterExtension.setup()
           await send(.filter(.receivedState(setupState)))
           if setupState.installed {
             _ = await filterXpc.establishConnection()
           }
         },
-
-        // .exec { send in
-        //   var numTicks = 0
-        //   for await _ in bgQueue.timer(interval: .seconds(60)) {
-        //     numTicks += 1
-        //     for interval in heartbeatIntervals(for: numTicks) {
-        //       await send(.heartbeat(interval))
-        //     }
-        //   }
-        // }.cancellable(id: Heartbeat.CancelId.interval),
 
         .exec { _ in
           // TODO: should be part of onboarding...
@@ -76,17 +57,14 @@ extension ApplicationFeature.RootReducer: RootReducing {
           filterXpc.events()
             .map { .xpc($0) }
             .receive(on: mainQueue)
-        },
-
-        .publisher {
-          websocket.receive()
-            .map { .websocket(.receivedMessage($0)) }
-            .receive(on: mainQueue)
         }
       )
 
     case .application(.willTerminate):
-      return .cancel(id: Heartbeat.CancelId.interval)
+      return .merge(
+        .cancel(id: AppReducer.CancelId.heartbeatInterval),
+        .cancel(id: AppReducer.CancelId.websocketMessages)
+      )
 
     default:
       return .none
@@ -94,8 +72,8 @@ extension ApplicationFeature.RootReducer: RootReducing {
   }
 }
 
-func heartbeatIntervals(for tick: Int) -> [Heartbeat.Interval] {
-  var intervals: [Heartbeat.Interval] = [.everyMinute]
+func heartbeatIntervals(for tick: Int) -> [HeartbeatInterval] {
+  var intervals: [HeartbeatInterval] = [.everyMinute]
   if tick % 5 == 0 {
     intervals.append(.everyFiveMinutes)
   }

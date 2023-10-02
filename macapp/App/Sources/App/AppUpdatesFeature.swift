@@ -79,7 +79,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
               // refresh the rules post-update, or else health check will complain
               await send(.checkIn(
                 result: TaskResult { try await api.appCheckIn(version) },
-                reason: .appLaunched
+                reason: .appUpdated
               ))
 
               // big sur doesn't get notification pushed when filter restarts

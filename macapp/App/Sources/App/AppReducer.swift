@@ -27,6 +27,11 @@ struct AppReducer: Reducer, Sendable {
     }
   }
 
+  enum CancelId {
+    case heartbeatInterval
+    case websocketMessages
+  }
+
   enum Action: Equatable, Sendable {
     enum Delegate: Equatable, Sendable {
       case filterSuspendedChanged(was: Bool, is: Bool)
@@ -35,6 +40,11 @@ struct AppReducer: Reducer, Sendable {
     enum FocusedNotification: Equatable, Sendable {
       case unexpectedError
       case text(String, String)
+    }
+
+    enum StartUserProtectionSource: Equatable, Sendable {
+      case persistence
+      case newConnection
     }
 
     case admin(AdminFeature.Action)
@@ -52,10 +62,10 @@ struct AppReducer: Reducer, Sendable {
     case onboarding(OnboardingFeature.Action)
     case loadedPersistentState(Persistent.State?)
     case user(UserFeature.Action)
-    case heartbeat(Heartbeat.Interval)
+    case heartbeat(HeartbeatInterval)
     case blockedRequests(BlockedRequestsFeature.Action)
     case requestSuspension(RequestSuspensionFeature.Action)
-    case startHeartbeat
+    case startProtecting(user: UserData, from: StartUserProtectionSource)
     case websocket(WebSocketFeature.Action)
 
     indirect case adminAuthed(Action)
@@ -64,8 +74,10 @@ struct AppReducer: Reducer, Sendable {
   @Dependency(\.api) var api
   @Dependency(\.device) var device
   @Dependency(\.backgroundQueue) var bgQueue
+  @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.network) var network
   @Dependency(\.storage) var storage
+  @Dependency(\.websocket) var websocket
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
@@ -94,34 +106,39 @@ struct AppReducer: Reducer, Sendable {
         state.appUpdates.releaseChannel = persisted.appUpdateReleaseChannel
         state.filter.version = persisted.filterVersion
         guard let user = persisted.user else {
-          // TODO: are we sure we want to start the heartbeat?
-          return .exec { send in await send(.startHeartbeat) }
+          return .none
         }
         state.user = .init(data: user)
+        return .exec { send in
+          await send(.startProtecting(user: user, from: .persistence))
+        }
+
+      case .startProtecting(let user, let source):
         return .merge(
-          .exec { send in
-            await send(.startHeartbeat)
-          },
           .exec { [filterVersion = state.filter.version] send in
             await api.setUserToken(user.token)
             guard network.isConnected() else { return }
             await send(.checkIn(
               result: TaskResult { try await api.appCheckIn(filterVersion) },
-              reason: .appLaunched
+              reason: .init(source)
             ))
-          }
-        )
-
-      case .startHeartbeat:
-        return .exec { send in
-          var numTicks = 0
-          for await _ in bgQueue.timer(interval: .seconds(60)) {
-            numTicks += 1
-            for interval in heartbeatIntervals(for: numTicks) {
-              await send(.heartbeat(interval))
+          },
+          // todo, launch at login
+          // .publisher {
+          //   websocket.receive()
+          //     .map { .websocket(.receivedMessage($0)) }
+          //     .receive(on: mainQueue)
+          // }.cancellable(id: CancelId.websocketMessages),
+          .exec { send in
+            var numTicks = 0
+            for await _ in bgQueue.timer(interval: .seconds(60)) {
+              numTicks += 1
+              for interval in heartbeatIntervals(for: numTicks) {
+                await send(.heartbeat(interval))
+              }
             }
-          }
-        }.cancellable(id: Heartbeat.CancelId.interval)
+          }.cancellable(id: CancelId.heartbeatInterval)
+        )
 
       case .focusedNotification(let notification):
         // dismiss windows/dropdowns so notification is visible, i.e. "focused"

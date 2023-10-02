@@ -39,15 +39,14 @@ import XExpect
       $0.filter.extension = .installedButNotRunning
     }
 
+    await store.receive(.startProtecting(user: .mock, from: .persistence))
     await store.receive(.websocket(.connectedSuccessfully))
 
     await expect(tokenSetSpy).toEqual(UserData.mock.token)
 
-    await store.receive(.startHeartbeat)
-
     let prevUser = store.state.user.data
 
-    await store.receive(.checkIn(result: .success(.mock), reason: .appLaunched)) {
+    await store.receive(.checkIn(result: .success(.mock), reason: .loadedPersistedUser)) {
       $0.appUpdates.latestVersion = .init(semver: "2.0.4")
       $0.user.data?.screenshotsEnabled = true
       $0.user.data?.keyloggingEnabled = true
