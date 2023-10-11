@@ -95,6 +95,8 @@ struct AppReducer: Reducer, Sendable {
         }
 
       case .loadedPersistentState(.some(let persisted)) where persisted.resumeOnboarding != nil:
+        OnboardingFeature.Reducer()
+          .log("resume at: \(String(describing: persisted.resumeOnboarding))", "d9ae3ee7")
         return .merge(
           .exec { send in
             await send(.onboarding(.resume(persisted.resumeOnboarding ?? .at(step: .welcome))))
@@ -165,6 +167,8 @@ struct AppReducer: Reducer, Sendable {
         }
 
       case .onboarding(.delegate(.saveForResume(let resume))):
+        OnboardingFeature.Reducer()
+          .log("save for resume: \(String(describing: resume))", "93e00bac")
         return .exec { [persist = state.persistent] _ in
           var copy = persist
           copy.resumeOnboarding = resume
