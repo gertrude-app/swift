@@ -11,6 +11,7 @@ public struct FilterExtensionClient: Sendable {
   public var replace: @Sendable () async -> FilterInstallResult
   public var state: @Sendable () async -> FilterExtensionState
   public var install: @Sendable () async -> FilterInstallResult
+  public var installOverridingTimeout: @Sendable (_ timeout: Int) async -> FilterInstallResult
   public var stateChanges: @Sendable () -> AnyPublisher<FilterExtensionState, Never>
   public var uninstall: @Sendable () async -> Bool
 
@@ -23,6 +24,7 @@ public struct FilterExtensionClient: Sendable {
     replace: @escaping @Sendable () async -> FilterInstallResult,
     state: @escaping @Sendable () async -> FilterExtensionState,
     install: @escaping @Sendable () async -> FilterInstallResult,
+    installOverridingTimeout: @escaping @Sendable (_ timeout: Int) async -> FilterInstallResult,
     stateChanges: @escaping @Sendable () -> AnyPublisher<FilterExtensionState, Never>,
     uninstall: @escaping @Sendable () async -> Bool
   ) {
@@ -34,6 +36,7 @@ public struct FilterExtensionClient: Sendable {
     self.replace = replace
     self.state = state
     self.install = install
+    self.installOverridingTimeout = installOverridingTimeout
     self.stateChanges = stateChanges
     self.uninstall = uninstall
   }
@@ -49,6 +52,7 @@ extension FilterExtensionClient: TestDependencyKey {
     replace: unimplemented("FilterExtensionClient.replace"),
     state: unimplemented("FilterExtensionClient.state"),
     install: unimplemented("FilterExtensionClient.install"),
+    installOverridingTimeout: unimplemented("FilterExtensionClient.installOverridingTimeout"),
     stateChanges: unimplemented("FilterExtensionClient.stateChanges"),
     uninstall: unimplemented("FilterExtensionClient.uninstall")
   )
@@ -62,6 +66,7 @@ extension FilterExtensionClient: TestDependencyKey {
     replace: { .installedSuccessfully },
     state: { .installedAndRunning },
     install: { .installedSuccessfully },
+    installOverridingTimeout: { _ in .installedSuccessfully },
     stateChanges: { Empty().eraseToAnyPublisher() },
     uninstall: { true }
   )

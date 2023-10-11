@@ -231,12 +231,15 @@ import XExpect
       $0.onboarding.step = .installSysExt_explain // ...and go to sys ext start
     }
 
-    let installSysExt = mock(once: FilterInstallResult.installedSuccessfully)
-    store.deps.filterExtension.install = installSysExt.fn
+    let installSysExt = spy(
+      on: Int.self,
+      returning: FilterInstallResult.installedSuccessfully // <-- success
+    )
+    store.deps.filterExtension.installOverridingTimeout = installSysExt.fn
 
     // they click "Next" on the install sys ext start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
-    await expect(installSysExt.invocations).toEqual(1)
+    await expect(installSysExt.invocations.value).toHaveCount(1)
     await store.receive(.onboarding(.setStep(.installSysExt_allow))) {
       $0.onboarding.step = .installSysExt_allow // ...and go to sys ext allow
     }
@@ -446,12 +449,15 @@ import XExpect
     store.deps.mainQueue = .immediate
     let filterState = mock(once: FilterExtensionState.notInstalled)
     store.deps.filterExtension.state = filterState.fn
-    let installSysExt = mock(once: FilterInstallResult.timedOutWaiting) // <-- fail
-    store.deps.filterExtension.install = installSysExt.fn
+    let installSysExt = spy(
+      on: Int.self,
+      returning: FilterInstallResult.userClickedDontAllow // <-- fail
+    )
+    store.deps.filterExtension.installOverridingTimeout = installSysExt.fn
 
     // they click "Next" on the install sys ext explain screen
     await store.send(.webview(.primaryBtnClicked))
-    await expect(installSysExt.invocations).toEqual(1)
+    await expect(installSysExt.invocations.value).toHaveCount(1)
     await store.receive(.setStep(.installSysExt_allow)) {
       $0.step = .installSysExt_allow // ...and go to sys ext allow
     }

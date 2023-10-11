@@ -367,7 +367,7 @@ struct OnboardingFeature: Feature {
           case .notInstalled:
             await send(.setStep(.installSysExt_allow))
             try? await mainQueue.sleep(for: .seconds(3)) // let them see the explanation gif
-            let installResult = await systemExtension.install()
+            let installResult = await systemExtension.installOverridingTimeout(60 * 4) // 4 minutes
             log("sys ext install result=\(installResult)", "adbc0453")
             switch installResult {
             case .installedSuccessfully:
