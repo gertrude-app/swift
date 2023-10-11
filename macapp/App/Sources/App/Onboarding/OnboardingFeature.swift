@@ -237,11 +237,12 @@ struct OnboardingFeature: Feature {
         return .exec { send in
           let granted = await monitoring.screenRecordingPermissionGranted()
           log("primary from .allowScreenshots_required, already granted=\(granted)", "ce78b67b")
-          await send(.setStep(
-            granted
-              ? await nextRequiredStage(from: step)
-              : .allowScreenshots_openSysSettings
-          ))
+          if granted {
+            await send(.setStep(nextRequiredStage(from: step)))
+          } else {
+            try? await monitoring.takeScreenshot(500) // trigger permission prompt
+            await send(.setStep(.allowScreenshots_openSysSettings))
+          }
         }
 
       case .webview(.secondaryBtnClicked) where step == .allowScreenshots_required:

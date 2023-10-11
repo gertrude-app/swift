@@ -163,11 +163,15 @@ import XExpect
       $0.onboarding.step = .allowScreenshots_required
     }
 
+    let takeScreenshot = spy(on: Int.self, returning: ())
+    store.deps.monitoring.takeScreenshot = takeScreenshot.fn
+
     // they click "Grant Permission" on the allow screenshots start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
-    // ...and we check the setting (which pops up prompt) and moved them on
+    // ...and we check the setting, and take a screenshot, and moved them on
     await expect(screenshotsAllowed.invocations).toEqual(2)
+    await expect(takeScreenshot.invocations.value).toHaveCount(1)
     await store.receive(.onboarding(.setStep(.allowScreenshots_openSysSettings))) {
       $0.onboarding.step = .allowScreenshots_openSysSettings // ...and go to open
     }
