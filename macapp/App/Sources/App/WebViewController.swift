@@ -83,10 +83,13 @@ class WebViewController<State, Action>:
         await self?.send(action: action)
       }
     } catch {
+      let actionType = String(reflecting: Action.self)
+      let errMsg = "ERR: could not decode action from webview: \(message) as \(actionType)\n"
       #if DEBUG
-        let actionType = String(reflecting: Action.self)
-        print("ERR: could not decode action from webview: \(message) as \(actionType)\n")
+        print(errMsg)
         print(error)
+      #else
+        unexpectedError(id: "0645e891", detail: errMsg)
       #endif
     }
   }
