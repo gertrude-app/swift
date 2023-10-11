@@ -76,15 +76,14 @@ extension HistoryFeature.RootReducer: RootReducing {
     case .history(.userConnection(.connect(.success(let user)))):
       state.user = .init(data: user)
       return .exec { [persistent = state.persistent] send in
-        await send(.startProtecting(user: user, from: .menuBarConnection))
+        await send(.startProtecting(user: user))
         try await storage.savePersistentState(persistent)
       }
 
     case .onboarding(.connectUser(.success(let user))):
       state.user = .init(data: user)
       state.history.userConnection = .established(welcomeDismissed: true)
-      return .exec { [persistent = state.persistent] send in
-        await send(.startProtecting(user: user, from: .onboardingConnection))
+      return .exec { [persistent = state.persistent] _ in
         try await storage.savePersistentState(persistent)
       }
 

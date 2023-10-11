@@ -61,7 +61,7 @@ import XExpect
 
   store.exhaustivity = .on
   await store.withExhaustivity(.off) {
-    await store.send(.startProtecting(user: .mock, from: .persistence))
+    await store.send(.startProtecting(user: .mock))
     await store.skipReceivedActions()
     await bgQueue.advance(by: .seconds(60))
     await store.receive(.heartbeat(.everyMinute)) // <-- heartbeat is running

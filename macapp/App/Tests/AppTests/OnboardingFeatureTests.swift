@@ -83,17 +83,8 @@ import XExpect
     let user = UserData.mock { $0.name = "lil suzy" }
     let connectUser = spy(on: ConnectUser.Input.self, returning: user)
     store.deps.api.connectUser = connectUser.fn
-    let setUserToken = spy(on: UUID.self, returning: ())
-    store.deps.api.setUserToken = setUserToken.fn
-    let setAccountActive = spy(on: Bool.self, returning: ())
-    store.deps.api.setAccountActive = setAccountActive.fn
-    let checkInResult = CheckIn.Output.empty { $0.userData = user }
-    let checkIn = spy(on: CheckIn.Input.self, returning: checkInResult)
-    store.deps.api.checkIn = checkIn.fn
     store.deps.app.installedVersion = { "1.0.0" }
-    await expect(saveState.invocations.value).toHaveCount(1)
     store.deps.device = .mock // lots of data used by connect user request
-    store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
 
     // they enter code `123456` and click submit...
     await store.send(.onboarding(.webview(.connectChildSubmitted(code: 123_456)))) {
@@ -103,9 +94,6 @@ import XExpect
 
     await expect(connectUser.invocations.value).toHaveCount(1)
     await expect(connectUser.invocations.value[0].verificationCode).toEqual(123_456)
-    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
-    await expect(setAccountActive.invocations).toEqual([true])
-    await expect(checkIn.invocations).toEqual([.init(appVersion: "1.0.0", filterVersion: "1.0.0")])
 
     await store.receive(.onboarding(.connectUser(.success(user)))) {
       $0.user.data = user
@@ -114,16 +102,9 @@ import XExpect
       $0.onboarding.connectChildRequest = .succeeded(payload: "lil suzy")
     }
 
-    await store.receive(.startProtecting(user: user, from: .onboardingConnection))
-    await store.receive(.checkIn(result: .success(checkInResult), reason: .userConnected)) {
-      $0.appUpdates.latestVersion = checkInResult.latestRelease
-    }
-    await store.receive(.user(.updated(previous: user)))
-
     // we persisted the user data
-    await expect(saveState.invocations.value).toHaveCount(3)
+    await expect(saveState.invocations.value).toHaveCount(2)
     await expect(saveState.invocations.value[1].user).toEqual(user)
-    await expect(saveState.invocations.value[2].user).toEqual(user)
 
     // notifications not enabled
     let notifsSettings = mock(returning: [.none], then: NotificationsSetting.alert)
@@ -274,13 +255,33 @@ import XExpect
       $0.onboarding.step = .finish // ...and go to finish
     }
 
-    // primary button on finish screen closes window, enables launch at login
+    // primary button on finish screen closes window, sends delegate that starts protection
     store.deps.app.isLaunchAtLoginEnabled = { false }
     let enableLaunchAtLogin = mock(always: ())
     store.deps.app.enableLaunchAtLogin = enableLaunchAtLogin.fn
+    let setUserToken = spy(on: UUID.self, returning: ())
+    store.deps.api.setUserToken = setUserToken.fn
+    let setAccountActive = spy(on: Bool.self, returning: ())
+    store.deps.api.setAccountActive = setAccountActive.fn
+    let checkInResult = CheckIn.Output.empty { $0.userData = user }
+    let checkIn = spy(on: CheckIn.Input.self, returning: checkInResult)
+    store.deps.api.checkIn = checkIn.fn
+    store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
+
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.windowOpen = false
     }
+
+    await store.receive(.onboarding(.delegate(.onboardingFinished)))
+    await store.receive(.startProtecting(user: user))
+    await store.receive(.checkIn(result: .success(checkInResult), reason: .startProtecting)) {
+      $0.appUpdates.latestVersion = checkInResult.latestRelease
+    }
+    await store.receive(.user(.updated(previous: user)))
+
+    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
+    await expect(setAccountActive.invocations).toEqual([true])
+    await expect(checkIn.invocations).toEqual([.init(appVersion: "1.0.0", filterVersion: "1.0.0")])
     await expect(enableLaunchAtLogin.invocations).toEqual(1)
 
     // shutdown tries fo flush keystrokes
@@ -294,6 +295,7 @@ import XExpect
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
     store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
+    store.deps.app.isLaunchAtLoginEnabled = { fatalError("should not check launch at login") }
     store.deps.storage.loadPersistentState = { .mock {
       $0.user = .mock
       $0.resumeOnboarding = .checkingScreenRecordingPermission
@@ -303,7 +305,10 @@ import XExpect
     await store.skipReceivedActions()
 
     // user restored
-    store.assert { $0.user = .init(data: .mock) }
+    store.assert {
+      $0.onboarding.connectChildRequest = .succeeded(payload: UserData.mock.name)
+      $0.user = .init(data: .mock)
+    }
 
     // and we saved the state, removing onboarding resume
     await expect(saveState.invocations).toEqual([.mock {

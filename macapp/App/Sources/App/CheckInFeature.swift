@@ -132,19 +132,9 @@ extension CheckIn {
     case appUpdated
     case healthCheck
     case heartbeat
-    case loadedPersistedUser
-    case userConnected
+    case startProtecting
     case inactiveAccountRechecked
     case receivedWebsocketMessage
     case userRefreshedRules
-
-    init(_ source: AppReducer.Action.StartUserProtectionSource) {
-      switch source {
-      case .persistence:
-        self = .loadedPersistedUser
-      case .onboardingConnection, .menuBarConnection:
-        self = .userConnected
-      }
-    }
   }
 }

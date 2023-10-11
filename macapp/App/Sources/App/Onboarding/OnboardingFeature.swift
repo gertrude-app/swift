@@ -44,6 +44,7 @@ struct OnboardingFeature: Feature {
 
     enum Delegate: Equatable, Sendable {
       case saveForResume(Resume?)
+      case onboardingFinished
     }
 
     case webview(View)
@@ -440,10 +441,8 @@ struct OnboardingFeature: Feature {
         state.windowOpen = false
         let userConnected = state.connectChildRequest.isSucceeded
         log("\(action), step=\(step), userConnected=\(userConnected)", "936082d4")
-        return .exec { _ in
-          if userConnected, (await app.isLaunchAtLoginEnabled()) == false {
-            await app.enableLaunchAtLogin()
-          }
+        return .exec { send in
+          await send(.delegate(.onboardingFinished))
         }
 
       case .webview(.primaryBtnClicked):

@@ -42,12 +42,6 @@ struct AppReducer: Reducer, Sendable {
       case text(String, String)
     }
 
-    enum StartUserProtectionSource: Equatable, Sendable {
-      case persistence
-      case onboardingConnection
-      case menuBarConnection
-    }
-
     case admin(AdminFeature.Action)
     case adminWindow(AdminWindowFeature.Action)
     case application(ApplicationFeature.Action)
@@ -66,7 +60,7 @@ struct AppReducer: Reducer, Sendable {
     case heartbeat(HeartbeatInterval)
     case blockedRequests(BlockedRequestsFeature.Action)
     case requestSuspension(RequestSuspensionFeature.Action)
-    case startProtecting(user: UserData, from: StartUserProtectionSource)
+    case startProtecting(user: UserData)
     case websocket(WebSocketFeature.Action)
 
     indirect case adminAuthed(Action)
@@ -100,9 +94,13 @@ struct AppReducer: Reducer, Sendable {
         var effects: [Effect<Action>] = []
         if let user = persisted.user {
           state.user = .init(data: user)
-          effects.append(.exec { send in
-            await send(.startProtecting(user: user, from: .persistence))
-          })
+          if persisted.resumeOnboarding == nil {
+            effects.append(.exec { send in
+              await send(.startProtecting(user: user))
+            })
+          } else {
+            state.onboarding.connectChildRequest = .succeeded(payload: user.name)
+          }
         }
         if let onboardingStep = persisted.resumeOnboarding {
           effects.append(.exec { send in
@@ -114,20 +112,18 @@ struct AppReducer: Reducer, Sendable {
         }
         return .merge(effects)
 
-      case .startProtecting(let user, let source):
+      case .startProtecting(let user):
         return .merge(
           .exec { [filterVersion = state.filter.version] send in
             await api.setUserToken(user.token)
             guard network.isConnected() else { return }
             await send(.checkIn(
               result: TaskResult { try await api.appCheckIn(filterVersion) },
-              reason: .init(source)
+              reason: .startProtecting
             ))
           },
           .exec { _ in
-            // when we're onboarding, we delay enabling this, to avoid yet another notification
-            // that might confuse them. it is enabled when they close the onboarding window
-            if source != .onboardingConnection, (await app.isLaunchAtLoginEnabled()) == false {
+            if (await app.isLaunchAtLoginEnabled()) == false {
               await app.enableLaunchAtLogin()
             }
           },
@@ -170,6 +166,14 @@ struct AppReducer: Reducer, Sendable {
           var copy = persist
           copy.resumeOnboarding = resume
           try await storage.savePersistentState(copy)
+        }
+
+      case .onboarding(.delegate(.onboardingFinished)):
+        OnboardingFeature.Reducer().log("finished", "079cbee4")
+        if let user = state.user.data {
+          return .exec { send in await send(.startProtecting(user: user)) }
+        } else {
+          return .none
         }
 
       default:
