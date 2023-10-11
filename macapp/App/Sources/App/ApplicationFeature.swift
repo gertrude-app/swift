@@ -1,5 +1,7 @@
 import ComposableArchitecture
 
+import Foundation
+
 // public, not nested, because it's used in the AppDelegate
 public enum ApplicationAction: Equatable, Sendable {
   case didFinishLaunching
@@ -29,6 +31,11 @@ extension ApplicationFeature.RootReducer: RootReducing {
     case .application(.didFinishLaunching):
       return .merge(
         .exec { send in
+          #if DEBUG
+            if ProcessInfo.processInfo.environment["SWIFT_DETERMINISTIC_HASHING"] == nil {
+              await storage.deleteAll()
+            }
+          #endif
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
         },
 

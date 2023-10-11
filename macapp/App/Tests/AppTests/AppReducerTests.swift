@@ -74,7 +74,7 @@ import XExpect
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
 
-    await store.send(.onboarding(.delegate(.saveCurrentStep(.macosUserAccountType))))
+    await store.send(.onboarding(.delegate(.saveForResume(.at(step: .macosUserAccountType)))))
     await expect(saveState.invocations.value[0].resumeOnboarding)
       .toEqual(.at(step: .macosUserAccountType))
   }

@@ -95,6 +95,9 @@ actor Ephemeral {
   }
 
   func getPendingAppConnection(_ code: Int) -> User.Id? {
+    #if DEBUG
+      if code == 999_999 { return AdminBetsy.Ids.jimmysId }
+    #endif
     guard let (userId, expiration) = pendingAppConnections[code],
           expiration > Current.date() else {
       return nil

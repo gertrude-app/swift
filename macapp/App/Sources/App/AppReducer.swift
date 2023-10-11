@@ -164,10 +164,10 @@ struct AppReducer: Reducer, Sendable {
           }
         }
 
-      case .onboarding(.delegate(.saveCurrentStep(let step))):
+      case .onboarding(.delegate(.saveForResume(let resume))):
         return .exec { [persist = state.persistent] _ in
           var copy = persist
-          copy.resumeOnboarding = step.map { .at(step: $0) }
+          copy.resumeOnboarding = resume
           try await storage.savePersistentState(copy)
         }
 

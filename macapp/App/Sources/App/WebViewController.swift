@@ -11,6 +11,7 @@ class WebViewController<State, Action>:
   var webView: WKWebView!
   var isReady: CurrentValueSubject<Bool, Never> = .init(false)
   var send: (Action) -> Void = { _ in }
+  var withTitleBar = false
 
   @Dependency(\.app) var app
 
@@ -27,7 +28,16 @@ class WebViewController<State, Action>:
   func loadWebView(screen: String) {
     let webConfiguration = WKWebViewConfiguration()
     webConfiguration.setValue(true, forKey: "allowUniversalAccessFromFileURLs")
-    webView = WKWebView(frame: .zero, configuration: webConfiguration)
+    if #available(macOS 12.3, *) {
+      // allow embedded youtube videos to go fullscreen
+      webConfiguration.preferences.isElementFullscreenEnabled = true
+    }
+
+    if withTitleBar {
+      webView = WKWebView(frame: .zero, configuration: webConfiguration)
+    } else {
+      webView = NoTitleWebView(frame: .zero, configuration: webConfiguration)
+    }
     webView.uiDelegate = self
     webView.setValue(false, forKey: "drawsBackground")
 
@@ -89,6 +99,10 @@ class WebViewController<State, Action>:
   @MainActor func ready() {
     isReady.value = true
   }
+}
+
+class NoTitleWebView: WKWebView {
+  override var mouseDownCanMoveWindow: Bool { true }
 }
 
 typealias WebViewControllerOf<F: Feature> = WebViewController<

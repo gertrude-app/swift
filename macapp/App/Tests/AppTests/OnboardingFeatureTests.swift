@@ -53,15 +53,13 @@ import XExpect
       users: [
         .init(id: 501, name: "Dad", type: .admin),
         .init(id: 502, name: "liljimmy", type: .standard),
-      ],
-      notificationsSetting: .none
+      ]
     ))) {
       $0.onboarding.users = [
         .init(id: 501, name: "Dad", isAdmin: true),
         .init(id: 502, name: "liljimmy", isAdmin: false),
       ]
       $0.onboarding.currentUser = .init(id: 502, name: "liljimmy", isAdmin: false)
-      $0.onboarding.existingNotificationsSetting = .some(.none)
     }
 
     // next they confirm that they have a gertrude account...
@@ -98,7 +96,7 @@ import XExpect
     store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
 
     // they enter code `123456` and click submit...
-    await store.send(.onboarding(.webview(.connectChildSubmitted(123_456)))) {
+    await store.send(.onboarding(.webview(.connectChildSubmitted(code: 123_456)))) {
       $0.onboarding.step = .connectChild
       $0.onboarding.connectChildRequest = .ongoing // ... and see a throbber
     }
@@ -111,6 +109,7 @@ import XExpect
 
     await store.receive(.onboarding(.connectUser(.success(user)))) {
       $0.user.data = user
+      $0.history.userConnection = .established(welcomeDismissed: true)
       $0.onboarding.step = .connectChild
       $0.onboarding.connectChildRequest = .succeeded(payload: "lil suzy")
     }
@@ -125,9 +124,16 @@ import XExpect
     await expect(saveState.invocations.value).toHaveCount(3)
     await expect(saveState.invocations.value[1].user).toEqual(user)
 
+    // notifications not enabled
+    let notifsSettings = mock(returning: [.none], then: NotificationsSetting.alert)
+    store.deps.device.notificationsSetting = notifsSettings.fn
+
     // they click "next" on the connected child success screen...
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.step = .allowNotifications_start // ...and go to notifications screen
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+
+    // ... and end up on the notifications screen
+    await store.receive(.onboarding(.setStep(.allowNotifications_start))) {
+      $0.onboarding.step = .allowNotifications_start
     }
 
     let requestNotifAuth = mock(always: ())
@@ -144,27 +150,24 @@ import XExpect
     await expect(requestNotifAuth.invocations).toEqual(1)
     await expect(openSysPrefs.invocations).toEqual([.notifications])
 
-    // they did indeed enable notifications...
-    let notifsSettings = mock(always: NotificationsSetting.alert)
-    store.deps.device.notificationsSetting = notifsSettings.fn
+    // they have not previously granted permission...
+    let screenshotsAllowed = mock(returning: [false, false], then: true)
+    store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
+
     // ... and then clicked "Done" on the notifications grant screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
     // ...and we confirmed the setting and moved them on the happy path
-    await expect(notifsSettings.invocations).toEqual(1)
+    await expect(notifsSettings.invocations).toEqual(2)
     await store.receive(.onboarding(.setStep(.allowScreenshots_required))) {
       $0.onboarding.step = .allowScreenshots_required
     }
-
-    // they have not previously granted permission...
-    let screenshotsAllowed = mock(returning: [false], then: true)
-    store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
 
     // they click "Grant Permission" on the allow screenshots start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
     // ...and we check the setting (which pops up prompt) and moved them on
-    await expect(screenshotsAllowed.invocations).toEqual(1)
+    await expect(screenshotsAllowed.invocations).toEqual(2)
     await store.receive(.onboarding(.setStep(.allowScreenshots_openSysSettings))) {
       $0.onboarding.step = .allowScreenshots_openSysSettings // ...and go to open
     }
@@ -173,6 +176,9 @@ import XExpect
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.step = .allowScreenshots_grantAndRestart // ...and go to grant
     }
+
+    // we record to restart checking screen recording permission...
+    await store.receive(.onboarding(.delegate(.saveForResume(.checkingScreenRecordingPermission))))
 
     // NB: here technically they RESTART the app, but instead of starting a new test
     // we simulate receiving the resume action to carry on where they should
@@ -183,20 +189,21 @@ import XExpect
       $0.onboarding.step = .allowScreenshots_success
     }
 
-    // they click the "Next" button from the screen recording success
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.step = .allowKeylogging_required // ...and go to keylogging
-    }
-
     // they have not previously granted permission...
-    let keyloggingAllowed = mock(returning: [false], then: true)
+    let keyloggingAllowed = mock(returning: [false, false], then: true)
     store.deps.monitoring.keystrokeRecordingPermissionGranted = keyloggingAllowed.fn
+
+    // they click the "Next" button from the screen recording success
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+    await store.receive(.onboarding(.setStep(.allowKeylogging_required))) {
+      $0.onboarding.step = .allowKeylogging_required
+    }
 
     // they click "Grant Permission" on the allow keylogging start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
     // ...and we check the setting (which pops up prompt) and moved them on
-    await expect(keyloggingAllowed.invocations).toEqual(1)
+    await expect(keyloggingAllowed.invocations).toEqual(2)
     await store.receive(.onboarding(.setStep(.allowKeylogging_openSysSettings))) {
       $0.onboarding.step = .allowKeylogging_openSysSettings // ...and go to open
     }
@@ -206,18 +213,24 @@ import XExpect
       $0.onboarding.step = .allowKeylogging_grant // ...and go to grant
     }
 
+    // moving on from keylogging tests filter extension state, to possibly ski
+    let filterState = mock(returning: [
+      FilterExtensionState.notInstalled,
+      .notInstalled,
+      .installedAndRunning,
+    ])
+    store.deps.filterExtension.state = filterState.fn
+
     // they click "Done" indicating they think they've allowed keylogging
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
-    // we confirm, and see that the did it correct...
-    await expect(keyloggingAllowed.invocations).toEqual(2)
+    // we confirm, and see that they did it correct...
+    await expect(keyloggingAllowed.invocations).toEqual(3)
     // ...so they get sent off to the next happy path step
     await store.receive(.onboarding(.setStep(.installSysExt_explain))) {
       $0.onboarding.step = .installSysExt_explain // ...and go to sys ext start
     }
 
-    let filterState = mock(returning: [FilterExtensionState.notInstalled, .installedAndRunning])
-    store.deps.filterExtension.state = filterState.fn
     let installSysExt = mock(once: FilterInstallResult.installedSuccessfully)
     store.deps.filterExtension.install = installSysExt.fn
 
@@ -268,6 +281,123 @@ import XExpect
     await store.send(.application(.willTerminate))
   }
 
+  func testSkippingFromAdminUserRemediation() async {
+    let store = featureStore {
+      $0.step = .macosUserAccountType
+      $0.userRemediationStep = .create
+    }
+    await store.send(.webview(.secondaryBtnClicked)) {
+      $0.step = .getChildConnectionCode
+    }
+  }
+
+  func testPrimaryBtnFromAllowScreenshotsGrantModalGoesToFailForVideo() async {
+    let store = featureStore { $0.step = .allowScreenshots_grantAndRestart }
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .allowScreenshots_failed
+    }
+  }
+
+  func testSecondaryEscapeHatchFromAllowScreenshotsGrantGoesToNextStage() async {
+    let store = featureStore { $0.step = .allowScreenshots_grantAndRestart }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required))
+  }
+
+  func testSecondaryFromAllowNotificationsGrantModalGoesToFail() async {
+    let store = featureStore { $0.step = .allowNotifications_grant }
+    await store.send(.webview(.secondaryBtnClicked)) {
+      $0.step = .allowNotifications_failed
+    }
+  }
+
+  func testSkippingAllStepsFromConnectSuccess() async {
+    let store = featureStore {
+      $0.step = .connectChild
+      $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
+    }
+
+    store.deps.device.notificationsSetting = { .alert }
+    store.deps.monitoring.screenRecordingPermissionGranted = { true }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
+    store.deps.filterExtension.state = { .installedAndRunning }
+
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.locateMenuBarIcon))
+  }
+
+  func testSkippingNotificationStepFromConnectSuccess() async {
+    let store = featureStore {
+      $0.step = .connectChild
+      $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
+    }
+
+    store.deps.device.notificationsSetting = { .alert }
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { fatalError() }
+    store.deps.filterExtension.state = { fatalError() }
+
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_required))
+  }
+
+  func testSkippingToKeyloggingFromConnectSuccess() async {
+    let store = featureStore {
+      $0.step = .connectChild
+      $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
+    }
+
+    store.deps.device.notificationsSetting = { .alert }
+    store.deps.monitoring.screenRecordingPermissionGranted = { true }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
+    store.deps.filterExtension.state = { fatalError() }
+
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required))
+  }
+
+  func testSkippingToInstallSysExtFromConnectSuccess() async {
+    let store = featureStore {
+      $0.step = .connectChild
+      $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
+    }
+
+    store.deps.device.notificationsSetting = { .alert }
+    store.deps.monitoring.screenRecordingPermissionGranted = { true }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
+    store.deps.filterExtension.state = { .notInstalled }
+
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_explain))
+  }
+
+  func testSkippingScreenshotsFromFinishNotifications() async {
+    let store = featureStore { $0.step = .allowNotifications_grant }
+    store.deps.monitoring.screenRecordingPermissionGranted = { true } // <-- skip
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
+    store.deps.device.notificationsSetting = { .alert }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required))
+  }
+
+  func testSkippingKeyloggingFromFinishScreenshots() async {
+    let store = featureStore { $0.step = .allowScreenshots_success }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
+    store.deps.filterExtension.state = { .notInstalled }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_explain))
+  }
+
+  func testFromScreenshotsRequiredScreenshotsAndKeyloggingAlreadyAllowed() async {
+    let store = featureStore { $0.step = .allowScreenshots_required }
+    store.deps.monitoring.screenRecordingPermissionGranted = { true }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
+    store.deps.filterExtension.state = { .notInstalled }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_explain))
+  }
+
   func testClickingTryAgainPrimaryFromInstallSysExtFailed() async {
     let store = featureStore { $0.step = .installSysExt_failed }
     await store.send(.webview(.primaryBtnClicked)) {
@@ -284,9 +414,16 @@ import XExpect
 
   func testClickingHelpSecondaryFromInstallSysExt() async {
     let store = featureStore { $0.step = .installSysExt_allow }
-    await store.send(.webview(.secondaryBtnClicked)) {
-      $0.step = .installSysExt_failed
-    }
+    store.deps.filterExtension.state = { .notInstalled } // <-- not installed
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_failed)) // <-- goes to failed
+  }
+
+  func testClickingHelpSecondaryFromInstallSysExt_WhenInstalled() async {
+    let store = featureStore { $0.step = .installSysExt_allow }
+    store.deps.filterExtension.state = { .installedAndRunning } // <-- installed
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_success)) // <-- goes to success
   }
 
   // for most users, we will move them along automatically to
@@ -365,9 +502,16 @@ import XExpect
 
   func testSkipAllowKeylogging() async {
     let store = featureStore { $0.step = .allowKeylogging_required }
-    await store.send(.webview(.secondaryBtnClicked)) {
-      $0.step = .installSysExt_explain
-    }
+    store.deps.filterExtension.state = { .notInstalled }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_explain))
+  }
+
+  func testSkipAllowKeyloggingSysExtAlreadyInstalled() async {
+    let store = featureStore { $0.step = .allowKeylogging_required }
+    store.deps.filterExtension.state = { .installedAndRunning }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.locateMenuBarIcon))
   }
 
   func testFailedToAllowKeylogging() async {
@@ -387,12 +531,18 @@ import XExpect
     store.deps.device.openSystemPrefs = openSysPrefs.fn
 
     // now they click the "try again" button
-    await store.send(.webview(.primaryBtnClicked)) {
-      $0.step = .allowKeylogging_grant
-    }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_grant))
 
     // and we tried to open system prefs to the right spot
     await expect(openSysPrefs.invocations).toEqual([.security(.accessibility)])
+  }
+
+  func testSkipFromKeylogginFail() async {
+    let store = featureStore { $0.step = .allowKeylogging_failed }
+    store.deps.filterExtension.state = { .notInstalled }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_explain))
   }
 
   func testSkipsMostKeyloggingStepsIfPermsPreviouslyGranted() async {
@@ -400,23 +550,22 @@ import XExpect
 
     let keyloggingAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.keystrokeRecordingPermissionGranted = keyloggingAllowed.fn
+    store.deps.filterExtension.state = { .notInstalled }
 
     // they click "Grant permission" on the allow screenshots required screen
     await store.send(.webview(.primaryBtnClicked))
 
     // ...and we check the setting (which pops up prompt) and moved them on
     await expect(keyloggingAllowed.invocations).toEqual(1)
-    await store.receive(.setStep(.installSysExt_explain)) {
-      $0.step = .installSysExt_explain // ...and go to install system extension
-    }
+    await store.receive(.setStep(.installSysExt_explain))
   }
 
   func testSkipAllowingScreenshots() async {
     let store = featureStore { $0.step = .allowScreenshots_required }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     // they click "Skip" on the allow screenshots start screen
-    await store.send(.webview(.secondaryBtnClicked)) {
-      $0.step = .allowKeylogging_required // ...and go to keylogging
-    }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required))
   }
 
   func testSkipsMostScreenshotStepsIfPermsPreviouslyGranted() async {
@@ -424,6 +573,7 @@ import XExpect
 
     let screenshotsAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
 
     // they click "Grant permission" on the allow screenshots required screen
     await store.send(.webview(.primaryBtnClicked))
@@ -436,9 +586,7 @@ import XExpect
   }
 
   func testFailureToGrantNotificationsSendsToFailScreen() async {
-    let store = featureStore {
-      $0.step = .allowNotifications_grant
-    }
+    let store = featureStore { $0.step = .allowNotifications_grant }
 
     let notifsSettings = mock(
       returning: [NotificationsSetting.none], // <- they did NOT enable notifications...
@@ -451,49 +599,31 @@ import XExpect
 
     // ...and we fail to confirm the setting, moving them to fail screen
     await expect(notifsSettings.invocations).toEqual(1)
-    await store.receive(.setStep(.allowNotifications_failed)) {
-      $0.step = .allowNotifications_failed
-    }
+    await store.receive(.setStep(.allowNotifications_failed))
+
+    // used to determine if screen recording stage should be skipped
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
 
     // they fixed it, and clicked Try Again...
     await store.send(.webview(.primaryBtnClicked))
 
     // ...and we confirmed the setting and moved them on the happy path
     await expect(notifsSettings.invocations).toEqual(2)
-    await store.receive(.setStep(.allowScreenshots_required)) {
-      $0.step = .allowScreenshots_required
-    }
+    await store.receive(.setStep(.allowScreenshots_required))
   }
 
   func testSkipFromAllowNotificationsFailedStep() async {
-    let store = featureStore {
-      $0.step = .allowNotifications_failed
-    }
-    await store.send(.webview(.secondaryBtnClicked)) {
-      $0.step = .allowScreenshots_required
-    }
+    let store = featureStore { $0.step = .allowNotifications_failed }
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_required))
   }
 
   func testSkipAllowNotificationsStep() async {
-    let store = featureStore {
-      $0.step = .allowNotifications_start
-    }
-    await store.send(.webview(.secondaryBtnClicked)) {
-      $0.step = .allowScreenshots_required
-    }
-  }
-
-  func testNotificationsStepSkippedIfAlreadyGranted() async {
-    let store = featureStore {
-      $0.step = .connectChild
-      $0.connectChildRequest = .succeeded(payload: "lil suzy")
-      $0.existingNotificationsSetting = .alert // <-- already granted
-    }
-
-    // from the connect child success, they click next...
-    await store.send(.webview(.primaryBtnClicked)) {
-      $0.step = .allowScreenshots_required // ...and skip straight to screenshots
-    }
+    let store = featureStore { $0.step = .allowNotifications_start }
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_required))
   }
 
   func testConnectChildFailure() async {
@@ -593,21 +723,66 @@ import XExpect
     store.deps.device.openSystemPrefs = openSysPrefs.fn
 
     // they now click the primary "try again" button
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.step = .allowScreenshots_grantAndRestart // ... and go back to the grant step
-    }
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+    await store.receive(.onboarding(.setStep(.allowScreenshots_grantAndRestart)))
 
     // and we tried to open system prefs to the right spot
     await expect(openSysPrefs.invocations).toEqual([.security(.screenRecording)])
   }
 
+  func testTryAgainFromScreenRecFailMovesOnIfPermsGranted() async {
+    let store = featureStore { $0.step = .allowScreenshots_failed }
+    store.deps.monitoring.screenRecordingPermissionGranted = { true }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_success))
+  }
+
   func testSkipFromScreenRecordingFailed() async {
-    let store = featureStore {
-      $0.step = .allowScreenshots_failed
+    let store = featureStore { $0.step = .allowScreenshots_failed }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required))
+  }
+
+  func testNoGertrudeAccountPrimary() async {
+    let store = featureStore { $0.step = .noGertrudeAccount }
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .macosUserAccountType
     }
+  }
+
+  func testSecondaryHelpFromAllowKeyloggingGrantGoesToFailForVideo() async {
+    let store = featureStore { $0.step = .allowKeylogging_grant }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_failed))
+  }
+
+  func testSecondaryHelpFromAllowKeyloggingGrantGoesToNextIfPermGranted() async {
+    let store = featureStore { $0.step = .allowKeylogging_grant }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { true } // <-- granted
+    store.deps.filterExtension.state = { .notInstalled }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_explain))
+  }
+
+  func testSecondaryFromAllowKeyloggingOpenSysSettings() async {
+    let store = featureStore { $0.step = .allowKeylogging_openSysSettings }
+    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
+    store.deps.device.openSystemPrefs = openSysPrefs.fn
+  }
+
+  func testGetHelpClickedFromAllowScreenshotsOpenSysSettings() async {
+    let store = featureStore { $0.step = .allowScreenshots_openSysSettings }
+    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
+    store.deps.device.openSystemPrefs = openSysPrefs.fn
+
     await store.send(.webview(.secondaryBtnClicked)) {
-      $0.step = .allowKeylogging_required
+      $0.step = .allowScreenshots_grantAndRestart
     }
+
+    // and we tried to open system prefs to the right spot
+    await expect(openSysPrefs.invocations).toEqual([.security(.screenRecording)])
   }
 
   func testNoGertrudeAccountQuit() async {
@@ -701,7 +876,7 @@ import XExpect
     }
 
     // remediations require restarting gertrude, so note the step to restart w/
-    await store.receive(.delegate(.saveCurrentStep(.macosUserAccountType)))
+    await store.receive(.delegate(.saveForResume(.at(step: .macosUserAccountType))))
 
     await store.send(.webview(.chooseDemoteAdminClicked)) {
       $0.userRemediationStep = .demote

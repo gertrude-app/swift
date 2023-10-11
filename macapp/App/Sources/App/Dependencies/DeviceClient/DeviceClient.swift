@@ -12,6 +12,7 @@ struct DeviceClient: Sendable {
   var numericUserId: @Sendable () -> uid_t
   var openSystemPrefs: @Sendable (SystemPrefsLocation) async -> Void
   var openWebUrl: @Sendable (URL) async -> Void
+  var osVersion: @Sendable () -> MacOSVersion
   var quitBrowsers: @Sendable () async -> Void
   var requestNotificationAuthorization: @Sendable () async -> Void
   var showNotification: @Sendable (String, String) async -> Void
@@ -30,6 +31,7 @@ extension DeviceClient: DependencyKey {
     numericUserId: { getuid() },
     openSystemPrefs: openSystemPrefs(at:),
     openWebUrl: { NSWorkspace.shared.open($0) },
+    osVersion: { macOSVersion() },
     quitBrowsers: quitAllBrowsers,
     requestNotificationAuthorization: requestNotificationAuth,
     showNotification: showNotification(title:body:),
@@ -49,6 +51,7 @@ extension DeviceClient: TestDependencyKey {
     numericUserId: unimplemented("DeviceClient.numericUserId"),
     openSystemPrefs: unimplemented("DeviceClient.openSystemPrefs"),
     openWebUrl: unimplemented("DeviceClient.openWebUrl"),
+    osVersion: unimplemented("DeviceClient.osVersion"),
     quitBrowsers: unimplemented("DeviceClient.quitBrowsers"),
     requestNotificationAuthorization: unimplemented(
       "DeviceClient.requestNotificationAuthorization"
@@ -71,6 +74,7 @@ extension DeviceClient: TestDependencyKey {
     numericUserId: { 502 },
     openSystemPrefs: { _ in },
     openWebUrl: { _ in },
+    osVersion: { .init(major: 14, minor: 0, patch: 0) },
     quitBrowsers: {},
     requestNotificationAuthorization: {},
     showNotification: { _, _ in },
