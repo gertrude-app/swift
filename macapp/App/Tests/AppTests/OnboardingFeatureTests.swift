@@ -85,6 +85,8 @@ import XExpect
     store.deps.api.connectUser = connectUser.fn
     store.deps.app.installedVersion = { "1.0.0" }
     store.deps.device = .mock // lots of data used by connect user request
+    let setUserToken = spy(on: UUID.self, returning: ())
+    store.deps.api.setUserToken = setUserToken.fn
 
     // they enter code `123456` and click submit...
     await store.send(.onboarding(.webview(.connectChildSubmitted(code: 123_456)))) {
@@ -92,6 +94,7 @@ import XExpect
       $0.onboarding.connectChildRequest = .ongoing // ... and see a throbber
     }
 
+    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
     await expect(connectUser.invocations.value).toHaveCount(1)
     await expect(connectUser.invocations.value[0].verificationCode).toEqual(123_456)
 
@@ -259,8 +262,6 @@ import XExpect
     store.deps.app.isLaunchAtLoginEnabled = { false }
     let enableLaunchAtLogin = mock(always: ())
     store.deps.app.enableLaunchAtLogin = enableLaunchAtLogin.fn
-    let setUserToken = spy(on: UUID.self, returning: ())
-    store.deps.api.setUserToken = setUserToken.fn
     let setAccountActive = spy(on: Bool.self, returning: ())
     store.deps.api.setAccountActive = setAccountActive.fn
     let checkInResult = CheckIn.Output.empty { $0.userData = user }
@@ -279,7 +280,7 @@ import XExpect
     }
     await store.receive(.user(.updated(previous: user)))
 
-    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
+    await expect(setUserToken.invocations).toEqual([UserData.mock.token, UserData.mock.token])
     await expect(setAccountActive.invocations).toEqual([true])
     await expect(checkIn.invocations).toEqual([.init(appVersion: "1.0.0", filterVersion: "1.0.0")])
     await expect(enableLaunchAtLogin.invocations).toEqual(1)
@@ -293,12 +294,17 @@ import XExpect
   func testResumingToCheckScreenRecordingRestoresUserConnection() async {
     let (store, _) = AppReducer.testStore()
     let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { fatalError("no key check") }
+    store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.storage.savePersistentState = saveState.fn
     store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
-    store.deps.app.isLaunchAtLoginEnabled = { fatalError("should not check launch at login") }
+    store.deps.app.isLaunchAtLoginEnabled = { fatalError("don't check launch at login") }
+    let setUserToken = spy(on: UUID.self, returning: ())
+    store.deps.api.setUserToken = setUserToken.fn
+
     store.deps.storage.loadPersistentState = { .mock {
       $0.user = .mock
-      $0.resumeOnboarding = .checkingScreenRecordingPermission
+      $0.resumeOnboarding = .checkingScreenRecordingPermission // <-- resume here
     }}
 
     await store.send(.application(.didFinishLaunching))
@@ -306,6 +312,7 @@ import XExpect
 
     // user restored
     store.assert {
+      $0.onboarding.windowOpen = true
       $0.onboarding.connectChildRequest = .succeeded(payload: UserData.mock.name)
       $0.user = .init(data: .mock)
     }
@@ -315,6 +322,10 @@ import XExpect
       $0.user = .mock
       $0.resumeOnboarding = nil
     }])
+
+    // and setup the api token, so the test administrate health check works
+    // correctly even before we send the .startProtecting(user) action
+    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
   }
 
   func testSkippingFromAdminUserRemediation() async {

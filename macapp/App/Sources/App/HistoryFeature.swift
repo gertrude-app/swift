@@ -84,6 +84,7 @@ extension HistoryFeature.RootReducer: RootReducing {
       state.user = .init(data: user)
       state.history.userConnection = .established(welcomeDismissed: true)
       return .exec { [persistent = state.persistent] _ in
+        await api.setUserToken(user.token)
         try await storage.savePersistentState(persistent)
       }
 

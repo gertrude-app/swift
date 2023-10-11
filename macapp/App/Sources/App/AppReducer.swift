@@ -100,6 +100,9 @@ struct AppReducer: Reducer, Sendable {
             })
           } else {
             state.onboarding.connectChildRequest = .succeeded(payload: user.name)
+            effects.append(.exec { _ in
+              await api.setUserToken(user.token)
+            })
           }
         }
         if let onboardingStep = persisted.resumeOnboarding {
