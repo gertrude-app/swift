@@ -301,20 +301,15 @@ struct OnboardingFeature: Feature {
         }
 
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_required:
+        log(step, action, "6db8471f")
         return .exec { send in
-          let granted = await monitoring.keystrokeRecordingPermissionGranted()
-          log("primary from .allowKeylogging_required, already granted=\(granted)", "ce78b67b")
-          await send(.setStep(
-            granted
-              ? await nextRequiredStage(from: step)
-              : .allowKeylogging_openSysSettings
-          ))
+          await send(.setStep(await nextRequiredStage(from: step)))
         }
 
       case .webview(.secondaryBtnClicked) where step == .allowKeylogging_required:
         log(step, action, "61a87bb2")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: step)))
+          await send(.setStep(await nextRequiredStage(from: .installSysExt_explain)))
         }
 
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_openSysSettings:
@@ -494,10 +489,19 @@ struct OnboardingFeature: Feature {
         log("screenshots already allowed, skipping stage", "6e2e204c")
       }
 
+      // checking keylogging pops up the system prompt, so we always
+      // have to land them on this screen once, and test later.
+      // if they click "next" from .allowKeylogging_required, and the perms
+      // have already been granted, they'll move straight on, and not see a prompt
       if current < .allowKeylogging_required {
+        log("can't test keylogging yet, go to required", "fd0bfa95")
+        return .allowKeylogging_required
+      }
+
+      if current == .allowKeylogging_required {
         if await monitoring.keystrokeRecordingPermissionGranted() == false {
           log("keylogging not granted yet", "5d5275e5")
-          return .allowKeylogging_required
+          return .allowKeylogging_openSysSettings
         }
         log("keylogging already allowed, skipping stage", "51ed2be8")
       }

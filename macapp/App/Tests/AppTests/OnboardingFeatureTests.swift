@@ -194,21 +194,21 @@ import XExpect
       $0.onboarding.step = .allowScreenshots_success
     }
 
-    // they have not previously granted permission...
-    let keyloggingAllowed = mock(returning: [false, false], then: true)
-    store.deps.monitoring.keystrokeRecordingPermissionGranted = keyloggingAllowed.fn
-
     // they click the "Next" button from the screen recording success
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
     await store.receive(.onboarding(.setStep(.allowKeylogging_required))) {
       $0.onboarding.step = .allowKeylogging_required
     }
 
+    // they have not previously granted permission...
+    let keyloggingAllowed = mock(returning: [false], then: true)
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = keyloggingAllowed.fn
+
     // they click "Grant Permission" on the allow keylogging start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
     // ...and we check the setting (which pops up prompt) and moved them on
-    await expect(keyloggingAllowed.invocations).toEqual(2)
+    await expect(keyloggingAllowed.invocations).toEqual(1)
     await store.receive(.onboarding(.setStep(.allowKeylogging_openSysSettings))) {
       $0.onboarding.step = .allowKeylogging_openSysSettings // ...and go to open
     }
@@ -230,7 +230,7 @@ import XExpect
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
     // we confirm, and see that they did it correct...
-    await expect(keyloggingAllowed.invocations).toEqual(3)
+    await expect(keyloggingAllowed.invocations).toEqual(2)
     // ...so they get sent off to the next happy path step
     await store.receive(.onboarding(.setStep(.installSysExt_explain))) {
       $0.onboarding.step = .installSysExt_explain // ...and go to sys ext start
@@ -355,6 +355,8 @@ import XExpect
     store.deps.filterExtension.state = { .installedAndRunning }
 
     await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required)) // we always stop here
+    await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.locateMenuBarIcon))
   }
 
@@ -400,6 +402,8 @@ import XExpect
     store.deps.filterExtension.state = { .notInstalled }
 
     await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required)) // we always stop here
+    await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.installSysExt_explain))
   }
 
@@ -417,7 +421,10 @@ import XExpect
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.installSysExt_explain))
+    // we always stop here, because we can't check without prompting
+    await store.receive(.setStep(.allowKeylogging_required))
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_explain)) // <-- but they skip the rest
   }
 
   func testFromScreenshotsRequiredScreenshotsAndKeyloggingAlreadyAllowed() async {
@@ -425,6 +432,8 @@ import XExpect
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required)) // we always stop here
     await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.installSysExt_explain))
   }
