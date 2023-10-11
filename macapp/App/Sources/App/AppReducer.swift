@@ -94,28 +94,25 @@ struct AppReducer: Reducer, Sendable {
           try await storage.savePersistentState(new)
         }
 
-      case .loadedPersistentState(.some(let persisted)) where persisted.resumeOnboarding != nil:
-        OnboardingFeature.Reducer()
-          .log("resume at: \(String(describing: persisted.resumeOnboarding))", "d9ae3ee7")
-        return .merge(
-          .exec { send in
-            await send(.onboarding(.resume(persisted.resumeOnboarding ?? .at(step: .welcome))))
-          },
-          .exec { [withoutResume = state.persistent] _ in
-            try await storage.savePersistentState(withoutResume)
-          }
-        )
-
       case .loadedPersistentState(.some(let persisted)):
         state.appUpdates.releaseChannel = persisted.appUpdateReleaseChannel
         state.filter.version = persisted.filterVersion
-        guard let user = persisted.user else {
-          return .none
+        var effects: [Effect<Action>] = []
+        if let user = persisted.user {
+          state.user = .init(data: user)
+          effects.append(.exec { send in
+            await send(.startProtecting(user: user, from: .persistence))
+          })
         }
-        state.user = .init(data: user)
-        return .exec { send in
-          await send(.startProtecting(user: user, from: .persistence))
+        if let onboardingStep = persisted.resumeOnboarding {
+          effects.append(.exec { send in
+            await send(.onboarding(.resume(onboardingStep)))
+          })
+          effects.append(.exec { [withoutResume = state.persistent] _ in
+            try await storage.savePersistentState(withoutResume)
+          })
         }
+        return .merge(effects)
 
       case .startProtecting(let user, let source):
         return .merge(

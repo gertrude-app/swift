@@ -123,6 +123,7 @@ import XExpect
     // we persisted the user data
     await expect(saveState.invocations.value).toHaveCount(3)
     await expect(saveState.invocations.value[1].user).toEqual(user)
+    await expect(saveState.invocations.value[2].user).toEqual(user)
 
     // notifications not enabled
     let notifsSettings = mock(returning: [.none], then: NotificationsSetting.alert)
@@ -286,6 +287,29 @@ import XExpect
     store.deps.monitoring = .mock
     store.deps.monitoring.takePendingKeystrokes = { nil }
     await store.send(.application(.willTerminate))
+  }
+
+  func testResumingToCheckScreenRecordingRestoresUserConnection() async {
+    let (store, _) = AppReducer.testStore()
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+    store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
+    store.deps.storage.loadPersistentState = { .mock {
+      $0.user = .mock
+      $0.resumeOnboarding = .checkingScreenRecordingPermission
+    }}
+
+    await store.send(.application(.didFinishLaunching))
+    await store.skipReceivedActions()
+
+    // user restored
+    store.assert { $0.user = .init(data: .mock) }
+
+    // and we saved the state, removing onboarding resume
+    await expect(saveState.invocations).toEqual([.mock {
+      $0.user = .mock
+      $0.resumeOnboarding = nil
+    }])
   }
 
   func testSkippingFromAdminUserRemediation() async {
