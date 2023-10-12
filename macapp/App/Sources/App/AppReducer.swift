@@ -106,7 +106,9 @@ struct AppReducer: Reducer, Sendable {
           effects.append(.exec { send in
             await send(.onboarding(.resume(onboardingStep)))
           })
-          effects.append(.exec { [withoutResume = state.persistent] _ in
+          effects.append(.exec { [persist = state.persistent] _ in
+            var withoutResume = persist
+            withoutResume.resumeOnboarding = nil
             try await storage.savePersistentState(withoutResume)
           })
         }

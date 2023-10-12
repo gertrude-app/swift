@@ -154,20 +154,21 @@ import XExpect
     // they click "Grant Permission" on the allow screenshots start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
+    await store.receive(.onboarding(.delegate(.saveForResume(.checkingScreenRecordingPermission))))
+
+    // check that we persisted the onboarding resumption state
+    await expect(saveState.invocations.value).toHaveCount(3)
+    await expect(saveState.invocations.value[2].resumeOnboarding)
+      .toEqual(.checkingScreenRecordingPermission)
+
+    await store.receive(.onboarding(.setStep(.allowScreenshots_grantAndRestart))) {
+      $0.onboarding.step = .allowScreenshots_grantAndRestart
+    }
+
     // ...and we check the setting, and take a screenshot, and moved them on
     await expect(screenshotsAllowed.invocations).toEqual(2)
+    // taking a screenshot ensures the full permissions prompt
     await expect(takeScreenshot.invocations.value).toHaveCount(1)
-    await store.receive(.onboarding(.setStep(.allowScreenshots_openSysSettings))) {
-      $0.onboarding.step = .allowScreenshots_openSysSettings // ...and go to open
-    }
-
-    // they click "Done" indicating that they clicked the system prompt
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.step = .allowScreenshots_grantAndRestart // ...and go to grant
-    }
-
-    // we record to restart checking screen recording permission...
-    await store.receive(.onboarding(.delegate(.saveForResume(.checkingScreenRecordingPermission))))
 
     // NB: here technically they RESTART the app, but instead of starting a new test
     // we simulate receiving the resume action to carry on where they should
@@ -837,19 +838,6 @@ import XExpect
     let store = featureStore { $0.step = .allowKeylogging_openSysSettings }
     let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
     store.deps.device.openSystemPrefs = openSysPrefs.fn
-  }
-
-  func testGetHelpClickedFromAllowScreenshotsOpenSysSettings() async {
-    let store = featureStore { $0.step = .allowScreenshots_openSysSettings }
-    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
-    store.deps.device.openSystemPrefs = openSysPrefs.fn
-
-    await store.send(.webview(.secondaryBtnClicked)) {
-      $0.step = .allowScreenshots_grantAndRestart
-    }
-
-    // and we tried to open system prefs to the right spot
-    await expect(openSysPrefs.invocations).toEqual([.security(.screenRecording)])
   }
 
   func testNoGertrudeAccountQuit() async {

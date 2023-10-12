@@ -21,7 +21,6 @@ extension OnboardingFeature.State {
 
     // screenshots
     case allowScreenshots_required
-    case allowScreenshots_openSysSettings
     case allowScreenshots_grantAndRestart
     // these two states exist to give us a landing spot for resuming
     // onboarding after the grant -> quit & reopen flow
@@ -70,8 +69,6 @@ extension OnboardingFeature.State.Step {
     case .allowNotifications_failed:
       return .allowScreenshots_required
     case .allowScreenshots_required:
-      return .allowScreenshots_openSysSettings
-    case .allowScreenshots_openSysSettings:
       return .allowScreenshots_grantAndRestart
     case .allowScreenshots_grantAndRestart:
       return .allowScreenshots_success
@@ -128,10 +125,8 @@ extension OnboardingFeature.State.Step {
       return .allowNotifications_grant
     case .allowScreenshots_required:
       return .allowNotifications_start
-    case .allowScreenshots_openSysSettings:
-      return .allowScreenshots_required
     case .allowScreenshots_grantAndRestart:
-      return .allowScreenshots_openSysSettings
+      return .allowScreenshots_required
     case .allowScreenshots_failed:
       return .allowScreenshots_required
     case .allowScreenshots_success:
@@ -181,7 +176,6 @@ extension OnboardingFeature.State.Step: Comparable {
     case .allowNotifications_grant: return 35
     case .allowNotifications_failed: return 40
     case .allowScreenshots_required: return 45
-    case .allowScreenshots_openSysSettings: return 50
     case .allowScreenshots_grantAndRestart: return 55
     case .allowScreenshots_failed: return 60
     case .allowScreenshots_success: return 65

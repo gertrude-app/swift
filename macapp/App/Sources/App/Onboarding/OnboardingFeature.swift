@@ -242,7 +242,8 @@ struct OnboardingFeature: Feature {
             await nextRequiredStage(from: step, send)
           } else {
             try? await monitoring.takeScreenshot(500) // trigger permission prompt
-            await send(.setStep(.allowScreenshots_openSysSettings))
+            await send(.delegate(.saveForResume(.checkingScreenRecordingPermission)))
+            await send(.setStep(.allowScreenshots_grantAndRestart))
           }
         }
 
@@ -250,21 +251,6 @@ struct OnboardingFeature: Feature {
         log(step, action, "b2907efa")
         return .exec { send in
           await nextRequiredStage(from: step, send)
-        }
-
-      case .webview(.primaryBtnClicked) where step == .allowScreenshots_openSysSettings:
-        log(step, action, "4e52e7d8")
-        state.step = .allowScreenshots_grantAndRestart
-        return .exec { send in
-          await send(.delegate(.saveForResume(.checkingScreenRecordingPermission)))
-        }
-
-      case .webview(.secondaryBtnClicked) where step == .allowScreenshots_openSysSettings:
-        log(step, action, "2d2e6a2f")
-        state.step = .allowScreenshots_grantAndRestart
-        return .exec { send in
-          await device.openSystemPrefs(.security(.screenRecording))
-          await send(.delegate(.saveForResume(.checkingScreenRecordingPermission)))
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_grantAndRestart:
