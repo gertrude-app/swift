@@ -412,13 +412,9 @@ struct OnboardingFeature: Feature {
         state.step = .installSysExt_explain
         return .none
 
-      case .webview(.secondaryBtnClicked) where step == .installSysExt_failed:
+      case .webview(.primaryBtnClicked) where step == .installSysExt_success,
+           .webview(.secondaryBtnClicked) where step == .installSysExt_failed:
         log(step, action, "78bded66")
-        state.step = .locateMenuBarIcon
-        return .none
-
-      case .webview(.primaryBtnClicked) where step == .installSysExt_success:
-        log(step, action, "7009a9cf")
         state.step = .locateMenuBarIcon
         return .none
 

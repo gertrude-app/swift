@@ -37,6 +37,7 @@ extension MonitoringFeature.RootReducer {
     switch action {
 
     case .loadedPersistentState(.some(let persistent)):
+      guard persistent.resumeOnboarding == nil else { return .none }
       return configureMonitoring(current: persistent.user, previous: nil)
 
     case .user(.updated(let previous)):

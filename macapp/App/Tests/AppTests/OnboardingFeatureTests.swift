@@ -294,16 +294,20 @@ import XExpect
   func testResumingToCheckScreenRecordingRestoresUserConnection() async {
     let (store, _) = AppReducer.testStore()
     let saveState = spy(on: Persistent.State.self, returning: ())
-    store.deps.monitoring.keystrokeRecordingPermissionGranted = { fatalError("no key check") }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.storage.savePersistentState = saveState.fn
     store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
     store.deps.app.isLaunchAtLoginEnabled = { fatalError("don't check launch at login") }
     let setUserToken = spy(on: UUID.self, returning: ())
     store.deps.api.setUserToken = setUserToken.fn
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = {
+      // it's critical this is not called when we first resume, so that they
+      // don't get a prompt until they advance to the keylogging screen
+      fatalError("keystrokeRecordingPermissionGranted should not be called")
+    }
 
     store.deps.storage.loadPersistentState = { .mock {
-      $0.user = .mock
+      $0.user = .mock { $0.keyloggingEnabled = true }
       $0.resumeOnboarding = .checkingScreenRecordingPermission // <-- resume here
     }}
 
@@ -314,12 +318,12 @@ import XExpect
     store.assert {
       $0.onboarding.windowOpen = true
       $0.onboarding.connectChildRequest = .succeeded(payload: UserData.mock.name)
-      $0.user = .init(data: .mock)
+      $0.user = .init(data: .mock { $0.keyloggingEnabled = true })
     }
 
     // and we saved the state, removing onboarding resume
     await expect(saveState.invocations).toEqual([.mock {
-      $0.user = .mock
+      $0.user = .mock { $0.keyloggingEnabled = true }
       $0.resumeOnboarding = nil
     }])
 
