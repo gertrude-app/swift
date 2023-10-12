@@ -1,3 +1,4 @@
+import ClientInterfaces
 import Combine
 import ComposableArchitecture
 import Core
@@ -246,6 +247,10 @@ import XExpect
     let checkIn = spy(on: CheckIn.Input.self, returning: checkInResult)
     store.deps.api.checkIn = checkIn.fn
     store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
+    let connectWebsocket = succeed(with: WebSocketClient.State.connected, capturing: UUID.self)
+    store.deps.websocket.connect = connectWebsocket.fn
+    let wsSend = succeed(with: (), capturing: WebSocketMessage.FromAppToApi.self)
+    store.deps.websocket.send = wsSend.fn
     store.deps.monitoring = .mock
     let stopLoggingKeystrokes = mock(always: ())
     store.deps.monitoring.stopLoggingKeystrokes = stopLoggingKeystrokes.fn
@@ -260,10 +265,16 @@ import XExpect
 
     await store.receive(.onboarding(.delegate(.onboardingConfigComplete)))
     await store.receive(.startProtecting(user: user))
+    await store.receive(.websocket(.connectedSuccessfully))
+
     await store.receive(.checkIn(result: .success(checkInResult), reason: .startProtecting)) {
       $0.appUpdates.latestVersion = checkInResult.latestRelease
     }
     await store.receive(.user(.updated(previous: user)))
+
+    // we need to ensure the websocket connection is setup, so they can do the tutorial vid
+    await expect(connectWebsocket.invocations).toEqual([UserData.mock.token])
+    await expect(wsSend.invocations).toEqual([.currentFilterState(.off)])
 
     await expect(setUserToken.invocations).toEqual([UserData.mock.token, UserData.mock.token])
     await expect(setAccountActive.invocations).toEqual([true])
