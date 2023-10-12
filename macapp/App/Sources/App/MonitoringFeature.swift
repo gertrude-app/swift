@@ -46,6 +46,9 @@ extension MonitoringFeature.RootReducer {
     case .history(.userConnection(.connect(.success(let user)))):
       return configureMonitoring(current: user, previous: nil)
 
+    case .onboarding(.delegate(.onboardingConfigComplete)):
+      return configureMonitoring(current: state.user.data, previous: nil)
+
     case .monitoring(.timerTriggeredTakeScreenshot):
       let width = state.user.data?.screenshotSize ?? 800
       let filterSuspended = state.filter.isSuspended

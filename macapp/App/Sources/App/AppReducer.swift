@@ -100,9 +100,6 @@ struct AppReducer: Reducer, Sendable {
             })
           } else {
             state.onboarding.connectChildRequest = .succeeded(payload: user.name)
-            effects.append(.exec { _ in
-              await api.setUserToken(user.token)
-            })
           }
         }
         if let onboardingStep = persisted.resumeOnboarding {
@@ -116,6 +113,7 @@ struct AppReducer: Reducer, Sendable {
         return .merge(effects)
 
       case .startProtecting(let user):
+        let onboardingWindowOpen = state.onboarding.windowOpen
         return .merge(
           .exec { [filterVersion = state.filter.version] send in
             await api.setUserToken(user.token)
@@ -126,7 +124,7 @@ struct AppReducer: Reducer, Sendable {
             ))
           },
           .exec { _ in
-            if (await app.isLaunchAtLoginEnabled()) == false {
+            if onboardingWindowOpen == false, (await app.isLaunchAtLoginEnabled()) == false {
               await app.enableLaunchAtLogin()
             }
           },
@@ -171,7 +169,7 @@ struct AppReducer: Reducer, Sendable {
           try await storage.savePersistentState(copy)
         }
 
-      case .onboarding(.delegate(.onboardingFinished)):
+      case .onboarding(.delegate(.onboardingConfigComplete)):
         OnboardingFeature.Reducer().log("finished", "079cbee4")
         if let user = state.user.data {
           return .exec { send in await send(.startProtecting(user: user)) }

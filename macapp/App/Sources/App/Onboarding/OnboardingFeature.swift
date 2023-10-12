@@ -44,7 +44,7 @@ struct OnboardingFeature: Feature {
 
     enum Delegate: Equatable, Sendable {
       case saveForResume(Resume?)
-      case onboardingFinished
+      case onboardingConfigComplete
     }
 
     case webview(View)
@@ -200,7 +200,7 @@ struct OnboardingFeature: Feature {
         where step == .connectChild && state.connectChildRequest.isSucceeded:
         log("next from connect user success", "34221891")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: .connectChild)))
+          await nextRequiredStage(from: .connectChild, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowNotifications_start:
@@ -215,11 +215,11 @@ struct OnboardingFeature: Feature {
         where step == .allowNotifications_grant || step == .allowNotifications_failed:
         log(step, action, "9fa094ac")
         return .exec { send in
-          await send(.setStep(
-            await device.notificationsSetting() != .none
-              ? await nextRequiredStage(from: step)
-              : .allowNotifications_failed
-          ))
+          if await device.notificationsSetting() == .none {
+            await send(.setStep(.allowNotifications_failed))
+          } else {
+            await nextRequiredStage(from: step, send)
+          }
         }
 
       case .webview(.secondaryBtnClicked) where step == .allowNotifications_grant:
@@ -231,7 +231,7 @@ struct OnboardingFeature: Feature {
         where step == .allowNotifications_start || step == .allowNotifications_failed:
         log(step, action, "8cf52d46")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: step)))
+          await nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_required:
@@ -239,7 +239,7 @@ struct OnboardingFeature: Feature {
           let granted = await monitoring.screenRecordingPermissionGranted()
           log("primary from .allowScreenshots_required, already granted=\(granted)", "ce78b67b")
           if granted {
-            await send(.setStep(nextRequiredStage(from: step)))
+            await nextRequiredStage(from: step, send)
           } else {
             try? await monitoring.takeScreenshot(500) // trigger permission prompt
             await send(.setStep(.allowScreenshots_openSysSettings))
@@ -249,7 +249,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowScreenshots_required:
         log(step, action, "b2907efa")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: step)))
+          await nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_openSysSettings:
@@ -275,7 +275,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowScreenshots_grantAndRestart:
         log(step, action, "a85b700c")
         return .exec { send in
-          await send(.setStep(nextRequiredStage(from: step)))
+          await nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_failed:
@@ -292,25 +292,25 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowScreenshots_failed:
         log(step, action, "9616ea42")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: step)))
+          await nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_success:
         log(step, action, "fc9a6916")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: step)))
+          await nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_required:
         log(step, action, "6db8471f")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: step)))
+          await nextRequiredStage(from: step, send)
         }
 
       case .webview(.secondaryBtnClicked) where step == .allowKeylogging_required:
         log(step, action, "61a87bb2")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: .installSysExt_explain)))
+          await nextRequiredStage(from: .installSysExt_explain, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_openSysSettings:
@@ -322,18 +322,18 @@ struct OnboardingFeature: Feature {
         return .exec { send in
           let granted = await monitoring.keystrokeRecordingPermissionGranted()
           log("primary from .allowKeylogging_grant, granted=\(granted)", "ce78b67b")
-          await send(.setStep(
-            granted
-              ? await nextRequiredStage(from: step)
-              : .allowKeylogging_failed
-          ))
+          if granted {
+            await nextRequiredStage(from: step, send)
+          } else {
+            await send(.setStep(.allowKeylogging_failed))
+          }
         }
 
       case .webview(.secondaryBtnClicked) where step == .allowKeylogging_grant:
         log(step, action, "5ccce8b9")
         return .exec { send in
           if await monitoring.keystrokeRecordingPermissionGranted() {
-            await send(.setStep(nextRequiredStage(from: step)))
+            await nextRequiredStage(from: step, send)
           } else {
             await send(.setStep(.allowKeylogging_failed))
           }
@@ -343,7 +343,7 @@ struct OnboardingFeature: Feature {
         log(step, action, "36181833")
         return .exec { send in
           if await monitoring.keystrokeRecordingPermissionGranted() {
-            await send(.setStep(nextRequiredStage(from: step)))
+            await nextRequiredStage(from: step, send)
           } else {
             await device.openSystemPrefs(.security(.accessibility))
             await send(.setStep(.allowKeylogging_grant))
@@ -353,7 +353,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowKeylogging_failed:
         log(step, action, "775f57f9")
         return .exec { send in
-          await send(.setStep(await nextRequiredStage(from: step)))
+          await nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .installSysExt_explain:
@@ -416,7 +416,9 @@ struct OnboardingFeature: Feature {
            .webview(.secondaryBtnClicked) where step == .installSysExt_failed:
         log(step, action, "78bded66")
         state.step = .locateMenuBarIcon
-        return .none
+        return .exec { send in
+          await send(.delegate(.onboardingConfigComplete))
+        }
 
       case .webview(.primaryBtnClicked) where step == .locateMenuBarIcon:
         log(step, action, "d0a159fd")
@@ -434,11 +436,13 @@ struct OnboardingFeature: Feature {
         return .none
 
       case .webview(.primaryBtnClicked) where step == .finish, .closeWindow, .webview(.closeWindow):
+        log(step, action, "2760db29")
         state.windowOpen = false
         let userConnected = state.connectChildRequest.isSucceeded
-        log("\(action), step=\(step), userConnected=\(userConnected)", "936082d4")
         return .exec { send in
-          await send(.delegate(.onboardingFinished))
+          if userConnected, await app.isLaunchAtLoginEnabled() == false {
+            await app.enableLaunchAtLogin()
+          }
         }
 
       case .webview(.primaryBtnClicked):
@@ -467,11 +471,11 @@ struct OnboardingFeature: Feature {
       }
     }
 
-    func nextRequiredStage(from current: State.Step) async -> State.Step {
+    func nextRequiredStage(from current: State.Step, _ send: Send<Action>) async {
       if current < .allowNotifications_start {
         if await device.notificationsSetting() != .alert {
           log("notifications not .alert yet", "ec99a6ea")
-          return .allowNotifications_start
+          return await send(.setStep(.allowNotifications_start))
         }
         log("notifications already .alert, skipping stage", "f2988b3c")
       }
@@ -479,7 +483,7 @@ struct OnboardingFeature: Feature {
       if current < .allowScreenshots_required {
         if await monitoring.screenRecordingPermissionGranted() == false {
           log("screen recording not granted yet", "3edcf34f")
-          return .allowScreenshots_required
+          return await send(.setStep(.allowScreenshots_required))
         }
         log("screenshots already allowed, skipping stage", "6e2e204c")
       }
@@ -490,24 +494,26 @@ struct OnboardingFeature: Feature {
       // have already been granted, they'll move straight on, and not see a prompt
       if current < .allowKeylogging_required {
         log("can't test keylogging yet, go to required", "fd0bfa95")
-        return .allowKeylogging_required
+        return await send(.setStep(.allowKeylogging_required))
       }
 
       if current == .allowKeylogging_required {
         if await monitoring.keystrokeRecordingPermissionGranted() == false {
           log("keylogging not granted yet", "5d5275e5")
-          return .allowKeylogging_openSysSettings
+          return await send(.setStep(.allowKeylogging_openSysSettings))
         }
         log("keylogging already allowed, skipping stage", "51ed2be8")
       }
 
       if await systemExtension.state() != .installedAndRunning {
         log("sys ext not installed and running yet", "b493ebde")
-        return .installSysExt_explain
+        return await send(.setStep(.installSysExt_explain))
       }
 
       log("sys ext already installed and running, skipping stage", "b0e6e683")
-      return .locateMenuBarIcon
+
+      await send(.delegate(.onboardingConfigComplete))
+      await send(.setStep(.locateMenuBarIcon))
     }
   }
 }

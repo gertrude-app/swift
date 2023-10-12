@@ -238,10 +238,34 @@ import XExpect
       $0.onboarding.step = .installSysExt_success
     }
 
+    // we kick off protection when they move to .locateMenuBarIcon step, lots happens...
+    let setAccountActive = spy(on: Bool.self, returning: ())
+    store.deps.api.setAccountActive = setAccountActive.fn
+    let checkInResult = CheckIn.Output.empty { $0.userData = user }
+    let checkIn = spy(on: CheckIn.Input.self, returning: checkInResult)
+    store.deps.api.checkIn = checkIn.fn
+    store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
+    store.deps.monitoring = .mock
+    let stopLoggingKeystrokes = mock(always: ())
+    store.deps.monitoring.stopLoggingKeystrokes = stopLoggingKeystrokes.fn
+
     // they click "Next" on the install sys ext success screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.step = .locateMenuBarIcon // ...and go to locate icon
     }
+
+    // this proves that we turned on all monitoring
+    await expect(stopLoggingKeystrokes.invocations).toEqual(1)
+
+    await store.receive(.onboarding(.delegate(.onboardingConfigComplete)))
+    await store.receive(.startProtecting(user: user))
+    await store.receive(.checkIn(result: .success(checkInResult), reason: .startProtecting)) {
+      $0.appUpdates.latestVersion = checkInResult.latestRelease
+    }
+    await store.receive(.user(.updated(previous: user)))
+
+    await expect(setUserToken.invocations).toEqual([UserData.mock.token, UserData.mock.token])
+    await expect(setAccountActive.invocations).toEqual([true])
 
     // they click "Next" on the locate menu bar icon screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -262,31 +286,16 @@ import XExpect
     store.deps.app.isLaunchAtLoginEnabled = { false }
     let enableLaunchAtLogin = mock(always: ())
     store.deps.app.enableLaunchAtLogin = enableLaunchAtLogin.fn
-    let setAccountActive = spy(on: Bool.self, returning: ())
-    store.deps.api.setAccountActive = setAccountActive.fn
-    let checkInResult = CheckIn.Output.empty { $0.userData = user }
-    let checkIn = spy(on: CheckIn.Input.self, returning: checkInResult)
-    store.deps.api.checkIn = checkIn.fn
-    store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
 
+    // close the final "finish" screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.windowOpen = false
     }
 
-    await store.receive(.onboarding(.delegate(.onboardingFinished)))
-    await store.receive(.startProtecting(user: user))
-    await store.receive(.checkIn(result: .success(checkInResult), reason: .startProtecting)) {
-      $0.appUpdates.latestVersion = checkInResult.latestRelease
-    }
-    await store.receive(.user(.updated(previous: user)))
-
-    await expect(setUserToken.invocations).toEqual([UserData.mock.token, UserData.mock.token])
-    await expect(setAccountActive.invocations).toEqual([true])
     await expect(checkIn.invocations).toEqual([.init(appVersion: "1.0.0", filterVersion: "1.0.0")])
     await expect(enableLaunchAtLogin.invocations).toEqual(1)
 
     // shutdown tries fo flush keystrokes
-    store.deps.monitoring = .mock
     store.deps.monitoring.takePendingKeystrokes = { nil }
     await store.send(.application(.willTerminate))
   }
@@ -298,11 +307,10 @@ import XExpect
     store.deps.storage.savePersistentState = saveState.fn
     store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
     store.deps.app.isLaunchAtLoginEnabled = { fatalError("don't check launch at login") }
-    let setUserToken = spy(on: UUID.self, returning: ())
-    store.deps.api.setUserToken = setUserToken.fn
+
+    // it's critical this is not called when we first resume, so that they
+    // don't get a prompt until they advance to the keylogging screen
     store.deps.monitoring.keystrokeRecordingPermissionGranted = {
-      // it's critical this is not called when we first resume, so that they
-      // don't get a prompt until they advance to the keylogging screen
       fatalError("keystrokeRecordingPermissionGranted should not be called")
     }
 
@@ -326,10 +334,6 @@ import XExpect
       $0.user = .mock { $0.keyloggingEnabled = true }
       $0.resumeOnboarding = nil
     }])
-
-    // and setup the api token, so the test administrate health check works
-    // correctly even before we send the .startProtecting(user) action
-    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
   }
 
   func testSkippingFromAdminUserRemediation() async {
