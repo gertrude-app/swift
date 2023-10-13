@@ -71,10 +71,15 @@ struct OnboardingFeature: Feature {
       switch action {
 
       case .resume(.at(let step)):
+        log("resuming at \(step)", "711355aa")
         state.windowOpen = true
         state.step = step
-        log("resuming at \(step)", "711355aa")
-        return .none
+        return .exec { send in
+          await send(.receivedDeviceData(
+            currentUserId: device.currentUserId(),
+            users: try await device.listMacOSUsers()
+          ))
+        }
 
       case .resume(.checkingScreenRecordingPermission):
         return .exec { send in

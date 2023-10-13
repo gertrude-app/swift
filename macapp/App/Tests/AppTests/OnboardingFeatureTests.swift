@@ -312,6 +312,37 @@ import XExpect
     await store.send(.application(.willTerminate))
   }
 
+  func testResumingFromAdminUserDemotion() async {
+    let (store, _) = AppReducer.testStore(mockDeps: true)
+    store.deps.device = .testValue
+    store.deps.device.currentUserId = { 502 }
+    store.deps.device.listMacOSUsers = { [
+      .init(id: 501, name: "jared", type: .admin),
+      .init(id: 502, name: "franny", type: .standard),
+    ] }
+
+    store.deps.storage.loadPersistentState = { .mock {
+      $0.user = .monitored
+      $0.resumeOnboarding = .at(step: .macosUserAccountType)
+    }}
+
+    await store.send(.application(.didFinishLaunching))
+    await store.receive(.onboarding(.resume(.at(step: .macosUserAccountType)))) {
+      $0.onboarding.step = .macosUserAccountType
+      $0.onboarding.windowOpen = true
+    }
+
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.step = .getChildConnectionCode
+      // we need to make sure we initialize the user data when resuming
+      $0.onboarding.currentUser = .init(id: 502, name: "franny", isAdmin: false)
+      $0.onboarding.users = [
+        .init(id: 501, name: "jared", isAdmin: true),
+        .init(id: 502, name: "franny", isAdmin: false),
+      ]
+    }
+  }
+
   func testResumingToCheckScreenRecordingRestoresUserConnection() async {
     let (store, _) = AppReducer.testStore()
     let saveState = spy(on: Persistent.State.self, returning: ())
