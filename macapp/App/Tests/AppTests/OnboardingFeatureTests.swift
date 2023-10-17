@@ -699,8 +699,9 @@ import XExpect
     let store = featureStore { $0.step = .allowNotifications_grant }
 
     let notifsSettings = mock(
-      returning: [NotificationsSetting.none], // <- they did NOT enable notifications...
-      then: NotificationsSetting.alert // ... but they fix it before we check again
+      // they did NOT enable notifications (the first 2 times we check)
+      returning: [NotificationsSetting.none, .none],
+      then: NotificationsSetting.alert // ... but they fix it before 3rd...
     )
     store.deps.device.notificationsSetting = notifsSettings.fn
 
@@ -711,14 +712,29 @@ import XExpect
     await expect(notifsSettings.invocations).toEqual(1)
     await store.receive(.setStep(.allowNotifications_failed))
 
-    // used to determine if screen recording stage should be skipped
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    let requestNotifAuth = mock(always: ())
+    store.deps.device.requestNotificationAuthorization = requestNotifAuth.fn
+    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
+    store.deps.device.openSystemPrefs = openSysPrefs.fn
 
-    // they fixed it, and clicked Try Again...
+    // they did NOT fix it, and clicked Try Again...
+    await store.send(.webview(.primaryBtnClicked))
+
+    // so we a) checked the settings again
+    await expect(notifsSettings.invocations).toEqual(2)
+    // b) requested permission
+    await expect(requestNotifAuth.invocations).toEqual(1)
+    // and c) open system prefs
+    await expect(openSysPrefs.invocations).toEqual([.notifications])
+    // and send them back to the grant screen with instructions
+    await store.receive(.setStep(.allowNotifications_grant))
+
+    // NOW (3rd check) they finally fixed it, and clicked Try Again...
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
     await store.send(.webview(.primaryBtnClicked))
 
     // ...and we confirmed the setting and moved them on the happy path
-    await expect(notifsSettings.invocations).toEqual(2)
+    await expect(notifsSettings.invocations).toEqual(3)
     await store.receive(.setStep(.allowScreenshots_required))
   }
 

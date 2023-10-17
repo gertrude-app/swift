@@ -216,8 +216,7 @@ struct OnboardingFeature: Feature {
           await device.openSystemPrefs(.notifications)
         }
 
-      case .webview(.primaryBtnClicked)
-        where step == .allowNotifications_grant || step == .allowNotifications_failed:
+      case .webview(.primaryBtnClicked) where step == .allowNotifications_grant:
         log(step, action, "9fa094ac")
         return .exec { send in
           if await device.notificationsSetting() == .none {
@@ -231,6 +230,18 @@ struct OnboardingFeature: Feature {
         log(step, action, "8f9d3c9c")
         state.step = .allowNotifications_failed
         return .none
+
+      case .webview(.primaryBtnClicked) where step == .allowNotifications_failed:
+        log(step, action, "b183d96d")
+        return .exec { send in
+          if await device.notificationsSetting() == .none {
+            await device.requestNotificationAuthorization()
+            await device.openSystemPrefs(.notifications)
+            await send(.setStep(.allowNotifications_grant))
+          } else {
+            await nextRequiredStage(from: step, send)
+          }
+        }
 
       case .webview(.secondaryBtnClicked)
         where step == .allowNotifications_start || step == .allowNotifications_failed:
