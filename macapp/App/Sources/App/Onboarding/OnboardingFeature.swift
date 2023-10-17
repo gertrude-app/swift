@@ -85,11 +85,12 @@ struct OnboardingFeature: Feature {
         return .exec { send in
           let granted = await monitoring.screenRecordingPermissionGranted()
           log("resume checking screen recording, granted=\(granted)", "5d1d27fe")
-          await send(.setStep(
-            granted
-              ? .allowScreenshots_success
-              : .allowScreenshots_failed
-          ))
+          if granted {
+            await send(.setStep(.allowScreenshots_success))
+          } else {
+            await send(.delegate(.saveForResume(.checkingScreenRecordingPermission)))
+            await send(.setStep(.allowScreenshots_failed))
+          }
         }
 
       case .receivedDeviceData(let currentUserId, let users):
@@ -484,6 +485,10 @@ struct OnboardingFeature: Feature {
         }
         log("screenshots already allowed, skipping stage", "6e2e204c")
       }
+
+      // if we're past the screenshot stage, we know we don't want to resume again
+      // so, defensively always remove the onboarding resume state at this point
+      await send(.delegate(.saveForResume(nil)))
 
       // checking keylogging pops up the system prompt, so we always
       // have to land them on this screen once, and test later.

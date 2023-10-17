@@ -182,6 +182,7 @@ import XExpect
 
     // they click the "Next" button from the screen recording success
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
+    await store.receive(.onboarding(.delegate(.saveForResume(nil))))
     await store.receive(.onboarding(.setStep(.allowKeylogging_required))) {
       $0.onboarding.step = .allowKeylogging_required
     }
@@ -193,6 +194,7 @@ import XExpect
     // they click "Grant Permission" on the allow keylogging start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
+    await store.receive(.onboarding(.delegate(.saveForResume(nil))))
     await store.receive(.onboarding(.setStep(.allowKeylogging_grant))) {
       $0.onboarding.step = .allowKeylogging_grant // ...and go to grant
     }
@@ -214,6 +216,7 @@ import XExpect
     // we confirm, and see that they did it correct...
     await expect(keyloggingAllowed.invocations).toEqual(2)
     // ...so they get sent off to the next happy path step
+    await store.receive(.onboarding(.delegate(.saveForResume(nil))))
     await store.receive(.onboarding(.setStep(.installSysExt_explain))) {
       $0.onboarding.step = .installSysExt_explain // ...and go to sys ext start
     }
@@ -361,9 +364,10 @@ import XExpect
     await store.send(.application(.didFinishLaunching))
     await store.skipReceivedActions()
 
-    // user restored
     store.assert {
       $0.onboarding.windowOpen = true
+      $0.onboarding.step = .allowScreenshots_success
+      // user restored
       $0.onboarding.connectChildRequest = .succeeded(payload: UserData.mock.name)
       $0.user = .init(data: .mock { $0.keyloggingEnabled = true })
     }
@@ -373,6 +377,41 @@ import XExpect
       $0.user = .mock { $0.keyloggingEnabled = true }
       $0.resumeOnboarding = nil
     }])
+  }
+
+  func testResumingToCheckScreenRecording_Failure() async {
+    let (store, _) = AppReducer.testStore()
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.monitoring.screenRecordingPermissionGranted = { false } // <-- still no bueno!
+    store.deps.storage.savePersistentState = saveState.fn
+    store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
+    store.deps.app.isLaunchAtLoginEnabled = { fatalError("don't check launch at login") }
+    store.deps.monitoring.keystrokeRecordingPermissionGranted = { fatalError("nope") }
+
+    store.deps.storage.loadPersistentState = { .mock {
+      $0.user = .mock { $0.keyloggingEnabled = true }
+      $0.resumeOnboarding = .checkingScreenRecordingPermission // <-- resume here
+    }}
+
+    await store.send(.application(.didFinishLaunching))
+    await store.skipReceivedActions()
+
+    store.assert {
+      $0.onboarding.step = .allowScreenshots_failed
+    }
+
+    // since the perms are still wrong, we need to save state to
+    // resume again after a quit & restart
+    await expect(saveState.invocations).toEqual([
+      .mock {
+        $0.user = .mock { $0.keyloggingEnabled = true }
+        $0.resumeOnboarding = nil // <-- the first, default clear save
+      },
+      .mock {
+        $0.user = .mock { $0.keyloggingEnabled = true }
+        $0.resumeOnboarding = .checkingScreenRecordingPermission // <-- after we detect the failure
+      },
+    ])
   }
 
   func testSkippingFromAdminUserRemediation() async {
