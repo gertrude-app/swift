@@ -414,6 +414,18 @@ import XExpect
     ])
   }
 
+  func testQuittingOnboardingEarlyAfterConnectionSuccessStartsProtection() async {
+    let (store, _) = AppReducer.testStore {
+      $0.user = .init(data: .mock { $0.name = "franny" })
+      $0.onboarding.step = .allowNotifications_start // post child connection..
+      $0.onboarding
+        .connectChildRequest = .succeeded(payload: "franny") // <-- ... w/ a successful connection
+    }
+
+    await store.send(.onboarding(.webview(.closeWindow)))
+    await store.receive(.startProtecting(user: .mock { $0.name = "franny" }))
+  }
+
   func testSkippingFromAdminUserRemediation() async {
     let store = featureStore {
       $0.step = .macosUserAccountType

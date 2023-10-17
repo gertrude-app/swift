@@ -433,13 +433,19 @@ struct OnboardingFeature: Feature {
         state.step = .finish
         return .none
 
-      case .webview(.primaryBtnClicked) where step == .finish, .closeWindow, .webview(.closeWindow):
+      case .webview(.primaryBtnClicked) where step == .finish,
+           .closeWindow,
+           .webview(.closeWindow):
         log(step, action, "2760db29")
         state.windowOpen = false
-        let userConnected = state.connectChildRequest.isSucceeded
+        guard state.connectChildRequest.isSucceeded else { return .none }
         return .exec { send in
-          if userConnected, await app.isLaunchAtLoginEnabled() == false {
+          if await app.isLaunchAtLoginEnabled() == false {
             await app.enableLaunchAtLogin()
+          }
+          if step < .locateMenuBarIcon {
+            // unexpected early bail, so we need to start protection
+            await send(.delegate(.onboardingConfigComplete))
           }
         }
 
