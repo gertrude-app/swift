@@ -315,11 +315,6 @@ struct OnboardingFeature: Feature {
           await nextRequiredStage(from: .installSysExt_explain, send)
         }
 
-      case .webview(.primaryBtnClicked) where step == .allowKeylogging_openSysSettings:
-        log(step, action, "c2e08e19")
-        state.step = .allowKeylogging_grant
-        return .none
-
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_grant:
         return .exec { send in
           let granted = await monitoring.keystrokeRecordingPermissionGranted()
@@ -502,7 +497,7 @@ struct OnboardingFeature: Feature {
       if current == .allowKeylogging_required {
         if await monitoring.keystrokeRecordingPermissionGranted() == false {
           log("keylogging not granted yet", "5d5275e5")
-          return await send(.setStep(.allowKeylogging_openSysSettings))
+          return await send(.setStep(.allowKeylogging_grant))
         }
         log("keylogging already allowed, skipping stage", "51ed2be8")
       }

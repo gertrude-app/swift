@@ -193,18 +193,14 @@ import XExpect
     // they click "Grant Permission" on the allow keylogging start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
-    // ...and we check the setting (which pops up prompt) and moved them on
-    await expect(keyloggingAllowed.invocations).toEqual(1)
-    await store.receive(.onboarding(.setStep(.allowKeylogging_openSysSettings))) {
-      $0.onboarding.step = .allowKeylogging_openSysSettings // ...and go to open
-    }
-
-    // they click "Done" indicating that they clicked the system prompt
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+    await store.receive(.onboarding(.setStep(.allowKeylogging_grant))) {
       $0.onboarding.step = .allowKeylogging_grant // ...and go to grant
     }
 
-    // moving on from keylogging tests filter extension state, to possibly ski
+    // ...and we checked the setting (which pops up prompt) and moved them on
+    await expect(keyloggingAllowed.invocations).toEqual(1)
+
+    // moving on from keylogging tests filter extension state, to possibly skip
     let filterState = mock(returning: [
       FilterExtensionState.notInstalled,
       .notInstalled,
@@ -890,12 +886,6 @@ import XExpect
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_explain))
-  }
-
-  func testSecondaryFromAllowKeyloggingOpenSysSettings() async {
-    let store = featureStore { $0.step = .allowKeylogging_openSysSettings }
-    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
-    store.deps.device.openSystemPrefs = openSysPrefs.fn
   }
 
   func testNoGertrudeAccountQuit() async {

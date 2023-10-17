@@ -29,7 +29,6 @@ extension OnboardingFeature.State {
 
     // keylogging
     case allowKeylogging_required
-    case allowKeylogging_openSysSettings
     case allowKeylogging_grant
     case allowKeylogging_failed
 
@@ -77,8 +76,6 @@ extension OnboardingFeature.State.Step {
     case .allowScreenshots_success:
       return .allowKeylogging_required
     case .allowKeylogging_required:
-      return .allowKeylogging_openSysSettings
-    case .allowKeylogging_openSysSettings:
       return .allowKeylogging_grant
     case .allowKeylogging_grant:
       return .installSysExt_explain
@@ -133,10 +130,8 @@ extension OnboardingFeature.State.Step {
       return .allowScreenshots_grantAndRestart
     case .allowKeylogging_required:
       return .allowScreenshots_required
-    case .allowKeylogging_openSysSettings:
-      return .allowKeylogging_required
     case .allowKeylogging_grant:
-      return .allowKeylogging_openSysSettings
+      return .allowKeylogging_required
     case .allowKeylogging_failed:
       return .allowKeylogging_required
     case .installSysExt_explain:
@@ -180,7 +175,6 @@ extension OnboardingFeature.State.Step: Comparable {
     case .allowScreenshots_failed: return 60
     case .allowScreenshots_success: return 65
     case .allowKeylogging_required: return 70
-    case .allowKeylogging_openSysSettings: return 75
     case .allowKeylogging_grant: return 80
     case .allowKeylogging_failed: return 85
     case .installSysExt_explain: return 90
