@@ -82,6 +82,7 @@ struct OnboardingFeature: Feature {
         }
 
       case .resume(.checkingScreenRecordingPermission):
+        state.windowOpen = true
         return .exec { send in
           let granted = await monitoring.screenRecordingPermissionGranted()
           log("resume checking screen recording, granted=\(granted)", "5d1d27fe")
@@ -463,7 +464,6 @@ struct OnboardingFeature: Feature {
 
       case .setStep(let step):
         state.step = step
-        state.windowOpen = true // for resuming
         return .none
 
       case .webview(.infoModalOpened(let step, let detail)):

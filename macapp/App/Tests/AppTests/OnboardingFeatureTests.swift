@@ -1037,6 +1037,19 @@ import XExpect
     }
   }
 
+  func testSettingStepDoesntOpenWindow() async {
+    let store = featureStore {
+      $0.windowOpen = false
+    }
+    // there's a 4 minute timeout for failed sys-ext install
+    // so the onboarding could be closed by the time that triggers
+    // sending a .setStep into the system, which should NOT reopen
+    await store.send(.setStep(.installSysExt_failed))
+    store.assert {
+      $0.windowOpen = false
+    }
+  }
+
   // helpers
   func featureStore(
     mutateState: @escaping (inout OnboardingFeature.State) -> Void = { _ in }
