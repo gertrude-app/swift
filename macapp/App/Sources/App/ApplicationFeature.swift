@@ -32,9 +32,10 @@ extension ApplicationFeature.RootReducer: RootReducing {
       return .merge(
         .exec { send in
           #if DEBUG
-            if ProcessInfo.processInfo.environment["SWIFT_DETERMINISTIC_HASHING"] == nil {
-              await storage.deleteAll()
-            }
+            // uncomment to test ONBOARDING
+            // if ProcessInfo.processInfo.environment["SWIFT_DETERMINISTIC_HASHING"] == nil {
+            //   await storage.deleteAll()
+            // }
           #endif
           await send(.loadedPersistentState(try await storage.loadPersistentState()))
         },

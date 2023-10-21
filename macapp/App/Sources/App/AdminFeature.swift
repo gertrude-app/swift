@@ -24,6 +24,7 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
     case .adminWindow(.webview(.inactiveAccountDisconnectAppClicked)),
          .blockedRequests(.webview(.inactiveAccountDisconnectAppClicked)),
          .requestSuspension(.webview(.inactiveAccountDisconnectAppClicked)),
+         .requestSuspension(.webview(.noFilterCommunicationAdministrateClicked)),
          .blockedRequests(.webview(.noFilterCommunicationAdministrateClicked)):
       return adminAuthenticated(action)
 
@@ -49,7 +50,10 @@ extension AdminFeature.RootReducer: RootReducing, AdminAuthenticating {
       state.requestSuspension.windowOpen = false
       state.adminWindow.windowOpen = true
       state.adminWindow.screen = .healthCheck
-      return .none
+      return .exec { send in
+        // we've already authed the admin, this kicks off a full health check
+        await send(.adminAuthed(.menuBar(.administrateClicked)))
+      }
 
     default:
       return .none

@@ -535,7 +535,6 @@ extension OnboardingFeature.State.MacUser {
 }
 
 extension OnboardingFeature.Reducer {
-
   func eventMeta() -> String {
     "os: \(device.osVersion().name), sn: \(device.serialNumber() ?? ""), time: \(Date())"
   }
