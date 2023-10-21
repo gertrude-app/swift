@@ -12,15 +12,23 @@ extension LatestAppVersion: Resolver {
     let current = Semver(input.currentVersion)!
     var output = Output(semver: releases.first?.semver ?? "0.0.0")
 
+    // if they're on a beta/canary version ahead of their app release channel
+    // don't tell them there's an update to an older version
+    // this allows me to release "beta" versions to new customers without
+    // bothering existing users with an update
+    if current > Semver(output.semver)! {
+      output.semver = current.string
+    }
+
     for release in releases {
-      output.semver = release.semver
-      if current < Semver(release.semver)!,
-         let pace = release.requirementPace,
-         output.pace == nil {
-        output.pace = .init(
-          nagOn: release.createdAt.advanced(by: .days(pace)),
-          requireOn: release.createdAt.advanced(by: .days(pace * 2))
-        )
+      if current < Semver(release.semver)! {
+        output.semver = release.semver
+        if let pace = release.requirementPace, output.pace == nil {
+          output.pace = .init(
+            nagOn: release.createdAt.advanced(by: .days(pace)),
+            requireOn: release.createdAt.advanced(by: .days(pace * 2))
+          )
+        }
       }
     }
 

@@ -94,6 +94,26 @@ final class CheckInResolverTests: ApiTestCase {
     )
     expect(output.keys.contains(.init(id: autoKey.id.rawValue, key: autoKey.key))).toBeTrue()
   }
+
+  func testOnBetaAheadOfStable() async throws {
+    try await createReleases([
+      Release("1.0.0", pace: 10, createdAt: .epoch),
+      Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),
+      Release("2.0.0", channel: .beta, pace: 10, createdAt: .epoch.advanced(by: .days(20))),
+    ])
+
+    let user = try await Entities.user().withDevice(adminDevice: {
+      $0.appReleaseChannel = .stable // set to stable, but they're on beta
+    })
+
+    let output = try await CheckIn.resolve(
+      with: .init(appVersion: "2.0.0", filterVersion: nil),
+      in: user.context
+    )
+
+    expect(output.updateReleaseChannel).toEqual(.stable)
+    expect(output.latestRelease.semver).toEqual("2.0.0")
+  }
 }
 
 // helpers
