@@ -129,9 +129,10 @@ extension CheckInFeature.RootReducer {
 
 extension CheckIn {
   enum Reason: Equatable, Sendable {
-    case appLaunched
+    case appUpdated
     case healthCheck
     case heartbeat
+    case startProtecting
     case inactiveAccountRechecked
     case receivedWebsocketMessage
     case userRefreshedRules

@@ -20,6 +20,7 @@ protocol AppWindow: AnyObject {
   var windowLevel: NSWindow.Level { get }
   var title: String { get }
   var screen: String { get }
+  var showTitleBar: Bool { get }
   var closeWindowAction: Action { get }
 
   func embed(_ webviewAction: WebViewAction) -> Action
@@ -29,6 +30,7 @@ extension AppWindow {
   var windowLevel: NSWindow.Level { .normal }
   var initialSize: NSRect { NSRect(x: 0, y: 0, width: 900, height: 600) }
   var minSize: NSSize { NSSize(width: 800, height: 500) }
+  var showTitleBar: Bool { true }
 
   @MainActor func bind() {
     windowDelegate.events
@@ -69,10 +71,18 @@ extension AppWindow {
     window?.delegate = windowDelegate
     window?.tabbingMode = .disallowed
     window?.titlebarAppearsTransparent = true
+
+    if !showTitleBar {
+      window?.titleVisibility = .hidden
+      window?.styleMask.insert(NSWindow.StyleMask.fullSizeContentView)
+      window?.isMovableByWindowBackground = true
+    }
+
     window?.isReleasedWhenClosed = false
     window?.level = windowLevel
 
     let wvc = WebViewController<State, WebViewAction>()
+    wvc.withTitleBar = showTitleBar
 
     wvc.send = { [weak self] action in
       guard let self = self else { return }

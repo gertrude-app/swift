@@ -44,6 +44,12 @@ extension UserDefaultsClient: DependencyKey {
 
 extension UserDefaultsClient: TestDependencyKey {
   public static let testValue = Self(
+    setString: unimplemented("UserDefaultsClient.setString"),
+    getString: unimplemented("UserDefaultsClient.getString"),
+    remove: unimplemented("UserDefaultsClient.remove"),
+    removeAll: unimplemented("UserDefaultsClient.removeAll")
+  )
+  public static let mock = Self(
     setString: { _, _ in },
     getString: { _ in nil },
     remove: { _ in },

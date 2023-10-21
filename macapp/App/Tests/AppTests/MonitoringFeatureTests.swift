@@ -515,8 +515,8 @@ import XExpect
     } }
 
     await store.send(.application(.didFinishLaunching))
-    await bgQueue.advance(by: .seconds(600)) // <-- no fatal error
-    await expect(keylogging.take.invoked).toEqual(true) // we always check
+    await bgQueue.advance(by: .seconds(600)) // <-- no fatal error, heartbeat not running
+    await expect(keylogging.take.invoked).toEqual(false)
     await expect(keylogging.upload.invoked).toEqual(false)
   }
 
@@ -617,17 +617,19 @@ import XExpect
   func testConnectingUserStartsMonitoring() async {
     let (store, bgQueue) = AppReducer.testStore()
 
-    store.deps.storage.loadPersistentState = { nil }
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
+    store.deps.storage.loadPersistentState = { .init(
+      appVersion: "1.0.0",
+      appUpdateReleaseChannel: .stable,
+      filterVersion: "1.0.0",
+      user: nil, // <-- no user
+      resumeOnboarding: nil
+    ) }
 
     let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store, keystrokes: mock(
-      returning: [nil],
-      then: [.mock]
-    ))
+    let keylogging = spyKeylogging(store)
 
     await store.send(.application(.didFinishLaunching))
-    await bgQueue.advance(by: .seconds(60 * 5)) // <- to heartbeat
     await expect(takeScreenshot.invocations.value.count).toEqual(0)
     await expect(uploadScreenshot.invocations.value.count).toEqual(0)
     await expect(keylogging.upload.invocations.value.count).toEqual(0)

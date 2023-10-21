@@ -42,10 +42,9 @@ struct AppUpdatesFeature: Feature {
 }
 
 extension AppUpdatesFeature.State {
-  init() {
-    @Dependency(\.app) var appClient
+  init(installedVersion: String?) {
     self.init(
-      installedVersion: appClient.installedVersion() ?? "0.0.0",
+      installedVersion: installedVersion ?? "0.0.0",
       releaseChannel: .stable,
       latestVersion: nil
     )
@@ -56,10 +55,6 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
 
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-    case .loadedPersistentState(.none):
-      return .exec { [new = state.persistent] _ in
-        try await storage.savePersistentState(new)
-      }
 
     case .loadedPersistentState(.some(let restored)):
       guard restored.appVersion != state.appUpdates.installedVersion else {
@@ -84,7 +79,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
               // refresh the rules post-update, or else health check will complain
               await send(.checkIn(
                 result: TaskResult { try await api.appCheckIn(version) },
-                reason: .appLaunched
+                reason: .appUpdated
               ))
 
               // big sur doesn't get notification pushed when filter restarts

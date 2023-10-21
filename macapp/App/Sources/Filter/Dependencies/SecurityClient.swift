@@ -87,6 +87,10 @@ extension SecurityClient: DependencyKey {
 
 extension SecurityClient: TestDependencyKey {
   public static let testValue = Self(
+    userIdFromAuditToken: unimplemented("SecurityClient.userIdFromAuditToken"),
+    rootAppFromAuditToken: unimplemented("SecurityClient.rootAppFromAuditToken")
+  )
+  public static let mock = Self(
     userIdFromAuditToken: { _ in nil },
     rootAppFromAuditToken: { _ in (nil, nil) }
   )

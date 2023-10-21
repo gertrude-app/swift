@@ -7,8 +7,7 @@ import SystemConfiguration
 
 typealias ScreenshotData = (data: Data, width: Int, height: Int, createdAt: Date)
 
-@Sendable
-func takeScreenshot(width: Int) async throws {
+@Sendable func takeScreenshot(width: Int) async throws {
   guard currentUserProbablyHasScreen(), screensaverRunning() == false else {
     return
   }
@@ -64,6 +63,32 @@ enum ScreenshotError: Error {
   case createImageFailed
   case writeToDiskFailed
   case downsampleFailed
+}
+
+// this technique should be reliable for all supported os's, (including catalina)
+// and does not cause a system prompt for screen recording permission
+// @see https://www.ryanthomson.net/articles/screen-recording-permissions-catalina-mess/
+@Sendable func isScreenRecordingPermissionGranted() -> Bool {
+  guard let windowList = CGWindowListCopyWindowInfo(.excludeDesktopElements, kCGNullWindowID)
+    as NSArray? else { return false }
+
+  for case let windowInfo as NSDictionary in windowList {
+    // Ignore windows owned by this application
+    let windowPID = windowInfo[kCGWindowOwnerPID] as? pid_t
+    if windowPID == NSRunningApplication.current.processIdentifier {
+      continue
+    }
+    // Ignore system UI elements
+    if windowInfo[kCGWindowOwnerName] as? String == "Window Server" {
+      continue
+    }
+
+    if windowInfo[kCGWindowName] != nil {
+      return true
+    }
+  }
+
+  return false
 }
 
 // helpers

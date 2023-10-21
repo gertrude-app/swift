@@ -65,6 +65,9 @@ extension AppviewStore: CodeGenerator {
     let url = URL(fileURLWithPath: "/Users/jared/gertie/web/appviews/src/\(path)")
     let file = String(data: try Data(contentsOf: url), encoding: .utf8)!
     let lines = file.components(separatedBy: "\n")
+    guard lines.contains("// begin codegen"), lines.contains("// end codegen") else {
+      fatalError("codegen markers not found in \(path)")
+    }
 
     var updated: [String] = []
     var inCodegen = false

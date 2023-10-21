@@ -14,7 +14,7 @@ public enum WebSocketMessage {
     case suspendFilterRequestDenied(parentComment: String?)
   }
 
-  public enum FromAppToApi: Codable {
+  public enum FromAppToApi: Codable, Equatable {
     case currentFilterState(UserFilterState)
     case goingOffline
   }

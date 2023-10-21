@@ -37,6 +37,7 @@ extension MonitoringFeature.RootReducer {
     switch action {
 
     case .loadedPersistentState(.some(let persistent)):
+      guard persistent.resumeOnboarding == nil else { return .none }
       return configureMonitoring(current: persistent.user, previous: nil)
 
     case .user(.updated(let previous)):
@@ -44,6 +45,9 @@ extension MonitoringFeature.RootReducer {
 
     case .history(.userConnection(.connect(.success(let user)))):
       return configureMonitoring(current: user, previous: nil)
+
+    case .onboarding(.delegate(.onboardingConfigComplete)):
+      return configureMonitoring(current: state.user.data, previous: nil)
 
     case .monitoring(.timerTriggeredTakeScreenshot):
       let width = state.user.data?.screenshotSize ?? 800
@@ -125,7 +129,9 @@ extension MonitoringFeature.RootReducer {
         flushKeystrokes(state.filter.isSuspended)
       )
 
-    case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
+    case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))),
+         .history(.userConnection(.disconnectMissingUser)),
+         .websocket(.receivedMessage(.userDeleted)):
       return .cancel(id: CancelId.screenshots)
 
     // try to catch the moment when they've fixed monitoring permissions issues

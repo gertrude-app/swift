@@ -123,6 +123,7 @@ extension Device.Model.Chip {
 }
 
 enum MacOS: Encodable {
+  case sonoma
   case ventura
   case monterey
   case bigSur

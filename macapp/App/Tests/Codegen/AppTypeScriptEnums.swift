@@ -33,6 +33,12 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
         AdminWindowFeature.Action.View.self,
       ]
     ),
+    EnumCodableGen.EnumsGenerator(
+      name: "OnboardingFeature",
+      types: [
+        OnboardingFeature.Action.View.self,
+      ]
+    ),
   ]
 
   func format() throws {

@@ -12,6 +12,7 @@ struct DeviceClient: Sendable {
   var numericUserId: @Sendable () -> uid_t
   var openSystemPrefs: @Sendable (SystemPrefsLocation) async -> Void
   var openWebUrl: @Sendable (URL) async -> Void
+  var osVersion: @Sendable () -> MacOSVersion
   var quitBrowsers: @Sendable () async -> Void
   var requestNotificationAuthorization: @Sendable () async -> Void
   var showNotification: @Sendable (String, String) async -> Void
@@ -30,6 +31,7 @@ extension DeviceClient: DependencyKey {
     numericUserId: { getuid() },
     openSystemPrefs: openSystemPrefs(at:),
     openWebUrl: { NSWorkspace.shared.open($0) },
+    osVersion: { macOSVersion() },
     quitBrowsers: quitAllBrowsers,
     requestNotificationAuthorization: requestNotificationAuth,
     showNotification: showNotification(title:body:),
@@ -40,6 +42,26 @@ extension DeviceClient: DependencyKey {
 
 extension DeviceClient: TestDependencyKey {
   static let testValue = Self(
+    currentMacOsUserType: unimplemented("DeviceClient.currentMacOsUserType"),
+    currentUserId: unimplemented("DeviceClient.currentUserId"),
+    fullUsername: unimplemented("DeviceClient.fullUsername"),
+    listMacOSUsers: unimplemented("DeviceClient.listMacOSUsers"),
+    modelIdentifier: unimplemented("DeviceClient.modelIdentifier"),
+    notificationsSetting: unimplemented("DeviceClient.notificationsSetting"),
+    numericUserId: unimplemented("DeviceClient.numericUserId"),
+    openSystemPrefs: unimplemented("DeviceClient.openSystemPrefs"),
+    openWebUrl: unimplemented("DeviceClient.openWebUrl"),
+    osVersion: unimplemented("DeviceClient.osVersion"),
+    quitBrowsers: unimplemented("DeviceClient.quitBrowsers"),
+    requestNotificationAuthorization: unimplemented(
+      "DeviceClient.requestNotificationAuthorization"
+    ),
+    showNotification: unimplemented("DeviceClient.showNotification"),
+    serialNumber: unimplemented("DeviceClient.serialNumber"),
+    username: unimplemented("DeviceClient.username")
+  )
+
+  static let mock = Self(
     currentMacOsUserType: { .standard },
     currentUserId: { 502 },
     fullUsername: { "test-full-username" },
@@ -52,6 +74,7 @@ extension DeviceClient: TestDependencyKey {
     numericUserId: { 502 },
     openSystemPrefs: { _ in },
     openWebUrl: { _ in },
+    osVersion: { .init(major: 14, minor: 0, patch: 0) },
     quitBrowsers: {},
     requestNotificationAuthorization: {},
     showNotification: { _, _ in },

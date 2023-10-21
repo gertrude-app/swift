@@ -34,9 +34,8 @@ extension WebSocketFeature.RootReducer {
         }
       }
 
-    case .loadedPersistentState(.some(let persistent)):
+    case .startProtecting(user: let user):
       guard state.admin.accountStatus != .inactive else { return .none }
-      guard let user = persistent.user else { return .none }
       return connect(user)
 
     case .filter(.receivedState(let filterState)):
@@ -50,6 +49,8 @@ extension WebSocketFeature.RootReducer {
 
     case .application(.willSleep),
          .application(.willTerminate),
+         .websocket(.receivedMessage(.userDeleted)),
+         .history(.userConnection(.disconnectMissingUser)),
          .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))),
          .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
       return .exec { _ in
@@ -104,8 +105,17 @@ extension WebSocketFeature.RootReducer {
           )
         }
 
-      case .receivedMessage:
-        return .none
+      case .receivedMessage(.userDeleted):
+        return .none // handled above, with other disconnect-like actions
+
+      case .receivedMessage(.userUpdated):
+        return .none // handled by user feature, which triggers a checkin
+
+      case .receivedMessage(.suspendFilter):
+        return .none // handled by filter feature
+
+      case .receivedMessage(.filterSuspensionRequestDecided):
+        return .none // handled by filter feature AND monitoring feature
       }
 
     case .adminAuthed(.adminWindow(.webview(.advanced(.websocketEndpointSet(let url))))):

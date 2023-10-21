@@ -10,8 +10,12 @@ typealias UserData = GetUserData.Output
   var blockedRequestsWindow: BlockedRequestsWindow
   var adminWindow: AdminWindow
   var requestSuspensionWindow: RequestSuspensionWindow
+  var onboardingWindow: OnboardingWindow
   let store = Store(
-    initialState: AppReducer.State(),
+    initialState: AppReducer.State(appVersion: {
+      @Dependency(\.app) var appClient
+      return appClient.installedVersion()
+    }()),
     reducer: {
       AppReducer()._printChanges(.filteredBy { action in
         switch action {
@@ -44,6 +48,10 @@ typealias UserData = GetUserData.Output
     requestSuspensionWindow = RequestSuspensionWindow(store: store.scope(
       state: { $0 },
       action: AppReducer.Action.requestSuspension
+    ))
+    onboardingWindow = OnboardingWindow(store: store.scope(
+      state: { $0 },
+      action: AppReducer.Action.onboarding
     ))
 
     #if !DEBUG

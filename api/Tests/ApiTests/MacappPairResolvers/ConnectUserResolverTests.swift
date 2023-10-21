@@ -114,7 +114,7 @@ final class ConnectUserResolversTests: ApiTestCase {
 
     try await expectErrorFrom { [self] in
       _ = try await ConnectUser.resolve(with: input, in: self.context)
-    }.toContain("registered to another admin")
+    }.toContain("associated with another Gertrude parent account")
 
     // old token is not deleted
     let retrievedOldToken = try? await Current.db.find(existingUserToken.id)

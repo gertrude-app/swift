@@ -33,17 +33,7 @@ extension MonitoringClient: DependencyKey {
       #endif
     },
     restorePendingKeystrokes: restoreKeystrokes(_:),
-    screenRecordingPermissionGranted: {
-      if #available(macOS 11, *) {
-        // apple docs say available in 10.15, but that's not the case:
-        // https://developer.apple.com/forums/thread/683860
-        return CGPreflightScreenCaptureAccess()
-      } else {
-        // no way in Catalina to check this :/
-        // @see https://www.ryanthomson.net/articles/screen-recording-permissions-catalina-mess/
-        return true
-      }
-    },
+    screenRecordingPermissionGranted: isScreenRecordingPermissionGranted,
     startLoggingKeystrokes: startKeylogging,
     stopLoggingKeystrokes: stopKeylogging,
     takePendingKeystrokes: takeKeystrokes,
@@ -54,6 +44,21 @@ extension MonitoringClient: DependencyKey {
 
 extension MonitoringClient: TestDependencyKey {
   static let testValue = Self(
+    commitPendingKeystrokes: unimplemented("MonitoringClient.commitPendingKeystrokes"),
+    keystrokeRecordingPermissionGranted: unimplemented(
+      "MonitoringClient.keystrokeRecordingPermissionGranted"
+    ),
+    restorePendingKeystrokes: unimplemented("MonitoringClient.restorePendingKeystrokes"),
+    screenRecordingPermissionGranted: unimplemented(
+      "MonitoringClient.screenRecordingPermissionGranted"
+    ),
+    startLoggingKeystrokes: unimplemented("MonitoringClient.startLoggingKeystrokes"),
+    stopLoggingKeystrokes: unimplemented("MonitoringClient.stopLoggingKeystrokes"),
+    takePendingKeystrokes: unimplemented("MonitoringClient.takePendingKeystrokes"),
+    takePendingScreenshots: unimplemented("MonitoringClient.takePendingScreenshots"),
+    takeScreenshot: unimplemented("MonitoringClient.takeScreenshot")
+  )
+  static let mock = Self(
     commitPendingKeystrokes: { _ in },
     keystrokeRecordingPermissionGranted: { true },
     restorePendingKeystrokes: { _ in },

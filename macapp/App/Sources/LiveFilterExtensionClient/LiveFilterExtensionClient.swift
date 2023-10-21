@@ -20,6 +20,7 @@ extension FilterExtensionClient: DependencyKey {
       replace: { await manager.replaceFilter() },
       state: { await manager.loadState() },
       install: { await manager.installFilter() },
+      installOverridingTimeout: { await manager.installFilter(timeout: $0) },
       stateChanges: {
         filterStateChanges.withValue { subject in
           Move(subject.eraseToAnyPublisher())
@@ -53,8 +54,8 @@ actor ThreadSafeFilterManager {
     await manager.replaceFilter()
   }
 
-  func installFilter() async -> FilterInstallResult {
-    await manager.installFilter()
+  func installFilter(timeout: Int? = nil) async -> FilterInstallResult {
+    await manager.installFilter(timeout: timeout)
   }
 
   func uninstallFilter() async -> Bool {

@@ -78,7 +78,7 @@ final class FilterManager: NSObject {
     return await loadState()
   }
 
-  func installFilter() async -> FilterInstallResult {
+  func installFilter(timeout: Int? = nil) async -> FilterInstallResult {
     switch await loadState() {
     case .installedAndRunning, .installedButNotRunning:
       os_log("[G•] APP FilterManager.installFilter() already installed #1")
@@ -92,10 +92,10 @@ final class FilterManager: NSObject {
       return .alreadyInstalled
     }
 
-    return await activateExtension()
+    return await activateExtension(timeout: timeout ?? 90)
   }
 
-  func activateExtension() async -> FilterInstallResult {
+  func activateExtension(timeout: Int) async -> FilterInstallResult {
     os_log("[G•] APP FilterManager.activateExtension()")
     system.requestExtensionActivation(self)
 
@@ -134,7 +134,7 @@ final class FilterManager: NSObject {
 
       // no resolution after 90 seconds, user probably confused, missed a step
       case .idle, .configuring, .waitingForDelegateRequest:
-        if waited > 90 {
+        if waited > timeout {
           configureTask?.cancel()
           interestingEvent(id: "9ffabfe5", "status: \(currentStatus)")
           await activationRequest.setValue(.idle)
@@ -156,7 +156,7 @@ final class FilterManager: NSObject {
     system.disableNEFilterManagerShared()
     defer { system.enableNEFilterManagerShared() }
 
-    return await activateExtension()
+    return await activateExtension(timeout: 90)
   }
 
   func uninstallFilter() async -> Bool {
