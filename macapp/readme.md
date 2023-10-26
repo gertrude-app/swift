@@ -33,6 +33,9 @@
 - `2.0.5` (9/6/23)
   - fixed domains resolved from outbound bytes not showing up in blocked requests window
   - fixed double browser quit from computer sleep during filter suspension
+- `2.1.0` (10/21/23 as `beta` for new customers)
+  - onboarding
+  - fixed adminstrate button on request suspension screen filter not connected state
 
 ## Sparkle Releases
 
