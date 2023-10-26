@@ -27,9 +27,10 @@ enum ResetRoute {
            <code>\(betsy.email)</code>
         </p>
         <p>
-          To test a filter suspension, use this route in the dashboard web app:<br />
-           <code>/children/\(AdminBetsy.Ids.jimmysId)/suspend-filter-requests/\(AdminBetsy.Ids
-        .suspendFilter.lowercased)</code>
+          To test a filter suspension, use
+          <a href ="\(Env.DASHBOARD_URL)/children/\(AdminBetsy.Ids
+        .jimmysId)/suspend-filter-requests/\(AdminBetsy.Ids.suspendFilter.lowercased)">
+          this route</a> in the dashboard web app:<br />
         </p>
         </body></html>
       """)
