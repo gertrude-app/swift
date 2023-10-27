@@ -40,7 +40,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testGetAdminWithNotifications() async throws {
-    let admin = try await Entities.admin()
+    let admin = try await Entities.admin { $0.subscriptionStatus = .paid }
     let method = AdminVerifiedNotificationMethod(
       adminId: admin.id,
       config: .email(email: "blob@blob.com")
@@ -56,7 +56,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(output).toEqual(.init(
       id: admin.id,
       email: admin.email.rawValue,
-      subscriptionStatus: admin.subscriptionStatus,
+      subscriptionStatus: .paid,
       notifications: [.init(
         id: notification.id,
         trigger: notification.trigger,

@@ -36,7 +36,7 @@ enum DashboardTsCodegenRoute {
       ("AdminKeychain", GetAdminKeychains.AdminKeychain.self),
       ("UserActivityItem", UserActivity.Item.self),
       ("AdminNotificationTrigger", AdminNotification.Trigger.self),
-      ("AdminSubscriptionStatus", Admin.SubscriptionStatus.self),
+      ("AdminSubscriptionStatus", GetAdmin.SubscriptionStatus.self),
       ("VerifiedNotificationMethod", GetAdmin.VerifiedNotificationMethod.self),
       ("AdminNotification", GetAdmin.Notification.self),
     ]
