@@ -6,7 +6,7 @@ import XExpect
 @testable import Api
 
 final class AuthedAdminResolverTests: ApiTestCase {
-  func testCreateBillingPortalSessionHappyPath() async throws {
+  func testStripeUrlForBillingPortalSession() async throws {
     let admin = try await Entities.admin {
       $0.subscriptionId = .init(rawValue: "sub_123")
       $0.subscriptionStatus = .paid
@@ -22,9 +22,65 @@ final class AuthedAdminResolverTests: ApiTestCase {
       return .init(id: "bps_123", url: "bps-url")
     }
 
-    let output = try await CreateBillingPortalSession.resolve(in: context(admin))
+    Current.stripe.createCheckoutSession = { _ in fatalError("should not be called") }
 
-    expect(output).toEqual(.init(url: "bps-url"))
+    let output = try await StripeUrl.resolve(in: context(admin))
+
+    expect(output).toEqual("bps-url")
+  }
+
+  func testStripeUrlForCheckoutSession() async throws {
+    let admin = try await Entities.admin {
+      $0.subscriptionId = nil
+      $0.subscriptionStatus = .trialing
+    }
+
+    Current.stripe.createCheckoutSession = { sessionData in
+      expect(sessionData.clientReferenceId).toEqual(admin.id.lowercased)
+      expect(sessionData.customerEmail).toEqual(admin.email.rawValue)
+      return .init(id: "s1", url: "/checkout-url", subscription: "subsid", clientReferenceId: nil)
+    }
+
+    Current.stripe.getSubscription = { _ in fatalError("should not be called") }
+    Current.stripe.createBillingPortalSession = { _ in fatalError("should not be called") }
+
+    let output = try await StripeUrl.resolve(in: context(admin))
+
+    expect(output).toEqual("/checkout-url")
+  }
+
+  func testHandleCheckoutSuccess() async throws {
+    let sessionId = "cs_123"
+    let admin = try await Current.db.create(Admin.random { $0.subscriptionStatus = .trialing })
+    Current.date = { Date(timeIntervalSince1970: 0) }
+
+    Current.stripe.getCheckoutSession = { id in
+      expect(id).toBe(sessionId)
+      return .init(
+        id: "cs_123",
+        url: nil,
+        subscription: "sub_123",
+        clientReferenceId: admin.id.lowercased
+      )
+    }
+
+    Current.stripe.getSubscription = { id in
+      expect(id).toBe("sub_123")
+      return .init(id: id, status: .active, customer: "cus_123")
+    }
+
+    let output = try await HandleCheckoutSuccess.resolve(
+      with: .init(stripeCheckoutSessionId: sessionId),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.success)
+    let retrieved = try await Current.db.find(admin.id)
+    expect(retrieved.subscriptionId).toEqual(.init(rawValue: "sub_123"))
+    expect(retrieved.subscriptionStatus).toEqual(.paid)
+    expect(retrieved.subscriptionStatusExpiration).toEqual(
+      Date(timeIntervalSince1970: 0).advanced(by: .days(33))
+    )
   }
 
   func testCreatePendingAppConnection() async throws {

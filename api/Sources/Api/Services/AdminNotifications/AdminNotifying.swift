@@ -54,6 +54,16 @@ extension Email {
       html: html
     )
   }
+
+  static func unexpected(_ id: String, _ detail: String = "") -> Email {
+    let search = "https://github.com/search?q=repo%3Agertrude-app%2Fswift%20\(id)&type=code"
+    return .init(
+      to: .init(email: "jared@netrivet.com"),
+      from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
+      subject: "Gertrude API unexpected event".withEmailSubjectDisambiguator,
+      html: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)"
+    )
+  }
 }
 
 struct Text: Equatable {

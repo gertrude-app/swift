@@ -24,7 +24,7 @@ public enum Stripe {
       }
     }
 
-    public struct CheckoutSession: Decodable {
+    public struct CheckoutSession: Codable {
       public var id: String
       public var url: String?
       public var subscription: String?

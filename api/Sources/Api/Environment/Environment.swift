@@ -65,3 +65,28 @@ extension Date {
 extension UUID {
   static let mock = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 }
+
+func unexpected(_ id: String, _ context: some ResolverContext, _ detail: String = "") {
+  var detail = detail
+  let adminId: Admin.Id?
+  if let adminContext = context as? AdminContext {
+    adminId = adminContext.admin.id
+    detail += ", admin id: \(adminId!.lowercased)"
+  } else {
+    adminId = nil
+  }
+
+  Current.logger.error("Unexpected event `\(id)`, \(detail)")
+  Current.sendGrid.fireAndForget(.unexpected(id, detail))
+
+  Task { [detail] in
+    try await Current.db.create(InterestingEvent(
+      eventId: id,
+      kind: "event",
+      context: "api",
+      userDeviceId: nil,
+      adminId: adminId,
+      detail: detail
+    ))
+  }
+}
