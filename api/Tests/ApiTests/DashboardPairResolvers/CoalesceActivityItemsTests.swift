@@ -48,6 +48,30 @@ class CoalesceMonitoringItemsTests: XCTestCase {
     XCTAssertEqual(coalesced[1].keystrokeLine?.line, "Foo\nBar")
   }
 
+  func testCoalescedIsDuringSuspensionIfAnyDuringSuspension() {
+    let keystroke1 = KeystrokeLine.random
+    keystroke1.appName = "Brave"
+    keystroke1.line = "Foo"
+    keystroke1.filterSuspended = false
+    keystroke1.createdAt = Date(timeIntervalSince1970: 10)
+    let keystroke2 = KeystrokeLine.random
+    keystroke2.appName = "Brave"
+    keystroke2.line = "Bar"
+    keystroke2.filterSuspended = true // <-- only one during suspension
+    keystroke2.createdAt = Date(timeIntervalSince1970: 12)
+    let keystroke3 = KeystrokeLine.random
+    keystroke3.appName = "Brave"
+    keystroke3.line = "Bar"
+    keystroke3.filterSuspended = false
+    keystroke3.createdAt = Date(timeIntervalSince1970: 15)
+
+    let coalesced = coalesce([], [keystroke2, keystroke1, keystroke3])
+
+    XCTAssertEqual(coalesced.count, 1)
+    XCTAssertEqual(coalesced[0].keystrokeLine?.ids.count, 3)
+    XCTAssertEqual(coalesced[0].keystrokeLine?.duringSuspension, true)
+  }
+
   func testDoesntCoalesceDeletedAndNonDeleted() {
     let keystroke1 = KeystrokeLine.random
     keystroke1.appName = "Brave"

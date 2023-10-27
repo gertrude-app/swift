@@ -111,6 +111,8 @@ func coalesce(_ screenshots: [Screenshot], _ keystrokes: [KeystrokeLine]) -> [Us
          keystroke.appName == coalescedKeystroke.appName {
         coalescedKeystroke.line = "\(keystroke.line)\n\(coalescedKeystroke.line)"
         coalescedKeystroke.ids.append(keystroke.id)
+        coalescedKeystroke.duringSuspension = coalescedKeystroke.duringSuspension ||
+          keystroke.filterSuspended
         coalesced[coalesced.count - 1] = .keystrokeLine(coalescedKeystroke)
       } else {
         coalesced.append(.keystrokeLine(.init(from: keystroke)))
