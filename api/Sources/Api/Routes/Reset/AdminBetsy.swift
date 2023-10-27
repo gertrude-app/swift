@@ -16,8 +16,9 @@ enum AdminBetsy {
       id: Ids.betsy,
       email: "betsy-mcstandard" |> Reset.testEmail,
       password: try Bcrypt.hash("betsy123"),
-      subscriptionId: .init(rawValue: "sub_1LropYGKRdhETuKAE6gufq5J"),
-      subscriptionStatus: .active
+      subscriptionStatus: .paid,
+      subscriptionStatusExpiration: Date().advanced(by: .days(30)),
+      subscriptionId: .init(rawValue: "sub_1LropYGKRdhETuKAE6gufq5J")
     ))
 
     let email = try await Reset.createNotification(

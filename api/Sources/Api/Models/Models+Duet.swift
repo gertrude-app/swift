@@ -84,9 +84,9 @@ extension Admin {
     case password
     case subscriptionId
     case subscriptionStatus
+    case subscriptionStatusExpiration
     case createdAt
     case updatedAt
-    case deletedAt
   }
 }
 
@@ -447,6 +447,20 @@ extension InterestingEvent {
     case userDeviceId
     case adminId
     case detail
+    case createdAt
+  }
+}
+
+extension DeletedEntity: Duet.Identifiable {
+  typealias Id = Tagged<DeletedEntity, UUID>
+}
+
+extension DeletedEntity {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case type
+    case reason
+    case data
     case createdAt
   }
 }

@@ -17,12 +17,12 @@ extension Admin: Model {
       return .string(subscriptionId?.rawValue)
     case .subscriptionStatus:
       return .enum(subscriptionStatus)
+    case .subscriptionStatusExpiration:
+      return .date(subscriptionStatusExpiration)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
       return .date(updatedAt)
-    case .deletedAt:
-      return .date(deletedAt)
     }
   }
 
@@ -33,6 +33,7 @@ extension Admin: Model {
       .password: .string(password),
       .subscriptionId: .string(subscriptionId?.rawValue),
       .subscriptionStatus: .enum(subscriptionStatus),
+      .subscriptionStatusExpiration: .date(subscriptionStatusExpiration),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -805,6 +806,36 @@ extension StripeEvent: Model {
     [
       .id: .id(self),
       .json: .string(json),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension DeletedEntity: Model {
+  public static let tableName = DeletedEntity.M16.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .type:
+      return .string(type)
+    case .reason:
+      return .string(reason)
+    case .data:
+      return .string(data)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .type: .string(type),
+      .reason: .string(reason),
+      .data: .string(data),
       .createdAt: .currentTimestamp,
     ]
   }

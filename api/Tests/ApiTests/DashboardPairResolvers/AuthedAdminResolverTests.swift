@@ -9,7 +9,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testCreateBillingPortalSessionHappyPath() async throws {
     let admin = try await Entities.admin {
       $0.subscriptionId = .init(rawValue: "sub_123")
-      $0.subscriptionStatus = .active
+      $0.subscriptionStatus = .paid
     }
 
     Current.stripe.getSubscription = { subId in

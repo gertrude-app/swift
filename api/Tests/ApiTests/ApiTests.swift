@@ -98,7 +98,7 @@ final class ApiTests: ApiTestCase {
   }
 
   func testUserContextCreated() async throws {
-    let user = try await Entities.user(admin: { $0.subscriptionStatus = .active }).withDevice()
+    let user = try await Entities.user(admin: { $0.subscriptionStatus = .paid }).withDevice()
 
     let response = try await PairQLRoute.respond(
       to: .macApp(.userAuthed(user.token.value.rawValue, .getAccountStatus)),
@@ -109,7 +109,7 @@ final class ApiTests: ApiTestCase {
   }
 
   func testResolveUsersAdminAccountStatus() async throws {
-    let user = try await Entities.user(admin: { $0.subscriptionStatus = .active })
+    let user = try await Entities.user(admin: { $0.subscriptionStatus = .paid })
     let context = UserContext(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
     let output = try await GetAccountStatus.resolve(in: context)
     expect(output.status).toEqual(.active)

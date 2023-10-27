@@ -37,7 +37,7 @@ final class CheckInResolverTests: ApiTestCase {
     ])
 
     let user = try await Entities.user(admin: {
-      $0.subscriptionStatus = .pastDue
+      $0.subscriptionStatus = .overdue
     }).withDevice(adminDevice: {
       $0.appReleaseChannel = .beta
     })

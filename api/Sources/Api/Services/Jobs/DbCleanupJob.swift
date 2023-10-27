@@ -1,7 +1,7 @@
 import DuetSQL
 import Foundation
-import Queues
 import Gertie
+import Queues
 import Vapor
 
 struct CleanupJob: AsyncScheduledJob {
@@ -57,12 +57,6 @@ func cleanupDb() async throws -> [String] {
     .delete(force: true)
 
   logs.append("Deleted \(deletedAdminTokens.count) admin tokens")
-
-  let admins = try await Current.db.query(Admin.self)
-    .where(.deletedAt < 90.daysAgo .&& .not(.isNull(.deletedAt)))
-    .delete(force: true)
-
-  logs.append("Deleted \(admins.count) admins")
 
   let suspendFilterRequests = try await Current.db.query(SuspendFilterRequest.self)
     .where(.createdAt < 3.daysAgo)
