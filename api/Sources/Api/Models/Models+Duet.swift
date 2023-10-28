@@ -13,6 +13,10 @@ extension Model {
     try await Current.db.create(self)
   }
 
+  func delete() async throws {
+    try await Current.db.query(Self.self).byId(id).delete()
+  }
+
   static func find(_ id: Tagged<Self, UUID>) async throws -> Self {
     try await Current.db.query(Self.self).byId(id).first()
   }

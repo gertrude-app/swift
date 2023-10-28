@@ -249,7 +249,7 @@ public extension Stripe.Client {
       .init(id: "cs_123", url: "/checkout.session/url", subscription: nil, clientReferenceId: nil)
     },
     getSubscription: { _ in
-      .init(id: "sub_123", status: .trialing, customer: "cus_123")
+      .init(id: "sub_123", status: .trialing, customer: "cus_123", currentPeriodEnd: 0)
     },
     createBillingPortalSession: { _ in
       .init(id: "bps_123", url: "/billing_portal.session/url")

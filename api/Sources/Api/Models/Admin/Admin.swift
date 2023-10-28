@@ -99,6 +99,7 @@ extension Admin {
     case overdue
     case paid
     case unpaid
+    case pendingAccountDeletion
     case complimentary
 
     var accountStatus: AdminAccountStatus {
@@ -107,7 +108,7 @@ extension Admin {
         return .active
       case .overdue:
         return .needsAttention
-      case .pendingEmailVerification, .unpaid:
+      case .pendingEmailVerification, .unpaid, .pendingAccountDeletion:
         return .inactive
       }
     }

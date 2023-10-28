@@ -53,10 +53,14 @@ public enum Stripe {
       public let status: Status
       public let customer: String
 
-      public init(id: String, status: Status, customer: String) {
+      /// unix epoch timestamp (seconds)
+      public let currentPeriodEnd: Int
+
+      public init(id: String, status: Status, customer: String, currentPeriodEnd: Int) {
         self.id = id
         self.status = status
         self.customer = customer
+        self.currentPeriodEnd = currentPeriodEnd
       }
     }
 

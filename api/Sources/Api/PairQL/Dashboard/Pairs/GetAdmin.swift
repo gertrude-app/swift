@@ -65,7 +65,7 @@ extension GetAdmin.SubscriptionStatus {
       self = .paid
     case .overdue:
       self = .overdue
-    case .unpaid:
+    case .unpaid, .pendingAccountDeletion:
       self = .unpaid
     case .pendingEmailVerification:
       struct EmailNotVerified: Error {}

@@ -34,7 +34,11 @@ struct ReworkPayments: GertieMigration {
       case "trialing", "emailVerified":
         return (admin.id, .trialing, admin.createdAt.advanced(by: .days(60 - 7)))
       default:
-        fatalError("unexpected subscription status: `\(admin.subscriptionStatus)`")
+        if Env.mode == .prod {
+          fatalError("unexpected subscription status: `\(admin.subscriptionStatus)`")
+        } else {
+          return (admin.id, .complimentary, .distantFuture)
+        }
       }
     }
 
@@ -54,7 +58,7 @@ struct ReworkPayments: GertieMigration {
       Column(.id, .uuid, .primaryKey)
       Column(DeletedEntity.M16.type, .text)
       Column(DeletedEntity.M16.reason, .text)
-      Column(DeletedEntity.M16.data, .jsonb)
+      Column(DeletedEntity.M16.data, .text)
       Column(.createdAt, .timestampWithTimezone)
     }
   }
@@ -97,6 +101,8 @@ struct ReworkPayments: GertieMigration {
         return (admin.id, .canceled)
       case Admin.SubscriptionStatus.complimentary.rawValue:
         return (admin.id, .complimentary)
+      case Admin.SubscriptionStatus.pendingAccountDeletion.rawValue:
+        return (admin.id, .canceled)
       default:
         fatalError("unexpected subscription status: `\(admin.subscriptionStatus)`")
       }

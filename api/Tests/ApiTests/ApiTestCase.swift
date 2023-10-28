@@ -123,4 +123,5 @@ func mockUUIDs() -> (UUID, UUID) {
 
 public extension Date {
   static let epoch = Date(timeIntervalSince1970: 0)
+  static let reference = Date(timeIntervalSinceReferenceDate: 0)
 }

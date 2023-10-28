@@ -16,12 +16,14 @@ public struct Client {
 public struct Email {
   public var to: String
   public var from: String
+  public var replyTo: String?
   public var subject: String
   public var html: String
 
-  public init(to: String, from: String, subject: String, html: String) {
+  public init(to: String, from: String, replyTo: String? = nil, subject: String, html: String) {
     self.to = to
     self.from = from
+    self.replyTo = replyTo
     self.subject = subject
     self.html = html
   }
@@ -81,6 +83,7 @@ struct ApiEmail: Encodable {
   let To: String
   let Subject: String
   let HtmlBody: String
+  let ReplyTo: String?
   let TrackOpens: Bool
 
   init(email: Email) {
@@ -88,6 +91,7 @@ struct ApiEmail: Encodable {
     To = email.to
     Subject = email.subject
     HtmlBody = email.html
+    ReplyTo = email.replyTo
     TrackOpens = true
   }
 }

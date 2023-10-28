@@ -14,7 +14,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     Current.stripe.getSubscription = { subId in
       expect(subId).toBe("sub_123")
-      return .init(id: "sub_123", status: .active, customer: "cus_123")
+      return .init(id: "sub_123", status: .active, customer: "cus_123", currentPeriodEnd: 0)
     }
 
     Current.stripe.createBillingPortalSession = { cusId in
@@ -66,7 +66,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     Current.stripe.getSubscription = { id in
       expect(id).toBe("sub_123")
-      return .init(id: id, status: .active, customer: "cus_123")
+      return .init(id: id, status: .active, customer: "cus_123", currentPeriodEnd: 0)
     }
 
     let output = try await HandleCheckoutSuccess.resolve(
