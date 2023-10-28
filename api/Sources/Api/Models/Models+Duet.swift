@@ -13,6 +13,10 @@ extension Model {
     try await Current.db.create(self)
   }
 
+  func delete() async throws {
+    try await Current.db.query(Self.self).byId(id).delete()
+  }
+
   static func find(_ id: Tagged<Self, UUID>) async throws -> Self {
     try await Current.db.query(Self.self).byId(id).first()
   }
@@ -84,9 +88,9 @@ extension Admin {
     case password
     case subscriptionId
     case subscriptionStatus
+    case subscriptionStatusExpiration
     case createdAt
     case updatedAt
-    case deletedAt
   }
 }
 
@@ -447,6 +451,20 @@ extension InterestingEvent {
     case userDeviceId
     case adminId
     case detail
+    case createdAt
+  }
+}
+
+extension DeletedEntity: Duet.Identifiable {
+  typealias Id = Tagged<DeletedEntity, UUID>
+}
+
+extension DeletedEntity {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case type
+    case reason
+    case data
     case createdAt
   }
 }

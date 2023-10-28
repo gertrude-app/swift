@@ -7,6 +7,7 @@ final class Admin: Codable {
   var password: String
   var subscriptionId: SubscriptionId?
   var subscriptionStatus: SubscriptionStatus
+  var subscriptionStatusExpiration: Date
   var createdAt = Date()
   var updatedAt = Date()
   var deletedAt: Date?
@@ -22,14 +23,16 @@ final class Admin: Codable {
     id: Id = .init(),
     email: EmailAddress,
     password: String,
-    subscriptionId: SubscriptionId? = nil,
-    subscriptionStatus: SubscriptionStatus = .pendingEmailVerification
+    subscriptionStatus: SubscriptionStatus = .pendingEmailVerification,
+    subscriptionStatusExpiration: Date = Date().advanced(by: .days(7)),
+    subscriptionId: SubscriptionId? = nil
   ) {
     self.id = id
     self.email = email
     self.password = password
     self.subscriptionId = subscriptionId
     self.subscriptionStatus = subscriptionStatus
+    self.subscriptionStatusExpiration = subscriptionStatusExpiration
   }
 }
 
@@ -91,26 +94,21 @@ extension Admin {
 
   enum SubscriptionStatus: String, Codable, Equatable, CaseIterable {
     case pendingEmailVerification
-    case emailVerified // legacy, no longer used
-    case signupCanceled
-    case complimentary
-
-    // below statuses map to Stripe statuses
-    case incomplete
-    case incompleteExpired
     case trialing
-    case active
-    case pastDue
-    case canceled
+    case trialExpiringSoon
+    case overdue
+    case paid
     case unpaid
+    case pendingAccountDeletion
+    case complimentary
 
     var accountStatus: AdminAccountStatus {
       switch self {
-      case .active, .trialing, .complimentary:
+      case .paid, .trialing, .trialExpiringSoon, .complimentary:
         return .active
-      case .pastDue:
+      case .overdue:
         return .needsAttention
-      default:
+      case .pendingEmailVerification, .unpaid, .pendingAccountDeletion:
         return .inactive
       }
     }

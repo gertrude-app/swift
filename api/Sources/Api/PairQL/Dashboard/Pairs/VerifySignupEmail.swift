@@ -32,6 +32,7 @@ extension VerifySignupEmail: Resolver {
       }
 
       admin.subscriptionStatus = .trialing
+      admin.subscriptionStatusExpiration = Current.date().advanced(by: .days(60 - 7))
       try await admin.save()
 
       // they get a default "verified" notification method, since they verified their email

@@ -5,7 +5,6 @@ import XExpect
 @testable import Api
 
 final class UserActivityResolverTests: ApiTestCase {
-
   func testGetActivityDay() async throws {
     Current.date = { Date() }
     let user = try await Entities.user().withDevice()
@@ -15,12 +14,13 @@ final class UserActivityResolverTests: ApiTestCase {
     let keystrokeLine = KeystrokeLine.random
     keystrokeLine.userDeviceId = user.device.id
     try await Current.db.create(keystrokeLine)
+    let twoDaysAgo = Date(subtractingDays: 2)
 
     let output = try await UserActivityFeed.resolve(
       with: .init(
         userId: user.id,
         range: .init(
-          start: Date(subtractingDays: 2).isoString,
+          start: twoDaysAgo.isoString,
           end: Date(addingDays: 2).isoString
         )
       ),
@@ -30,10 +30,9 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(output.userName).toEqual(user.name)
     expect(output.numDeleted).toEqual(0)
     expect(output.items).toHaveCount(2)
-    let _ignoreDate = Date(subtractingDays: 2)
 
     var firstItem = try XCTUnwrap(output.items.first?.keystrokeLine)
-    firstItem.createdAt = _ignoreDate
+    firstItem.createdAt = twoDaysAgo // prevent test failure for time
 
     expect(firstItem).toEqual(.init(
       id: keystrokeLine.id,
@@ -41,11 +40,11 @@ final class UserActivityResolverTests: ApiTestCase {
       appName: keystrokeLine.appName,
       line: keystrokeLine.line,
       duringSuspension: keystrokeLine.filterSuspended,
-      createdAt: _ignoreDate
+      createdAt: twoDaysAgo
     ))
 
     var secondItem = try XCTUnwrap(output.items.last?.screenshot)
-    secondItem.createdAt = _ignoreDate
+    secondItem.createdAt = twoDaysAgo // prevent test failure for time
 
     expect(secondItem).toEqual(.init(
       id: screenshot.id,
@@ -54,7 +53,7 @@ final class UserActivityResolverTests: ApiTestCase {
       width: screenshot.width,
       height: screenshot.height,
       duringSuspension: screenshot.filterSuspended,
-      createdAt: _ignoreDate
+      createdAt: twoDaysAgo
     ))
   }
 

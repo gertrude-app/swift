@@ -25,6 +25,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
   }
 
   func testInitiateSignupHappyPath() async throws {
+    Current.date = { .epoch }
     let email = "signup".random + "@example.com"
     let input = Signup.Input(email: email, password: "pass")
     let output = try await Signup.resolve(with: input, in: context)
@@ -35,6 +36,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     expect(output).toEqual(.success)
     expect(user.subscriptionStatus).toEqual(.pendingEmailVerification)
+    expect(user.subscriptionStatusExpiration).toEqual(.epoch.advanced(by: .days(7)))
     expect(sent.postmarkEmails.count).toEqual(1)
     expect(sent.postmarkEmails[0].to).toEqual(email)
     expect(sent.postmarkEmails[0].html).toContain("verify your email address")

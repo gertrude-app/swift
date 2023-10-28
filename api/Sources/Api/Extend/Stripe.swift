@@ -28,24 +28,3 @@ extension Stripe.Api.CheckoutSession {
     }
   }
 }
-
-extension Admin.SubscriptionStatus {
-  init(stripeSubscriptionStatus stripeStatus: Stripe.Api.Subscription.Status) {
-    switch stripeStatus {
-    case .incomplete:
-      self = .incomplete
-    case .incompleteExpired:
-      self = .incompleteExpired
-    case .trialing:
-      self = .trialing
-    case .active:
-      self = .active
-    case .pastDue:
-      self = .pastDue
-    case .canceled:
-      self = .canceled
-    case .unpaid:
-      self = .unpaid
-    }
-  }
-}

@@ -15,10 +15,18 @@ struct GetAdmin: Pair {
     let config: AdminVerifiedNotificationMethod.Config
   }
 
+  enum SubscriptionStatus: PairNestable {
+    case complimentary
+    case trialing(daysLeft: Int)
+    case paid
+    case overdue
+    case unpaid
+  }
+
   struct Output: PairOutput {
     let id: Admin.Id
     let email: String
-    let subscriptionStatus: Admin.SubscriptionStatus
+    let subscriptionStatus: SubscriptionStatus
     let notifications: [Notification]
     let verifiedNotificationMethods: [VerifiedNotificationMethod]
   }
@@ -34,7 +42,7 @@ extension GetAdmin: NoInputResolver {
     return .init(
       id: admin.id,
       email: admin.email.rawValue,
-      subscriptionStatus: admin.subscriptionStatus,
+      subscriptionStatus: try .init(admin),
       notifications: notifications.map {
         .init(id: $0.id, trigger: $0.trigger, methodId: $0.methodId)
       },
@@ -42,5 +50,26 @@ extension GetAdmin: NoInputResolver {
         .init(id: $0.id, config: $0.config)
       }
     )
+  }
+}
+
+extension GetAdmin.SubscriptionStatus {
+  init(_ admin: Admin) throws {
+    switch admin.subscriptionStatus {
+    case .complimentary:
+      self = .complimentary
+    case .trialing, .trialExpiringSoon:
+      let delta = Current.date().distance(to: admin.subscriptionStatusExpiration)
+      self = .trialing(daysLeft: Int(delta / 86400))
+    case .paid:
+      self = .paid
+    case .overdue:
+      self = .overdue
+    case .unpaid, .pendingAccountDeletion:
+      self = .unpaid
+    case .pendingEmailVerification:
+      struct EmailNotVerified: Error {}
+      throw EmailNotVerified() // should never happen
+    }
   }
 }

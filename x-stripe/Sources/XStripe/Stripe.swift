@@ -24,7 +24,7 @@ public enum Stripe {
       }
     }
 
-    public struct CheckoutSession: Decodable {
+    public struct CheckoutSession: Codable {
       public var id: String
       public var url: String?
       public var subscription: String?
@@ -53,10 +53,14 @@ public enum Stripe {
       public let status: Status
       public let customer: String
 
-      public init(id: String, status: Status, customer: String) {
+      /// unix epoch timestamp (seconds)
+      public let currentPeriodEnd: Int
+
+      public init(id: String, status: Status, customer: String, currentPeriodEnd: Int) {
         self.id = id
         self.status = status
         self.customer = customer
+        self.currentPeriodEnd = currentPeriodEnd
       }
     }
 

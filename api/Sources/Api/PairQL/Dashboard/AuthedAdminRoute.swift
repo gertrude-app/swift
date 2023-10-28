@@ -4,7 +4,6 @@ import Vapor
 
 enum AuthedAdminRoute: PairRoute {
   case confirmPendingNotificationMethod(ConfirmPendingNotificationMethod.Input)
-  case createBillingPortalSession
   case createPendingAppConnection(CreatePendingAppConnection.Input)
   case createPendingNotificationMethod(CreatePendingNotificationMethod.Input)
   case decideFilterSuspensionRequest(DecideFilterSuspensionRequest.Input)
@@ -22,6 +21,8 @@ enum AuthedAdminRoute: PairRoute {
   case getUnlockRequest(GetUnlockRequest.Input)
   case getUnlockRequests
   case getUser(GetUser.Input)
+  case handleCheckoutCancel(HandleCheckoutCancel.Input)
+  case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
   case latestAppVersions
   case userActivityFeed(UserActivityFeed.Input)
   case userActivitySummaries(UserActivitySummaries.Input)
@@ -34,6 +35,7 @@ enum AuthedAdminRoute: PairRoute {
   case saveKeychain(SaveKeychain.Input)
   case saveNotification(SaveNotification.Input)
   case saveUser(SaveUser.Input)
+  case stripeUrl
   case updateUnlockRequest(UpdateUnlockRequest.Input)
 }
 
@@ -42,9 +44,6 @@ extension AuthedAdminRoute {
     Route(/Self.confirmPendingNotificationMethod) {
       Operation(ConfirmPendingNotificationMethod.self)
       Body(.dashboardInput(ConfirmPendingNotificationMethod.self))
-    }
-    Route(/Self.createBillingPortalSession) {
-      Operation(CreateBillingPortalSession.self)
     }
     Route(/Self.createPendingAppConnection) {
       Operation(CreatePendingAppConnection.self)
@@ -107,6 +106,14 @@ extension AuthedAdminRoute {
       Operation(GetUser.self)
       Body(.dashboardInput(GetUser.self))
     }
+    Route(/Self.handleCheckoutCancel) {
+      Operation(HandleCheckoutCancel.self)
+      Body(.dashboardInput(HandleCheckoutCancel.self))
+    }
+    Route(/Self.handleCheckoutSuccess) {
+      Operation(HandleCheckoutSuccess.self)
+      Body(.dashboardInput(HandleCheckoutSuccess.self))
+    }
     Route(/Self.userActivitySummaries) {
       Operation(UserActivitySummaries.self)
       Body(.dashboardInput(UserActivitySummaries.self))
@@ -149,6 +156,9 @@ extension AuthedAdminRoute {
       Operation(SaveUser.self)
       Body(.dashboardInput(SaveUser.self))
     }
+    Route(/Self.stripeUrl) {
+      Operation(StripeUrl.self)
+    }
     Route(/Self.updateUnlockRequest) {
       Operation(UpdateUnlockRequest.self)
       Body(.dashboardInput(UpdateUnlockRequest.self))
@@ -178,9 +188,6 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .userActivitySummaries(let input):
       let output = try await UserActivitySummaries.resolve(with: input, in: context)
-      return try await respond(with: output)
-    case .createBillingPortalSession:
-      let output = try await CreateBillingPortalSession.resolve(in: context)
       return try await respond(with: output)
     case .createPendingAppConnection(let input):
       let output = try await CreatePendingAppConnection.resolve(with: input, in: context)
@@ -227,6 +234,12 @@ extension AuthedAdminRoute: RouteResponder {
     case .getAdminKeychain(let input):
       let output = try await GetAdminKeychain.resolve(with: input, in: context)
       return try await respond(with: output)
+    case .handleCheckoutCancel(let input):
+      let output = try await HandleCheckoutCancel.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .handleCheckoutSuccess(let input):
+      let output = try await HandleCheckoutSuccess.resolve(with: input, in: context)
+      return try await respond(with: output)
     case .latestAppVersions:
       let output = try await LatestAppVersions.resolve(in: context)
       return try await respond(with: output)
@@ -256,6 +269,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .saveKey(let input):
       let output = try await SaveKey.resolve(with: input, in: context)
+      return try await respond(with: output)
+    case .stripeUrl:
+      let output = try await StripeUrl.resolve(in: context)
       return try await respond(with: output)
     case .deleteActivityItems_v2(let input):
       let output = try await DeleteActivityItems_v2.resolve(with: input, in: context)

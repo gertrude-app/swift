@@ -110,6 +110,60 @@ extension DecideFilterSuspensionRequest.Decision {
   }
 }
 
+extension GetAdmin.SubscriptionStatus {
+  private struct _NamedCase: Codable {
+    var `case`: String
+    static func extract(from decoder: Decoder) throws -> String {
+      let container = try decoder.singleValueContainer()
+      return try container.decode(_NamedCase.self).case
+    }
+  }
+
+  private struct _TypeScriptDecodeError: Error {
+    var message: String
+  }
+
+  private struct _CaseTrialing: Codable {
+    var `case` = "trialing"
+    var daysLeft: Int
+  }
+
+  func encode(to encoder: Encoder) throws {
+    switch self {
+    case .trialing(let daysLeft):
+      try _CaseTrialing(daysLeft: daysLeft).encode(to: encoder)
+    case .complimentary:
+      try _NamedCase(case: "complimentary").encode(to: encoder)
+    case .paid:
+      try _NamedCase(case: "paid").encode(to: encoder)
+    case .overdue:
+      try _NamedCase(case: "overdue").encode(to: encoder)
+    case .unpaid:
+      try _NamedCase(case: "unpaid").encode(to: encoder)
+    }
+  }
+
+  init(from decoder: Decoder) throws {
+    let caseName = try _NamedCase.extract(from: decoder)
+    let container = try decoder.singleValueContainer()
+    switch caseName {
+    case "trialing":
+      let value = try container.decode(_CaseTrialing.self)
+      self = .trialing(daysLeft: value.daysLeft)
+    case "complimentary":
+      self = .complimentary
+    case "paid":
+      self = .paid
+    case "overdue":
+      self = .overdue
+    case "unpaid":
+      self = .unpaid
+    default:
+      throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
+    }
+  }
+}
+
 public extension UserActivity.Item {
   private struct _NamedCase: Codable {
     var `case`: String

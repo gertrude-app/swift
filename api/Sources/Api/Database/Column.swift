@@ -40,6 +40,7 @@ struct Column {
     case int(Int)
     case enumValue(PostgresEnum)
     case uuid(UUID)
+    case currentTimestamp
 
     public var sql: String {
       switch self {
@@ -53,6 +54,8 @@ struct Column {
         return "'\(value)'"
       case .enumValue(let value):
         return "'\(value.rawValue)'::\(value.typeName)"
+      case .currentTimestamp:
+        return "CURRENT_TIMESTAMP"
       }
     }
   }
