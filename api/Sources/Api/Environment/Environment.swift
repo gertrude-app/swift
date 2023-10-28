@@ -66,6 +66,10 @@ extension UUID {
   static let mock = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 }
 
+func unexpected(_ id: String, detail: String = "") {
+  unexpected(id, nil, detail)
+}
+
 func unexpected(_ id: String, _ adminId: Admin.Id? = nil, _ detail: String = "") {
   Current.logger.error("Unexpected event `\(id)`, \(detail)")
   Current.sendGrid.fireAndForget(.unexpected(id, detail))
