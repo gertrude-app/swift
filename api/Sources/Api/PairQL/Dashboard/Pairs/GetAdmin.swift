@@ -58,7 +58,10 @@ extension GetAdmin.SubscriptionStatus {
     switch admin.subscriptionStatus {
     case .complimentary:
       self = .complimentary
-    case .trialing, .trialExpiringSoon:
+    case .trialing:
+      let delta = Current.date().distance(to: admin.subscriptionStatusExpiration)
+      self = .trialing(daysLeft: Int(delta / 86400) + 7) // 7 days in "expiring soon"
+    case .trialExpiringSoon:
       let delta = Current.date().distance(to: admin.subscriptionStatusExpiration)
       self = .trialing(daysLeft: Int(delta / 86400))
     case .paid:
