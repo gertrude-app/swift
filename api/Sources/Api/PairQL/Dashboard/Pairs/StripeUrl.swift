@@ -5,7 +5,9 @@ import XStripe
 
 struct StripeUrl: Pair {
   static var auth: ClientAuth = .admin
-  typealias Output = String
+  struct Output: PairOutput {
+    var url: String
+  }
 }
 
 // resolver
@@ -18,20 +20,20 @@ extension StripeUrl: NoInputResolver {
          (.trialExpiringSoon, nil),
          (.overdue, nil),
          (.unpaid, nil):
-      return try await checkoutSessionUrl(for: context)
+      return .init(url: try await checkoutSessionUrl(for: context))
 
     case (.paid, .some(let subscription)),
          (.overdue, .some(let subscription)),
          (.unpaid, .some(let subscription)):
-      return try await billingPortalSessionUrl(for: subscription)
+      return .init(url: try await billingPortalSessionUrl(for: subscription))
 
     // should never happen...
     case (let status, let subscription):
       unexpected("65554aa1", context, ".\(status), \(subscription ?? "nil")")
       if let subscription {
-        return try await billingPortalSessionUrl(for: subscription)
+        return .init(url: try await billingPortalSessionUrl(for: subscription))
       } else {
-        return try await checkoutSessionUrl(for: context)
+        return .init(url: try await checkoutSessionUrl(for: context))
       }
     }
   }

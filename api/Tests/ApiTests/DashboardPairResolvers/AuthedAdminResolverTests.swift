@@ -26,7 +26,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     let output = try await StripeUrl.resolve(in: context(admin))
 
-    expect(output).toEqual("bps-url")
+    expect(output).toEqual(.init(url: "bps-url"))
   }
 
   func testStripeUrlForCheckoutSession() async throws {
@@ -46,7 +46,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     let output = try await StripeUrl.resolve(in: context(admin))
 
-    expect(output).toEqual("/checkout-url")
+    expect(output).toEqual(.init(url: "/checkout-url"))
   }
 
   func testHandleCheckoutSuccess() async throws {
