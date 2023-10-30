@@ -23,9 +23,6 @@ enum StripeEventsRoute {
         admin.subscriptionStatusExpiration = event?.data?.object?.period_end
           .map { Date(timeIntervalSince1970: TimeInterval($0)).advanced(by: .days(2)) }
           ?? Current.date().advanced(by: .days(33))
-        if admin.subscriptionId == nil {
-          unexpected("d63aab05", admin.id, "event: \(stripeEvent.id)")
-        }
       } else {
         unexpected("b3aaf12c", detail: "email: \(email), event: \(stripeEvent.id)")
       }
