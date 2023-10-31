@@ -306,6 +306,71 @@ import XExpect
     await store.send(.application(.willTerminate))
   }
 
+  func testBailingBeforeConnectionQuitsForReOnboarding() async {
+    let (store, _) = AppReducer.testStore(exhaustive: false, mockDeps: true)
+    let loadState = mock(
+      returning: [nil], // <-- first boot
+      then: Persistent.State( // <-- quit+delete failsave, w/ no user
+        appVersion: "1.0.0",
+        appUpdateReleaseChannel: .stable,
+        filterVersion: "1.0.0"
+      )
+    )
+    store.deps.storage.loadPersistentState = loadState.fn
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+    let deleteAll = mock(always: ())
+    store.deps.storage.deleteAll = deleteAll.fn
+    let quit = mock(always: ())
+    store.deps.app.quit = quit.fn
+
+    await store.send(.application(.didFinishLaunching))
+
+    await store.receive(.loadedPersistentState(nil)) {
+      $0.onboarding.windowOpen = true
+      $0.onboarding.step = .welcome
+    }
+
+    await expect(saveState.invocations.value).toHaveCount(1)
+
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) // welcome -> confirm acct
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) // confirm acct -> get code
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) { // get code -> connect child
+      $0.onboarding.step = .connectChild
+    }
+
+    // this is the initial save in AppReducer, after loading nil, it has NO user
+    await expect(saveState.invocations).toEqual([
+      .init(appVersion: "1.0.0", appUpdateReleaseChannel: .stable, filterVersion: "1.0.0"),
+    ])
+
+    // we haven't called deleteAll (or quit) yet...
+    await expect(deleteAll.invocations).toEqual(0)
+    await expect(quit.invocations).toEqual(0)
+    await expect(loadState.invocations).toEqual(1) // and only loaded state once
+
+    // ...and we NEVER call save state again
+    store.deps.storage.savePersistentState = {
+      _ in fatalError("not called again")
+    }
+
+    store.assert {
+      // double-check no user data from connection whatsoever
+      $0.onboarding.connectChildRequest = .idle
+      $0.user = .init()
+    }
+
+    // now they CLOSE the onboarding flow
+    await store.send(.onboarding(.webview(.closeWindow))) {
+      $0.onboarding.windowOpen = false
+    }
+
+    // so we purge all stored state (so onboarder runs next launch), and quit
+    await expect(deleteAll.invocations).toEqual(1)
+    await expect(quit.invocations).toEqual(1)
+    await expect(loadState.invocations).toEqual(2) // the failsafe check, for state.user = nil
+  }
+
   func testResumingFromAdminUserDemotion() async {
     let (store, _) = AppReducer.testStore(mockDeps: true)
     store.deps.device = .testValue
