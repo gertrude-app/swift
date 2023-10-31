@@ -72,6 +72,14 @@ extension AppWindow {
     window?.tabbingMode = .disallowed
     window?.titlebarAppearsTransparent = true
 
+    // align onboarding window to right, prevent system settings popping up on top
+    if title == "Onboarding", let screenFrame = NSScreen.main?.visibleFrame, let window {
+      var windowFrame = window.frame
+      let xOrigin = NSMaxX(screenFrame) - windowFrame.size.width
+      windowFrame.origin = NSPoint(x: xOrigin, y: windowFrame.origin.y)
+      window.setFrame(windowFrame, display: true)
+    }
+
     if !showTitleBar {
       window?.titleVisibility = .hidden
       window?.styleMask.insert(NSWindow.StyleMask.fullSizeContentView)
