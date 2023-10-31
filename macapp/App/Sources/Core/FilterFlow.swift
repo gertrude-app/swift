@@ -1,6 +1,6 @@
 import Foundation
-import Network
 import Gertie
+import Network
 
 public struct FilterFlow: Equatable, Codable, Sendable {
   public var url: String?
@@ -71,7 +71,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
     }
 
     if let range = byteString.range(
-      of: #"[a-z0-9_-]{2,}\.[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,})?(\.[a-z0-9_-]{2,})?"#,
+      of: #"[a-z0-9_-]{2,}\.[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,}){0,5}"#,
       options: .regularExpression
     ) {
       hostname = String(byteString[range])
