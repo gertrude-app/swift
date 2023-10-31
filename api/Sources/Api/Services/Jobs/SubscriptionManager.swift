@@ -62,7 +62,7 @@ struct SubscriptionManager: AsyncScheduledJob {
       }
     }
 
-    if Env.mode == .prod {
+    if Env.mode == .prod, !logs.isEmpty {
       Current.sendGrid.fireAndForget(.toJared(
         "Gertrude subscription manager events",
         "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>"
