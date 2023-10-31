@@ -66,11 +66,6 @@ import XExpect
     // next they confirm that they have a gertrude account...
     store.deps.device.currentMacOsUserType = { .standard }
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.step = .macosUserAccountType // ...and end up on the macos user screen
-    }
-
-    // they click next on the macos user confirmation good page...
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.step = .getChildConnectionCode // ...and go to the get connection screen
     }
 

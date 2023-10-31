@@ -111,7 +111,7 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .confirmGertrudeAccount:
         log(step, action, "36a1852c")
-        state.step = .macosUserAccountType
+        state.step = userIsAdmin ? .macosUserAccountType : .getChildConnectionCode
         return .none
 
       case .webview(.secondaryBtnClicked) where step == .confirmGertrudeAccount:
@@ -121,7 +121,7 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .noGertrudeAccount:
         log(step, action, "05820945")
-        state.step = .macosUserAccountType
+        state.step = userIsAdmin ? .macosUserAccountType : .getChildConnectionCode
         return .none
 
       case .webview(.secondaryBtnClicked) where step == .noGertrudeAccount:
