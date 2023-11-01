@@ -15,4 +15,10 @@ public struct FilterSuspension: Equatable, Codable, Sendable {
     self.duration = duration
     expiresAt = now.advanced(by: Double(duration.rawValue))
   }
+
+  public init(scope: AppScope, duration: Seconds<Int>, expiresAt: Date) {
+    self.scope = scope
+    self.duration = duration
+    self.expiresAt = expiresAt
+  }
 }

@@ -227,6 +227,55 @@ import XExpect
     }
   }
 
+  func testExtendSuspensionWhenReceivingASecond() async {
+    let (store, mainQueue) = Filter.testStore {
+      $0.suspensions = [:]
+    }
+
+    let time = ControllingNow(starting: .epoch, with: mainQueue)
+    store.deps.date = time.generator
+
+    store.deps.filterExtension = .mock
+
+    let notifyExpired = spy(on: uid_t.self, returning: ())
+    store.deps.xpc.notifyFilterSuspensionEnded = notifyExpired.fn
+
+    await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
+      $0.suspensions = [
+        502: .init(
+          scope: .unrestricted,
+          duration: 600,
+          expiresAt: .epoch.advanced(by: .seconds(600))
+        ),
+      ]
+    }
+
+    await time.advance(seconds: 500)
+    await expect(notifyExpired.invoked).toEqual(false)
+
+    await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
+      $0.suspensions = [
+        502: .init(
+          scope: .unrestricted,
+          duration: 600,
+          expiresAt: .epoch.advanced(by: .seconds(500 + 600))
+        ),
+      ]
+    }
+
+    // going past first expiration does not notify app of end
+    await time.advance(seconds: 200)
+    await expect(notifyExpired.invoked).toEqual(false)
+
+    // moving past second suspension end does notify and clean up
+    await time.advance(seconds: 400)
+    await expect(notifyExpired.invocations).toEqual([502])
+
+    await store.receive(.suspensionTimerEnded(502)) {
+      $0.suspensions[502] = nil
+    }
+  }
+
   func testCancelledFilterSuspension() async {
     let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
     let (store, mainQueue) = Filter.testStore {
