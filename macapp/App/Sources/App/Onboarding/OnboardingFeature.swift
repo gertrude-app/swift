@@ -53,6 +53,7 @@ struct OnboardingFeature: Feature {
     case receivedDeviceData(currentUserId: uid_t, users: [MacOSUser])
     case connectUser(TaskResult<UserData>)
     case setStep(State.Step)
+    case sysExtInstallTimedOut
     case closeWindow
   }
 
@@ -368,7 +369,9 @@ struct OnboardingFeature: Feature {
             switch installResult {
             case .installedSuccessfully:
               await send(.setStep(.installSysExt_success))
-            case .timedOutWaiting, .userClickedDontAllow:
+            case .timedOutWaiting:
+              await send(.sysExtInstallTimedOut)
+            case .userClickedDontAllow:
               await send(.setStep(.installSysExt_failed))
             case .alreadyInstalled:
               // should never happen, since checked the condition above
@@ -393,6 +396,15 @@ struct OnboardingFeature: Feature {
             }
           }
         }
+
+      case .sysExtInstallTimedOut where step < .installSysExt_success && state.windowOpen:
+        log("sys ext install timed out, moving to fail", "83da9790")
+        state.step = .installSysExt_failed
+        return .none
+
+      case .sysExtInstallTimedOut:
+        log("ignoring sys ext install timeout, past install stage", "2c03ab74")
+        return .none
 
       case .webview(.primaryBtnClicked) where step == .installSysExt_allow,
            .webview(.secondaryBtnClicked) where step == .installSysExt_allow:

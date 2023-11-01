@@ -11,6 +11,7 @@ import XExpect
 @testable import App
 
 @MainActor final class OnboardingFeatureTests: XCTestCase {
+
   func testFirstBootOnboardingHappyPathExhaustive() async {
     let (store, _) = AppReducer.testStore(exhaustive: true, mockDeps: false)
     let scheduler = DispatchQueue.test
@@ -1110,11 +1111,88 @@ import XExpect
     }
   }
 
+  func testSysExtInstallTimeoutDoesntPullBackToFailScreenIfPastThere() async {
+    let store = featureStore { $0.step = .installSysExt_explain }
+    store.deps.mainQueue = .immediate
+    let timedOut = LockIsolated(false)
+    store.deps.filterExtension.state = { .notInstalled }
+
+    // this is janky, but allows me to simulate timeout AFTER they proceeded
+    store.deps.filterExtension.installOverridingTimeout = { seconds in
+      if !timedOut.value {
+        await Task.yield()
+        return await store.deps.filterExtension.installOverridingTimeout(seconds)
+      }
+      return .timedOutWaiting
+    }
+
+    // they click next from sys-ext explain, triggering install
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_allow))
+
+    // they click help i'm stuck, going to fail screen
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_failed))
+
+    // they click to skip the install from the fail screen
+    await store.send(.webview(.secondaryBtnClicked)) {
+      $0.step = .locateMenuBarIcon
+    }
+
+    // and then, the install times out...
+    timedOut.setValue(true)
+    await Task.megaYield(count: 50)
+    await store.skipReceivedActions()
+
+    store.assert {
+      $0.step = .locateMenuBarIcon // ...and they should NOT be brought back to fail
+    }
+  }
+
+  func testSysExtInstallTimeoutDoesGoToFailScreenIfNotPastStage() async {
+    let store = featureStore { $0.step = .installSysExt_explain }
+    store.deps.mainQueue = .immediate
+    let timedOut = LockIsolated(false)
+    store.deps.filterExtension.state = { .notInstalled }
+
+    // this is janky, but allows me to simulate timeout AFTER they proceeded
+    store.deps.filterExtension.installOverridingTimeout = { seconds in
+      if !timedOut.value {
+        await Task.yield()
+        return await store.deps.filterExtension.installOverridingTimeout(seconds)
+      }
+      return .timedOutWaiting
+    }
+
+    // they click next from sys-ext explain, triggering install
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_allow))
+
+    // they click help i'm stuck, going to fail screen
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.installSysExt_failed))
+
+    // they click "try again" from the fail screen
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .installSysExt_explain
+    }
+
+    // and then, the install times out...
+    timedOut.setValue(true)
+    await Task.megaYield(count: 50)
+    await store.skipReceivedActions()
+
+    store.assert {
+      $0.step = .installSysExt_failed // ...and they SHOULD be moved to fail
+    }
+  }
+
   // helpers
   func featureStore(
     mutateState: @escaping (inout OnboardingFeature.State) -> Void = { _ in }
   ) -> TestStoreOf<OnboardingFeature.Reducer> {
     var state = OnboardingFeature.State()
+    state.windowOpen = true
     mutateState(&state)
     let store = TestStore(initialState: state) {
       OnboardingFeature.Reducer()
