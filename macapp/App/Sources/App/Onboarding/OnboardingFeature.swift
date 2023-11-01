@@ -53,6 +53,7 @@ struct OnboardingFeature: Feature {
     case receivedDeviceData(currentUserId: uid_t, users: [MacOSUser])
     case connectUser(TaskResult<UserData>)
     case setStep(State.Step)
+    case sysExtInstallTimedOut
     case closeWindow
   }
 
@@ -111,7 +112,7 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .confirmGertrudeAccount:
         log(step, action, "36a1852c")
-        state.step = .macosUserAccountType
+        state.step = userIsAdmin ? .macosUserAccountType : .getChildConnectionCode
         return .none
 
       case .webview(.secondaryBtnClicked) where step == .confirmGertrudeAccount:
@@ -121,7 +122,7 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .noGertrudeAccount:
         log(step, action, "05820945")
-        state.step = .macosUserAccountType
+        state.step = userIsAdmin ? .macosUserAccountType : .getChildConnectionCode
         return .none
 
       case .webview(.secondaryBtnClicked) where step == .noGertrudeAccount:
@@ -368,7 +369,9 @@ struct OnboardingFeature: Feature {
             switch installResult {
             case .installedSuccessfully:
               await send(.setStep(.installSysExt_success))
-            case .timedOutWaiting, .userClickedDontAllow:
+            case .timedOutWaiting:
+              await send(.sysExtInstallTimedOut)
+            case .userClickedDontAllow:
               await send(.setStep(.installSysExt_failed))
             case .alreadyInstalled:
               // should never happen, since checked the condition above
@@ -393,6 +396,15 @@ struct OnboardingFeature: Feature {
             }
           }
         }
+
+      case .sysExtInstallTimedOut where step < .installSysExt_success && state.windowOpen:
+        log("sys ext install timed out, moving to fail", "83da9790")
+        state.step = .installSysExt_failed
+        return .none
+
+      case .sysExtInstallTimedOut:
+        log("ignoring sys ext install timeout, past install stage", "2c03ab74")
+        return .none
 
       case .webview(.primaryBtnClicked) where step == .installSysExt_allow,
            .webview(.secondaryBtnClicked) where step == .installSysExt_allow:
@@ -437,9 +449,20 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .finish,
            .closeWindow,
            .webview(.closeWindow):
-        log(step, action, "2760db29")
+        let childConnected = state.connectChildRequest.isSucceeded
+        log("bba204bc", "close from \(step), childConnected=\(childConnected)")
         state.windowOpen = false
-        guard state.connectChildRequest.isSucceeded else { return .none }
+        guard childConnected else {
+          return .exec { _ in
+            let persisted = try await storage.loadPersistentState()
+            if persisted?.user == nil, step < .allowNotifications_start {
+              // unexpected super early bail, so we need to delete all storage and quit
+              // so that if they launch Gertrude again, they get the onboarding flow again
+              await storage.deleteAll()
+              await app.quit()
+            }
+          }
+        }
         return .exec { send in
           if await app.isLaunchAtLoginEnabled() == false {
             await app.enableLaunchAtLogin()

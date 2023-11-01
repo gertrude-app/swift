@@ -172,7 +172,7 @@ struct AppReducer: Reducer, Sendable {
         }
 
       case .onboarding(.delegate(.onboardingConfigComplete)):
-        OnboardingFeature.Reducer().log("finished", "079cbee4")
+        OnboardingFeature.Reducer().log("onboarding config complete", "079cbee4")
         if let user = state.user.data {
           return .exec { send in await send(.startProtecting(user: user)) }
         } else {
