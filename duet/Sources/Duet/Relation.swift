@@ -131,6 +131,15 @@ public enum OptionalChild<C: Duet.Identifiable> {
       return loaded
     }
   }
+
+  public mutating func useLoaded(or load: () async throws -> C?) async throws -> C? {
+    guard case .loaded(let loaded) = self else {
+      let optionalChild = try await load()
+      self = .loaded(optionalChild)
+      return optionalChild
+    }
+    return loaded
+  }
 }
 
 public func connect<P: Duet.Identifiable, C: Duet.Identifiable>(

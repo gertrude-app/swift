@@ -13,6 +13,15 @@ extension Model {
     try await Current.db.create(self)
   }
 
+  @discardableResult
+  func upsert() async throws -> Self {
+    if (try? await Current.db.query(Self.self).byId(id).first()) != nil {
+      return try await create()
+    } else {
+      return try await save()
+    }
+  }
+
   func delete() async throws {
     try await Current.db.query(Self.self).byId(id).delete()
   }
