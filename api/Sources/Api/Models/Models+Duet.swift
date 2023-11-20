@@ -49,6 +49,18 @@ extension Model {
   }
 }
 
+extension Array where Element: Model {
+  @discardableResult
+  func create() async throws -> Self {
+    try await Current.db.create(self)
+  }
+
+  @discardableResult
+  func save() async throws -> Self {
+    try await Current.db.update(self)
+  }
+}
+
 extension RequestStatus: PostgresEnum {
   public var typeName: String { RequestTables.M5.requestStatusTypeName }
 }

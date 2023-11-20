@@ -10,10 +10,10 @@ public protocol Client: SQLQuerying, SQLMutating {
   @discardableResult
   func create<M: Model>(_ models: [M]) async throws -> [M]
 
-  func queryJoined<J: SQLJoined>(
-    _ Joined: J.Type,
+  func customQuery<T: CustomQueryable>(
+    _ Custom: T.Type,
     withBindings: [Postgres.Data]?
-  ) async throws -> [J]
+  ) async throws -> [T]
 }
 
 public extension Client {

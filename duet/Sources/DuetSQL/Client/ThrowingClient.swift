@@ -46,11 +46,11 @@ public struct ThrowingClient: Client {
     throw DuetSQLError.notImplemented("ThrowingClient.create")
   }
 
-  public func queryJoined<J: SQLJoined>(
-    _ Joined: J.Type,
+  public func customQuery<T: CustomQueryable>(
+    _ T: T.Type,
     withBindings: [Postgres.Data]? = nil
-  ) async throws -> [J] {
-    throw DuetSQLError.notImplemented("ThrowingClient.queryJoined")
+  ) async throws -> [T] {
+    throw DuetSQLError.notImplemented("ThrowingClient.customQuery")
   }
 
   public func count<M: Model>(
