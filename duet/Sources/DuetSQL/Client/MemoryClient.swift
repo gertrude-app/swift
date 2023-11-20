@@ -146,11 +146,11 @@ public struct MemoryClient<Store: MemoryStore>: Client {
     return await store.delete(selected)
   }
 
-  public func queryJoined<J: SQLJoined>(
-    _ Joined: J.Type,
+  public func customQuery<T: CustomQueryable>(
+    _ Custom: T.Type,
     withBindings bindings: [Postgres.Data]? = nil
-  ) async throws -> [J] {
-    try await J.memoryQuery(bindings: bindings)
+  ) async throws -> [T] {
+    fatalError("MemoryClient.customQuery() not implemented")
   }
 
   public func count<M: Model>(

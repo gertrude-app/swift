@@ -102,13 +102,14 @@ public struct LiveClient: Client {
     return try rows.compactMap { try $0.decode(Model.self) }
   }
 
-  public func queryJoined<J: SQLJoined>(
-    _ Joined: J.Type,
+  public func customQuery<T: CustomQueryable>(
+    _ Custom: T.Type,
     withBindings bindings: [Postgres.Data]? = nil
-  ) async throws -> [J] {
-    let prepared = SQL.PreparedStatement(query: Joined.query, bindings: bindings ?? [])
+  ) async throws -> [T] {
+    let query = Custom.query(numBindings: bindings?.count ?? 0)
+    let prepared = SQL.PreparedStatement(query: query, bindings: bindings ?? [])
     let rows = try await SQL.execute(prepared, on: sql)
-    return try Joined.decode(fromSqlRows: rows)
+    return try Custom.decode(fromSqlRows: rows)
   }
 
   public func count<M: Model>(
