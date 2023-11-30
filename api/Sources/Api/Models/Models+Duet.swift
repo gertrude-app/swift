@@ -15,7 +15,7 @@ extension Model {
 
   @discardableResult
   func upsert() async throws -> Self {
-    if (try? await Current.db.query(Self.self).byId(id).first()) != nil {
+    if (try? await Current.db.query(Self.self).byId(id).first()) == nil {
       return try await create()
     } else {
       return try await save()
