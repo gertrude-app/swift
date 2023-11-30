@@ -20,7 +20,7 @@ enum StripeEventsRoute {
 
       if let admin {
         admin.subscriptionStatus = .paid
-        admin.subscriptionStatusExpiration = event?.data?.object?.period_end
+        admin.subscriptionStatusExpiration = event?.data?.object?.lines?.data?.first?.period?.end
           .map { Date(timeIntervalSince1970: TimeInterval($0)).advanced(by: .days(2)) }
           ?? Current.date().advanced(by: .days(33))
       } else {
@@ -42,12 +42,24 @@ enum StripeEventsRoute {
 
 private struct EventInfo: Decodable {
   struct Data: Decodable {
-    struct InvoiceObject: Decodable {
+    struct Object: Decodable {
+      struct Lines: Decodable {
+        struct Line: Decodable {
+          struct Period: Decodable {
+            var end: Int?
+          }
+
+          var period: Period?
+        }
+
+        var data: [Line]?
+      }
+
       var customer_email: String?
-      var period_end: Int?
+      var lines: Lines?
     }
 
-    var object: InvoiceObject?
+    var object: Object?
   }
 
   var type: String?
