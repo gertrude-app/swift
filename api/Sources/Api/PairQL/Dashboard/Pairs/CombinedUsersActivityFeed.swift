@@ -11,6 +11,7 @@ struct CombinedUsersActivityFeed: Pair {
 
   struct UserDay: PairOutput {
     var userName: String
+    var showSuspensionActivity: Bool
     var numDeleted: Int
     var items: [UserActivity.Item]
   }
@@ -50,6 +51,7 @@ extension CombinedUsersActivityFeed: Resolver {
 
       return UserDay(
         userName: user.name,
+        showSuspensionActivity: user.showSuspensionActivity,
         numDeleted: coalesced.lazy.filter(\.isDeleted).count,
         items: coalesced.lazy.filter(\.notDeleted)
       )

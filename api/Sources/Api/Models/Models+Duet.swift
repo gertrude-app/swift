@@ -424,6 +424,7 @@ extension User {
     case screenshotsEnabled
     case screenshotsResolution
     case screenshotsFrequency
+    case showSuspensionActivity
     case createdAt
     case updatedAt
     case deletedAt
