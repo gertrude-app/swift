@@ -8,6 +8,7 @@ final class User: Codable {
   var screenshotsEnabled: Bool
   var screenshotsResolution: Int
   var screenshotsFrequency: Int
+  var showSuspensionActivity: Bool
   var createdAt = Date()
   var updatedAt = Date()
   var deletedAt: Date?
@@ -24,7 +25,8 @@ final class User: Codable {
     keyloggingEnabled: Bool = false,
     screenshotsEnabled: Bool = false,
     screenshotsResolution: Int = 1200,
-    screenshotsFrequency: Int = 60
+    screenshotsFrequency: Int = 60,
+    showSuspensionActivity: Bool = true
   ) {
     self.id = id
     self.adminId = adminId
@@ -33,6 +35,7 @@ final class User: Codable {
     self.screenshotsEnabled = screenshotsEnabled
     self.screenshotsResolution = screenshotsResolution
     self.screenshotsFrequency = screenshotsFrequency
+    self.showSuspensionActivity = showSuspensionActivity
   }
 }
 

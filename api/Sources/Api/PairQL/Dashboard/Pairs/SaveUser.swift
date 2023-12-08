@@ -12,6 +12,7 @@ struct SaveUser: Pair {
     var screenshotsEnabled: Bool
     var screenshotsResolution: Int
     var screenshotsFrequency: Int
+    var showSuspensionActivity: Bool
     var keychainIds: [Keychain.Id]
   }
 }
@@ -29,7 +30,8 @@ extension SaveUser: Resolver {
         keyloggingEnabled: input.keyloggingEnabled,
         screenshotsEnabled: input.screenshotsEnabled,
         screenshotsResolution: input.screenshotsResolution,
-        screenshotsFrequency: input.screenshotsFrequency
+        screenshotsFrequency: input.screenshotsFrequency,
+        showSuspensionActivity: input.showSuspensionActivity
       ))
     } else {
       user = try await Current.db.find(input.id)
@@ -38,6 +40,7 @@ extension SaveUser: Resolver {
       user.screenshotsEnabled = input.screenshotsEnabled
       user.screenshotsResolution = input.screenshotsResolution
       user.screenshotsFrequency = input.screenshotsFrequency
+      user.showSuspensionActivity = input.showSuspensionActivity
       try await Current.db.update(user)
     }
 

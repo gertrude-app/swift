@@ -22,6 +22,7 @@ struct GetUser: Pair {
     var screenshotsEnabled: Bool
     var screenshotsResolution: Int
     var screenshotsFrequency: Int
+    var showSuspensionActivity: Bool
     var keychains: [KeychainSummary]
     var devices: [Device]
     var createdAt: Date
@@ -96,6 +97,7 @@ extension GetUser.User {
       screenshotsEnabled: user.screenshotsEnabled,
       screenshotsResolution: user.screenshotsResolution,
       screenshotsFrequency: user.screenshotsFrequency,
+      showSuspensionActivity: user.showSuspensionActivity,
       keychains: try await userKeychains,
       devices: try await devices,
       createdAt: user.createdAt

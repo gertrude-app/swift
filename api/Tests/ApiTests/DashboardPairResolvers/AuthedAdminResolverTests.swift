@@ -388,15 +388,16 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testSaveExistingKeychain() async throws {
-    let admin = try await Entities.admin().withKeychain()
+    let admin = try await Entities.admin().withKeychain { keychain, _ in
+      keychain.isPublic = false
+    }
 
     let output = try await SaveKeychain.resolve(
       with: SaveKeychain.Input(
         isNew: false,
         id: admin.keychain.id,
         name: "new name",
-        description: "new description",
-        isPublic: true
+        description: "new description"
       ),
       in: context(admin)
     )
@@ -406,7 +407,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let retrieved = try await Current.db.find(admin.keychain.id)
     expect(retrieved.name).toEqual("new name")
     expect(retrieved.description).toEqual("new description")
-    expect(retrieved.isPublic).toEqual(true)
+    expect(retrieved.isPublic).toEqual(false)
   }
 
   func testSaveNewKeychain() async throws {
@@ -418,8 +419,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
         isNew: true,
         id: id,
         name: "some name",
-        description: "some description",
-        isPublic: false
+        description: "some description"
       ),
       in: context(admin)
     )

@@ -55,6 +55,7 @@ let package = Package(
     .testTarget(name: "ApiTests", dependencies: [
       .target(name: "Api"),
       .product(name: "XExpect", package: "x-expect"),
+      .product(name: "XCTVapor", package: "vapor"),
     ]),
   ]
 )

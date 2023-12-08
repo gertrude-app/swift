@@ -11,6 +11,7 @@ enum StripeEventsRoute {
 
     let stripeEvent = try await Current.db.create(StripeEvent(json: json))
     let event = try? JSON.decode(json, as: EventInfo.self)
+
     if event?.type == "invoice.paid",
        let email = event?.data?.object?.customer_email {
 
@@ -23,6 +24,7 @@ enum StripeEventsRoute {
         admin.subscriptionStatusExpiration = event?.data?.object?.lines?.data?.first?.period?.end
           .map { Date(timeIntervalSince1970: TimeInterval($0)).advanced(by: .days(2)) }
           ?? Current.date().advanced(by: .days(33))
+        try await admin.save()
       } else {
         unexpected("b3aaf12c", detail: "email: \(email), event: \(stripeEvent.id)")
       }

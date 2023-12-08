@@ -28,6 +28,7 @@ final class UsersResolversTests: ApiTestCase {
       screenshotsEnabled: true,
       screenshotsResolution: 111,
       screenshotsFrequency: 588,
+      showSuspensionActivity: false,
       keychainIds: []
     )
 
@@ -40,6 +41,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(user.screenshotsEnabled).toEqual(true)
     expect(user.screenshotsResolution).toEqual(111)
     expect(user.screenshotsFrequency).toEqual(588)
+    expect(user.showSuspensionActivity).toEqual(false)
   }
 
   func testExistingUserUpdated() async throws {
@@ -54,6 +56,7 @@ final class UsersResolversTests: ApiTestCase {
         screenshotsEnabled: false,
         screenshotsResolution: 333,
         screenshotsFrequency: 444,
+        showSuspensionActivity: true,
         keychainIds: []
       ),
       in: user.admin.context
@@ -66,6 +69,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(retrieved.screenshotsEnabled).toEqual(false)
     expect(retrieved.screenshotsResolution).toEqual(333)
     expect(retrieved.screenshotsFrequency).toEqual(444)
+    expect(retrieved.showSuspensionActivity).toEqual(true)
 
     expect(sent.appEvents).toEqual([.userUpdated(user.id)])
   }
@@ -141,6 +145,7 @@ extension SaveUser.Input {
       screenshotsEnabled: user.screenshotsEnabled,
       screenshotsResolution: user.screenshotsResolution,
       screenshotsFrequency: user.screenshotsFrequency,
+      showSuspensionActivity: user.showSuspensionActivity,
       keychainIds: keychainIds
     )
   }

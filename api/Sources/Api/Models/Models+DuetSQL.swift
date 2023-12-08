@@ -662,6 +662,8 @@ extension User: Model {
       return .int(screenshotsResolution)
     case .screenshotsFrequency:
       return .int(screenshotsFrequency)
+    case .showSuspensionActivity:
+      return .bool(showSuspensionActivity)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -680,6 +682,7 @@ extension User: Model {
       .screenshotsEnabled: .bool(screenshotsEnabled),
       .screenshotsResolution: .int(screenshotsResolution),
       .screenshotsFrequency: .int(screenshotsFrequency),
+      .showSuspensionActivity: .bool(showSuspensionActivity),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

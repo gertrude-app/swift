@@ -8,7 +8,6 @@ struct SaveKeychain: Pair {
     let id: Keychain.Id
     let name: String
     let description: String?
-    let isPublic: Bool
   }
 }
 
@@ -21,13 +20,12 @@ extension SaveKeychain: Resolver {
         id: input.id,
         authorId: context.admin.id,
         name: input.name,
-        isPublic: input.isPublic,
+        isPublic: false,
         description: input.description
       ))
     } else {
       let keychain = try await Current.db.find(input.id)
       keychain.name = input.name
-      keychain.isPublic = input.isPublic
       keychain.description = input.description
       try await Current.db.update(keychain)
     }
