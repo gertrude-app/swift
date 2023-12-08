@@ -5,6 +5,8 @@ import MacAppRoute
 
 typealias UserData = GetUserData.Output
 
+// make a change to run ci!
+
 @MainActor public struct App {
   var menuBarManager: MenuBarManager
   var blockedRequestsWindow: BlockedRequestsWindow
