@@ -39,4 +39,8 @@ extension Semver {
     // releases are guaranteed to have a valid semver
     self.init(release.semver)!
   }
+
+  func isBehind(_ release: Release) -> Bool {
+    self < Semver(release)
+  }
 }
