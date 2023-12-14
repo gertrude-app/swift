@@ -146,6 +146,7 @@ public struct Filter: Reducer, Sendable {
 
     case .xpc(.receivedAppMessage(.setBlockStreaming(true, let userId))):
       state.blockListeners[userId] = now.advanced(by: FIVE_MINUTES_IN_SECONDS)
+      os_log("[D•] FILTER state start streaming: %{public}@", "\(state.debug)")
       return .none
 
     case .xpc(.receivedAppMessage(.setBlockStreaming(false, let userId))):
