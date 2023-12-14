@@ -20,10 +20,13 @@ public class Mutex<T>: @unchecked Sendable {
     _value = closure()
   }
 
-  public func replace(with value: T) {
+  @discardableResult
+  public func replace(with value: T) -> T {
     lock.lock()
     defer { lock.unlock() }
+    let previous = _value
     _value = value
+    return previous
   }
 }
 
