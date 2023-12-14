@@ -102,13 +102,18 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .welcome:
         log(step, action, "e712e261")
-        state.step = .confirmGertrudeAccount
+        state.step = app.inCorrectLocation ? .confirmGertrudeAccount : .wrongInstallDir
         return .exec { send in
           await send(.receivedDeviceData(
             currentUserId: device.currentUserId(),
             users: try await device.listMacOSUsers()
           ))
         }
+
+      case .webview(.primaryBtnClicked) where step == .wrongInstallDir:
+        log(step, action, "1d7defca")
+        state.windowOpen = false
+        return .exec { _ in await app.quit() }
 
       case .webview(.primaryBtnClicked) where step == .confirmGertrudeAccount:
         log(step, action, "36a1852c")

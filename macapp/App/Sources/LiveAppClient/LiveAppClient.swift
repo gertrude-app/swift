@@ -29,6 +29,9 @@ extension AppClient: DependencyKey {
       isLaunchAtLoginEnabled: {
         LaunchAtLogin.isEnabled
       },
+      installLocation: {
+        Bundle.main.bundleURL
+      },
       installedVersion: {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
       },

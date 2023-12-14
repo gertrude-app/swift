@@ -3,6 +3,9 @@ extension OnboardingFeature.State {
   enum Step: String, Equatable, Codable {
     case welcome
 
+    // wrong install dir
+    case wrongInstallDir
+
     // account
     case confirmGertrudeAccount
     case noGertrudeAccount
@@ -50,6 +53,8 @@ extension OnboardingFeature.State.Step {
   var primaryFallbackNextStep: Self {
     switch self {
     case .welcome:
+      return .confirmGertrudeAccount
+    case .wrongInstallDir:
       return .confirmGertrudeAccount
     case .confirmGertrudeAccount:
       return .macosUserAccountType
@@ -103,6 +108,8 @@ extension OnboardingFeature.State.Step {
   var secondaryFallbackNextStep: Self {
     switch self {
     case .welcome:
+      return .welcome
+    case .wrongInstallDir:
       return .welcome
     case .confirmGertrudeAccount:
       return .welcome
@@ -162,6 +169,7 @@ extension OnboardingFeature.State.Step: Comparable {
   private var asInt: Int {
     switch self {
     case .welcome: return 0
+    case .wrongInstallDir: return 3
     case .confirmGertrudeAccount: return 5
     case .noGertrudeAccount: return 10
     case .macosUserAccountType: return 15

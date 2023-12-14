@@ -20,6 +20,7 @@ import XExpect
     store.deps.filterExtension.stateChanges = { Empty().eraseToAnyPublisher() }
     store.deps.filterXpc.events = { Empty().eraseToAnyPublisher() }
     store.deps.websocket.state = { .notConnected }
+    store.deps.app.installLocation = { .inApplicationsDir }
 
     store.deps.device.currentUserId = { 502 }
     store.deps.device.listMacOSUsers = DeviceClient.mock.listMacOSUsers
@@ -305,6 +306,29 @@ import XExpect
     // shutdown tries fo flush keystrokes
     store.deps.monitoring.takePendingKeystrokes = { nil }
     await store.send(.application(.willTerminate))
+  }
+
+  func testAppNotInRootApplicationsDir() async {
+    let (store, _) = AppReducer.testStore(exhaustive: false, mockDeps: true)
+    let quit = mock(always: ())
+    store.deps.app.quit = quit.fn
+    store.deps.app.installLocation = {
+      // !! not correct dir, macOS won't install sys ext from there
+      URL(fileURLWithPath: "/Users/jared/Desktop/Gertrude.app/")
+    }
+
+    await store.send(.application(.didFinishLaunching))
+
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.step = .wrongInstallDir
+    }
+
+    await expect(quit.invocations).toEqual(0)
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.windowOpen = false
+    }
+
+    await expect(quit.invocations).toEqual(1)
   }
 
   func testBailingBeforeConnectionQuitsForReOnboarding() async {
@@ -1198,6 +1222,7 @@ import XExpect
       OnboardingFeature.Reducer()
     }
     store.exhaustivity = .off
+    store.deps.app.installLocation = { .inApplicationsDir }
     return store
   }
 }

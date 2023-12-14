@@ -1,5 +1,6 @@
 import Combine
 import Dependencies
+import Foundation
 import MacAppRoute
 
 public struct AppClient: Sendable {
@@ -13,6 +14,7 @@ public struct AppClient: Sendable {
   public var disableLaunchAtLogin: @Sendable () async -> Void
   public var enableLaunchAtLogin: @Sendable () async -> Void
   public var isLaunchAtLoginEnabled: @Sendable () async -> Bool
+  public var installLocation: @Sendable () -> URL
   public var installedVersion: @Sendable () -> String?
   public var quit: @Sendable () async -> Void
 
@@ -22,6 +24,7 @@ public struct AppClient: Sendable {
     disableLaunchAtLogin: @escaping @Sendable () async -> Void,
     enableLaunchAtLogin: @escaping @Sendable () async -> Void,
     isLaunchAtLoginEnabled: @escaping @Sendable () async -> Bool,
+    installLocation: @escaping @Sendable () -> URL,
     installedVersion: @escaping @Sendable () -> String?,
     quit: @escaping @Sendable () async -> Void
   ) {
@@ -30,10 +33,29 @@ public struct AppClient: Sendable {
     self.disableLaunchAtLogin = disableLaunchAtLogin
     self.enableLaunchAtLogin = enableLaunchAtLogin
     self.isLaunchAtLoginEnabled = isLaunchAtLoginEnabled
+    self.installLocation = installLocation
     self.installedVersion = installedVersion
     self.quit = quit
   }
 }
+
+public extension AppClient {
+  var inCorrectLocation: Bool {
+    #if DEBUG
+      if ProcessInfo.processInfo.environment["SWIFT_DETERMINISTIC_HASHING"] == nil {
+        return true // we're running the debug build locally (not testing)
+      }
+    #endif
+    // macOS won't install system extensions from outside /Applications
+    return installLocation().path.starts(with: "/Applications")
+  }
+}
+
+#if DEBUG
+  public extension URL {
+    static let inApplicationsDir = URL(fileURLWithPath: "/Applications/Gertrude.app")
+  }
+#endif
 
 extension AppClient: TestDependencyKey {
   public static let testValue = Self(
@@ -42,6 +64,7 @@ extension AppClient: TestDependencyKey {
     disableLaunchAtLogin: unimplemented("AppClient.disableLaunchAtLogin"),
     enableLaunchAtLogin: unimplemented("AppClient.enableLaunchAtLogin"),
     isLaunchAtLoginEnabled: unimplemented("AppClient.isLaunchAtLoginEnabled"),
+    installLocation: unimplemented("AppClient.installLocation"),
     installedVersion: unimplemented("AppClient.installedVersion"),
     quit: unimplemented("AppClient.quit")
   )
@@ -51,6 +74,7 @@ extension AppClient: TestDependencyKey {
     disableLaunchAtLogin: {},
     enableLaunchAtLogin: {},
     isLaunchAtLoginEnabled: { true },
+    installLocation: { URL(fileURLWithPath: "/Applications/Gertrude.app") },
     installedVersion: { "1.0.0" },
     quit: {}
   )
