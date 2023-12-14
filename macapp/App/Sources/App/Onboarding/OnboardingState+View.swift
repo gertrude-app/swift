@@ -1,4 +1,5 @@
 import Dependencies
+import Foundation
 
 extension OnboardingFeature.State {
   struct View: Equatable, Encodable, Sendable {
@@ -9,6 +10,7 @@ extension OnboardingFeature.State {
     var currentUser: MacUser?
     var connectChildRequest: PayloadRequestState<String, String>
     var users: [MacUser]
+    var exemptUserIds: [uid_t]?
 
     init(state: AppReducer.State) {
       @Dependency(\.device) var device
@@ -19,6 +21,7 @@ extension OnboardingFeature.State {
       currentUser = state.onboarding.currentUser
       connectChildRequest = state.onboarding.connectChildRequest
       users = state.onboarding.users
+      exemptUserIds = state.onboarding.exemptUserIds
     }
   }
 }

@@ -63,7 +63,8 @@ class AppMigratorTests: XCTestCase {
       appVersion: "2.0.2",
       appUpdateReleaseChannel: .stable,
       filterVersion: "2.0.2",
-      user: .empty
+      user: .empty,
+      resumeOnboarding: nil
     ))
     expect(setStringInvocations.value).toEqual([
       Both(
@@ -72,7 +73,8 @@ class AppMigratorTests: XCTestCase {
           appVersion: "2.0.2",
           appUpdateReleaseChannel: .stable,
           filterVersion: "2.0.2", // <-- transferred
-          user: .empty
+          user: .empty,
+          resumeOnboarding: nil
         ))
       ),
     ])

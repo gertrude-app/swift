@@ -42,6 +42,7 @@ extension OnboardingFeature.State {
     case installSysExt_success
 
     // wrap up
+    case exemptUsers
     case locateMenuBarIcon
     case viewHealthCheck
     case howToUseGertrude
@@ -93,6 +94,8 @@ extension OnboardingFeature.State.Step {
     case .installSysExt_failed:
       return .installSysExt_success
     case .installSysExt_success:
+      return .locateMenuBarIcon
+    case .exemptUsers:
       return .locateMenuBarIcon
     case .locateMenuBarIcon:
       return .viewHealthCheck
@@ -149,6 +152,8 @@ extension OnboardingFeature.State.Step {
       return .installSysExt_explain
     case .installSysExt_success:
       return .installSysExt_explain
+    case .exemptUsers:
+      return .installSysExt_explain
     case .locateMenuBarIcon:
       return .installSysExt_explain
     case .viewHealthCheck:
@@ -189,6 +194,7 @@ extension OnboardingFeature.State.Step: Comparable {
     case .installSysExt_allow: return 95
     case .installSysExt_failed: return 100
     case .installSysExt_success: return 105
+    case .exemptUsers: return 108
     case .locateMenuBarIcon: return 110
     case .viewHealthCheck: return 115
     case .howToUseGertrude: return 120

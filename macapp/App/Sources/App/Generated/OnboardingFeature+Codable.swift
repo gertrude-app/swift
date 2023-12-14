@@ -25,12 +25,20 @@ extension OnboardingFeature.Action.View {
     var detail: String?
   }
 
+  private struct _CaseSetUserExemption: Codable {
+    var `case` = "setUserExemption"
+    var userId: UInt32
+    var enabled: Bool
+  }
+
   func encode(to encoder: Encoder) throws {
     switch self {
     case .connectChildSubmitted(let code):
       try _CaseConnectChildSubmitted(code: code).encode(to: encoder)
     case .infoModalOpened(let step, let detail):
       try _CaseInfoModalOpened(step: step, detail: detail).encode(to: encoder)
+    case .setUserExemption(let userId, let enabled):
+      try _CaseSetUserExemption(userId: userId, enabled: enabled).encode(to: encoder)
     case .closeWindow:
       try _NamedCase(case: "closeWindow").encode(to: encoder)
     case .primaryBtnClicked:
@@ -56,6 +64,9 @@ extension OnboardingFeature.Action.View {
     case "infoModalOpened":
       let value = try container.decode(_CaseInfoModalOpened.self)
       self = .infoModalOpened(step: value.step, detail: value.detail)
+    case "setUserExemption":
+      let value = try container.decode(_CaseSetUserExemption.self)
+      self = .setUserExemption(userId: value.userId, enabled: value.enabled)
     case "closeWindow":
       self = .closeWindow
     case "primaryBtnClicked":

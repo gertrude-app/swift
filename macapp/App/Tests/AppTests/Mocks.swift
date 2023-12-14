@@ -39,7 +39,8 @@ extension Persistent.State: Mocked {
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
-      user: .mock
+      user: .mock,
+      resumeOnboarding: nil
     )
   }
 
@@ -48,7 +49,8 @@ extension Persistent.State: Mocked {
       appVersion: "",
       appUpdateReleaseChannel: .stable,
       filterVersion: "",
-      user: .empty
+      user: .empty,
+      resumeOnboarding: nil
     )
   }
 
@@ -57,7 +59,8 @@ extension Persistent.State: Mocked {
       appVersion: "0.9.9",
       appUpdateReleaseChannel: .stable,
       filterVersion: "0.9.9",
-      user: .mock
+      user: .mock,
+      resumeOnboarding: nil
     )
   }
 }

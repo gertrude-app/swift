@@ -23,6 +23,7 @@ struct OnboardingFeature: Feature {
     var currentUser: MacUser?
     var connectChildRequest: PayloadRequestState<String, String> = .idle
     var users: [MacUser] = []
+    var exemptUserIds: [uid_t]?
   }
 
   enum Resume: Codable, Equatable, Sendable {
@@ -40,6 +41,7 @@ struct OnboardingFeature: Feature {
       case chooseDemoteAdminClicked
       case connectChildSubmitted(code: Int)
       case infoModalOpened(step: State.Step, detail: String?)
+      case setUserExemption(userId: uid_t, enabled: Bool)
     }
 
     enum Delegate: Equatable, Sendable {
@@ -51,6 +53,7 @@ struct OnboardingFeature: Feature {
     case delegate(Delegate)
     case resume(Resume)
     case receivedDeviceData(currentUserId: uid_t, users: [MacOSUser])
+    case receivedExemptUserIds([uid_t])
     case connectUser(TaskResult<UserData>)
     case setStep(State.Step)
     case sysExtInstallTimedOut
@@ -62,6 +65,7 @@ struct OnboardingFeature: Feature {
     @Dependency(\.app) var app
     @Dependency(\.device) var device
     @Dependency(\.filterExtension) var systemExtension
+    @Dependency(\.filterXpc) var systemExtensionXpc
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.monitoring) var monitoring
     @Dependency(\.storage) var storage
@@ -98,6 +102,10 @@ struct OnboardingFeature: Feature {
       case .receivedDeviceData(let currentUserId, let users):
         state.users = users.map(State.MacUser.init)
         state.currentUser = state.users.first(where: { $0.id == currentUserId })
+        return .none
+
+      case .receivedExemptUserIds(let ids):
+        state.exemptUserIds = ids
         return .none
 
       case .webview(.primaryBtnClicked) where step == .welcome:
@@ -374,6 +382,12 @@ struct OnboardingFeature: Feature {
             switch installResult {
             case .installedSuccessfully:
               await send(.setStep(.installSysExt_success))
+              switch await systemExtensionXpc.requestExemptUserIds() {
+              case .success(let ids):
+                await send(.receivedExemptUserIds(ids))
+              case .failure(let err):
+                log("failed to get exempt user ids: \(err)", "3b8fd6b8")
+              }
             case .timedOutWaiting:
               await send(.sysExtInstallTimedOut)
             case .userClickedDontAllow:
@@ -431,10 +445,28 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .installSysExt_success,
            .webview(.secondaryBtnClicked) where step == .installSysExt_failed:
         log(step, action, "78bded66")
-        state.step = .locateMenuBarIcon
+        state.step = state.exemptUserIds == nil || state.users.count == 1
+          ? .locateMenuBarIcon
+          : .exemptUsers
         return .exec { send in
           await send(.delegate(.onboardingConfigComplete))
         }
+
+      case .webview(.setUserExemption(userId: let userId, enabled: let enabled)):
+        log(step, action, "1e34d6d0")
+        if enabled {
+          state.exemptUserIds?.append(userId)
+        } else {
+          state.exemptUserIds?.removeAll(where: { $0 == userId })
+        }
+        return .exec { _ in
+          _ = await systemExtensionXpc.setUserExemption(userId, enabled)
+        }
+
+      case .webview(.primaryBtnClicked) where step == .exemptUsers:
+        log(step, action, "0b4634fa")
+        state.step = .locateMenuBarIcon
+        return .none
 
       case .webview(.primaryBtnClicked) where step == .locateMenuBarIcon:
         log(step, action, "d0a159fd")
