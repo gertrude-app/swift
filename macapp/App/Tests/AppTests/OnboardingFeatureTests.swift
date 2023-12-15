@@ -240,8 +240,8 @@ import XExpect
     }
 
     await expect(getExemptIds.invocations).toEqual(1)
-    await store.receive(.onboarding(.receivedExemptUserIds([]))) {
-      $0.onboarding.exemptUserIds = []
+    await store.receive(.onboarding(.receivedFilterUsers(.init(exempt: [], protected: [])))) {
+      $0.onboarding.filterUsers = .init(exempt: [], protected: [])
     }
 
     // we kick off protection when they move past sys ext stage, lots happens...
@@ -291,7 +291,7 @@ import XExpect
 
     // they click to exempt the dad admin user
     await store.send(.onboarding(.webview(.setUserExemption(userId: 501, enabled: true)))) {
-      $0.onboarding.exemptUserIds = [501]
+      $0.onboarding.filterUsers = .init(exempt: [501], protected: [])
     }
     await expect(setUserExemption.invocations).toEqual([.init(501, true)])
 
@@ -342,7 +342,7 @@ import XExpect
       ]
       // below is only non-nil if the sys-ext is installed, and we've
       // been able to communicate with it, so if nil, we should skip
-      $0.exemptUserIds = nil
+      $0.filterUsers = nil
     }
 
     await store.send(.webview(.primaryBtnClicked)) {
@@ -354,7 +354,23 @@ import XExpect
     let store = featureStore {
       $0.step = .installSysExt_success
       $0.users = [.init(id: 501, name: "Dad", isAdmin: true)]
-      $0.exemptUserIds = []
+      $0.filterUsers = .init(exempt: [], protected: [])
+    }
+
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .locateMenuBarIcon
+    }
+  }
+
+  func testSkipsExemptScreenIfAllOtherUsersAlreadyProtected() async {
+    let store = featureStore {
+      $0.step = .installSysExt_success
+      $0.currentUser = .init(id: 502, name: "Lil jimmy", isAdmin: false)
+      $0.users = [
+        .init(id: 501, name: "Dad", isAdmin: true),
+        .init(id: 502, name: "Lil jimmy", isAdmin: false),
+      ]
+      $0.filterUsers = .init(exempt: [], protected: [501]) // <-- Dad is protected
     }
 
     await store.send(.webview(.primaryBtnClicked)) {

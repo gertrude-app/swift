@@ -136,8 +136,7 @@ struct AdminWindowFeature: Feature {
     case setNotificationsSetting(NotificationsSetting)
     case setMacOsUserType(Failable<MacOSUserType>)
     case setFilterStatus(State.HealthCheck.FilterStatus)
-    case setExemptableUsers(Failable<[MacOSUser]>)
-    case setExemptUserIds(Failable<[uid_t]>)
+    case setExemptionData(Failable<[MacOSUser]>, Failable<FilterUserTypes>)
     case receivedRecentAppVersions([String: String])
     case webview(View)
     case delegate(Delegate)
@@ -183,14 +182,10 @@ extension AdminWindowFeature.RootReducer {
       state.adminWindow.windowOpen = true
       return .merge(
         .exec { send in
-          await send(.adminWindow(.setExemptableUsers(Failable {
-            try await device.listExemptableUsers()
-          })))
-        },
-        .exec { send in
-          await send(.adminWindow(.setExemptUserIds(Failable(
-            result: await xpc.requestExemptUserIds()
-          ))))
+          await send(.adminWindow(.setExemptionData(
+            Failable { try await device.nonCurrentUsers() },
+            Failable(result: await xpc.requestUserTypes())
+          )))
         },
         checkHealth(state: &state, action: action)
       )
@@ -318,12 +313,20 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.setUserExemption):
         return adminAuthenticated(action)
 
-      case .setExemptUserIds(let result):
-        state.adminWindow.exemptUserIds = result
-        return .none
-
-      case .setExemptableUsers(let usersResult):
-        state.adminWindow.exemptableUsers = usersResult
+      case .setExemptionData(let exemptableUsers, let filterUsersResult):
+        state.adminWindow.exemptableUsers = exemptableUsers
+        switch filterUsersResult {
+        case .ok(let filterUsers):
+          state.adminWindow.exemptUserIds = .ok(value: filterUsers.exempt)
+        case .error(let err):
+          state.adminWindow.exemptUserIds = .error(message: err)
+        }
+        if case .ok(let exemptable) = exemptableUsers,
+           case .ok(let filterUsers) = filterUsersResult {
+          state.adminWindow.exemptableUsers = .ok(value: exemptable.filter {
+            filterUsers.protected.contains($0.id) == false
+          })
+        }
         return .none
 
       case .setNotificationsSetting(let setting):

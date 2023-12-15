@@ -11,6 +11,7 @@ public struct FilterXPCClient: Sendable {
   public var disconnectUser: @Sendable () async -> Result<Void, XPCErr>
   public var endFilterSuspension: @Sendable () async -> Result<Void, XPCErr>
   public var requestAck: @Sendable () async -> Result<XPC.FilterAck, XPCErr>
+  /// "deprecated" - next xpc breaking change will remove/change this
   public var requestExemptUserIds: @Sendable () async -> Result<[uid_t], XPCErr>
   public var sendDeleteAllStoredState: @Sendable () async -> Result<Void, XPCErr>
   public var sendUserRules: @Sendable (AppIdManifest, [FilterKey]) async -> Result<Void, XPCErr>
@@ -45,6 +46,17 @@ public struct FilterXPCClient: Sendable {
     self.setUserExemption = setUserExemption
     self.suspendFilter = suspendFilter
     self.events = events
+  }
+
+  /// next xpc breaking change, this will become a var closure
+  /// replacing the `requestExemptUserIds` closure property
+  public func requestUserTypes() async -> Result<FilterUserTypes, XPCErr> {
+    switch await requestExemptUserIds() {
+    case .success(let transport):
+      return .success(.init(transport: transport))
+    case .failure(let err):
+      return .failure(err)
+    }
   }
 
   public func connected(attemptRepair: Bool = false) async -> Bool {

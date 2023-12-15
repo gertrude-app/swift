@@ -127,7 +127,9 @@ import os.log
       os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest()")
       let savedState = try storage.loadPersistentStateSync()
       let exemptUsers = Array(savedState?.exemptUsers ?? [])
-      let data = try XPC.encode(exemptUsers)
+      let protectedUsers = savedState.map { Array($0.userKeys.keys) } ?? []
+      let types = FilterUserTypes(exempt: exemptUsers, protected: protectedUsers)
+      let data = try XPC.encode(types.transport)
       reply(data, nil)
     } catch {
       os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")

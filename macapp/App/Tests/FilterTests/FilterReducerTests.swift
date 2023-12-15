@@ -73,6 +73,22 @@ import XExpect
     await store.send(.extensionStopping)
   }
 
+  func testReceivingRulesClearsExemptStatus() async {
+    let (store, _) = Filter.testStore {
+      $0.exemptUsers = [501, 504]
+    }
+    store.deps.filterExtension = .mock
+    store.deps.storage = .mock
+
+    await store.send(.xpc(.receivedAppMessage(.userRules(
+      userId: 501, // we get rules about user 501
+      keys: [.mock],
+      manifest: .mock
+    )))) {
+      $0.exemptUsers = [504] // ... so they are removed from the exempt list
+    }
+  }
+
   func testStreamBlockedRequests() async {
     let (store, _) = Filter.testStore(exhaustive: true)
     store.deps.filterExtension = .mock

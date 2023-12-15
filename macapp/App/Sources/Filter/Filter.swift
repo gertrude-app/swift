@@ -179,6 +179,7 @@ public struct Filter: Reducer, Sendable {
 
     case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
       state.userKeys[userId] = keys
+      state.exemptUsers.remove(userId)
       state.appIdManifest = manifest
       state.appCache = [:]
       return saving(state.persistent)

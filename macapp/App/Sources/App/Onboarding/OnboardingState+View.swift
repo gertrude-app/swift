@@ -1,3 +1,4 @@
+import Core
 import Dependencies
 import Foundation
 
@@ -10,7 +11,8 @@ extension OnboardingFeature.State {
     var currentUser: MacUser?
     var connectChildRequest: PayloadRequestState<String, String>
     var users: [MacUser]
-    var exemptUserIds: [uid_t]?
+    var exemptableUserIds: [uid_t]
+    var exemptUserIds: [uid_t]
 
     init(state: AppReducer.State) {
       @Dependency(\.device) var device
@@ -21,7 +23,8 @@ extension OnboardingFeature.State {
       currentUser = state.onboarding.currentUser
       connectChildRequest = state.onboarding.connectChildRequest
       users = state.onboarding.users
-      exemptUserIds = state.onboarding.exemptUserIds
+      exemptableUserIds = state.onboarding.exemptableUsers.map(\.id)
+      exemptUserIds = state.onboarding.filterUsers?.exempt ?? []
     }
   }
 }

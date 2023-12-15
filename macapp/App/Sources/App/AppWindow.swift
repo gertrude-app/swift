@@ -21,6 +21,7 @@ protocol AppWindow: AnyObject {
   var title: String { get }
   var screen: String { get }
   var showTitleBar: Bool { get }
+  var supportsDarkMode: Bool { get }
   var closeWindowAction: Action { get }
 
   func embed(_ webviewAction: WebViewAction) -> Action
@@ -31,6 +32,7 @@ extension AppWindow {
   var initialSize: NSRect { NSRect(x: 0, y: 0, width: 900, height: 600) }
   var minSize: NSSize { NSSize(width: 800, height: 500) }
   var showTitleBar: Bool { true }
+  var supportsDarkMode: Bool { true }
 
   @MainActor func bind() {
     windowDelegate.events
@@ -91,6 +93,7 @@ extension AppWindow {
 
     let wvc = WebViewController<State, WebViewAction>()
     wvc.withTitleBar = showTitleBar
+    wvc.supportsDarkMode = supportsDarkMode
 
     wvc.send = { [weak self] action in
       guard let self = self else { return }

@@ -12,7 +12,7 @@ struct MacOSUser: Hashable, Codable, Equatable {
 }
 
 extension DeviceClient {
-  func listExemptableUsers() async throws -> [MacOSUser] {
+  func nonCurrentUsers() async throws -> [MacOSUser] {
     try await listMacOSUsers().filter { $0.id != currentUserId() }
   }
 }
