@@ -227,6 +227,12 @@ import XExpect
     let getExemptIds = mock(always: Result<[uid_t], XPCErr>.success([]))
     store.deps.filterXpc.requestExemptUserIds = getExemptIds.fn
 
+    let setUserExemption = spy2(
+      on: (uid_t.self, Bool.self),
+      returning: Result<Void, XPCErr>.success(())
+    )
+    store.deps.filterXpc.setUserExemption = setUserExemption.fn
+
     // they click "Next" on the install sys ext start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
     await expect(installSysExt.invocations.value).toHaveCount(1)
@@ -238,6 +244,9 @@ import XExpect
     await store.receive(.onboarding(.setStep(.installSysExt_success))) {
       $0.onboarding.step = .installSysExt_success
     }
+
+    // we clear the exempted state for the current user proactively as safeguard
+    await expect(setUserExemption.invocations).toEqual([.init(502, false)])
 
     await expect(getExemptIds.invocations).toEqual(1)
     await store.receive(.onboarding(.receivedFilterUsers(.init(exempt: [], protected: [])))) {
@@ -283,17 +292,11 @@ import XExpect
     await expect(setUserToken.invocations).toEqual([UserData.mock.token, UserData.mock.token])
     await expect(setAccountActive.invocations).toEqual([true])
 
-    let setUserExemption = spy2(
-      on: (uid_t.self, Bool.self),
-      returning: Result<Void, XPCErr>.success(())
-    )
-    store.deps.filterXpc.setUserExemption = setUserExemption.fn
-
     // they click to exempt the dad admin user
     await store.send(.onboarding(.webview(.setUserExemption(userId: 501, enabled: true)))) {
       $0.onboarding.filterUsers = .init(exempt: [501], protected: [])
     }
-    await expect(setUserExemption.invocations).toEqual([.init(501, true)])
+    await expect(setUserExemption.invocations).toEqual([.init(502, false), .init(501, true)])
 
     // now they click continue from the exempt users screen...
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {

@@ -383,6 +383,8 @@ struct OnboardingFeature: Feature {
             switch installResult {
             case .installedSuccessfully:
               await send(.setStep(.installSysExt_success))
+              // safeguard, make sure onboarding user not exempted
+              _ = await systemExtensionXpc.setUserExemption(device.currentUserId(), false)
               switch await systemExtensionXpc.requestUserTypes() {
               case .success(let data):
                 await send(.receivedFilterUsers(data))
