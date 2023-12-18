@@ -19,6 +19,7 @@ class OnboardingWindow: AppWindow {
   var initialSize = NSRect(x: 0, y: 0, width: 900, height: 700)
   var minSize = NSSize(width: 800, height: 600)
   var showTitleBar = false
+  var supportsDarkMode = false
 
   @Dependency(\.mainQueue) var mainQueue
   @Dependency(\.app) var appClient

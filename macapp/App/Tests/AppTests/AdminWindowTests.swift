@@ -12,12 +12,14 @@ import XExpect
 
 @MainActor final class AdminWindowTests: XCTestCase {
   func testReconnectUserClicked() async {
-    let (store, _) = AppReducer.testStore {
+    let (store, _) = AppReducer.testStore(mockDeps: false) {
       $0.adminWindow.windowOpen = true
       $0.user = .init(data: .mock)
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
+    store.deps.websocket = .mock
+    store.deps.app = .mock
     let clearUserToken = mock(once: ())
     store.deps.api.clearUserToken = clearUserToken.fn
     let saveState = spy(on: Persistent.State.self, returning: ())

@@ -1,5 +1,6 @@
 import ClientInterfaces
 import ComposableArchitecture
+import Core
 import Foundation
 
 struct OnboardingFeature: Feature {
@@ -23,6 +24,7 @@ struct OnboardingFeature: Feature {
     var currentUser: MacUser?
     var connectChildRequest: PayloadRequestState<String, String> = .idle
     var users: [MacUser] = []
+    var filterUsers: FilterUserTypes?
   }
 
   enum Resume: Codable, Equatable, Sendable {
@@ -40,6 +42,7 @@ struct OnboardingFeature: Feature {
       case chooseDemoteAdminClicked
       case connectChildSubmitted(code: Int)
       case infoModalOpened(step: State.Step, detail: String?)
+      case setUserExemption(userId: uid_t, enabled: Bool)
     }
 
     enum Delegate: Equatable, Sendable {
@@ -51,6 +54,7 @@ struct OnboardingFeature: Feature {
     case delegate(Delegate)
     case resume(Resume)
     case receivedDeviceData(currentUserId: uid_t, users: [MacOSUser])
+    case receivedFilterUsers(FilterUserTypes)
     case connectUser(TaskResult<UserData>)
     case setStep(State.Step)
     case sysExtInstallTimedOut
@@ -62,6 +66,7 @@ struct OnboardingFeature: Feature {
     @Dependency(\.app) var app
     @Dependency(\.device) var device
     @Dependency(\.filterExtension) var systemExtension
+    @Dependency(\.filterXpc) var systemExtensionXpc
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.monitoring) var monitoring
     @Dependency(\.storage) var storage
@@ -100,15 +105,24 @@ struct OnboardingFeature: Feature {
         state.currentUser = state.users.first(where: { $0.id == currentUserId })
         return .none
 
+      case .receivedFilterUsers(let data):
+        state.filterUsers = data
+        return .none
+
       case .webview(.primaryBtnClicked) where step == .welcome:
         log(step, action, "e712e261")
-        state.step = .confirmGertrudeAccount
+        state.step = app.inCorrectLocation ? .confirmGertrudeAccount : .wrongInstallDir
         return .exec { send in
           await send(.receivedDeviceData(
             currentUserId: device.currentUserId(),
             users: try await device.listMacOSUsers()
           ))
         }
+
+      case .webview(.primaryBtnClicked) where step == .wrongInstallDir:
+        log(step, action, "1d7defca")
+        state.windowOpen = false
+        return .exec { _ in await app.quit() }
 
       case .webview(.primaryBtnClicked) where step == .confirmGertrudeAccount:
         log(step, action, "36a1852c")
@@ -369,6 +383,14 @@ struct OnboardingFeature: Feature {
             switch installResult {
             case .installedSuccessfully:
               await send(.setStep(.installSysExt_success))
+              // safeguard, make sure onboarding user not exempted
+              _ = await systemExtensionXpc.setUserExemption(device.currentUserId(), false)
+              switch await systemExtensionXpc.requestUserTypes() {
+              case .success(let data):
+                await send(.receivedFilterUsers(data))
+              case .failure(let err):
+                log("failed to get exempt user ids: \(err)", "3b8fd6b8")
+              }
             case .timedOutWaiting:
               await send(.sysExtInstallTimedOut)
             case .userClickedDontAllow:
@@ -426,10 +448,26 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .installSysExt_success,
            .webview(.secondaryBtnClicked) where step == .installSysExt_failed:
         log(step, action, "78bded66")
-        state.step = .locateMenuBarIcon
+        state.step = state.exemptableUsers.isEmpty ? .locateMenuBarIcon : .exemptUsers
         return .exec { send in
           await send(.delegate(.onboardingConfigComplete))
         }
+
+      case .webview(.setUserExemption(userId: let userId, enabled: let enabled)):
+        log(step, action, "1e34d6d0")
+        if enabled {
+          state.filterUsers?.exempt.append(userId)
+        } else {
+          state.filterUsers?.exempt.removeAll(where: { $0 == userId })
+        }
+        return .exec { _ in
+          _ = await systemExtensionXpc.setUserExemption(userId, enabled)
+        }
+
+      case .webview(.primaryBtnClicked) where step == .exemptUsers:
+        log(step, action, "0b4634fa")
+        state.step = .locateMenuBarIcon
+        return .none
 
       case .webview(.primaryBtnClicked) where step == .locateMenuBarIcon:
         log(step, action, "d0a159fd")
@@ -545,6 +583,18 @@ struct OnboardingFeature: Feature {
 
       await send(.delegate(.onboardingConfigComplete))
       await send(.setStep(.locateMenuBarIcon))
+    }
+  }
+}
+
+extension OnboardingFeature.State {
+  var exemptableUsers: [MacUser] {
+    guard users.count > 1, let filterUsers = filterUsers else {
+      return []
+    }
+
+    return users.filter {
+      $0.id != currentUser?.id && filterUsers.protected.contains($0.id) == false
     }
   }
 }

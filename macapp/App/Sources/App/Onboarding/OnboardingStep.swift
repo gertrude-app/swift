@@ -3,6 +3,9 @@ extension OnboardingFeature.State {
   enum Step: String, Equatable, Codable {
     case welcome
 
+    // wrong install dir
+    case wrongInstallDir
+
     // account
     case confirmGertrudeAccount
     case noGertrudeAccount
@@ -39,6 +42,7 @@ extension OnboardingFeature.State {
     case installSysExt_success
 
     // wrap up
+    case exemptUsers
     case locateMenuBarIcon
     case viewHealthCheck
     case howToUseGertrude
@@ -50,6 +54,8 @@ extension OnboardingFeature.State.Step {
   var primaryFallbackNextStep: Self {
     switch self {
     case .welcome:
+      return .confirmGertrudeAccount
+    case .wrongInstallDir:
       return .confirmGertrudeAccount
     case .confirmGertrudeAccount:
       return .macosUserAccountType
@@ -89,6 +95,8 @@ extension OnboardingFeature.State.Step {
       return .installSysExt_success
     case .installSysExt_success:
       return .locateMenuBarIcon
+    case .exemptUsers:
+      return .locateMenuBarIcon
     case .locateMenuBarIcon:
       return .viewHealthCheck
     case .viewHealthCheck:
@@ -103,6 +111,8 @@ extension OnboardingFeature.State.Step {
   var secondaryFallbackNextStep: Self {
     switch self {
     case .welcome:
+      return .welcome
+    case .wrongInstallDir:
       return .welcome
     case .confirmGertrudeAccount:
       return .welcome
@@ -142,6 +152,8 @@ extension OnboardingFeature.State.Step {
       return .installSysExt_explain
     case .installSysExt_success:
       return .installSysExt_explain
+    case .exemptUsers:
+      return .installSysExt_explain
     case .locateMenuBarIcon:
       return .installSysExt_explain
     case .viewHealthCheck:
@@ -162,6 +174,7 @@ extension OnboardingFeature.State.Step: Comparable {
   private var asInt: Int {
     switch self {
     case .welcome: return 0
+    case .wrongInstallDir: return 3
     case .confirmGertrudeAccount: return 5
     case .noGertrudeAccount: return 10
     case .macosUserAccountType: return 15
@@ -181,6 +194,7 @@ extension OnboardingFeature.State.Step: Comparable {
     case .installSysExt_allow: return 95
     case .installSysExt_failed: return 100
     case .installSysExt_success: return 105
+    case .exemptUsers: return 108
     case .locateMenuBarIcon: return 110
     case .viewHealthCheck: return 115
     case .howToUseGertrude: return 120

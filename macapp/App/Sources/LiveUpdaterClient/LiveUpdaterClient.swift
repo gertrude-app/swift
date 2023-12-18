@@ -6,25 +6,36 @@ import Sparkle
 
 extension UpdaterClient: DependencyKey {
   public static var liveValue: Self {
-    UpdaterClient(
+    let updater = UpdateManager()
+    manager.replace(with: updater)
+    return UpdaterClient(
       triggerUpdate: { feedUrl in
-        let updater = UpdateManager()
-        retainer.replace(with: updater)
-        try await updater.triggerUpdate(from: feedUrl)
+        // in the (very unlikely) event of a data-race here
+        // the racing thread will just get a dummy updater
+        let updater = manager.replace(with: NoopManager())
+        defer { manager.replace(with: updater) }
+
+        if !updater.windowOpen {
+          try await updater.triggerUpdate(from: feedUrl)
+        }
       }
     )
   }
 }
 
-class UpdateManager {
+private class UpdateManager: Manager {
   private var delegate: UpdaterDelegate
   private var updater: SPUUpdater
 
   @MainActor
-  func triggerUpdate(from feedUrl: String) throws {
+  func triggerUpdate(from feedUrl: String) async throws {
     delegate.feedUrl = feedUrl
     try updater.start()
     updater.checkForUpdates()
+  }
+
+  var windowOpen: Bool {
+    updater.sessionInProgress
   }
 
   init() {
@@ -42,18 +53,24 @@ class UpdateManager {
   }
 }
 
-class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
+// @see https://sparkle-project.github.io/documentation/api-reference/Protocols/SPUUpdaterDelegate.html
+// for protocol delegate methods to respond to various events/errors
+private class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
   var feedUrl: String?
 
   func feedURLString(for updater: SPUUpdater) -> String? {
     feedUrl
   }
-
-  // @see https://sparkle-project.github.io/documentation/api-reference/Protocols/SPUUpdaterDelegate.html
-  // for protocol delegate methods to respond to various events/errors
 }
 
-// sparkle is built on objective-c delegate patterns
-// so we need to hold on to a reference to the current
-// updater to keep all of the objects alive long enough
-let retainer = Mutex(UpdateManager())
+private protocol Manager {
+  func triggerUpdate(from feedUrl: String) async throws
+  var windowOpen: Bool { get }
+}
+
+private struct NoopManager: Manager {
+  func triggerUpdate(from feedUrl: String) async throws {}
+  var windowOpen: Bool { true }
+}
+
+private let manager: Mutex<any Manager> = Mutex(NoopManager())

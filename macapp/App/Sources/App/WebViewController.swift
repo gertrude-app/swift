@@ -12,6 +12,7 @@ class WebViewController<State, Action>:
   var isReady: CurrentValueSubject<Bool, Never> = .init(false)
   var send: (Action) -> Void = { _ in }
   var withTitleBar = false
+  var supportsDarkMode = true
 
   @Dependency(\.app) var app
 
@@ -22,7 +23,9 @@ class WebViewController<State, Action>:
   }
 
   func updateColorScheme(_ colorScheme: AppClient.ColorScheme) {
-    webView.evaluateJavaScript("window.updateColorScheme('\(colorScheme.rawValue)')")
+    if supportsDarkMode {
+      webView.evaluateJavaScript("window.updateColorScheme('\(colorScheme.rawValue)')")
+    }
   }
 
   func loadWebView(screen: String) {
@@ -48,7 +51,7 @@ class WebViewController<State, Action>:
       webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
     #endif
 
-    let colorScheme = app.colorScheme()
+    let colorScheme = supportsDarkMode ? app.colorScheme() : .light
     let filePathURL = URL(
       fileURLWithPath: "Contents/Resources/WebViews/\(screen)/index.\(colorScheme).html",
       relativeTo: Bundle.main.bundleURL

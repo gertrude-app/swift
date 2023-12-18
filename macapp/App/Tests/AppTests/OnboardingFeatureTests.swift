@@ -20,6 +20,7 @@ import XExpect
     store.deps.filterExtension.stateChanges = { Empty().eraseToAnyPublisher() }
     store.deps.filterXpc.events = { Empty().eraseToAnyPublisher() }
     store.deps.websocket.state = { .notConnected }
+    store.deps.app.installLocation = { .inApplicationsDir }
 
     store.deps.device.currentUserId = { 502 }
     store.deps.device.listMacOSUsers = DeviceClient.mock.listMacOSUsers
@@ -223,6 +224,15 @@ import XExpect
     )
     store.deps.filterExtension.installOverridingTimeout = installSysExt.fn
 
+    let getExemptIds = mock(always: Result<[uid_t], XPCErr>.success([]))
+    store.deps.filterXpc.requestExemptUserIds = getExemptIds.fn
+
+    let setUserExemption = spy2(
+      on: (uid_t.self, Bool.self),
+      returning: Result<Void, XPCErr>.success(())
+    )
+    store.deps.filterXpc.setUserExemption = setUserExemption.fn
+
     // they click "Next" on the install sys ext start screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
     await expect(installSysExt.invocations.value).toHaveCount(1)
@@ -230,12 +240,20 @@ import XExpect
       $0.onboarding.step = .installSysExt_allow // ...and go to sys ext allow
     }
 
-    // becuase filterExtension.install is mocked to return success, we go to success
+    // because filterExtension.install is mocked to return success, we go to success
     await store.receive(.onboarding(.setStep(.installSysExt_success))) {
       $0.onboarding.step = .installSysExt_success
     }
 
-    // we kick off protection when they move to .locateMenuBarIcon step, lots happens...
+    // we clear the exempted state for the current user proactively as safeguard
+    await expect(setUserExemption.invocations).toEqual([.init(502, false)])
+
+    await expect(getExemptIds.invocations).toEqual(1)
+    await store.receive(.onboarding(.receivedFilterUsers(.init(exempt: [], protected: [])))) {
+      $0.onboarding.filterUsers = .init(exempt: [], protected: [])
+    }
+
+    // we kick off protection when they move past sys ext stage, lots happens...
     let setAccountActive = spy(on: Bool.self, returning: ())
     store.deps.api.setAccountActive = setAccountActive.fn
     let checkInResult = CheckIn.Output.empty { $0.userData = user }
@@ -252,7 +270,7 @@ import XExpect
 
     // they click "Next" on the install sys ext success screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.step = .locateMenuBarIcon // ...and go to locate icon
+      $0.onboarding.step = .exemptUsers // ...and go to exempt users
     }
 
     // this proves that we turned on all monitoring
@@ -273,6 +291,17 @@ import XExpect
 
     await expect(setUserToken.invocations).toEqual([UserData.mock.token, UserData.mock.token])
     await expect(setAccountActive.invocations).toEqual([true])
+
+    // they click to exempt the dad admin user
+    await store.send(.onboarding(.webview(.setUserExemption(userId: 501, enabled: true)))) {
+      $0.onboarding.filterUsers = .init(exempt: [501], protected: [])
+    }
+    await expect(setUserExemption.invocations).toEqual([.init(502, false), .init(501, true)])
+
+    // now they click continue from the exempt users screen...
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.step = .locateMenuBarIcon // ...and go to locate icon
+    }
 
     // they click "Next" on the locate menu bar icon screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -305,6 +334,75 @@ import XExpect
     // shutdown tries fo flush keystrokes
     store.deps.monitoring.takePendingKeystrokes = { nil }
     await store.send(.application(.willTerminate))
+  }
+
+  func testSkipsExemptScreenIfSysExtHasntCommunicatedIds() async {
+    let store = featureStore {
+      $0.step = .installSysExt_success
+      $0.users = [
+        .init(id: 501, name: "Dad", isAdmin: true),
+        .init(id: 502, name: "franny", isAdmin: false),
+      ]
+      // below is only non-nil if the sys-ext is installed, and we've
+      // been able to communicate with it, so if nil, we should skip
+      $0.filterUsers = nil
+    }
+
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .locateMenuBarIcon
+    }
+  }
+
+  func testSingleUserOnlySkipsExemptUserScreen() async {
+    let store = featureStore {
+      $0.step = .installSysExt_success
+      $0.users = [.init(id: 501, name: "Dad", isAdmin: true)]
+      $0.filterUsers = .init(exempt: [], protected: [])
+    }
+
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .locateMenuBarIcon
+    }
+  }
+
+  func testSkipsExemptScreenIfAllOtherUsersAlreadyProtected() async {
+    let store = featureStore {
+      $0.step = .installSysExt_success
+      $0.currentUser = .init(id: 502, name: "Lil jimmy", isAdmin: false)
+      $0.users = [
+        .init(id: 501, name: "Dad", isAdmin: true),
+        .init(id: 502, name: "Lil jimmy", isAdmin: false),
+      ]
+      $0.filterUsers = .init(exempt: [], protected: [501]) // <-- Dad is protected
+    }
+
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .locateMenuBarIcon
+    }
+  }
+
+  func testAppNotInRootApplicationsDir() async {
+    let (store, _) = AppReducer.testStore(exhaustive: false, mockDeps: true)
+    let quit = mock(always: ())
+    store.deps.storage.loadPersistentState = { nil }
+    store.deps.app.quit = quit.fn
+    store.deps.app.installLocation = {
+      // !! not correct dir, macOS won't install sys ext from there
+      URL(fileURLWithPath: "/Users/jared/Desktop/Gertrude.app")
+    }
+
+    await store.send(.application(.didFinishLaunching))
+
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.step = .wrongInstallDir
+    }
+
+    await expect(quit.invocations).toEqual(0)
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.windowOpen = false
+    }
+
+    await expect(quit.invocations).toEqual(1)
   }
 
   func testBailingBeforeConnectionQuitsForReOnboarding() async {
@@ -1198,6 +1296,7 @@ import XExpect
       OnboardingFeature.Reducer()
     }
     store.exhaustivity = .off
+    store.deps.app.installLocation = { .inApplicationsDir }
     return store
   }
 }

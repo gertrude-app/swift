@@ -57,7 +57,8 @@ import XExpect
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .canary,
       filterVersion: "1.0.0",
-      user: checkInResult.userData
+      user: checkInResult.userData,
+      resumeOnboarding: nil
     )])
   }
 

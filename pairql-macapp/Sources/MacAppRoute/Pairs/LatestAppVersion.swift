@@ -21,5 +21,4 @@ public struct LatestAppVersion: Pair {
 }
 
 extension CheckIn.LatestRelease: PairOutput {}
-
 extension ReleaseChannel: PairInput {}
