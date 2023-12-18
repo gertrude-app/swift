@@ -36,6 +36,18 @@
 - `2.1.0` (10/21/23 as `beta` for new customers)
   - onboarding
   - fixed adminstrate button on request suspension screen filter not connected state
+- `2.1.1` (11/1/23)
+  - fix parsing of multi-part domains from outbound flow #caf5ded
+  - onboading improvements: skip user type if good, allow relaunch on early bail, align
+    window right, prevent sys ext install timeout wonkiness
+  - fix request suspension double-submit
+- `2.1.2` (12/18/23 as `beta` for new customers only)
+  - log filter state at beginning of block streaming for debugging/troubleshooting
+  - prevent proliferation of sparkle windows
+  - stop onboarding early if app launched from wrong dir
+  - add onboarding user exemption screen
+  - improve user exemption to not include other protected users
+  - prevent integer overflow causing json decode in request suspension window
 
 ## Sparkle Releases
 
