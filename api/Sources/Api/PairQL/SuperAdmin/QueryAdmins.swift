@@ -97,6 +97,7 @@ extension QueryAdmins: NoInputResolver {
     var admins: [Admin.Id: AdminData] = [:]
     for row in rows {
       guard admins[row.adminId] == nil else { continue }
+      guard !isTestAddress(row.email.rawValue) else { continue }
       admins[row.adminId] = .init(
         id: row.adminId,
         email: row.email,

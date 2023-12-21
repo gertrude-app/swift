@@ -55,7 +55,14 @@ enum PairQLRoute: Equatable, RouteResponder {
       return try await PairQLRoute.respond(to: route, in: context)
     } catch {
       if "\(type(of: error))" == "ParsingError" {
-        if Env.mode == .dev { print("PairQL routing \(error)") }
+        switch Env.mode {
+        case .prod:
+          await slackPairQLRouteNotFound(request, error)
+        case .dev:
+          print("PairQL parsing \(error)")
+        case .staging, .test:
+          break
+        }
         return .init(PqlError(
           id: "0f5a25c9",
           requestId: context.requestId,
@@ -90,4 +97,26 @@ private func logOperation(_ route: PairQLRoute, _ request: Request) {
     Current.logger
       .notice("PairQL request: \("SuperAdmin".cyan) \(operation.yellow)")
   }
+}
+
+private func slackPairQLRouteNotFound(_ request: Request, _ error: Error) async {
+  let domain = request.parameters.get("domain") ?? ""
+  let operation = request.parameters.get("operation") ?? ""
+  try? await Current.slack.sysLog(to: "errors", """
+  *PairQL parsing error:*
+  domain: `\(domain)`
+  operation: `\(operation)`
+  body:
+  ```
+  \(request.collectedBody() ?? "(nil)")
+  ```
+  headers:
+  ```
+  \(request.headers.debugDescription)
+  ```
+  error:
+  ```
+  \(error)
+  ```
+  """)
 }

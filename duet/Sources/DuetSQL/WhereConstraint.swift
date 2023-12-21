@@ -8,6 +8,8 @@ public extension SQL {
     case greaterThanOrEqualTo(M.ColumnName, Postgres.Data)
     case `in`(M.ColumnName, [Postgres.Data])
     case isNull(M.ColumnName)
+    case like(M.ColumnName, String)
+    case ilike(M.ColumnName, String)
     case always
     case never
     indirect case or(WhereConstraint<M>, WhereConstraint<M>)
@@ -41,6 +43,18 @@ public extension SQL {
       case .greaterThanOrEqualTo(let column, let data):
         let colData = model.postgresData(for: column)
         return colData >= data
+      case .like(let column, let pattern):
+        guard case .string(.some(let string)) = model.postgresData(for: column) else {
+          return false
+        }
+        let regex = "^" + pattern.replacingOccurrences(of: "%", with: ".*") + "$"
+        return string.range(of: regex, options: .regularExpression) != nil
+      case .ilike(let column, let pattern):
+        guard case .string(.some(let string)) = model.postgresData(for: column) else {
+          return false
+        }
+        let regex = "^" + pattern.replacingOccurrences(of: "%", with: ".*") + "$"
+        return string.lowercased().range(of: regex, options: .regularExpression) != nil
       case .always:
         return true
       case .never:
@@ -100,6 +114,12 @@ public extension SQL {
         return "(\(lhs.sql(boundTo: &bindings)) AND \(rhs.sql(boundTo: &bindings)))"
       case .or(let lhs, let rhs):
         return "(\(lhs.sql(boundTo: &bindings)) OR \(rhs.sql(boundTo: &bindings)))"
+      case .like(let column, let pattern):
+        bindings.append(.string(pattern))
+        return "\"\(M.columnName(column))\" LIKE $\(bindings.count)"
+      case .ilike(let column, let pattern):
+        bindings.append(.string(pattern))
+        return "\"\(M.columnName(column))\" ILIKE $\(bindings.count)"
       case .always:
         return "TRUE"
       case .never:
