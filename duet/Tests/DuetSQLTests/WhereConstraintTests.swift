@@ -42,6 +42,8 @@ final class WhereConstraintTests: XCTestCase {
 
   func testSQLFromWhereConstraint() throws {
     let cases: [(SQL.WhereConstraint<Thing>, String, [Postgres.Data])] = [
+      (.like(.string, "%foo%"), #""string" LIKE $1"#, ["%foo%"]),
+      (.ilike(.string, "%foo%"), #""string" ILIKE $1"#, ["%foo%"]),
       (.isNull(.optionalString), #""optional_string" IS NULL"#, []),
       (.not(.isNull(.optionalString)), #"NOT "optional_string" IS NULL"#, []),
       (.equals(.int, 3), #""int" = $1"#, [3]),
