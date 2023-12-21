@@ -82,6 +82,12 @@ func cleanupDb() async throws -> [String] {
 
   logs.append("Deleted \(keystrokeslines.count) keystroke lines")
 
+  let smokeAdmins = try await Current.db.query(Admin.self)
+    .where(.like(.email, "82uii.smoke-test-%"))
+    .delete(force: true)
+
+  logs.append("Deleted \(smokeAdmins.count) smoke test admin accounts")
+
   return logs
 }
 
