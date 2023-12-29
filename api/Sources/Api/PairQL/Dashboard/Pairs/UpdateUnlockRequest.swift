@@ -21,12 +21,11 @@ extension UpdateUnlockRequest: Resolver {
     request.responseComment = input.responseComment
     request.status = input.status
     try await Current.db.update(request)
-    let decision = try await Current.db.find(request.networkDecisionId)
 
     try await Current.connectedApps.notify(.unlockRequestUpdated(.init(
       userDeviceId: userDevice.id,
       status: request.status,
-      target: decision.target ?? "",
+      target: request.target ?? "",
       comment: request.requestComment,
       responseComment: request.responseComment
     )))

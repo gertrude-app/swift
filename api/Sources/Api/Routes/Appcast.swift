@@ -6,10 +6,9 @@ enum AppcastRoute {
   static func handler(_ request: Request) async throws -> Response {
     let query = try request.query.decode(AppcastQuery.self)
     let releases = try await Current.db.query(Release.self)
-      .where(query.version.map { _ in .always } ?? (.channel == query.channel ?? .stable))
-      .where(query.version.map { .semver == $0 } ?? .always)
       .orderBy(.createdAt, .desc)
       .all()
+      .filter { $0.channel.isAtLeastAsStable(as: query.channel ?? .stable) }
 
     return Response(
       headers: ["Content-Type": "application/xml"],

@@ -21,7 +21,7 @@ struct AdminTables: GertieMigration {
   // table: admins
 
   func upAdmins(_ sql: SQLDatabase) async throws {
-    try await sql.create(enum: Admin.M1.LegacySubscriptionStatus.self)
+    try await sql.create(enum: Admin.M1.Deleted.SubscriptionStatus.self)
     try await sql.create(table: Admin.M1.self) {
       Column(.id, .uuid, .primaryKey)
       Column(Admin.M1.email, .text, .unique)
@@ -29,8 +29,8 @@ struct AdminTables: GertieMigration {
       Column(Admin.M1.subscriptionId, .text, .nullable)
       Column(
         Admin.M1.subscriptionStatus,
-        .enum(Admin.M1.LegacySubscriptionStatus.self),
-        default: .enumValue(Admin.M1.LegacySubscriptionStatus.pendingEmailVerification)
+        .enum(Admin.M1.Deleted.SubscriptionStatus.self),
+        default: .enumValue(Admin.M1.Deleted.SubscriptionStatus.pendingEmailVerification)
       )
       Column(.createdAt, .timestampWithTimezone)
       Column(.updatedAt, .timestampWithTimezone)
@@ -160,19 +160,21 @@ extension Admin {
     static let subscriptionStatus = FieldKey("subscription_status")
     static let subscriptionStatusTypeName = "enum_admin_subscription_status"
 
-    enum LegacySubscriptionStatus: String, Codable, CaseIterable, PostgresEnum {
-      var typeName: String { Admin.M1.subscriptionStatusTypeName }
-      case pendingEmailVerification
-      case emailVerified
-      case signupCanceled
-      case complimentary
-      case incomplete
-      case incompleteExpired
-      case trialing
-      case active
-      case pastDue
-      case canceled
-      case unpaid
+    enum Deleted {
+      enum SubscriptionStatus: String, Codable, CaseIterable, PostgresEnum {
+        var typeName: String { Admin.M1.subscriptionStatusTypeName }
+        case pendingEmailVerification
+        case emailVerified
+        case signupCanceled
+        case complimentary
+        case incomplete
+        case incompleteExpired
+        case trialing
+        case active
+        case pastDue
+        case canceled
+        case unpaid
+      }
     }
   }
 }

@@ -18,7 +18,6 @@ struct GetUnlockRequest: Pair {
     let appSlug: String?
     let appBundleId: String?
     let appCategories: [String]
-    let requestProtocol: String?
     let createdAt: Date
   }
 
@@ -37,30 +36,25 @@ extension GetUnlockRequest: Resolver {
 extension GetUnlockRequest.Output {
   init(from request: UnlockRequest, in context: AdminContext) async throws {
     let userDevice = try await request.userDevice()
-    let decision = try await request.networkDecision()
     let user = try await context.verifiedUser(from: userDevice.userId)
 
-    var app: AppDescriptor?
-    if let bundleId = decision.appBundleId {
-      let idManifest = try await getCachedAppIdManifest()
-      let factory = AppDescriptorFactory(appIdManifest: idManifest)
-      app = factory.appDescriptor(for: bundleId)
-    }
+    let idManifest = try await getCachedAppIdManifest()
+    let factory = AppDescriptorFactory(appIdManifest: idManifest)
+    let app = factory.appDescriptor(for: request.appBundleId)
 
     self.init(
       id: request.id,
       userId: user.id,
       userName: user.name,
       status: request.status,
-      url: decision.url,
-      domain: decision.hostname,
-      ipAddress: decision.ipAddress,
+      url: request.url,
+      domain: request.hostname,
+      ipAddress: request.ipAddress,
       requestComment: request.requestComment,
-      appName: app?.displayName,
-      appSlug: app?.slug,
-      appBundleId: decision.appBundleId,
-      appCategories: Array(app?.categories ?? []),
-      requestProtocol: decision.ipProtocol?.description,
+      appName: app.displayName,
+      appSlug: app.slug,
+      appBundleId: request.appBundleId,
+      appCategories: Array(app.categories),
       createdAt: request.createdAt
     )
   }

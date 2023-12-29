@@ -6,21 +6,20 @@ public struct CreateUnlockRequests_v2: Pair {
   public static var auth: ClientAuth = .user
 
   public struct Input: PairInput {
+    /// NB: used to have a `time: Date` field, but removed as non-breaking
+    /// change in 2.1.3, when we eliminated network_decisions table
     public struct BlockedRequest: PairNestable {
-      public let time: Date
       public let bundleId: String
       public let url: String?
       public let hostname: String?
       public let ipAddress: String?
 
       public init(
-        time: Date,
         bundleId: String,
         url: String? = nil,
         hostname: String? = nil,
         ipAddress: String? = nil
       ) {
-        self.time = time
         self.bundleId = bundleId
         self.url = url
         self.hostname = hostname

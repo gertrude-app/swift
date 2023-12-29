@@ -20,7 +20,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testAppOnLatestVersionHappyPath() async throws {
-    try await createReleases([
+    try await replaceAllReleases(with: [
       Release("1.0.0", pace: 10),
       Release("1.1.0", pace: 10),
     ])
@@ -31,7 +31,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testAppBehindOne() async throws {
-    try await createReleases([
+    try await replaceAllReleases(with: [
       Release("1.0.0", pace: 10, createdAt: .epoch),
       Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),
       Release("1.2.0", pace: 10, createdAt: .epoch.advanced(by: .days(20))),
@@ -49,7 +49,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testAppBehindTwoUsesFirstPace() async throws {
-    try await createReleases([
+    try await replaceAllReleases(with: [
       Release("1.0.0", pace: 10, createdAt: .epoch),
       Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),
       Release("1.2.0", pace: 10, createdAt: .epoch.advanced(by: .days(20))),
@@ -68,7 +68,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testOnBetaAheadOfStable() async throws {
-    try await createReleases([
+    try await replaceAllReleases(with: [
       Release("1.0.0", pace: 10, createdAt: .epoch),
       Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),
       Release("2.0.0", channel: .beta, pace: 10, createdAt: .epoch.advanced(by: .days(20))),
@@ -88,7 +88,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testOnCanaryBehindStable() async throws {
-    try await createReleases([
+    try await replaceAllReleases(with: [
       Release("2.0.0", channel: .stable, pace: nil, createdAt: .epoch),
       Release("2.1.0", channel: .canary, pace: nil, createdAt: .epoch.advanced(by: .days(10))),
       Release("2.1.1", channel: .stable, pace: nil, createdAt: .epoch.advanced(by: .days(20))),
@@ -110,7 +110,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
 
 // extensions, helpers
 
-func createReleases(_ releases: [Release]) async throws {
+func replaceAllReleases(with releases: [Release]) async throws {
   try await Current.db.deleteAll(Release.self)
   try await Current.db.create(releases)
   for var release in releases {

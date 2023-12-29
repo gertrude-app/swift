@@ -30,7 +30,7 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testCheckIn_OtherProps() async throws {
-    try await createReleases([
+    try await replaceAllReleases(with: [
       Release("2.0.3", channel: .stable),
       Release("2.0.4", channel: .stable),
       Release("3.0.0", channel: .beta),

@@ -12,6 +12,8 @@ enum MigrationDirection: String {
   case down
 }
 
+enum Deleted {}
+
 protocol TableNamingMigration {
   static var tableName: String { get }
 }

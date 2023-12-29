@@ -72,10 +72,6 @@ extension GetDashboardWidgets: NoInputResolver {
       .where(.status == .enum(RequestStatus.pending))
       .all()
 
-    async let awaitedNetworkDecisions = Current.db.query(NetworkDecision.self)
-      .where(.id |=| unlockRequests.map(\.networkDecisionId))
-      .all()
-
     let deviceToUserMap: [UserDevice.Id: Api.User] = userDevices.reduce(into: [:]) { map, device in
       map[device.id] = users.first(where: { $0.id == device.userId })
     }
@@ -96,8 +92,6 @@ extension GetDashboardWidgets: NoInputResolver {
 
     async let notifications = context.admin.notifications()
 
-    let networkDecisions = try await awaitedNetworkDecisions
-
     return try await .init(
       users: users.concurrentMap { user in .init(
         id: user.id,
@@ -113,8 +107,7 @@ extension GetDashboardWidgets: NoInputResolver {
       ),
       unlockRequests: mapUnlockRequests(
         unlockRequests: unlockRequests,
-        map: deviceToUserMap,
-        networkDecisions: networkDecisions
+        map: deviceToUserMap
       ),
       recentScreenshots: recentScreenshots(
         users: users,
@@ -137,17 +130,14 @@ func userOnline(_ userId: User.Id, _ userDevices: [UserDevice]) async throws -> 
 
 func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],
-  map: [UserDevice.Id: User],
-  networkDecisions: [NetworkDecision]
+  map: [UserDevice.Id: User]
 ) -> [GetDashboardWidgets.UnlockRequest] {
   unlockRequests.map { unlockRequest in
     .init(
       id: unlockRequest.id,
       userId: map[unlockRequest.userDeviceId]?.id ?? .init(),
       userName: map[unlockRequest.userDeviceId]?.name ?? "",
-      target: networkDecisions
-        .first(where: { $0.id == unlockRequest.networkDecisionId })?
-        .target ?? "",
+      target: unlockRequest.target ?? "",
       comment: unlockRequest.requestComment,
       createdAt: unlockRequest.createdAt
     )

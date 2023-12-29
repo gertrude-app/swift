@@ -21,6 +21,10 @@ public extension Client {
     DuetQuery<M>(db: self)
   }
 
+  func customQuery<T: CustomQueryable>(_ Custom: T.Type) async throws -> [T] {
+    try await customQuery(Custom, withBindings: nil)
+  }
+
   func find<M: Model>(_: M.Type, byId id: UUID, withSoftDeleted: Bool = false) async throws -> M {
     try await query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
   }

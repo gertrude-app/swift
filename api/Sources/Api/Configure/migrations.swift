@@ -21,5 +21,6 @@ extension Configure {
     app.migrations.add(DuringSuspensionActivity())
     app.migrations.add(ReworkPayments())
     app.migrations.add(AddUserShowSuspensionActivity())
+    app.migrations.add(EliminateNetworkDecisionsTable())
   }
 }

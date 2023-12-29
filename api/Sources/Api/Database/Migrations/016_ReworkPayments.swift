@@ -5,7 +5,7 @@ struct ReworkPayments: GertieMigration {
   func up(sql: SQLDatabase) async throws {
     let admins = try await getAdmins(sql)
     try await sql.dropColumn(Admin.M1.subscriptionStatus, on: Admin.M1.self)
-    try await sql.drop(enum: Admin.M1.LegacySubscriptionStatus.self)
+    try await sql.drop(enum: Admin.M1.Deleted.SubscriptionStatus.self)
     try await sql.create(enum: Admin.SubscriptionStatus.self)
     try await sql.dropColumn(.deletedAt, on: Admin.M1.self)
 
@@ -68,7 +68,7 @@ struct ReworkPayments: GertieMigration {
 
     try await sql.dropColumn(Admin.M1.subscriptionStatus, on: Admin.M1.self)
     try await sql.drop(enum: Admin.SubscriptionStatus.self)
-    try await sql.create(enum: Admin.M1.LegacySubscriptionStatus.self)
+    try await sql.create(enum: Admin.M1.Deleted.SubscriptionStatus.self)
 
     try await sql.addColumn(
       .deletedAt,
@@ -80,13 +80,13 @@ struct ReworkPayments: GertieMigration {
     try await sql.addColumn(
       Admin.M1.subscriptionStatus,
       on: Admin.M1.self,
-      type: .enum(Admin.M1.LegacySubscriptionStatus.self),
-      default: .enumValue(Admin.M1.LegacySubscriptionStatus.pendingEmailVerification) // <-- temp
+      type: .enum(Admin.M1.Deleted.SubscriptionStatus.self),
+      default: .enumValue(Admin.M1.Deleted.SubscriptionStatus.pendingEmailVerification) // <-- temp
     )
 
     try await sql.dropColumn(Admin.M16.subscriptionStatusExpiration, on: Admin.M1.self)
 
-    let updates: [(UUID, Admin.M1.LegacySubscriptionStatus)] = admins.map { admin in
+    let updates: [(UUID, Admin.M1.Deleted.SubscriptionStatus)] = admins.map { admin in
       switch admin.subscriptionStatus {
       case Admin.SubscriptionStatus.pendingEmailVerification.rawValue:
         return (admin.id, .pendingEmailVerification)

@@ -3,30 +3,18 @@ import MacAppRoute
 extension CreateUnlockRequests_v2: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
     let userDevice = try await context.userDevice()
-    let networkDecisions = input.blockedRequests.map {
-      NetworkDecision(
+
+    let requests = try await UnlockRequest.create(input.blockedRequests.map {
+      UnlockRequest(
         userDeviceId: userDevice.id,
-        verdict: .block,
-        reason: .defaultNotAllowed,
-        count: 1,
+        appBundleId: $0.bundleId,
+        url: $0.url,
         hostname: $0.hostname,
         ipAddress: $0.ipAddress,
-        url: $0.url,
-        appBundleId: $0.bundleId,
-        createdAt: $0.time
-      )
-    }
-    try await Current.db.create(networkDecisions)
-
-    let requests = networkDecisions.map {
-      UnlockRequest(
-        networkDecisionId: $0.id,
-        userDeviceId: userDevice.id,
         requestComment: input.comment,
         status: .pending
       )
-    }
-    try await Current.db.create(requests)
+    })
 
     await Current.adminNotifier.notify(
       context.user.adminId,

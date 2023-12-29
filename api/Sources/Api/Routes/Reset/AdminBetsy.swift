@@ -199,37 +199,21 @@ enum AdminBetsy {
   }
 
   private static func createTransientRequests(_ userDevice: UserDevice) async throws {
-    let nd1 = try await Current.db.create(NetworkDecision(
+    try await Current.db.create(UnlockRequest(
       userDeviceId: userDevice.id,
-      verdict: .block,
-      reason: .defaultNotAllowed,
+      appBundleId: ".com.apple.Safari",
+      url: "https://www.youtube.com/watch?v=123456789",
       hostname: "youtube.com",
       ipAddress: "234.423.32.2423",
-      url: "https://www.youtube.com/watch?v=123456789",
-      appBundleId: ".com.apple.Safari",
-      createdAt: Date()
-    ))
-
-    let nd2 = try await Current.db.create(NetworkDecision(
-      userDeviceId: userDevice.id,
-      verdict: .block,
-      reason: .defaultNotAllowed,
-      hostname: "someotherwebsite.com",
-      ipAddress: "234.423.32.2423",
-      appBundleId: "BQR82RBBHL.com.tinyspeck.slackmacgap.helper",
-      createdAt: Date(subtractingDays: 1)
-    ))
-
-    try await Current.db.create(UnlockRequest(
-      networkDecisionId: nd1.id,
-      userDeviceId: userDevice.id,
       requestComment: "I want to watch a video",
       status: .pending
     ))
 
     try await Current.db.create(UnlockRequest(
-      networkDecisionId: nd2.id,
       userDeviceId: userDevice.id,
+      appBundleId: "BQR82RBBHL.com.tinyspeck.slackmacgap.helper",
+      hostname: "someotherwebsite.com",
+      ipAddress: "234.423.32.2423",
       requestComment: "Need this for my dinasours class, k thx",
       status: .pending
     ))

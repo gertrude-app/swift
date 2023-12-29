@@ -32,12 +32,6 @@ func cleanupDb() async throws -> [String] {
 
   logs.append("Deleted \(deletedScreenshots.count) screenshots")
 
-  let deletedDecisions = try await Current.db.query(NetworkDecision.self)
-    .where(.createdAt < 7.daysAgo)
-    .delete()
-
-  logs.append("Deleted \(deletedDecisions.count) network decisions")
-
   let deletedNonPendingUnlockRequests = try await Current.db.query(UnlockRequest.self)
     .where(.not(.equals(.status, .enum(RequestStatus.pending))))
     .where(.updatedAt < 3.daysAgo)

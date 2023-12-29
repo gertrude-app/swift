@@ -55,7 +55,7 @@ extension QueryAdmins: NoInputResolver {
       return value
     }
 
-    let rows = try await Current.db.customQuery(AdminQuery.self, withBindings: nil)
+    let rows = try await Current.db.customQuery(AdminQuery.self)
 
     var installations: [UserDevice.Id: (AdminData.Child.Installation, User.Id)] = [:]
     for row in rows where row.userDeviceId != nil {
