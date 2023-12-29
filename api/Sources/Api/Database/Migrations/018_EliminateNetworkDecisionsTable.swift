@@ -62,7 +62,7 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
     // drop network_decisions table
     try await sql.drop(constraint: RequestTables().networkDecisionKeyFk)
     try await sql.drop(constraint: DeviceRefactor().networkDecisionFk)
-    try await sql.drop(table: LegacyNetworkDecision.M5.self)
+    try await sql.drop(table: Deleted.NetworkDecisionTable.M5.self)
     try await sql.drop(enum: NetworkDecisionVerdict.self)
     try await sql.drop(enum: NetworkDecisionReason.self)
   }
@@ -71,18 +71,18 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
     // recreate network_decisions table
     try await sql.create(enum: NetworkDecisionVerdict.self)
     try await sql.create(enum: NetworkDecisionReason.self)
-    try await sql.create(table: LegacyNetworkDecision.M5.self) {
+    try await sql.create(table: Deleted.NetworkDecisionTable.M5.self) {
       Column(.id, .uuid, .primaryKey)
-      Column(LegacyNetworkDecision.M11.userDeviceId, .uuid)
-      Column(LegacyNetworkDecision.M5.verdict, .enum(NetworkDecisionVerdict.self))
-      Column(LegacyNetworkDecision.M5.reason, .enum(NetworkDecisionReason.self))
-      Column(LegacyNetworkDecision.M5.ipProtocolNumber, .bigint, .nullable)
-      Column(LegacyNetworkDecision.M5.hostname, .text, .nullable)
-      Column(LegacyNetworkDecision.M5.ipAddress, .text, .nullable)
-      Column(LegacyNetworkDecision.M5.url, .text, .nullable)
-      Column(LegacyNetworkDecision.M5.appBundleId, .text, .nullable)
-      Column(LegacyNetworkDecision.M5.count, .bigint)
-      Column(LegacyNetworkDecision.M5.responsibleKeyId, .uuid, .nullable)
+      Column(Deleted.NetworkDecisionTable.M11.userDeviceId, .uuid)
+      Column(Deleted.NetworkDecisionTable.M5.verdict, .enum(NetworkDecisionVerdict.self))
+      Column(Deleted.NetworkDecisionTable.M5.reason, .enum(NetworkDecisionReason.self))
+      Column(Deleted.NetworkDecisionTable.M5.ipProtocolNumber, .bigint, .nullable)
+      Column(Deleted.NetworkDecisionTable.M5.hostname, .text, .nullable)
+      Column(Deleted.NetworkDecisionTable.M5.ipAddress, .text, .nullable)
+      Column(Deleted.NetworkDecisionTable.M5.url, .text, .nullable)
+      Column(Deleted.NetworkDecisionTable.M5.appBundleId, .text, .nullable)
+      Column(Deleted.NetworkDecisionTable.M5.count, .bigint)
+      Column(Deleted.NetworkDecisionTable.M5.responsibleKeyId, .uuid, .nullable)
       Column(.createdAt, .timestampWithTimezone)
     }
     try await sql.add(constraint: RequestTables().networkDecisionKeyFk)
@@ -130,11 +130,11 @@ private struct LegacyDecisions: CustomQueryable {
     """
     SELECT
       id,
-      \(LegacyNetworkDecision.M5.appBundleId),
-      \(LegacyNetworkDecision.M5.url),
-      \(LegacyNetworkDecision.M5.hostname),
-      \(LegacyNetworkDecision.M5.ipAddress)
-    FROM \(LegacyNetworkDecision.M5.tableName)
+      \(Deleted.NetworkDecisionTable.M5.appBundleId),
+      \(Deleted.NetworkDecisionTable.M5.url),
+      \(Deleted.NetworkDecisionTable.M5.hostname),
+      \(Deleted.NetworkDecisionTable.M5.ipAddress)
+    FROM \(Deleted.NetworkDecisionTable.M5.tableName)
     """
   }
 }

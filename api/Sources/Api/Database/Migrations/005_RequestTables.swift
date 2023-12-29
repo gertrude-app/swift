@@ -19,26 +19,26 @@ struct RequestTables: GertieMigration {
   // table: network_decisions
 
   let networkDecisionDeviceFk = Constraint.foreignKey(
-    from: LegacyNetworkDecision.M5.self,
+    from: Deleted.NetworkDecisionTable.M5.self,
     to: Device.M3.self,
-    thru: LegacyNetworkDecision.M5.deviceId,
+    thru: Deleted.NetworkDecisionTable.M5.deviceId,
     onDelete: .cascade
   )
 
   let networkDecisionKeyFk = Constraint.foreignKey(
-    from: LegacyNetworkDecision.M5.self,
+    from: Deleted.NetworkDecisionTable.M5.self,
     to: Key.M2.self,
-    thru: LegacyNetworkDecision.M5.responsibleKeyId,
+    thru: Deleted.NetworkDecisionTable.M5.responsibleKeyId,
     onDelete: .cascade
   )
 
   func upNetworkDecisions(_ sql: SQLDatabase) async throws {
-    typealias M = LegacyNetworkDecision.M5
+    typealias M = Deleted.NetworkDecisionTable.M5
 
     try await sql.create(enum: NetworkDecisionVerdict.self)
     try await sql.create(enum: NetworkDecisionReason.self)
 
-    try await sql.create(table: LegacyNetworkDecision.M5.self) {
+    try await sql.create(table: Deleted.NetworkDecisionTable.M5.self) {
       Column(.id, .uuid, .primaryKey)
       Column(M.deviceId, .uuid)
       Column(M.verdict, .enum(NetworkDecisionVerdict.self))
@@ -60,7 +60,7 @@ struct RequestTables: GertieMigration {
   func downNetworkDecisions(_ sql: SQLDatabase) async throws {
     try await sql.drop(constraint: networkDecisionDeviceFk)
     try await sql.drop(constraint: networkDecisionKeyFk)
-    try await sql.drop(table: LegacyNetworkDecision.M5.self)
+    try await sql.drop(table: Deleted.NetworkDecisionTable.M5.self)
     try await sql.drop(enum: NetworkDecisionVerdict.self)
     try await sql.drop(enum: NetworkDecisionReason.self)
   }
@@ -76,7 +76,7 @@ struct RequestTables: GertieMigration {
 
   let unlockRequestNetworkDecisionFk = Constraint.foreignKey(
     from: UnlockRequest.M5.self,
-    to: LegacyNetworkDecision.M5.self,
+    to: Deleted.NetworkDecisionTable.M5.self,
     thru: UnlockRequest.M5.networkDecisionId,
     onDelete: .cascade
   )
@@ -140,21 +140,23 @@ extension RequestTables {
   }
 }
 
-enum LegacyNetworkDecision {
-  enum M5: TableNamingMigration {
-    static let tableName = "network_decisions"
-    static let verdictTypeName = "enum_network_decision_verdict"
-    static let reasonTypeName = "enum_network_decision_reason"
-    static let deviceId = FieldKey("device_id")
-    static let verdict = FieldKey("verdict")
-    static let reason = FieldKey("reason")
-    static let ipProtocolNumber = FieldKey("ip_protocol_number")
-    static let hostname = FieldKey("hostname")
-    static let ipAddress = FieldKey("ip_address")
-    static let url = FieldKey("url")
-    static let appBundleId = FieldKey("app_bundle_id")
-    static let count = FieldKey("count")
-    static let responsibleKeyId = FieldKey("responsible_key_id")
+extension Deleted {
+  enum NetworkDecisionTable {
+    enum M5: TableNamingMigration {
+      static let tableName = "network_decisions"
+      static let verdictTypeName = "enum_network_decision_verdict"
+      static let reasonTypeName = "enum_network_decision_reason"
+      static let deviceId = FieldKey("device_id")
+      static let verdict = FieldKey("verdict")
+      static let reason = FieldKey("reason")
+      static let ipProtocolNumber = FieldKey("ip_protocol_number")
+      static let hostname = FieldKey("hostname")
+      static let ipAddress = FieldKey("ip_address")
+      static let url = FieldKey("url")
+      static let appBundleId = FieldKey("app_bundle_id")
+      static let count = FieldKey("count")
+      static let responsibleKeyId = FieldKey("responsible_key_id")
+    }
   }
 }
 

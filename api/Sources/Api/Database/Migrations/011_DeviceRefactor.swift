@@ -258,9 +258,9 @@ struct DeviceRefactor: GertieMigration {
   }
 
   let networkDecisionFk = Constraint.foreignKey(
-    from: LegacyNetworkDecision.M5.self,
+    from: Deleted.NetworkDecisionTable.M5.self,
     to: UserDevice.M11.self,
-    thru: LegacyNetworkDecision.M11.userDeviceId,
+    thru: Deleted.NetworkDecisionTable.M11.userDeviceId,
     onDelete: .cascade
   )
 
@@ -349,9 +349,9 @@ struct DeviceRefactor: GertieMigration {
       to: Screenshot.M11.userDeviceId
     )
     try await sql.renameColumn(
-      on: LegacyNetworkDecision.M5.self,
-      from: LegacyNetworkDecision.M5.deviceId,
-      to: LegacyNetworkDecision.M11.userDeviceId
+      on: Deleted.NetworkDecisionTable.M5.self,
+      from: Deleted.NetworkDecisionTable.M5.deviceId,
+      to: Deleted.NetworkDecisionTable.M11.userDeviceId
     )
     try await sql.renameColumn(
       on: UnlockRequest.M5.self,
@@ -387,9 +387,9 @@ struct DeviceRefactor: GertieMigration {
       to: Screenshot.M4.deviceId
     )
     try await sql.renameColumn(
-      on: LegacyNetworkDecision.M5.self,
-      from: LegacyNetworkDecision.M11.userDeviceId,
-      to: LegacyNetworkDecision.M5.deviceId
+      on: Deleted.NetworkDecisionTable.M5.self,
+      from: Deleted.NetworkDecisionTable.M11.userDeviceId,
+      to: Deleted.NetworkDecisionTable.M5.deviceId
     )
     try await sql.renameColumn(
       on: UnlockRequest.M5.self,
@@ -509,7 +509,7 @@ extension Screenshot {
   }
 }
 
-extension LegacyNetworkDecision {
+extension Deleted.NetworkDecisionTable {
   enum M11 {
     static let userDeviceId = FieldKey("user_device_id")
   }

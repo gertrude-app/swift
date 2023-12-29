@@ -296,11 +296,11 @@ extension KeystrokeLine {
 }
 
 extension NetworkDecisionVerdict: PostgresEnum {
-  public var typeName: String { LegacyNetworkDecision.M5.verdictTypeName }
+  public var typeName: String { Deleted.NetworkDecisionTable.M5.verdictTypeName }
 }
 
 extension NetworkDecisionReason: PostgresEnum {
-  public var typeName: String { LegacyNetworkDecision.M5.reasonTypeName }
+  public var typeName: String { Deleted.NetworkDecisionTable.M5.reasonTypeName }
 }
 
 extension Release: Duet.Identifiable {
