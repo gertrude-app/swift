@@ -100,7 +100,6 @@ struct BlockedRequestsFeature: Feature {
         let inputReqs = state.requests
           .filter { state.selectedRequestIds.contains($0.id) }
           .map { CreateUnlockRequests_v2.Input.BlockedRequest(
-            time: $0.time,
             bundleId: $0.app.bundleId,
             url: $0.url,
             hostname: $0.hostname,

@@ -38,12 +38,6 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
       type: .text,
       nullable: true
     )
-    try await sql.addColumn(
-      UnlockRequest.M18.ipProtocolNumber,
-      on: UnlockRequest.M5.self,
-      type: .int,
-      nullable: true
-    )
 
     // transfer data from network_decisions to unlock_requests
     for unlock in unlockRequestIds {
@@ -56,8 +50,7 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
           \(col: UnlockRequest.M18.appBundleId) = '\(raw: decision.appBundleId)',
           \(col: UnlockRequest.M18.url) = \(nullable: decision.url),
           \(col: UnlockRequest.M18.hostname) = \(nullable: decision.hostname),
-          \(col: UnlockRequest.M18.ipAddress) = \(nullable: decision.ipAddress),
-          \(col: UnlockRequest.M18.ipProtocolNumber) = \(nullable: decision.ipProtocolNumber)
+          \(col: UnlockRequest.M18.ipAddress) = \(nullable: decision.ipAddress)
         WHERE \(col: .id) = '\(uuid: unlock.id)'
       """)
     }
@@ -69,7 +62,7 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
     // drop network_decisions table
     try await sql.drop(constraint: RequestTables().networkDecisionKeyFk)
     try await sql.drop(constraint: DeviceRefactor().networkDecisionFk)
-    try await sql.drop(table: NetworkDecision.M5.self)
+    try await sql.drop(table: LegacyNetworkDecision.M5.self)
     try await sql.drop(enum: NetworkDecisionVerdict.self)
     try await sql.drop(enum: NetworkDecisionReason.self)
   }
@@ -78,18 +71,18 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
     // recreate network_decisions table
     try await sql.create(enum: NetworkDecisionVerdict.self)
     try await sql.create(enum: NetworkDecisionReason.self)
-    try await sql.create(table: NetworkDecision.M5.self) {
+    try await sql.create(table: LegacyNetworkDecision.M5.self) {
       Column(.id, .uuid, .primaryKey)
-      Column(NetworkDecision.M11.userDeviceId, .uuid)
-      Column(NetworkDecision.M5.verdict, .enum(NetworkDecisionVerdict.self))
-      Column(NetworkDecision.M5.reason, .enum(NetworkDecisionReason.self))
-      Column(NetworkDecision.M5.ipProtocolNumber, .bigint, .nullable)
-      Column(NetworkDecision.M5.hostname, .text, .nullable)
-      Column(NetworkDecision.M5.ipAddress, .text, .nullable)
-      Column(NetworkDecision.M5.url, .text, .nullable)
-      Column(NetworkDecision.M5.appBundleId, .text, .nullable)
-      Column(NetworkDecision.M5.count, .bigint)
-      Column(NetworkDecision.M5.responsibleKeyId, .uuid, .nullable)
+      Column(LegacyNetworkDecision.M11.userDeviceId, .uuid)
+      Column(LegacyNetworkDecision.M5.verdict, .enum(NetworkDecisionVerdict.self))
+      Column(LegacyNetworkDecision.M5.reason, .enum(NetworkDecisionReason.self))
+      Column(LegacyNetworkDecision.M5.ipProtocolNumber, .bigint, .nullable)
+      Column(LegacyNetworkDecision.M5.hostname, .text, .nullable)
+      Column(LegacyNetworkDecision.M5.ipAddress, .text, .nullable)
+      Column(LegacyNetworkDecision.M5.url, .text, .nullable)
+      Column(LegacyNetworkDecision.M5.appBundleId, .text, .nullable)
+      Column(LegacyNetworkDecision.M5.count, .bigint)
+      Column(LegacyNetworkDecision.M5.responsibleKeyId, .uuid, .nullable)
       Column(.createdAt, .timestampWithTimezone)
     }
     try await sql.add(constraint: RequestTables().networkDecisionKeyFk)
@@ -104,7 +97,6 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
     try await sql.dropColumn(UnlockRequest.M18.url, on: UnlockRequest.M5.self)
     try await sql.dropColumn(UnlockRequest.M18.hostname, on: UnlockRequest.M5.self)
     try await sql.dropColumn(UnlockRequest.M18.ipAddress, on: UnlockRequest.M5.self)
-    try await sql.dropColumn(UnlockRequest.M18.ipProtocolNumber, on: UnlockRequest.M5.self)
     try await sql.addColumn(
       UnlockRequest.M5.networkDecisionId,
       on: UnlockRequest.M5.self,
@@ -122,7 +114,6 @@ extension UnlockRequest {
     static let url = FieldKey("url")
     static let hostname = FieldKey("hostname")
     static let ipAddress = FieldKey("ip_address")
-    static let ipProtocolNumber = FieldKey("ip_protocol_number")
   }
 }
 
@@ -134,18 +125,16 @@ private struct LegacyDecisions: CustomQueryable {
   var url: String?
   var hostname: String?
   var ipAddress: String?
-  var ipProtocolNumber: Int?
 
   static func query(numBindings: Int) -> String {
     """
     SELECT
       id,
-      \(NetworkDecision.M5.appBundleId),
-      \(NetworkDecision.M5.url),
-      \(NetworkDecision.M5.hostname),
-      \(NetworkDecision.M5.ipAddress),
-      \(NetworkDecision.M5.ipProtocolNumber)
-    FROM \(NetworkDecision.M5.tableName)
+      \(LegacyNetworkDecision.M5.appBundleId),
+      \(LegacyNetworkDecision.M5.url),
+      \(LegacyNetworkDecision.M5.hostname),
+      \(LegacyNetworkDecision.M5.ipAddress)
+    FROM \(LegacyNetworkDecision.M5.tableName)
     """
   }
 }

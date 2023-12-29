@@ -19,26 +19,26 @@ struct RequestTables: GertieMigration {
   // table: network_decisions
 
   let networkDecisionDeviceFk = Constraint.foreignKey(
-    from: NetworkDecision.M5.self,
+    from: LegacyNetworkDecision.M5.self,
     to: Device.M3.self,
-    thru: NetworkDecision.M5.deviceId,
+    thru: LegacyNetworkDecision.M5.deviceId,
     onDelete: .cascade
   )
 
   let networkDecisionKeyFk = Constraint.foreignKey(
-    from: NetworkDecision.M5.self,
+    from: LegacyNetworkDecision.M5.self,
     to: Key.M2.self,
-    thru: NetworkDecision.M5.responsibleKeyId,
+    thru: LegacyNetworkDecision.M5.responsibleKeyId,
     onDelete: .cascade
   )
 
   func upNetworkDecisions(_ sql: SQLDatabase) async throws {
-    typealias M = NetworkDecision.M5
+    typealias M = LegacyNetworkDecision.M5
 
     try await sql.create(enum: NetworkDecisionVerdict.self)
     try await sql.create(enum: NetworkDecisionReason.self)
 
-    try await sql.create(table: NetworkDecision.M5.self) {
+    try await sql.create(table: LegacyNetworkDecision.M5.self) {
       Column(.id, .uuid, .primaryKey)
       Column(M.deviceId, .uuid)
       Column(M.verdict, .enum(NetworkDecisionVerdict.self))
@@ -60,7 +60,7 @@ struct RequestTables: GertieMigration {
   func downNetworkDecisions(_ sql: SQLDatabase) async throws {
     try await sql.drop(constraint: networkDecisionDeviceFk)
     try await sql.drop(constraint: networkDecisionKeyFk)
-    try await sql.drop(table: NetworkDecision.M5.self)
+    try await sql.drop(table: LegacyNetworkDecision.M5.self)
     try await sql.drop(enum: NetworkDecisionVerdict.self)
     try await sql.drop(enum: NetworkDecisionReason.self)
   }
@@ -76,7 +76,7 @@ struct RequestTables: GertieMigration {
 
   let unlockRequestNetworkDecisionFk = Constraint.foreignKey(
     from: UnlockRequest.M5.self,
-    to: NetworkDecision.M5.self,
+    to: LegacyNetworkDecision.M5.self,
     thru: UnlockRequest.M5.networkDecisionId,
     onDelete: .cascade
   )
@@ -140,7 +140,7 @@ extension RequestTables {
   }
 }
 
-extension NetworkDecision {
+enum LegacyNetworkDecision {
   enum M5: TableNamingMigration {
     static let tableName = "network_decisions"
     static let verdictTypeName = "enum_network_decision_verdict"

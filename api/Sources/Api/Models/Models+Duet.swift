@@ -295,33 +295,12 @@ extension KeystrokeLine {
   }
 }
 
-extension NetworkDecision: Duet.Identifiable {
-  typealias Id = Tagged<NetworkDecision, UUID>
-}
-
-extension NetworkDecision {
-  enum CodingKeys: String, CodingKey, CaseIterable {
-    case id
-    case userDeviceId
-    case responsibleKeyId
-    case verdict
-    case reason
-    case ipProtocolNumber
-    case hostname
-    case ipAddress
-    case url
-    case appBundleId
-    case count
-    case createdAt
-  }
-}
-
 extension NetworkDecisionVerdict: PostgresEnum {
-  public var typeName: String { NetworkDecision.M5.verdictTypeName }
+  public var typeName: String { LegacyNetworkDecision.M5.verdictTypeName }
 }
 
 extension NetworkDecisionReason: PostgresEnum {
-  public var typeName: String { NetworkDecision.M5.reasonTypeName }
+  public var typeName: String { LegacyNetworkDecision.M5.reasonTypeName }
 }
 
 extension Release: Duet.Identifiable {
@@ -401,11 +380,14 @@ extension UnlockRequest: Duet.Identifiable {
 extension UnlockRequest {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
-    case networkDecisionId
     case userDeviceId
     case status
     case requestComment
     case responseComment
+    case appBundleId
+    case url
+    case hostname
+    case ipAddress
     case createdAt
     case updatedAt
   }

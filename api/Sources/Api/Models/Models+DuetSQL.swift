@@ -425,57 +425,6 @@ extension KeystrokeLine: Model {
   }
 }
 
-extension NetworkDecision: Model {
-  public static let tableName = M5.tableName
-  public typealias ColumnName = CodingKeys
-
-  public func postgresData(for column: ColumnName) -> Postgres.Data {
-    switch column {
-    case .id:
-      return .id(self)
-    case .userDeviceId:
-      return .uuid(userDeviceId)
-    case .responsibleKeyId:
-      return .uuid(responsibleKeyId)
-    case .verdict:
-      return .enum(verdict)
-    case .reason:
-      return .enum(reason)
-    case .ipProtocolNumber:
-      return .int(ipProtocolNumber)
-    case .hostname:
-      return .string(hostname)
-    case .ipAddress:
-      return .string(ipAddress)
-    case .url:
-      return .string(url)
-    case .appBundleId:
-      return .string(appBundleId)
-    case .count:
-      return .int(count)
-    case .createdAt:
-      return .date(createdAt)
-    }
-  }
-
-  public var insertValues: [ColumnName: Postgres.Data] {
-    [
-      .id: .id(self),
-      .userDeviceId: .uuid(userDeviceId),
-      .responsibleKeyId: .uuid(responsibleKeyId),
-      .verdict: .enum(verdict),
-      .reason: .enum(reason),
-      .ipProtocolNumber: .int(ipProtocolNumber),
-      .hostname: .string(hostname),
-      .ipAddress: .string(ipAddress),
-      .url: .string(url),
-      .appBundleId: .string(appBundleId),
-      .count: .int(count),
-      .createdAt: .date(createdAt),
-    ]
-  }
-}
-
 extension Release: Model {
   public static let tableName = M7.tableName
   public typealias ColumnName = CodingKeys
@@ -611,8 +560,6 @@ extension UnlockRequest: Model {
     switch column {
     case .id:
       return .id(self)
-    case .networkDecisionId:
-      return .uuid(networkDecisionId)
     case .userDeviceId:
       return .uuid(userDeviceId)
     case .status:
@@ -621,6 +568,14 @@ extension UnlockRequest: Model {
       return .string(requestComment)
     case .responseComment:
       return .string(responseComment)
+    case .appBundleId:
+      return .string(appBundleId)
+    case .url:
+      return .string(url)
+    case .hostname:
+      return .string(hostname)
+    case .ipAddress:
+      return .string(ipAddress)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -631,11 +586,14 @@ extension UnlockRequest: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .networkDecisionId: .uuid(networkDecisionId),
       .userDeviceId: .uuid(userDeviceId),
       .status: .enum(status),
       .requestComment: .string(requestComment),
       .responseComment: .string(responseComment),
+      .appBundleId: .string(appBundleId),
+      .url: .string(url),
+      .hostname: .string(hostname),
+      .ipAddress: .string(ipAddress),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

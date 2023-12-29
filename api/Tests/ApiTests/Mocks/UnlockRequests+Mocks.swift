@@ -4,14 +4,14 @@ import Gertie
 
 extension UnlockRequest: RandomMocked {
   public static var mock: UnlockRequest {
-    UnlockRequest(networkDecisionId: .init(), userDeviceId: .init())
+    UnlockRequest(userDeviceId: .init(), appBundleId: "com.acme.widget")
   }
 
   public static var empty: UnlockRequest {
-    UnlockRequest(networkDecisionId: .init(), userDeviceId: .init())
+    UnlockRequest(userDeviceId: .init(), appBundleId: "")
   }
 
   public static var random: UnlockRequest {
-    UnlockRequest(networkDecisionId: .init(), userDeviceId: .init())
+    UnlockRequest(userDeviceId: .init(), appBundleId: "com.".random)
   }
 }

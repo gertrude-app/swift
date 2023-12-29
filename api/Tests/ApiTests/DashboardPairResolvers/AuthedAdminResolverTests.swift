@@ -453,16 +453,11 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testGetUnlockRequests() async throws {
     let user = try await Entities.user().withDevice()
 
-    let decision = NetworkDecision.random
-    decision.userDeviceId = user.device.id
-    decision.appBundleId = "com.rofl.biz"
-    try await Current.db.create(decision)
-
     let request = UnlockRequest.mock
     request.userDeviceId = user.device.id
     request.status = .pending
     request.requestComment = "please dad"
-    request.networkDecisionId = decision.id
+    request.appBundleId = "com.rofl.biz"
     try await Current.db.create(request)
 
     let output = try await GetUnlockRequest.resolve(
@@ -552,16 +547,10 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testUpdateUnlockRequest() async throws {
     let user = try await Entities.user().withDevice()
 
-    let decision = NetworkDecision.random
-    decision.userDeviceId = user.device.id
-    decision.appBundleId = "com.rofl.biz"
-    try await Current.db.create(decision)
-
     let request = UnlockRequest.mock
     request.userDeviceId = user.device.id
     request.status = .pending
     request.requestComment = "please dad"
-    request.networkDecisionId = decision.id
     try await Current.db.create(request)
 
     let output = try await UpdateUnlockRequest.resolve(
@@ -583,7 +572,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
       .unlockRequestUpdated(.init(
         userDeviceId: user.device.id,
         status: .rejected,
-        target: decision.target ?? "",
+        target: request.target ?? "",
         comment: "please dad",
         responseComment: "no way"
       )),
