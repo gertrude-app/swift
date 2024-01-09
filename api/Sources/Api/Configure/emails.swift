@@ -53,7 +53,7 @@ extension SendGrid.Email {
 }
 
 private func isCypressTestAddress(_ email: String) -> Bool {
-  email.starts(with: "e2e-test-") && email.contains("@gertrude.app")
+  email.starts(with: "e2e-user-") && email.contains("@gertrude.app")
 }
 
 private func isProdSmokeTestAddress(_ email: String) -> Bool {
