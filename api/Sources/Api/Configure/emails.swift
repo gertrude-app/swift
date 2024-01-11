@@ -23,7 +23,7 @@ extension Configure {
     Current.postmark.send = { email in
       if isCypressTestAddress(email.to) {
         return
-      } else if isProdSmokeTestAddress(email.to) {
+      } else if isProdSmokeTestAddress(email.to) || isJaredTestAddress(email.to) {
         try await sendGridSend(.init(postmark: email))
       } else {
         try await postmarkSend(email)
@@ -58,6 +58,10 @@ private func isCypressTestAddress(_ email: String) -> Bool {
 
 private func isProdSmokeTestAddress(_ email: String) -> Bool {
   email.starts(with: "82uii.smoke-test-") && email.contains("@inbox.testmail.app")
+}
+
+private func isJaredTestAddress(_ email: String) -> Bool {
+  email.starts(with: "jared+") && email.hasSuffix("@netrivet.com")
 }
 
 func isTestAddress(_ email: String) -> Bool {
