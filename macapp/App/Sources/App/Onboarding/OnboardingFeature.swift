@@ -220,9 +220,14 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked)
         where step == .connectChild && state.connectChildRequest.isSucceeded:
-        log("next from connect user success", "34221891")
+        log("next from connect user success", "dbd6106b")
+        state.step = .howToUseGifs
+        return .none
+
+      case .webview(.primaryBtnClicked) where step == .howToUseGifs:
+        log(step, action, "16472dce")
         return .exec { send in
-          await nextRequiredStage(from: .connectChild, send)
+          await nextRequiredStage(from: .howToUseGifs, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowNotifications_start:
@@ -370,40 +375,46 @@ struct OnboardingFeature: Feature {
           await nextRequiredStage(from: step, send)
         }
 
+      case .webview(.primaryBtnClicked) where step == .installSysExt_trick:
+        log(step, action, "880e4b49")
+        state.step = .installSysExt_allow
+        return .exec { send in
+          try? await mainQueue.sleep(for: .seconds(3)) // let them see the explanation gif
+          let installResult = await systemExtension.installOverridingTimeout(60 * 4) // 4 minutes
+          log("sys ext install result=\(installResult)", "adbc0453")
+          switch installResult {
+          case .installedSuccessfully:
+            await send(.setStep(.installSysExt_success))
+            // safeguard, make sure onboarding user not exempted
+            _ = await systemExtensionXpc.setUserExemption(device.currentUserId(), false)
+            switch await systemExtensionXpc.requestUserTypes() {
+            case .success(let data):
+              await send(.receivedFilterUsers(data))
+            case .failure(let err):
+              log("failed to get exempt user ids: \(err)", "3b8fd6b8")
+            }
+          case .timedOutWaiting:
+            await send(.sysExtInstallTimedOut)
+          case .userClickedDontAllow:
+            await send(.setStep(.installSysExt_failed))
+          case .alreadyInstalled:
+            // should never happen, since checked the condition above
+            await send(.setStep(.installSysExt_failed))
+          case .activationRequestFailed,
+               .failedToGetBundleIdentifier,
+               .failedToLoadConfig,
+               .failedToSaveConfig:
+            await send(.setStep(.installSysExt_failed))
+          }
+        }
+
       case .webview(.primaryBtnClicked) where step == .installSysExt_explain:
         return .exec { send in
           let startingState = await systemExtension.state()
           log("primary from .installSysExt_explain, state=\(startingState)", "e585331d")
           switch startingState {
           case .notInstalled:
-            await send(.setStep(.installSysExt_allow))
-            try? await mainQueue.sleep(for: .seconds(3)) // let them see the explanation gif
-            let installResult = await systemExtension.installOverridingTimeout(60 * 4) // 4 minutes
-            log("sys ext install result=\(installResult)", "adbc0453")
-            switch installResult {
-            case .installedSuccessfully:
-              await send(.setStep(.installSysExt_success))
-              // safeguard, make sure onboarding user not exempted
-              _ = await systemExtensionXpc.setUserExemption(device.currentUserId(), false)
-              switch await systemExtensionXpc.requestUserTypes() {
-              case .success(let data):
-                await send(.receivedFilterUsers(data))
-              case .failure(let err):
-                log("failed to get exempt user ids: \(err)", "3b8fd6b8")
-              }
-            case .timedOutWaiting:
-              await send(.sysExtInstallTimedOut)
-            case .userClickedDontAllow:
-              await send(.setStep(.installSysExt_failed))
-            case .alreadyInstalled:
-              // should never happen, since checked the condition above
-              await send(.setStep(.installSysExt_failed))
-            case .activationRequestFailed,
-                 .failedToGetBundleIdentifier,
-                 .failedToLoadConfig,
-                 .failedToSaveConfig:
-              await send(.setStep(.installSysExt_failed))
-            }
+            await send(.setStep(.installSysExt_trick))
           case .errorLoadingConfig, .unknown:
             await send(.setStep(.installSysExt_failed))
           case .installedAndRunning:

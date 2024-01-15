@@ -17,6 +17,9 @@ extension OnboardingFeature.State {
     case getChildConnectionCode
     case connectChild
 
+    // how to use gifs
+    case howToUseGifs
+
     // notifications
     case allowNotifications_start
     case allowNotifications_grant
@@ -37,6 +40,7 @@ extension OnboardingFeature.State {
 
     // sys ext
     case installSysExt_explain
+    case installSysExt_trick
     case installSysExt_allow
     case installSysExt_failed
     case installSysExt_success
@@ -66,6 +70,8 @@ extension OnboardingFeature.State.Step {
     case .getChildConnectionCode:
       return .connectChild
     case .connectChild:
+      return .howToUseGifs
+    case .howToUseGifs:
       return .allowNotifications_start
     case .allowNotifications_start:
       return .allowNotifications_grant
@@ -88,6 +94,8 @@ extension OnboardingFeature.State.Step {
     case .allowKeylogging_failed:
       return .installSysExt_explain
     case .installSysExt_explain:
+      return .installSysExt_trick
+    case .installSysExt_trick:
       return .installSysExt_allow
     case .installSysExt_allow:
       return .installSysExt_success
@@ -124,8 +132,10 @@ extension OnboardingFeature.State.Step {
       return .macosUserAccountType
     case .connectChild:
       return .getChildConnectionCode
-    case .allowNotifications_start:
+    case .howToUseGifs:
       return .connectChild
+    case .allowNotifications_start:
+      return .howToUseGifs
     case .allowNotifications_grant:
       return .allowNotifications_start
     case .allowNotifications_failed:
@@ -146,8 +156,10 @@ extension OnboardingFeature.State.Step {
       return .allowKeylogging_required
     case .installSysExt_explain:
       return .allowKeylogging_required
-    case .installSysExt_allow:
+    case .installSysExt_trick:
       return .installSysExt_explain
+    case .installSysExt_allow:
+      return .installSysExt_trick
     case .installSysExt_failed:
       return .installSysExt_explain
     case .installSysExt_success:
@@ -180,6 +192,7 @@ extension OnboardingFeature.State.Step: Comparable {
     case .macosUserAccountType: return 15
     case .getChildConnectionCode: return 20
     case .connectChild: return 25
+    case .howToUseGifs: return 28
     case .allowNotifications_start: return 30
     case .allowNotifications_grant: return 35
     case .allowNotifications_failed: return 40
@@ -191,6 +204,7 @@ extension OnboardingFeature.State.Step: Comparable {
     case .allowKeylogging_grant: return 80
     case .allowKeylogging_failed: return 85
     case .installSysExt_explain: return 90
+    case .installSysExt_trick: return 92
     case .installSysExt_allow: return 95
     case .installSysExt_failed: return 100
     case .installSysExt_success: return 105
