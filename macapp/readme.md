@@ -48,6 +48,9 @@
   - add onboarding user exemption screen
   - improve user exemption to not include other protected users
   - prevent integer overflow causing json decode in request suspension window
+- `2.1.3` (1/16/24 as `beta` for new customers only)
+  - multi-stage gifs for onboarding instructions
+  - new "how to use gifs" & "don't fall for trick" onboarding screens
 
 ## Sparkle Releases
 
