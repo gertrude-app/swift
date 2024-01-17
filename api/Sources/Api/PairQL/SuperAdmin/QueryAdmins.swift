@@ -175,7 +175,9 @@ struct AdminQuery: CustomQueryable {
     LEFT JOIN devices ON user_devices.device_id = devices.id
     LEFT JOIN user_keychain ON users.id = user_keychain.user_id
     LEFT JOIN keys ON user_keychain.keychain_id = keys.keychain_id
-    WHERE users.deleted_at IS NULL
+    WHERE
+      users.deleted_at IS NULL AND
+      admins.email NOT LIKE '82uii.smoke-test-%'
     GROUP BY
       admins.id,
       admins.email,
