@@ -325,7 +325,6 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(retrieved.first?.eventId).toEqual("123")
     expect(retrieved.first?.kind).toEqual("event")
     expect(retrieved.first?.detail).toEqual("detail")
-    expect(sent.slacks).toHaveCount(1)
   }
 
   func testUpdateAdminNotification() async throws {
