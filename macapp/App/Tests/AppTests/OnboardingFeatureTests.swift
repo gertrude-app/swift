@@ -112,6 +112,11 @@ import XExpect
     store.deps.device.notificationsSetting = notifsSettings.fn
 
     // they click "next" on the connected child success screen...
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.step = .howToUseGifs // and go to "how to use gifs"
+    }
+
+    // they click "next" on the how to use gifs screen...
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
     // ... and end up on the notifications screen
@@ -215,7 +220,13 @@ import XExpect
     // ...so they get sent off to the next happy path step
     await store.receive(.onboarding(.delegate(.saveForResume(nil))))
     await store.receive(.onboarding(.setStep(.installSysExt_explain))) {
-      $0.onboarding.step = .installSysExt_explain // ...and go to sys ext start
+      $0.onboarding.step = .installSysExt_explain // ...which is sys ext explain
+    }
+
+    // they click "Got it" on the install sys ext start screen
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+    await store.receive(.onboarding(.setStep(.installSysExt_trick))) {
+      $0.onboarding.step = .installSysExt_trick // ...which is sys ext "trick"
     }
 
     let installSysExt = spy(
@@ -224,21 +235,22 @@ import XExpect
     )
     store.deps.filterExtension.installOverridingTimeout = installSysExt.fn
 
-    let getExemptIds = mock(always: Result<[uid_t], XPCErr>.success([]))
-    store.deps.filterXpc.requestExemptUserIds = getExemptIds.fn
-
     let setUserExemption = spy2(
       on: (uid_t.self, Bool.self),
       returning: Result<Void, XPCErr>.success(())
     )
     store.deps.filterXpc.setUserExemption = setUserExemption.fn
 
-    // they click "Next" on the install sys ext start screen
-    await store.send(.onboarding(.webview(.primaryBtnClicked)))
-    await expect(installSysExt.invocations.value).toHaveCount(1)
-    await store.receive(.onboarding(.setStep(.installSysExt_allow))) {
-      $0.onboarding.step = .installSysExt_allow // ...and go to sys ext allow
+    let getExemptIds = mock(always: Result<[uid_t], XPCErr>.success([]))
+    store.deps.filterXpc.requestExemptUserIds = getExemptIds.fn
+
+    // they click "Got it" on the install sys ext trick screen...
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.step = .installSysExt_allow // ...and go to sys ext allow...
     }
+
+    // ...which kicks off the sys ext install
+    await expect(installSysExt.invocations.value).toHaveCount(1)
 
     // because filterExtension.install is mocked to return success, we go to success
     await store.receive(.onboarding(.setStep(.installSysExt_success))) {
@@ -627,6 +639,7 @@ import XExpect
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .installedAndRunning }
 
+    await store.send(.webview(.primaryBtnClicked)) { $0.step = .howToUseGifs }
     await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_required)) // we always stop here
     await store.send(.webview(.primaryBtnClicked))
@@ -644,6 +657,7 @@ import XExpect
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { fatalError() }
     store.deps.filterExtension.state = { fatalError() }
 
+    await store.send(.webview(.primaryBtnClicked)) { $0.step = .howToUseGifs }
     await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.allowScreenshots_required))
   }
@@ -659,6 +673,7 @@ import XExpect
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     store.deps.filterExtension.state = { fatalError() }
 
+    await store.send(.webview(.primaryBtnClicked)) { $0.step = .howToUseGifs }
     await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_required))
   }
@@ -674,6 +689,7 @@ import XExpect
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
 
+    await store.send(.webview(.primaryBtnClicked)) { $0.step = .howToUseGifs }
     await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_required)) // we always stop here
     await store.send(.webview(.primaryBtnClicked))
@@ -754,7 +770,7 @@ import XExpect
 
   func testHandleDetectingSysExtInstallFail() async {
     let store = featureStore {
-      $0.step = .installSysExt_explain
+      $0.step = .installSysExt_trick
     }
     store.deps.mainQueue = .immediate
     let filterState = mock(once: FilterExtensionState.notInstalled)
@@ -765,13 +781,15 @@ import XExpect
     )
     store.deps.filterExtension.installOverridingTimeout = installSysExt.fn
 
-    // they click "Next" on the install sys ext explain screen
-    await store.send(.webview(.primaryBtnClicked))
-    await expect(installSysExt.invocations.value).toHaveCount(1)
-    await store.receive(.setStep(.installSysExt_allow)) {
-      $0.step = .installSysExt_allow // ...and go to sys ext allow
+    // they click "Next" on the install sys ext "trick" screen...
+    await store.send(.webview(.primaryBtnClicked)) {
+      // which brings them to the "allow" screen, AND kicks of (unsuccesful) install
+      $0.step = .installSysExt_allow
     }
 
+    // prove we tried to install (which was mocked to fail)
+    await expect(installSysExt.invocations.value).toHaveCount(1)
+    // so we end up on fail screen
     await store.receive(.setStep(.installSysExt_failed))
   }
 
@@ -1210,7 +1228,7 @@ import XExpect
   }
 
   func testSysExtInstallTimeoutDoesntPullBackToFailScreenIfPastThere() async {
-    let store = featureStore { $0.step = .installSysExt_explain }
+    let store = featureStore { $0.step = .installSysExt_trick }
     store.deps.mainQueue = .immediate
     let timedOut = LockIsolated(false)
     store.deps.filterExtension.state = { .notInstalled }
@@ -1224,9 +1242,10 @@ import XExpect
       return .timedOutWaiting
     }
 
-    // they click next from sys-ext explain, triggering install
-    await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.installSysExt_allow))
+    // they click next from sys-ext "trick" screen, triggering install
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .installSysExt_allow
+    }
 
     // they click help i'm stuck, going to fail screen
     await store.send(.webview(.secondaryBtnClicked))
@@ -1248,7 +1267,7 @@ import XExpect
   }
 
   func testSysExtInstallTimeoutDoesGoToFailScreenIfNotPastStage() async {
-    let store = featureStore { $0.step = .installSysExt_explain }
+    let store = featureStore { $0.step = .installSysExt_trick }
     store.deps.mainQueue = .immediate
     let timedOut = LockIsolated(false)
     store.deps.filterExtension.state = { .notInstalled }
@@ -1262,9 +1281,10 @@ import XExpect
       return .timedOutWaiting
     }
 
-    // they click next from sys-ext explain, triggering install
-    await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.installSysExt_allow))
+    // they click next from sys-ext "trick" screen, triggering install
+    await store.send(.webview(.primaryBtnClicked)) {
+      $0.step = .installSysExt_allow
+    }
 
     // they click help i'm stuck, going to fail screen
     await store.send(.webview(.secondaryBtnClicked))

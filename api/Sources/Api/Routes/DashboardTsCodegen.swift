@@ -74,6 +74,7 @@ enum DashboardTsCodegenRoute {
       GetUserUnlockRequests.self,
       Login.self,
       LoginMagicLink.self,
+      LogEvent.self,
       RequestMagicLink.self,
       ResetPassword.self,
       SaveDevice.self,

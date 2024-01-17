@@ -91,6 +91,7 @@ jobs:
     container: swift:5.8-focal
     env:
       DATABASE_HOST: postgres
+      SLACK_API_TOKEN: not-real
     services:
       postgres:
         image: postgres:latest

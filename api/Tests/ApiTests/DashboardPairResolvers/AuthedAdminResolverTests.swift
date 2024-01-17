@@ -281,6 +281,53 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(retrieved).toBeNil()
   }
 
+  func testDeletingAdminDeletesAdminAndCreatesDeletedEntity() async throws {
+    try await DeletedEntity.deleteAll()
+    let admin = try await Entities.admin()
+
+    _ = try await DeleteEntity.resolve(
+      with: .init(id: admin.id.rawValue, type: .admin),
+      in: context(admin)
+    )
+
+    let deleted = try await DeletedEntity.query().all()
+    expect(deleted).toHaveCount(1)
+    expect(deleted.first?.type).toEqual("Admin")
+    expect(deleted.first?.reason).toEqual("self-deleted from use-case initial screen")
+    expect(deleted.first!.data).toContain(admin.id.lowercased)
+    expect(try? await Admin.find(admin.id)).toBeNil()
+  }
+
+  func testAdminCantDeleteOtherAdmin() async throws {
+    let admin1 = try await Entities.admin()
+    let admin2 = try await Entities.admin()
+
+    try await expectErrorFrom { [weak self] in
+      _ = try await DeleteEntity.resolve(
+        with: .init(id: admin2.id.rawValue, type: .admin),
+        in: self!.context(admin1)
+      )
+    }.toContain("Unauthorized")
+  }
+
+  func testLogDashboardEvent() async throws {
+    try await InterestingEvent.deleteAll()
+    let admin = try await Entities.admin()
+
+    let output = try await LogEvent.resolve(
+      with: .init(eventId: "123", detail: "detail"),
+      in: context(admin)
+    )
+
+    expect(output).toEqual(.success)
+    let retrieved = try await InterestingEvent.query().all()
+    expect(retrieved).toHaveCount(1)
+    expect(retrieved.first?.eventId).toEqual("123")
+    expect(retrieved.first?.kind).toEqual("event")
+    expect(retrieved.first?.detail).toEqual("detail")
+    expect(sent.slacks).toHaveCount(1)
+  }
+
   func testUpdateAdminNotification() async throws {
     let admin = try await Entities.admin()
     let email = try await Current.db.create(AdminVerifiedNotificationMethod(

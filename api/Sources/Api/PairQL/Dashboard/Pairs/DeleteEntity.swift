@@ -1,12 +1,14 @@
 import DuetSQL
 import PairQL
 import Vapor
+import XCore
 
 struct DeleteEntity: Pair {
   static var auth: ClientAuth = .admin
 
   struct Input: PairInput {
     enum EntityType: String, Codable {
+      case admin
       case adminNotification
       case adminVerifiedNotificationMethod
       case userDevice
@@ -25,6 +27,16 @@ struct DeleteEntity: Pair {
 extension DeleteEntity: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     switch input.type {
+    case .admin:
+      guard input.id == context.admin.id else {
+        throw Abort(.unauthorized)
+      }
+      try await Current.db.create(DeletedEntity(
+        type: "Admin",
+        reason: "self-deleted from use-case initial screen",
+        data: try JSON.encode(context.admin, [.isoDates])
+      ))
+      try await context.admin.delete()
 
     case .adminNotification:
       try await Current.db.query(AdminNotification.self)
