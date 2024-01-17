@@ -24,6 +24,7 @@ enum AuthedAdminRoute: PairRoute {
   case handleCheckoutCancel(HandleCheckoutCancel.Input)
   case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
   case latestAppVersions
+  case logEvent(LogEvent.Input)
   case userActivityFeed(UserActivityFeed.Input)
   case userActivitySummaries(UserActivitySummaries.Input)
   case combinedUsersActivityFeed(CombinedUsersActivityFeed.Input)
@@ -113,6 +114,10 @@ extension AuthedAdminRoute {
     Route(/Self.handleCheckoutSuccess) {
       Operation(HandleCheckoutSuccess.self)
       Body(.dashboardInput(HandleCheckoutSuccess.self))
+    }
+    Route(/Self.logEvent) {
+      Operation(LogEvent.self)
+      Body(.dashboardInput(LogEvent.self))
     }
     Route(/Self.userActivitySummaries) {
       Operation(UserActivitySummaries.self)
@@ -206,6 +211,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await respond(with: output)
     case .getAdmin:
       let output = try await GetAdmin.resolve(in: context)
+      return try await respond(with: output)
+    case .logEvent(let input):
+      let output = try await LogEvent.resolve(with: input, in: context)
       return try await respond(with: output)
     case .saveDevice(let input):
       let output = try await SaveDevice.resolve(with: input, in: context)
