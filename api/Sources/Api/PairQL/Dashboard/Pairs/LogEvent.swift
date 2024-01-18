@@ -14,6 +14,9 @@ struct LogEvent: Pair {
 
 extension LogEvent: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+    if isTestAddress(context.admin.email.rawValue) {
+      return .success
+    }
     try await InterestingEvent(
       eventId: input.eventId,
       kind: "event",
