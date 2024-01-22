@@ -22,6 +22,7 @@ extension HandleCheckoutSuccess: Resolver {
     case (.trialing, .active),
          (.trialExpiringSoon, .active),
          (.overdue, .active),
+         (.paid, .active), // <-- happens when stripe webhook received before
          (.unpaid, .active):
       admin.subscriptionStatus = .paid
       admin.subscriptionId = subscriptionId

@@ -5,6 +5,29 @@ import XExpect
 @testable import Api
 
 final class StripeEventTests: ApiTestCase {
+  func testSetsSubscriptionId() async throws {
+    let admin = try await Admin
+      .random(with: { $0.subscriptionId = nil })
+      .create()
+
+    let json = """
+      {
+        "type": "invoice.paid",
+        "data": {
+          "object": {
+            "customer_email": "\(admin.email)",
+            "subscription": "sub_123"
+          }
+        }
+      }
+    """
+
+    try await app.test(.POST, "stripe-events", body: .init(string: json), afterResponse: { res in
+      let retrieved = try await Admin.find(admin.id)
+      expect(retrieved.subscriptionId).toEqual("sub_123")
+    })
+  }
+
   func testUpdateAdminSubscriptionStatusExpirationFromStripeEvent() async throws {
     let periodEnd = 1_704_050_627
     let admin = try await Admin
