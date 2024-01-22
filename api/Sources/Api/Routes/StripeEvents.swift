@@ -24,6 +24,17 @@ enum StripeEventsRoute {
         admin.subscriptionStatusExpiration = event?.data?.object?.lines?.data?.first?.period?.end
           .map { Date(timeIntervalSince1970: TimeInterval($0)).advanced(by: .days(2)) }
           ?? Current.date().advanced(by: .days(33))
+
+        switch (admin.subscriptionId, event?.data?.object?.subscription) {
+        case (.none, .some(let subscriptionId)):
+          admin.subscriptionId = .init(rawValue: subscriptionId)
+        case (.some(let existing), .some(let subscriptionId))
+          where existing.rawValue != subscriptionId:
+          admin.subscriptionId = .init(rawValue: subscriptionId)
+          unexpected("2156b9f8", detail: "prev: \(existing), new: \(subscriptionId)")
+        default:
+          break
+        }
         try await admin.save()
       } else {
         unexpected("b3aaf12c", detail: "email: \(email), event: \(stripeEvent.id)")
@@ -59,6 +70,7 @@ private struct EventInfo: Decodable {
 
       var customer_email: String?
       var lines: Lines?
+      var subscription: String?
     }
 
     var object: Object?
