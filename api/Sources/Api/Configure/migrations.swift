@@ -22,5 +22,6 @@ extension Configure {
     app.migrations.add(ReworkPayments())
     app.migrations.add(AddUserShowSuspensionActivity())
     app.migrations.add(EliminateNetworkDecisionsTable())
+    app.migrations.add(AddAdminGclid())
   }
 }

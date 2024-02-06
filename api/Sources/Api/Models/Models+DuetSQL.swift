@@ -19,6 +19,8 @@ extension Admin: Model {
       return .enum(subscriptionStatus)
     case .subscriptionStatusExpiration:
       return .date(subscriptionStatusExpiration)
+    case .gclid:
+      return .string(gclid)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -34,6 +36,7 @@ extension Admin: Model {
       .subscriptionId: .string(subscriptionId?.rawValue),
       .subscriptionStatus: .enum(subscriptionStatus),
       .subscriptionStatusExpiration: .date(subscriptionStatusExpiration),
+      .gclid: .string(gclid),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
