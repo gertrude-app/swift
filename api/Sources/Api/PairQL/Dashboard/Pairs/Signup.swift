@@ -66,7 +66,7 @@ func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
 private func accountExists(with email: String) -> XPostmark.Email {
   .init(
     to: email,
-    from: "noreply@gertrude.app",
+    from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude Signup Request".withEmailSubjectDisambiguator,
     html: """
     We received a request to initiate a signup for the Gertrude app, \
@@ -80,7 +80,7 @@ private func accountExists(with email: String) -> XPostmark.Email {
 private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> XPostmark.Email {
   .init(
     to: email,
-    from: "noreply@gertrude.app",
+    from: "Gertrude App <noreply@gertrude.app>",
     subject: "Action Required: Confirm your email".withEmailSubjectDisambiguator,
     html: """
     Please verify your email address by clicking \
