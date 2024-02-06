@@ -30,16 +30,28 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     let input = Signup.Input(email: email, password: "pass")
     let output = try await Signup.resolve(with: input, in: context)
 
-    let user = try await Current.db.query(Admin.self)
+    let admin = try await Current.db.query(Admin.self)
       .where(.email == email)
       .first()
 
     expect(output).toEqual(.success)
-    expect(user.subscriptionStatus).toEqual(.pendingEmailVerification)
-    expect(user.subscriptionStatusExpiration).toEqual(.epoch.advanced(by: .days(7)))
+    expect(admin.subscriptionStatus).toEqual(.pendingEmailVerification)
+    expect(admin.subscriptionStatusExpiration).toEqual(.epoch.advanced(by: .days(7)))
     expect(sent.postmarkEmails.count).toEqual(1)
     expect(sent.postmarkEmails[0].to).toEqual(email)
     expect(sent.postmarkEmails[0].html).toContain("verify your email address")
+  }
+
+  func testInitiateSignupWithGclid() async throws {
+    let email = "signup".random + "@example.com"
+    let input = Signup.Input(email: email, password: "pass", gclid: "gclid-123")
+    _ = try await Signup.resolve(with: input, in: context)
+
+    let admin = try await Current.db.query(Admin.self)
+      .where(.email == email)
+      .first()
+
+    expect(admin.gclid).toEqual("gclid-123")
   }
 
   func testLoginFromMagicLink() async throws {

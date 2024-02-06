@@ -10,6 +10,7 @@ struct Signup: Pair {
   struct Input: PairInput {
     var email: String
     var password: String
+    var gclid: String?
   }
 }
 
@@ -42,7 +43,8 @@ extension Signup: Resolver {
       email: .init(rawValue: email),
       password: Env.mode == .test ? input.password : try Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
-      subscriptionStatusExpiration: Current.date().advanced(by: .days(7))
+      subscriptionStatusExpiration: Current.date().advanced(by: .days(7)),
+      gclid: input.gclid
     ))
 
     try await sendVerificationEmail(to: admin, in: context)
