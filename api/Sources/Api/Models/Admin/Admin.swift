@@ -8,6 +8,7 @@ final class Admin: Codable {
   var subscriptionId: SubscriptionId?
   var subscriptionStatus: SubscriptionStatus
   var subscriptionStatusExpiration: Date
+  var gclid: String?
   var createdAt = Date()
   var updatedAt = Date()
   var deletedAt: Date?
@@ -25,7 +26,8 @@ final class Admin: Codable {
     password: String,
     subscriptionStatus: SubscriptionStatus = .pendingEmailVerification,
     subscriptionStatusExpiration: Date = Date().advanced(by: .days(7)),
-    subscriptionId: SubscriptionId? = nil
+    subscriptionId: SubscriptionId? = nil,
+    gclid: String? = nil
   ) {
     self.id = id
     self.email = email
@@ -33,6 +35,7 @@ final class Admin: Codable {
     self.subscriptionId = subscriptionId
     self.subscriptionStatus = subscriptionStatus
     self.subscriptionStatusExpiration = subscriptionStatusExpiration
+    self.gclid = gclid
   }
 }
 

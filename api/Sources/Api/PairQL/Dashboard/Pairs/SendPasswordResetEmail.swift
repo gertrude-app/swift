@@ -35,7 +35,7 @@ extension SendPasswordResetEmail: Resolver {
 private func reset(_ email: String, _ dashboardUrl: String, _ token: UUID) -> XPostmark.Email {
   .init(
     to: email,
-    from: "noreply@gertrude.app",
+    from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude password reset".withEmailSubjectDisambiguator,
     html: """
     You can reset your Gertrude account password by clicking \
@@ -47,7 +47,7 @@ private func reset(_ email: String, _ dashboardUrl: String, _ token: UUID) -> XP
 private func notFound(_ email: String) -> XPostmark.Email {
   .init(
     to: email,
-    from: "noreply@gertrude.app",
+    from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude app password reset".withEmailSubjectDisambiguator,
     html: """
     A password reset was requested for this email address, \

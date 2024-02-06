@@ -110,6 +110,7 @@ extension Admin {
     case subscriptionId
     case subscriptionStatus
     case subscriptionStatusExpiration
+    case gclid
     case createdAt
     case updatedAt
   }

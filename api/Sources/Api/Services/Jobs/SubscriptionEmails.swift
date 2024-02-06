@@ -21,7 +21,7 @@ enum SubscriptionEmails {
   private static func trialEndingSoon(_ address: String) -> XPostmark.Email {
     .init(
       to: address,
-      from: "noreply@gertrude.app",
+      from: "Gertrude App <noreply@gertrude.app>",
       replyTo: "jared@netrivet.com",
       subject: "[action required] Gertrude trial ending soon".withEmailSubjectDisambiguator,
       html: """
@@ -48,7 +48,7 @@ enum SubscriptionEmails {
   private static func trialEndedToOverdue(_ address: String) -> XPostmark.Email {
     .init(
       to: address,
-      from: "noreply@gertrude.app",
+      from: "Gertrude App <noreply@gertrude.app>",
       replyTo: "jared@netrivet.com",
       subject: "[action required] Gertrude trial ended".withEmailSubjectDisambiguator,
       html: """
@@ -85,7 +85,7 @@ enum SubscriptionEmails {
   private static func overdueToUnpaid(_ address: String) -> XPostmark.Email {
     .init(
       to: address,
-      from: "noreply@gertrude.app",
+      from: "Gertrude App <noreply@gertrude.app>",
       replyTo: "jared@netrivet.com",
       subject: "[action required] Gertrude account disabled".withEmailSubjectDisambiguator,
       html: """
@@ -121,7 +121,7 @@ enum SubscriptionEmails {
   private static func paidToOverdue(_ address: String) -> XPostmark.Email {
     .init(
       to: address,
-      from: "noreply@gertrude.app",
+      from: "Gertrude App <noreply@gertrude.app>",
       replyTo: "jared@netrivet.com",
       subject: "[action required] Gertrude payment failed".withEmailSubjectDisambiguator,
       html: """
@@ -161,7 +161,7 @@ enum SubscriptionEmails {
   private static func unpaidToPendingDelete(_ address: String) -> XPostmark.Email {
     .init(
       to: address,
-      from: "noreply@gertrude.app",
+      from: "Gertrude App <noreply@gertrude.app>",
       replyTo: "jared@netrivet.com",
       subject: "[action required] Gertrude account will be deleted".withEmailSubjectDisambiguator,
       html: """
@@ -189,7 +189,7 @@ enum SubscriptionEmails {
   private static func deleteEmailUnverified(_ address: String) -> XPostmark.Email {
     .init(
       to: address,
-      from: "noreply@gertrude.app",
+      from: "Gertrude App <noreply@gertrude.app>",
       replyTo: "jared@netrivet.com",
       subject: "Gertrude unverified account deleted".withEmailSubjectDisambiguator,
       html: """

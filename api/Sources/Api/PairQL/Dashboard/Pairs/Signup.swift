@@ -10,6 +10,7 @@ struct Signup: Pair {
   struct Input: PairInput {
     var email: String
     var password: String
+    var gclid: String?
   }
 }
 
@@ -42,7 +43,8 @@ extension Signup: Resolver {
       email: .init(rawValue: email),
       password: Env.mode == .test ? input.password : try Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
-      subscriptionStatusExpiration: Current.date().advanced(by: .days(7))
+      subscriptionStatusExpiration: Current.date().advanced(by: .days(7)),
+      gclid: input.gclid
     ))
 
     try await sendVerificationEmail(to: admin, in: context)
@@ -64,7 +66,7 @@ func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
 private func accountExists(with email: String) -> XPostmark.Email {
   .init(
     to: email,
-    from: "noreply@gertrude.app",
+    from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude Signup Request".withEmailSubjectDisambiguator,
     html: """
     We received a request to initiate a signup for the Gertrude app, \
@@ -78,7 +80,7 @@ private func accountExists(with email: String) -> XPostmark.Email {
 private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> XPostmark.Email {
   .init(
     to: email,
-    from: "noreply@gertrude.app",
+    from: "Gertrude App <noreply@gertrude.app>",
     subject: "Action Required: Confirm your email".withEmailSubjectDisambiguator,
     html: """
     Please verify your email address by clicking \
