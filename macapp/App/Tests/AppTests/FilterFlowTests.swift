@@ -37,8 +37,11 @@ class FilterFlowTests: XCTestCase {
   func testIsLocal() throws {
     let cases = [
       ("12.2.3.4:80", false),
+      ("::1.80", true),
+      ("0:0:0:0:0:0:0:1.80", true),
       ("127.0.0.1:80", true),
       ("127.0.0.1:443", true),
+      ("2001:4998:24:120d::1:0.443", false),
     ]
     for (endpoint, expected) in cases {
       let flow = TestDesc(endpoint: endpoint).flow

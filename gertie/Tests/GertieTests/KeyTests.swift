@@ -88,6 +88,8 @@ final class KeyTests: XCTestCase {
       "FE80:0000:0000:0000:0202:B3FF:FE1E:8329",
       "FE80::0202:B3FF:FE1E:8329",
       "FE80::0202:B3FF:FE1E:8329%en0",
+      // ipv6 localhost
+      "0:0:0:0:0:0:0:1", "::1",
     ]
     for input in validInputs {
       expect(Key.Ip(input)).not.toBeNil()

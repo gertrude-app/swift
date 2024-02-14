@@ -84,7 +84,7 @@ public extension Key.Ip {
     // these regexes are naive, but probably good enough
     if input.matchesRegex(#"^\d+\.\d+\.\d+\.\d+"#) {
       string = input
-    } else if input.matchesRegex(#"^[0-9a-zA-Z]+:[0-9a-zA-Z:%]+$"#) {
+    } else if input.matchesRegex(#"^[0-9a-zA-Z]*:[0-9a-zA-Z:%]*$"#) {
       string = input
     } else {
       return nil

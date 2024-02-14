@@ -21,7 +21,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
   }
 
   public var isLocal: Bool {
-    if ipAddress == "127.0.0.1" {
+    if ipAddress == "127.0.0.1" || ipAddress == "::1" || ipAddress == "0:0:0:0:0:0:0:1" {
       return true
     }
     if hostname == "localhost" {
