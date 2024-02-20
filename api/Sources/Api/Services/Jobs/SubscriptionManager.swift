@@ -76,24 +76,13 @@ func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
     return nil
   }
 
+  let completedOnboarding = try await admin.completedOnboarding()
   switch admin.subscriptionStatus {
 
-  case .overdue:
-    return try await updateIfPaid(admin.subscriptionId) ?? .init(
-      action: .update(status: .unpaid, expiration: Current.date().advanced(by: .days(365))),
-      email: .overdueToUnpaid
-    )
-
-  case .paid:
-    return try await updateIfPaid(admin.subscriptionId) ?? .init(
-      action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
-      email: .paidToOverdue
-    )
-
-  case .trialExpiringSoon:
+  case .pendingEmailVerification:
     return .init(
-      action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
-      email: .trialEndedToOverdue
+      action: .delete(reason: "email never verified"),
+      email: .deleteEmailUnverified
     )
 
   case .trialing:
@@ -102,7 +91,21 @@ func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
         status: .trialExpiringSoon,
         expiration: Current.date().advanced(by: .days(7))
       ),
+      // NB: trial ending soon email is ALWAYS sent, regardless of onboarding status
+      // but if they have never onboarded, it will be the only email they receive
       email: .trialEndingSoon
+    )
+
+  case .trialExpiringSoon:
+    return .init(
+      action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
+      email: completedOnboarding ? .trialEndedToOverdue : nil
+    )
+
+  case .overdue:
+    return try await updateIfPaid(admin.subscriptionId) ?? .init(
+      action: .update(status: .unpaid, expiration: Current.date().advanced(by: .days(365))),
+      email: completedOnboarding ? .overdueToUnpaid : nil
     )
 
   case .pendingAccountDeletion:
@@ -117,12 +120,13 @@ func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
         status: .pendingAccountDeletion,
         expiration: Current.date().advanced(by: .days(30))
       ),
-      email: .unpaidToPendingDelete
+      email: completedOnboarding ? .unpaidToPendingDelete : nil
     )
-  case .pendingEmailVerification:
-    return .init(
-      action: .delete(reason: "email never verified"),
-      email: .deleteEmailUnverified
+
+  case .paid:
+    return try await updateIfPaid(admin.subscriptionId) ?? .init(
+      action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
+      email: .paidToOverdue
     )
 
   case .complimentary:
@@ -132,6 +136,16 @@ func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
 }
 
 // helpers
+
+private extension Admin {
+  func completedOnboarding() async throws -> Bool {
+    let children = try await users()
+    let childDevices = try await children.concurrentMap {
+      try await $0.devices()
+    }.flatMap { $0 }
+    return !childDevices.isEmpty
+  }
+}
 
 // failsafe in case webhook missed the `invoice.paid` event
 // theoretically, we should never find a subscription active

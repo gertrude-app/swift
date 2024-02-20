@@ -70,33 +70,69 @@ final class SubscriptionManagerTests: ApiTestCase {
     ))
   }
 
-  func testTrialEnded() async throws {
+  func testTrialEnded_NotOnboarded() async throws {
     let admin = Admin.empty {
       $0.subscriptionStatus = .trialExpiringSoon
       $0.subscriptionStatusExpiration = .epoch
     }
     expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
       action: .update(status: .overdue, expiration: .reference.advanced(by: .days(14))),
+      email: nil // <-- no email, they never onboarded
+    ))
+  }
+
+  func testTrialEnded_Onboarded() async throws {
+    let admin = try await Entities.admin {
+      $0.subscriptionStatus = .trialExpiringSoon
+      $0.subscriptionStatusExpiration = .epoch
+    }.withOnboardedChild().model
+    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .overdue, expiration: .reference.advanced(by: .days(14))),
       email: .trialEndedToOverdue
     ))
   }
 
-  func testOverdueToUnpaid() async throws {
+  func testOverdueToUnpaid_NotOnboarded() async throws {
     let admin = Admin.empty {
       $0.subscriptionStatus = .overdue
       $0.subscriptionStatusExpiration = .epoch
     }
     expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
       action: .update(status: .unpaid, expiration: .reference.advanced(by: .days(365))),
+      email: nil // <-- no email, they never onboarded
+    ))
+  }
+
+  func testOverdueToUnpaid_Onboarded() async throws {
+    let admin = try await Entities.admin {
+      $0.subscriptionStatus = .overdue
+      $0.subscriptionStatusExpiration = .epoch
+    }.withOnboardedChild().model
+    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .unpaid, expiration: .reference.advanced(by: .days(365))),
       email: .overdueToUnpaid
     ))
   }
 
-  func testUnpaidToPendingDeletion() async throws {
+  func testUnpaidToPendingDeletion_NotOnboarded() async throws {
     let admin = Admin.empty {
       $0.subscriptionStatus = .unpaid
       $0.subscriptionStatusExpiration = .epoch
     }
+    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(
+        status: .pendingAccountDeletion,
+        expiration: .reference.advanced(by: .days(30))
+      ),
+      email: nil // <-- no email, they never onboarded
+    ))
+  }
+
+  func testUnpaidToPendingDeletion_Onboarded() async throws {
+    let admin = try await Entities.admin {
+      $0.subscriptionStatus = .unpaid
+      $0.subscriptionStatusExpiration = .epoch
+    }.withOnboardedChild().model
     expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
       action: .update(
         status: .pendingAccountDeletion,
