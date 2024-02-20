@@ -1,6 +1,7 @@
 @testable import Api
 
-@dynamicMemberLookup struct UserEntities {
+@dynamicMemberLookup
+struct UserEntities {
   let model: User
   let token: UserToken
   let admin: AdminEntities
@@ -14,7 +15,8 @@
   }
 }
 
-@dynamicMemberLookup struct UserWithDeviceEntities {
+@dynamicMemberLookup
+struct UserWithDeviceEntities {
   let model: User
   let adminDevice: Device
   let device: UserDevice
@@ -30,7 +32,8 @@
   }
 }
 
-@dynamicMemberLookup struct AdminEntities {
+@dynamicMemberLookup
+struct AdminEntities {
   let model: Admin
   let token: AdminToken
 
@@ -43,11 +46,29 @@
   }
 }
 
-@dynamicMemberLookup struct AdminWithKeychainEntities {
+@dynamicMemberLookup
+struct AdminWithKeychainEntities {
   let model: Admin
   let token: AdminToken
   let keychain: Keychain
   let key: Key
+
+  var context: AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: model)
+  }
+
+  subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
+    model[keyPath: keyPath]
+  }
+}
+
+@dynamicMemberLookup
+struct AdminWithOnboardedChildEntities {
+  let model: Admin
+  let token: AdminToken
+  let child: User
+  let userDevice: UserDevice
+  let adminDevice: Device
 
   var context: AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", admin: model)
@@ -93,6 +114,28 @@ extension AdminEntities {
     try await Current.db.create(keychain)
     try await Current.db.create(key)
     return .init(model: model, token: token, keychain: keychain, key: key)
+  }
+
+  func withOnboardedChild(
+    config: (inout User, inout UserDevice, inout Device) -> Void = { _, _, _ in }
+  ) async throws -> AdminWithOnboardedChildEntities {
+    var child = User.random { $0.adminId = model.id }
+    var adminDevice = Device.random { $0.adminId = model.id }
+    var userDevice = UserDevice.random {
+      $0.userId = child.id
+      $0.deviceId = adminDevice.id
+    }
+    config(&child, &userDevice, &adminDevice)
+    try await Current.db.create(child)
+    try await Current.db.create(adminDevice)
+    try await Current.db.create(userDevice)
+    return .init(
+      model: model,
+      token: token,
+      child: child,
+      userDevice: userDevice,
+      adminDevice: adminDevice
+    )
   }
 }
 
