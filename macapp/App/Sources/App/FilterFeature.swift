@@ -145,7 +145,9 @@ extension FilterFeature.RootReducer {
             let installResult = await filterExtension.install()
             switch installResult {
             case .installedSuccessfully:
-              break
+              let udsClient = ClientUDS()
+              udsClient.connect()
+
             case .timedOutWaiting:
               // event `9ffabfe5` logged w/ more detail in FilterFeature.swift
               await send(.focusedNotification(.filterInstallTimeout))
