@@ -59,7 +59,7 @@ extension DeviceClient {
       proc.waitUntilExit()
 
       let data = pipe.fileHandleForReading.readDataToEndOfFile()
-      if let string = String(data: data, encoding: String.Encoding.utf8) {
+      if let string = String(data: data, encoding: .utf8) {
         return string.contains("(admin)") ? true : false
       } else {
         throw GetUserTypeError.stringDecodeError

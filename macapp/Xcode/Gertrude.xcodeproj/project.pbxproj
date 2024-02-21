@@ -15,6 +15,8 @@
 		7F53C599299FF6CA0097285A /* WebViews in Resources */ = {isa = PBXBuildFile; fileRef = 7F53C598299FF6CA0097285A /* WebViews */; };
 		7F8121052A1D3B7100A3E4E5 /* LiveAppClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7F8121042A1D3B7100A3E4E5 /* LiveAppClient */; };
 		7F94DC8C261CF092002D4534 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F94DC8B261CF092002D4534 /* main.swift */; };
+		7FA3E6A22B851F0E00A4CE5C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA3E6A12B851F0E00A4CE5C /* main.swift */; };
+		7FA3E6A72B851FDA00A4CE5C /* relauncher in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7FA3E69F2B851F0E00A4CE5C /* relauncher */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7FD8DCA629C221E0003D135A /* LiveApiClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCA529C221E0003D135A /* LiveApiClient */; };
 		7FD8DCAD29CF1CCC003D135A /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCAC29CF1CCC003D135A /* Filter */; };
 		7FD8DCAF29CF6C8D003D135A /* LiveFilterExtensionClient in Frameworks */ = {isa = PBXBuildFile; productRef = 7FD8DCAE29CF6C8D003D135A /* LiveFilterExtensionClient */; };
@@ -38,6 +40,25 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		7FA3E69D2B851F0E00A4CE5C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		7FA3E6A62B851FC100A4CE5C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 12;
+			files = (
+				7FA3E6A72B851FDA00A4CE5C /* relauncher in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C40A5C51229DD6A500627D50 /* Embed System Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -60,6 +81,9 @@
 		7F94DC6D261CEA75002D4534 /* Gertrude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gertrude.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = "com.netrivet.gertrude.filter-extension.systemextension"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F94DC8B261CF092002D4534 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		7FA3E69F2B851F0E00A4CE5C /* relauncher */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = relauncher; sourceTree = BUILT_PRODUCTS_DIR; };
+		7FA3E6A12B851F0E00A4CE5C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		7FA3E6A82B8659C500A4CE5C /* GertrudeRelauncher.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = GertrudeRelauncher.entitlements; sourceTree = "<group>"; };
 		7FF3CD4B2992C99000387D3C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C40A5C4A229DD6A500627D50 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		C40A5C4C229DD6A500627D50 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -71,6 +95,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7FA3E69C2B851F0E00A4CE5C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C40A5C42229DD6A500627D50 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -107,6 +138,15 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		7FA3E6A02B851F0E00A4CE5C /* GertrudeRelauncher */ = {
+			isa = PBXGroup;
+			children = (
+				7FA3E6A82B8659C500A4CE5C /* GertrudeRelauncher.entitlements */,
+				7FA3E6A12B851F0E00A4CE5C /* main.swift */,
+			);
+			path = GertrudeRelauncher;
+			sourceTree = "<group>";
+		};
 		C40A5C47229DD6A500627D50 /* GertrudeFilterExtension */ = {
 			isa = PBXGroup;
 			children = (
@@ -125,9 +165,11 @@
 				7F5476DD299BCFF30084F682 /* Filter */,
 				C4B45DB722739FFF0050C59B /* Gertrude */,
 				C40A5C47229DD6A500627D50 /* GertrudeFilterExtension */,
+				7FA3E6A02B851F0E00A4CE5C /* GertrudeRelauncher */,
 				C4B45DDC2273A3450050C59B /* Frameworks */,
 				7F94DC6D261CEA75002D4534 /* Gertrude.app */,
 				7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */,
+				7FA3E69F2B851F0E00A4CE5C /* relauncher */,
 			);
 			sourceTree = "<group>";
 		};
@@ -156,6 +198,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7FA3E69E2B851F0E00A4CE5C /* relauncher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7FA3E6A52B851F0E00A4CE5C /* Build configuration list for PBXNativeTarget "relauncher" */;
+			buildPhases = (
+				7FA3E69B2B851F0E00A4CE5C /* Sources */,
+				7FA3E69C2B851F0E00A4CE5C /* Frameworks */,
+				7FA3E69D2B851F0E00A4CE5C /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = relauncher;
+			productName = GertudeRelauncher;
+			productReference = 7FA3E69F2B851F0E00A4CE5C /* relauncher */;
+			productType = "com.apple.product-type.tool";
+		};
 		C40A5C44229DD6A500627D50 /* GertrudeFilterExtension */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C40A5C54229DD6A500627D50 /* Build configuration list for PBXNativeTarget "GertrudeFilterExtension" */;
@@ -186,6 +245,7 @@
 				C4B45DB322739FFF0050C59B /* Resources */,
 				7F8121062A1D3D0A00A3E4E5 /* Copy “Launch at Login Helper” */,
 				C40A5C51229DD6A500627D50 /* Embed System Extensions */,
+				7FA3E6A62B851FC100A4CE5C /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -213,10 +273,13 @@
 			isa = PBXProject;
 			attributes = {
 				DefaultBuildSystemTypeForWorkspace = Latest;
-				LastSwiftUpdateCheck = 1230;
+				LastSwiftUpdateCheck = 1430;
 				LastUpgradeCheck = 1420;
 				ORGANIZATIONNAME = Apple;
 				TargetAttributes = {
+					7FA3E69E2B851F0E00A4CE5C = {
+						CreatedOnToolsVersion = 14.3.1;
+					};
 					C40A5C44229DD6A500627D50 = {
 						CreatedOnToolsVersion = 11.0;
 					};
@@ -235,8 +298,6 @@
 			);
 			mainGroup = C4B45DAC22739FFF0050C59B;
 			packageReferences = (
-				7FC14B08299BF9E600FC3B13 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
-				7FD8DCA729C22286003D135A /* XCRemoteSwiftPackageReference "swift-dependencies" */,
 			);
 			productRefGroup = C4B45DAC22739FFF0050C59B;
 			projectDirPath = "";
@@ -244,6 +305,7 @@
 			targets = (
 				C4B45DB422739FFF0050C59B /* Gertrude */,
 				C40A5C44229DD6A500627D50 /* GertrudeFilterExtension */,
+				7FA3E69E2B851F0E00A4CE5C /* relauncher */,
 			);
 		};
 /* End PBXProject section */
@@ -290,6 +352,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7FA3E69B2B851F0E00A4CE5C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7FA3E6A22B851F0E00A4CE5C /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C40A5C41229DD6A500627D50 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -319,6 +389,40 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		7FA3E6A32B851F0E00A4CE5C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WFN83LM943;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CODE_SIGN_FLAGS = "$(inherited) -i $(PRODUCT_BUNDLE_IDENTIFIER)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.netrivet.gertrude.relauncher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		7FA3E6A42B851F0E00A4CE5C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WFN83LM943;
+				ENABLE_HARDENED_RUNTIME = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CODE_SIGN_FLAGS = "$(inherited) -i $(PRODUCT_BUNDLE_IDENTIFIER)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.netrivet.gertrude.relauncher;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		C40A5C52229DD6A500627D50 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -543,6 +647,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7FA3E6A52B851F0E00A4CE5C /* Build configuration list for PBXNativeTarget "relauncher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7FA3E6A32B851F0E00A4CE5C /* Debug */,
+				7FA3E6A42B851F0E00A4CE5C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C40A5C54229DD6A500627D50 /* Build configuration list for PBXNativeTarget "GertrudeFilterExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

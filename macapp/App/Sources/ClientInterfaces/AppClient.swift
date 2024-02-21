@@ -17,6 +17,7 @@ public struct AppClient: Sendable {
   public var installLocation: @Sendable () -> URL
   public var installedVersion: @Sendable () -> String?
   public var quit: @Sendable () async -> Void
+  public var relaunch: @Sendable () async throws -> Void
 
   public init(
     colorScheme: @escaping @Sendable () -> ColorScheme,
@@ -26,7 +27,8 @@ public struct AppClient: Sendable {
     isLaunchAtLoginEnabled: @escaping @Sendable () async -> Bool,
     installLocation: @escaping @Sendable () -> URL,
     installedVersion: @escaping @Sendable () -> String?,
-    quit: @escaping @Sendable () async -> Void
+    quit: @escaping @Sendable () async -> Void,
+    relaunch: @escaping @Sendable () async throws -> Void
   ) {
     self.colorScheme = colorScheme
     self.colorSchemeChanges = colorSchemeChanges
@@ -36,6 +38,7 @@ public struct AppClient: Sendable {
     self.installLocation = installLocation
     self.installedVersion = installedVersion
     self.quit = quit
+    self.relaunch = relaunch
   }
 }
 
@@ -66,7 +69,8 @@ extension AppClient: TestDependencyKey {
     isLaunchAtLoginEnabled: unimplemented("AppClient.isLaunchAtLoginEnabled"),
     installLocation: unimplemented("AppClient.installLocation"),
     installedVersion: unimplemented("AppClient.installedVersion"),
-    quit: unimplemented("AppClient.quit")
+    quit: unimplemented("AppClient.quit"),
+    relaunch: unimplemented("AppClient.relaunch")
   )
   public static let mock = Self(
     colorScheme: { .light },
@@ -76,7 +80,8 @@ extension AppClient: TestDependencyKey {
     isLaunchAtLoginEnabled: { true },
     installLocation: { URL(fileURLWithPath: "/Applications/Gertrude.app") },
     installedVersion: { "1.0.0" },
-    quit: {}
+    quit: {},
+    relaunch: {}
   )
 }
 

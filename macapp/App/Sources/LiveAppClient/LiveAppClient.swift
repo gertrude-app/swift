@@ -37,7 +37,8 @@ extension AppClient: DependencyKey {
       },
       quit: {
         exit(0)
-      }
+      },
+      relaunch: relaunchApp
     )
   }
 }
