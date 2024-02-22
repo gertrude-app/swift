@@ -45,6 +45,9 @@ extension AuthedUserRoute: RouteResponder {
     case .createUnlockRequests_v2(let input):
       let output = try await CreateUnlockRequests_v2.resolve(with: input, in: context)
       return try await respond(with: output)
+    case .reportBrowsers(let input):
+      let output = try await ReportBrowsers.resolve(with: input, in: context)
+      return try await respond(with: output)
     }
   }
 }

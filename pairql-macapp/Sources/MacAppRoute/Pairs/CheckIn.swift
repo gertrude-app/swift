@@ -53,6 +53,7 @@ public struct CheckIn: Pair {
     public var latestRelease: LatestRelease
     public var updateReleaseChannel: ReleaseChannel
     public var userData: UserData
+    public var browsers: [BrowserMatch]
 
     public init(
       adminAccountStatus: AdminAccountStatus,
@@ -60,7 +61,8 @@ public struct CheckIn: Pair {
       keys: [Key],
       latestRelease: LatestRelease,
       updateReleaseChannel: ReleaseChannel,
-      userData: UserData
+      userData: UserData,
+      browsers: [BrowserMatch]
     ) {
       self.adminAccountStatus = adminAccountStatus
       self.appManifest = appManifest
@@ -68,6 +70,7 @@ public struct CheckIn: Pair {
       self.latestRelease = latestRelease
       self.updateReleaseChannel = updateReleaseChannel
       self.userData = userData
+      self.browsers = browsers
     }
   }
 }
@@ -87,7 +90,8 @@ public struct CheckIn: Pair {
         $0.screenshotsEnabled = true
         $0.screenshotFrequency = 333
         $0.screenshotSize = 555
-      }
+      },
+      browsers: [.name("Safari"), .bundleId("com.apple.Safari")]
     )
 
     public static let empty = Self(
@@ -96,7 +100,8 @@ public struct CheckIn: Pair {
       keys: [],
       latestRelease: .init(semver: "2.0.4"),
       updateReleaseChannel: .stable,
-      userData: .empty
+      userData: .empty,
+      browsers: []
     )
   }
 #endif
