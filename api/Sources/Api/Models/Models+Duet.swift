@@ -473,3 +473,15 @@ extension DeletedEntity {
     case createdAt
   }
 }
+
+extension Browser: Duet.Identifiable {
+  typealias Id = Tagged<Browser, UUID>
+}
+
+extension Browser {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case match
+    case createdAt
+  }
+}
