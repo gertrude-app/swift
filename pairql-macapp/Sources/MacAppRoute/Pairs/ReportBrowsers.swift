@@ -8,6 +8,11 @@ public struct ReportBrowsers: Pair {
   public struct BrowserInput: PairInput {
     public var name: String
     public var bundleId: String
+
+    public init(name: String, bundleId: String) {
+      self.name = name
+      self.bundleId = bundleId
+    }
   }
 
   public typealias Input = [BrowserInput]

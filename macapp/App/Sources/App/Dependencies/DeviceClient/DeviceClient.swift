@@ -1,6 +1,7 @@
 import AppKit
 import Dependencies
 import Foundation
+import Gertie
 
 struct DeviceClient: Sendable {
   var currentMacOsUserType: @Sendable () async throws -> MacOSUserType
@@ -13,7 +14,7 @@ struct DeviceClient: Sendable {
   var openSystemPrefs: @Sendable (SystemPrefsLocation) async -> Void
   var openWebUrl: @Sendable (URL) async -> Void
   var osVersion: @Sendable () -> MacOSVersion
-  var quitBrowsers: @Sendable () async -> Void
+  var quitBrowsers: @Sendable ([BrowserMatch]) async -> Void
   var requestNotificationAuthorization: @Sendable () async -> Void
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
@@ -75,7 +76,7 @@ extension DeviceClient: TestDependencyKey {
     openSystemPrefs: { _ in },
     openWebUrl: { _ in },
     osVersion: { .init(major: 14, minor: 0, patch: 0) },
-    quitBrowsers: {},
+    quitBrowsers: { _ in },
     requestNotificationAuthorization: {},
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },

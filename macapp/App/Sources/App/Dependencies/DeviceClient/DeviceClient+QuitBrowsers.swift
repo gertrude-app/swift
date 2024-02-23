@@ -1,17 +1,32 @@
 import AppKit
 import Dependencies
+import Gertie
+import MacAppRoute
 
-@Sendable func quitAllBrowsers() async {
+@Sendable func quitAllBrowsers(_ browsers: [BrowserMatch]) async {
   @Dependency(\.mainQueue) var mainQueue
+  let names = Set(browsers.compactMap(\.name) + hardcodedNames)
+  let bundleIds = Set(browsers.compactMap(\.bundleId))
+  var newBrowsers: ReportBrowsers.Input = []
+
   for app in NSWorkspace.shared.runningApplications {
-    guard let appName = app.localizedName else { continue }
-    if browserNames.contains(appName) {
-      #if DEBUG
-        print("* (DEBUG) not terminating browser: `\(appName)`")
-      #else
+    if let bundleId = app.bundleIdentifier {
+      if bundleIds.contains(bundleId) {
         await terminate(app, on: mainQueue)
-      #endif
+        continue
+      }
     }
+    if let appName = app.localizedName {
+      if names.contains(appName) {
+        app.bundleIdentifier.map { newBrowsers.append(.init(name: appName, bundleId: $0)) }
+        await terminate(app, on: mainQueue)
+      }
+    }
+  }
+
+  if !newBrowsers.isEmpty {
+    @Dependency(\.api) var api
+    try? await api.reportBrowsers(newBrowsers)
   }
 }
 
@@ -19,20 +34,21 @@ private func terminate(
   _ app: NSRunningApplication,
   on scheduler: AnySchedulerOf<DispatchQueue>
 ) async {
-  app.forceTerminate()
-  // checking termination status and "re"-terminating works around
-  // loophole where an "unsaved changes" browser alert prevents termination
-  try? await scheduler.sleep(for: .seconds(3))
-  if !app.isTerminated {
-    await terminate(app, on: scheduler)
-  }
+  #if DEBUG
+    print("* (DEBUG) not terminating browser: `\(app.localizedName ?? "")`")
+  #else
+    app.forceTerminate()
+    // checking termination status and "re"-terminating works around
+    // loophole where an "unsaved changes" browser alert prevents termination
+    try? await scheduler.sleep(for: .seconds(3))
+    if !app.isTerminated {
+      await terminate(app, on: scheduler)
+    }
+  #endif
 }
 
-// TODO: should also test bundle identifiers,
-// and should pull this periodically from the API
-// so i can push hot-fixes to the list
-// https://github.com/gertrude-app/project/issues/157
-private let browserNames = [
+// safeguard, in case we get nothing from api, at least kill all these
+private let hardcodedNames = [
   "Arc",
   "Brave Browser",
   "Brave Browser Beta",

@@ -2,6 +2,7 @@ import ClientInterfaces
 import ComposableArchitecture
 import Core
 import Foundation
+import Gertie
 import TaggedTime
 
 struct FilterFeature: Feature {
@@ -116,12 +117,12 @@ extension FilterFeature.RootReducer {
     case .menuBar(.resumeFilterClicked):
       state.menuBar.dropdownOpen = false
       state.filter.currentSuspensionExpiration = nil
-      return handleFilterSuspensionEnded(early: true)
+      return handleFilterSuspensionEnded(browsers: state.browsers, early: true)
 
     case .xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(let userId)))
       where userId == device.currentUserId():
       state.filter.currentSuspensionExpiration = nil
-      return handleFilterSuspensionEnded(early: false)
+      return handleFilterSuspensionEnded(browsers: state.browsers, early: false)
 
     case .adminWindow(.delegate(.healthCheckFilterExtensionState(let filterState))):
       state.filter.extension = filterState
@@ -220,13 +221,16 @@ extension FilterFeature.RootReducer {
     )
   }
 
-  func handleFilterSuspensionEnded(early endedEarly: Bool = false) -> Effect<Action> {
+  func handleFilterSuspensionEnded(
+    browsers: [BrowserMatch],
+    early endedEarly: Bool = false
+  ) -> Effect<Action> {
     .exec { send in
       if endedEarly { _ = await xpc.endFilterSuspension() }
       try? await websocket.send(.currentFilterState(.on))
       await device.notifyBrowsersQuitting()
       try await mainQueue.sleep(for: .seconds(60))
-      await device.quitBrowsers()
+      await device.quitBrowsers(browsers)
     }
     .cancellable(id: FilterFeature.CancelId.quitBrowsers, cancelInFlight: true)
   }

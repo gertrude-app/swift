@@ -49,6 +49,7 @@ extension CheckInFeature.RootReducer {
       state.appUpdates.latestVersion = output.latestRelease
       state.appUpdates.releaseChannel = output.updateReleaseChannel
       state.admin.accountStatus = output.adminAccountStatus
+      state.browsers = output.browsers
       return .merge(
         .exec { send in
           await send(.user(.updated(previous: previousUserData)))

@@ -51,6 +51,7 @@ import XExpect
       $0.user.data?.keyloggingEnabled = true
       $0.user.data?.screenshotFrequency = 333
       $0.user.data?.screenshotSize = 555
+      $0.browsers = CheckIn.Output.mock.browsers
     }
 
     await store.receive(.user(.updated(previous: prevUser)))

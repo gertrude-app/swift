@@ -24,6 +24,7 @@ import XExpect
       $0.updateReleaseChannel = .canary
       $0.latestRelease = .init(semver: "8.7.5")
       $0.adminAccountStatus = .needsAttention
+      $0.browsers = [.name("RadBrowser")]
     }
 
     await store.send(.checkIn(result: .success(checkInResult), reason: .heartbeat)) {
@@ -34,6 +35,7 @@ import XExpect
       $0.admin.accountStatus = .needsAttention
       $0.appUpdates.latestVersion = .init(semver: "8.7.5")
       $0.appUpdates.releaseChannel = .canary
+      $0.browsers = [.name("RadBrowser")]
     }
 
     await store.receive(.user(.updated(previous: previousUserData)))

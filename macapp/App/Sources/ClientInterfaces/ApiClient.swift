@@ -13,6 +13,7 @@ public struct ApiClient: Sendable {
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void
   public var logInterestingEvent: @Sendable (LogInterestingEvent.Input) async -> Void
   public var recentAppVersions: @Sendable () async throws -> [String: String]
+  public var reportBrowsers: @Sendable (ReportBrowsers.Input) async throws -> Void
   public var setAccountActive: @Sendable (Bool) async -> Void
   public var setUserToken: @Sendable (UUID) async -> Void
   public var uploadScreenshot: @Sendable (UploadScreenshotData) async throws -> URL
@@ -27,6 +28,7 @@ public struct ApiClient: Sendable {
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void,
     logInterestingEvent: @escaping @Sendable (LogInterestingEvent.Input) async -> Void,
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
+    reportBrowsers: @escaping @Sendable (ReportBrowsers.Input) async throws -> Void,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setUserToken: @escaping @Sendable (UUID) async -> Void,
     uploadScreenshot: @escaping @Sendable (UploadScreenshotData) async throws -> URL
@@ -39,6 +41,7 @@ public struct ApiClient: Sendable {
     self.createUnlockRequests = createUnlockRequests
     self.logInterestingEvent = logInterestingEvent
     self.recentAppVersions = recentAppVersions
+    self.reportBrowsers = reportBrowsers
     self.setAccountActive = setAccountActive
     self.setUserToken = setUserToken
     self.uploadScreenshot = uploadScreenshot
@@ -92,6 +95,7 @@ extension ApiClient: TestDependencyKey {
     createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
     logInterestingEvent: unimplemented("ApiClient.logInterestingEvent"),
     recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
+    reportBrowsers: unimplemented("ApiClient.reportBrowsers"),
     setAccountActive: unimplemented("ApiClient.setAccountActive"),
     setUserToken: unimplemented("ApiClient.setUserToken"),
     uploadScreenshot: unimplemented("ApiClient.uploadScreenshot")
@@ -106,6 +110,7 @@ extension ApiClient: TestDependencyKey {
     createUnlockRequests: { _ in },
     logInterestingEvent: { _ in },
     recentAppVersions: { [:] },
+    reportBrowsers: { _ in },
     setAccountActive: { _ in },
     setUserToken: { _ in },
     uploadScreenshot: { _ in .init(string: "https://s3.buck.et/img.png")! }

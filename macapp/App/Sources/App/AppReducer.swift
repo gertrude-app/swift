@@ -13,6 +13,7 @@ struct AppReducer: Reducer, Sendable {
     var adminWindow = AdminWindowFeature.State()
     var appUpdates: AppUpdatesFeature.State
     var blockedRequests = BlockedRequestsFeature.State()
+    var browsers: [BrowserMatch] = []
     var filter: FilterFeature.State
     var history = HistoryFeature.State()
     var menuBar = MenuBarFeature.State()

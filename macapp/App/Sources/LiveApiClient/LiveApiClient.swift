@@ -55,6 +55,13 @@ extension ApiClient: DependencyKey {
         withUnauthed: .recentAppVersions
       )
     },
+    reportBrowsers: { input in
+      guard await accountActive.value else { return }
+      _ = try await output(
+        from: ReportBrowsers.self,
+        with: .reportBrowsers(input)
+      )
+    },
     setAccountActive: { await accountActive.setValue($0) },
     setUserToken: { await userToken.setValue($0) },
     uploadScreenshot: { data in
