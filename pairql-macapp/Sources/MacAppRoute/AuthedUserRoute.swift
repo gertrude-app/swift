@@ -10,6 +10,7 @@ public enum AuthedUserRoute: PairRoute {
   case getAccountStatus
   case getUserData
   case refreshRules(RefreshRules.Input)
+  case reportBrowsers(ReportBrowsers.Input)
 }
 
 public extension AuthedUserRoute {
@@ -43,6 +44,10 @@ public extension AuthedUserRoute {
     Route(/Self.refreshRules) {
       Operation(RefreshRules.self)
       Body(.json(RefreshRules.Input.self))
+    }
+    Route(/Self.reportBrowsers) {
+      Operation(ReportBrowsers.self)
+      Body(.json(ReportBrowsers.Input.self))
     }
   }
   .eraseToAnyParserPrinter()

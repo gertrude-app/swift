@@ -804,3 +804,29 @@ extension DeletedEntity: Model {
     ]
   }
 }
+
+extension Browser: Model {
+  public static let tableName = Browser.M20.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .match:
+      return .json(match.toPostgresJson)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .match: .json(match.toPostgresJson),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension BrowserMatch: PostgresJsonable {}

@@ -6,6 +6,7 @@ extension CheckIn: Resolver {
     async let v1 = RefreshRules.resolve(with: .init(appVersion: input.appVersion), in: context)
     async let admin = context.user.admin()
     async let userDevice = context.userDevice()
+    async let browsers = Browser.query().all()
     let adminDevice = try await userDevice.adminDevice()
     let channel = adminDevice.appReleaseChannel
 
@@ -37,7 +38,8 @@ extension CheckIn: Resolver {
         screenshotFrequency: context.user.screenshotsFrequency,
         screenshotSize: context.user.screenshotsResolution,
         connectedAt: try await userDevice.createdAt
-      )
+      ),
+      browsers: try await browsers.map(\.match)
     )
   }
 }

@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Core
+import Gertie
 import TaggedTime
 import TestSupport
 import XCTest
@@ -11,6 +12,7 @@ import XExpect
   func testResumeSuspension() async {
     let (store, _) = AppReducer.testStore {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
+      $0.browsers = [.name("Arc")]
     }
 
     let filterNotify = mock(once: Result<Void, XPCErr>.success(()))
@@ -19,7 +21,7 @@ import XExpect
     store.deps.device.showNotification = notification.fn
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
-    let quitBrowsers = mock(once: ())
+    let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
     store.deps.device.quitBrowsers = quitBrowsers.fn
 
     await store.send(.menuBar(.resumeFilterClicked)) {
@@ -33,6 +35,7 @@ import XExpect
     await expect(quitBrowsers.invoked).toEqual(false)
     await scheduler.advance(by: 1)
     await expect(quitBrowsers.invoked).toEqual(true)
+    await expect(quitBrowsers.invocations).toEqual([[.name("Arc")]])
   }
 
   func testHeartbeatUpdatesFilterVersionIfPossible() async {
@@ -85,7 +88,7 @@ import XExpect
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
     let showNotification = spy2(on: (String.self, String.self), returning: ())
     store.deps.device.showNotification = showNotification.fn
-    let quitBrowsers = mock(returning: [()])
+    let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
     store.deps.device.quitBrowsers = quitBrowsers.fn
 
     // pretend 30 seconds passed and the filter notifies of suspension ending
@@ -95,12 +98,12 @@ import XExpect
 
     await scheduler.advance(by: .seconds(59))
     await expect(showNotification.invocations.value).toHaveCount(1)
-    await expect(quitBrowsers.invocations).toEqual(0)
+    await expect(quitBrowsers.invocations.value.count).toEqual(0)
     await expect(showNotification.invocations.value[0].a).toContain("browsers quitting soon")
 
     // after 60 seconds pass, we quit the browsers
     await scheduler.advance(by: .seconds(1))
-    await expect(quitBrowsers.invocations).toEqual(1)
+    await expect(quitBrowsers.invocations.value.count).toEqual(1)
   }
 
   func testFilterSuspensionCanBeExtendedByReceivingAnother() async {
@@ -111,7 +114,7 @@ import XExpect
     store.deps.device.showNotification = showNotification.fn
     let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
     store.deps.filterXpc.suspendFilter = suspendFilter.fn
-    let quitBrowsers = mock(always: ())
+    let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
     store.deps.device.quitBrowsers = quitBrowsers.fn
 
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
@@ -141,13 +144,13 @@ import XExpect
 
     // and we haven't told them that the browsers are quitting
     await expect(showNotification.invocations.value).toHaveCount(2)
-    await expect(quitBrowsers.invocations).toEqual(0)
+    await expect(quitBrowsers.invocations.value).toHaveCount(0)
     expect(store.state.filter.currentSuspensionExpiration).not.toBeNil()
 
     // now move past second suspension
     await time.advance(seconds: 100)
     await expect(showNotification.invocations.value).toHaveCount(2)
-    await expect(quitBrowsers.invocations).toEqual(0)
+    await expect(quitBrowsers.invocations.value).toHaveCount(0)
 
     // simulate filter notifying that the suspension is over
     await store.send(.xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(502)))) {
@@ -156,7 +159,7 @@ import XExpect
 
     await expect(showNotification.invocations.value).toHaveCount(3)
     await expect(showNotification.invocations.value[2].a).toContain("browsers quitting soon")
-    await expect(quitBrowsers.invocations).toEqual(1)
+    await expect(quitBrowsers.invocations.value).toHaveCount(1)
   }
 
   func testFilterSuspensionWebsocketLifecycle() async {
@@ -168,7 +171,7 @@ import XExpect
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
     let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
     store.deps.filterXpc.suspendFilter = suspendFilter.fn
-    let quitBrowsers = mock(always: ())
+    let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
     store.deps.device.quitBrowsers = quitBrowsers.fn
     let resumeFilter = mock(returning: [Result<Void, XPCErr>.success(())])
     store.deps.filterXpc.endFilterSuspension = resumeFilter.fn
@@ -198,9 +201,9 @@ import XExpect
     await expect(showNotification.invocations.value[1].a).toContain("browsers quitting soon")
 
     await scheduler.advance(by: .seconds(59))
-    await expect(quitBrowsers.invocations).toEqual(0)
+    await expect(quitBrowsers.invocations.value).toHaveCount(0)
     await scheduler.advance(by: .seconds(1))
-    await expect(quitBrowsers.invocations).toEqual(1)
+    await expect(quitBrowsers.invocations.value).toHaveCount(1)
 
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
       decision: .rejected,
@@ -231,9 +234,9 @@ import XExpect
     await expect(showNotification.invocations.value[4].a).toContain("browsers quitting soon")
 
     await scheduler.advance(by: .seconds(59))
-    await expect(quitBrowsers.invocations).toEqual(1)
+    await expect(quitBrowsers.invocations.value).toHaveCount(1)
     await scheduler.advance(by: .seconds(1))
-    await expect(quitBrowsers.invocations).toEqual(2)
+    await expect(quitBrowsers.invocations.value).toHaveCount(2)
   }
 
   func testReceivingSuspensionDuring60SecondCountdownCancelsTimer() async {
@@ -246,7 +249,7 @@ import XExpect
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
     let showNotification = spy2(on: (String.self, String.self), returning: ())
     store.deps.device.showNotification = showNotification.fn
-    let quitBrowsers = mock(returning: [()])
+    let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
     store.deps.device.quitBrowsers = quitBrowsers.fn
 
     // pretend 30 seconds passed and the filter notifies of suspension ending
@@ -271,7 +274,7 @@ import XExpect
     await expect(showNotification.invocations.value[1].a).toContain("disabling filter")
 
     await scheduler.advance(by: .seconds(31))
-    await expect(quitBrowsers.invocations).toEqual(0) // ...and browsers never quit!
+    await expect(quitBrowsers.invocations.value).toHaveCount(0) // ...and browsers never quit!
 
     // now, receive a MANUAL suspension
     await store.send(
@@ -302,6 +305,6 @@ import XExpect
     }
 
     await scheduler.advance(by: .seconds(31))
-    await expect(quitBrowsers.invocations).toEqual(0) // browsers never quit
+    await expect(quitBrowsers.invocations.value).toHaveCount(0) // browsers never quit
   }
 }
