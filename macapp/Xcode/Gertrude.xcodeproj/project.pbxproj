@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7F0B887029C21561001E9427 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F0B886F29C21561001E9427 /* NetworkExtension.framework */; };
 		7F0B887129C2156D001E9427 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F0B886F29C21561001E9427 /* NetworkExtension.framework */; };
+		7F0C36322B8FBC2F00CD7621 /* Relauncher in Frameworks */ = {isa = PBXBuildFile; productRef = 7F0C36312B8FBC2F00CD7621 /* Relauncher */; };
 		7F1ADE0129E99F6600F1395C /* Core in Frameworks */ = {isa = PBXBuildFile; productRef = 7F1ADE0029E99F6600F1395C /* Core */; };
 		7F3BA9B829C214BA00C4FAF1 /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3BA9B729C214BA00C4FAF1 /* App */; };
 		7F51420F261D000300A66260 /* com.netrivet.gertrude.filter-extension.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 7F94DC6E261CEA75002D4534 /* com.netrivet.gertrude.filter-extension.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -99,6 +100,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F0C36322B8FBC2F00CD7621 /* Relauncher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,6 +213,9 @@
 			dependencies = (
 			);
 			name = relauncher;
+			packageProductDependencies = (
+				7F0C36312B8FBC2F00CD7621 /* Relauncher */,
+			);
 			productName = GertudeRelauncher;
 			productReference = 7FA3E69F2B851F0E00A4CE5C /* relauncher */;
 			productType = "com.apple.product-type.tool";
@@ -686,6 +691,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7F0C36312B8FBC2F00CD7621 /* Relauncher */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Relauncher;
+		};
 		7F1ADE0029E99F6600F1395C /* Core */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Core;

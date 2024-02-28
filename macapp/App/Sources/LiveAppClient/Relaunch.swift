@@ -32,7 +32,7 @@ import Foundation
   let proc = Process()
   let pipe = Pipe()
   proc.executableURL = relauncher
-  proc.arguments = [Bundle.main.bundleURL.absoluteString, "--test"]
+  proc.arguments = [Bundle.main.bundleURL.absoluteString, "--precheck"]
   proc.standardOutput = pipe
 
   do {

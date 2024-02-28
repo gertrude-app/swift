@@ -7,6 +7,12 @@ public struct Mock<T, U> {
   public var invoked: ActorIsolated<Bool>
 }
 
+public struct MockSync<T, U> {
+  public var fn: @Sendable () -> T
+  public var invocations: LockIsolated<U>
+  public var invoked: LockIsolated<Bool>
+}
+
 public struct Spy<T, Arg> {
   public var fn: @Sendable (Arg) async -> T
   public var invocations: ActorIsolated<[Arg]>
@@ -80,6 +86,31 @@ public func mock<T>(returning values: [T], then fallback: T? = nil) -> Mock<T, I
       returnValue = current.removeFirst()
       let updated = current
       await returns.setValue(updated)
+    } else if let fallback {
+      returnValue = fallback
+    } else {
+      fatalError(
+        "mock<\(String(reflecting: T.self))> called more than expected number of times \(values.count)"
+      )
+    }
+    return returnValue
+  }, invocations: invocations, invoked: invoked)
+}
+
+public func mockSync<T>(returning values: [T], then fallback: T? = nil) -> MockSync<T, Int> {
+  let returns = LockIsolated<[T]>(values)
+  let invocations = LockIsolated(0)
+  let invoked = LockIsolated(false)
+  return .init(fn: {
+    let currentInvocations = invocations.value
+    invocations.setValue(currentInvocations + 1)
+    invoked.setValue(true)
+    var current = returns.value
+    let returnValue: T
+    if current.count > 0 {
+      returnValue = current.removeFirst()
+      let updated = current
+      returns.setValue(updated)
     } else if let fallback {
       returnValue = fallback
     } else {
