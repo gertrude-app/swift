@@ -55,18 +55,20 @@ extension RelauncherClient: DependencyKey {
   }
 }
 
-extension RelauncherClient: TestDependencyKey {
-  public static let testValue = RelauncherClient(
-    commandLineArgs: { ["/", "Gertrude.app", "--relaunch"] },
-    fileExistsAtPath: { _ in true },
-    openApplication: { _ in },
-    processId: { 1234 },
-    parentProcessId: { 5678 },
-    sleepForSeconds: { _ in },
-    writeToStdout: { _ in },
-    exit: { _ in }
-  )
-}
+#if DEBUG
+  extension RelauncherClient: TestDependencyKey {
+    public static let testValue = RelauncherClient(
+      commandLineArgs: { ["/", "Gertrude.app", "--relaunch"] },
+      fileExistsAtPath: { _ in true },
+      openApplication: { _ in },
+      processId: { 1234 },
+      parentProcessId: { 5678 },
+      sleepForSeconds: { _ in },
+      writeToStdout: { _ in },
+      exit: { _ in }
+    )
+  }
+#endif
 
 // workaround the fact that CommandLine.arguments is not concurrency-safe
 // https://github.com/apple/swift/issues/66213#issuecomment-1802037929

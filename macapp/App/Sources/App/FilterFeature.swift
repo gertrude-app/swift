@@ -3,6 +3,7 @@ import ComposableArchitecture
 import Core
 import Foundation
 import Gertie
+import os.log
 import TaggedTime
 
 struct FilterFeature: Feature {
@@ -38,11 +39,13 @@ struct FilterFeature: Feature {
   }
 
   struct RootReducer: RootReducing {
+    @Dependency(\.app) var app
     @Dependency(\.date.now) var now
     @Dependency(\.device) var device
     @Dependency(\.filterExtension) var filterExtension
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.storage) var storage
     @Dependency(\.websocket) var websocket
   }
 }
@@ -103,7 +106,8 @@ extension FilterFeature.RootReducer {
       return .none
 
     case .heartbeat(.everyFiveMinutes):
-      return .exec { send in
+      let appVersionString = state.appUpdates.installedVersion
+      return .exec { [persist = state.persistent] send in
         let filter = await filterExtension.state()
         guard filter.isXpcReachable else { return }
         // attempt to reconnect, if necessary
@@ -111,6 +115,19 @@ extension FilterFeature.RootReducer {
           _ = await xpc.establishConnection()
         } else if case .success(let acc) = await xpc.requestAck() {
           await send(.filter(.receivedVersion(acc.version)))
+
+          // if the filter is ahead, another user must have updated Gertrude
+          // so we need to relaunch to get on the same version w/ the filter
+          if let filterVersion = Semver(acc.version),
+             let appVersion = Semver(appVersionString),
+             filterVersion > appVersion {
+            os_log(
+              "[G•] APP relaunch, filter ahead: `%{public}s` > `%{public}s`",
+              acc.version, appVersionString
+            )
+            try await storage.savePersistentState(persist)
+            try await app.relaunch()
+          }
         }
       }
 
