@@ -71,6 +71,9 @@ import XExpect
       $0.filter.version = "1.3.3" // ... and we think the filter is too
     }
 
+    store.deps.app = .testValue
+    let stopWatcher = mock(once: ())
+    store.deps.app.stopRelaunchWatcher = stopWatcher.fn
     let relaunch = mock(once: ())
     store.deps.app.relaunch = relaunch.fn
     let saveState = spy(on: Persistent.State.self, returning: ())
@@ -93,6 +96,7 @@ import XExpect
     // 2) store persistent state
     await expect(saveState.invocations.value).toHaveCount(1)
     // and 3) relaunch
+    await expect(stopWatcher.invoked).toEqual(true)
     await expect(relaunch.invoked).toEqual(true)
   }
 

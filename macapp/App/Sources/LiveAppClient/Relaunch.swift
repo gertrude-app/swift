@@ -2,14 +2,7 @@ import Darwin
 import Foundation
 
 @Sendable func relaunchApp() async throws {
-  guard let relauncher = Bundle.main.sharedSupportURL?.appendingPathComponent("relauncher") else {
-    throw RelaunchError.nilHelperUrl
-  }
-
-  guard FileManager.default.fileExists(atPath: relauncher.path) else {
-    throw RelaunchError.helperNotFound
-  }
-
+  let relauncher = try relauncherUrl()
   try await precheck(relauncher)
 
   let proc = Process()
@@ -18,11 +11,27 @@ import Foundation
   do {
     try proc.run()
   } catch {
-    throw RelaunchError.relaunchProcessError(error)
+    throw RelaunchError.relaunchProcessError("--relaunch", error)
   }
 
   try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
   exit(0)
+}
+
+@Sendable func startRelauncher() async throws -> pid_t {
+  let relauncher = try relauncherUrl()
+  try await precheck(relauncher)
+
+  let proc = Process()
+  proc.executableURL = relauncher
+  proc.arguments = [Bundle.main.bundleURL.absoluteString, "--crash-watch"]
+  do {
+    try proc.run()
+  } catch {
+    throw RelaunchError.relaunchProcessError("--crash-watch", error)
+  }
+
+  return proc.processIdentifier
 }
 
 // safeguards before we terminate the app, verifies:
@@ -55,11 +64,24 @@ import Foundation
   }
 }
 
+private func relauncherUrl() throws -> URL {
+  guard let relauncher = Bundle.main.sharedSupportURL?.appendingPathComponent("GertrudeHelper")
+  else {
+    throw RelaunchError.nilHelperUrl
+  }
+
+  guard FileManager.default.fileExists(atPath: relauncher.path) else {
+    throw RelaunchError.helperNotFound
+  }
+
+  return relauncher
+}
+
 private enum RelaunchError: Error {
   case nilHelperUrl
   case helperNotFound
   case testFailedInvalidExit(Int32)
   case testFailedUnexpectedOutput(String)
   case testProcessError(Error)
-  case relaunchProcessError(Error)
+  case relaunchProcessError(String, Error)
 }

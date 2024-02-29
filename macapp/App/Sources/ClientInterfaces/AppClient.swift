@@ -18,6 +18,8 @@ public struct AppClient: Sendable {
   public var installedVersion: @Sendable () -> String?
   public var quit: @Sendable () async -> Void
   public var relaunch: @Sendable () async throws -> Void
+  public var startRelaunchWatcher: @Sendable () async throws -> Void
+  public var stopRelaunchWatcher: @Sendable () async -> Void
 
   public init(
     colorScheme: @escaping @Sendable () -> ColorScheme,
@@ -28,7 +30,9 @@ public struct AppClient: Sendable {
     installLocation: @escaping @Sendable () -> URL,
     installedVersion: @escaping @Sendable () -> String?,
     quit: @escaping @Sendable () async -> Void,
-    relaunch: @escaping @Sendable () async throws -> Void
+    relaunch: @escaping @Sendable () async throws -> Void,
+    startRelaunchWatcher: @escaping @Sendable () async throws -> Void,
+    stopRelaunchWatcher: @escaping @Sendable () async -> Void
   ) {
     self.colorScheme = colorScheme
     self.colorSchemeChanges = colorSchemeChanges
@@ -39,6 +43,8 @@ public struct AppClient: Sendable {
     self.installedVersion = installedVersion
     self.quit = quit
     self.relaunch = relaunch
+    self.startRelaunchWatcher = startRelaunchWatcher
+    self.stopRelaunchWatcher = stopRelaunchWatcher
   }
 }
 
@@ -70,7 +76,9 @@ extension AppClient: TestDependencyKey {
     installLocation: unimplemented("AppClient.installLocation"),
     installedVersion: unimplemented("AppClient.installedVersion"),
     quit: unimplemented("AppClient.quit"),
-    relaunch: unimplemented("AppClient.relaunch")
+    relaunch: unimplemented("AppClient.relaunch"),
+    startRelaunchWatcher: unimplemented("AppClient.startRelaunchWatcher"),
+    stopRelaunchWatcher: unimplemented("AppClient.stopRelaunchWatcher")
   )
   public static let mock = Self(
     colorScheme: { .light },
@@ -81,7 +89,9 @@ extension AppClient: TestDependencyKey {
     installLocation: { URL(fileURLWithPath: "/Applications/Gertrude.app") },
     installedVersion: { "1.0.0" },
     quit: {},
-    relaunch: {}
+    relaunch: {},
+    startRelaunchWatcher: {},
+    stopRelaunchWatcher: {}
   )
 }
 

@@ -23,6 +23,8 @@ import XExpect
     store.deps.app.isLaunchAtLoginEnabled = { false }
     let enableLaunchAtLogin = mock(always: ())
     store.deps.app.enableLaunchAtLogin = enableLaunchAtLogin.fn
+    let startRelaunchWatcher = mock(always: ())
+    store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
 
     await store.send(.application(.didFinishLaunching))
 
@@ -42,6 +44,7 @@ import XExpect
 
     await expect(setUserToken.invocations).toEqual([UserData.mock.token])
     await expect(enableLaunchAtLogin.invocations).toEqual(1)
+    await expect(startRelaunchWatcher.invocations).toEqual(1)
 
     let prevUser = store.state.user.data
 

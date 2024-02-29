@@ -82,6 +82,7 @@ extension UserConnectionFeature.RootReducer {
         try await storage.savePersistentState(updated)
         _ = await xpc.disconnectUser()
         await app.disableLaunchAtLogin()
+        await app.stopRelaunchWatcher()
       },
       .cancel(id: AppReducer.CancelId.heartbeatInterval),
       .cancel(id: AppReducer.CancelId.websocketMessages)

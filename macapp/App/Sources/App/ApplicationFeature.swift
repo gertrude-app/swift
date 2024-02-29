@@ -26,7 +26,6 @@ enum ApplicationFeature {
 extension ApplicationFeature.RootReducer: RootReducing {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-
     case .application(.didFinishLaunching):
       return .merge(
         .exec { send in
@@ -63,7 +62,8 @@ extension ApplicationFeature.RootReducer: RootReducing {
     case .application(.willTerminate):
       return .merge(
         .cancel(id: AppReducer.CancelId.heartbeatInterval),
-        .cancel(id: AppReducer.CancelId.websocketMessages)
+        .cancel(id: AppReducer.CancelId.websocketMessages),
+        .exec { _ in await app.stopRelaunchWatcher() }
       )
 
     default:

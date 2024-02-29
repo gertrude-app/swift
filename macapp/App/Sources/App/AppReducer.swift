@@ -144,7 +144,10 @@ struct AppReducer: Reducer, Sendable {
                 await send(.heartbeat(interval))
               }
             }
-          }.cancellable(id: CancelId.heartbeatInterval)
+          }.cancellable(id: CancelId.heartbeatInterval),
+          .exec { _ in
+            try await app.startRelaunchWatcher()
+          }
         )
 
       case .focusedNotification(let notification):

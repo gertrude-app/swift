@@ -10,6 +10,7 @@ public struct RelauncherClient: Sendable {
   public var openApplication: @Sendable (URL) -> Void
   public var processId: @Sendable () -> pid_t
   public var parentProcessId: @Sendable () -> pid_t
+  public var runningApplicationsBundleUrlPaths: @Sendable () -> [String]
   public var sleepForSeconds: @Sendable (Double) -> Void
   public var writeToStdout: @Sendable (String) -> Void
   public var exit: @Sendable (Int32) -> Void
@@ -20,6 +21,7 @@ public struct RelauncherClient: Sendable {
     openApplication: @escaping @Sendable (URL) -> Void,
     processId: @escaping @Sendable () -> pid_t,
     parentProcessId: @escaping @Sendable () -> pid_t,
+    runningApplicationsBundleUrlPaths: @escaping @Sendable () -> [String],
     sleepForSeconds: @escaping @Sendable (Double) -> Void,
     writeToStdout: @escaping @Sendable (String) -> Void,
     exit: @escaping @Sendable (Int32) -> Void
@@ -29,6 +31,7 @@ public struct RelauncherClient: Sendable {
     self.openApplication = openApplication
     self.processId = processId
     self.parentProcessId = parentProcessId
+    self.runningApplicationsBundleUrlPaths = runningApplicationsBundleUrlPaths
     self.sleepForSeconds = sleepForSeconds
     self.writeToStdout = writeToStdout
     self.exit = exit
@@ -48,6 +51,9 @@ extension RelauncherClient: DependencyKey {
       },
       processId: { getpid() },
       parentProcessId: { getppid() },
+      runningApplicationsBundleUrlPaths: {
+        NSWorkspace.shared.runningApplications.compactMap(\.bundleURL?.path)
+      },
       sleepForSeconds: { Thread.sleep(forTimeInterval: $0) },
       writeToStdout: { fputs($0, stdout) },
       exit: { Darwin.exit($0) }
@@ -63,6 +69,7 @@ extension RelauncherClient: DependencyKey {
       openApplication: { _ in },
       processId: { 1234 },
       parentProcessId: { 5678 },
+      runningApplicationsBundleUrlPaths: { [] },
       sleepForSeconds: { _ in },
       writeToStdout: { _ in },
       exit: { _ in }

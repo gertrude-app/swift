@@ -22,6 +22,7 @@ final class RelaunchOnExpectedTerminationTests: XCTestCase {
       .parentProcessId, // they see the third 99
       .sleepForSeconds(0.2),
       .parentProcessId, // now they see `1`, so relaunch
+      .runningApplications,
       .openApplication(URL(string: "Gertrude.app")!),
       // then sleep a bit and terminate self
       .sleepForSeconds(0.2),
@@ -103,6 +104,7 @@ enum RelaunchClientInvocation: Equatable, Sendable {
   case openApplication(URL)
   case processId
   case parentProcessId
+  case runningApplications
   case writeToStdout(String)
   case exit(Int32)
 }
@@ -110,6 +112,7 @@ enum RelaunchClientInvocation: Equatable, Sendable {
 func recordingClient(
   args: [String] = ["/", "Gertrude.app", "--relaunch"],
   fileExistsAtPath: Bool = true,
+  runningApps: [String] = [],
   processId: pid_t = 1234,
   parentProcessIds: [pid_t] = [5678]
 ) -> (RelauncherClient, LockIsolated<[RelaunchClientInvocation]>) {
@@ -136,6 +139,10 @@ func recordingClient(
       return ppids.withValue { ppids in
         ppids.count == 1 ? ppids[0] : ppids.removeFirst()
       }
+    },
+    runningApplicationsBundleUrlPaths: {
+      invocations.append(.runningApplications)
+      return runningApps
     },
     sleepForSeconds: { seconds in
       invocations.append(.sleepForSeconds(seconds))

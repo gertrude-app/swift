@@ -126,6 +126,7 @@ extension FilterFeature.RootReducer {
               acc.version, appVersionString
             )
             try await storage.savePersistentState(persist)
+            await app.stopRelaunchWatcher()
             try await app.relaunch()
           }
         }
