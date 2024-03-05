@@ -75,6 +75,8 @@ import XExpect
   store.deps.filterXpc.disconnectUser = xpcDisconnect.fn
   let disableLaunchAtLogin = mock(always: ())
   store.deps.app.disableLaunchAtLogin = disableLaunchAtLogin.fn
+  let stopRelaunchWatcher = mock(always: ())
+  store.deps.app.stopRelaunchWatcher = stopRelaunchWatcher.fn
   store.deps.monitoring.commitPendingKeystrokes = { _ in fatalError() }
   store.deps.monitoring.takeScreenshot = { _ in fatalError() }
   setupStore(store)
@@ -93,6 +95,7 @@ import XExpect
   await expect(saveState.invocations.value).toHaveCount(1)
   await expect(xpcDisconnect.invocations).toEqual(1)
   await expect(disableLaunchAtLogin.invocations).toEqual(1)
+  await expect(stopRelaunchWatcher.invocations).toEqual(1)
 
   // no heartbeat actions received, no timed screenshots
   await bgQueue.advance(by: .seconds(60 * 10))

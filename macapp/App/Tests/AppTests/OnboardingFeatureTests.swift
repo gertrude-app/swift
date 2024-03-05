@@ -279,6 +279,8 @@ import XExpect
     store.deps.monitoring = .mock
     let stopLoggingKeystrokes = mock(always: ())
     store.deps.monitoring.stopLoggingKeystrokes = stopLoggingKeystrokes.fn
+    let startRelaunchWatcher = mock(always: ())
+    store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
 
     // they click "Next" on the install sys ext success screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -303,6 +305,7 @@ import XExpect
 
     await expect(setUserToken.invocations).toEqual([UserData.mock.token, UserData.mock.token])
     await expect(setAccountActive.invocations).toEqual([true])
+    await expect(startRelaunchWatcher.invocations).toEqual(1)
 
     // they click to exempt the dad admin user
     await store.send(.onboarding(.webview(.setUserExemption(userId: 501, enabled: true)))) {
@@ -345,7 +348,13 @@ import XExpect
 
     // shutdown tries fo flush keystrokes
     store.deps.monitoring.takePendingKeystrokes = { nil }
+    // and stop relauncher
+    let stopRelaunchWatcher = mock(always: ())
+    store.deps.app.stopRelaunchWatcher = stopRelaunchWatcher.fn
+
     await store.send(.application(.willTerminate))
+
+    await expect(stopRelaunchWatcher.invocations).toEqual(1)
   }
 
   func testSkipsExemptScreenIfSysExtHasntCommunicatedIds() async {

@@ -5,10 +5,18 @@ import Core
 import Dependencies
 import Foundation
 import LaunchAtLogin
+import os.log
 
 extension AppClient: DependencyKey {
   public static var liveValue: Self {
     initializeColorScheme()
+    let stopRelaunchWatcher: @Sendable () -> Void = {
+      if let pid = watcherPid.replace(with: nil) {
+        os_log("[G•] APP stopping relaunch watcher, pid=%{public}d", pid)
+        kill(pid, SIGTERM)
+        kill(pid, SIGKILL)
+      }
+    }
     return AppClient(
       colorScheme: {
         colorSchemeSubject.withValue { $0.value }
@@ -36,9 +44,19 @@ extension AppClient: DependencyKey {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
       },
       quit: {
+        stopRelaunchWatcher()
         exit(0)
       },
-      relaunch: relaunchApp
+      relaunch: relaunchApp,
+      startRelaunchWatcher: {
+        // stopping the debug build in xcode causes the relauncher to restart it
+        #if !DEBUG
+          let pid = try await startRelauncher()
+          watcherPid.replace(with: pid)
+          os_log("[G•] APP started relaunch watcher, pid=%{public}d", pid)
+        #endif
+      },
+      stopRelaunchWatcher: { stopRelaunchWatcher() }
     )
   }
 }
@@ -47,6 +65,7 @@ extension AppClient: DependencyKey {
 
 private let colorSchemeSubject = Mutex(CurrentValueSubject<AppClient.ColorScheme, Never>(.light))
 private let retainObserver = Mutex<NSKeyValueObservation?>(nil)
+private let watcherPid = Mutex<pid_t?>(nil)
 
 private func initializeColorScheme() {
   Task { @MainActor in

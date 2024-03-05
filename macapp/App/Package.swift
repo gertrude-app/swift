@@ -15,6 +15,7 @@ let package = Package(
     .library(name: "LiveFilterExtensionClient", targets: ["LiveFilterExtensionClient"]),
     .library(name: "LiveUpdaterClient", targets: ["LiveUpdaterClient"]),
     .library(name: "LiveWebSocketClient", targets: ["LiveWebSocketClient"]),
+    .library(name: "Relauncher", targets: ["Relauncher"]),
     .library(name: "TestSupport", targets: ["TestSupport"]),
   ],
   dependencies: [
@@ -88,6 +89,10 @@ let package = Package(
       name: "Core",
       dependencies: [.dependencies, "gertie" => "Gertie"]
     ),
+    .checkedTarget(
+      name: "Relauncher",
+      dependencies: [.dependencies]
+    ),
     .target(
       name: "TestSupport",
       dependencies: [.tca, "x-expect" => "XExpect"]
@@ -124,6 +129,15 @@ let package = Package(
         "x-kit" => "XCore",
         "combine-schedulers" => "CombineSchedulers",
         "Starscream",
+      ]
+    ),
+    .testTarget(
+      name: "RelauncherTests",
+      dependencies: [
+        .tca,
+        "Relauncher",
+        "TestSupport",
+        "x-expect" => "XExpect",
       ]
     ),
     .testTarget(

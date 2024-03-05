@@ -40,9 +40,12 @@ import XExpect
 
   func testHeartbeatUpdatesFilterVersionIfPossible() async {
     let (store, _) = AppReducer.testStore {
+      $0.appUpdates.installedVersion = "1.3.4"
       $0.filter.version = "1.3.3" // <-- out of date
     }
 
+    let relaunch = mock(once: ())
+    store.deps.app.relaunch = relaunch.fn
     store.deps.filterExtension.state = { .installedAndRunning }
     store.deps.filterXpc.checkConnectionHealth = { .success(()) }
     store.deps.filterXpc.requestAck = { .success(.init(
@@ -57,6 +60,44 @@ import XExpect
     await store.receive(.filter(.receivedVersion("1.3.4"))) {
       $0.filter.version = "1.3.4"
     }
+
+    // we're not behind, so we don't relaunch
+    await expect(relaunch.invoked).toEqual(false)
+  }
+
+  func testHeartbeatRelaunchesAppIfFilterAhead() async {
+    let (store, _) = AppReducer.testStore {
+      $0.appUpdates.installedVersion = "1.3.3" // <-- we're on "1.3.3"
+      $0.filter.version = "1.3.3" // ... and we think the filter is too
+    }
+
+    store.deps.app = .testValue
+    let stopWatcher = mock(once: ())
+    store.deps.app.stopRelaunchWatcher = stopWatcher.fn
+    let relaunch = mock(once: ())
+    store.deps.app.relaunch = relaunch.fn
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+    store.deps.filterExtension.state = { .installedAndRunning }
+    store.deps.filterXpc.checkConnectionHealth = { .success(()) }
+    store.deps.filterXpc.requestAck = { .success(.init(
+      randomInt: 333,
+      version: "1.3.4", // <-- but we get a new "ahead" filter version
+      userId: 502,
+      numUserKeys: 33
+    )) }
+
+    await store.send(.heartbeat(.everyFiveMinutes))
+
+    // so we 1) update the state
+    await store.receive(.filter(.receivedVersion("1.3.4"))) {
+      $0.filter.version = "1.3.4"
+    }
+    // 2) store persistent state
+    await expect(saveState.invocations.value).toHaveCount(1)
+    // and 3) relaunch
+    await expect(stopWatcher.invoked).toEqual(true)
+    await expect(relaunch.invoked).toEqual(true)
   }
 
   func testManualAdminSuspensionLifecycle() async {
