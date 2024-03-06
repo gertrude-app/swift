@@ -1,4 +1,5 @@
 import FluentSQL
+import Foundation
 import Gertie
 
 struct ReworkPayments: GertieMigration {
