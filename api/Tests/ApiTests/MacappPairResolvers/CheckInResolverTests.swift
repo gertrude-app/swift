@@ -100,14 +100,19 @@ final class CheckInResolverTests: ApiTestCase {
 
 @discardableResult
 func createAutoIncludeKeychain() async throws -> (Keychain, Key) {
+  guard let autoIdStr = Env.get("AUTO_INCLUDED_KEYCHAIN_ID"),
+        let autoId = UUID(uuidString: autoIdStr) else {
+    fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")
+  }
   let admin = try await Entities.admin()
   try await Current.db.query(Keychain.self)
-    .where(.name == "__auto_included__")
-    .delete()
+    .where(.id == autoId)
+    .delete(force: true)
 
   let keychain = try await Current.db.create(Keychain(
+    id: .init(autoId),
     authorId: admin.model.id,
-    name: "__auto_included__"
+    name: "Auto Included (test)"
   ))
   let key = try await Current.db.create(Key(
     keychainId: keychain.id,

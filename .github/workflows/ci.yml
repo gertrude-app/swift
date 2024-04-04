@@ -91,6 +91,7 @@ jobs:
     container: swift:5.9-focal
     env:
       DATABASE_HOST: postgres
+      AUTO_INCLUDED_KEYCHAIN_ID: 77777777-7777-7777-7777-777777777777
     services:
       postgres:
         image: postgres:latest

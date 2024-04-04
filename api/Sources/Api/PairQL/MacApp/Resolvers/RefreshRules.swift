@@ -19,12 +19,9 @@ extension RefreshRules: Resolver {
 
     // ...merging in AUTO-INCLUDED Keychain
     if !keys.isEmpty {
-      let autoKeychain = try await Current.db.query(Keychain.self)
-        .where(.name == "__auto_included__")
-        .orderBy(.createdAt, .desc) // safeguard against dupes
-        .limit(1)
-        .all()
-        .first
+      let autoId = Env.get("AUTO_INCLUDED_KEYCHAIN_ID")
+        .flatMap(UUID.init(uuidString:)) ?? Current.uuid()
+      let autoKeychain = try? await Keychain.find(.init(autoId))
       if let autoKeychain = autoKeychain {
         let autoKeys = try await autoKeychain.keys()
         keys.append(contentsOf: autoKeys)
