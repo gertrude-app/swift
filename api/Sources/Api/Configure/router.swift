@@ -30,10 +30,12 @@ public extension Configure {
       use: ReleasesRoute.handler(_:)
     )
 
-    app.get(
-      "reset-9cec5bbfd7f0",
-      use: ResetRoute.handler(_:)
-    )
+    if let suffix = Env.get("RESET_ROUTE_SUFFIX") {
+      app.get(
+        "reset-\(suffix)",
+        use: ResetRoute.handler(_:)
+      )
+    }
 
     app.post(
       "stripe-events",
