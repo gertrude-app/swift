@@ -9,7 +9,7 @@ let package = Package(
   ],
   dependencies: [
     .package(path: "../x-http"),
-    .package(url: "https://github.com/pointfreeco/swift-nonempty.git", from: "0.3.0"),
+    .package(url: "https://github.com/pointfreeco/swift-nonempty.git", from: "0.5.0"),
   ],
   targets: [
     .target(name: "XSendGrid", dependencies: [
