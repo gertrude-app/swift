@@ -47,17 +47,17 @@ nuke-test-db:
 #infra
 
 deploy-prod:
-	@node ./api/Infra/deploy.mjs --production
+	@node ../infra/deploy.mjs --production
 
 deploy-staging:
-	@node ./api/Infra/deploy.mjs
+	@node ../infra/deploy.mjs
 
 deploy-all:
 	@just deploy-staging
 	@just deploy-prod
 
 db-sync:
-	@node ./api/Infra/db-sync.mjs
+	@node ../infra/db-sync.mjs
 
 # root
 
