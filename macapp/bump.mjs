@@ -2,7 +2,7 @@
 // @ts-check
 import fs from 'node:fs';
 import semver from 'semver';
-import { c, log } from 'x-chalk';
+import { c as l, log } from 'x-chalk';
 
 const plistPaths = [
   `macapp/Xcode/Gertrude/Info.plist`,
@@ -11,9 +11,9 @@ const plistPaths = [
 
 const plistContents = plistPaths.map((path) => fs.readFileSync(path, 'utf8'));
 
-const current = plistContents[0].match(
+const current = plistContents[0]?.match(
   /CFBundleVersion<\/key>\n\s*<string>(.*?)<\/string>/,
-)[1];
+)?.[1];
 
 if (!semver.valid(current)) {
   abort(`Invalid current version: ${current}`);
@@ -33,7 +33,7 @@ plistContents.forEach((content, i) => {
   fs.writeFileSync(plistPaths[i], nextContent);
 });
 
-log(c`\nSet {cyan Info.plist} versions to {green.bold ${nextVersion}}.\n`);
+log(l`\nSet {cyan Info.plist} versions to {green.bold ${nextVersion}}.\n`);
 
 function next(current) {
   const input = process.argv[2];
@@ -56,6 +56,6 @@ function next(current) {
 }
 
 function abort(message) {
-  log(c`\n{red.bold ${message}}\n`);
+  log(l`\n{red.bold ${message}}\n`);
   process.exit(1);
 }
