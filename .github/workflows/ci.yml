@@ -9,7 +9,7 @@ jobs:
     container: swift:5.9-focal
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: build-duet
         run: cd duet && swift build
       - name: build-pairql
@@ -22,7 +22,7 @@ jobs:
     container: swift:5.9-focal
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: build-gertie
         run: cd gertie && swift build
       - name: build-ts-interop
@@ -47,7 +47,7 @@ jobs:
     container: swift:5.9-focal
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: test-duet
         run: cd duet && swift test
       - name: test-pairql
@@ -58,7 +58,7 @@ jobs:
     container: swift:5.9-focal
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: test-pairql-macapp
         run: cd pairql-macapp && swift test
       - name: test-ts-interop
@@ -77,8 +77,8 @@ jobs:
     container: swift:5.9-focal
     steps:
       - name: checkout
-        uses: actions/checkout@v3
-      - uses: actions/cache@v3
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: api/.build
           key: api-${{ hashFiles('api/Package.resolved') }}
@@ -91,6 +91,7 @@ jobs:
     container: swift:5.9-focal
     env:
       DATABASE_HOST: postgres
+      AUTO_INCLUDED_KEYCHAIN_ID: 77777777-7777-7777-7777-777777777777
     services:
       postgres:
         image: postgres:latest
@@ -100,9 +101,9 @@ jobs:
           POSTGRES_DB: vapor_database
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       # only restore, job:linux-api-build will save, to save execution time
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: api/.build
           key: api-${{ hashFiles('api/Package.resolved') }}
@@ -116,8 +117,8 @@ jobs:
       macapplib: ${{ steps.changes.outputs.macapplib }}
     steps:
       - name: checkout
-        uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
+        uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
         id: changes
         with:
           filters: |
@@ -130,12 +131,12 @@ jobs:
     runs-on: macos-13
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: 14.3.1
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: macapp/App/.build
           key: macapp-spm--${{ hashFiles('macapp/App/Package.resolved') }}
