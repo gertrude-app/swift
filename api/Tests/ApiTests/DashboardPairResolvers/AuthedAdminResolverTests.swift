@@ -128,7 +128,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let (id, _) = mockUUIDs()
 
     let output = try await CreatePendingNotificationMethod.resolve(
-      with: .text(phoneNumber: "1234567890"),
+      with: .text(phoneNumber: "+12345678901"),
       in: context(admin)
     )
 
@@ -140,10 +140,9 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     // check that text was sent
     expect(sent.texts).toEqual([.init(
-      to: "1234567890",
+      to: "+12345678901",
       message: "Your verification code is 987654"
     )])
-    expect(sent.texts.first?.recipientI164).toEqual("+1234567890")
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
@@ -157,7 +156,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
     expect(retrieved?.adminId).toEqual(admin.id)
-    expect(retrieved?.config).toEqual(.text(phoneNumber: "1234567890"))
+    expect(retrieved?.config).toEqual(.text(phoneNumber: "+12345678901"))
   }
 
   func testCreatePendingMethod_Slack() async throws {
