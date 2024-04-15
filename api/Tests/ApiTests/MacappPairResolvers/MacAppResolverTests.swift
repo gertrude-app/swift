@@ -7,7 +7,6 @@ import XExpect
 @testable import Api
 
 final class MacAppResolverTests: ApiTestCase {
-
   func testCreateSuspendFilterRequest() async throws {
     let user = try await Entities.user().withDevice()
 
@@ -18,7 +17,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let suspendRequests = try await Current.db.query(SuspendFilterRequest.self)
+    let suspendRequests = try await SuspendFilterRequest.query()
       .where(.userDeviceId == user.device.id)
       .all()
 
@@ -40,6 +39,46 @@ final class MacAppResolverTests: ApiTestCase {
         ))
       ),
     ])
+  }
+
+  func testOneFailedNotificationDoesntBlockRest() async throws {
+    let user = try await Entities.user().withDevice()
+
+    // admin gets two notifications on suspend filter request
+    let slack = try await AdminVerifiedNotificationMethod.create(.init(
+      adminId: user.adminId,
+      config: .slack(
+        channelId: "#gertie",
+        channelName: "Gertie",
+        token: "definitely-not-a-real-token"
+      )
+    ))
+    let text = try await AdminVerifiedNotificationMethod.create(.init(
+      adminId: user.adminId,
+      config: .text(phoneNumber: "1234567890")
+    ))
+    try await AdminNotification.create(.init(
+      adminId: user.adminId,
+      methodId: slack.id,
+      trigger: .suspendFilterRequestSubmitted
+    ))
+    try await AdminNotification.create(.init(
+      adminId: user.adminId,
+      methodId: text.id,
+      trigger: .suspendFilterRequestSubmitted
+    ))
+
+    // we want to test the LIVE admin notifier implementation
+    Current.adminNotifier = .live
+    Current.slack.send = { _, _ in "oh noes!" } // slack fails
+
+    _ = try await CreateSuspendFilterRequest.resolve(
+      with: .init(duration: 1111, comment: "test"),
+      in: context(user)
+    )
+
+    expect(sent.slacks).toHaveCount(0)
+    expect(sent.texts).toHaveCount(1)
   }
 
   func testCreateKeystrokeLines() async throws {
