@@ -70,10 +70,6 @@ struct Text: Equatable {
   let to: PhoneNumber
   let message: String
   typealias PhoneNumber = Tagged<Text, String>
-
-  var recipientI164: String {
-    "+1\(to.rawValue.filter(\.isNumber).drop(while: { $0 == "1" }))"
-  }
 }
 
 extension Slack {
