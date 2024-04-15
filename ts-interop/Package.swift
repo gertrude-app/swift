@@ -8,7 +8,7 @@ let package = Package(
     .library(name: "TypeScriptInterop", targets: ["TypeScriptInterop"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/wickwirew/Runtime.git", from: "2.2.4"),
+    .package(url: "https://github.com/wickwirew/Runtime.git", from: "2.2.5"),
     .package(path: "../x-expect"),
   ],
   targets: [
