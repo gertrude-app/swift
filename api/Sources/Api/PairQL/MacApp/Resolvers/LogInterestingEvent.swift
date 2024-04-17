@@ -13,7 +13,7 @@ extension LogInterestingEvent: Resolver {
         userDeviceId = nil
       }
 
-      try await Current.db.create(InterestingEvent(
+      try await InterestingEvent.create(.init(
         eventId: input.eventId,
         kind: input.kind,
         context: "macapp",

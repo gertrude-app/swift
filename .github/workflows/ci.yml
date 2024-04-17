@@ -92,6 +92,7 @@ jobs:
     env:
       DATABASE_HOST: postgres
       AUTO_INCLUDED_KEYCHAIN_ID: 77777777-7777-7777-7777-777777777777
+      SLACK_API_TOKEN: not-real
     services:
       postgres:
         image: postgres:latest
