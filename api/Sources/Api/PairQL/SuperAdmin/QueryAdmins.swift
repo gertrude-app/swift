@@ -177,7 +177,7 @@ struct AdminQuery: CustomQueryable {
     LEFT JOIN keys ON user_keychain.keychain_id = keys.keychain_id
     WHERE
       users.deleted_at IS NULL AND
-      admins.email NOT LIKE '82uii.smoke-test-%'
+      admins.email NOT LIKE '%.smoke-test-%'
     GROUP BY
       admins.id,
       admins.email,

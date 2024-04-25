@@ -57,7 +57,7 @@ private func isCypressTestAddress(_ email: String) -> Bool {
 }
 
 private func isProdSmokeTestAddress(_ email: String) -> Bool {
-  email.starts(with: "82uii.smoke-test-") && email.contains("@inbox.testmail.app")
+  email.contains(".smoke-test-") && email.contains("@inbox.testmail.app")
 }
 
 private func isJaredTestAddress(_ email: String) -> Bool {
