@@ -20,6 +20,8 @@ enum MonitoringFeature: Feature {
   }
 
   struct RootReducer: RootReducing {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.api) var api
     @Dependency(\.date.now) var now
     @Dependency(\.backgroundQueue) var bgQueue

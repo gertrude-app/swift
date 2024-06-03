@@ -149,7 +149,9 @@ struct AdminWindowFeature: Feature {
     }
   }
 
-  struct RootReducer: FilterControlling, AdminAuthenticating {
+  struct RootReducer: RootReducing, FilterControlling, AdminAuthenticating {
+    typealias State = AppReducer.State
+    typealias Action = AppReducer.Action
     @Dependency(\.app) var app
     @Dependency(\.api) var api
     @Dependency(\.device) var device

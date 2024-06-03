@@ -9,7 +9,9 @@ public extension Key.Domain {
     if domain.last == "/" {
       domain.removeLast()
     }
-    guard !domain.contains("/"), URL(string: domain) != nil else {
+    guard !domain.contains("/"),
+          !domain.contains(" "),
+          URL(string: domain) != nil else {
       return nil
     }
     string = domain.lowercased()

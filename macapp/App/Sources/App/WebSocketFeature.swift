@@ -11,6 +11,8 @@ enum WebSocketFeature {
   }
 
   struct RootReducer: RootReducing {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.device) var device
     @Dependency(\.websocket) var websocket

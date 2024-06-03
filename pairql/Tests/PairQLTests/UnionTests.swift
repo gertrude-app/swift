@@ -19,7 +19,7 @@ final class UnionTests: XCTestCase {
     """
 
     let encoder = JSONEncoder()
-    encoder.outputFormatting = .prettyPrinted
+    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
     let encoded = try! encoder.encode(union)
     let json = String(data: encoded, encoding: .utf8)!
     expect(json).toBe(expected)

@@ -9,6 +9,8 @@ struct AdminFeature: Feature {
   typealias Action = Never
 
   struct RootReducer: Sendable {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.api) var api
     @Dependency(\.app) var app
     @Dependency(\.security) var security

@@ -32,6 +32,8 @@ enum MenuBarFeature: Feature {
   }
 
   struct RootReducer: AdminAuthenticating {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.app) var app
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter

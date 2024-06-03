@@ -96,6 +96,8 @@ struct RequestSuspensionFeature: Feature {
   }
 
   struct RootReducer: AdminAuthenticating {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.security) var security
   }

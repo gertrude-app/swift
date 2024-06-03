@@ -39,6 +39,8 @@ struct FilterFeature: Feature {
   }
 
   struct RootReducer: RootReducing {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.app) var app
     @Dependency(\.date.now) var now
     @Dependency(\.device) var device

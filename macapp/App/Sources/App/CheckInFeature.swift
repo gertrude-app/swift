@@ -3,6 +3,8 @@ import MacAppRoute
 
 struct CheckInFeature {
   struct RootReducer: RootReducing {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.api) var api
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var filterXpc
