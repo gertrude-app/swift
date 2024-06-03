@@ -18,13 +18,13 @@ class WebViewController<State, Action>:
 
   func updateState(_ state: State) {
     if let json = try? JSON.encode(state, [.isoDates]) {
-      webView.evaluateJavaScript("window.updateAppState(\(json))")
+      self.webView.evaluateJavaScript("window.updateAppState(\(json))")
     }
   }
 
   func updateColorScheme(_ colorScheme: AppClient.ColorScheme) {
-    if supportsDarkMode {
-      webView.evaluateJavaScript("window.updateColorScheme('\(colorScheme.rawValue)')")
+    if self.supportsDarkMode {
+      self.webView.evaluateJavaScript("window.updateColorScheme('\(colorScheme.rawValue)')")
     }
   }
 
@@ -36,30 +36,30 @@ class WebViewController<State, Action>:
       webConfiguration.preferences.isElementFullscreenEnabled = true
     }
 
-    if withTitleBar {
-      webView = WKWebView(frame: .zero, configuration: webConfiguration)
+    if self.withTitleBar {
+      self.webView = WKWebView(frame: .zero, configuration: webConfiguration)
     } else {
-      webView = NoTitleWebView(frame: .zero, configuration: webConfiguration)
+      self.webView = NoTitleWebView(frame: .zero, configuration: webConfiguration)
     }
-    webView.uiDelegate = self
-    webView.setValue(false, forKey: "drawsBackground")
+    self.webView.uiDelegate = self
+    self.webView.setValue(false, forKey: "drawsBackground")
 
-    let contentController = webView.configuration.userContentController
+    let contentController = self.webView.configuration.userContentController
     contentController.add(self, name: "appView")
 
     #if DEBUG
-      webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
+      self.webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
     #endif
 
-    let colorScheme = supportsDarkMode ? app.colorScheme() : .light
+    let colorScheme = self.supportsDarkMode ? self.app.colorScheme() : .light
     let filePathURL = URL(
       fileURLWithPath: "Contents/Resources/WebViews/\(screen)/index.\(colorScheme).html",
       relativeTo: Bundle.main.bundleURL
     )
 
     let fileDirectoryURL = filePathURL.deletingLastPathComponent()
-    webView.loadFileURL(filePathURL, allowingReadAccessTo: fileDirectoryURL)
-    view = webView
+    self.webView.loadFileURL(filePathURL, allowingReadAccessTo: fileDirectoryURL)
+    view = self.webView
   }
 
   nonisolated func userContentController(
@@ -99,11 +99,11 @@ class WebViewController<State, Action>:
 
   // helper fn to keep compiler happy re: concurrency
   @MainActor func send(action: Action) {
-    send(action)
+    self.send(action)
   }
 
   @MainActor func ready() {
-    isReady.value = true
+    self.isReady.value = true
   }
 }
 

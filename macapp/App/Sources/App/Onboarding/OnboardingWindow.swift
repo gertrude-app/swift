@@ -25,8 +25,8 @@ class OnboardingWindow: AppWindow {
   @Dependency(\.app) var appClient
 
   @MainActor init(store: Store<AppReducer.State, Feature.Action>) {
-    viewStore = ViewStore(store, observe: OnboardingFeature.State.View.init)
-    openPublisher = viewStore.publisher.windowOpen
+    self.viewStore = ViewStore(store, observe: OnboardingFeature.State.View.init)
+    self.openPublisher = self.viewStore.publisher.windowOpen
     bind()
   }
 

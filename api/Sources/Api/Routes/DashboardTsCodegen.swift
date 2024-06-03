@@ -100,15 +100,15 @@ enum DashboardTsCodegenRoute {
     ]
     var config = Config(compact: true, aliasing: sharedAliases)
 
-    for (name, type) in sharedTypes {
+    for (name, type) in self.sharedTypes {
       shared[name] = try CodeGen(config: config).declaration(for: type, as: name)
       sharedAliases.append(.init(type, as: name))
       config = .init(compact: true, aliasing: sharedAliases)
     }
 
     var pairs: [String: Response.Pair] = [:]
-    for pairType in pairqlPairs {
-      pairs[pairType.name] = try ts(for: pairType, with: config)
+    for pairType in self.pairqlPairs {
+      pairs[pairType.name] = try self.ts(for: pairType, with: config)
     }
 
     return Response(shared: shared, pairs: pairs)

@@ -41,14 +41,14 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     let newListener = NSXPCListener(machServiceName: Constants.MACH_SERVICE_NAME)
     newListener.delegate = self
     newListener.resume()
-    listener = newListener
+    self.listener = newListener
     os_log("[G•] FILTER XPCManager: started listener")
   }
 
   func stopListener() {
-    listener?.invalidate()
-    listener = nil
-    connection = nil
+    self.listener?.invalidate()
+    self.listener = nil
+    self.connection = nil
     os_log("[G•] FILTER XPCManager: stopped listener")
   }
 
@@ -59,7 +59,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     os_log("[G•] FILTER XPCManager: accepting new connection %{public}@", newConnection)
     // ⛔️⛔️⛔️ WARNING ⛔️⛔️⛔️ `newConnection` has been "moved" into
     // the Connection object, and may not be accessed again !!!
-    connection = Connection(taking: Move(configure(connection: newConnection)))
+    self.connection = Connection(taking: Move(configure(connection: newConnection)))
     return true
     // NB: we can get user id: `newConnection.effectiveUserIdentifier`
   }

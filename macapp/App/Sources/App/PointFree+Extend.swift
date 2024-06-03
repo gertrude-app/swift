@@ -21,7 +21,7 @@ extension AnySchedulerOf<DispatchQueue> {
     after time: DispatchQueue.SchedulerTimeType.Stride,
     action: @escaping () -> Void
   ) {
-    schedule(after: now.advanced(by: time), action)
+    self.schedule(after: now.advanced(by: time), action)
   }
 }
 

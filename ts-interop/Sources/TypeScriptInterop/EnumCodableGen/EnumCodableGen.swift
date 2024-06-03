@@ -79,7 +79,7 @@ public extension EnumCodableGen.EnumType {
         var message: String
       }
 
-      \(helperStructs)func encode(to encoder: Encoder) throws {
+      \(self.helperStructs)func encode(to encoder: Encoder) throws {
         switch self {
         \(cases.map(\.encodeCase).joined(separator: "\n    "))
         }
@@ -150,7 +150,7 @@ extension EnumCodableGen.EnumType.Case {
   var codableStruct: String? {
     guard !values.isEmpty else { return nil }
     return """
-    private struct \(codableStructName): Codable {
+    private struct \(self.codableStructName): Codable {
         var `case` = "\(name)"
         \(values.map { "var \($0.requireName): \($0.type)" }.joined(separator: "\n    "))
       }
@@ -175,12 +175,12 @@ extension EnumCodableGen.EnumType.Case {
       if isFlattenedUserStruct {
         args = values.map(\.requireName).map { "\($0): unflat.\($0)" }
       }
-      return "\(codableStructName)(\(args.joined(separator: ", ")))"
+      return "\(self.codableStructName)(\(args.joined(separator: ", ")))"
     }
   }
 
   var encodeCase: String {
-    "\(switchPattern)\n      try \(encodeInit).encode(to: encoder)"
+    "\(self.switchPattern)\n      try \(self.encodeInit).encode(to: encoder)"
   }
 
   var initCase: String {
@@ -196,7 +196,7 @@ extension EnumCodableGen.EnumType.Case {
       }
       return #"""
       case "\#(name)":
-            let value = try container.decode(\#(codableStructName).self)
+            let value = try container.decode(\#(self.codableStructName).self)
             self = .\#(name)(\#(args))
       """#
     }

@@ -6,13 +6,13 @@ import XCTest
 final class CGImageTests: XCTestCase {
 
   func testIsNearlyIdenticalTo() {
-    let imageA = pngFixture("identical/1600x670_A.png")
-    let imageB = pngFixture("identical/1600x670_B.png")
-    let imageDiff = pngFixture("identical/1600x670_diff.png")
-    let largeImageA = pngFixture("identical/1920x1080_A.png")
-    let largeImageB = pngFixture("identical/1920x1080_B.png")
-    let hourSmallImageA = pngFixture("identical/1600x670_hour_A.png")
-    let hourSmallImageB = pngFixture("identical/1600x670_hour_B.png")
+    let imageA = self.pngFixture("identical/1600x670_A.png")
+    let imageB = self.pngFixture("identical/1600x670_B.png")
+    let imageDiff = self.pngFixture("identical/1600x670_diff.png")
+    let largeImageA = self.pngFixture("identical/1920x1080_A.png")
+    let largeImageB = self.pngFixture("identical/1920x1080_B.png")
+    let hourSmallImageA = self.pngFixture("identical/1600x670_hour_A.png")
+    let hourSmallImageB = self.pngFixture("identical/1600x670_hour_B.png")
 
     XCTAssertTrue(imageA.isNearlyIdenticalTo(imageB))
     XCTAssertTrue(imageA.isNearlyIdenticalTo(imageA))
@@ -25,8 +25,8 @@ final class CGImageTests: XCTestCase {
   }
 
   func testAntialiasingIdentical() {
-    let realA = jpegFixture("one.jpeg")
-    let realB = jpegFixture("two.jpeg")
+    let realA = self.jpegFixture("one.jpeg")
+    let realB = self.jpegFixture("two.jpeg")
 
     // these are nearly identical, except for antialiasing
     // ideally, this should be true, but it's not
@@ -37,9 +37,9 @@ final class CGImageTests: XCTestCase {
   }
 
   func testIsBlank() {
-    XCTAssertTrue(pngFixture("white.png").isBlank)
-    XCTAssertTrue(pngFixture("black.png").isBlank)
-    XCTAssertFalse(pngFixture("mixed.png").isBlank)
+    XCTAssertTrue(self.pngFixture("white.png").isBlank)
+    XCTAssertTrue(self.pngFixture("black.png").isBlank)
+    XCTAssertFalse(self.pngFixture("mixed.png").isBlank)
   }
 
   func pngFixture(_ filename: String) -> CGImage {

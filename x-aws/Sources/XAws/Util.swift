@@ -26,7 +26,7 @@ extension AWS.Util {
   }
 
   static func sha256(_ string: String) -> String {
-    hex(Data(SHA256.hash(data: Data(string.utf8))))
+    self.hex(Data(SHA256.hash(data: Data(string.utf8))))
   }
 
   static func hmac(_ key: Data, _ string: String) -> Data {
@@ -50,7 +50,7 @@ extension AWS.Util {
   }
 
   static func yyyymmdd(_ date: Date = Date()) -> String {
-    String(timestamp(date).prefix(8))
+    String(self.timestamp(date).prefix(8))
   }
 }
 

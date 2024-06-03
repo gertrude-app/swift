@@ -57,7 +57,7 @@ extension Node.Property: TypeScriptRepresentable {
 
   func declaration(_ ctx: Context) -> String {
     let propValue = ctx.config.alias(for: value) ?? value.declaration(ctx)
-    return "\(unindentedLhs(ctx))\(propValue)"
+    return "\(self.unindentedLhs(ctx))\(propValue)"
   }
 }
 

@@ -45,10 +45,10 @@ class FilterDataProvider: NEFilterDataProvider {
       }
     }
 
-    store.shouldSendBlockDecisions().sink { [weak self] in
+    self.store.shouldSendBlockDecisions().sink { [weak self] in
       os_log("[G•] FILTER data provider: toggle send block decisions %{public}d", $0)
       self?.sendingBlockDecisions = $0
-    }.store(in: &cancellables)
+    }.store(in: &self.cancellables)
   }
 
   override func stopFilter(
@@ -60,8 +60,8 @@ class FilterDataProvider: NEFilterDataProvider {
 
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
     let userId: uid_t
-    let earlyUserDecision = store.earlyUserDecision(auditToken: flow.sourceAppAuditToken)
-    if verboseLogging {
+    let earlyUserDecision = self.store.earlyUserDecision(auditToken: flow.sourceAppAuditToken)
+    if self.verboseLogging {
       os_log("[D•] FILTER received new flow: %{public}s", "\(flow.description)")
       os_log("[D•] FILTER early user decision: %{public}@", "\(earlyUserDecision)")
     }
@@ -79,8 +79,8 @@ class FilterDataProvider: NEFilterDataProvider {
     }
 
     let filterFlow = FilterFlow(flow, userId: userId)
-    let decision = store.newFlowDecision(filterFlow, auditToken: flow.sourceAppAuditToken)
-    if verboseLogging {
+    let decision = self.store.newFlowDecision(filterFlow, auditToken: flow.sourceAppAuditToken)
+    if self.verboseLogging {
       switch decision {
       case .some(let decision):
         os_log("[D•] FILTER new flow decision: %{public}@", "\(decision)")
@@ -91,8 +91,8 @@ class FilterDataProvider: NEFilterDataProvider {
 
     switch decision {
     case .block:
-      if sendingBlockDecisions {
-        store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
+      if self.sendingBlockDecisions {
+        self.store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
       #if DEBUG
         return .allow()
@@ -102,7 +102,7 @@ class FilterDataProvider: NEFilterDataProvider {
     case .allow:
       return .allow()
     case nil:
-      flowUserIds[flow.identifier] = userId
+      self.flowUserIds[flow.identifier] = userId
       return .filterDataVerdict(
         withFilterInbound: false,
         peekInboundBytes: Int.max,
@@ -117,21 +117,21 @@ class FilterDataProvider: NEFilterDataProvider {
     readBytesStartOffset _: Int,
     readBytes: Data
   ) -> NEFilterDataVerdict {
-    let userId = flowUserIds.removeValue(forKey: flow.identifier)
+    let userId = self.flowUserIds.removeValue(forKey: flow.identifier)
 
     // safeguard: prevent memory leak
-    if flowUserIds.count > 100 {
-      flowUserIds = [:]
+    if self.flowUserIds.count > 100 {
+      self.flowUserIds = [:]
     }
 
     var filterFlow = FilterFlow(flow, userId: userId)
-    let decision = store.completedFlowDecision(
+    let decision = self.store.completedFlowDecision(
       &filterFlow,
       readBytes: readBytes,
       auditToken: flow.sourceAppAuditToken
     )
 
-    if verboseLogging {
+    if self.verboseLogging {
       os_log("[D•] FILTER outbound flow: %{public}s", "\(filterFlow.shortDescription)")
       os_log("[D•] FILTER outbound flow decision: %{public}@", "\(decision)")
       os_log("[D•] FILTER outbound flow bytes: %{public}s", bytesToAscii(readBytes))
@@ -139,8 +139,8 @@ class FilterDataProvider: NEFilterDataProvider {
 
     switch decision {
     case .block:
-      if sendingBlockDecisions {
-        store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
+      if self.sendingBlockDecisions {
+        self.store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
       #if DEBUG
         return .allow()

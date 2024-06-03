@@ -143,7 +143,7 @@ extension UserActivity.Screenshot {
     height = screenshot.height
     duringSuspension = screenshot.filterSuspended
     createdAt = screenshot.createdAt
-    deletedAt = screenshot.deletedAt
+    self.deletedAt = screenshot.deletedAt
   }
 }
 
@@ -155,6 +155,6 @@ extension UserActivity.CoalescedKeystrokeLine {
     line = keystroke.line
     duringSuspension = keystroke.filterSuspended
     createdAt = keystroke.createdAt
-    deletedAt = keystroke.deletedAt
+    self.deletedAt = keystroke.deletedAt
   }
 }

@@ -181,109 +181,109 @@ extension AuthedAdminRoute: RouteResponder {
     switch route {
     case .getUser(let uuid):
       let output = try await GetUser.resolve(with: uuid, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getUsers:
       let output = try await GetUsers.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .saveUser(let input):
       let output = try await SaveUser.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .deleteEntity(let input):
       let output = try await DeleteEntity.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .userActivitySummaries(let input):
       let output = try await UserActivitySummaries.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .createPendingAppConnection(let input):
       let output = try await CreatePendingAppConnection.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .decideFilterSuspensionRequest(let input):
       let output = try await DecideFilterSuspensionRequest.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .userActivityFeed(let input):
       let output = try await UserActivityFeed.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .combinedUsersActivityFeed(let input):
       let output = try await CombinedUsersActivityFeed.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .combinedUsersActivitySummaries(let input):
       let output = try await CombinedUsersActivitySummaries.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getAdmin:
       let output = try await GetAdmin.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .logEvent(let input):
       let output = try await LogEvent.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .saveDevice(let input):
       let output = try await SaveDevice.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .saveNotification(let input):
       let output = try await SaveNotification.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getIdentifiedApps:
       let output = try await GetIdentifiedApps.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getDashboardWidgets:
       let output = try await GetDashboardWidgets.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getDevice(let input):
       let output = try await GetDevice.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getDevices:
       let output = try await GetDevices.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getSelectableKeychains:
       let output = try await GetSelectableKeychains.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getAdminKeychains:
       let output = try await GetAdminKeychains.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getAdminKeychain(let input):
       let output = try await GetAdminKeychain.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .handleCheckoutCancel(let input):
       let output = try await HandleCheckoutCancel.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .handleCheckoutSuccess(let input):
       let output = try await HandleCheckoutSuccess.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .latestAppVersions:
       let output = try await LatestAppVersions.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .saveKeychain(let input):
       let output = try await SaveKeychain.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .confirmPendingNotificationMethod(let input):
       let output = try await ConfirmPendingNotificationMethod.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getUnlockRequest(let input):
       let output = try await GetUnlockRequest.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getUnlockRequests:
       let output = try await GetUnlockRequests.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getUserUnlockRequests(let input):
       let output = try await GetUserUnlockRequests.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .getSuspendFilterRequest(let input):
       let output = try await GetSuspendFilterRequest.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .createPendingNotificationMethod(let input):
       let output = try await CreatePendingNotificationMethod.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .updateUnlockRequest(let input):
       let output = try await UpdateUnlockRequest.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .saveKey(let input):
       let output = try await SaveKey.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .stripeUrl:
       let output = try await StripeUrl.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .deleteActivityItems_v2(let input):
       let output = try await DeleteActivityItems_v2.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     }
   }
 }

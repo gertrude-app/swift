@@ -45,7 +45,7 @@ public struct Filter: Reducer, Sendable {
     default:
       os_log(
         "[G•] FILTER (%{public}@) received action: %{public}@",
-        filterExtension.version(),
+        self.filterExtension.version(),
         String(describing: action)
       )
     }
@@ -91,7 +91,7 @@ public struct Filter: Reducer, Sendable {
 
     case .flowBlocked(let flow, let app):
       if let userId = flow.userId, let expiration = state.blockListeners[userId] {
-        if expiration < now {
+        if expiration < self.now {
           state.blockListeners[userId] = nil
           return .none
         }
@@ -106,7 +106,7 @@ public struct Filter: Reducer, Sendable {
       for (userId, suspension) in state.suspensions {
         // 5 second cushion prevents race between heartbeat and expiration timer
         // we want the expiration timer to do the work, this is only a failsafe
-        if suspension.expiresAt < now.advanced(by: .seconds(-5)) {
+        if suspension.expiresAt < self.now.advanced(by: .seconds(-5)) {
           expiredSuspensionUserIds.append(userId)
         }
       }
@@ -145,7 +145,7 @@ public struct Filter: Reducer, Sendable {
       return .none
 
     case .xpc(.receivedAppMessage(.setBlockStreaming(true, let userId))):
-      state.blockListeners[userId] = now.advanced(by: FIVE_MINUTES_IN_SECONDS)
+      state.blockListeners[userId] = self.now.advanced(by: FIVE_MINUTES_IN_SECONDS)
       os_log("[D•] FILTER state start streaming: %{public}@", "\(state.debug)")
       return .none
 
@@ -157,7 +157,7 @@ public struct Filter: Reducer, Sendable {
       state.userKeys[userId] = nil
       state.suspensions[userId] = nil
       state.exemptUsers.remove(userId)
-      return saving(state.persistent)
+      return self.saving(state.persistent)
 
     case .xpc(.receivedAppMessage(.endFilterSuspension(let userId))):
       state.suspensions[userId] = nil
@@ -167,7 +167,7 @@ public struct Filter: Reducer, Sendable {
       state.suspensions[userId] = .init(
         scope: .unrestricted,
         duration: duration,
-        now: now
+        now: self.now
       )
       return .run { send in
         // NB: this sleep pauses (and thus becomes incorrect) when the computer is asleep
@@ -182,7 +182,7 @@ public struct Filter: Reducer, Sendable {
       state.exemptUsers.remove(userId)
       state.appIdManifest = manifest
       state.appCache = [:]
-      return saving(state.persistent)
+      return self.saving(state.persistent)
 
     case .xpc(.receivedAppMessage(.setUserExemption(let userId, let enabled))):
       if enabled {
@@ -190,7 +190,7 @@ public struct Filter: Reducer, Sendable {
       } else {
         state.exemptUsers.remove(userId)
       }
-      return saving(state.persistent)
+      return self.saving(state.persistent)
 
     case .xpc(.receivedAppMessage(.deleteAllStoredState)):
       state = .init()

@@ -37,8 +37,8 @@ class KeystrokeMonitor {
   private var bufferedApiInput: CreateKeystrokeLines.Input = []
 
   func start() {
-    stop() // if we don't stop prior, we get duplicate keystrokes
-    eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown]) { event in
+    self.stop() // if we don't stop prior, we get duplicate keystrokes
+    self.eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown]) { event in
       guard let keystroke = Keystroke(from: event),
             let appName = NSWorkspace.shared.frontmostApplication?.localizedName else {
         return
@@ -51,25 +51,25 @@ class KeystrokeMonitor {
     guard let keystrokes = appKeystrokes[app] else {
       let keystrokes = Keystrokes()
       keystrokes.receive(keystroke)
-      appKeystrokes[app] = keystrokes
+      self.appKeystrokes[app] = keystrokes
       return
     }
     keystrokes.receive(keystroke)
   }
 
   func appendBufferedApiInput(_ input: CreateKeystrokeLines.Input) {
-    bufferedApiInput.append(contentsOf: input)
-    if bufferedApiInput.count > 2000 {
+    self.bufferedApiInput.append(contentsOf: input)
+    if self.bufferedApiInput.count > 2000 {
       @Dependency(\.date.now) var now
       let sevenDaysAgo = Date(subtractingDays: 7, from: now)
-      bufferedApiInput = bufferedApiInput.filter { $0.time > sevenDaysAgo }
+      self.bufferedApiInput = self.bufferedApiInput.filter { $0.time > sevenDaysAgo }
     }
   }
 
   func commitPendingKeystrokes(filterSuspended: Bool) {
-    let keystrokes = appKeystrokes
-    appKeystrokes = [:]
-    appendBufferedApiInput(keystrokes.flatMap { appName, keystrokes in
+    let keystrokes = self.appKeystrokes
+    self.appKeystrokes = [:]
+    self.appendBufferedApiInput(keystrokes.flatMap { appName, keystrokes in
       keystrokes.lines.compactMap { timestamp, line in
         guard let date = keystrokes.lineDates[timestamp] else {
           return nil
@@ -84,7 +84,7 @@ class KeystrokeMonitor {
 
   func takeKeystrokes() -> CreateKeystrokeLines.Input {
     defer { bufferedApiInput = [] }
-    return bufferedApiInput
+    return self.bufferedApiInput
   }
 
   func stop() {

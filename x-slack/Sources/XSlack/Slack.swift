@@ -30,7 +30,7 @@ public extension Slack {
     public var username: String
 
     public var text: String {
-      switch content {
+      switch self.content {
       case .text(let text):
         return text
       case .blocks(_, let fallbackText):
@@ -44,7 +44,7 @@ public extension Slack {
       username: String,
       emoji: Emoji = .robotFace
     ) {
-      content = .text(text)
+      self.content = .text(text)
       self.channel = channel
       self.emoji = emoji
       self.username = username
@@ -57,7 +57,7 @@ public extension Slack {
       username: String,
       emoji: Emoji = .robotFace
     ) {
-      content = .blocks(blocks, fallbackText)
+      self.content = .blocks(blocks, fallbackText)
       self.channel = channel
       self.emoji = emoji
       self.username = username

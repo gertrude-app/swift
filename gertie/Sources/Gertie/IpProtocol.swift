@@ -17,7 +17,7 @@ public enum IpProtocol: Equatable, CustomStringConvertible, Codable, Sendable {
   }
 
   public var int: Int {
-    Int(number)
+    Int(self.number)
   }
 
   public var isTcp: Bool {

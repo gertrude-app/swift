@@ -44,7 +44,7 @@ final class User: Codable {
 extension User {
 
   func devices() async throws -> [UserDevice] {
-    try await devices.useLoaded(or: {
+    try await self.devices.useLoaded(or: {
       try await Current.db.query(UserDevice.self)
         .where(.userId == id)
         .all()
@@ -52,7 +52,7 @@ extension User {
   }
 
   func keychains() async throws -> [Keychain] {
-    try await keychains.useLoaded(or: {
+    try await self.keychains.useLoaded(or: {
       let pivots = try await Current.db.query(UserKeychain.self)
         .where(.userId == id)
         .all()
@@ -63,7 +63,7 @@ extension User {
   }
 
   func admin() async throws -> Admin {
-    try await admin.useLoaded(or: {
+    try await self.admin.useLoaded(or: {
       try await Current.db.query(Admin.self)
         .where(.id == adminId)
         .first()

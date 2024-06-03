@@ -23,8 +23,8 @@ struct AppReducer: Reducer, Sendable {
     var user = UserFeature.State()
 
     init(appVersion: String?) {
-      appUpdates = .init(installedVersion: appVersion)
-      filter = .init(appVersion: appVersion)
+      self.appUpdates = .init(installedVersion: appVersion)
+      self.filter = .init(appVersion: appVersion)
     }
   }
 

@@ -105,4 +105,3 @@ extension Either: Comparable where Left: Comparable, Right: Comparable {
     }
   }
 }
-

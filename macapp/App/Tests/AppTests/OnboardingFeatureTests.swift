@@ -358,7 +358,7 @@ import XExpect
   }
 
   func testSkipsExemptScreenIfSysExtHasntCommunicatedIds() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .installSysExt_success
       $0.users = [
         .init(id: 501, name: "Dad", isAdmin: true),
@@ -375,7 +375,7 @@ import XExpect
   }
 
   func testSingleUserOnlySkipsExemptUserScreen() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .installSysExt_success
       $0.users = [.init(id: 501, name: "Dad", isAdmin: true)]
       $0.filterUsers = .init(exempt: [], protected: [])
@@ -387,7 +387,7 @@ import XExpect
   }
 
   func testSkipsExemptScreenIfAllOtherUsersAlreadyProtected() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .installSysExt_success
       $0.currentUser = .init(id: 502, name: "Lil jimmy", isAdmin: false)
       $0.users = [
@@ -607,7 +607,7 @@ import XExpect
   }
 
   func testSkippingFromAdminUserRemediation() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .macosUserAccountType
       $0.userRemediationStep = .create
     }
@@ -617,28 +617,28 @@ import XExpect
   }
 
   func testPrimaryBtnFromAllowScreenshotsGrantModalGoesToFailForVideo() async {
-    let store = featureStore { $0.step = .allowScreenshots_grantAndRestart }
+    let store = self.featureStore { $0.step = .allowScreenshots_grantAndRestart }
     await store.send(.webview(.primaryBtnClicked)) {
       $0.step = .allowScreenshots_failed
     }
   }
 
   func testSecondaryEscapeHatchFromAllowScreenshotsGrantGoesToNextStage() async {
-    let store = featureStore { $0.step = .allowScreenshots_grantAndRestart }
+    let store = self.featureStore { $0.step = .allowScreenshots_grantAndRestart }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_required))
   }
 
   func testSecondaryFromAllowNotificationsGrantModalGoesToFail() async {
-    let store = featureStore { $0.step = .allowNotifications_grant }
+    let store = self.featureStore { $0.step = .allowNotifications_grant }
     await store.send(.webview(.secondaryBtnClicked)) {
       $0.step = .allowNotifications_failed
     }
   }
 
   func testSkippingAllStepsFromConnectSuccess() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .connectChild
       $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
     }
@@ -656,7 +656,7 @@ import XExpect
   }
 
   func testSkippingNotificationStepFromConnectSuccess() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .connectChild
       $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
     }
@@ -672,7 +672,7 @@ import XExpect
   }
 
   func testSkippingToKeyloggingFromConnectSuccess() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .connectChild
       $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
     }
@@ -688,7 +688,7 @@ import XExpect
   }
 
   func testSkippingToInstallSysExtFromConnectSuccess() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .connectChild
       $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
     }
@@ -706,7 +706,7 @@ import XExpect
   }
 
   func testSkippingScreenshotsFromFinishNotifications() async {
-    let store = featureStore { $0.step = .allowNotifications_grant }
+    let store = self.featureStore { $0.step = .allowNotifications_grant }
     store.deps.monitoring.screenRecordingPermissionGranted = { true } // <-- skip
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     store.deps.device.notificationsSetting = { .alert }
@@ -715,7 +715,7 @@ import XExpect
   }
 
   func testSkippingKeyloggingFromFinishScreenshots() async {
-    let store = featureStore { $0.step = .allowScreenshots_success }
+    let store = self.featureStore { $0.step = .allowScreenshots_success }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.primaryBtnClicked))
@@ -726,7 +726,7 @@ import XExpect
   }
 
   func testFromScreenshotsRequiredScreenshotsAndKeyloggingAlreadyAllowed() async {
-    let store = featureStore { $0.step = .allowScreenshots_required }
+    let store = self.featureStore { $0.step = .allowScreenshots_required }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
@@ -737,28 +737,28 @@ import XExpect
   }
 
   func testClickingTryAgainPrimaryFromInstallSysExtFailed() async {
-    let store = featureStore { $0.step = .installSysExt_failed }
+    let store = self.featureStore { $0.step = .installSysExt_failed }
     await store.send(.webview(.primaryBtnClicked)) {
       $0.step = .installSysExt_explain
     }
   }
 
   func testClickingSkipSecondaryFromInstallSysExtFailed() async {
-    let store = featureStore { $0.step = .installSysExt_failed }
+    let store = self.featureStore { $0.step = .installSysExt_failed }
     await store.send(.webview(.secondaryBtnClicked)) {
       $0.step = .locateMenuBarIcon
     }
   }
 
   func testClickingHelpSecondaryFromInstallSysExt() async {
-    let store = featureStore { $0.step = .installSysExt_allow }
+    let store = self.featureStore { $0.step = .installSysExt_allow }
     store.deps.filterExtension.state = { .notInstalled } // <-- not installed
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_failed)) // <-- goes to failed
   }
 
   func testClickingHelpSecondaryFromInstallSysExt_WhenInstalled() async {
-    let store = featureStore { $0.step = .installSysExt_allow }
+    let store = self.featureStore { $0.step = .installSysExt_allow }
     store.deps.filterExtension.state = { .installedAndRunning } // <-- installed
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_success)) // <-- goes to success
@@ -768,7 +768,7 @@ import XExpect
   // success of failure based on the result of the install request,
   // but we do have a button as well, this tests that it works
   func testClickingDoneFromInstallSysExt() async {
-    let store = featureStore { $0.step = .installSysExt_allow }
+    let store = self.featureStore { $0.step = .installSysExt_allow }
     let filterState = mock(returning: [FilterExtensionState.installedAndRunning])
     store.deps.filterExtension.state = filterState.fn
 
@@ -778,7 +778,7 @@ import XExpect
   }
 
   func testHandleDetectingSysExtInstallFail() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .installSysExt_trick
     }
     store.deps.mainQueue = .immediate
@@ -803,7 +803,7 @@ import XExpect
   }
 
   func testSysExtAlreadyInstalledAndRunning() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.step = .installSysExt_explain
     }
     let filterState = mock(once: FilterExtensionState.installedAndRunning)
@@ -816,7 +816,7 @@ import XExpect
   }
 
   func testSysExtAlreadyInstalledButNotRunning_StartsToSuccess() async {
-    let store = featureStore { $0.step = .installSysExt_explain }
+    let store = self.featureStore { $0.step = .installSysExt_explain }
     let filterState = mock(once: FilterExtensionState.installedButNotRunning)
     store.deps.filterExtension.state = filterState.fn
     let filterStart = mock(once: FilterExtensionState.installedAndRunning)
@@ -831,7 +831,7 @@ import XExpect
   }
 
   func testSysExtAlreadyInstalledButNotRunning_StartFailsToError() async {
-    let store = featureStore { $0.step = .installSysExt_explain }
+    let store = self.featureStore { $0.step = .installSysExt_explain }
     let filterState = mock(once: FilterExtensionState.installedButNotRunning)
     store.deps.filterExtension.state = filterState.fn
     let filterStart = mock(once: FilterExtensionState.installedButNotRunning)
@@ -844,21 +844,21 @@ import XExpect
   }
 
   func testSkipAllowKeylogging() async {
-    let store = featureStore { $0.step = .allowKeylogging_required }
+    let store = self.featureStore { $0.step = .allowKeylogging_required }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_explain))
   }
 
   func testSkipAllowKeyloggingSysExtAlreadyInstalled() async {
-    let store = featureStore { $0.step = .allowKeylogging_required }
+    let store = self.featureStore { $0.step = .allowKeylogging_required }
     store.deps.filterExtension.state = { .installedAndRunning }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.locateMenuBarIcon))
   }
 
   func testFailedToAllowKeylogging() async {
-    let store = featureStore { $0.step = .allowKeylogging_grant }
+    let store = self.featureStore { $0.step = .allowKeylogging_grant }
     let keyloggingAllowed = mock(always: false) // <-- they failed to allow
     store.deps.monitoring.keystrokeRecordingPermissionGranted = keyloggingAllowed.fn
 
@@ -882,14 +882,14 @@ import XExpect
   }
 
   func testSkipFromKeylogginFail() async {
-    let store = featureStore { $0.step = .allowKeylogging_failed }
+    let store = self.featureStore { $0.step = .allowKeylogging_failed }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_explain))
   }
 
   func testSkipsMostKeyloggingStepsIfPermsPreviouslyGranted() async {
-    let store = featureStore { $0.step = .allowKeylogging_required }
+    let store = self.featureStore { $0.step = .allowKeylogging_required }
 
     let keyloggingAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.keystrokeRecordingPermissionGranted = keyloggingAllowed.fn
@@ -904,7 +904,7 @@ import XExpect
   }
 
   func testSkipAllowingScreenshots() async {
-    let store = featureStore { $0.step = .allowScreenshots_required }
+    let store = self.featureStore { $0.step = .allowScreenshots_required }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     // they click "Skip" on the allow screenshots start screen
     await store.send(.webview(.secondaryBtnClicked))
@@ -912,7 +912,7 @@ import XExpect
   }
 
   func testSkipsMostScreenshotStepsIfPermsPreviouslyGranted() async {
-    let store = featureStore { $0.step = .allowScreenshots_required }
+    let store = self.featureStore { $0.step = .allowScreenshots_required }
 
     let screenshotsAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
@@ -929,7 +929,7 @@ import XExpect
   }
 
   func testFailureToGrantNotificationsSendsToFailScreen() async {
-    let store = featureStore { $0.step = .allowNotifications_grant }
+    let store = self.featureStore { $0.step = .allowNotifications_grant }
 
     let notifsSettings = mock(
       // they did NOT enable notifications (the first 2 times we check)
@@ -972,14 +972,14 @@ import XExpect
   }
 
   func testSkipFromAllowNotificationsFailedStep() async {
-    let store = featureStore { $0.step = .allowNotifications_failed }
+    let store = self.featureStore { $0.step = .allowNotifications_failed }
     store.deps.monitoring.screenRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowScreenshots_required))
   }
 
   func testSkipAllowNotificationsStep() async {
-    let store = featureStore { $0.step = .allowNotifications_start }
+    let store = self.featureStore { $0.step = .allowNotifications_start }
     store.deps.monitoring.screenRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowScreenshots_required))
@@ -1090,35 +1090,35 @@ import XExpect
   }
 
   func testTryAgainFromScreenRecFailMovesOnIfPermsGranted() async {
-    let store = featureStore { $0.step = .allowScreenshots_failed }
+    let store = self.featureStore { $0.step = .allowScreenshots_failed }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.allowScreenshots_success))
   }
 
   func testSkipFromScreenRecordingFailed() async {
-    let store = featureStore { $0.step = .allowScreenshots_failed }
+    let store = self.featureStore { $0.step = .allowScreenshots_failed }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_required))
   }
 
   func testNoGertrudeAccountPrimary() async {
-    let store = featureStore { $0.step = .noGertrudeAccount }
+    let store = self.featureStore { $0.step = .noGertrudeAccount }
     await store.send(.webview(.primaryBtnClicked)) {
       $0.step = .macosUserAccountType
     }
   }
 
   func testSecondaryHelpFromAllowKeyloggingGrantGoesToFailForVideo() async {
-    let store = featureStore { $0.step = .allowKeylogging_grant }
+    let store = self.featureStore { $0.step = .allowKeylogging_grant }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_failed))
   }
 
   func testSecondaryHelpFromAllowKeyloggingGrantGoesToNextIfPermGranted() async {
-    let store = featureStore { $0.step = .allowKeylogging_grant }
+    let store = self.featureStore { $0.step = .allowKeylogging_grant }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true } // <-- granted
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.secondaryBtnClicked))
@@ -1126,7 +1126,7 @@ import XExpect
   }
 
   func testNoGertrudeAccountQuit() async {
-    let store = featureStore()
+    let store = self.featureStore()
     store.deps.device = .mock
     let quit = mock(once: ())
     store.deps.app.quit = quit.fn
@@ -1145,7 +1145,7 @@ import XExpect
   }
 
   func testBadUserTypeIgnoresDanger() async {
-    let store = featureStore()
+    let store = self.featureStore()
     store.deps.device.currentUserId = { 501 }
     store.deps.device.listMacOSUsers = { [.init(id: 501, name: "Dad", type: .admin)] }
     store.deps.device.notificationsSetting = { .none }
@@ -1165,7 +1165,7 @@ import XExpect
   }
 
   func testBadUserTypeNoChoice() async {
-    let store = featureStore()
+    let store = self.featureStore()
     store.deps.device.currentUserId = { 501 }
     store.deps.device.listMacOSUsers = { [.init(id: 501, name: "Dad", type: .admin)] }
     store.deps.device.notificationsSetting = { .none }
@@ -1189,7 +1189,7 @@ import XExpect
   }
 
   func testBadUserTypeWithChoice() async {
-    let store = featureStore()
+    let store = self.featureStore()
 
     store.deps.device.currentUserId = { 501 }
     store.deps.device.listMacOSUsers = { [
@@ -1224,7 +1224,7 @@ import XExpect
   }
 
   func testSettingStepDoesntOpenWindow() async {
-    let store = featureStore {
+    let store = self.featureStore {
       $0.windowOpen = false
     }
     // there's a 4 minute timeout for failed sys-ext install
@@ -1237,7 +1237,7 @@ import XExpect
   }
 
   func testSysExtInstallTimeoutDoesntPullBackToFailScreenIfPastThere() async {
-    let store = featureStore { $0.step = .installSysExt_trick }
+    let store = self.featureStore { $0.step = .installSysExt_trick }
     store.deps.mainQueue = .immediate
     let timedOut = LockIsolated(false)
     store.deps.filterExtension.state = { .notInstalled }
@@ -1276,7 +1276,7 @@ import XExpect
   }
 
   func testSysExtInstallTimeoutDoesGoToFailScreenIfNotPastStage() async {
-    let store = featureStore { $0.step = .installSysExt_trick }
+    let store = self.featureStore { $0.step = .installSysExt_trick }
     store.deps.mainQueue = .immediate
     let timedOut = LockIsolated(false)
     store.deps.filterExtension.state = { .notInstalled }

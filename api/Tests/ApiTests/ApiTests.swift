@@ -86,12 +86,12 @@ final class ApiTests: ApiTestCase {
   func testHeaderAuthed() throws {
     var request = URLRequest(url: URL(string: "macos-app/GetAccountStatus")!)
     request.httpMethod = "POST"
-    let route = PairQLRoute.macApp(.userAuthed(token, .getAccountStatus))
+    let route = PairQLRoute.macApp(.userAuthed(self.token, .getAccountStatus))
 
     let missingHeader = try? PairQLRoute.router.match(request: request)
     expect(missingHeader).toEqual(nil)
 
-    request.addValue(token.uuidString, forHTTPHeaderField: "X-UserToken")
+    request.addValue(self.token.uuidString, forHTTPHeaderField: "X-UserToken")
 
     let matched = try PairQLRoute.router.match(request: request)
     expect(matched).toEqual(route)

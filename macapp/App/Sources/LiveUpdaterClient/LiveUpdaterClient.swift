@@ -29,18 +29,18 @@ private class UpdateManager: Manager {
 
   @MainActor
   func triggerUpdate(from feedUrl: String) async throws {
-    delegate.feedUrl = feedUrl
-    try updater.start()
-    updater.checkForUpdates()
+    self.delegate.feedUrl = feedUrl
+    try self.updater.start()
+    self.updater.checkForUpdates()
   }
 
   var windowOpen: Bool {
-    updater.sessionInProgress
+    self.updater.sessionInProgress
   }
 
   init() {
-    delegate = UpdaterDelegate()
-    updater = SPUUpdater(
+    self.delegate = UpdaterDelegate()
+    self.updater = SPUUpdater(
       hostBundle: Bundle.main,
       applicationBundle: Bundle.main,
       // NB: i could probably provide my own driver (or nil?) here if i wanted
@@ -48,7 +48,7 @@ private class UpdateManager: Manager {
       // to update in the Sparkle popup after they already clicked our UI to update
       // however, their UI does cover a lot of edge cases, like failure to download...
       userDriver: SPUStandardUserDriver(hostBundle: Bundle.main, delegate: nil),
-      delegate: delegate
+      delegate: self.delegate
     )
   }
 }
@@ -59,7 +59,7 @@ private class UpdaterDelegate: NSObject, SPUUpdaterDelegate {
   var feedUrl: String?
 
   func feedURLString(for updater: SPUUpdater) -> String? {
-    feedUrl
+    self.feedUrl
   }
 }
 

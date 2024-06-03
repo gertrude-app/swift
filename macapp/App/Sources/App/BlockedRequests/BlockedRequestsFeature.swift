@@ -179,14 +179,14 @@ extension BlockedRequestsFeature.State {
     var filterCommunicationConfirmed: Bool?
 
     init(state: AppReducer.State) {
-      windowOpen = state.blockedRequests.windowOpen
-      requests = state.blockedRequests.requests.map(\.view)
-      filterText = state.blockedRequests.filterText
-      tcpOnly = state.blockedRequests.tcpOnly
-      createUnlockRequests = state.blockedRequests.createUnlockRequests
-      selectedRequestIds = state.blockedRequests.selectedRequestIds
-      adminAccountStatus = state.admin.accountStatus
-      filterCommunicationConfirmed = state.blockedRequests.filterCommunicationConfirmed
+      self.windowOpen = state.blockedRequests.windowOpen
+      self.requests = state.blockedRequests.requests.map(\.view)
+      self.filterText = state.blockedRequests.filterText
+      self.tcpOnly = state.blockedRequests.tcpOnly
+      self.createUnlockRequests = state.blockedRequests.createUnlockRequests
+      self.selectedRequestIds = state.blockedRequests.selectedRequestIds
+      self.adminAccountStatus = state.admin.accountStatus
+      self.filterCommunicationConfirmed = state.blockedRequests.filterCommunicationConfirmed
     }
   }
 }

@@ -39,10 +39,10 @@ extension SuperAdminRoute: RouteResponder {
     switch authedRoute {
     case .createRelease(let input):
       let output = try await CreateRelease.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .queryAdmins:
       let output = try await QueryAdmins.resolve(in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     }
   }
 }

@@ -13,7 +13,7 @@ public enum SendGrid {
 
     public init(stringLiteral email: String) {
       self.email = email
-      name = nil
+      self.name = nil
     }
   }
 
@@ -28,17 +28,17 @@ public enum SendGrid {
       public var content: String // base64 encoded
 
       public init(plainTextContent plainText: String, filename: String) {
-        content = plainText.data(using: .utf8)?.base64EncodedString() ?? "<encoding error>"
+        self.content = plainText.data(using: .utf8)?.base64EncodedString() ?? "<encoding error>"
         self.filename = filename
       }
 
       public init(base64EncodedTextContent encodedText: String, filename: String) {
-        content = encodedText
+        self.content = encodedText
         self.filename = filename
       }
 
       public init(data: Data, filename: String) throws {
-        content = data.base64EncodedString()
+        self.content = data.base64EncodedString()
         self.filename = filename
       }
     }
@@ -56,11 +56,11 @@ public enum SendGrid {
     public var attachments: [Attachment]?
 
     public var firstRecipient: EmailAddress {
-      personalizations.first.to.first
+      self.personalizations.first.to.first
     }
 
     public var text: String {
-      content.first.value
+      self.content.first.value
     }
 
     public init(
@@ -70,11 +70,11 @@ public enum SendGrid {
       subject: String,
       text: String
     ) {
-      personalizations = .init(Personalization(to: .init(to)))
+      self.personalizations = .init(Personalization(to: .init(to)))
       self.from = from
       self.subject = subject
       self.replyTo = replyTo
-      content = .init(Content(type: "text/plain", value: text))
+      self.content = .init(Content(type: "text/plain", value: text))
     }
 
     public init(
@@ -84,11 +84,11 @@ public enum SendGrid {
       subject: String,
       html: String
     ) {
-      personalizations = .init(Personalization(to: .init(to)))
+      self.personalizations = .init(Personalization(to: .init(to)))
       self.from = from
       self.subject = subject
       self.replyTo = replyTo
-      content = .init(Content(type: "text/html", value: html))
+      self.content = .init(Content(type: "text/html", value: html))
     }
   }
 }

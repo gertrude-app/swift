@@ -4,17 +4,17 @@ enum SubscriptionEmails {
   static func email(_ event: SubscriptionEmail, to address: EmailAddress) -> XPostmark.Email {
     switch event {
     case .trialEndingSoon:
-      return trialEndingSoon(address.rawValue)
+      return self.trialEndingSoon(address.rawValue)
     case .trialEndedToOverdue:
-      return trialEndedToOverdue(address.rawValue)
+      return self.trialEndedToOverdue(address.rawValue)
     case .overdueToUnpaid:
-      return overdueToUnpaid(address.rawValue)
+      return self.overdueToUnpaid(address.rawValue)
     case .paidToOverdue:
-      return paidToOverdue(address.rawValue)
+      return self.paidToOverdue(address.rawValue)
     case .unpaidToPendingDelete:
-      return unpaidToPendingDelete(address.rawValue)
+      return self.unpaidToPendingDelete(address.rawValue)
     case .deleteEmailUnverified:
-      return deleteEmailUnverified(address.rawValue)
+      return self.deleteEmailUnverified(address.rawValue)
     }
   }
 

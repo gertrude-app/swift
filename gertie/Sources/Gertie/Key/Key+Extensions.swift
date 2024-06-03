@@ -33,7 +33,7 @@ public extension Key.Domain {
   }
 
   func matchesAnySubdomain(of hostname: String) -> Bool {
-    matches(hostname: hostname) || hostname.lowercased().hasSuffix(".\(string)")
+    self.matches(hostname: hostname) || hostname.lowercased().hasSuffix(".\(string)")
   }
 }
 

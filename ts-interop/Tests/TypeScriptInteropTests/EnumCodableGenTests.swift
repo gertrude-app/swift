@@ -56,7 +56,7 @@ final class CodableTests: XCTestCase {
   }
 
   func testExtractEnumType() throws {
-    expect(try EnumType(from: Baz.self)).toEqual(bazType)
+    expect(try EnumType(from: Baz.self)).toEqual(self.bazType)
   }
 
   func testFullyQualifiedTypeNames() throws {
@@ -67,7 +67,7 @@ final class CodableTests: XCTestCase {
   }
 
   func testCodableConformanceCodegen() {
-    expect(bazType.codableConformance()).toEqual(
+    expect(self.bazType.codableConformance()).toEqual(
       """
       extension Baz {
         private struct _NamedCase: Codable {

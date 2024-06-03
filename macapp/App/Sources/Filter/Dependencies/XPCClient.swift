@@ -64,19 +64,19 @@ actor ThreadSafeXPCManager {
   private var manager = XPCManager()
 
   func startListener() {
-    manager.startListener()
+    self.manager.startListener()
   }
 
   func stopListener() {
-    manager.stopListener()
+    self.manager.stopListener()
   }
 
   func sendBlockedRequest(_ request: BlockedRequest, userId: uid_t) async throws {
-    try await manager.sendBlockedRequest(request, userId: userId)
+    try await self.manager.sendBlockedRequest(request, userId: userId)
   }
 
   func notifyFilterSuspensionEnded(for userId: uid_t) async throws {
-    try await manager.notifyFilterSuspensionEnded(for: userId)
+    try await self.manager.notifyFilterSuspensionEnded(for: userId)
   }
 }
 

@@ -16,15 +16,15 @@ extension OnboardingFeature.State {
 
     init(state: AppReducer.State) {
       @Dependency(\.device) var device
-      os = device.osVersion().documentationGroup
-      windowOpen = state.onboarding.windowOpen
-      step = state.onboarding.step
-      userRemediationStep = state.onboarding.userRemediationStep
-      currentUser = state.onboarding.currentUser
-      connectChildRequest = state.onboarding.connectChildRequest
-      users = state.onboarding.users
-      exemptableUserIds = state.onboarding.exemptableUsers.map(\.id)
-      exemptUserIds = state.onboarding.filterUsers?.exempt ?? []
+      self.os = device.osVersion().documentationGroup
+      self.windowOpen = state.onboarding.windowOpen
+      self.step = state.onboarding.step
+      self.userRemediationStep = state.onboarding.userRemediationStep
+      self.currentUser = state.onboarding.currentUser
+      self.connectChildRequest = state.onboarding.connectChildRequest
+      self.users = state.onboarding.users
+      self.exemptableUserIds = state.onboarding.exemptableUsers.map(\.id)
+      self.exemptUserIds = state.onboarding.filterUsers?.exempt ?? []
     }
   }
 }

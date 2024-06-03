@@ -179,7 +179,7 @@ struct DeviceRefactor: GertieMigration {
       Column(.updatedAt, .timestampWithTimezone)
     }
 
-    try await sql.add(constraint: deviceAdminIdFk)
+    try await sql.add(constraint: self.deviceAdminIdFk)
     try await sql.add(constraint: .unique(Device.M3.self, Device.M11.serialNumber))
   }
 
@@ -307,24 +307,24 @@ struct DeviceRefactor: GertieMigration {
   )
 
   func setNewConstraints(_ sql: SQLDatabase) async throws {
-    try await sql.add(constraint: networkDecisionFk)
-    try await sql.add(constraint: unlockRequestFk)
-    try await sql.add(constraint: suspendFilterRequestFk)
-    try await sql.add(constraint: interestingEventFk)
-    try await sql.add(constraint: screenshotFk)
-    try await sql.add(constraint: keystrokeLineFk)
-    try await sql.add(constraint: userTokenFk)
+    try await sql.add(constraint: self.networkDecisionFk)
+    try await sql.add(constraint: self.unlockRequestFk)
+    try await sql.add(constraint: self.suspendFilterRequestFk)
+    try await sql.add(constraint: self.interestingEventFk)
+    try await sql.add(constraint: self.screenshotFk)
+    try await sql.add(constraint: self.keystrokeLineFk)
+    try await sql.add(constraint: self.userTokenFk)
     try await sql.dropDefault(from: UserDevice.M11.deviceId, on: UserDevice.M11.self)
   }
 
   func undoSetNewConstraints(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: networkDecisionFk)
-    try await sql.drop(constraint: unlockRequestFk)
-    try await sql.drop(constraint: suspendFilterRequestFk)
-    try await sql.drop(constraint: interestingEventFk)
-    try await sql.drop(constraint: screenshotFk)
-    try await sql.drop(constraint: keystrokeLineFk)
-    try await sql.drop(constraint: userTokenFk)
+    try await sql.drop(constraint: self.networkDecisionFk)
+    try await sql.drop(constraint: self.unlockRequestFk)
+    try await sql.drop(constraint: self.suspendFilterRequestFk)
+    try await sql.drop(constraint: self.interestingEventFk)
+    try await sql.drop(constraint: self.screenshotFk)
+    try await sql.drop(constraint: self.keystrokeLineFk)
+    try await sql.drop(constraint: self.userTokenFk)
     try await sql.addDefault(
       of: .uuid(.init(uuidString: "00000000-0000-0000-0000-000000000000")!),
       to: UserDevice.M11.deviceId,

@@ -7,20 +7,20 @@ actor AppConnections {
   func start() async {
     while true {
       try? await Task.sleep(seconds: 120)
-      flush()
+      self.flush()
     }
   }
 
   func add(_ connection: AppConnection) {
-    connections[connection.id] = connection
+    self.connections[connection.id] = connection
   }
 
   func remove(_ connection: AppConnection) {
-    connections.removeValue(forKey: connection.id)
+    self.connections.removeValue(forKey: connection.id)
   }
 
   func filterState(for userDeviceId: UserDevice.Id) -> UserFilterState? {
-    for connection in connections.values {
+    for connection in self.connections.values {
       if connection.ids.userDevice == userDeviceId {
         return connection.filterState
       }
@@ -29,45 +29,45 @@ actor AppConnections {
   }
 
   func isUserDeviceOnline(_ id: UserDevice.Id) -> Bool {
-    connections.values.contains { $0.ids.userDevice == id }
+    self.connections.values.contains { $0.ids.userDevice == id }
   }
 
   private func flush() {
-    connections.values.filter(\.ws.isClosed).forEach {
+    self.connections.values.filter(\.ws.isClosed).forEach {
       self.remove($0)
     }
   }
 
   private var currentConnections: [AppConnection] {
-    flush()
-    return Array(connections.values)
+    self.flush()
+    return Array(self.connections.values)
   }
 
   func notify(_ event: AppEvent) async throws {
     switch event {
     case .keychainUpdated(let keychainId):
-      try await currentConnections
+      try await self.currentConnections
         .filter { $0.ids.keychains.contains(keychainId) }
         .asyncForEach {
           try await $0.ws.send(codable: OutgoingMessage.userUpdated)
         }
 
     case .userUpdated(let userId):
-      try await currentConnections
+      try await self.currentConnections
         .filter { $0.ids.user == userId }
         .asyncForEach {
           try await $0.ws.send(codable: OutgoingMessage.userUpdated)
         }
 
     case .userDeleted(let userId):
-      try await currentConnections
+      try await self.currentConnections
         .filter { $0.ids.user == userId }
         .asyncForEach {
           try await $0.ws.send(codable: OutgoingMessage.userDeleted)
         }
 
     case .unlockRequestUpdated(let payload):
-      try await currentConnections
+      try await self.currentConnections
         .filter { $0.ids.userDevice == payload.userDeviceId }
         .asyncForEach {
           try await $0.ws.send(
@@ -81,7 +81,7 @@ actor AppConnections {
         }
 
     case .suspendFilterRequestDecided(let userDeviceId, let decision, let comment):
-      try await currentConnections
+      try await self.currentConnections
         .filter { $0.ids.userDevice == userDeviceId }
         .asyncForEach {
           try await $0.ws.send(
@@ -92,7 +92,7 @@ actor AppConnections {
 
     case .suspendFilterRequestUpdated(let payload):
       if payload.status == .accepted {
-        try await currentConnections
+        try await self.currentConnections
           .filter { $0.ids.userDevice == payload.userDeviceId }
           .asyncForEach {
             try await $0.ws.send(
@@ -104,7 +104,7 @@ actor AppConnections {
             )
           }
       } else {
-        try await currentConnections
+        try await self.currentConnections
           .filter { $0.ids.userDevice == payload.userDeviceId }
           .asyncForEach {
             try await $0.ws.send(

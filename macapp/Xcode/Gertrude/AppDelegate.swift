@@ -12,7 +12,7 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
   let app = App()
 
   public func applicationDidFinishLaunching(_ notification: Notification) {
-    app.send(.didFinishLaunching)
+    self.app.send(.didFinishLaunching)
 
     NSWorkspace.shared.notificationCenter.addObserver(
       self,
@@ -30,15 +30,15 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
   }
 
   public func applicationWillTerminate(_ notification: Notification) {
-    app.send(.willTerminate)
+    self.app.send(.willTerminate)
     NSWorkspace.shared.notificationCenter.removeObserver(self)
   }
 
   @objc func receiveSleep(_ notification: Notification) {
-    app.send(.willSleep)
+    self.app.send(.willSleep)
   }
 
   @objc func receiveWakeup(_ notification: Notification) {
-    app.send(.didWake)
+    self.app.send(.didWake)
   }
 }

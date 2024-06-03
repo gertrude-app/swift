@@ -17,7 +17,7 @@ final class UnlockRequest: Codable {
   var userDevice = Parent<UserDevice>.notLoaded
 
   var target: String? {
-    url ?? hostname ?? ipAddress
+    self.url ?? self.hostname ?? self.ipAddress
   }
 
   init(
@@ -47,7 +47,7 @@ final class UnlockRequest: Codable {
 
 extension UnlockRequest {
   func userDevice() async throws -> UserDevice {
-    try await userDevice.useLoaded(or: {
+    try await self.userDevice.useLoaded(or: {
       try await Current.db.query(UserDevice.self)
         .where(.id == userDeviceId)
         .first()

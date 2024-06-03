@@ -14,14 +14,14 @@ public extension Migrator {
       try JSON.decode(json, as: State.self)
     }
     if let current {
-      log("found current state, no migration necessary")
+      self.log("found current state, no migration necessary")
       return current
     } else if let migrated = await migrateLastVersion() {
-      log("migrated from prior state, \(String(describing: migrated))")
+      self.log("migrated from prior state, \(String(describing: migrated))")
       (try? JSON.encode(migrated)).map { userDefaults.setString(State.storageKey, $0) }
       return migrated
     } else {
-      log("no state found, or no migration succeeded")
+      self.log("no state found, or no migration succeeded")
       return nil
     }
   }

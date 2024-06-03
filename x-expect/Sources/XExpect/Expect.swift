@@ -15,32 +15,32 @@ public struct CollectionExpectation<T: Collection> {
   }
 
   public var not: Self {
-    Self(collection: collection, negated: true, file: #file, line: #line)
+    Self(collection: self.collection, negated: true, file: #file, line: #line)
   }
 
   public func toHaveCount(_ count: Int) {
-    if negated {
-      XCTAssertNotEqual(collection.count, count, file: file, line: line)
+    if self.negated {
+      XCTAssertNotEqual(self.collection.count, count, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(collection.count, count, file: file, line: line)
+      XCTAssertNoDifference(self.collection.count, count, file: self.file, line: self.line)
     }
   }
 
   public func toBeEmpty() {
-    if negated {
-      XCTAssertFalse(collection.isEmpty, file: file, line: line)
+    if self.negated {
+      XCTAssertFalse(self.collection.isEmpty, file: self.file, line: self.line)
     } else {
-      XCTAssertTrue(collection.isEmpty, file: file, line: line)
+      XCTAssertTrue(self.collection.isEmpty, file: self.file, line: self.line)
     }
   }
 }
 
 public extension CollectionExpectation where T: Equatable {
   func toEqual(_ expected: T) {
-    if negated {
-      XCTAssertNotEqual(collection, expected, file: file, line: line)
+    if self.negated {
+      XCTAssertNotEqual(self.collection, expected, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(collection, expected, file: file, line: line)
+      XCTAssertNoDifference(self.collection, expected, file: self.file, line: self.line)
     }
   }
 }
@@ -58,10 +58,10 @@ public struct ErrorExpectation<T> {
 
   public func toContain(_ substring: String) async throws {
     do {
-      _ = try await fn()
-      XCTFail("Expected error, got none", file: file, line: line)
+      _ = try await self.fn()
+      XCTFail("Expected error, got none", file: self.file, line: self.line)
     } catch {
-      expect("\(error)", file: file, line: line).toContain(substring)
+      expect("\(error)", file: self.file, line: self.line).toContain(substring)
     }
   }
 }
@@ -80,14 +80,14 @@ public struct EquatableExpectation<T: Equatable> {
   }
 
   public var not: Self {
-    Self(value: value, negated: true, file: #file, line: #line)
+    Self(value: self.value, negated: true, file: #file, line: #line)
   }
 
   public func toEqual(_ other: T) {
-    if negated {
-      XCTAssertNotEqual(value, other, file: file, line: line)
+    if self.negated {
+      XCTAssertNotEqual(self.value, other, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(value, other, file: file, line: line)
+      XCTAssertNoDifference(self.value, other, file: self.file, line: self.line)
     }
   }
 }
@@ -106,22 +106,22 @@ public struct EquatableOptionalExpectation<T: Equatable> {
   }
 
   public var not: Self {
-    Self(value: value, negated: true, file: #file, line: #line)
+    Self(value: self.value, negated: true, file: #file, line: #line)
   }
 
   public func toEqual(_ other: T) {
-    if negated {
-      XCTAssertNotEqual(value, other, file: file, line: line)
+    if self.negated {
+      XCTAssertNotEqual(self.value, other, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(value, other, file: file, line: line)
+      XCTAssertNoDifference(self.value, other, file: self.file, line: self.line)
     }
   }
 
   public func toBeNil() {
-    if negated {
-      XCTAssertNotNil(value, file: file, line: line)
+    if self.negated {
+      XCTAssertNotNil(self.value, file: self.file, line: self.line)
     } else {
-      XCTAssertNil(value, file: file, line: line)
+      XCTAssertNil(self.value, file: self.file, line: self.line)
     }
   }
 }
@@ -138,15 +138,15 @@ public struct ResultExpectation<Success, Failure: Swift.Error> {
   }
 
   public func toBeError(containing substring: String) {
-    switch result {
+    switch self.result {
     case .success(let value):
-      XCTFail("Expected error, got success: \(value)", file: file, line: line)
+      XCTFail("Expected error, got success: \(value)", file: self.file, line: self.line)
     case .failure(let error):
       XCTAssert(
         "\(error)".contains(substring),
         "Expected error `\(error)` to contain `\(substring)`",
-        file: file,
-        line: line
+        file: self.file,
+        line: self.line
       )
     }
   }
@@ -164,7 +164,7 @@ public struct OptionalExpectation {
   }
 
   public func toBeNil() {
-    XCTAssertNil(value, file: file, line: line)
+    XCTAssertNil(self.value, file: self.file, line: self.line)
   }
 }
 
@@ -182,31 +182,31 @@ public struct StringExpectation {
   }
 
   public var not: Self {
-    Self(value: value, negated: true, file: #file, line: #line)
+    Self(value: self.value, negated: true, file: #file, line: #line)
   }
 
   public func toBe(_ other: String) {
-    if negated {
-      XCTAssertNotEqual(value, other, file: file, line: line)
+    if self.negated {
+      XCTAssertNotEqual(self.value, other, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(value, other, file: file, line: line)
+      XCTAssertNoDifference(self.value, other, file: self.file, line: self.line)
     }
   }
 
   public func toContain(_ substring: String) {
-    if !negated {
+    if !self.negated {
       XCTAssert(
-        value.contains(substring),
-        "Expected `\(value)` to contain `\(substring)`",
-        file: file,
-        line: line
+        self.value.contains(substring),
+        "Expected `\(self.value)` to contain `\(substring)`",
+        file: self.file,
+        line: self.line
       )
     } else {
       XCTAssert(
-        !value.contains(substring),
-        "Expected `\(value)` NOT to contain `\(substring)`",
-        file: file,
-        line: line
+        !self.value.contains(substring),
+        "Expected `\(self.value)` NOT to contain `\(substring)`",
+        file: self.file,
+        line: self.line
       )
     }
   }
@@ -224,11 +224,11 @@ public struct BoolExpectation {
   }
 
   public func toBeTrue() {
-    XCTAssert(value, file: file, line: line)
+    XCTAssert(self.value, file: self.file, line: self.line)
   }
 
   public func toBeFalse() {
-    XCTAssert(!value, file: file, line: line)
+    XCTAssert(!self.value, file: self.file, line: self.line)
   }
 }
 

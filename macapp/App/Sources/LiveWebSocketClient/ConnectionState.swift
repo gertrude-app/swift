@@ -23,7 +23,7 @@ public enum ConnectionState: Sendable {
     log: @Sendable (String) -> Void = { _ in }
   ) -> ConnectionState {
     let prev = self
-    let next = transition(event)
+    let next = self.transition(event)
     log("- transition: \(prev) + \(event) -> \(next)")
     return next
   }

@@ -64,13 +64,13 @@ extension Vapor.Environment {
     var coloredName: String {
       switch self {
       case .prod:
-        return name.uppercased().red.bold
+        return self.name.uppercased().red.bold
       case .dev:
-        return name.uppercased().green.bold
+        return self.name.uppercased().green.bold
       case .staging:
-        return name.uppercased().yellow.bold
+        return self.name.uppercased().yellow.bold
       case .test:
-        return name.uppercased().magenta.bold
+        return self.name.uppercased().magenta.bold
       }
     }
   }

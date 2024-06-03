@@ -38,7 +38,7 @@ final class SuspendFilterRequest: Codable {
 
 extension SuspendFilterRequest {
   func userDevice() async throws -> UserDevice {
-    try await userDevice.useLoaded(or: {
+    try await self.userDevice.useLoaded(or: {
       try await Current.db.query(UserDevice.self)
         .where(.id == userDeviceId)
         .first()

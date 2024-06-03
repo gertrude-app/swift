@@ -23,12 +23,12 @@ actor Ephemeral {
     expiration: Date = Current.date() + ONE_HOUR
   ) -> UUID {
     let token = UUID.new()
-    adminIds[token] = (adminId: adminId, expiration: expiration)
+    self.adminIds[token] = (adminId: adminId, expiration: expiration)
     return token
   }
 
   func unexpiredAdminIdFromToken(_ token: UUID) -> Admin.Id? {
-    switch adminIdFromToken(token) {
+    switch self.adminIdFromToken(token) {
     case .notExpired(let adminId):
       return adminId
     case .expired, .notFound, .previouslyRetrieved:
@@ -39,11 +39,11 @@ actor Ephemeral {
   func adminIdFromToken(_ token: UUID) -> AdminId {
     if let (adminId, expiration) = adminIds.removeValue(forKey: token) {
       if expiration > Current.date() {
-        retrievedAdminIds[token] = adminId
+        self.retrievedAdminIds[token] = adminId
         return .notExpired(adminId)
       } else {
         // put back, so if they try again, they know it's expired, not missing
-        adminIds[token] = (adminId, expiration)
+        self.adminIds[token] = (adminId, expiration)
         return .expired(adminId)
       }
     } else if let adminId = retrievedAdminIds[token] {
@@ -64,7 +64,7 @@ actor Ephemeral {
     expiration: Date = Current.date() + ONE_HOUR
   ) -> Int {
     let code = Current.verificationCode.generate()
-    pendingMethods[model.id] = (model: model, code: code, expiration: expiration)
+    self.pendingMethods[model.id] = (model: model, code: code, expiration: expiration)
     return code
   }
 
@@ -87,10 +87,10 @@ actor Ephemeral {
     expiration: Date = Current.date() + ONE_HOUR
   ) -> Int {
     let code = Current.verificationCode.generate()
-    if pendingAppConnections[code] != nil {
-      return createPendingAppConnection(userId)
+    if self.pendingAppConnections[code] != nil {
+      return self.createPendingAppConnection(userId)
     }
-    pendingAppConnections[code] = (userId: userId, expiration: expiration)
+    self.pendingAppConnections[code] = (userId: userId, expiration: expiration)
     return code
   }
 

@@ -9,13 +9,13 @@ struct AdminContext: ResolverContext {
   func verifiedUser(from id: User.Id) async throws -> User {
     try await Current.db.query(User.self)
       .where(.id == id)
-      .where(.adminId == admin.id)
+      .where(.adminId == self.admin.id)
       .first()
   }
 
   func users() async throws -> [User] {
     try await Current.db.query(User.self)
-      .where(.adminId == admin.id)
+      .where(.adminId == self.admin.id)
       .all()
   }
 

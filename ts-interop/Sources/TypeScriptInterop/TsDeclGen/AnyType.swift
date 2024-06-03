@@ -22,8 +22,8 @@ extension AnyType: Equatable {
 
 extension AnyType: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(fullyQualifiedName)
-    hasher.combine(name)
+    hasher.combine(self.fullyQualifiedName)
+    hasher.combine(self.name)
   }
 }
 

@@ -20,7 +20,7 @@ public class WebSocketConnection: WebSocketDelegate {
   var state = Mutex(ConnectionState.idle)
 
   var currentState: ConnectionState {
-    state.withValue { $0 }
+    self.state.withValue { $0 }
   }
 
   public init(
@@ -37,27 +37,27 @@ public class WebSocketConnection: WebSocketDelegate {
     self.createSocket = createSocket
     self.pingInterval = pingInterval
     self.messageSubject = messageSubject
-    logFn = log
-    logErrorFn = logError
-    socket = createSocket()
-    connect(socket)
+    self.logFn = log
+    self.logErrorFn = logError
+    self.socket = createSocket()
+    self.connect(self.socket)
   }
 
   public func send(_ message: WebSocketMessage.FromAppToApi) {
     guard let json = try? JSON.encode(message) else {
-      logError("failed to get json string from msg: \(message)")
+      self.logError("failed to get json string from msg: \(message)")
       return
     }
-    socket.write(string: json)
+    self.socket.write(string: json)
   }
 
   public func disconnect() {
-    transition(receiving: .initiatingDisconnect)
-    socket.disconnect()
+    self.transition(receiving: .initiatingDisconnect)
+    self.socket.disconnect()
   }
 
   public func clientState() -> ClientInterfaces.WebSocketClient.State {
-    switch currentState {
+    switch self.currentState {
     case .connected:
       return .connected
     case .disconnected:
@@ -75,32 +75,32 @@ public class WebSocketConnection: WebSocketDelegate {
     switch event {
 
     case .connected:
-      log("connection established")
-      transition(receiving: .receivedConnected)
+      self.log("connection established")
+      self.transition(receiving: .receivedConnected)
 
     case .disconnected(let reason, let code):
-      log("disconnected, reason: \(reason), code: \(code)")
-      transition(receiving: .receivedDisconnected(code: code))
+      self.log("disconnected, reason: \(reason), code: \(code)")
+      self.transition(receiving: .receivedDisconnected(code: code))
 
     case .cancelled:
-      log("connection cancelled")
-      transition(receiving: .receivedCancelled)
+      self.log("connection cancelled")
+      self.transition(receiving: .receivedCancelled)
 
     case .pong:
-      log("received pong, connectivity confirmed")
-      transition(receiving: .receivedPong)
+      self.log("received pong, connectivity confirmed")
+      self.transition(receiving: .receivedPong)
 
     case .text(let json):
       guard let message = try? JSON.decode(json, as: WebSocketMessage.FromApiToApp.self) else {
-        logError("failed to decode message: \(json)")
+        self.logError("failed to decode message: \(json)")
         return
       }
-      messageSubject.withValue { [message] subject in
+      self.messageSubject.withValue { [message] subject in
         subject.send(message)
       }
 
     default:
-      log("other event received: \(event)")
+      self.log("other event received: \(event)")
     }
   }
 
@@ -110,56 +110,56 @@ public class WebSocketConnection: WebSocketDelegate {
       socket.delegate = self
     }
 
-    log("connecting")
-    transition(receiving: .initiatingConnection)
+    self.log("connecting")
+    self.transition(receiving: .initiatingConnection)
     socket.connect()
-    schedulePing()
+    self.schedulePing()
   }
 
   func heartbeat() {
-    guard currentState == .connected else {
-      logError("websocket not connected in heartbeat")
+    guard self.currentState == .connected else {
+      self.logError("websocket not connected in heartbeat")
       return
     }
 
-    log("checking websocket connectivity in heartbeat")
-    pingsSent += 1
-    socket.write(ping: Data())
-    transition(receiving: .sentPing)
-    schedule(after: PONG_CONFIRMATION_DELAY) {
+    self.log("checking websocket connectivity in heartbeat")
+    self.pingsSent += 1
+    self.socket.write(ping: Data())
+    self.transition(receiving: .sentPing)
+    self.schedule(after: PONG_CONFIRMATION_DELAY) {
       [weak self] in self?.checkPongResponse()
     }
   }
 
   func checkPongResponse() {
-    if currentState == .waitingForPong {
-      logError("failed to receive timely pong")
-      transition(receiving: .failedToReceiveTimelyPong)
-    } else if currentState == .connected {
-      schedulePing()
+    if self.currentState == .waitingForPong {
+      self.logError("failed to receive timely pong")
+      self.transition(receiving: .failedToReceiveTimelyPong)
+    } else if self.currentState == .connected {
+      self.schedulePing()
     } else {
-      logError("unexpected state checking pong response")
+      self.logError("unexpected state checking pong response")
     }
   }
 
   func schedulePing() {
-    schedule(after: pingInterval) { [weak self] in self?.heartbeat() }
+    self.schedule(after: self.pingInterval) { [weak self] in self?.heartbeat() }
   }
 
   func schedule(after interval: IntervalInSeconds, action: @escaping () -> Void) {
-    scheduler.schedule(after: scheduler.now.advanced(by: interval), action)
+    self.scheduler.schedule(after: self.scheduler.now.advanced(by: interval), action)
   }
 
   func transition(receiving event: ConnectionState.Event) {
-    state.transition { [logFn] in $0.receive(event, log: logFn) }
+    self.state.transition { [logFn] in $0.receive(event, log: logFn) }
   }
 
   func log(_ message: String) {
-    logFn("\(message), state: `\(currentState)`")
+    self.logFn("\(message), state: `\(self.currentState)`")
   }
 
   func logError(_ message: String) {
-    logErrorFn("\(message), state: `\(currentState)`")
+    self.logErrorFn("\(message), state: `\(self.currentState)`")
   }
 }
 

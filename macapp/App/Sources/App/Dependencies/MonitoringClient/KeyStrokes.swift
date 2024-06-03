@@ -18,7 +18,7 @@ struct Keystroke {
   var date = Date()
 
   var isNewline: Bool {
-    switch (char, keyCode) {
+    switch (self.char, self.keyCode) {
     case ("\r", _), (_, Self.NEWLINE_KEYCODE):
       return true
     default:
@@ -27,26 +27,26 @@ struct Keystroke {
   }
 
   var isBackspace: Bool {
-    keyCode == Self.BACKSPACE_KEYCODE
+    self.keyCode == Self.BACKSPACE_KEYCODE
   }
 
   var isEscape: Bool {
-    keyCode == Self.ESCAPE_KEYCODE
+    self.keyCode == Self.ESCAPE_KEYCODE
   }
 
   var display: String {
-    if modifiers.contains(.control) {
-      return " <CTRL-\(char)> "
-    } else if modifiers.contains(.option) {
-      return " <OPT-\(char)> "
-    } else if modifiers.contains(.command) {
-      return " <⌘\(char)> "
-    } else if isEscape {
+    if self.modifiers.contains(.control) {
+      return " <CTRL-\(self.char)> "
+    } else if self.modifiers.contains(.option) {
+      return " <OPT-\(self.char)> "
+    } else if self.modifiers.contains(.command) {
+      return " <⌘\(self.char)> "
+    } else if self.isEscape {
       return "<ESC>"
-    } else if char.isWhitespace || !char.isASCII {
+    } else if self.char.isWhitespace || !self.char.isASCII {
       return " "
     } else {
-      return String(char)
+      return String(self.char)
     }
   }
 
@@ -66,10 +66,10 @@ struct Keystroke {
     guard let str = event.characters, str.unicodeScalars.count == 1 else {
       return nil
     }
-    char = Character(str)
-    keyCode = event.keyCode
-    modifiers = event.modifierFlags
-    timestamp = event.timestamp
+    self.char = Character(str)
+    self.keyCode = event.keyCode
+    self.modifiers = event.modifierFlags
+    self.timestamp = event.timestamp
   }
 }
 
@@ -96,15 +96,15 @@ class Keystrokes {
       lineKey = current
     }
 
-    lastEvent = keystroke.timestamp
+    self.lastEvent = keystroke.timestamp
 
     if keystroke.isNewline {
-      currentLineKey = nil
+      self.currentLineKey = nil
       return
     }
 
-    guard lines[lineKey] == nil else {
-      addKeystroke(keystroke, lineKey)
+    guard self.lines[lineKey] == nil else {
+      self.addKeystroke(keystroke, lineKey)
       return
     }
 
@@ -112,10 +112,10 @@ class Keystrokes {
       return
     }
 
-    lineDates[keystroke.timestamp] = keystroke.date
-    currentLineKey = keystroke.timestamp
-    lines[keystroke.timestamp] = ""
-    addKeystroke(keystroke, keystroke.timestamp)
+    self.lineDates[keystroke.timestamp] = keystroke.date
+    self.currentLineKey = keystroke.timestamp
+    self.lines[keystroke.timestamp] = ""
+    self.addKeystroke(keystroke, keystroke.timestamp)
   }
 
   private func addKeystroke(_ keystroke: Keystroke, _ key: TimeInterval) {
@@ -123,8 +123,8 @@ class Keystrokes {
       return
     }
 
-    if keystroke.isBackspace, keystroke.timestamp - lastEvent < Self.BACKSPACE_DELTA {
-      lines[key] = String(line.dropLast())
+    if keystroke.isBackspace, keystroke.timestamp - self.lastEvent < Self.BACKSPACE_DELTA {
+      self.lines[key] = String(line.dropLast())
       return
     }
 
@@ -133,7 +133,7 @@ class Keystrokes {
       return
     }
 
-    lines[key] = line + display
+    self.lines[key] = line + display
   }
 }
 
@@ -141,13 +141,13 @@ class Keystrokes {
 
 extension Keystroke: CustomStringConvertible {
   var description: String {
-    "\(char.isASCII ? String(char) : "<non-ascii>") keyCode=\(keyCode), mods=\(modifiers), time=\(timestamp), isWhitespace=\(char.isWhitespace) debug=\(char.debugDescription)"
+    "\(self.char.isASCII ? String(self.char) : "<non-ascii>") keyCode=\(self.keyCode), mods=\(self.modifiers), time=\(self.timestamp), isWhitespace=\(self.char.isWhitespace) debug=\(self.char.debugDescription)"
   }
 }
 
 extension Keystrokes: CustomStringConvertible {
   var description: String {
-    Array(lines.keys).sorted().map { timestamp in
+    Array(self.lines.keys).sorted().map { timestamp in
       var dateStr = ""
       if let date = lineDates[timestamp] {
         dateStr = String(describing: date)

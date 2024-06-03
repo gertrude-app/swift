@@ -25,7 +25,7 @@ import os.log
       userId,
       enabled ? "true" : "false"
     )
-    subject.withValue {
+    self.subject.withValue {
       $0.send(.receivedAppMessage(.setUserExemption(userId: userId, enabled: enabled)))
     }
     reply(nil)
@@ -33,7 +33,7 @@ import os.log
 
   func disconnectUser(_ userId: uid_t, reply: @escaping (XPCErrorData?) -> Void) {
     os_log("[G•] FILTER xpc.disconnectUser(for: %{public}d)", userId)
-    subject.withValue {
+    self.subject.withValue {
       $0.send(.receivedAppMessage(.disconnectUser(userId: userId)))
     }
     reply(nil)
@@ -41,7 +41,7 @@ import os.log
 
   func endSuspension(for userId: uid_t, reply: @escaping (XPCErrorData?) -> Void) {
     os_log("[G•] FILTER xpc.endSuspension(for: %{public}d)", userId)
-    subject.withValue {
+    self.subject.withValue {
       $0.send(.receivedAppMessage(.endFilterSuspension(userId: userId)))
     }
     reply(nil)
@@ -57,7 +57,7 @@ import os.log
       userId,
       durationInSeconds
     )
-    subject.withValue {
+    self.subject.withValue {
       $0.send(.receivedAppMessage(.suspendFilter(
         userId: userId,
         duration: .init(durationInSeconds)
@@ -80,7 +80,7 @@ import os.log
       let savedState = try storage.loadPersistentStateSync()
       let ack = XPC.FilterAck(
         randomInt: randomInt,
-        version: filterExtension.version(),
+        version: self.filterExtension.version(),
         userId: userId,
         numUserKeys: savedState?.userKeys[userId]?.count ?? 0
       )
@@ -101,7 +101,7 @@ import os.log
     do {
       let manifest = try XPC.decode(AppIdManifest.self, from: manifestData)
       let keys = try keysData.map { try XPC.decode(FilterKey.self, from: $0) }
-      subject.withValue {
+      self.subject.withValue {
         $0.send(.receivedAppMessage(.userRules(
           userId: userId,
           keys: keys,
@@ -147,7 +147,7 @@ import os.log
       enabled ? "true" : "false",
       userId
     )
-    subject.withValue {
+    self.subject.withValue {
       $0.send(.receivedAppMessage(.setBlockStreaming(enabled: enabled, userId: userId)))
     }
     reply(nil)
@@ -155,7 +155,7 @@ import os.log
 
   func deleteAllStoredState(reply: @escaping (XPCErrorData?) -> Void) {
     os_log("[G•] FILTER xpc.deleteAllStoredState()")
-    subject.withValue {
+    self.subject.withValue {
       $0.send(.receivedAppMessage(.deleteAllStoredState))
     }
     reply(nil)

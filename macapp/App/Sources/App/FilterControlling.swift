@@ -54,7 +54,11 @@ extension FilterControlling {
     // reliably, especially the one i observe locally only, where the filter
     // shows up in an "orange" state in the system preferences pane
     if attempt < 4, await xpc.notConnected() {
-      return try await replaceFilter(send, attempt: attempt + 1, reinstallOnFail: reinstallOnFail)
+      return try await self.replaceFilter(
+        send,
+        attempt: attempt + 1,
+        reinstallOnFail: reinstallOnFail
+      )
     }
 
     if reinstallOnFail, await xpc.notConnected() {

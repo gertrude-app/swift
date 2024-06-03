@@ -2,15 +2,15 @@ import FluentSQL
 
 struct AppTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {
-    try await upAppCategories(sql)
-    try await upIdentifiedApps(sql)
-    try await upAppBundleIds(sql)
+    try await self.upAppCategories(sql)
+    try await self.upIdentifiedApps(sql)
+    try await self.upAppBundleIds(sql)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await downAppBundleIds(sql)
-    try await downIdentifiedApps(sql)
-    try await downAppCategories(sql)
+    try await self.downAppBundleIds(sql)
+    try await self.downIdentifiedApps(sql)
+    try await self.downAppCategories(sql)
   }
 
   // table: app_categories
@@ -50,11 +50,11 @@ struct AppTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
       Column(.updatedAt, .timestampWithTimezone)
     }
-    try await sql.add(constraint: identifiedAppsFk)
+    try await sql.add(constraint: self.identifiedAppsFk)
   }
 
   func downIdentifiedApps(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: identifiedAppsFk)
+    try await sql.drop(constraint: self.identifiedAppsFk)
     try await sql.drop(table: IdentifiedApp.M6.self)
   }
 
@@ -75,11 +75,11 @@ struct AppTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
       Column(.updatedAt, .timestampWithTimezone)
     }
-    try await sql.add(constraint: appBundleIdFk)
+    try await sql.add(constraint: self.appBundleIdFk)
   }
 
   func downAppBundleIds(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: appBundleIdFk)
+    try await sql.drop(constraint: self.appBundleIdFk)
     try await sql.drop(table: AppBundleId.M6.self)
   }
 }

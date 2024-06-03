@@ -6,16 +6,16 @@ import XCore
 enum Reset {
   static func run() async throws {
     try await Current.db.deleteAll(Admin.self, force: true)
-    try await createHtcPublicKeychain()
+    try await self.createHtcPublicKeychain()
     try await AdminBetsy.create()
   }
 
   static func createHtcPublicKeychain() async throws {
     let jared = try await Current.db.create(Admin(
-      email: "jared-htc-author" |> testEmail,
+      email: "jared-htc-author" |> self.testEmail,
       password: try Bcrypt.hash("jared123")
     ))
-    try await createKeychain(
+    try await self.createKeychain(
       id: Ids.htcKeychain,
       adminId: jared.id,
       name: "HTC",

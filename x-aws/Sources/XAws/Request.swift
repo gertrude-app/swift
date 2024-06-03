@@ -27,7 +27,7 @@ extension AWS.Request {
     queryParams: [String: String] = [:],
     signedHeaders: [String: String] = [:]
   ) -> String {
-    let canonicalRequest = canonicalRequestForPreSignedUrl(
+    let canonicalRequest = self.canonicalRequestForPreSignedUrl(
       httpVerb: httpVerb,
       endpoint: endpoint,
       bucket: bucket,
@@ -54,7 +54,7 @@ extension AWS.Request {
       signingKey: signingKey,
       stringToSign: stringToSign
     )
-    let (_, params) = data(
+    let (_, params) = self.data(
       accessKeyId,
       endpoint,
       bucket,
@@ -64,7 +64,7 @@ extension AWS.Request {
       expires,
       signedHeaders
     )
-    return "https://\(bucket).\(endpoint)/\(objectKey)?\(queryString(params))&X-Amz-Signature=\(signature)"
+    return "https://\(bucket).\(endpoint)/\(objectKey)?\(self.queryString(params))&X-Amz-Signature=\(signature)"
   }
 
   static func canonicalRequestForPreSignedUrl(
@@ -80,7 +80,7 @@ extension AWS.Request {
     queryParams: [String: String] = [:],
     signedHeaders: [String: String] = [:]
   ) -> String {
-    let (headers, params) = data(
+    let (headers, params) = self.data(
       accessKeyId,
       endpoint,
       bucket,
@@ -92,13 +92,13 @@ extension AWS.Request {
     )
 
     let canonicalUri = Util.uriEncode(objectKey, isObjectKeyName: true)
-    let canonicalQueryString = queryString(params)
+    let canonicalQueryString = self.queryString(params)
 
     return """
     \(httpVerb)
     /\(canonicalUri)
     \(canonicalQueryString)
-    \(canonicalHeaders(headers))
+    \(self.canonicalHeaders(headers))
     \(Self.signedHeaders(headers))
     UNSIGNED-PAYLOAD
     """
@@ -170,7 +170,7 @@ extension AWS.Request {
     """
     AWS4-HMAC-SHA256
     \(Util.timestamp(time))
-    \(scope(time, region, service))
+    \(self.scope(time, region, service))
     \(Util.sha256(canonicalRequest))
     """
   }

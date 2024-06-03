@@ -10,16 +10,16 @@ extension MacAppRoute: RouteResponder {
       switch unauthed {
       case .connectUser(let input):
         let output = try await ConnectUser.resolve(with: input, in: context)
-        return try await respond(with: output)
+        return try await self.respond(with: output)
       case .latestAppVersion(let input):
         let output = try await LatestAppVersion.resolve(with: input, in: context)
-        return try await respond(with: output)
+        return try await self.respond(with: output)
       case .logInterestingEvent(let input):
         let output = try await LogInterestingEvent.resolve(with: input, in: context)
-        return try await respond(with: output)
+        return try await self.respond(with: output)
       case .recentAppVersions:
         let output = try await RecentAppVersions.resolve(in: context)
-        return try await respond(with: output)
+        return try await self.respond(with: output)
       }
 
     case .userAuthed(let uuid, let userRoute):

@@ -7,7 +7,7 @@ struct FilterMigrator: Migrator {
   var context = "Filter"
 
   func migrateLastVersion() async -> Persistent.State? {
-    await migrateV1()
+    await self.migrateV1()
   }
 
   // v1 below refers to legacy 1.x version of the app

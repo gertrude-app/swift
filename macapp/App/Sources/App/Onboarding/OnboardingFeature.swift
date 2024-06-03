@@ -111,7 +111,7 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .welcome:
         log(step, action, "e712e261")
-        state.step = app.inCorrectLocation ? .confirmGertrudeAccount : .wrongInstallDir
+        state.step = self.app.inCorrectLocation ? .confirmGertrudeAccount : .wrongInstallDir
         return .exec { send in
           await send(.receivedDeviceData(
             currentUserId: device.currentUserId(),
@@ -549,7 +549,7 @@ struct OnboardingFeature: Feature {
 
     func nextRequiredStage(from current: State.Step, _ send: Send<Action>) async {
       if current < .allowNotifications_start {
-        if await device.notificationsSetting() != .alert {
+        if await self.device.notificationsSetting() != .alert {
           log("notifications not .alert yet", "ec99a6ea")
           return await send(.setStep(.allowNotifications_start))
         }
@@ -557,7 +557,7 @@ struct OnboardingFeature: Feature {
       }
 
       if current < .allowScreenshots_required {
-        if await monitoring.screenRecordingPermissionGranted() == false {
+        if await self.monitoring.screenRecordingPermissionGranted() == false {
           log("screen recording not granted yet", "3edcf34f")
           return await send(.setStep(.allowScreenshots_required))
         }
@@ -578,14 +578,14 @@ struct OnboardingFeature: Feature {
       }
 
       if current == .allowKeylogging_required {
-        if await monitoring.keystrokeRecordingPermissionGranted() == false {
+        if await self.monitoring.keystrokeRecordingPermissionGranted() == false {
           log("keylogging not granted yet", "5d5275e5")
           return await send(.setStep(.allowKeylogging_grant))
         }
         log("keylogging already allowed, skipping stage", "51ed2be8")
       }
 
-      if await systemExtension.state() != .installedAndRunning {
+      if await self.systemExtension.state() != .installedAndRunning {
         log("sys ext not installed and running yet", "b493ebde")
         return await send(.setStep(.installSysExt_explain))
       }
@@ -628,7 +628,7 @@ extension OnboardingFeature.Reducer {
       Task { interestingEvent(id: id, "[onboarding]: \(msg), \(eventMeta())") }
     #else
       if ProcessInfo.processInfo.environment["SWIFT_DETERMINISTIC_HASHING"] == nil {
-        print("\n[onboarding]: `\(id)` \(msg), \(eventMeta())\n")
+        print("\n[onboarding]: `\(id)` \(msg), \(self.eventMeta())\n")
       }
     #endif
   }
@@ -636,6 +636,6 @@ extension OnboardingFeature.Reducer {
   func log(_ step: State.Step, _ action: Action, _ id: String) {
     let shortAction = "\(action)"
       .replacingOccurrences(of: "App.OnboardingFeature.Action.View", with: "")
-    log("received .\(shortAction) from step .\(step)", id)
+    self.log("received .\(shortAction) from step .\(step)", id)
   }
 }

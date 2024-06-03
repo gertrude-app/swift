@@ -38,7 +38,7 @@ final class Device: Codable {
 
 extension Device {
   func admin() async throws -> Admin {
-    try await admin.useLoaded(or: {
+    try await self.admin.useLoaded(or: {
       try await Current.db.query(Admin.self)
         .where(.id == adminId)
         .first()
@@ -46,7 +46,7 @@ extension Device {
   }
 
   func userDevices() async throws -> [UserDevice] {
-    try await userDevices.useLoaded(or: {
+    try await self.userDevices.useLoaded(or: {
       try await Current.db.query(UserDevice.self)
         .where(.deviceId == id)
         .all()

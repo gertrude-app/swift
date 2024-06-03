@@ -53,28 +53,28 @@ extension UnauthedRoute: RouteResponder {
     switch route {
     case .signup(let input):
       let output = try await Signup.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .verifySignupEmail(let input):
       let output = try await VerifySignupEmail.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .login(let input):
       let output = try await Login.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .loginMagicLink(let input):
       let output = try await LoginMagicLink.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .requestMagicLink(let input):
       let output = try await RequestMagicLink.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .resetPassword(let input):
       let output = try await ResetPassword.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .saveConferenceEmail(let input):
       let output = try await SaveConferenceEmail.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     case .sendPasswordResetEmail(let input):
       let output = try await SendPasswordResetEmail.resolve(with: input, in: context)
-      return try await respond(with: output)
+      return try await self.respond(with: output)
     }
   }
 }

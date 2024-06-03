@@ -13,13 +13,13 @@ final class FilterManager: NSObject {
   @Dependency(\.mainQueue) var scheduler
 
   func setup() async -> FilterExtensionState {
-    system.filterDidChangePublisher().sink {
+    self.system.filterDidChangePublisher().sink {
       filterStateChanges.withValue { subject in
         subject.send(self.getState())
       }
-    }.store(in: &cancellables)
+    }.store(in: &self.cancellables)
 
-    return await loadState()
+    return await self.loadState()
   }
 
   func loadState() async -> FilterExtensionState {
@@ -29,16 +29,16 @@ final class FilterManager: NSObject {
       return .errorLoadingConfig
     }
 
-    return getState()
+    return self.getState()
   }
 
   // query current state, without loading filter configuration
   // loading filter configuration only needs to be done once, and is async
   private func getState() -> FilterExtensionState {
-    if system.filterProviderConfiguration() == nil {
+    if self.system.filterProviderConfiguration() == nil {
       return .notInstalled
     } else {
-      return system.isNEFilterManagerSharedEnabled()
+      return self.system.isNEFilterManagerSharedEnabled()
         ? .installedAndRunning : .installedButNotRunning
     }
   }
@@ -51,14 +51,14 @@ final class FilterManager: NSObject {
       return state
     }
 
-    system.enableNEFilterManagerShared()
+    self.system.enableNEFilterManagerShared()
 
     if let error = await system.saveNEFilterManagerShared() {
       unexpectedError(id: "b787c1ff", error)
     }
 
     // now that we've attempted to stop the filter, recheck the state completely
-    return await loadState()
+    return await self.loadState()
   }
 
   func stopFilter() async -> FilterExtensionState {
@@ -68,18 +68,18 @@ final class FilterManager: NSObject {
       unexpectedError(id: "6f5b0838", detail: "state: \(state)")
     }
 
-    system.disableNEFilterManagerShared()
+    self.system.disableNEFilterManagerShared()
 
     if let error = await system.saveNEFilterManagerShared() {
       unexpectedError(id: "214df4cf", error)
     }
 
     // now that we've attempted to stop the filter, recheck the state completely
-    return await loadState()
+    return await self.loadState()
   }
 
   func installFilter(timeout: Int? = nil) async -> FilterInstallResult {
-    switch await loadState() {
+    switch await self.loadState() {
     case .installedAndRunning, .installedButNotRunning:
       os_log("[G•] APP FilterManager.installFilter() already installed #1")
       return .alreadyInstalled
@@ -87,17 +87,17 @@ final class FilterManager: NSObject {
       break
     }
 
-    guard system.isNEFilterManagerSharedEnabled() == false else {
+    guard self.system.isNEFilterManagerSharedEnabled() == false else {
       os_log("[G•] APP FilterManager.installFilter() already installed #2")
       return .alreadyInstalled
     }
 
-    return await activateExtension(timeout: timeout ?? 90)
+    return await self.activateExtension(timeout: timeout ?? 90)
   }
 
   func activateExtension(timeout: Int) async -> FilterInstallResult {
     os_log("[G•] APP FilterManager.activateExtension()")
-    system.requestExtensionActivation(self)
+    self.system.requestExtensionActivation(self)
 
     // the delegate os system extension request almost always succeeds immediately
     // it's result has nothing to do with whether the user clicks "allow", etc.
@@ -108,7 +108,7 @@ final class FilterManager: NSObject {
 
     while true {
 
-      try? await scheduler.sleep(for: .seconds(1))
+      try? await self.scheduler.sleep(for: .seconds(1))
       waited += 1
 
       let currentStatus = await activationRequest.value
@@ -145,7 +145,7 @@ final class FilterManager: NSObject {
   }
 
   func replaceFilter() async -> FilterInstallResult {
-    _ = await stopFilter()
+    _ = await self.stopFilter()
 
     // this disable/enable dance SEEMS to be the key to restoring good
     // filter <-> app communication after replace. i can't explain why,
@@ -153,21 +153,21 @@ final class FilterManager: NSObject {
     // https://developer.apple.com/forums/thread/711713
     // see also old implementation, which seemed to _mostly_ work:
     // https://github.com/gertrude-app/swift/blob/1b32b129288cd8130e4486e7de800d6be45a2eb6/macapp/Gertrude/AppCore/Sources/AppCore/FilterController.swift#L112
-    system.disableNEFilterManagerShared()
+    self.system.disableNEFilterManagerShared()
     defer { system.enableNEFilterManagerShared() }
 
-    return await activateExtension(timeout: 90)
+    return await self.activateExtension(timeout: 90)
   }
 
   func uninstallFilter() async -> Bool {
-    _ = await stopFilter()
-    return await system.removeFilterConfiguration() == nil
+    _ = await self.stopFilter()
+    return await self.system.removeFilterConfiguration() == nil
   }
 
   /// replaces + removes config, so user has to click "allow" again
   func reinstallFilter() async -> FilterInstallResult {
-    _ = await uninstallFilter()
-    return await installFilter()
+    _ = await self.uninstallFilter()
+    return await self.installFilter()
   }
 }
 

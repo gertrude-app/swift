@@ -3,13 +3,13 @@ import Gertie
 
 struct MiscTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {
-    try await upReleases(sql)
-    try await upStripeEvents(sql)
+    try await self.upReleases(sql)
+    try await self.upStripeEvents(sql)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await downReleases(sql)
-    try await downStripeEvents(sql)
+    try await self.downReleases(sql)
+    try await self.downStripeEvents(sql)
   }
 
   // table: releases

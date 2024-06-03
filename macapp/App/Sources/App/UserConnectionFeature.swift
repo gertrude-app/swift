@@ -54,14 +54,14 @@ extension UserConnectionFeature.RootReducer {
       state.history.userConnection = .notConnected
       state.adminWindow.windowOpen = false
       state.menuBar.dropdownOpen = true
-      return disconnectUser(persisting: state.persistent)
+      return self.disconnectUser(persisting: state.persistent)
 
     case .websocket(.receivedMessage(.userDeleted)),
          .history(.userConnection(.disconnectMissingUser)):
       state.user = .init()
       state.history.userConnection = .notConnected
       return .merge(
-        disconnectUser(persisting: state.persistent),
+        self.disconnectUser(persisting: state.persistent),
         .exec { send in
           await send(.focusedNotification(.text(
             "Child deleted",

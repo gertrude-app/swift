@@ -38,16 +38,16 @@ extension MonitoringFeature.RootReducer {
 
     case .loadedPersistentState(.some(let persistent)):
       guard persistent.resumeOnboarding == nil else { return .none }
-      return configureMonitoring(current: persistent.user, previous: nil)
+      return self.configureMonitoring(current: persistent.user, previous: nil)
 
     case .user(.updated(let previous)):
-      return configureMonitoring(current: state.user.data, previous: previous)
+      return self.configureMonitoring(current: state.user.data, previous: previous)
 
     case .history(.userConnection(.connect(.success(let user)))):
-      return configureMonitoring(current: user, previous: nil)
+      return self.configureMonitoring(current: user, previous: nil)
 
     case .onboarding(.delegate(.onboardingConfigComplete)):
-      return configureMonitoring(current: state.user.data, previous: nil)
+      return self.configureMonitoring(current: state.user.data, previous: nil)
 
     case .monitoring(.timerTriggeredTakeScreenshot):
       let width = state.user.data?.screenshotSize ?? 800
@@ -74,7 +74,7 @@ extension MonitoringFeature.RootReducer {
       // reuse the last extra suspension monitoring sent by via the parents dashboard
       state.monitoring.suspensionMonitoring = lastMonitoring
       state.monitoring.lastSuspensionMonitoring = lastMonitoring
-      return configureMonitoring(current: lastMonitoring, previous: user)
+      return self.configureMonitoring(current: lastMonitoring, previous: user)
 
     case .websocket(.receivedMessage(.filterSuspensionRequestDecided(.accepted(_, .none), _))):
       state.monitoring.lastSuspensionMonitoring = nil
@@ -87,7 +87,7 @@ extension MonitoringFeature.RootReducer {
       let suspensionMonitoring = user.monitoring(merging: extraMonitoring)
       state.monitoring.suspensionMonitoring = suspensionMonitoring
       state.monitoring.lastSuspensionMonitoring = suspensionMonitoring
-      return configureMonitoring(current: suspensionMonitoring, previous: user)
+      return self.configureMonitoring(current: suspensionMonitoring, previous: user)
 
     case .heartbeat(.everyMinute):
       return .none
@@ -96,14 +96,14 @@ extension MonitoringFeature.RootReducer {
       // for simplicity's sake, we ALWAYS try to upload any pending keystrokes
       // so we don't have to worry about edge cases when we stop/restart.
       // if we're not monitoring keystrokes, nothing will go to api
-      let flushPendingKeystrokes = flushKeystrokes(state.filter.isSuspended)
+      let flushPendingKeystrokes = self.flushKeystrokes(state.filter.isSuspended)
 
       // failsafe for cleaning up suspension monitoring if we missed the expiration
       if let suspensionMonitoring = state.monitoring.suspensionMonitoring,
          (state.filter.currentSuspensionExpiration ?? .distantPast) < now {
         state.monitoring.suspensionMonitoring = nil
         return .merge(
-          configureMonitoring(current: state.user.data, previous: suspensionMonitoring),
+          self.configureMonitoring(current: state.user.data, previous: suspensionMonitoring),
           flushPendingKeystrokes
         )
       }
@@ -111,22 +111,22 @@ extension MonitoringFeature.RootReducer {
 
     case .application(.willSleep),
          .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))):
-      return flushKeystrokes(state.filter.isSuspended)
+      return self.flushKeystrokes(state.filter.isSuspended)
 
     case .delegate(.filterSuspendedChanged(let wasSuspended, _)):
       if wasSuspended, let suspensionMonitoring = state.monitoring.suspensionMonitoring {
         state.monitoring.suspensionMonitoring = nil
         return .merge(
-          configureMonitoring(current: state.user.data, previous: suspensionMonitoring),
-          flushKeystrokes(wasSuspended)
+          self.configureMonitoring(current: state.user.data, previous: suspensionMonitoring),
+          self.flushKeystrokes(wasSuspended)
         )
       }
-      return flushKeystrokes(wasSuspended)
+      return self.flushKeystrokes(wasSuspended)
 
     case .application(.willTerminate):
       return .merge(
         .cancel(id: CancelId.screenshots),
-        flushKeystrokes(state.filter.isSuspended)
+        self.flushKeystrokes(state.filter.isSuspended)
       )
 
     case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))),
@@ -136,7 +136,7 @@ extension MonitoringFeature.RootReducer {
 
     // try to catch the moment when they've fixed monitoring permissions issues
     case .adminWindow(.webview(.healthCheck(.recheckClicked))):
-      return configureMonitoring(current: state.user.data, previous: nil, force: true)
+      return self.configureMonitoring(current: state.user.data, previous: nil, force: true)
 
     default:
       return .none

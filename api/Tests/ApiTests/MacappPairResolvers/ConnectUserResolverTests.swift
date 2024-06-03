@@ -13,7 +13,7 @@ final class ConnectUserResolversTests: ApiTestCase {
     let code = await Current.ephemeral.createPendingAppConnection(user.id)
 
     let input = input(code)
-    let userData = try await ConnectUser.resolve(with: input, in: context)
+    let userData = try await ConnectUser.resolve(with: input, in: self.context)
 
     expect(userData.id).toEqual(user.id.rawValue)
     expect(userData.name).toEqual(user.name)
@@ -44,14 +44,14 @@ final class ConnectUserResolversTests: ApiTestCase {
     let user2 = try await Entities.user { $0.adminId = user1.admin.id }
     let code2 = await Current.ephemeral.createPendingAppConnection(user2.id)
 
-    var input1 = input(code1)
+    var input1 = self.input(code1)
     input1.numericId = 501
-    _ = try await ConnectUser.resolve(with: input1, in: context)
+    _ = try await ConnectUser.resolve(with: input1, in: self.context)
 
-    var input2 = input(code2)
+    var input2 = self.input(code2)
     input2.numericId = 502 // <-- same computer, different user
     // should not throw...
-    _ = try await ConnectUser.resolve(with: input2, in: context)
+    _ = try await ConnectUser.resolve(with: input2, in: self.context)
   }
 
   func testConnectUser_verificationCodeNotFound() async throws {
@@ -83,7 +83,7 @@ final class ConnectUserResolversTests: ApiTestCase {
     input.numericId = existingUser.device.numericId
     input.serialNumber = existingUser.adminDevice.serialNumber
 
-    let userData = try await ConnectUser.resolve(with: input, in: context)
+    let userData = try await ConnectUser.resolve(with: input, in: self.context)
 
     expect(userData.id).toEqual(newUser.id.rawValue)
     expect(userData.name).toEqual(newUser.name)

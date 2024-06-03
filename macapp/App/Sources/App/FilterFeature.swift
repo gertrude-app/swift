@@ -67,7 +67,7 @@ extension FilterFeature.State {
   }
 
   var isSuspended: Bool {
-    filterState.isSuspended
+    self.filterState.isSuspended
   }
 }
 
@@ -79,7 +79,7 @@ extension FilterFeature.RootReducer {
       .accepted(let seconds, let extraMonitoring),
       let comment
     ))):
-      return suspendFilter(
+      return self.suspendFilter(
         for: seconds,
         with: &state,
         comment: comment,
@@ -93,11 +93,11 @@ extension FilterFeature.RootReducer {
 
     case .websocket(.receivedMessage(.suspendFilter(let seconds, let comment))):
       unexpectedError(id: "64635783") // api should not send this legacy event
-      return suspendFilter(for: seconds, with: &state, comment: comment)
+      return self.suspendFilter(for: seconds, with: &state, comment: comment)
 
     case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):
       state.requestSuspension.windowOpen = false
-      return suspendFilter(for: .init(seconds), with: &state)
+      return self.suspendFilter(for: .init(seconds), with: &state)
 
     case .heartbeat(.everyMinute):
       if let expiration = state.filter.currentSuspensionExpiration, expiration <= now {
@@ -135,12 +135,12 @@ extension FilterFeature.RootReducer {
     case .menuBar(.resumeFilterClicked):
       state.menuBar.dropdownOpen = false
       state.filter.currentSuspensionExpiration = nil
-      return handleFilterSuspensionEnded(browsers: state.browsers, early: true)
+      return self.handleFilterSuspensionEnded(browsers: state.browsers, early: true)
 
     case .xpc(.receivedExtensionMessage(.userFilterSuspensionEnded(let userId)))
       where userId == device.currentUserId():
       state.filter.currentSuspensionExpiration = nil
-      return handleFilterSuspensionEnded(browsers: state.browsers, early: false)
+      return self.handleFilterSuspensionEnded(browsers: state.browsers, early: false)
 
     case .adminWindow(.delegate(.healthCheckFilterExtensionState(let filterState))):
       state.filter.extension = filterState

@@ -15,7 +15,7 @@ import Foundation
     userId: uid_t,
     reply: @escaping (XPCErrorData?) -> Void
   ) {
-    subject.withValue {
+    self.subject.withValue {
       $0.send(.receivedExtensionMessage(.userFilterSuspensionEnded(userId)))
     }
     reply(nil)
@@ -32,12 +32,12 @@ import Foundation
     }
     do {
       let request = try JSONDecoder().decode(BlockedRequest.self, from: requestData)
-      subject.withValue {
+      self.subject.withValue {
         $0.send(.receivedExtensionMessage(.blockedRequest(request)))
       }
       reply(nil)
     } catch {
-      subject.withValue {
+      self.subject.withValue {
         $0.send(.decodingExtensionMessageDataFailed(
           fn: "\(#function)",
           type: "\(BlockedRequest.self)",

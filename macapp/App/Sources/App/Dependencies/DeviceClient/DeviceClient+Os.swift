@@ -15,11 +15,11 @@ struct MacOSVersion: Sendable {
   let patch: Int
 
   var semver: String {
-    "\(major).\(minor).\(patch)"
+    "\(self.major).\(self.minor).\(self.patch)"
   }
 
   var name: Name {
-    switch (major, minor) {
+    switch (self.major, self.minor) {
     case (10, 15): return .catalina
     case (11, _): return .bigSur
     case (12, _): return .monterey
@@ -30,7 +30,7 @@ struct MacOSVersion: Sendable {
   }
 
   var description: String {
-    "\(name.rawValue)@\(semver)"
+    "\(self.name.rawValue)@\(self.semver)"
   }
 }
 
@@ -51,7 +51,7 @@ extension MacOSVersion {
   }
 
   var documentationGroup: DocumentationGroup {
-    switch name {
+    switch self.name {
     case .catalina:
       return .catalina
     case .bigSur, .monterey:

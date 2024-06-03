@@ -7,7 +7,7 @@ import XCTest
 
 final class Codegen: XCTestCase {
   func test_codegenSwift() throws {
-    if envVarSet("CODEGEN_SWIFT") {
+    if self.envVarSet("CODEGEN_SWIFT") {
       try ApiTypeScriptEnumsCodableGenerator().write()
     }
   }
@@ -38,7 +38,7 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
   func format() throws {
     let proc = Process()
     proc.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/swiftformat")
-    proc.arguments = generators.compactMap { generator in
+    proc.arguments = self.generators.compactMap { generator in
       (generator as? EnumCodableGen.EnumsGenerator)?.path
     }
     try proc.run()

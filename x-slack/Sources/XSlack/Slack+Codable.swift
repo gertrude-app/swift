@@ -63,7 +63,7 @@ public struct TextObject: Encodable {
   public let text: String
 
   public init(_ text: String, _ textType: TextType = .markdown) {
-    type = textType == .markdown ? "mrkdwn" : "plain_text"
+    self.type = textType == .markdown ? "mrkdwn" : "plain_text"
     self.text = text
   }
 }

@@ -22,5 +22,3 @@ final class AppCategory: Codable {
     self.description = description
   }
 }
-
-

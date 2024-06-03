@@ -36,7 +36,7 @@ extension UserToken {
 
 extension UserToken {
   func user() async throws -> User {
-    try await user.useLoaded(or: {
+    try await self.user.useLoaded(or: {
       try await Current.db.query(User.self)
         .where(.id == userId)
         .first()
@@ -44,7 +44,7 @@ extension UserToken {
   }
 
   func userDevice() async throws -> UserDevice? {
-    try await userDevice.useLoaded(or: { () async throws -> UserDevice? in
+    try await self.userDevice.useLoaded(or: { () async throws -> UserDevice? in
       guard let userDeviceId else { return nil }
       return try await Current.db.query(UserDevice.self)
         .where(.id == userDeviceId)

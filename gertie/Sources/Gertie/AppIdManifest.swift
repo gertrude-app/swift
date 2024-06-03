@@ -9,7 +9,7 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
   public var categories: [AppCategorySlug: Set<IdentifiedAppSlug>] = [:]
 
   public var isEmpty: Bool {
-    categories.isEmpty && apps.isEmpty && displayNames.isEmpty
+    self.categories.isEmpty && self.apps.isEmpty && self.displayNames.isEmpty
   }
 
   public init(
@@ -27,7 +27,7 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
       return nil
     }
 
-    for (appSlug, bundleIds) in apps {
+    for (appSlug, bundleIds) in self.apps {
       if bundleIds.contains(bundleId) {
         return appSlug
       }
@@ -37,18 +37,18 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
   }
 
   public func displayName(fromBundleId bundleId: String?) -> String? {
-    displayName(fromAppSlug: appSlug(fromBundleId: bundleId))
+    self.displayName(fromAppSlug: self.appSlug(fromBundleId: bundleId))
   }
 
   public func displayName(fromAppSlug appSlug: String?) -> String? {
     guard let appSlug = appSlug else {
       return nil
     }
-    return displayNames[appSlug]
+    return self.displayNames[appSlug]
   }
 
   public func categorySlugs(fromBundleId bundleId: String?) -> [String] {
-    categorySlugs(fromAppSlug: appSlug(fromBundleId: bundleId))
+    self.categorySlugs(fromAppSlug: self.appSlug(fromBundleId: bundleId))
   }
 
   public func categorySlugs(fromAppSlug appSlug: String?) -> [String] {
@@ -57,7 +57,7 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
     }
 
     var slugs: [String] = []
-    for (categorySlug, apps) in categories {
+    for (categorySlug, apps) in self.categories {
       if apps.contains(appSlug) {
         slugs.append(categorySlug)
       }

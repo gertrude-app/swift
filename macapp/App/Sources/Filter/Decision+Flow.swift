@@ -8,7 +8,7 @@ public extension NetworkFilter {
     _ flow: FilterFlow,
     auditToken: Data? = nil
   ) -> FilterDecision.FromFlow? {
-    flowDecision(flow, auditToken: auditToken, canDefer: true)
+    self.flowDecision(flow, auditToken: auditToken, canDefer: true)
   }
 
   func completedFlowDecision(
@@ -19,7 +19,7 @@ public extension NetworkFilter {
     if flow.url == nil {
       flow.parseOutboundData(byteString: bytesToAscii(readBytes))
     }
-    return flowDecision(flow, auditToken: auditToken, canDefer: false) ??
+    return self.flowDecision(flow, auditToken: auditToken, canDefer: false) ??
       .block(.defaultNotAllowed)
   }
 
@@ -47,7 +47,7 @@ public extension NetworkFilter {
     }
 
     let app = appDescriptor(for: flow.bundleId ?? "", auditToken: auditToken)
-    if activeSuspension(for: userId, permits: app) {
+    if self.activeSuspension(for: userId, permits: app) {
       return .allow(.filterSuspended)
     }
 

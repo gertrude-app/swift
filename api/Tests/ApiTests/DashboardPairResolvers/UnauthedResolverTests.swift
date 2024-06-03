@@ -9,7 +9,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
   let context = Context.mock
 
   func testInitiateSignupWithBadEmailErrorsBadRequest() async throws {
-    let result = await Signup.result(with: .init(email: "💩", password: ""), in: context)
+    let result = await Signup.result(with: .init(email: "💩", password: ""), in: self.context)
     expect(result).toBeError(containing: "Bad Request")
   }
 
@@ -17,7 +17,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     let existing = try await Current.db.create(Admin.random)
 
     let input = Signup.Input(email: existing.email.rawValue, password: "pass")
-    let output = try await Signup.resolve(with: input, in: context)
+    let output = try await Signup.resolve(with: input, in: self.context)
 
     expect(output).toEqual(.success)
     expect(sent.postmarkEmails.count).toEqual(1)
@@ -28,7 +28,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     Current.date = { .epoch }
     let email = "signup".random + "@example.com"
     let input = Signup.Input(email: email, password: "pass")
-    let output = try await Signup.resolve(with: input, in: context)
+    let output = try await Signup.resolve(with: input, in: self.context)
 
     let admin = try await Current.db.query(Admin.self)
       .where(.email == email)
@@ -45,7 +45,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
   func testInitiateSignupWithGclid() async throws {
     let email = "signup".random + "@example.com"
     let input = Signup.Input(email: email, password: "pass", gclid: "gclid-123")
-    _ = try await Signup.resolve(with: input, in: context)
+    _ = try await Signup.resolve(with: input, in: self.context)
 
     let admin = try await Current.db.query(Admin.self)
       .where(.email == email)
@@ -59,7 +59,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     let token = await Current.ephemeral.createAdminIdToken(admin.id)
     let (tokenId, tokenValue) = mockUUIDs()
 
-    let output = try await LoginMagicLink.resolve(with: .init(token: token), in: context)
+    let output = try await LoginMagicLink.resolve(with: .init(token: token), in: self.context)
 
     let adminToken = try await Current.db.find(AdminToken.Id(tokenId))
     expect(output).toEqual(.init(token: .init(tokenValue), adminId: admin.id))
@@ -99,7 +99,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
   func testSendMagicLinkToUnknownEmailReturnsSuccessSendingNoAccountEmail() async throws {
     let output = try await RequestMagicLink.resolve(
       with: .init(email: "some@hacker.com", redirect: nil),
-      in: context
+      in: self.context
     )
 
     expect(output).toEqual(.success)

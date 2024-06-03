@@ -4,15 +4,15 @@ import Gertie
 struct RequestTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {
     try await sql.create(enum: RequestStatus.self)
-    try await upNetworkDecisions(sql)
-    try await upUnlockRequests(sql)
-    try await upSuspendFilterRequests(sql)
+    try await self.upNetworkDecisions(sql)
+    try await self.upUnlockRequests(sql)
+    try await self.upSuspendFilterRequests(sql)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await downSuspendFilterRequests(sql)
-    try await downUnlockRequests(sql)
-    try await downNetworkDecisions(sql)
+    try await self.downSuspendFilterRequests(sql)
+    try await self.downUnlockRequests(sql)
+    try await self.downNetworkDecisions(sql)
     try await sql.drop(enum: RequestStatus.self)
   }
 
@@ -53,13 +53,13 @@ struct RequestTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
     }
 
-    try await sql.add(constraint: networkDecisionDeviceFk)
-    try await sql.add(constraint: networkDecisionKeyFk)
+    try await sql.add(constraint: self.networkDecisionDeviceFk)
+    try await sql.add(constraint: self.networkDecisionKeyFk)
   }
 
   func downNetworkDecisions(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: networkDecisionDeviceFk)
-    try await sql.drop(constraint: networkDecisionKeyFk)
+    try await sql.drop(constraint: self.networkDecisionDeviceFk)
+    try await sql.drop(constraint: self.networkDecisionKeyFk)
     try await sql.drop(table: Deleted.NetworkDecisionTable.M5.self)
     try await sql.drop(enum: NetworkDecisionVerdict.self)
     try await sql.drop(enum: NetworkDecisionReason.self)
@@ -92,13 +92,13 @@ struct RequestTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
       Column(.updatedAt, .timestampWithTimezone)
     }
-    try await sql.add(constraint: unlockRequestDeviceFk)
-    try await sql.add(constraint: unlockRequestNetworkDecisionFk)
+    try await sql.add(constraint: self.unlockRequestDeviceFk)
+    try await sql.add(constraint: self.unlockRequestNetworkDecisionFk)
   }
 
   func downUnlockRequests(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: unlockRequestNetworkDecisionFk)
-    try await sql.drop(constraint: unlockRequestDeviceFk)
+    try await sql.drop(constraint: self.unlockRequestNetworkDecisionFk)
+    try await sql.drop(constraint: self.unlockRequestDeviceFk)
     try await sql.drop(table: UnlockRequest.M5.self)
   }
 
@@ -123,11 +123,11 @@ struct RequestTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
       Column(.updatedAt, .timestampWithTimezone)
     }
-    try await sql.add(constraint: suspendFilterRequestFk)
+    try await sql.add(constraint: self.suspendFilterRequestFk)
   }
 
   func downSuspendFilterRequests(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: suspendFilterRequestFk)
+    try await sql.drop(constraint: self.suspendFilterRequestFk)
     try await sql.drop(table: SuspendFilterRequest.M5.self)
   }
 }

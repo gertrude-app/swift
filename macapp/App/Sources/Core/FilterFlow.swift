@@ -13,18 +13,19 @@ public struct FilterFlow: Equatable, Codable, Sendable {
   public var ipProtocol: IpProtocol?
 
   public var isDnsRequest: Bool {
-    isUDP && port == .dns(53)
+    self.isUDP && self.port == .dns(53)
   }
 
   public var isUDP: Bool {
-    ipProtocol == .udp(Int32(IPPROTO_UDP))
+    self.ipProtocol == .udp(Int32(IPPROTO_UDP))
   }
 
   public var isLocal: Bool {
-    if ipAddress == "127.0.0.1" || ipAddress == "::1" || ipAddress == "0:0:0:0:0:0:0:1" {
+    if self.ipAddress == "127.0.0.1" || self.ipAddress == "::1" || self
+      .ipAddress == "0:0:0:0:0:0:0:1" {
       return true
     }
-    if hostname == "localhost" {
+    if self.hostname == "localhost" {
       return true
     }
     return false
@@ -65,8 +66,8 @@ public struct FilterFlow: Equatable, Codable, Sendable {
     ) {
       let firstChunk = String(byteString[range])
       let pieces = firstChunk.components(separatedBy: "•").filter { $0 != "" }
-      url = "http://" + pieces[4] + pieces[1]
-      hostname = pieces[4]
+      self.url = "http://" + pieces[4] + pieces[1]
+      self.hostname = pieces[4]
       return
     }
 
@@ -74,7 +75,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
       of: #"[a-z0-9_-]{2,}\.[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,}){0,5}"#,
       options: .regularExpression
     ) {
-      hostname = String(byteString[range])
+      self.hostname = String(byteString[range])
     }
   }
 
@@ -114,28 +115,28 @@ public struct FilterFlow: Equatable, Codable, Sendable {
     for untrimmedLine in descLines {
       let line = untrimmedLine.trimmingCharacters(in: .whitespaces)
       if line.hasPrefix("sourceAppIdentifier") {
-        bundleId = line.components(separatedBy: " = ").last ?? ""
+        self.bundleId = line.components(separatedBy: " = ").last ?? ""
       } else if line.hasPrefix("protocol") {
-        ipProtocol = IpProtocol(line.components(separatedBy: " = ").last ?? "")
+        self.ipProtocol = IpProtocol(line.components(separatedBy: " = ").last ?? "")
       } else if line.hasPrefix("hostname") {
-        hostname = line.components(separatedBy: " = ").last ?? ""
+        self.hostname = line.components(separatedBy: " = ").last ?? ""
       } else if line.hasPrefix("remoteEndpoint") {
-        remoteEndpoint = line.components(separatedBy: " = ").last ?? line
-        if remoteEndpoint?.matchesRegex(#"^\d+\.\d+\.\d+\.\d+:(\d+)$"#) == true {
-          let parts = remoteEndpoint?.components(separatedBy: ":") ?? []
+        self.remoteEndpoint = line.components(separatedBy: " = ").last ?? line
+        if self.remoteEndpoint?.matchesRegex(#"^\d+\.\d+\.\d+\.\d+:(\d+)$"#) == true {
+          let parts = self.remoteEndpoint?.components(separatedBy: ":") ?? []
           if parts.count == 2 {
-            ipAddress = parts.first!
-            port = Port(parts.last!)
+            self.ipAddress = parts.first!
+            self.port = Port(parts.last!)
           }
         } else {
-          let parts = remoteEndpoint?.components(separatedBy: ".") ?? []
+          let parts = self.remoteEndpoint?.components(separatedBy: ".") ?? []
           if parts.count != 2 {
             return
           }
           let noPort = parts.first!
-          port = Port(parts.last!)
+          self.port = Port(parts.last!)
           if IPv6Address(noPort) != nil {
-            ipAddress = noPort
+            self.ipAddress = noPort
           }
         }
       }
@@ -144,9 +145,9 @@ public struct FilterFlow: Equatable, Codable, Sendable {
 
   public var shortDescription: String {
     [
-      ipProtocol?.description,
-      url ?? hostname ?? ipAddress ?? remoteEndpoint,
-      bundleId,
+      self.ipProtocol?.description,
+      self.url ?? self.hostname ?? self.ipAddress ?? self.remoteEndpoint,
+      self.bundleId,
     ]
     .compactMap { $0 }
     .joined(separator: " ")

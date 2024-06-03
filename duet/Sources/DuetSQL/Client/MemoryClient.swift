@@ -20,43 +20,43 @@ public struct MemoryClient<Store: MemoryStore>: Client {
     public var store: Store
 
     public func flush() {
-      store.flush()
+      self.store.flush()
     }
 
     @discardableResult
     public func set<M: Model>(_ model: M) -> M {
-      let keyPath = store.keyPath(to: M.self)
-      store[keyPath: keyPath][model.id] = model
+      let keyPath = self.store.keyPath(to: M.self)
+      self.store[keyPath: keyPath][model.id] = model
       return model
     }
 
     @discardableResult
     public func set<M: Model>(_ models: [M]) -> [M] {
-      let keyPath = store.keyPath(to: M.self)
+      let keyPath = self.store.keyPath(to: M.self)
       for model in models {
-        store[keyPath: keyPath][model.id] = model
+        self.store[keyPath: keyPath][model.id] = model
       }
       return models
     }
 
     @discardableResult
     public func delete<M: Model>(_ model: M) -> M {
-      let keyPath = store.keyPath(to: M.self)
-      store[keyPath: keyPath][model.id] = nil
+      let keyPath = self.store.keyPath(to: M.self)
+      self.store[keyPath: keyPath][model.id] = nil
       return model
     }
 
     @discardableResult
     public func delete<M: Model>(_ models: [M]) -> [M] {
-      let keyPath = store.keyPath(to: M.self)
+      let keyPath = self.store.keyPath(to: M.self)
       for model in models {
-        store[keyPath: keyPath][model.id] = nil
+        self.store[keyPath: keyPath][model.id] = nil
       }
       return models
     }
 
     func models<M: Model>(of: M.Type) throws -> [M.IdValue: M] {
-      store[keyPath: store.keyPath(to: M.self)]
+      self.store[keyPath: self.store.keyPath(to: M.self)]
     }
 
     public init(store: Store) {
@@ -71,7 +71,7 @@ public struct MemoryClient<Store: MemoryStore>: Client {
   }
 
   public func flush() async {
-    await store.flush()
+    await self.store.flush()
   }
 
   public func select<M: Model>(
@@ -101,13 +101,13 @@ public struct MemoryClient<Store: MemoryStore>: Client {
 
   public func create<M: Model>(_ insert: [M]) async throws -> [M] {
     for model in insert {
-      await store.set(model)
+      await self.store.set(model)
     }
     return insert
   }
 
   public func update<M: Model>(_ model: M) async throws -> M {
-    await store.set(model)
+    await self.store.set(model)
   }
 
   public func forceDelete<M: Model>(
@@ -124,7 +124,7 @@ public struct MemoryClient<Store: MemoryStore>: Client {
       limit: limit,
       withSoftDeleted: true
     )
-    return await store.delete(selected)
+    return await self.store.delete(selected)
   }
 
   public func delete<M: Model>(
@@ -143,7 +143,7 @@ public struct MemoryClient<Store: MemoryStore>: Client {
       }
       return selected
     }
-    return await store.delete(selected)
+    return await self.store.delete(selected)
   }
 
   public func customQuery<T: CustomQueryable>(
@@ -158,6 +158,6 @@ public struct MemoryClient<Store: MemoryStore>: Client {
     where constraint: SQL.WhereConstraint<M> = .always,
     withSoftDeleted: Bool = false
   ) async throws -> Int {
-    try await select(M.self, where: constraint, withSoftDeleted: withSoftDeleted).count
+    try await self.select(M.self, where: constraint, withSoftDeleted: withSoftDeleted).count
   }
 }

@@ -21,16 +21,16 @@ public struct AppDescriptor: Equatable, Codable, Sendable {
 
 extension AppDescriptor: CustomStringConvertible {
   public var shortDescription: String {
-    var desc = displayName ?? slug ?? bundleId
-    if !categories.isEmpty {
-      desc += " \(categories.sorted().map { "category:\($0)" }.joined(separator: " "))"
+    var desc = self.displayName ?? self.slug ?? self.bundleId
+    if !self.categories.isEmpty {
+      desc += " \(self.categories.sorted().map { "category:\($0)" }.joined(separator: " "))"
     }
     return desc
   }
 
   public var description: String {
-    if slug == nil, displayName == nil, categories.isEmpty {
-      return bundleId
+    if self.slug == nil, displayName == nil, self.categories.isEmpty {
+      return self.bundleId
     }
 
     var desc = ""
@@ -40,9 +40,9 @@ extension AppDescriptor: CustomStringConvertible {
       suffix = ")"
     }
 
-    var subParts: [String?] = [slug != nil ? "app:\(slug!)" : nil]
-    subParts += categories.sorted().map { "category:\($0)" }
-    subParts.append(bundleId)
+    var subParts: [String?] = [slug != nil ? "app:\(self.slug!)" : nil]
+    subParts += self.categories.sorted().map { "category:\($0)" }
+    subParts.append(self.bundleId)
 
     return desc + subParts.compactMap { $0 }.joined(separator: ", ") + suffix
   }

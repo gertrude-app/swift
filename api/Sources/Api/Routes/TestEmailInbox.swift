@@ -38,11 +38,11 @@ private struct TestEmailResponse: Decodable {
     var html: String?
 
     var secondsAgo: Int {
-      Int(Date().timeIntervalSince1970 - dateObj.timeIntervalSince1970)
+      Int(Date().timeIntervalSince1970 - self.dateObj.timeIntervalSince1970)
     }
 
     var timeAgo: String {
-      let seconds = secondsAgo
+      let seconds = self.secondsAgo
       if seconds < 60 {
         return "\(seconds) seconds ago"
       } else if seconds < 120 {
@@ -53,7 +53,7 @@ private struct TestEmailResponse: Decodable {
     }
 
     var dateObj: Date {
-      Date(timeIntervalSince1970: Double(date / 1000))
+      Date(timeIntervalSince1970: Double(self.date / 1000))
     }
 
     var rendered: String {
@@ -61,15 +61,15 @@ private struct TestEmailResponse: Decodable {
       <div class="wrap">
         <ul>
           <li>
-            Date: <code>\(dateObj.isoString)</code>&nbsp;
-            <span class='received'>\(timeAgo)</span>
+            Date: <code>\(self.dateObj.isoString)</code>&nbsp;
+            <span class='received'>\(self.timeAgo)</span>
           </li>
-          <li>To: <code>\(envelopeTo)</code></li>
-          <li>From: <code>\(envelopeFrom)</code></li>
-          <li>Subject: <code>\(subject)</code></li>
+          <li>To: <code>\(self.envelopeTo)</code></li>
+          <li>From: <code>\(self.envelopeFrom)</code></li>
+          <li>Subject: <code>\(self.subject)</code></li>
         </ul>
-        <pre>\(text)</pre>
-        \(html.map { "<div class='html'>\($0)</div>" } ?? "")
+        <pre>\(self.text)</pre>
+        \(self.html.map { "<div class='html'>\($0)</div>" } ?? "")
       </div>
       """
     }
@@ -78,12 +78,12 @@ private struct TestEmailResponse: Decodable {
   var emails: [Email]
 
   var recent: [Email] {
-    emails.filter { $0.secondsAgo < (60 * 5) }
+    self.emails.filter { $0.secondsAgo < (60 * 5) }
   }
 
   var html: String {
-    guard !recent.isEmpty else { return "<h1>No emails received in last 5 minutes</h1>" }
-    return css + recent.map(\.rendered).joined(separator: "\n")
+    guard !self.recent.isEmpty else { return "<h1>No emails received in last 5 minutes</h1>" }
+    return self.css + self.recent.map(\.rendered).joined(separator: "\n")
   }
 
   var css: String {

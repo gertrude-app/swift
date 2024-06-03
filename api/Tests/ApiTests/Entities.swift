@@ -7,11 +7,11 @@ struct UserEntities {
   let admin: AdminEntities
 
   var context: UserContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", user: model, token: token)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
-    model[keyPath: keyPath]
+    self.model[keyPath: keyPath]
   }
 }
 
@@ -24,11 +24,11 @@ struct UserWithDeviceEntities {
   let admin: AdminEntities
 
   var context: UserContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", user: model, token: token)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
-    model[keyPath: keyPath]
+    self.model[keyPath: keyPath]
   }
 }
 
@@ -38,11 +38,11 @@ struct AdminEntities {
   let token: AdminToken
 
   var context: AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: model)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
-    model[keyPath: keyPath]
+    self.model[keyPath: keyPath]
   }
 }
 
@@ -54,11 +54,11 @@ struct AdminWithKeychainEntities {
   let key: Key
 
   var context: AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: model)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
-    model[keyPath: keyPath]
+    self.model[keyPath: keyPath]
   }
 }
 
@@ -71,11 +71,11 @@ struct AdminWithOnboardedChildEntities {
   let adminDevice: Device
 
   var context: AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: model)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
-    model[keyPath: keyPath]
+    self.model[keyPath: keyPath]
   }
 }
 
@@ -107,13 +107,13 @@ extension AdminEntities {
     config: (inout Keychain, inout Key) -> Void = { _, _ in }
   ) async throws -> AdminWithKeychainEntities {
     var keychain = Keychain.random
-    keychain.authorId = model.id
+    keychain.authorId = self.model.id
     var key = Key.random
     key.keychainId = keychain.id
     config(&keychain, &key)
     try await Current.db.create(keychain)
     try await Current.db.create(key)
-    return .init(model: model, token: token, keychain: keychain, key: key)
+    return .init(model: self.model, token: self.token, keychain: keychain, key: key)
   }
 
   func withOnboardedChild(
@@ -130,8 +130,8 @@ extension AdminEntities {
     try await Current.db.create(adminDevice)
     try await Current.db.create(userDevice)
     return .init(
-      model: model,
-      token: token,
+      model: self.model,
+      token: self.token,
       child: child,
       userDevice: userDevice,
       adminDevice: adminDevice
@@ -153,8 +153,14 @@ extension UserEntities {
       $0.userId = model.id
       $0.deviceId = device.id
     })
-    token.userDeviceId = userDevice.id
-    try await Current.db.update(token)
-    return .init(model: model, adminDevice: device, device: userDevice, token: token, admin: admin)
+    self.token.userDeviceId = userDevice.id
+    try await Current.db.update(self.token)
+    return .init(
+      model: self.model,
+      adminDevice: device,
+      device: userDevice,
+      token: self.token,
+      admin: self.admin
+    )
   }
 }

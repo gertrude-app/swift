@@ -44,7 +44,7 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
   func format() throws {
     let proc = Process()
     proc.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/swiftformat")
-    proc.arguments = generators.compactMap { generator in
+    proc.arguments = self.generators.compactMap { generator in
       (generator as? EnumCodableGen.EnumsGenerator)?.path
     }
     try proc.run()

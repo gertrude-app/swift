@@ -59,14 +59,14 @@ extension Thing {
   var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .string: .string(string),
-      .version: .varchar(version),
-      .int: .int(int),
-      .bool: .bool(bool),
-      .optionalInt: .int(optionalInt),
-      .optionalString: .string(optionalString),
-      .customEnum: .enum(customEnum),
-      .optionalCustomEnum: .enum(optionalCustomEnum),
+      .string: .string(self.string),
+      .version: .varchar(self.version),
+      .int: .int(self.int),
+      .bool: .bool(self.bool),
+      .optionalInt: .int(self.optionalInt),
+      .optionalString: .string(self.optionalString),
+      .customEnum: .enum(self.customEnum),
+      .optionalCustomEnum: .enum(self.optionalCustomEnum),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -99,27 +99,27 @@ extension Thing: Model {
     case .id:
       return .id(self)
     case .string:
-      return .string(string)
+      return .string(self.string)
     case .version:
-      return .varchar(version)
+      return .varchar(self.version)
     case .int:
-      return .int(int)
+      return .int(self.int)
     case .bool:
-      return .bool(bool)
+      return .bool(self.bool)
     case .optionalInt:
-      return .int(optionalInt)
+      return .int(self.optionalInt)
     case .optionalString:
-      return .string(optionalString)
+      return .string(self.optionalString)
     case .customEnum:
-      return .enum(customEnum)
+      return .enum(self.customEnum)
     case .optionalCustomEnum:
-      return .enum(optionalCustomEnum)
+      return .enum(self.optionalCustomEnum)
     case .createdAt:
-      return .date(createdAt)
+      return .date(self.createdAt)
     case .updatedAt:
-      return .date(updatedAt)
+      return .date(self.updatedAt)
     case .deletedAt:
-      return .date(deletedAt)
+      return .date(self.deletedAt)
     }
   }
 }

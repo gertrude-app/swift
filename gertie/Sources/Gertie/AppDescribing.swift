@@ -17,9 +17,9 @@ public extension AppDescribing {
 
     // if we can't find a slug for the bundle id, but we have a token, look for a root app
     if slug == nil, let token = auditToken {
-      let (rootBundleId, rootDisplayName) = rootApp(fromAuditToken: token)
+      let (rootBundleId, rootDisplayName) = self.rootApp(fromAuditToken: token)
       if let rootBundleId = rootBundleId, rootBundleId != bundleId {
-        var rootApp = appDescriptor(for: rootBundleId)
+        var rootApp = self.appDescriptor(for: rootBundleId)
 
         // if we happened also to find a display name not known by the
         // AppIdManifest, override cache from the above call to self.appDescriptor()

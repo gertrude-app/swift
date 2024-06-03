@@ -15,3 +15,4 @@
 --wraparguments before-first
 --maxwidth 100
 --enable redundantReturn
+--self insert

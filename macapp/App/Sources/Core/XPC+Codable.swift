@@ -27,7 +27,7 @@ public enum XPC {
   public static func errorData(_ error: Error) -> Data {
     do {
       if let xpcError = error as? XPCErr {
-        return try encode(xpcError)
+        return try self.encode(xpcError)
       }
     } catch {}
     return Data(String(describing: error).utf8)
