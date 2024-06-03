@@ -51,7 +51,7 @@ public struct FilterXPCClient: Sendable {
   /// next xpc breaking change, this will become a var closure
   /// replacing the `requestExemptUserIds` closure property
   public func requestUserTypes() async -> Result<FilterUserTypes, XPCErr> {
-    switch await requestExemptUserIds() {
+    switch await self.requestExemptUserIds() {
     case .success(let transport):
       return .success(.init(transport: transport))
     case .failure(let err):
@@ -60,17 +60,17 @@ public struct FilterXPCClient: Sendable {
   }
 
   public func connected(attemptRepair: Bool = false) async -> Bool {
-    if await checkConnectionHealth().isSuccess {
+    if await self.checkConnectionHealth().isSuccess {
       return true
     } else if attemptRepair {
-      return await establishConnection().isSuccess
+      return await self.establishConnection().isSuccess
     } else {
       return false
     }
   }
 
   public func notConnected() async -> Bool {
-    await connected() == false
+    await self.connected() == false
   }
 }
 

@@ -13,6 +13,8 @@ enum ApplicationFeature {
   typealias Action = ApplicationAction
 
   struct RootReducer {
+    typealias State = AppReducer.State
+    typealias Action = AppReducer.Action
     @Dependency(\.app) var app
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.device) var device

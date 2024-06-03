@@ -31,7 +31,7 @@ final class Key: Codable {
 
 extension Key {
   func keychain() async throws -> Keychain {
-    try await keychain.useLoaded(or: {
+    try await self.keychain.useLoaded(or: {
       try await Current.db.find(keychainId)
     })
   }

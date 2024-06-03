@@ -14,14 +14,14 @@ class FilterMigratorTests: XCTestCase {
   }
 
   func testNoStoredDataAtAllReturnsNil() async {
-    var migrator = testMigrator
+    var migrator = self.testMigrator
     migrator.userDefaults.getString = { _ in nil }
     let result = await migrator.migrate()
     expect(result).toBeNil()
   }
 
   func testCurrentStoredDataReturned() async {
-    var migrator = testMigrator
+    var migrator = self.testMigrator
     let stateJson = try! JSON.encode(Persistent.State.mock)
     let getString = spySync(on: String.self, returning: stateJson)
     migrator.userDefaults.getString = getString.fn
@@ -31,7 +31,7 @@ class FilterMigratorTests: XCTestCase {
   }
 
   func testMigratesV1Data() async {
-    var migrator = testMigrator
+    var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
     migrator.userDefaults.setString = { key, value in

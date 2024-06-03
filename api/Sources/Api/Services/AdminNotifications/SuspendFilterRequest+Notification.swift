@@ -6,7 +6,7 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
       "[Gertrude App] New suspend filter request from \(userName)".withEmailSubjectDisambiguator
     let html = """
     User \(userName) submitted a new <b>suspend filter request</b>.
-     \(Email.link(url: url, text: "Click here")) to view the details and approve or deny.
+     \(Email.link(url: self.url, text: "Click here")) to view the details and approve or deny.
     """
     try await Current.sendGrid.send(Email.fromApp(to: address, subject: subject, html: html))
   }
@@ -14,7 +14,7 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
   func sendSlack(channel: String, token: String) async throws {
     let text = """
     New *suspend filter request* from user `\(userName)`.\
-     \(Slack.link(to: url, withText: "Click here")) to view the details and approve or deny.
+     \(Slack.link(to: self.url, withText: "Click here")) to view the details and approve or deny.
     """
     try await Current.slack.send(Slack(text: text, channel: channel, token: token))
   }

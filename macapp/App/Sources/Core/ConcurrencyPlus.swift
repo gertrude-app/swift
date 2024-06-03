@@ -35,9 +35,9 @@ public extension NSXPCConnection {
 public extension CheckedContinuation where T == Void {
   func resume(with error: E?) {
     if let error {
-      resume(throwing: error)
+      self.resume(throwing: error)
     } else {
-      resume()
+      self.resume()
     }
   }
 }
@@ -46,11 +46,11 @@ public extension CheckedContinuation where E == Error {
   func resume(with value: T?, error: Error?) {
     switch (value, error) {
     case (let value?, nil):
-      resume(returning: value)
+      self.resume(returning: value)
     case (_, let error?):
-      resume(throwing: XPCContinuationErr.replyError(error))
+      self.resume(throwing: XPCContinuationErr.replyError(error))
     case (nil, nil):
-      resume(throwing: XPCContinuationErr.missingBothValueAndError)
+      self.resume(throwing: XPCContinuationErr.missingBothValueAndError)
     }
   }
 
@@ -77,12 +77,12 @@ public extension CheckedContinuation where T: Decodable, E == Error {
   func resume(with data: Data?, error: Error?) {
     switch (data, error) {
     case (_, let error?):
-      resume(throwing: XPCContinuationErr.replyError(error))
+      self.resume(throwing: XPCContinuationErr.replyError(error))
     case (nil, nil):
-      resume(throwing: XPCContinuationErr.missingBothValueAndError)
+      self.resume(throwing: XPCContinuationErr.missingBothValueAndError)
     case (let encodedValue?, nil):
       let result = Swift.Result(catching: { try JSONDecoder().decode(T.self, from: encodedValue) })
-      resume(with: result)
+      self.resume(with: result)
     }
   }
 

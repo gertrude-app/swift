@@ -22,15 +22,15 @@ public extension Client {
   }
 
   func customQuery<T: CustomQueryable>(_ Custom: T.Type) async throws -> [T] {
-    try await customQuery(Custom, withBindings: nil)
+    try await self.customQuery(Custom, withBindings: nil)
   }
 
   func find<M: Model>(_: M.Type, byId id: UUID, withSoftDeleted: Bool = false) async throws -> M {
-    try await query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
+    try await self.query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
   }
 
   func find<M: Model>(_ id: Tagged<M, UUID>, withSoftDeleted: Bool = false) async throws -> M {
-    try await query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
+    try await self.query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
   }
 
   func find<M: Model>(
@@ -38,7 +38,7 @@ public extension Client {
     byId id: M.IdValue,
     withSoftDeleted: Bool = false
   ) async throws -> M {
-    try await query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
+    try await self.query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
   }
 
   @discardableResult
@@ -53,15 +53,15 @@ public extension Client {
     byId id: UUIDStringable,
     force: Bool = false
   ) async throws -> M {
-    try await query(M.self).where(M.column("id") == id).deleteOne(force: force)
+    try await self.query(M.self).where(M.column("id") == id).deleteOne(force: force)
   }
 
   @discardableResult
   func delete<M: Model>(_ id: Tagged<M, UUID>, force: Bool = false) async throws -> M {
-    try await query(M.self).where(M.column("id") == id).deleteOne(force: force)
+    try await self.query(M.self).where(M.column("id") == id).deleteOne(force: force)
   }
 
   func deleteAll<M: Model>(_: M.Type, force: Bool = false) async throws {
-    _ = try await query(M.self).delete(force: force)
+    _ = try await self.query(M.self).delete(force: force)
   }
 }

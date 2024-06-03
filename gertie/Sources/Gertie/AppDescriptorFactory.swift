@@ -9,10 +9,10 @@ public final class AppDescriptorFactory: AppDescribing {
   }
 
   public func appCache(get: String) -> AppDescriptor? {
-    cache[get]
+    self.cache[get]
   }
 
   public func appCache(insert descriptor: AppDescriptor, for bundleId: String) {
-    cache[bundleId] = descriptor
+    self.cache[bundleId] = descriptor
   }
 }

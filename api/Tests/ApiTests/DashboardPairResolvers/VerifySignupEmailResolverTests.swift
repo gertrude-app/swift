@@ -13,7 +13,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
     let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
     let token = await Current.ephemeral.createAdminIdToken(admin.id)
 
-    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
+    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
     let retrieved = try await Current.db.find(admin.id)
     let method = try await Current.db.query(AdminVerifiedNotificationMethod.self)
@@ -33,7 +33,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
       expiration: Current.date().advanced(by: .days(-1))
     )
 
-    let result = await VerifySignupEmail.result(with: .init(token: token), in: context)
+    let result = await VerifySignupEmail.result(with: .init(token: token), in: self.context)
 
     expect(result).toBeError(containing: "expired, but we sent a new verification email")
     expect(sent.postmarkEmails).toHaveCount(1)
@@ -49,7 +49,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
       expiration: Current.date().advanced(by: .days(-1))
     )
 
-    let result = await VerifySignupEmail.result(with: .init(token: token), in: context)
+    let result = await VerifySignupEmail.result(with: .init(token: token), in: self.context)
 
     expect(result).toBeError(containing: "already verified")
   }
@@ -58,7 +58,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
     let admin = try await Entities.admin { $0.subscriptionStatus = .trialing } // <-- not pending
     let token = await Current.ephemeral.createAdminIdToken(admin.id)
 
-    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: context)
+    let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
     let retrieved = try await Current.db.find(admin.id)
 
@@ -74,7 +74,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
 
     let result = await Login.result(
       with: .init(email: admin.email.rawValue, password: "lol-lol-lol"),
-      in: context
+      in: self.context
     )
 
     expect(result).toBeError(containing: "until your email is verified")

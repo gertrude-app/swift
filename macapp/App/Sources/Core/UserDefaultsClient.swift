@@ -21,11 +21,11 @@ public struct UserDefaultsClient: Sendable {
   }
 
   public func loadJson<T: Decodable>(at key: String, decoding type: T.Type) throws -> T? {
-    try getString(key).flatMap { try JSON.decode($0, as: T.self) }
+    try self.getString(key).flatMap { try JSON.decode($0, as: T.self) }
   }
 
   public func saveJson<T: Encodable>(from value: T, at key: String) throws {
-    setString(try JSON.encode(value), key)
+    self.setString(try JSON.encode(value), key)
   }
 }
 

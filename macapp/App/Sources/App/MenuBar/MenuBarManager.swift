@@ -19,82 +19,82 @@ import WebKit
     var dropdownOpen: Bool
 
     init(_ state: AppReducer.State) {
-      webview = state.menuBarView
-      dropdownOpen = state.menuBar.dropdownOpen
+      self.webview = state.menuBarView
+      self.dropdownOpen = state.menuBar.dropdownOpen
     }
   }
 
   init(store: Store<AppReducer.State, MenuBarFeature.Action>) {
     self.store = store
-    viewStore = ViewStore(store, observe: ObservedState.init)
+    self.viewStore = ViewStore(store, observe: ObservedState.init)
 
-    popover = NSPopover()
-    popover.animates = false
-    popover.behavior = .applicationDefined
+    self.popover = NSPopover()
+    self.popover.animates = false
+    self.popover.behavior = .applicationDefined
 
-    vc = WebViewController<MenuBarFeature.State.View, MenuBarFeature.Action>()
-    popover.contentViewController = vc
-    popover.contentSize = NSSize(width: 400, height: 300)
+    self.vc = WebViewController<MenuBarFeature.State.View, MenuBarFeature.Action>()
+    self.popover.contentViewController = self.vc
+    self.popover.contentSize = NSSize(width: 400, height: 300)
 
-    statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    statusItem.button?.image = NSImage(named: "MenuBarIcon.v2")
-    statusItem.button?.image?.isTemplate = true // auto-coloring/inverting of image
-    statusItem.button?.action = #selector(iconClicked(_:))
-    statusItem.button?.target = self
+    self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    self.statusItem.button?.image = NSImage(named: "MenuBarIcon.v2")
+    self.statusItem.button?.image?.isTemplate = true // auto-coloring/inverting of image
+    self.statusItem.button?.action = #selector(self.iconClicked(_:))
+    self.statusItem.button?.target = self
 
-    vc.send = { [weak self] action in
+    self.vc.send = { [weak self] action in
       self?.viewStore.send(action)
     }
 
     // send new state when store gets a change
-    viewStore.publisher
-      .receive(on: mainQueue)
+    self.viewStore.publisher
+      .receive(on: self.mainQueue)
       .sink { [weak self] _ in
         guard let self = self, self.vc.isReady.value else { return }
         self.vc.updateState(self.viewStore.state.webview)
-      }.store(in: &cancellables)
+      }.store(in: &self.cancellables)
 
     // respond to color scheme changes
-    app.colorSchemeChanges()
-      .receive(on: mainQueue)
+    self.app.colorSchemeChanges()
+      .receive(on: self.mainQueue)
       .sink { [weak self] colorScheme in
         guard let self = self, self.vc.isReady.value else { return }
         self.vc.updateColorScheme(colorScheme)
-      }.store(in: &cancellables)
+      }.store(in: &self.cancellables)
 
     // send the initial state when the webview is ready
-    vc.isReady
-      .receive(on: mainQueue)
+    self.vc.isReady
+      .receive(on: self.mainQueue)
       .prefix(2)
       .removeDuplicates()
       .sink { [weak self] ready in
         guard let self = self, ready else { return }
         self.vc.updateState(self.viewStore.state.webview)
         self.vc.updateColorScheme(self.app.colorScheme())
-      }.store(in: &cancellables)
+      }.store(in: &self.cancellables)
 
-    vc.loadWebView(screen: "MenuBar")
+    self.vc.loadWebView(screen: "MenuBar")
 
-    viewStore.publisher.dropdownOpen
-      .receive(on: mainQueue)
+    self.viewStore.publisher.dropdownOpen
+      .receive(on: self.mainQueue)
       .dropFirst()
       .sink { [weak self] isOpen in
         guard let self = self else { return }
         self.setPopoverVisibility(to: isOpen)
-      }.store(in: &cancellables)
+      }.store(in: &self.cancellables)
   }
 
   @objc func iconClicked(_ sender: Any?) {
-    viewStore.send(.menuBarIconClicked)
+    self.viewStore.send(.menuBarIconClicked)
   }
 
   func setPopoverVisibility(to visible: Bool) {
     if !visible {
-      popover.performClose(nil)
+      self.popover.performClose(nil)
       return
     } else {
       guard let button = statusItem.button else { return }
-      popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.maxY)
+      self.popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.maxY)
 
       // This is probably not necessary - added to ensure Gertrude is front application
       // when menu bar icon is clicked, so that webview hover/focus states always work.
@@ -102,7 +102,7 @@ import WebKit
       // take care to activate the app to ensure focus.
       NSApp.activate(ignoringOtherApps: true)
 
-      popover.contentViewController?.view.window?.becomeKey()
+      self.popover.contentViewController?.view.window?.becomeKey()
     }
   }
 }

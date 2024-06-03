@@ -27,13 +27,13 @@ struct InterestingEventsTable: GertieMigration {
       Column(InterestingEvent.M8.detail, .text, .nullable)
       Column(.createdAt, .timestampWithTimezone)
     }
-    try await sql.add(constraint: deviceIdFk)
-    try await sql.add(constraint: adminIdFk)
+    try await sql.add(constraint: self.deviceIdFk)
+    try await sql.add(constraint: self.adminIdFk)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: deviceIdFk)
-    try await sql.drop(constraint: adminIdFk)
+    try await sql.drop(constraint: self.deviceIdFk)
+    try await sql.drop(constraint: self.adminIdFk)
     try await sql.drop(table: InterestingEvent.M8.self)
   }
 }

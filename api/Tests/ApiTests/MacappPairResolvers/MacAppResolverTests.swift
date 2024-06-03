@@ -12,7 +12,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     let output = try await CreateSuspendFilterRequest.resolve(
       with: .init(duration: 1111, comment: "test"),
-      in: context(user)
+      in: self.context(user)
     )
 
     expect(output).toEqual(.success)
@@ -74,7 +74,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     _ = try await CreateSuspendFilterRequest.resolve(
       with: .init(duration: 1111, comment: "test"),
-      in: context(user)
+      in: self.context(user)
     )
 
     expect(sent.slacks).toHaveCount(0)
@@ -92,7 +92,7 @@ final class MacAppResolverTests: ApiTestCase {
         filterSuspended: false,
         time: .epoch
       )],
-      in: context(user)
+      in: self.context(user)
     )
 
     expect(output).toEqual(.success)
@@ -113,7 +113,7 @@ final class MacAppResolverTests: ApiTestCase {
         filterSuspended: false,
         time: .epoch
       )],
-      in: context(user)
+      in: self.context(user)
     )
 
     expect(output).toEqual(.success)
@@ -132,7 +132,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     let output = try await CreateUnlockRequests_v2.resolve(
       with: .init(blockedRequests: [blocked], comment: "please dad!"),
-      in: context(user)
+      in: self.context(user)
     )
 
     expect(output).toEqual(.success)
@@ -163,7 +163,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     let output = try await CreateSignedScreenshotUpload.resolve(
       with: .init(width: 111, height: 222),
-      in: context(user)
+      in: self.context(user)
     )
 
     expect(output.uploadUrl.absoluteString).toEqual("from-aws.com")
@@ -180,7 +180,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     _ = try await CreateSignedScreenshotUpload.resolve(
       with: .init(width: 1116, height: 222, createdAt: .epoch),
-      in: context(user)
+      in: self.context(user)
     )
 
     let screenshot = try await Current.db.find(Screenshot.Id(uuid))

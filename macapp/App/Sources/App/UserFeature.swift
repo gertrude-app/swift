@@ -13,6 +13,8 @@ struct UserFeature: Feature {
   }
 
   struct RootReducer {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.api) var api
   }
 }

@@ -33,23 +33,23 @@ typealias UserData = GetUserData.Output
   )
 
   public init() {
-    menuBarManager = MenuBarManager(store: store.scope(
+    self.menuBarManager = MenuBarManager(store: self.store.scope(
       state: { $0 },
       action: AppReducer.Action.menuBar
     ))
-    adminWindow = AdminWindow(store: store.scope(
+    self.adminWindow = AdminWindow(store: self.store.scope(
       state: { $0 },
       action: AppReducer.Action.adminWindow
     ))
-    blockedRequestsWindow = BlockedRequestsWindow(store: store.scope(
+    self.blockedRequestsWindow = BlockedRequestsWindow(store: self.store.scope(
       state: { $0 },
       action: AppReducer.Action.blockedRequests
     ))
-    requestSuspensionWindow = RequestSuspensionWindow(store: store.scope(
+    self.requestSuspensionWindow = RequestSuspensionWindow(store: self.store.scope(
       state: { $0 },
       action: AppReducer.Action.requestSuspension
     ))
-    onboardingWindow = OnboardingWindow(store: store.scope(
+    self.onboardingWindow = OnboardingWindow(store: self.store.scope(
       state: { $0 },
       action: AppReducer.Action.onboarding
     ))
@@ -72,13 +72,13 @@ typealias UserData = GetUserData.Output
   public func send(_ action: ApplicationAction) {
     switch action {
     case .didFinishLaunching:
-      store.send(.application(.didFinishLaunching))
+      self.store.send(.application(.didFinishLaunching))
     case .willSleep:
-      store.send(.application(.willSleep))
+      self.store.send(.application(.willSleep))
     case .didWake:
-      store.send(.application(.didWake))
+      self.store.send(.application(.didWake))
     case .willTerminate:
-      store.send(.application(.willTerminate))
+      self.store.send(.application(.willTerminate))
     }
   }
 }

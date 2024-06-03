@@ -66,7 +66,7 @@ extension AppviewStore: CodeGenerator {
     let file = String(data: try Data(contentsOf: url), encoding: .utf8)!
     let lines = file.components(separatedBy: "\n")
     guard lines.contains("// begin codegen"), lines.contains("// end codegen") else {
-      fatalError("codegen markers not found in \(path)")
+      fatalError("codegen markers not found in \(self.path)")
     }
 
     var updated: [String] = []
@@ -75,7 +75,7 @@ extension AppviewStore: CodeGenerator {
       if line == "// begin codegen" {
         inCodegen = true
         updated.append(line)
-        updated.append(try decls.joined(separator: "\n\n"))
+        updated.append(try self.decls.joined(separator: "\n\n"))
       } else if line.contains("// end codegen") {
         inCodegen = false
         updated.append(line)

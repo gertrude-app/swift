@@ -64,7 +64,7 @@ enum AdminBetsy {
       UserKeychain(userId: sally.id, keychainId: Reset.Ids.htcKeychain),
     ])
 
-    try await createUserActivity()
+    try await self.createUserActivity()
   }
 
   private static func createUsers(_ betsy: Admin) async throws -> (User, User, User) {
@@ -92,7 +92,7 @@ enum AdminBetsy {
       numericId: 502
     ))
 
-    try await createTransientRequests(userDevice)
+    try await self.createTransientRequests(userDevice)
 
     let imac = try await Current.db.create(Device(
       adminId: betsy.id,

@@ -2,12 +2,12 @@ import Foundation
 
 public extension String {
   var snakeCased: String {
-    processCamelCaseRegex(pattern: acronymPattern)?
+    self.processCamelCaseRegex(pattern: acronymPattern)?
       .processCamelCaseRegex(pattern: normalPattern)?.lowercased() ?? lowercased()
   }
 
   var shoutyCased: String {
-    snakeCased.uppercased()
+    self.snakeCased.uppercased()
   }
 
   func padLeft(toLength length: Int, withPad pad: Character) -> String {
@@ -26,7 +26,7 @@ public extension String {
   }
 
   func regexRemove<Pattern: StringProtocol>(_ pattern: Pattern) -> String {
-    regexReplace(pattern, "")
+    self.regexReplace(pattern, "")
   }
 
   func matchesRegex<Pattern: StringProtocol>(_ pattern: Pattern) -> Bool {

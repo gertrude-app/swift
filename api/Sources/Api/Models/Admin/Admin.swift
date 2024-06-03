@@ -18,7 +18,7 @@ final class Admin: Codable {
   var users = Children<User>.notLoaded
   var notifications = Children<AdminNotification>.notLoaded
   var verifiedNotificationMethods = Children<AdminVerifiedNotificationMethod>.notLoaded
-  var accountStatus: AdminAccountStatus { subscriptionStatus.accountStatus }
+  var accountStatus: AdminAccountStatus { self.subscriptionStatus.accountStatus }
 
   init(
     id: Id = .init(),
@@ -43,7 +43,7 @@ final class Admin: Codable {
 
 extension Admin {
   func keychains() async throws -> [Keychain] {
-    try await keychains.useLoaded(or: {
+    try await self.keychains.useLoaded(or: {
       try await Current.db.query(Keychain.self)
         .where(.authorId == id)
         .all()
@@ -52,13 +52,13 @@ extension Admin {
 
   func keychain(_ keychainId: Keychain.Id) async throws -> Keychain {
     try await Current.db.query(Keychain.self)
-      .where(.authorId == id)
+      .where(.authorId == self.id)
       .where(.id == keychainId)
       .first()
   }
 
   func users() async throws -> [User] {
-    try await users.useLoaded(or: {
+    try await self.users.useLoaded(or: {
       try await Current.db.query(User.self)
         .where(.adminId == id)
         .all()
@@ -66,7 +66,7 @@ extension Admin {
   }
 
   func devices() async throws -> [Device] {
-    try await devices.useLoaded(or: {
+    try await self.devices.useLoaded(or: {
       try await Current.db.query(Device.self)
         .where(.adminId == id)
         .all()
@@ -74,7 +74,7 @@ extension Admin {
   }
 
   func notifications() async throws -> [AdminNotification] {
-    try await notifications.useLoaded(or: {
+    try await self.notifications.useLoaded(or: {
       try await Current.db.query(AdminNotification.self)
         .where(.adminId == id)
         .all()
@@ -82,7 +82,7 @@ extension Admin {
   }
 
   func verifiedNotificationMethods() async throws -> [AdminVerifiedNotificationMethod] {
-    try await verifiedNotificationMethods.useLoaded(or: {
+    try await self.verifiedNotificationMethods.useLoaded(or: {
       try await Current.db.query(AdminVerifiedNotificationMethod.self)
         .where(.adminId == id)
         .all()

@@ -161,14 +161,14 @@ public struct ModelDecodingError: Error, LocalizedError, CustomStringConvertible
   }
 
   public var errorDescription: String? {
-    description
+    self.description
   }
 
   public var description: String {
-    "ModelDecodingError (Invalid JSON): \(message)"
+    "ModelDecodingError (Invalid JSON): \(self.message)"
   }
 
   public var debugDescription: String {
-    "ModelDecodingError(message: \"\(message)\")"
+    "ModelDecodingError(message: \"\(self.message)\")"
   }
 }

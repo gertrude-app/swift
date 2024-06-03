@@ -4,7 +4,8 @@ struct AdminNotifier {
 
 extension AdminNotifier {
   static var live: Self {
-    .init(notify: notify(_:_:))
+    // swiftformat:disable redundantSelf
+    .init(notify: notify(adminId:event:))
   }
 
   static var mock: Self {
@@ -12,7 +13,7 @@ extension AdminNotifier {
   }
 }
 
-private func notify(_ adminId: Admin.Id, _ event: AdminEvent) async {
+private func notify(adminId: Admin.Id, event: AdminEvent) async {
   do {
     let admin = try await Current.db.find(adminId)
     let notifications = try await admin.notifications()

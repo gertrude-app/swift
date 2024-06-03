@@ -17,29 +17,29 @@ public final class Move<NonSendable>: @unchecked Sendable {
   }
 
   public var hasBeenTaken: Bool {
-    lock.lock()
+    self.lock.lock()
     defer { lock.unlock() }
-    return value == nil
+    return self.value == nil
   }
 
   public func take(replacing newValue: NonSendable) -> NonSendable {
-    lock.lock()
+    self.lock.lock()
     defer { lock.unlock() }
     guard let give = value else {
       preconditionFailure("Ownership has already been transferred")
     }
-    value = newValue
+    self.value = newValue
     return give
   }
 
   /// Safely assume ownership of the wrapped value.
   public func consume() -> NonSendable {
-    lock.lock()
+    self.lock.lock()
     defer { lock.unlock() }
     guard let give = value else {
       preconditionFailure("Ownership has already been transferred")
     }
-    value = nil
+    self.value = nil
     return give
   }
 }

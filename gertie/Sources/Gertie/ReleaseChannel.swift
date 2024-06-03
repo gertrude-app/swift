@@ -17,6 +17,6 @@ public extension ReleaseChannel {
   }
 
   func isAtLeastAsStable(as other: ReleaseChannel) -> Bool {
-    self == other || isMoreStable(than: other)
+    self == other || self.isMoreStable(than: other)
   }
 }

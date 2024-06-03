@@ -155,13 +155,13 @@ struct TestDesc {
     self.ipProtocol = ipProtocol
   }
 
-  var flow: FilterFlow { FilterFlow(url: nil, description: get) }
+  var flow: FilterFlow { FilterFlow(url: nil, description: self.get) }
 
   var get: String {
     """
         identifier = 5B4BF304-E46B-4602-9C09-7EF0BC9D1757
-        hostname = \(hostname)
-        sourceAppIdentifier = \(appId)
+        hostname = \(self.hostname)
+        sourceAppIdentifier = \(self.appId)
         sourceAppVersion = 14.0.1
         sourceAppUniqueIdentifier = 20:{length = 20, bytes = 0xf0c4232c3a01828c129246f4b575524558714576}
         procPID = 41141
@@ -170,8 +170,8 @@ struct TestDesc {
         inBytes = 0
         outBytes = 0
         signature = 32:{...}
-        remoteEndpoint = \(endpoint)
-        protocol = \(ipProtocol)
+        remoteEndpoint = \(self.endpoint)
+        protocol = \(self.ipProtocol)
         family = 2
         type = 1
         procUUID = 5DBC6092-DC53-3DA2-A09C-48B532B84D11

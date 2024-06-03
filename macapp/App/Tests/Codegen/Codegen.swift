@@ -4,13 +4,13 @@ import XCTest
 
 final class Codegen: XCTestCase {
   func test_codegenSwift() throws {
-    if envVarSet("CODEGEN_SWIFT") {
+    if self.envVarSet("CODEGEN_SWIFT") {
       try AppTypeScriptEnums().write()
     }
   }
 
   func test_codegenTypescript() throws {
-    if envVarSet("CODEGEN_TYPESCRIPT") {
+    if self.envVarSet("CODEGEN_TYPESCRIPT") {
       try AppWebViews().write()
     }
   }

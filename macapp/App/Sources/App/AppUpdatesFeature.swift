@@ -29,6 +29,8 @@ struct AppUpdatesFeature: Feature {
   }
 
   struct RootReducer {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.api) var api
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var xpc

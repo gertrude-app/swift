@@ -27,7 +27,7 @@ struct SubscriptionUpdate: Equatable {
 struct SubscriptionManager: AsyncScheduledJob {
   func run(context: QueueContext) async throws {
     guard Env.mode == .prod else { return }
-    try await advanceExpired()
+    try await self.advanceExpired()
   }
 
   func advanceExpired() async throws {

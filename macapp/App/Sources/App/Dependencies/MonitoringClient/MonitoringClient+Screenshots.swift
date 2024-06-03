@@ -149,15 +149,15 @@ internal actor ScreenshotBuffer {
   private var buffer: [ScreenshotData] = []
 
   func append(_ screenshot: ScreenshotData) {
-    if buffer.count > 100 {
-      buffer.removeFirst()
+    if self.buffer.count > 100 {
+      self.buffer.removeFirst()
     }
-    buffer.append(screenshot)
+    self.buffer.append(screenshot)
   }
 
   func removeAll() -> [ScreenshotData] {
     defer { buffer.removeAll() }
-    return buffer
+    return self.buffer
   }
 }
 

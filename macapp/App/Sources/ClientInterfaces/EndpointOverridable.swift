@@ -8,7 +8,7 @@ public protocol EndpointOverridable {
 
 public extension EndpointOverridable {
   static var endpoint: URL {
-    endpointOverride.value ?? endpointDefault
+    self.endpointOverride.value ?? endpointDefault
   }
 
   var endpoint: URL {
@@ -41,9 +41,9 @@ public extension EndpointOverridable {
 
   func updateEndpointOverride(_ input: String?) async {
     if let input, let url = URL(string: input), !input.isEmpty {
-      setEndpointOverride(url)
+      self.setEndpointOverride(url)
     } else {
-      clearEndpointOverride()
+      self.clearEndpointOverride()
     }
   }
 }

@@ -37,17 +37,17 @@ public struct Semver {
 
   /// A string representation of prerelease identifiers (if any).
   public var prereleaseString: String? {
-    prerelease.isEmpty ? nil : prerelease.joined(separator: ".")
+    self.prerelease.isEmpty ? nil : self.prerelease.joined(separator: ".")
   }
 
   /// A string representation of build metadatas (if any).
   public var buildMetadataString: String? {
-    buildMetadata.isEmpty ? nil : buildMetadata.joined(separator: ".")
+    self.buildMetadata.isEmpty ? nil : self.buildMetadata.joined(separator: ".")
   }
 
   /// A Boolean value indicating whether the version is pre-release version.
   public var isPrerelease: Bool {
-    !prerelease.isEmpty
+    !self.prerelease.isEmpty
   }
 
   /// A Boolean value indicating whether the version conforms to Semantic
@@ -56,11 +56,11 @@ public struct Semver {
   /// An invalid Semver can only be formed with the memberwise initializer
   /// `Semver.init(major:minor:patch:prerelease:buildMetadata:)`.
   public var isValid: Bool {
-    major >= 0
-      && minor >= 0
-      && patch >= 0
-      && prerelease.allSatisfy(validatePrereleaseIdentifier)
-      && buildMetadata.allSatisfy(validateBuildMetadataIdentifier)
+    self.major >= 0
+      && self.minor >= 0
+      && self.patch >= 0
+      && self.prerelease.allSatisfy(validatePrereleaseIdentifier)
+      && self.buildMetadata.allSatisfy(validateBuildMetadataIdentifier)
   }
 }
 
@@ -154,22 +154,22 @@ extension Semver: LosslessStringConvertible {
     self.major = major
     self.minor = minor
     self.patch = patch
-    prerelease = description[match.range(at: 4)]?.components(separatedBy: ".") ?? []
-    buildMetadata = description[match.range(at: 5)]?.components(separatedBy: ".") ?? []
+    self.prerelease = description[match.range(at: 4)]?.components(separatedBy: ".") ?? []
+    self.buildMetadata = description[match.range(at: 5)]?.components(separatedBy: ".") ?? []
   }
 
   public var description: String {
     var result = "\(major).\(minor).\(patch)"
-    if !prerelease.isEmpty {
-      result += "-" + prerelease.joined(separator: ".")
+    if !self.prerelease.isEmpty {
+      result += "-" + self.prerelease.joined(separator: ".")
     }
-    if !buildMetadata.isEmpty {
-      result += "+" + buildMetadata.joined(separator: ".")
+    if !self.buildMetadata.isEmpty {
+      result += "+" + self.buildMetadata.joined(separator: ".")
     }
     return result
   }
 
-  public var string: String { description }
+  public var string: String { self.description }
 }
 
 extension Semver: ExpressibleByStringLiteral {
@@ -231,7 +231,7 @@ private extension NSRegularExpression {
     options: NSRegularExpression.MatchingOptions = []
   ) -> [NSTextCheckingResult] {
     let r = NSRange(string.startIndex ..< string.endIndex, in: string)
-    return matches(in: string, options: options, range: r)
+    return self.matches(in: string, options: options, range: r)
   }
 
   func firstMatch(
@@ -239,6 +239,6 @@ private extension NSRegularExpression {
     options: NSRegularExpression.MatchingOptions = []
   ) -> NSTextCheckingResult? {
     let r = NSRange(string.startIndex ..< string.endIndex, in: string)
-    return firstMatch(in: string, options: options, range: r)
+    return self.firstMatch(in: string, options: options, range: r)
   }
 }

@@ -18,7 +18,7 @@ class AppConnection {
   var filterState: UserFilterState?
 
   init(ws: WebsocketProtocol, ids: Ids) {
-    id = .init(UUID())
+    self.id = .init(UUID())
     self.ids = ids
     self.ws = ws
     ws.onText { ws, string in
@@ -41,7 +41,7 @@ class AppConnection {
       Current.logger.error("WS: failed to decode WebSocket message: `\(json)`")
       return
     }
-    Current.logger.notice("WS: WebSocket \(id.lowercased) got message: \(message)")
+    Current.logger.notice("WS: WebSocket \(self.id.lowercased) got message: \(message)")
     switch message {
     case .currentFilterState(let filterState):
       self.filterState = filterState

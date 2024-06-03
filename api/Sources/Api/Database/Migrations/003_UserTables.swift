@@ -2,17 +2,17 @@ import FluentSQL
 
 struct UserTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {
-    try await upUsers(sql)
-    try await upDevices(sql)
-    try await upUserTokens(sql)
-    try await upUserKeychain(sql)
+    try await self.upUsers(sql)
+    try await self.upDevices(sql)
+    try await self.upUserTokens(sql)
+    try await self.upUserKeychain(sql)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await downUserKeychain(sql)
-    try await downUserTokens(sql)
-    try await downDevices(sql)
-    try await downUsers(sql)
+    try await self.downUserKeychain(sql)
+    try await self.downUserTokens(sql)
+    try await self.downDevices(sql)
+    try await self.downUsers(sql)
   }
 
   // table: users
@@ -37,11 +37,11 @@ struct UserTables: GertieMigration {
       Column(.updatedAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
     }
-    try await sql.add(constraint: usersFk)
+    try await sql.add(constraint: self.usersFk)
   }
 
   func downUsers(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: usersFk)
+    try await sql.drop(constraint: self.usersFk)
     try await sql.drop(table: User.M3.self)
   }
 
@@ -71,11 +71,11 @@ struct UserTables: GertieMigration {
       Column(.updatedAt, .timestampWithTimezone)
     }
     try await sql.add(constraint: .unique(M.self, [M.numericId, M.serialNumber]))
-    try await sql.add(constraint: devicesFk)
+    try await sql.add(constraint: self.devicesFk)
   }
 
   func downDevices(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: devicesFk)
+    try await sql.drop(constraint: self.devicesFk)
     try await sql.drop(table: Device.M3.self)
   }
 
@@ -105,13 +105,13 @@ struct UserTables: GertieMigration {
       Column(.updatedAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
     }
-    try await sql.add(constraint: userTokensUserFk)
-    try await sql.add(constraint: userTokensDeviceFk)
+    try await sql.add(constraint: self.userTokensUserFk)
+    try await sql.add(constraint: self.userTokensDeviceFk)
   }
 
   func downUserTokens(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: userTokensUserFk)
-    try await sql.drop(constraint: userTokensDeviceFk)
+    try await sql.drop(constraint: self.userTokensUserFk)
+    try await sql.drop(constraint: self.userTokensDeviceFk)
     try await sql.drop(table: UserToken.M3.self)
   }
 
@@ -140,13 +140,13 @@ struct UserTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
     }
     try await sql.add(constraint: .unique(M.self, [M.userId, M.keychainId]))
-    try await sql.add(constraint: userKeychainUserFk)
-    try await sql.add(constraint: userKeychainKeychainFk)
+    try await sql.add(constraint: self.userKeychainUserFk)
+    try await sql.add(constraint: self.userKeychainKeychainFk)
   }
 
   func downUserKeychain(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: userKeychainKeychainFk)
-    try await sql.drop(constraint: userKeychainUserFk)
+    try await sql.drop(constraint: self.userKeychainKeychainFk)
+    try await sql.drop(constraint: self.userKeychainUserFk)
     try await sql.drop(table: UserKeychain.M3.self)
   }
 }

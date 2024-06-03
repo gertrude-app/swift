@@ -25,7 +25,7 @@ struct FilterXPC: Sendable {
     // that's why SimpleFirewall has a dummy `register()` proxy endpoint,
     // because you need to send _SOMETHING_ to fire up the connection
     // sending it the test connection healthy message serves the purpose
-    try await checkConnectionHealth()
+    try await self.checkConnectionHealth()
   }
 
   func checkConnectionHealth() async throws {
@@ -36,7 +36,7 @@ struct FilterXPC: Sendable {
 
     // if this doesn't throw, we know we have a good connection
     // validated by passing random int back and forth
-    _ = try await requestAck()
+    _ = try await self.requestAck()
   }
 
   func requestAck() async throws -> XPC.FilterAck {
@@ -57,7 +57,7 @@ struct FilterXPC: Sendable {
   }
 
   func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {
-    try await establishConnection()
+    try await self.establishConnection()
 
     let manifestData = try XPC.encode(manifest)
     let keysData = try keys.map { try XPC.encode($0) }
@@ -73,21 +73,21 @@ struct FilterXPC: Sendable {
   }
 
   func disconnectUser() async throws {
-    try await establishConnection()
+    try await self.establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.disconnectUser(getuid(), reply: continuation.dataHandler)
     }
   }
 
   func endFilterSuspension() async throws {
-    try await establishConnection()
+    try await self.establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.endSuspension(for: getuid(), reply: continuation.dataHandler)
     }
   }
 
   func suspendFilter(for duration: Seconds<Int>) async throws {
-    try await establishConnection()
+    try await self.establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.suspendFilter(
         for: getuid(),
@@ -98,7 +98,7 @@ struct FilterXPC: Sendable {
   }
 
   func setBlockStreaming(enabled: Bool) async throws {
-    try await establishConnection()
+    try await self.establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.setBlockStreaming(
         enabled,
@@ -109,7 +109,7 @@ struct FilterXPC: Sendable {
   }
 
   func setUserExemption(userId: uid_t, enabled: Bool) async throws {
-    try await establishConnection()
+    try await self.establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.setUserExemption(
         userId,
@@ -120,14 +120,14 @@ struct FilterXPC: Sendable {
   }
 
   func requestExemptUserIds() async throws -> [uid_t] {
-    try await establishConnection()
+    try await self.establishConnection()
     return try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.receiveListExemptUserIdsRequest(reply: continuation.dataHandler)
     }
   }
 
   func sendDeleteAllStoredState() async throws {
-    try await establishConnection()
+    try await self.establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.deleteAllStoredState(reply: continuation.dataHandler)
     }

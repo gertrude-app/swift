@@ -2,13 +2,13 @@ import FluentSQL
 
 struct KeychainTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {
-    try await upKeychains(sql)
-    try await upKeys(sql)
+    try await self.upKeychains(sql)
+    try await self.upKeys(sql)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await downKeys(sql)
-    try await downKeychains(sql)
+    try await self.downKeys(sql)
+    try await self.downKeychains(sql)
   }
 
   // table: keychains
@@ -31,11 +31,11 @@ struct KeychainTables: GertieMigration {
       Column(.updatedAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
     }
-    try await sql.add(constraint: keychainsFk)
+    try await sql.add(constraint: self.keychainsFk)
   }
 
   func downKeychains(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: keychainsFk)
+    try await sql.drop(constraint: self.keychainsFk)
     try await sql.drop(table: Keychain.M2.self)
   }
 
@@ -58,11 +58,11 @@ struct KeychainTables: GertieMigration {
       Column(.updatedAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
     }
-    try await sql.add(constraint: keysFk)
+    try await sql.add(constraint: self.keysFk)
   }
 
   func downKeys(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: keysFk)
+    try await sql.drop(constraint: self.keysFk)
     try await sql.drop(table: Key.M2.self)
   }
 }

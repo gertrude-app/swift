@@ -55,46 +55,46 @@ actor ThreadSafeFilterXPC {
   private let filterXpc = FilterXPC()
 
   func establishConnection() async throws {
-    try await filterXpc.establishConnection()
+    try await self.filterXpc.establishConnection()
   }
 
   func checkConnectionHealth() async throws {
-    try await filterXpc.checkConnectionHealth()
+    try await self.filterXpc.checkConnectionHealth()
   }
 
   func endFilterSuspension() async throws {
-    try await filterXpc.endFilterSuspension()
+    try await self.filterXpc.endFilterSuspension()
   }
 
   func suspendFilter(for duration: Seconds<Int>) async throws {
-    try await filterXpc.suspendFilter(for: duration)
+    try await self.filterXpc.suspendFilter(for: duration)
   }
 
   func disconnectUser() async throws {
-    try await filterXpc.disconnectUser()
+    try await self.filterXpc.disconnectUser()
   }
 
   func requestAck() async throws -> XPC.FilterAck {
-    try await filterXpc.requestAck()
+    try await self.filterXpc.requestAck()
   }
 
   func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {
-    try await filterXpc.sendUserRules(manifest: manifest, keys: keys)
+    try await self.filterXpc.sendUserRules(manifest: manifest, keys: keys)
   }
 
   func setBlockStreaming(enabled: Bool) async throws {
-    try await filterXpc.setBlockStreaming(enabled: enabled)
+    try await self.filterXpc.setBlockStreaming(enabled: enabled)
   }
 
   func setUserExemption(userId: uid_t, enabled: Bool) async throws {
-    try await filterXpc.setUserExemption(userId: userId, enabled: enabled)
+    try await self.filterXpc.setUserExemption(userId: userId, enabled: enabled)
   }
 
   func requestExemptUserIds() async throws -> [uid_t] {
-    try await filterXpc.requestExemptUserIds()
+    try await self.filterXpc.requestExemptUserIds()
   }
 
   func sendDeleteAllStoredState() async throws {
-    try await filterXpc.sendDeleteAllStoredState()
+    try await self.filterXpc.sendDeleteAllStoredState()
   }
 }

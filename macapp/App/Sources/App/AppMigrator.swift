@@ -9,15 +9,15 @@ struct AppMigrator: Migrator {
   var context = "App"
 
   func migrateLastVersion() async -> Persistent.State? {
-    await migrateV2()
+    await self.migrateV2()
   }
 
   func migrateV2() async -> Persistent.V2? {
-    var v1 = try? userDefaults.getString(Persistent.V1.storageKey).flatMap { json in
+    var v1 = try? self.userDefaults.getString(Persistent.V1.storageKey).flatMap { json in
       try JSON.decode(json, as: Persistent.V1.self)
     }
     if v1 == nil {
-      v1 = await migrateV1()
+      v1 = await self.migrateV1()
     }
     guard let v1 else { return nil }
     return .init(
@@ -40,9 +40,9 @@ struct AppMigrator: Migrator {
     }
 
     log("found v1 token `\(token)`")
-    await api.setUserToken(token)
+    await self.api.setUserToken(token)
     let user = (try? await api.appCheckIn(nil))?.userData
-    let v1Version = userDefaults.v1(.installedAppVersion) ?? "unknown"
+    let v1Version = self.userDefaults.v1(.installedAppVersion) ?? "unknown"
 
     if let user {
       log("migrated v1 state from successful user api call")
@@ -63,10 +63,10 @@ struct AppMigrator: Migrator {
       return nil
     }
 
-    let keyloggingEnabled = userDefaults.v1(.keyloggingEnabled).flatMap(V1.toBool)
-    let screenshotsEnabled = userDefaults.v1(.screenshotsEnabled).flatMap(V1.toBool)
-    let screenshotsFrequency = userDefaults.v1(.screenshotFrequency).flatMap(Int.init)
-    let screenshotsSize = userDefaults.v1(.screenshotSize).flatMap(Int.init)
+    let keyloggingEnabled = self.userDefaults.v1(.keyloggingEnabled).flatMap(V1.toBool)
+    let screenshotsEnabled = self.userDefaults.v1(.screenshotsEnabled).flatMap(V1.toBool)
+    let screenshotsFrequency = self.userDefaults.v1(.screenshotFrequency).flatMap(Int.init)
+    let screenshotsSize = self.userDefaults.v1(.screenshotSize).flatMap(Int.init)
 
     log("migrated v1 state from fallback storage")
     return Persistent.V1(

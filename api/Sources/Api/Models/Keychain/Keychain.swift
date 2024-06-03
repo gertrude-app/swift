@@ -33,7 +33,7 @@ final class Keychain: Codable {
 
 extension Keychain {
   func keys() async throws -> [Key] {
-    try await keys.useLoaded(or: {
+    try await self.keys.useLoaded(or: {
       try await Current.db.query(Key.self)
         .where(.keychainId == id)
         .all()

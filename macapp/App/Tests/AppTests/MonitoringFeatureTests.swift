@@ -19,8 +19,8 @@ import XExpect
       $0.user?.screenshotFrequency = 60
     } }
 
-    let (takeScreenshot, uploadScreenshot, takePendingScreenshots) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store)
+    let (takeScreenshot, uploadScreenshot, takePendingScreenshots) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store)
 
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
 
@@ -64,8 +64,8 @@ import XExpect
       $0.user?.screenshotFrequency = 60
     } }
 
-    let (_, uploadScreenshot, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store)
+    let (_, uploadScreenshot, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store)
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
 
     await store.send(.application(.didFinishLaunching)) // start heartbeat
@@ -222,8 +222,8 @@ import XExpect
   func testAddOnlyKeyloggingToUnMonitoredDuringSuspension() async {
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
-    let (takeScreenshot, _, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store)
+    let (takeScreenshot, _, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store)
 
     // user is NOT monitored...
     store.deps.storage.loadPersistentState = { .mock { $0.user = .notMonitored } }
@@ -270,8 +270,8 @@ import XExpect
   func testIncreaseScreenshotsDuringSuspension() async {
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
-    let (takeScreenshot, _, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store)
+    let (takeScreenshot, _, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store)
 
     // user already has screenshots
     store.deps.storage.loadPersistentState = { .mock {
@@ -319,8 +319,8 @@ import XExpect
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     let time = ControllingNow(starting: .epoch, with: bgQueue)
     store.deps.date = time.generator
-    let (takeScreenshot, _, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store)
+    let (takeScreenshot, _, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store)
 
     // user is NOT monitored...
     store.deps.storage.loadPersistentState = { .mock { $0.user = .notMonitored } }
@@ -369,7 +369,7 @@ import XExpect
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     store.deps.storage.loadPersistentState = { .mock { $0.user = .notMonitored } }
-    let (takeScreenshot, _, _) = spyScreenshots(store)
+    let (takeScreenshot, _, _) = self.spyScreenshots(store)
 
     await store.send(.application(.didFinishLaunching))
 
@@ -442,8 +442,8 @@ import XExpect
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
 
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
-    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store, keystrokes: mock(
+    let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [nil],
       then: [.mock]
     ))
@@ -475,7 +475,7 @@ import XExpect
 
   func testPendingKeystrokesRestoredIfApiRequestFails() async {
     let (store, _) = AppReducer.testStore()
-    _ = spyKeylogging(store)
+    _ = self.spyKeylogging(store)
     let restore = spy(on: CreateKeystrokeLines.Input.self, returning: ())
     store.deps.monitoring.restorePendingKeystrokes = restore.fn
     store.deps.api.createKeystrokeLines = { _ in throw TestErr("oh noes!") }
@@ -495,7 +495,7 @@ import XExpect
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     store.deps.monitoring.takeScreenshot = { _ in fatalError() }
     store.deps.api.uploadScreenshot = { _ in fatalError() }
-    let keylogging = spyKeylogging(store, keystrokes: mock(always: nil))
+    let keylogging = self.spyKeylogging(store, keystrokes: mock(always: nil))
 
     await store.send(.application(.didFinishLaunching))
     await bgQueue.advance(by: .seconds(600))
@@ -509,7 +509,7 @@ import XExpect
     store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
     store.deps.monitoring.takeScreenshot = { _ in fatalError() }
     store.deps.api.uploadScreenshot = { _ in fatalError() }
-    let keylogging = spyKeylogging(store, keystrokes: mock(always: nil))
+    let keylogging = self.spyKeylogging(store, keystrokes: mock(always: nil))
     store.deps.storage.loadPersistentState = { .mock {
       $0.user = nil // <-- no user!
     } }
@@ -533,8 +533,8 @@ import XExpect
       $0.userData.screenshotsEnabled = false
       $0.userData.keyloggingEnabled = false
     } }
-    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store, keystrokes: mock(
+    let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [nil],
       then: [.mock]
     ))
@@ -583,8 +583,8 @@ import XExpect
       $0.userData.screenshotFrequency = 60
     } }
 
-    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store, keystrokes: mock(
+    let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [[.mock]],
       then: .some(nil)
     ))
@@ -626,8 +626,8 @@ import XExpect
       resumeOnboarding: nil
     ) }
 
-    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store)
+    let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store)
 
     await store.send(.application(.didFinishLaunching))
     await expect(takeScreenshot.invocations.value.count).toEqual(0)
@@ -661,8 +661,8 @@ import XExpect
       $0.user?.screenshotFrequency = 60
     } }
 
-    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
-    let keylogging = spyKeylogging(store, keystrokes: mock(
+    let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
+    let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [[.mock]],
       then: .some(nil)
     ))
@@ -687,7 +687,7 @@ import XExpect
   func testMonitoringItemsBufferedForLaterUploadWhenNoConnection() async {
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.network.isConnected = { false } // <-- no internet connection
-    let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
+    let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
     let takePendingScreenshots = mock(returning: [[
       (Data(), 999, 600, Date.epoch),
       (Data(), 999, 600, Date.epoch),
@@ -695,7 +695,7 @@ import XExpect
     ]])
     store.deps.monitoring.takePendingScreenshots = takePendingScreenshots.fn
 
-    let keylogging = spyKeylogging(store, keystrokes: mock(
+    let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [[.mock]],
       then: .some(nil)
     ))

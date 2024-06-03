@@ -37,7 +37,7 @@ extension AdminNotification {
 
 extension AdminNotification {
   func method() async throws -> AdminVerifiedNotificationMethod {
-    try await method.useLoaded(or: {
+    try await self.method.useLoaded(or: {
       try await Current.db.query(AdminVerifiedNotificationMethod.self)
         .where(.id == methodId)
         .first()

@@ -57,9 +57,9 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
 extension AdminEvent.UnlockRequestSubmitted {
   private var url: String {
     if requestIds.count == 1, let first = requestIds.first {
-      return individualRequestUrl(first)
+      return self.individualRequestUrl(first)
     } else {
-      return userUnlockRequestsUrl
+      return self.userUnlockRequestsUrl
     }
   }
 
@@ -68,6 +68,6 @@ extension AdminEvent.UnlockRequestSubmitted {
   }
 
   private func individualRequestUrl(_ requestId: UnlockRequest.Id) -> String {
-    "\(userUnlockRequestsUrl)/\(requestId.lowercased)"
+    "\(self.userUnlockRequestsUrl)/\(requestId.lowercased)"
   }
 }

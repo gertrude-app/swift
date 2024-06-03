@@ -3,6 +3,8 @@ import MacAppRoute
 
 struct CheckInFeature {
   struct RootReducer: RootReducing {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.api) var api
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var filterXpc
@@ -16,14 +18,14 @@ extension CheckInFeature.RootReducer {
     switch action {
 
     case .heartbeat(.everyTwentyMinutes) where state.admin.accountStatus != .inactive:
-      return checkIn(
+      return self.checkIn(
         reason: .heartbeat,
         filterVersion: state.filter.version,
         notifyNoInternet: false
       )
 
     case .heartbeat(.everySixHours) where state.admin.accountStatus == .inactive:
-      return checkIn(
+      return self.checkIn(
         reason: .heartbeat,
         filterVersion: state.filter.version,
         notifyNoInternet: false
@@ -31,12 +33,12 @@ extension CheckInFeature.RootReducer {
 
     case .menuBar(.refreshRulesClicked),
          .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))):
-      return checkIn(reason: .userRefreshedRules, filterVersion: state.filter.version)
+      return self.checkIn(reason: .userRefreshedRules, filterVersion: state.filter.version)
 
     case .adminWindow(.webview(.inactiveAccountRecheckClicked)),
          .blockedRequests(.webview(.inactiveAccountRecheckClicked)),
          .requestSuspension(.webview(.inactiveAccountRecheckClicked)):
-      return checkIn(reason: .inactiveAccountRechecked, filterVersion: state.filter.version)
+      return self.checkIn(reason: .inactiveAccountRechecked, filterVersion: state.filter.version)
 
     case .checkIn(.success(let output), let reason):
       guard output.adminAccountStatus != .inactive else {

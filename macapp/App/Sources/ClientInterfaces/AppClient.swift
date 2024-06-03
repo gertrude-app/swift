@@ -56,7 +56,7 @@ public extension AppClient {
       }
     #endif
     // macOS won't install system extensions from outside /Applications
-    return installLocation().path.starts(with: "/Applications")
+    return self.installLocation().path.starts(with: "/Applications")
   }
 }
 

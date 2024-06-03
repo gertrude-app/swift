@@ -24,19 +24,19 @@ public struct Config {
   }
 
   public mutating func addAlias(_ alias: Alias) {
-    aliases[alias.type] = alias.alias
+    self.aliases[alias.type] = alias.alias
   }
 
   public func alias(for node: Node) -> String? {
-    alias(for: node.anyType)
+    self.alias(for: node.anyType)
   }
 
   public func alias(for anyType: AnyType) -> String? {
-    alias(for: anyType.type)
+    self.alias(for: anyType.type)
   }
 
   public func alias(for type: Any.Type) -> String? {
-    switch aliases[.init(type)] {
+    switch self.aliases[.init(type)] {
     case .some(.some(let alias)):
       // prefer explicit alias over conformance
       return alias

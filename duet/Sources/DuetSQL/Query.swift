@@ -21,103 +21,103 @@ public struct DuetQuery<M: Model> {
     self.limit = limit
     self.order = order
     self.offset = offset
-    _withSoftDeleted = withSoftDeleted
+    self._withSoftDeleted = withSoftDeleted
   }
 
   public func byId(_ id: UUIDStringable, withSoftDeleted: Bool = false) throws -> DuetQuery<M> {
     try .init(
-      db: db,
-      constraint: constraint + (M.column("id") == .uuid(id)),
-      order: order,
-      limit: limit,
-      offset: offset,
+      db: self.db,
+      constraint: self.constraint + (M.column("id") == .uuid(id)),
+      order: self.order,
+      limit: self.limit,
+      offset: self.offset,
       withSoftDeleted: withSoftDeleted
     )
   }
 
   public func withSoftDeleted() -> DuetQuery<M> {
     .init(
-      db: db,
-      constraint: constraint,
-      order: order,
-      limit: limit,
-      offset: offset,
+      db: self.db,
+      constraint: self.constraint,
+      order: self.order,
+      limit: self.limit,
+      offset: self.offset,
       withSoftDeleted: true
     )
   }
 
   public func `where`(_ constraint: SQL.WhereConstraint<M>) -> DuetQuery<M> {
     .init(
-      db: db,
+      db: self.db,
       constraint: self.constraint + constraint,
-      order: order,
-      limit: limit,
-      offset: offset,
-      withSoftDeleted: _withSoftDeleted
+      order: self.order,
+      limit: self.limit,
+      offset: self.offset,
+      withSoftDeleted: self._withSoftDeleted
     )
   }
 
   public func limit(_ limit: Int?) -> DuetQuery<M> {
     .init(
-      db: db,
-      constraint: constraint,
-      order: order,
+      db: self.db,
+      constraint: self.constraint,
+      order: self.order,
       limit: limit,
-      offset: offset,
-      withSoftDeleted: _withSoftDeleted
+      offset: self.offset,
+      withSoftDeleted: self._withSoftDeleted
     )
   }
 
   public func offset(_ offset: Int?) -> DuetQuery<M> {
     .init(
-      db: db,
-      constraint: constraint,
-      order: order,
-      limit: limit,
+      db: self.db,
+      constraint: self.constraint,
+      order: self.order,
+      limit: self.limit,
       offset: offset,
-      withSoftDeleted: _withSoftDeleted
+      withSoftDeleted: self._withSoftDeleted
     )
   }
 
   public func orderBy(_ order: SQL.Order<M>?) -> DuetQuery<M> {
     .init(
-      db: db,
-      constraint: constraint,
+      db: self.db,
+      constraint: self.constraint,
       order: order,
-      limit: limit,
-      offset: offset,
-      withSoftDeleted: _withSoftDeleted
+      limit: self.limit,
+      offset: self.offset,
+      withSoftDeleted: self._withSoftDeleted
     )
   }
 
   public func orderBy(_ column: M.ColumnName, _ direction: SQL.OrderDirection) -> DuetQuery<M> {
     .init(
-      db: db,
-      constraint: constraint,
+      db: self.db,
+      constraint: self.constraint,
       order: .init(column: column, direction: direction),
-      limit: limit,
-      offset: offset,
-      withSoftDeleted: _withSoftDeleted
+      limit: self.limit,
+      offset: self.offset,
+      withSoftDeleted: self._withSoftDeleted
     )
   }
 
   @discardableResult
   public func delete(force: Bool = false) async throws -> [M] {
-    if force || _withSoftDeleted {
-      return try await db.forceDelete(
+    if force || self._withSoftDeleted {
+      return try await self.db.forceDelete(
         M.self,
-        where: constraint,
-        orderBy: order,
-        limit: limit,
-        offset: offset
+        where: self.constraint,
+        orderBy: self.order,
+        limit: self.limit,
+        offset: self.offset
       )
     } else {
-      return try await db.delete(
+      return try await self.db.delete(
         M.self,
-        where: constraint,
-        orderBy: order,
-        limit: limit,
-        offset: offset
+        where: self.constraint,
+        orderBy: self.order,
+        limit: self.limit,
+        offset: self.offset
       )
     }
   }
@@ -126,44 +126,50 @@ public struct DuetQuery<M: Model> {
   public func deleteOne(force: Bool = false) async throws -> M {
     let models = try await db.select(
       M.self,
-      where: constraint,
-      orderBy: order,
-      limit: limit,
-      offset: offset,
-      withSoftDeleted: force || _withSoftDeleted
+      where: self.constraint,
+      orderBy: self.order,
+      limit: self.limit,
+      offset: self.offset,
+      withSoftDeleted: force || self._withSoftDeleted
     )
     guard !models.isEmpty else { throw DuetSQLError.notFound("\(M.self)") }
     guard models.count == 1 else { throw DuetSQLError.tooManyResultsForDeleteOne }
     if force {
-      try await db.forceDelete(
+      try await self.db.forceDelete(
         M.self,
-        where: constraint,
-        orderBy: order,
-        limit: limit,
-        offset: offset
+        where: self.constraint,
+        orderBy: self.order,
+        limit: self.limit,
+        offset: self.offset
       )
     } else {
-      try await db.delete(M.self, where: constraint, orderBy: order, limit: limit, offset: offset)
+      try await self.db.delete(
+        M.self,
+        where: self.constraint,
+        orderBy: self.order,
+        limit: self.limit,
+        offset: self.offset
+      )
     }
     return models.first!
   }
 
   public func all() async throws -> [M] {
-    try await db.select(
+    try await self.db.select(
       M.self,
-      where: constraint,
-      orderBy: order,
-      limit: limit,
-      offset: offset,
-      withSoftDeleted: _withSoftDeleted
+      where: self.constraint,
+      orderBy: self.order,
+      limit: self.limit,
+      offset: self.offset,
+      withSoftDeleted: self._withSoftDeleted
     )
   }
 
   public func first(orThrow error: Error = DuetSQLError.notFound("\(M.self)")) async throws -> M {
-    try await all().first(orThrow: error)
+    try await self.all().first(orThrow: error)
   }
 
   public func count() async throws -> Int {
-    try await db.count(M.self, where: constraint, withSoftDeleted: _withSoftDeleted)
+    try await self.db.count(M.self, where: self.constraint, withSoftDeleted: self._withSoftDeleted)
   }
 }

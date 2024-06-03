@@ -57,13 +57,13 @@ public struct ControllingNow {
   /// by mainQueue.sleep(for:) are suspended (because i can't use ContinuousClock)
   /// but real wall-clock time is advancing
   public func simulateComputerSleep(seconds advance: Int) {
-    let current = elapsed.value
-    elapsed.setValue(current + advance)
+    let current = self.elapsed.value
+    self.elapsed.setValue(current + advance)
   }
 
   public func advance(seconds advance: Int) async {
-    let current = elapsed.value
-    elapsed.setValue(current + advance)
+    let current = self.elapsed.value
+    self.elapsed.setValue(current + advance)
     if let scheduler = scheduler {
       await scheduler.advance(by: .seconds(advance))
     }
@@ -88,7 +88,7 @@ public func expect<T: Equatable>(
 
 public struct TestErr: Equatable, Error, LocalizedError {
   public let msg: String
-  public var errorDescription: String? { msg }
+  public var errorDescription: String? { self.msg }
   public init(_ msg: String) { self.msg = msg }
 }
 

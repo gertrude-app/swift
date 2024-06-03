@@ -9,10 +9,10 @@ struct DeviceIdForeignKey: GertieMigration {
   )
 
   func up(sql: SQLDatabase) async throws {
-    try await sql.add(constraint: fk)
+    try await sql.add(constraint: self.fk)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: fk)
+    try await sql.drop(constraint: self.fk)
   }
 }

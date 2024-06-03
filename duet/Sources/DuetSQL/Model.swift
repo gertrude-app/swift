@@ -34,7 +34,7 @@ public extension Model where ColumnName: RawRepresentable, ColumnName.RawValue =
   }
 
   static subscript(_ column: ColumnName) -> String {
-    columnName(column)
+    self.columnName(column)
   }
 }
 

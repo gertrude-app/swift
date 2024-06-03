@@ -9,7 +9,9 @@ public extension Key.Domain {
     if domain.last == "/" {
       domain.removeLast()
     }
-    guard !domain.contains("/"), URL(string: domain) != nil else {
+    guard !domain.contains("/"),
+          !domain.contains(" "),
+          URL(string: domain) != nil else {
       return nil
     }
     string = domain.lowercased()
@@ -33,7 +35,7 @@ public extension Key.Domain {
   }
 
   func matchesAnySubdomain(of hostname: String) -> Bool {
-    matches(hostname: hostname) || hostname.lowercased().hasSuffix(".\(string)")
+    self.matches(hostname: hostname) || hostname.lowercased().hasSuffix(".\(string)")
   }
 }
 

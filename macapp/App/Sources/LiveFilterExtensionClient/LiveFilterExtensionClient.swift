@@ -35,34 +35,34 @@ actor ThreadSafeFilterManager {
   private var manager = FilterManager()
 
   func setup() async -> FilterExtensionState {
-    await manager.setup()
+    await self.manager.setup()
   }
 
   func loadState() async -> FilterExtensionState {
-    await manager.loadState()
+    await self.manager.loadState()
   }
 
   func startFilter() async -> FilterExtensionState {
-    await manager.startFilter()
+    await self.manager.startFilter()
   }
 
   func stopFilter() async -> FilterExtensionState {
-    await manager.stopFilter()
+    await self.manager.stopFilter()
   }
 
   func replaceFilter() async -> FilterInstallResult {
-    await manager.replaceFilter()
+    await self.manager.replaceFilter()
   }
 
   func installFilter(timeout: Int? = nil) async -> FilterInstallResult {
-    await manager.installFilter(timeout: timeout)
+    await self.manager.installFilter(timeout: timeout)
   }
 
   func uninstallFilter() async -> Bool {
-    await manager.uninstallFilter()
+    await self.manager.uninstallFilter()
   }
 
   func reinstallFilter() async -> FilterInstallResult {
-    await manager.reinstallFilter()
+    await self.manager.reinstallFilter()
   }
 }

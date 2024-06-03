@@ -87,12 +87,12 @@ struct ApiEmail: Encodable {
   let TrackOpens: Bool
 
   init(email: Email) {
-    From = email.from
-    To = email.to
-    Subject = email.subject
-    HtmlBody = email.html
-    ReplyTo = email.replyTo
-    TrackOpens = true
+    self.From = email.from
+    self.To = email.to
+    self.Subject = email.subject
+    self.HtmlBody = email.html
+    self.ReplyTo = email.replyTo
+    self.TrackOpens = true
   }
 }
 

@@ -8,23 +8,23 @@ struct Context {
   }
 
   var inline: Context {
-    Context(config: config, depth: depth)
+    Context(config: self.config, depth: self.depth)
   }
 
   var indent: String {
-    config.compact ? " " : String(repeating: " ", count: depth * 2)
+    self.config.compact ? " " : String(repeating: " ", count: self.depth * 2)
   }
 
   var newLine: String {
-    config.compact ? "" : "\n"
+    self.config.compact ? "" : "\n"
   }
 
   var indentedNewLine: String {
-    config.compact ? "" : "\n\(indent)"
+    self.config.compact ? "" : "\n\(self.indent)"
   }
 
   func compact(_ compact: String, or expanded: String) -> String {
-    config.compact ? compact : expanded
+    self.config.compact ? compact : expanded
   }
 }
 

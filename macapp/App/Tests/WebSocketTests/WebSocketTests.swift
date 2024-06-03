@@ -16,20 +16,20 @@ final class WebsocketTests: XCTestCase {
   var receivedMessages: [WebSocketMessage.FromApiToApp] = []
   var cancellables: Set<AnyCancellable> = []
 
-  var state: LiveWebSocketClient.ConnectionState { conn.currentState }
+  var state: LiveWebSocketClient.ConnectionState { self.conn.currentState }
   var ws: WebSocket { WebSocket(request: .init(url: URL(string: "/")!)) }
 
   override func setUp() {
-    receivedMessages = []
+    self.receivedMessages = []
 
     let subject = PassthroughSubject<WebSocketMessage.FromApiToApp, Never>()
     subject.eraseToAnyPublisher().sink { [self] in
       self.receivedMessages.append($0)
-    }.store(in: &cancellables)
+    }.store(in: &self.cancellables)
 
-    scheduler = DispatchQueue.test
-    conn = WebSocketConnection(
-      scheduler: scheduler.eraseToAnyScheduler(),
+    self.scheduler = DispatchQueue.test
+    self.conn = WebSocketConnection(
+      scheduler: self.scheduler.eraseToAnyScheduler(),
       messageSubject: Mutex(subject)
     ) { [self] in
       self.socket = TestSocket()
@@ -38,98 +38,98 @@ final class WebsocketTests: XCTestCase {
   }
 
   func send(_ event: WebSocketEvent) {
-    conn.didReceive(event: event, client: ws)
+    self.conn.didReceive(event: event, client: self.ws)
   }
 
   func testConnection() throws {
-    expect(state).toEqual(.idle)
-    expect(socket.connectCalls).toEqual(1)
+    expect(self.state).toEqual(.idle)
+    expect(self.socket.connectCalls).toEqual(1)
 
-    send(.connected([:]))
-    expect(state).toEqual(.connected)
+    self.send(.connected([:]))
+    expect(self.state).toEqual(.connected)
 
-    send(.disconnected("some reason", 1))
-    expect(state).toEqual(.disconnected)
+    self.send(.disconnected("some reason", 1))
+    expect(self.state).toEqual(.disconnected)
   }
 
   func testDisconnect() {
-    send(.connected([:]))
-    expect(state).toEqual(.connected)
+    self.send(.connected([:]))
+    expect(self.state).toEqual(.connected)
 
-    send(.disconnected("some reason", 1))
-    expect(state).toEqual(.disconnected)
+    self.send(.disconnected("some reason", 1))
+    expect(self.state).toEqual(.disconnected)
 
     // never tries to reconnect on its own (app heartbeat responsible)
-    scheduler.advance(by: 1000)
-    expect(state).toEqual(.disconnected)
+    self.scheduler.advance(by: 1000)
+    expect(self.state).toEqual(.disconnected)
   }
 
   func testPingPong() {
-    send(.connected([:]))
+    self.send(.connected([:]))
 
-    scheduler.advance(by: conn.pingInterval - 1)
-    expect(state).toEqual(.connected)
+    self.scheduler.advance(by: self.conn.pingInterval - 1)
+    expect(self.state).toEqual(.connected)
 
-    scheduler.advance(by: 1)
-    expect(state).toEqual(.waitingForPong)
+    self.scheduler.advance(by: 1)
+    expect(self.state).toEqual(.waitingForPong)
 
-    send(.pong(nil))
-    expect(state).toEqual(.connected)
+    self.send(.pong(nil))
+    expect(self.state).toEqual(.connected)
 
-    scheduler.advance(by: PONG_CONFIRMATION_DELAY + conn.pingInterval - 1)
-    expect(state).toEqual(.connected)
+    self.scheduler.advance(by: PONG_CONFIRMATION_DELAY + self.conn.pingInterval - 1)
+    expect(self.state).toEqual(.connected)
 
-    scheduler.advance(by: 1)
-    expect(state).toEqual(.waitingForPong)
+    self.scheduler.advance(by: 1)
+    expect(self.state).toEqual(.waitingForPong)
 
-    send(.pong(nil))
-    expect(state).toEqual(.connected)
+    self.send(.pong(nil))
+    expect(self.state).toEqual(.connected)
   }
 
   func testFailedToReceivePongReestablishesConnection() {
-    send(.connected([:]))
+    self.send(.connected([:]))
 
-    scheduler.advance(by: conn.pingInterval - 1)
-    expect(conn.pingsSent).toEqual(0)
-    expect(state).toEqual(.connected)
+    self.scheduler.advance(by: self.conn.pingInterval - 1)
+    expect(self.conn.pingsSent).toEqual(0)
+    expect(self.state).toEqual(.connected)
 
-    scheduler.advance(by: 1)
-    expect(state).toEqual(.waitingForPong)
-    expect(conn.pingsSent).toEqual(1)
+    self.scheduler.advance(by: 1)
+    expect(self.state).toEqual(.waitingForPong)
+    expect(self.conn.pingsSent).toEqual(1)
 
-    scheduler.advance(by: 5) // should have receive pong by now!
-    expect(state).toEqual(.disconnected)
+    self.scheduler.advance(by: 5) // should have receive pong by now!
+    expect(self.state).toEqual(.disconnected)
   }
 
   // test that it passes messages on
   func testPassesMessagesOnToHandler() throws {
-    send(.connected([:]))
+    self.send(.connected([:]))
 
     let message = WebSocketMessage.FromApiToApp.currentFilterStateRequested
     let json = try JSON.encode(message)
-    send(.text(json))
+    self.send(.text(json))
 
-    expect(receivedMessages).toEqual([.currentFilterStateRequested])
+    expect(self.receivedMessages).toEqual([.currentFilterStateRequested])
   }
 
   func testReceivingCancelledReschedulesConnectionIn30Seconds() {
-    send(.connected([:]))
+    self.send(.connected([:]))
 
-    send(.cancelled)
-    expect(state).toEqual(.disconnected)
+    self.send(.cancelled)
+    expect(self.state).toEqual(.disconnected)
 
     // never tries to reconnect on its own (app heartbeat responsible)
-    scheduler.advance(by: 1000)
-    expect(state).toEqual(.disconnected)
+    self.scheduler.advance(by: 1000)
+    expect(self.state).toEqual(.disconnected)
   }
 
   func testDirectDisconnect() {
-    send(.connected([:]))
-    expect(state).toEqual(.connected)
+    self.send(.connected([:]))
+    expect(self.state).toEqual(.connected)
 
-    conn.disconnect()
-    expect(state).toEqual(.disconnected)
-    expect(socket.disconnectCalls).toEqual(1)
+    self.conn.disconnect()
+    expect(self.state).toEqual(.disconnected)
+    expect(self.socket.disconnectCalls).toEqual(1)
   }
 }
 
@@ -140,11 +140,11 @@ class TestSocket: WebSocketClient {
   var disconnectCalls = 0
 
   func connect() {
-    connectCalls += 1
+    self.connectCalls += 1
   }
 
   func disconnect(closeCode: UInt16) {
-    disconnectCalls += 1
+    self.disconnectCalls += 1
   }
 
   func write(string: String, completion: (() -> Void)?) {}

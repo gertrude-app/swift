@@ -3,19 +3,19 @@ import FluentSQL
 
 struct AdminTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {
-    try await upAdmins(sql)
-    try await upAdminTokens(sql)
-    try await upAdminVerifiedNotificationMethods(sql)
-    try await upAdminNotifications(sql)
-    try await upWaitlistedAdmins(sql)
+    try await self.upAdmins(sql)
+    try await self.upAdminTokens(sql)
+    try await self.upAdminVerifiedNotificationMethods(sql)
+    try await self.upAdminNotifications(sql)
+    try await self.upWaitlistedAdmins(sql)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await downWaitlistedAdmins(sql)
-    try await downAdminNotifications(sql)
-    try await downAdminVerifiedNotificationMethods(sql)
-    try await downAdminTokens(sql)
-    try await downAdmins(sql)
+    try await self.downWaitlistedAdmins(sql)
+    try await self.downAdminNotifications(sql)
+    try await self.downAdminVerifiedNotificationMethods(sql)
+    try await self.downAdminTokens(sql)
+    try await self.downAdmins(sql)
   }
 
   // table: admins
@@ -60,11 +60,11 @@ struct AdminTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone)
     }
-    try await sql.add(constraint: adminTokensFk)
+    try await sql.add(constraint: self.adminTokensFk)
   }
 
   func downAdminTokens(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: adminTokensFk)
+    try await sql.drop(constraint: self.adminTokensFk)
     try await sql.drop(table: AdminToken.M1.self)
   }
 
@@ -85,12 +85,12 @@ struct AdminTables: GertieMigration {
       Column(M.config, .jsonb)
       Column(.createdAt, .timestampWithTimezone)
     }
-    try await sql.add(constraint: adminVerifiedNotificationMethodsFk)
+    try await sql.add(constraint: self.adminVerifiedNotificationMethodsFk)
     try await sql.add(constraint: .unique(M.self, [M.adminId, M.config]))
   }
 
   func downAdminVerifiedNotificationMethods(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: adminVerifiedNotificationMethodsFk)
+    try await sql.drop(constraint: self.adminVerifiedNotificationMethodsFk)
     try await sql.drop(table: AdminVerifiedNotificationMethod.M1.self)
   }
 
@@ -120,14 +120,14 @@ struct AdminTables: GertieMigration {
       Column(M.methodId, .uuid)
       Column(.createdAt, .timestampWithTimezone)
     }
-    try await sql.add(constraint: adminNotificationsAdminIdFk)
-    try await sql.add(constraint: adminNotificationsMethodIdFk)
+    try await sql.add(constraint: self.adminNotificationsAdminIdFk)
+    try await sql.add(constraint: self.adminNotificationsMethodIdFk)
     try await sql.add(constraint: .unique(M.self, [M.methodId, M.adminId, M.trigger]))
   }
 
   func downAdminNotifications(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: adminNotificationsAdminIdFk)
-    try await sql.drop(constraint: adminNotificationsMethodIdFk)
+    try await sql.drop(constraint: self.adminNotificationsAdminIdFk)
+    try await sql.drop(constraint: self.adminNotificationsMethodIdFk)
     try await sql.drop(table: AdminNotification.M1.self)
     try await sql.drop(enum: AdminNotification.Trigger.self)
   }

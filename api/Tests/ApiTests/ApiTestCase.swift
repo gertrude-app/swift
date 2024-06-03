@@ -33,14 +33,14 @@ class ApiTestCase: XCTestCase {
 
   override static func setUp() {
     Current = .mock
-    app = Application(.testing)
-    try! Configure.app(app)
-    app.logger = .null
+    self.app = Application(.testing)
+    try! Configure.app(self.app)
+    self.app.logger = .null
     // doing this once per test run gives about a 10x speedup when running all tests
-    if !migrated {
-      try! app.autoRevert().wait()
-      try! app.autoMigrate().wait()
-      migrated = true
+    if !self.migrated {
+      try! self.app.autoRevert().wait()
+      try! self.app.autoMigrate().wait()
+      self.migrated = true
     }
   }
 
@@ -67,7 +67,7 @@ class ApiTestCase: XCTestCase {
   }
 
   override static func tearDown() {
-    app.shutdown()
+    self.app.shutdown()
     sync { await SQL.resetPreparedStatements() }
   }
 

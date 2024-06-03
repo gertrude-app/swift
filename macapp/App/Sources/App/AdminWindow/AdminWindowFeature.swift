@@ -149,7 +149,9 @@ struct AdminWindowFeature: Feature {
     }
   }
 
-  struct RootReducer: FilterControlling, AdminAuthenticating {
+  struct RootReducer: RootReducing, FilterControlling, AdminAuthenticating {
+    typealias State = AppReducer.State
+    typealias Action = AppReducer.Action
     @Dependency(\.app) var app
     @Dependency(\.api) var api
     @Dependency(\.device) var device
@@ -187,17 +189,17 @@ extension AdminWindowFeature.RootReducer {
             Failable(result: await xpc.requestUserTypes())
           )))
         },
-        checkHealth(state: &state, action: action)
+        self.checkHealth(state: &state, action: action)
       )
 
     case .adminWindow(.webview(.healthCheck(.recheckClicked))):
-      return checkHealth(state: &state, action: action)
+      return self.checkHealth(state: &state, action: action)
 
     case .appUpdates(.delegate(.postUpdateFilterReplaceFailed)),
          .appUpdates(.delegate(.postUpdateFilterNotInstalled)):
       state.adminWindow.windowOpen = true
       state.adminWindow.screen = .healthCheck
-      return checkHealth(state: &state, action: action)
+      return self.checkHealth(state: &state, action: action)
 
     case .checkIn(.success(result: let result), _) where state.adminWindow.windowOpen:
       state.adminWindow.healthCheck.accountStatus = .ok(value: result.adminAccountStatus)
@@ -244,7 +246,7 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.gotoScreenClicked(.healthCheck)):
         let prev = state.adminWindow.screen
         state.adminWindow.screen = .healthCheck
-        return prev == .healthCheck ? .none : checkHealth(state: &state, action: action)
+        return prev == .healthCheck ? .none : self.checkHealth(state: &state, action: action)
 
       case .webview(.gotoScreenClicked(let screen)):
         state.adminWindow.screen = screen
@@ -278,14 +280,14 @@ extension AdminWindowFeature.RootReducer {
         state.adminWindow.healthCheck.filterStatus = nil
         return .merge(
           .exec { try await startFilter($0) },
-          withTimeoutAfter(seconds: 3)
+          self.withTimeoutAfter(seconds: 3)
         )
 
       case .webview(.healthCheck(.installFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = .installing
         return .merge(
           .exec { try await installFilter($0) },
-          withTimeoutAfter(seconds: 20)
+          self.withTimeoutAfter(seconds: 20)
         )
 
       case .webview(.healthCheck(.repairFilterCommunicationClicked)):
@@ -293,7 +295,7 @@ extension AdminWindowFeature.RootReducer {
 
       case .webview(.healthCheck(.zeroKeysRefreshRulesClicked)):
         state.adminWindow.healthCheck.filterStatus = nil
-        return withTimeoutAfter(seconds: 10)
+        return self.withTimeoutAfter(seconds: 10)
 
       case .webview(.healthCheck(.upgradeAppClicked)):
         return adminAuthenticated(action)
@@ -368,7 +370,7 @@ extension AdminWindowFeature.RootReducer {
         state.adminWindow.healthCheck.filterStatus = nil
         return .merge(
           .exec { try await replaceFilter($0) },
-          withTimeoutAfter(seconds: 10)
+          self.withTimeoutAfter(seconds: 10)
         )
 
       case .webview(.healthCheck(.repairFilterCommunicationClicked)):
@@ -381,7 +383,7 @@ extension AdminWindowFeature.RootReducer {
               try await replaceFilter(send)
             }
           },
-          withTimeoutAfter(seconds: 10)
+          self.withTimeoutAfter(seconds: 10)
         )
 
       case .webview(.healthCheck(.upgradeAppClicked)):
@@ -498,7 +500,7 @@ extension AdminWindowFeature.RootReducer {
   }
 
   func afterFilterChange(_ send: Send<Action>, repairing: Bool = false) async {
-    await recheckFilter(send, repairing: repairing)
+    await self.recheckFilter(send, repairing: repairing)
   }
 
   func withTimeoutAfter(seconds: Int) -> Effect<Action> {
@@ -571,7 +573,7 @@ extension AdminWindowFeature.State.HealthCheck {
   }
 
   var checkCompletionEffect: Effect<AppReducer.Action> {
-    isComplete ? Effect.cancel(id: CancelId.healthCheckTimeout) : .none
+    self.isComplete ? Effect.cancel(id: CancelId.healthCheckTimeout) : .none
   }
 }
 

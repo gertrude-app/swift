@@ -15,8 +15,8 @@ public struct FilterUserTypes: Codable, Sendable, Equatable {
 // remove this, and have the filter talk directly with this type coded as json
 public extension FilterUserTypes {
   var transport: [uid_t] {
-    var joined = exempt
-    for userId in protected {
+    var joined = self.exempt
+    for userId in self.protected {
       // uid_t is a UInt32, so we can't use negative numbers
       // +1 mil is our sentinal for protected users
       joined.append(userId + 1_000_000)

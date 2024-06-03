@@ -97,6 +97,6 @@ public extension Result {
   }
 
   var isFailure: Bool {
-    !isSuccess
+    !self.isSuccess
   }
 }

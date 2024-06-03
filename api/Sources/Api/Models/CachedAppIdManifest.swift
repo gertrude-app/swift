@@ -22,11 +22,11 @@ private actor CachedAppIdManifest {
   private var appIdManifest: AppIdManifest?
 
   func clear() {
-    appIdManifest = nil
+    self.appIdManifest = nil
   }
 
   func get() -> AppIdManifest? {
-    appIdManifest
+    self.appIdManifest
   }
 
   func set(_ appIdManifest: AppIdManifest) {

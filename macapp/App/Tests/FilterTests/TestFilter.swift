@@ -19,11 +19,11 @@ class TestFilter: NetworkFilter {
   @Dependency(\.security) var security
 
   func appCache(get bundleId: String) -> AppDescriptor? {
-    state.appCache[bundleId]
+    self.state.appCache[bundleId]
   }
 
   func appCache(insert: AppDescriptor, for bundleId: String) {
-    state.appCache[bundleId] = insert
+    self.state.appCache[bundleId] = insert
   }
 
   static func scenario(

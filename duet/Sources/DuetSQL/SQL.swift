@@ -51,7 +51,7 @@ public enum SQL {
     offset: Int? = nil
   ) -> PreparedStatement {
     var bindings: [Postgres.Data] = []
-    let WHERE = whereClause(constraint, bindings: &bindings)
+    let WHERE = self.whereClause(constraint, bindings: &bindings)
     let ORDER_BY = Order<M>.sql(orderBy)
     let LIMIT = limit.sql(.limit)
     let OFFSET = offset.sql(.offset)
@@ -63,7 +63,7 @@ public enum SQL {
     _: M.Type,
     where constraint: WhereConstraint<M> = .always
   ) -> PreparedStatement {
-    update(table: M.tableName, set: ["deleted_at": .currentTimestamp], where: constraint)
+    self.update(table: M.tableName, set: ["deleted_at": .currentTimestamp], where: constraint)
   }
 
   private static func update<M: Model>(
@@ -80,7 +80,7 @@ public enum SQL {
       setPairs.append("\"\(column)\" = $\(bindings.count)")
     }
 
-    let WHERE = whereClause(constraint, bindings: &bindings)
+    let WHERE = self.whereClause(constraint, bindings: &bindings)
 
     var RETURNING = ""
     if let returning = returning {
@@ -101,7 +101,7 @@ public enum SQL {
     where constraint: WhereConstraint<M> = .always,
     returning: Postgres.Columns? = nil
   ) -> PreparedStatement {
-    update(
+    self.update(
       table: M.tableName,
       set: values.mapKeys { M.columnName($0) },
       where: constraint,
@@ -113,7 +113,7 @@ public enum SQL {
     into _: M.Type,
     values: [M.ColumnName: Postgres.Data]
   ) throws -> PreparedStatement {
-    try insert(into: M.self, values: [values])
+    try self.insert(into: M.self, values: [values])
   }
 
   public static func insert<M: Model>(
@@ -161,7 +161,7 @@ public enum SQL {
     offset: Int? = nil
   ) -> PreparedStatement {
     var bindings: [Postgres.Data] = []
-    let WHERE = whereClause(constraint, bindings: &bindings)
+    let WHERE = self.whereClause(constraint, bindings: &bindings)
     let ORDER_BY = Order<M>.sql(order)
     let LIMIT = limit.sql(.limit)
     let OFFSET = offset.sql(.offset)
@@ -176,7 +176,7 @@ public enum SQL {
     where constraint: WhereConstraint<M> = .always
   ) -> PreparedStatement {
     var bindings: [Postgres.Data] = []
-    let WHERE = whereClause(constraint, bindings: &bindings)
+    let WHERE = self.whereClause(constraint, bindings: &bindings)
     let query = """
     SELECT COUNT(*) FROM "\(M.tableName)"\(WHERE);
     """
@@ -278,15 +278,15 @@ private actor PreparedStatements {
   var statements: [String: String] = [:]
 
   func get(_ key: String) -> String? {
-    statements[key]
+    self.statements[key]
   }
 
   func set(_ value: String, forKey key: String) {
-    statements[key] = value
+    self.statements[key] = value
   }
 
   func reset() {
-    statements = [:]
+    self.statements = [:]
   }
 }
 

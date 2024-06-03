@@ -88,12 +88,12 @@ struct Column {
   var sql: String {
     var sql = "\(name) \(type.sql)"
     // all columns are NOT NULL by default, unless explicitly set to nullable
-    if !constraints.contains(.nullable) {
+    if !self.constraints.contains(.nullable) {
       sql += " NOT NULL"
     }
-    let withoutNull = constraints.filter { $0 != .nullable && $0 != .notNull }
+    let withoutNull = self.constraints.filter { $0 != .nullable && $0 != .notNull }
     if !withoutNull.isEmpty {
-      sql += " \(constraints.map(\.sql).joined(separator: " "))"
+      sql += " \(self.constraints.map(\.sql).joined(separator: " "))"
     }
     if let defaultValue = defaultValue {
       sql += " DEFAULT \(defaultValue.sql)"
@@ -111,8 +111,8 @@ extension Column {
   ) {
     self.name = name
     self.type = type
-    constraints = [constraint]
-    defaultValue = `default`
+    self.constraints = [constraint]
+    self.defaultValue = `default`
   }
 
   init(
@@ -124,7 +124,7 @@ extension Column {
     self.name = name
     self.type = type
     self.constraints = constraints
-    defaultValue = `default`
+    self.defaultValue = `default`
   }
 }
 

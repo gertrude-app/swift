@@ -2,13 +2,13 @@ import FluentSQL
 
 struct ActivityTables: GertieMigration {
   func up(sql: SQLDatabase) async throws {
-    try await upScreenshots(sql)
-    try await upKeystrokeLines(sql)
+    try await self.upScreenshots(sql)
+    try await self.upKeystrokeLines(sql)
   }
 
   func down(sql: SQLDatabase) async throws {
-    try await downKeystrokeLines(sql)
-    try await downScreenshots(sql)
+    try await self.downKeystrokeLines(sql)
+    try await self.downScreenshots(sql)
   }
 
   // table: screenshots
@@ -30,11 +30,11 @@ struct ActivityTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
     }
-    try await sql.add(constraint: screenshotsFk)
+    try await sql.add(constraint: self.screenshotsFk)
   }
 
   func downScreenshots(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: screenshotsFk)
+    try await sql.drop(constraint: self.screenshotsFk)
     try await sql.drop(table: Screenshot.M4.self)
   }
 
@@ -56,11 +56,11 @@ struct ActivityTables: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
       Column(.deletedAt, .timestampWithTimezone, .nullable)
     }
-    try await sql.add(constraint: keystrokeLinesFk)
+    try await sql.add(constraint: self.keystrokeLinesFk)
   }
 
   func downKeystrokeLines(_ sql: SQLDatabase) async throws {
-    try await sql.drop(constraint: keystrokeLinesFk)
+    try await sql.drop(constraint: self.keystrokeLinesFk)
     try await sql.drop(table: KeystrokeLine.M4.self)
   }
 }

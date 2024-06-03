@@ -11,6 +11,8 @@ enum WebSocketFeature {
   }
 
   struct RootReducer: RootReducing {
+    typealias Action = AppReducer.Action
+    typealias State = AppReducer.State
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.device) var device
     @Dependency(\.websocket) var websocket
@@ -36,7 +38,7 @@ extension WebSocketFeature.RootReducer {
 
     case .startProtecting(user: let user):
       guard state.admin.accountStatus != .inactive else { return .none }
-      return connect(user)
+      return self.connect(user)
 
     case .filter(.receivedState(let filterState)):
       return .exec { [state] _ in
@@ -45,7 +47,7 @@ extension WebSocketFeature.RootReducer {
       }
 
     case .history(.userConnection(.connect(.success(let user)))):
-      return connect(user)
+      return self.connect(user)
 
     case .application(.willSleep),
          .application(.willTerminate),
@@ -74,7 +76,7 @@ extension WebSocketFeature.RootReducer {
     case .application(.didWake):
       guard state.admin.accountStatus != .inactive else { return .none }
       guard let user = state.user.data else { return .none }
-      return connect(user)
+      return self.connect(user)
 
     case .websocket(let websocketAction):
       guard state.admin.accountStatus != .inactive else { return .none }

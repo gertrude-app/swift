@@ -61,13 +61,13 @@ extension AppWindow {
 
   @MainActor func openWindow() {
     window = NSWindow(
-      contentRect: initialSize,
+      contentRect: self.initialSize,
       styleMask: [.titled, .closable, .miniaturizable, .resizable],
       backing: .buffered,
       defer: false
     )
 
-    window?.minSize = minSize
+    window?.minSize = self.minSize
     window?.center()
     window?.title = "\(title)  |  Gertrude"
     window?.delegate = windowDelegate
@@ -82,18 +82,18 @@ extension AppWindow {
       window.setFrame(windowFrame, display: true)
     }
 
-    if !showTitleBar {
+    if !self.showTitleBar {
       window?.titleVisibility = .hidden
       window?.styleMask.insert(NSWindow.StyleMask.fullSizeContentView)
       window?.isMovableByWindowBackground = true
     }
 
     window?.isReleasedWhenClosed = false
-    window?.level = windowLevel
+    window?.level = self.windowLevel
 
     let wvc = WebViewController<State, WebViewAction>()
-    wvc.withTitleBar = showTitleBar
-    wvc.supportsDarkMode = supportsDarkMode
+    wvc.withTitleBar = self.showTitleBar
+    wvc.supportsDarkMode = self.supportsDarkMode
 
     wvc.send = { [weak self] action in
       guard let self = self else { return }
@@ -154,6 +154,6 @@ class AppWindowDelegate: NSObject, NSWindowDelegate {
   let events = PassthroughSubject<Event, Never>()
 
   func windowWillClose(_ notification: Notification) {
-    events.send(.willClose)
+    self.events.send(.willClose)
   }
 }
