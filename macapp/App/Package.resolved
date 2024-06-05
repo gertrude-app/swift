@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/wickwirew/Runtime.git",
       "state" : {
-        "revision" : "ea112a73f7a8772a92b125ceeaaf61f1844466bd",
-        "version" : "2.2.6"
+        "revision" : "b90e9ab1c66a964a9edf32fe38ea2774c0e5821b",
+        "version" : "2.2.7"
       }
     },
     {
