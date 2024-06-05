@@ -11,7 +11,6 @@ import XExpect
 @testable import App
 
 @MainActor final class OnboardingFeatureTests: XCTestCase {
-
   func testFirstBootOnboardingHappyPathExhaustive() async {
     let (store, _) = AppReducer.testStore(exhaustive: true, mockDeps: false)
     let scheduler = DispatchQueue.test
@@ -343,7 +342,12 @@ import XExpect
       $0.onboarding.windowOpen = false
     }
 
-    await expect(checkIn.invocations).toEqual([.init(appVersion: "1.0.0", filterVersion: "1.0.0")])
+    await expect(checkIn.invocations).toEqual([.init(
+      appVersion: "1.0.0",
+      filterVersion: "1.0.0",
+      userIsAdmin: false,
+      osVersion: "14.0.0"
+    )])
     await expect(enableLaunchAtLogin.invocations).toEqual(1)
 
     // shutdown tries fo flush keystrokes

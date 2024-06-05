@@ -1,4 +1,5 @@
 import DuetSQL
+import Gertie
 import MacAppRoute
 import XCTest
 import XExpect
@@ -6,7 +7,6 @@ import XExpect
 @testable import Api
 
 final class CheckInResolverTests: ApiTestCase {
-
   func testCheckIn_UserProps() async throws {
     let user = try await Entities.user(config: {
       $0.keyloggingEnabled = false
@@ -50,6 +50,52 @@ final class CheckInResolverTests: ApiTestCase {
     expect(output.adminAccountStatus).toEqual(.needsAttention)
     expect(output.updateReleaseChannel).toEqual(.beta)
     expect(output.latestRelease.semver).toEqual("3.0.0")
+  }
+
+  func testCheckInUpdatesDeviceData() async throws {
+    let user = try await Entities.user().withDevice {
+      $0.isAdmin = nil
+    } adminDevice: {
+      $0.osVersion = nil
+    }
+
+    _ = try await CheckIn.resolve(
+      with: .init(
+        appVersion: "1.0.0",
+        filterVersion: "3.3.3",
+        userIsAdmin: true,
+        osVersion: "14.5.0"
+      ),
+      in: user.context
+    )
+
+    let device = try await Device.find(user.adminDevice.id)
+    expect(device.osVersion).toEqual(Semver("14.5.0"))
+    let userDevice = try await UserDevice.find(user.device.id)
+    expect(userDevice.isAdmin).toEqual(true)
+  }
+
+  func testCheckInDoesntOverwriteDeviceDataWithNil() async throws {
+    let user = try await Entities.user().withDevice {
+      $0.isAdmin = false
+    } adminDevice: {
+      $0.osVersion = Semver("14.5.0")
+    }
+
+    _ = try await CheckIn.resolve(
+      with: .init(
+        appVersion: "1.0.0",
+        filterVersion: "3.3.3",
+        userIsAdmin: nil, // <-- don't overwrite val in database
+        osVersion: nil // <-- don't overwrite val in database
+      ),
+      in: user.context
+    )
+
+    let device = try await Device.find(user.adminDevice.id)
+    expect(device.osVersion).toEqual(Semver("14.5.0"))
+    let userDevice = try await UserDevice.find(user.device.id)
+    expect(userDevice.isAdmin).toEqual(false)
   }
 
   func testCheckIn_AppManifest() async throws {
@@ -99,7 +145,7 @@ final class CheckInResolverTests: ApiTestCase {
 // helpers
 
 @discardableResult
-func createAutoIncludeKeychain() async throws -> (Keychain, Key) {
+func createAutoIncludeKeychain() async throws -> (Keychain, Api.Key) {
   guard let autoIdStr = Env.get("AUTO_INCLUDED_KEYCHAIN_ID"),
         let autoId = UUID(uuidString: autoIdStr) else {
     fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")

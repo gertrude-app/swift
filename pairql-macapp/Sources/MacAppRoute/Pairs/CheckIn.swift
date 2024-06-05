@@ -9,10 +9,19 @@ public struct CheckIn: Pair {
   public struct Input: PairInput {
     public var appVersion: String
     public var filterVersion: String?
+    public var userIsAdmin: Bool?
+    public var osVersion: String?
 
-    public init(appVersion: String, filterVersion: String?) {
+    public init(
+      appVersion: String,
+      filterVersion: String?,
+      userIsAdmin: Bool? = nil,
+      osVersion: String? = nil
+    ) {
       self.appVersion = appVersion
       self.filterVersion = filterVersion
+      self.userIsAdmin = userIsAdmin
+      self.osVersion = osVersion
     }
   }
 

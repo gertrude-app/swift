@@ -1,3 +1,4 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Foundation
 import MacAppRoute
@@ -49,6 +50,21 @@ enum NotificationsSetting: String, Equatable, Codable {
   case none
   case banner
   case alert
+}
+
+public extension ApiClient {
+  func appCheckIn(_ filterVersion: String?) async throws -> CheckIn.Output {
+    @Dependency(\.app) var appClient
+    @Dependency(\.device) var device
+    return try await checkIn(
+      .init(
+        appVersion: appClient.installedVersion() ?? "unknown",
+        filterVersion: filterVersion,
+        userIsAdmin: device.currentMacOsUserType() == .admin,
+        osVersion: device.osVersion().semver
+      )
+    )
+  }
 }
 
 extension URL {

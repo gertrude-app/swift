@@ -83,6 +83,8 @@ class AppMigratorTests: XCTestCase {
   func testMigratesLegacyV1DataFromApiCallSuccess() async {
     await withDependencies {
       $0.app.installedVersion = { "1.0.0" }
+      $0.device.currentMacOsUserType = { .standard }
+      $0.device.osVersion = { .sonoma }
     } operation: {
 
       var migrator = testMigrator
@@ -163,6 +165,8 @@ class AppMigratorTests: XCTestCase {
   func testMigratesLegacyV1DataWhenApiCallFails() async {
     await withDependencies {
       $0.app.installedVersion = { "1.0.0" }
+      $0.device.currentMacOsUserType = { .standard }
+      $0.device.osVersion = { .sonoma }
     } operation: {
       var migrator = testMigrator
 
