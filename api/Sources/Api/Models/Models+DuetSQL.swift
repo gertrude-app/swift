@@ -836,3 +836,35 @@ extension Browser: Model {
 }
 
 extension BrowserMatch: PostgresJsonable {}
+
+extension SecurityEvent: Model {
+  public static let tableName = SecurityEvent.M21.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .adminId:
+      return .uuid(adminId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
+    case .event:
+      return .string(event)
+    case .detail:
+      return .string(detail)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .adminId: .uuid(adminId),
+      .userDeviceId: .uuid(userDeviceId),
+      .event: .string(event),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}

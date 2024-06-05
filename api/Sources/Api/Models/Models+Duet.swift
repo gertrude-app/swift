@@ -487,3 +487,18 @@ extension Browser {
     case createdAt
   }
 }
+
+extension SecurityEvent: Duet.Identifiable {
+  typealias Id = Tagged<SecurityEvent, UUID>
+}
+
+extension SecurityEvent {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case adminId
+    case userDeviceId
+    case event
+    case detail
+    case createdAt
+  }
+}
