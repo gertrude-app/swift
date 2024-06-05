@@ -4,6 +4,7 @@ final class UserDevice: Codable {
   var id: Id
   var userId: User.Id
   var deviceId: Device.Id
+  var isAdmin: Bool?
   var appVersion: String
   var username: String
   var fullUsername: String
@@ -20,6 +21,7 @@ final class UserDevice: Codable {
     id: Id = .init(),
     userId: User.Id,
     deviceId: Device.Id,
+    isAdmin: Bool?,
     appVersion: String,
     username: String,
     fullUsername: String,
@@ -32,6 +34,7 @@ final class UserDevice: Codable {
     self.username = username
     self.fullUsername = fullUsername
     self.numericId = numericId
+    self.isAdmin = isAdmin
   }
 }
 

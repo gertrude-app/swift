@@ -196,7 +196,7 @@ extension AppBundleId: Model {
 }
 
 extension UserDevice: Model {
-  public static let tableName = "user_devices" // TODO: device-refactor
+  public static let tableName = M11.tableName
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -207,6 +207,8 @@ extension UserDevice: Model {
       return .uuid(deviceId)
     case .userId:
       return .uuid(userId)
+    case .isAdmin:
+      return .bool(isAdmin)
     case .appVersion:
       return .string(appVersion)
     case .fullUsername:
@@ -230,6 +232,7 @@ extension UserDevice: Model {
       .appVersion: .string(appVersion),
       .username: .string(username),
       .fullUsername: .string(fullUsername),
+      .isAdmin: .bool(isAdmin),
       .numericId: .int(numericId),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
@@ -257,6 +260,8 @@ extension Device: Model {
       return .enum(appReleaseChannel)
     case .filterVersion:
       return .varchar(filterVersion?.string)
+    case .osVersion:
+      return .varchar(osVersion?.string)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -273,6 +278,7 @@ extension Device: Model {
       .serialNumber: .string(serialNumber),
       .appReleaseChannel: .enum(appReleaseChannel),
       .filterVersion: .varchar(filterVersion?.string),
+      .osVersion: .varchar(osVersion?.string),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

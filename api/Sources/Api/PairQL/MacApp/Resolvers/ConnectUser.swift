@@ -1,4 +1,5 @@
 import DuetSQL
+import Gertie
 import MacAppRoute
 import Vapor
 
@@ -14,9 +15,9 @@ extension ConnectUser: Resolver {
     ) }
 
     let userDevice: UserDevice
-    let user = try await Current.db.find(userId)
+    let user = try await User.find(userId)
 
-    var adminDevice = try? await Current.db.query(Device.self)
+    var adminDevice = try? await Device.query()
       .where(.serialNumber == input.serialNumber)
       .first()
 
@@ -24,7 +25,7 @@ extension ConnectUser: Resolver {
     // per computer + macOS user (represented by os user numeric id)
     var existingUserDevice: UserDevice?
     if let adminDevice {
-      existingUserDevice = try? await Current.db.query(UserDevice.self)
+      existingUserDevice = try? await UserDevice.query()
         .where(.deviceId == adminDevice.id)
         .where(.numericId == .int(input.numericId))
         .first()
@@ -50,11 +51,12 @@ extension ConnectUser: Resolver {
       existingUserDevice.username = input.username
       existingUserDevice.fullUsername = input.fullUsername
       existingUserDevice.userId = user.id
+      existingUserDevice.isAdmin = input.isAdmin
 
       // update the device to be attached to the user issuing this request
-      userDevice = try await Current.db.update(existingUserDevice)
+      userDevice = try await existingUserDevice.save()
 
-      try await Current.db.query(UserToken.self)
+      try await UserToken.query()
         .where(.userDeviceId == userDevice.id)
         .where(.userId == oldUserId)
         .delete()
@@ -62,28 +64,30 @@ extension ConnectUser: Resolver {
     } else {
       if adminDevice == nil {
         // create new admin device if we don't have one
-        adminDevice = try await Current.db.create(Device(
+        adminDevice = try await Device(
           adminId: user.adminId,
+          osVersion: input.osVersion.flatMap(Semver.init),
           modelIdentifier: input.modelIdentifier,
           serialNumber: input.serialNumber
-        ))
+        ).create()
       }
 
       // ...and create the user device
-      userDevice = try await Current.db.create(UserDevice(
+      userDevice = try await UserDevice(
         userId: user.id,
         deviceId: adminDevice?.id ?? .init(),
+        isAdmin: input.isAdmin,
         appVersion: input.appVersion,
         username: input.username,
         fullUsername: input.fullUsername,
         numericId: input.numericId
-      ))
+      ).create()
     }
 
-    let token = try await Current.db.create(UserToken(
+    let token = try await UserToken(
       userId: user.id,
       userDeviceId: userDevice.id
-    ))
+    ).create()
 
     return Output(
       id: user.id.rawValue,

@@ -86,6 +86,7 @@ enum AdminBetsy {
     let userDevice = try await Current.db.create(UserDevice(
       userId: jimmy.id,
       deviceId: macAir.id,
+      isAdmin: false,
       appVersion: "2.1.0",
       username: "jimmy",
       fullUsername: "Jimmy McStandard",
@@ -105,6 +106,7 @@ enum AdminBetsy {
       id: Ids.jimmysDevice,
       userId: jimmy.id,
       deviceId: imac.id,
+      isAdmin: false,
       appVersion: "2.1.0",
       username: "jimmy",
       fullUsername: "Jimmy McStandard",
@@ -129,6 +131,7 @@ enum AdminBetsy {
       id: Ids.sallysDevice,
       userId: sally.id,
       deviceId: macbookPro.id,
+      isAdmin: false,
       appVersion: "2.1.0",
       username: "sally",
       fullUsername: "Sally McStandard",

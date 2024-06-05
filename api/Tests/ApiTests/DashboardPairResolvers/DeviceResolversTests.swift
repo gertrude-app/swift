@@ -20,6 +20,7 @@ final class DeviceResolversTests: ApiTestCase {
     try await UserDevice.create(.init(
       userId: user2.id,
       deviceId: device.id,
+      isAdmin: false,
       appVersion: "2.0.1", // <-- lower app version
       username: "Bob",
       fullUsername: "Bob",

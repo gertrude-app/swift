@@ -7,6 +7,7 @@ extension UserDevice: RandomMocked {
     UserDevice(
       userId: .init(),
       deviceId: .init(),
+      isAdmin: false,
       appVersion: "2.0.0", // must be valid semver
       username: "@mock username liljimmy",
       fullUsername: "@mock fullUsername Jimmy McStandard",
@@ -18,6 +19,7 @@ extension UserDevice: RandomMocked {
     UserDevice(
       userId: .init(),
       deviceId: .init(),
+      isAdmin: false,
       appVersion: "0.0.0", // must be valid semver
       username: "",
       fullUsername: "",
@@ -29,6 +31,7 @@ extension UserDevice: RandomMocked {
     UserDevice(
       userId: .init(),
       deviceId: .init(),
+      isAdmin: false,
       appVersion: "3.\(Int.random(in: 10 ... 99)).\(Int.random(in: 10 ... 99))",
       username: "@random".random,
       fullUsername: "@random".random,
