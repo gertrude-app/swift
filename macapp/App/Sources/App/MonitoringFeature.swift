@@ -25,8 +25,10 @@ enum MonitoringFeature: Feature {
     @Dependency(\.api) var api
     @Dependency(\.date.now) var now
     @Dependency(\.backgroundQueue) var bgQueue
+    @Dependency(\.device) var device
     @Dependency(\.monitoring) var monitoring
     @Dependency(\.network) var network
+    @Dependency(\.userDefaults) var userDefaults
   }
 }
 
@@ -110,6 +112,21 @@ extension MonitoringFeature.RootReducer {
         )
       }
       return flushPendingKeystrokes
+
+    case .heartbeat(.everyTwentyMinutes) where state.admin.accountStatus != .inactive:
+      return .exec { _ in
+        let users = try await self.device.listMacOSUsers()
+        guard let prevNum = self.userDefaults.getInt("numMacOsUsers") else {
+          self.userDefaults.setInt("numMacOsUsers", users.count)
+          return
+        }
+        if users.count != prevNum {
+          self.userDefaults.setInt("numMacOsUsers", users.count)
+        }
+        if users.count > prevNum {
+          await self.api.securityEvent(.newMacOsUserCreated)
+        }
+      }
 
     case .application(.willSleep),
          .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))):

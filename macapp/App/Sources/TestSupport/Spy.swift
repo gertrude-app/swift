@@ -164,6 +164,14 @@ public func spySync<T, Arg>(on arg: Arg.Type, returning value: T) -> SpySync<T, 
   spySync(returning: [], then: value)
 }
 
+public func spySync<T, Arg>(
+  on arg: Arg.Type,
+  returning values: [T],
+  then value: T
+) -> SpySync<T, Arg> {
+  spySync(returning: values, then: value)
+}
+
 public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Spy<T, Arg> {
   let returns = ActorIsolated<[T]>(values)
   let invocations = ActorIsolated<[Arg]>([])

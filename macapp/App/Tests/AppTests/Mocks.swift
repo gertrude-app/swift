@@ -64,3 +64,8 @@ extension Persistent.State: Mocked {
     )
   }
 }
+
+extension MacOSUser {
+  static let dad = MacOSUser(id: 501, name: "Dad", type: .admin)
+  static let franny = MacOSUser(id: 502, name: "Franny", type: .standard)
+}

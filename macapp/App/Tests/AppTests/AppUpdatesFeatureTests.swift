@@ -167,6 +167,9 @@ import XExpect
     store.deps.storage.savePersistentState = saveState.fn
     let triggerUpdate = spy(on: String.self, returning: ())
     store.deps.updater.triggerUpdate = triggerUpdate.fn
+    // ignore checking num mac users
+    store.deps.userDefaults.getInt = { _ in 3 }
+    store.deps.userDefaults.setInt = { _, _ in }
 
     await store.send(.application(.didFinishLaunching)) // <-- start the heartbeat
     await scheduler.advance(by: .seconds(60 * 60 * 6 - 1)) // one second before 6 hours
@@ -190,6 +193,7 @@ import XExpect
 
     let triggerUpdate = spy(on: String.self, returning: ())
     store.deps.updater.triggerUpdate = triggerUpdate.fn
+    store.deps.userDefaults = .mock // ignore checking num mac users
 
     await store.send(.application(.didFinishLaunching)) // <-- start the heartbeat
     await scheduler.advance(by: .seconds(60 * 60 * 6))

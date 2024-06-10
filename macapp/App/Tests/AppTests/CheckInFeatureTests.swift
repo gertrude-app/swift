@@ -66,6 +66,10 @@ import XExpect
 
   func testCheckInInHeartbeat() async {
     let (store, bgQueue) = AppReducer.testStore()
+    // ignore checking num mac users
+    store.deps.userDefaults.getInt = { _ in 3 }
+    store.deps.userDefaults.setInt = { _, _ in }
+
     await store.send(.application(.didFinishLaunching)) // start heartbeat
 
     let output = CheckIn.Output.mock { $0.userData.screenshotSize = 999 }
