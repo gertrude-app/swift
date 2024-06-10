@@ -210,13 +210,19 @@ final class MacAppResolverTests: ApiTestCase {
     expect(screenshot).not.toBeNil()
   }
 
-  // helpers
+  func testLogsSecurityEvent() async throws {
+    let user = try await Entities.user().withDevice()
 
-  func context(_ user: UserEntities) async throws -> UserContext {
-    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
-  }
+    let output = try await LogSecurityEvent.resolve(
+      with: .init(deviceId: user.device.id.rawValue, event: "appQuit", detail: nil),
+      in: context(user)
+    )
 
-  func context(_ user: UserWithDeviceEntities) async throws -> UserContext {
-    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
+    let retrieved = try await SecurityEvent.query()
+      .where(.userDeviceId == user.device.id)
+      .first()
+
+    expect(output).toEqual(.success)
+    expect(retrieved.event).toEqual("appQuit")
   }
 }

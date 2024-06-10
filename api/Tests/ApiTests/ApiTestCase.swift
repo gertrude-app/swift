@@ -82,6 +82,14 @@ class ApiTestCase: XCTestCase {
   func context(_ admin: AdminWithKeychainEntities) -> AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
   }
+
+  func context(_ user: UserEntities) async throws -> UserContext {
+    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
+  }
+
+  func context(_ user: UserWithDeviceEntities) async throws -> UserContext {
+    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
+  }
 }
 
 func sync(
