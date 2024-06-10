@@ -152,8 +152,8 @@ struct AdminWindowFeature: Feature {
   struct RootReducer: RootReducing, FilterControlling, AdminAuthenticating {
     typealias State = AppReducer.State
     typealias Action = AppReducer.Action
-    @Dependency(\.app) var app
     @Dependency(\.api) var api
+    @Dependency(\.app) var app
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
@@ -394,6 +394,7 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.confirmQuitAppClicked):
         state.adminWindow.quitting = true
         return .exec { _ in
+          await api.securityEvent(.appQuit)
           // give time for uploading keystrokes, websocket disconnect, etc
           try await mainQueue.sleep(for: .seconds(2))
           await app.quit()
@@ -415,6 +416,9 @@ extension AdminWindowFeature.RootReducer {
           state.adminWindow.exemptUserIds = .ok(value: [])
         }
         return .exec { send in
+          if enabled {
+            await api.securityEvent(.macosUserExempted, "userId: \(userId)")
+          }
           _ = await xpc.setUserExemption(userId, enabled)
         }
 
@@ -438,6 +442,7 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.gotoScreenClicked(.advanced)):
         state.adminWindow.screen = .advanced
         return .exec { send in
+          await api.securityEvent(.advancedSettingsOpened)
           guard network.isConnected() else { return }
           if let versions = try? await api.recentAppVersions() {
             await send(.adminWindow(.receivedRecentAppVersions(versions)))

@@ -54,7 +54,6 @@ extension AppUpdatesFeature.State {
 }
 
 extension AppUpdatesFeature.RootReducer: FilterControlling {
-
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
@@ -73,9 +72,11 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
           default:
             try await replaceFilter(send)
             if await xpc.notConnected() {
+              await api.securityEvent(.appUpdateFailedToReplaceSystemExtension)
               await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
               unexpectedError(id: "cde231a0", detail: "state: \(await filter.state())")
             } else {
+              await api.securityEvent(.appUpdateSucceeded)
               await send(.filter(.replacedFilterVersion(version)))
 
               // refresh the rules post-update, or else health check will complain
@@ -169,6 +170,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     _ query: AppcastQuery,
     _ persist: Persistent.State
   ) async throws {
+    await api.securityEvent(.appUpdateInitiated)
     let feedUrl = "\(updater.endpoint.absoluteString)\(query.urlString)"
     try await storage.savePersistentState(persist)
     try await updater.triggerUpdate(feedUrl)

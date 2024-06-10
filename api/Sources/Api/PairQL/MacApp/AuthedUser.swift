@@ -33,6 +33,9 @@ extension AuthedUserRoute: RouteResponder {
     case .getUserData:
       let output = try await GetUserData.resolve(in: context)
       return try await self.respond(with: output)
+    case .logSecurityEvent(let input):
+      let output = try await LogSecurityEvent.resolve(with: input, in: context)
+      return try await self.respond(with: output)
     case .refreshRules(let input):
       let output = try await RefreshRules.resolve(with: input, in: context)
       return try await self.respond(with: output)

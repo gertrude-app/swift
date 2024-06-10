@@ -34,6 +34,7 @@ enum MenuBarFeature: Feature {
   struct RootReducer: AdminAuthenticating {
     typealias Action = AppReducer.Action
     typealias State = AppReducer.State
+    @Dependency(\.api) var api
     @Dependency(\.app) var app
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
@@ -78,19 +79,26 @@ extension MenuBarFeature.RootReducer {
       return adminAuthenticated(action)
 
     case .adminAuthed(.menuBar(.quitForNowClicked)):
-      return .exec { _ in await app.quit() }
+      return .exec { _ in
+        await api.securityEvent(.appQuit)
+        await app.quit()
+      }
 
     case .menuBar(.removeFilterClicked):
       return adminAuthenticated(action)
 
     case .adminAuthed(.menuBar(.removeFilterClicked)):
-      return .exec { _ in _ = await filter.uninstall() }
+      return .exec { _ in
+        await api.securityEvent(.systemExtensionChanged, "uninstall")
+        _ = await filter.uninstall()
+      }
 
     case .menuBar(.quitForUninstallClicked):
       return adminAuthenticated(action)
 
     case .adminAuthed(.menuBar(.quitForUninstallClicked)):
       return .exec { _ in
+        await api.securityEvent(.appQuit, "for uninstall")
         _ = await xpc.disconnectUser()
         _ = await filter.uninstall()
         await storage.deleteAllPersistentState()

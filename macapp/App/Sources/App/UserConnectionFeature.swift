@@ -52,18 +52,20 @@ extension UserConnectionFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))):
+      let name = state.user.data?.name
       state.user = .init()
       state.history.userConnection = .notConnected
       state.adminWindow.windowOpen = false
       state.menuBar.dropdownOpen = true
-      return self.disconnectUser(persisting: state.persistent)
+      return self.disconnectUser(name, persisting: state.persistent)
 
     case .websocket(.receivedMessage(.userDeleted)),
          .history(.userConnection(.disconnectMissingUser)):
+      let name = state.user.data?.name
       state.user = .init()
       state.history.userConnection = .notConnected
       return .merge(
-        self.disconnectUser(persisting: state.persistent),
+        self.disconnectUser(name, persisting: state.persistent),
         .exec { send in
           await send(.focusedNotification(.text(
             "Child deleted",
@@ -77,9 +79,10 @@ extension UserConnectionFeature.RootReducer {
     }
   }
 
-  func disconnectUser(persisting updated: Persistent.State) -> Effect<Action> {
+  func disconnectUser(_ name: String?, persisting updated: Persistent.State) -> Effect<Action> {
     .merge(
       .exec { _ in
+        await api.securityEvent(.childDisconnected, "name: \(name ?? "(nil)")")
         await api.clearUserToken()
         try await storage.savePersistentState(updated)
         _ = await xpc.disconnectUser()

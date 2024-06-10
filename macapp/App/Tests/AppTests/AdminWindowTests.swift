@@ -11,7 +11,7 @@ import XExpect
 @testable import ClientInterfaces
 
 @MainActor final class AdminWindowTests: XCTestCase {
-  func testReconnectUserClicked() async {
+  func testDisconnectUserClicked() async {
     let (store, _) = AppReducer.testStore(mockDeps: false) {
       $0.adminWindow.windowOpen = true
       $0.user = .init(data: .mock)
@@ -24,8 +24,11 @@ import XExpect
     store.deps.api.clearUserToken = clearUserToken.fn
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
+    store.deps.storage.loadPersistentState = { .mock }
     let filterNotify = mock(once: Result<Void, XPCErr>.success(()))
     store.deps.filterXpc.disconnectUser = filterNotify.fn
+    let securityEvent = spy(on: LogSecurityEvent.Input.self, returning: ())
+    store.deps.api.logSecurityEvent = securityEvent.fn
 
     await store.send(.adminAuthed(.adminWindow(.webview(.disconnectUserClicked)))) {
       $0.history.userConnection = .notConnected
@@ -43,6 +46,8 @@ import XExpect
       user: nil,
       resumeOnboarding: nil
     )])
+    await expect(securityEvent.invocations)
+      .toEqual([.init(.childDisconnected, "name: Mock User")])
   }
 
   func testSuspendFilter() async {

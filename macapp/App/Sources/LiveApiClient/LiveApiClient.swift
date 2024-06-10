@@ -49,6 +49,16 @@ extension ApiClient: DependencyKey {
         withUnauthed: .logInterestingEvent(input)
       )
     },
+    logSecurityEvent: { input in
+      // sleep allows us to log events possibly before token/account resolved
+      try? await Task.sleep(nanoseconds: 1_000_000) // 1 millisecond
+      guard await accountActive.value else { return }
+      guard await userToken.value != nil else { return }
+      _ = try? await output(
+        from: LogSecurityEvent.self,
+        with: .logSecurityEvent(input)
+      )
+    },
     recentAppVersions: {
       try await output(
         from: RecentAppVersions.self,
