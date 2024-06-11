@@ -52,9 +52,10 @@ class FilterDataProvider: NEFilterDataProvider {
   }
 
   override func stopFilter(
-    with _: NEProviderStopReason,
+    with reason: NEProviderStopReason,
     completionHandler: @escaping () -> Void
   ) {
+    os_log("[G•] FILTER data provider: filter stopped, reason: %{public}s", "\(reason)")
     completionHandler()
   }
 

@@ -864,6 +864,7 @@ extension SecurityEvent: Model {
       .adminId: .uuid(adminId),
       .userDeviceId: .uuid(userDeviceId),
       .event: .string(event),
+      .detail: .string(detail),
       .createdAt: .currentTimestamp,
     ]
   }

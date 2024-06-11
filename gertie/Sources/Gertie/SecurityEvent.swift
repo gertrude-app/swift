@@ -4,7 +4,8 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case filterSuspensionGrantedByAdmin
     case filterSuspensionExpired
     case filterSuspensionEndedEarly
-    case systemExtensionChanged
+    case systemExtensionChangeRequested
+    case systemExtensionStateChanged
     case appQuit
     case appLaunched
     case newMacOsUserCreated

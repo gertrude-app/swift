@@ -10,9 +10,9 @@ extension LogSecurityEvent: Resolver {
       return .success
     }
     if let event = Gertie.SecurityEvent.MacApp(rawValue: input.event) {
-      await Current.slack.sysLog("Recieved security event: `\(event)`") // temporary
+      await Current.slack.sysLog("Received security event: `\(event)`") // temporary
     } else {
-      await Current.slack.sysLog("Recieved unknown security event: `\(input.event)`")
+      await Current.slack.sysLog("Received unknown security event: `\(input.event)`")
     }
     let adminDevice = try await userDevice.adminDevice()
     try await Api.SecurityEvent(

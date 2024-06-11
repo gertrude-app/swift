@@ -89,7 +89,7 @@ extension MenuBarFeature.RootReducer {
 
     case .adminAuthed(.menuBar(.removeFilterClicked)):
       return .exec { _ in
-        await api.securityEvent(.systemExtensionChanged, "uninstall")
+        await api.securityEvent(.systemExtensionChangeRequested, "uninstall")
         _ = await filter.uninstall()
       }
 

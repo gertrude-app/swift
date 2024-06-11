@@ -20,11 +20,19 @@ struct FilterFeature: Feature {
   }
 
   struct Reducer: FeatureReducer {
+    @Dependency(\.api) var api
+
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
-      case .receivedState(let extensionState):
-        state.extension = extensionState
-        return .none
+      case .receivedState(let newState):
+        let oldState = state.extension
+        state.extension = newState
+        return .exec { _ in
+          if oldState != newState, oldState != .unknown {
+            let detail = "from \(oldState) to \(newState)"
+            await api.securityEvent(.systemExtensionStateChanged, detail)
+          }
+        }
 
       case .receivedVersion(let version),
            .replacedFilterVersion(let version):
@@ -154,7 +162,7 @@ extension FilterFeature.RootReducer {
       // so optimistically set the extension state, and then recheck after 2 seconds
       state.filter.extension = .installedButNotRunning
       return .exec { send in
-        await api.securityEvent(.systemExtensionChanged, "stop")
+        await api.securityEvent(.systemExtensionChangeRequested, "stop")
         _ = await filterExtension.stop()
         try await mainQueue.sleep(for: .seconds(2))
         await send(.filter(.receivedState(await filterExtension.state())))
@@ -165,7 +173,7 @@ extension FilterFeature.RootReducer {
       return .merge(
         .exec { send in
           if !extensionInstalled {
-            await api.securityEvent(.systemExtensionChanged, "install")
+            await api.securityEvent(.systemExtensionChangeRequested, "install")
             let installResult = await filterExtension.install()
             switch installResult {
             case .installedSuccessfully:
@@ -184,7 +192,7 @@ extension FilterFeature.RootReducer {
               unexpectedError(id: "8a8762e7", detail: "result: \(installResult)")
             }
           } else {
-            await api.securityEvent(.systemExtensionChanged, "start")
+            await api.securityEvent(.systemExtensionChangeRequested, "start")
             let state = await filterExtension.start()
             switch state {
             case .installedAndRunning:

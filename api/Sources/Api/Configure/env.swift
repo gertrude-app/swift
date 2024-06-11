@@ -19,6 +19,10 @@ extension Configure {
     )
 
     Current.logger.notice("App environment is \(Env.mode.coloredName)")
+
+    if Env.mode == .dev {
+      Current.logger.notice("Connected to database `\(Env.DATABASE_NAME)`")
+    }
   }
 }
 
