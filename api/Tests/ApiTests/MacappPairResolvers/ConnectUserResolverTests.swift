@@ -1,4 +1,5 @@
 import DuetSQL
+import Gertie
 import MacAppRoute
 import XCore
 import XCTest
@@ -7,7 +8,6 @@ import XExpect
 @testable import Api
 
 final class ConnectUserResolversTests: ApiTestCase {
-
   func testConnectUser_createNewDevice() async throws {
     let user = try await Entities.user()
     let code = await Current.ephemeral.createPendingAppConnection(user.id)
@@ -25,8 +25,10 @@ final class ConnectUserResolversTests: ApiTestCase {
     expect(userDevice.fullUsername).toEqual(input.fullUsername)
     expect(userDevice.numericId).toEqual(input.numericId)
     expect(userDevice.appVersion).toEqual(input.appVersion)
+    expect(userDevice.isAdmin).toEqual(input.isAdmin)
     expect(device.serialNumber).toEqual(input.serialNumber)
     expect(device.modelIdentifier).toEqual(input.modelIdentifier)
+    expect(device.osVersion).toEqual(Semver("14.2.0"))
 
     let token = try await Current.db.query(UserToken.self)
       .where(.value == userData.token)
@@ -148,7 +150,9 @@ final class ConnectUserResolversTests: ApiTestCase {
       username: "kids",
       fullUsername: "kids",
       numericId: 501,
-      serialNumber: "X02VH0Y6JG5J"
+      serialNumber: "X02VH0Y6JG5J",
+      osVersion: "14.2.0",
+      isAdmin: false
     )
   }
 

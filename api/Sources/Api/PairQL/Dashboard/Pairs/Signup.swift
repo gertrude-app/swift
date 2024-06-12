@@ -36,7 +36,10 @@ extension Signup: Resolver {
     }
 
     if Env.mode == .prod, !isTestAddress(email) {
-      Current.sendGrid.fireAndForget(.toJared("signup", "email: \(email)"))
+      Current.sendGrid.fireAndForget(.toJared(
+        "signup",
+        "email: \(email)<br />gclid: \(input.gclid ?? "(nil)"))"
+      ))
     }
 
     let admin = try await Current.db.create(Admin(

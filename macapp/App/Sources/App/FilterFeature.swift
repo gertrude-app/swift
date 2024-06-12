@@ -20,11 +20,19 @@ struct FilterFeature: Feature {
   }
 
   struct Reducer: FeatureReducer {
+    @Dependency(\.api) var api
+
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
-      case .receivedState(let extensionState):
-        state.extension = extensionState
-        return .none
+      case .receivedState(let newState):
+        let oldState = state.extension
+        state.extension = newState
+        return .exec { _ in
+          if oldState != newState, oldState != .unknown {
+            let detail = "from \(oldState) to \(newState)"
+            await api.securityEvent(.systemExtensionStateChanged, detail)
+          }
+        }
 
       case .receivedVersion(let version),
            .replacedFilterVersion(let version):
@@ -41,6 +49,7 @@ struct FilterFeature: Feature {
   struct RootReducer: RootReducing {
     typealias Action = AppReducer.Action
     typealias State = AppReducer.State
+    @Dependency(\.api) var api
     @Dependency(\.app) var app
     @Dependency(\.date.now) var now
     @Dependency(\.device) var device
@@ -99,7 +108,7 @@ extension FilterFeature.RootReducer {
 
     case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):
       state.requestSuspension.windowOpen = false
-      return self.suspendFilter(for: .init(seconds), with: &state)
+      return self.suspendFilter(for: .init(seconds), with: &state, fromAdmin: true)
 
     case .heartbeat(.everyMinute):
       if let expiration = state.filter.currentSuspensionExpiration, expiration <= now {
@@ -153,6 +162,7 @@ extension FilterFeature.RootReducer {
       // so optimistically set the extension state, and then recheck after 2 seconds
       state.filter.extension = .installedButNotRunning
       return .exec { send in
+        await api.securityEvent(.systemExtensionChangeRequested, "stop")
         _ = await filterExtension.stop()
         try await mainQueue.sleep(for: .seconds(2))
         await send(.filter(.receivedState(await filterExtension.state())))
@@ -163,6 +173,7 @@ extension FilterFeature.RootReducer {
       return .merge(
         .exec { send in
           if !extensionInstalled {
+            await api.securityEvent(.systemExtensionChangeRequested, "install")
             let installResult = await filterExtension.install()
             switch installResult {
             case .installedSuccessfully:
@@ -181,6 +192,7 @@ extension FilterFeature.RootReducer {
               unexpectedError(id: "8a8762e7", detail: "result: \(installResult)")
             }
           } else {
+            await api.securityEvent(.systemExtensionChangeRequested, "start")
             let state = await filterExtension.start()
             switch state {
             case .installedAndRunning:
@@ -221,6 +233,7 @@ extension FilterFeature.RootReducer {
   func suspendFilter(
     for seconds: Seconds<Int>,
     with state: inout State,
+    fromAdmin: Bool = false,
     comment: String? = nil,
     extraMonitoring: Bool = false
   ) -> Effect<Action> {
@@ -237,6 +250,13 @@ extension FilterFeature.RootReducer {
           extraMonitoring: extraMonitoring
         )
       },
+      .exec { _ in
+        await api.securityEvent(
+          fromAdmin
+            ? .filterSuspensionGrantedByAdmin
+            : .filterSuspendedRemotely
+        )
+      },
       .cancel(id: FilterFeature.CancelId.quitBrowsers)
     )
   }
@@ -247,6 +267,7 @@ extension FilterFeature.RootReducer {
   ) -> Effect<Action> {
     .exec { send in
       if endedEarly { _ = await xpc.endFilterSuspension() }
+      await api.securityEvent(endedEarly ? .filterSuspensionEndedEarly : .filterSuspensionExpired)
       try? await websocket.send(.currentFilterState(.on))
       await device.notifyBrowsersQuitting()
       try await mainQueue.sleep(for: .seconds(60))

@@ -26,6 +26,9 @@ private func notify(adminId: Admin.Id, event: AdminEvent) async {
         case (.unlockRequestSubmitted, .unlockRequestSubmitted(let event)):
           let method = try await notification.method()
           try await event.send(with: method.config)
+        case (.adminChildSecurityEvent, .adminChildSecurityEvent(let event)):
+          let method = try await notification.method()
+          try await event.send(with: method.config)
         default:
           break
         }

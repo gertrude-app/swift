@@ -15,6 +15,7 @@ enum ApplicationFeature {
   struct RootReducer {
     typealias State = AppReducer.State
     typealias Action = AppReducer.Action
+    @Dependency(\.api) var api
     @Dependency(\.app) var app
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.device) var device
@@ -37,7 +38,11 @@ extension ApplicationFeature.RootReducer: RootReducing {
             //   await storage.deleteAll()
             // }
           #endif
-          await send(.loadedPersistentState(try await storage.loadPersistentState()))
+          let state = try await storage.loadPersistentState()
+          await send(.loadedPersistentState(state))
+          if let deviceId = state?.user?.deviceId {
+            await api.securityEvent(deviceId: deviceId, event: .appLaunched)
+          }
         },
 
         .exec { send in

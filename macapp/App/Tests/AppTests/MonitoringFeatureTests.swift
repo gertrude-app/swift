@@ -739,6 +739,51 @@ import XExpect
     await expect(keylogging.take.invocations).toEqual(1)
   }
 
+  func testNumMacosUsersSecurityEvent() async throws {
+    let key = "numMacOsUsers"
+    let (store, _) = AppReducer.testStore()
+    let getInt = spySync(on: String.self, returning: [nil, 2, 2], then: 3)
+    store.deps.api.logSecurityEvent = unimplemented("should not be called")
+    store.deps.userDefaults.getInt = getInt.fn
+    store.deps.device.listMacOSUsers = { [.dad, .franny] }
+
+    let setNumCalls = LockIsolated<[Both<String, Int>]>([])
+    store.deps.userDefaults.setInt = { key, value in
+      setNumCalls.withValue { $0.append(.init(key, value)) }
+    }
+
+    // first check, records current number
+    await store.send(.heartbeat(.everyTwentyMinutes))
+    expect(getInt.invocations).toEqual([key])
+    expect(setNumCalls.value).toEqual([.init(key, 2)])
+
+    // next time we check, we get `2`, which is same, so nothing to do
+    await store.send(.heartbeat(.everyTwentyMinutes))
+    expect(getInt.invocations).toEqual([key, key])
+    expect(setNumCalls.value).toEqual([.init(key, 2)])
+
+    // third time, we now see `3` users so emit a security event and update
+    store.deps.device.listMacOSUsers = { [
+      .dad,
+      .franny,
+      .init(id: 503, name: "suspicious", type: .admin), // <-- new user
+    ] }
+    let securityEvent = spy(on: LogSecurityEvent.Input.self, returning: ())
+    store.deps.api.logSecurityEvent = securityEvent.fn
+
+    await store.send(.heartbeat(.everyTwentyMinutes))
+    expect(getInt.invocations).toEqual([key, key, key])
+    expect(setNumCalls.value).toEqual([.init(key, 2), .init(key, 3)])
+    await expect(securityEvent.invocations).toEqual([.init(.newMacOsUserCreated)])
+
+    // removing a user does not emit a security event
+    store.deps.device.listMacOSUsers = { [.dad, .franny] }
+    store.deps.api.logSecurityEvent = unimplemented("should not be called")
+    await store.send(.heartbeat(.everyTwentyMinutes))
+    expect(getInt.invocations).toEqual([key, key, key, key])
+    expect(setNumCalls.value).toEqual([.init(key, 2), .init(key, 3), .init(key, 2)])
+  }
+
   // helpers
 
   func spyScreenshots(_ store: TestStoreOf<AppReducer>)

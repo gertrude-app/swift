@@ -7,12 +7,13 @@ protocol FilterControlling: RootReducing {
   var filter: FilterExtensionClient { get }
   var mainQueue: AnySchedulerOf<DispatchQueue> { get }
   var xpc: FilterXPCClient { get }
+  var api: ApiClient { get }
   func afterFilterChange(_ send: Send<Action>, repairing: Bool) async
 }
 
 extension FilterControlling {
-
   func installFilter(_ send: Send<Action>) async throws {
+    await api.securityEvent(.systemExtensionChangeRequested, "install")
     _ = await filter.install()
     try await mainQueue.sleep(for: .milliseconds(10))
     let result = await xpc.establishConnection()
@@ -21,6 +22,7 @@ extension FilterControlling {
   }
 
   func restartFilter(_ send: Send<Action>) async throws {
+    await api.securityEvent(.systemExtensionChangeRequested, "restart")
     _ = await filter.restart()
     try await mainQueue.sleep(for: .milliseconds(100))
     let result = await xpc.establishConnection()
@@ -29,6 +31,7 @@ extension FilterControlling {
   }
 
   func startFilter(_ send: Send<Action>) async throws {
+    await api.securityEvent(.systemExtensionChangeRequested, "start")
     _ = await filter.start()
     try await mainQueue.sleep(for: .milliseconds(100))
     let result = await xpc.establishConnection()
@@ -42,6 +45,7 @@ extension FilterControlling {
     reinstallOnFail: Bool = true
   ) async throws {
     _ = await filter.replace()
+    await api.securityEvent(.systemExtensionChangeRequested, "replace")
     var result = await xpc.establishConnection()
     os_log(
       "[G•] APP FilterControlling.replaceFilter() attempt: %{public}d, result: %{public}s",

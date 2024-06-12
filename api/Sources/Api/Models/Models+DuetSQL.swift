@@ -196,7 +196,7 @@ extension AppBundleId: Model {
 }
 
 extension UserDevice: Model {
-  public static let tableName = "user_devices" // TODO: device-refactor
+  public static let tableName = M11.tableName
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -207,6 +207,8 @@ extension UserDevice: Model {
       return .uuid(deviceId)
     case .userId:
       return .uuid(userId)
+    case .isAdmin:
+      return .bool(isAdmin)
     case .appVersion:
       return .string(appVersion)
     case .fullUsername:
@@ -230,6 +232,7 @@ extension UserDevice: Model {
       .appVersion: .string(appVersion),
       .username: .string(username),
       .fullUsername: .string(fullUsername),
+      .isAdmin: .bool(isAdmin),
       .numericId: .int(numericId),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
@@ -257,6 +260,8 @@ extension Device: Model {
       return .enum(appReleaseChannel)
     case .filterVersion:
       return .varchar(filterVersion?.string)
+    case .osVersion:
+      return .varchar(osVersion?.string)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -273,6 +278,7 @@ extension Device: Model {
       .serialNumber: .string(serialNumber),
       .appReleaseChannel: .enum(appReleaseChannel),
       .filterVersion: .varchar(filterVersion?.string),
+      .osVersion: .varchar(osVersion?.string),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -830,3 +836,36 @@ extension Browser: Model {
 }
 
 extension BrowserMatch: PostgresJsonable {}
+
+extension SecurityEvent: Model {
+  public static let tableName = SecurityEvent.M21.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id:
+      return .id(self)
+    case .adminId:
+      return .uuid(adminId)
+    case .userDeviceId:
+      return .uuid(userDeviceId)
+    case .event:
+      return .string(event)
+    case .detail:
+      return .string(detail)
+    case .createdAt:
+      return .date(createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .adminId: .uuid(adminId),
+      .userDeviceId: .uuid(userDeviceId),
+      .event: .string(event),
+      .detail: .string(detail),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}

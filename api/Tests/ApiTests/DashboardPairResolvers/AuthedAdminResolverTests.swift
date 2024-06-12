@@ -118,7 +118,8 @@ final class AuthedAdminResolverTests: ApiTestCase {
         trigger: notification.trigger,
         methodId: notification.methodId
       )],
-      verifiedNotificationMethods: [.init(id: method.id, config: method.config)]
+      verifiedNotificationMethods: [.init(id: method.id, config: method.config)],
+      hasAdminChild: false
     ))
   }
 

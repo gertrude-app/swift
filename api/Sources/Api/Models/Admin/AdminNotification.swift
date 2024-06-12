@@ -30,6 +30,7 @@ extension AdminNotification {
   enum Trigger: String, Codable, CaseIterable, Equatable {
     case unlockRequestSubmitted
     case suspendFilterRequestSubmitted
+    case adminChildSecurityEvent
   }
 }
 

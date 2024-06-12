@@ -35,7 +35,7 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
         ? "\(requestIds.count) new unlock requests from \(userName)"
         : "New unlock request from \(userName)"
 
-    let subject = "[Gertrude App] \(subjectPreamble)".withEmailSubjectDisambiguator
+    let subject = "[Gertrude App] \(subjectPreamble)"
 
     let unlockRequests =
       requestIds.count > 1

@@ -12,6 +12,7 @@ public struct ApiClient: Sendable {
     -> Void
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void
   public var logInterestingEvent: @Sendable (LogInterestingEvent.Input) async -> Void
+  public var logSecurityEvent: @Sendable (LogSecurityEvent.Input) async -> Void
   public var recentAppVersions: @Sendable () async throws -> [String: String]
   public var reportBrowsers: @Sendable (ReportBrowsers.Input) async throws -> Void
   public var setAccountActive: @Sendable (Bool) async -> Void
@@ -27,6 +28,7 @@ public struct ApiClient: Sendable {
       -> Void,
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void,
     logInterestingEvent: @escaping @Sendable (LogInterestingEvent.Input) async -> Void,
+    logSecurityEvent: @escaping @Sendable (LogSecurityEvent.Input) async -> Void,
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     reportBrowsers: @escaping @Sendable (ReportBrowsers.Input) async throws -> Void,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
@@ -40,6 +42,7 @@ public struct ApiClient: Sendable {
     self.createSuspendFilterRequest = createSuspendFilterRequest
     self.createUnlockRequests = createUnlockRequests
     self.logInterestingEvent = logInterestingEvent
+    self.logSecurityEvent = logSecurityEvent
     self.recentAppVersions = recentAppVersions
     self.reportBrowsers = reportBrowsers
     self.setAccountActive = setAccountActive
@@ -94,6 +97,7 @@ extension ApiClient: TestDependencyKey {
     createSuspendFilterRequest: unimplemented("ApiClient.createSuspendFilterRequest"),
     createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
     logInterestingEvent: unimplemented("ApiClient.logInterestingEvent"),
+    logSecurityEvent: unimplemented("ApiClient.logSecurityEvent"),
     recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
     reportBrowsers: unimplemented("ApiClient.reportBrowsers"),
     setAccountActive: unimplemented("ApiClient.setAccountActive"),
@@ -109,6 +113,7 @@ extension ApiClient: TestDependencyKey {
     createSuspendFilterRequest: { _ in },
     createUnlockRequests: { _ in },
     logInterestingEvent: { _ in },
+    logSecurityEvent: { _ in },
     recentAppVersions: { [:] },
     reportBrowsers: { _ in },
     setAccountActive: { _ in },

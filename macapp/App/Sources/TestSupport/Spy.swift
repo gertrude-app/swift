@@ -137,7 +137,7 @@ public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Throw
       await invoked.setValue(true)
       var current = await returns.value
       let returnValue: T
-      if current.count > 1 {
+      if current.count > 0 {
         returnValue = current.removeFirst()
         let updated = current
         await returns.setValue(updated)
@@ -164,6 +164,14 @@ public func spySync<T, Arg>(on arg: Arg.Type, returning value: T) -> SpySync<T, 
   spySync(returning: [], then: value)
 }
 
+public func spySync<T, Arg>(
+  on arg: Arg.Type,
+  returning values: [T],
+  then value: T
+) -> SpySync<T, Arg> {
+  spySync(returning: values, then: value)
+}
+
 public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Spy<T, Arg> {
   let returns = ActorIsolated<[T]>(values)
   let invocations = ActorIsolated<[Arg]>([])
@@ -175,7 +183,7 @@ public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Spy<T
       await invoked.setValue(true)
       var current = await returns.value
       let returnValue: T
-      if current.count > 1 {
+      if current.count > 0 {
         returnValue = current.removeFirst()
         let updated = current
         await returns.setValue(updated)
@@ -204,7 +212,7 @@ public func spySync<T, Arg>(returning values: [T], then fallback: T? = nil) -> S
       invoked.setValue(true)
       var current = returns.value
       let returnValue: T
-      if current.count > 1 {
+      if current.count > 0 {
         returnValue = current.removeFirst()
         let updated = current
         returns.setValue(updated)
@@ -243,7 +251,7 @@ public func spy2<T, Arg1, Arg2>(
       await invoked.setValue(true)
       var current = await returns.value
       let returnValue: T
-      if current.count > 1 {
+      if current.count > 0 {
         returnValue = current.removeFirst()
         let updated = current
         await returns.setValue(updated)
@@ -283,7 +291,7 @@ public func spy3<T, Arg1, Arg2, Arg3>(
       await invoked.setValue(true)
       var current = await returns.value
       let returnValue: T
-      if current.count > 1 {
+      if current.count > 0 {
         returnValue = current.removeFirst()
         let updated = current
         await returns.setValue(updated)
@@ -323,7 +331,7 @@ public func spy4<T, Arg1, Arg2, Arg3, Arg4>(
       await invoked.setValue(true)
       var current = await returns.value
       let returnValue: T
-      if current.count > 1 {
+      if current.count > 0 {
         returnValue = current.removeFirst()
         let updated = current
         await returns.setValue(updated)

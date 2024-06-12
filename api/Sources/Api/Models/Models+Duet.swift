@@ -207,6 +207,7 @@ extension Device {
     case serialNumber
     case appReleaseChannel
     case filterVersion
+    case osVersion
     case createdAt
     case updatedAt
   }
@@ -222,6 +223,7 @@ extension UserDevice {
     case userId
     case deviceId
     case appVersion
+    case isAdmin
     case username
     case fullUsername
     case numericId
@@ -482,6 +484,21 @@ extension Browser {
   enum CodingKeys: String, CodingKey, CaseIterable {
     case id
     case match
+    case createdAt
+  }
+}
+
+extension SecurityEvent: Duet.Identifiable {
+  typealias Id = Tagged<SecurityEvent, UUID>
+}
+
+extension SecurityEvent {
+  enum CodingKeys: String, CodingKey, CaseIterable {
+    case id
+    case adminId
+    case userDeviceId
+    case event
+    case detail
     case createdAt
   }
 }

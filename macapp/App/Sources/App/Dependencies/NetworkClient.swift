@@ -49,8 +49,8 @@ extension DependencyValues {
 }
 
 extension NetworkClient: DependencyKey {
-  static var liveValue: NetworkClient = .live
-  static var testValue: NetworkClient = .connected
+  static let liveValue: NetworkClient = .live
+  static let testValue: NetworkClient = .connected
 }
 
 extension NetworkClient {

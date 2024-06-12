@@ -167,7 +167,6 @@ struct DeviceRefactor: GertieMigration {
   )
 
   func createNewDevicesTable(_ sql: SQLDatabase) async throws {
-    Current.logger.notice("CREATE TABLE \(Device.M3.tableName)")
     try await sql.create(table: Device.M3.self) {
       Column(.id, .uuid, .primaryKey)
       Column(Device.M11.adminId, .uuid)

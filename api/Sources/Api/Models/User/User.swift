@@ -42,7 +42,6 @@ final class User: Codable {
 // loaders
 
 extension User {
-
   func devices() async throws -> [UserDevice] {
     try await self.devices.useLoaded(or: {
       try await Current.db.query(UserDevice.self)

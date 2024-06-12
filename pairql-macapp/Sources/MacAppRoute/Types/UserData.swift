@@ -41,7 +41,7 @@ public struct UserData: Equatable, Codable, Sendable, PairOutput {
     public static let mock = Self(
       id: UUID(),
       token: UUID(),
-      deviceId: UUID(),
+      deviceId: UUID(uuidString: "DEADBEEF-DEAD-BEEF-DEAD-BEEFDEADBEEF")!,
       name: "Mock User",
       keyloggingEnabled: false,
       screenshotsEnabled: false,

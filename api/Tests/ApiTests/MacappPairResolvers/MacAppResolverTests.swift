@@ -210,13 +210,30 @@ final class MacAppResolverTests: ApiTestCase {
     expect(screenshot).not.toBeNil()
   }
 
-  // helpers
+  func testLogsAndNotifiesSecurityEvent() async throws {
+    let user = try await Entities.user().withDevice {
+      $0.isAdmin = true
+    }
 
-  func context(_ user: UserEntities) async throws -> UserContext {
-    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
-  }
+    let output = try await LogSecurityEvent.resolve(
+      with: .init(deviceId: user.device.id.rawValue, event: "appQuit", detail: "foo"),
+      in: context(user)
+    )
 
-  func context(_ user: UserWithDeviceEntities) async throws -> UserContext {
-    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
+    let retrieved = try await SecurityEvent.query()
+      .where(.userDeviceId == user.device.id)
+      .first()
+
+    expect(output).toEqual(.success)
+    expect(retrieved.event).toEqual("appQuit")
+
+    expect(sent.adminNotifications).toEqual([.init(
+      adminId: user.adminId,
+      event: .adminChildSecurityEvent(.init(
+        userName: user.name,
+        event: .appQuit,
+        detail: "foo"
+      ))
+    )])
   }
 }

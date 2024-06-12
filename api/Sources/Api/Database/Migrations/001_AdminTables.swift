@@ -112,10 +112,10 @@ struct AdminTables: GertieMigration {
 
   func upAdminNotifications(_ sql: SQLDatabase) async throws {
     typealias M = AdminNotification.M1
-    try await sql.create(enum: AdminNotification.Trigger.self)
+    try await sql.create(enum: AdminNotification.M1.Trigger.self)
     try await sql.create(table: M.self) {
       Column(.id, .uuid, .primaryKey)
-      Column(M.trigger, .enum(AdminNotification.Trigger.self))
+      Column(M.trigger, .enum(AdminNotification.M1.Trigger.self))
       Column(M.adminId, .uuid)
       Column(M.methodId, .uuid)
       Column(.createdAt, .timestampWithTimezone)
@@ -129,7 +129,7 @@ struct AdminTables: GertieMigration {
     try await sql.drop(constraint: self.adminNotificationsAdminIdFk)
     try await sql.drop(constraint: self.adminNotificationsMethodIdFk)
     try await sql.drop(table: AdminNotification.M1.self)
-    try await sql.drop(enum: AdminNotification.Trigger.self)
+    try await sql.drop(enum: AdminNotification.M1.Trigger.self)
   }
 
   // table: waitlisted_admins
@@ -194,6 +194,12 @@ extension AdminNotification {
     static let adminId = FieldKey("admin_id")
     static let methodId = FieldKey("method_id")
     static let triggerTypeName = "enum_admin_notification_trigger"
+
+    enum Trigger: String, Codable, CaseIterable, PostgresEnum {
+      var typeName: String { AdminNotification.M1.triggerTypeName }
+      case unlockRequestSubmitted
+      case suspendFilterRequestSubmitted
+    }
   }
 }
 

@@ -14,6 +14,8 @@ public struct ConnectUser: Pair {
     public var fullUsername: String
     public var numericId: Int
     public var serialNumber: String
+    public var osVersion: String?
+    public var isAdmin: Bool?
 
     public init(
       verificationCode: Int,
@@ -22,7 +24,9 @@ public struct ConnectUser: Pair {
       username: String,
       fullUsername: String,
       numericId: Int,
-      serialNumber: String
+      serialNumber: String,
+      osVersion: String? = nil,
+      isAdmin: Bool? = nil
     ) {
       self.verificationCode = verificationCode
       self.appVersion = appVersion
@@ -31,6 +35,8 @@ public struct ConnectUser: Pair {
       self.fullUsername = fullUsername
       self.numericId = numericId
       self.serialNumber = serialNumber
+      self.osVersion = osVersion
+      self.isAdmin = isAdmin
     }
   }
 

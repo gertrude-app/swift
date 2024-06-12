@@ -8,7 +8,7 @@ public struct SecurityClient: Sendable {
 
 extension SecurityClient: DependencyKey {
   #if DEBUG
-    public static var liveValue = Self(
+    public static let liveValue = Self(
       didAuthenticateAsAdmin: { true }
     )
   #else

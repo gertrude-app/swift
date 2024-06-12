@@ -1,5 +1,7 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Foundation
+import Gertie
 import MacAppRoute
 
 typealias FeatureReducer = Reducer
@@ -49,6 +51,38 @@ enum NotificationsSetting: String, Equatable, Codable {
   case none
   case banner
   case alert
+}
+
+public extension ApiClient {
+  func appCheckIn(_ filterVersion: String?) async throws -> CheckIn.Output {
+    @Dependency(\.app) var appClient
+    @Dependency(\.device) var device
+    return try await self.checkIn(
+      .init(
+        appVersion: appClient.installedVersion() ?? "unknown",
+        filterVersion: filterVersion,
+        userIsAdmin: device.currentMacOsUserType() == .admin,
+        osVersion: device.osVersion().semver
+      )
+    )
+  }
+
+  func securityEvent(_ event: SecurityEvent.MacApp, _ detail: String? = nil) async {
+    @Dependency(\.storage) var storage
+    guard let deviceId = try? await storage.loadPersistentState()?.user?.deviceId else {
+      return
+    }
+    await self.securityEvent(deviceId: deviceId, event: event, detail: detail)
+  }
+
+  func securityEvent(deviceId: UUID, event: SecurityEvent.MacApp, detail: String? = nil) async {
+    @Dependency(\.network) var network
+    guard network.isConnected() else {
+      // TODO: buffer/resend https://github.com/gertrude-app/project/issues/243
+      return
+    }
+    await self.logSecurityEvent(.init(deviceId: deviceId, event: event.rawValue, detail: detail))
+  }
 }
 
 extension URL {

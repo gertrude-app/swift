@@ -3,17 +3,23 @@ import Foundation
 import XCore
 
 public struct UserDefaultsClient: Sendable {
+  public var setInt: @Sendable (String, Int) -> Void
+  public var getInt: @Sendable (String) -> Int?
   public var setString: @Sendable (String, String) -> Void
   public var getString: @Sendable (String) -> String?
   public var remove: @Sendable (String) -> Void
   public var removeAll: @Sendable () -> Void
 
   public init(
+    setInt: @escaping @Sendable (String, Int) -> Void,
+    getInt: @escaping @Sendable (String) -> Int?,
     setString: @escaping @Sendable (String, String) -> Void,
     getString: @escaping @Sendable (String) -> String?,
     remove: @escaping @Sendable (String) -> Void,
     removeAll: @escaping @Sendable () -> Void
   ) {
+    self.setInt = setInt
+    self.getInt = getInt
     self.setString = setString
     self.getString = getString
     self.remove = remove
@@ -31,6 +37,8 @@ public struct UserDefaultsClient: Sendable {
 
 extension UserDefaultsClient: DependencyKey {
   public static let liveValue = Self(
+    setInt: { UserDefaults.standard.set($1, forKey: $0) },
+    getInt: { UserDefaults.standard.integer(forKey: $0) },
     setString: { UserDefaults.standard.set($0, forKey: $1) },
     getString: { UserDefaults.standard.string(forKey: $0) },
     remove: { UserDefaults.standard.removeObject(forKey: $0) },
@@ -44,12 +52,16 @@ extension UserDefaultsClient: DependencyKey {
 
 extension UserDefaultsClient: TestDependencyKey {
   public static let testValue = Self(
+    setInt: unimplemented("UserDefaultsClient.setInt"),
+    getInt: unimplemented("UserDefaultsClient.getInt"),
     setString: unimplemented("UserDefaultsClient.setString"),
     getString: unimplemented("UserDefaultsClient.getString"),
     remove: unimplemented("UserDefaultsClient.remove"),
     removeAll: unimplemented("UserDefaultsClient.removeAll")
   )
   public static let mock = Self(
+    setInt: { _, _ in },
+    getInt: { _ in nil },
     setString: { _, _ in },
     getString: { _ in nil },
     remove: { _ in },
@@ -66,11 +78,6 @@ public extension DependencyValues {
 
 #if DEBUG
   public extension UserDefaultsClient {
-    static let failing = Self(
-      setString: unimplemented("UserDefaultsClient.setString"),
-      getString: unimplemented("UserDefaultsClient.getString"),
-      remove: unimplemented("UserDefaultsClient.remove"),
-      removeAll: unimplemented("UserDefaultsClient.removeAll")
-    )
+    static let failing = Self.testValue
   }
 #endif
