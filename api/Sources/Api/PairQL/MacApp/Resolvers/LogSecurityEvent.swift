@@ -9,19 +9,35 @@ extension LogSecurityEvent: Resolver {
         .sysLog("UserDevice \(input.deviceId) not found, security event: \(input.event)")
       return .success
     }
-    if let event = Gertie.SecurityEvent.MacApp(rawValue: input.event) {
-      await Current.slack.sysLog("Received security event: `\(event)`") // temporary
-    } else {
-      await Current.slack.sysLog("Received unknown security event: `\(input.event)`")
-    }
-    let adminDevice = try await userDevice.adminDevice()
+
     try await Api.SecurityEvent(
-      adminId: adminDevice.adminId,
+      adminId: context.user.adminId,
       userDeviceId: userDevice.id,
       event: input.event,
       detail: input.detail
     ).create()
-    // TODO: emit notification event
+
+    guard let event = Gertie.SecurityEvent.MacApp(rawValue: input.event) else {
+      await Current.slack.sysLog(
+        to: "errors",
+        "Received unknown security event: `\(input.event)`"
+      )
+      return .success
+    }
+
+    // temp, while observing beta feature
+    await Current.slack
+      .sysLog("Received security event: `\(event)` for child: `\(context.user.name)`")
+
+    await Current.adminNotifier.notify(
+      context.user.adminId,
+      .adminChildSecurityEvent(.init(
+        userName: context.user.name,
+        event: event,
+        detail: input.detail
+      ))
+    )
+
     return .success
   }
 }
