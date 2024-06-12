@@ -1,3 +1,4 @@
+import DuetSQL
 import FluentSQL
 import Gertie
 
@@ -31,6 +32,12 @@ struct SecurityEvents: GertieMigration {
       Column(.createdAt, .timestampWithTimezone)
     }
     try await sql.add(constraint: self.securityEventFk)
+
+    // add new enum case
+    try await sql.execute("""
+      ALTER TYPE \(raw: AdminNotification.Trigger.typeName)
+      ADD VALUE '\(raw: AdminNotification.Trigger.adminChildSecurityEvent.rawValue)'
+    """)
   }
 
   func down(sql: SQLDatabase) async throws {
@@ -38,6 +45,35 @@ struct SecurityEvents: GertieMigration {
     try await sql.dropColumn(Device.M21.osVersion, on: Device.M3.self)
     try await sql.drop(constraint: self.securityEventFk)
     try await sql.drop(table: SecurityEvent.M21.self)
+
+    try await AdminNotification.query()
+      .where(.trigger == .enum(AdminNotification.Trigger.adminChildSecurityEvent))
+      .delete()
+
+    try await self.dropEnumCase(sql)
+  }
+
+  func dropEnumCase(_ sql: SQLDatabase) async throws {
+    // 1) switch the column to text temporarily
+    try await sql.execute("""
+      ALTER TABLE \(table: AdminNotification.M1.self)
+      ALTER COLUMN \(col: AdminNotification.M1.trigger)
+      TYPE text
+    """)
+
+    // 2) drop the enum
+    try await sql.drop(enum: AdminNotification.Trigger.self)
+
+    // 3) recreate old enum
+    try await sql.create(enum: AdminNotification.M1.Trigger.self)
+
+    // 4) switch the column back to the enum
+    try await sql.execute("""
+      ALTER TABLE \(table: AdminNotification.M1.self)
+      ALTER COLUMN \(col: AdminNotification.M1.trigger)
+      TYPE \(raw: AdminNotification.Trigger.typeName)
+      USING \(col: AdminNotification.M1.trigger)::\(raw: AdminNotification.Trigger.typeName)
+    """)
   }
 }
 
