@@ -38,6 +38,41 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
 }
 
 public extension SecurityEvent.MacApp {
+  var toWords: String {
+    switch self {
+    case .advancedSettingsOpened:
+      return "Advanced settings opened"
+    case .appLaunched:
+      return "App launched"
+    case .appQuit:
+      return "App quit"
+    case .appUpdateFailedToReplaceSystemExtension:
+      return "App update failed to replace system extension"
+    case .appUpdateInitiated:
+      return "App update initiated"
+    case .appUpdateSucceeded:
+      return "App update succeeded"
+    case .childDisconnected:
+      return "Child disconnected"
+    case .filterSuspendedRemotely:
+      return "Filter suspended remotely"
+    case .filterSuspensionEndedEarly:
+      return "Filter suspension ended early"
+    case .filterSuspensionExpired:
+      return "Filter suspension expired"
+    case .filterSuspensionGrantedByAdmin:
+      return "Filter suspension granted by admin"
+    case .macosUserExempted:
+      return "macOS user exempted"
+    case .newMacOsUserCreated:
+      return "New macOS user created"
+    case .systemExtensionChangeRequested:
+      return "System extension change requested"
+    case .systemExtensionStateChanged:
+      return "System extension state changed"
+    }
+  }
+
   var explanation: String {
     switch self {
     case .advancedSettingsOpened:

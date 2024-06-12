@@ -2,12 +2,12 @@ import Foundation
 
 extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
   var desc: String {
-    "\(event)\(detail.map { ":\($0)" } ?? "")"
+    "\(event.toWords)\(detail.map { ": \($0)" } ?? "")"
   }
 
   func sendText(to phoneNumber: String) async throws {
     let message = """
-    [Gertrude App] Received security event: \(desc) for child: \(userName)".
+    [Gertrude App] Received security event: "\(desc)" for child \(userName).
 
     \(event.explanation)
     """
@@ -16,10 +16,9 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
 
   func sendEmail(to address: String) async throws {
     let subject = "[Gertrude App] Security event for child: \(userName)"
-      .withEmailSubjectDisambiguator
 
     let html = """
-    Received security event: <b>\(desc)</b> for child: <b>\(userName)</b>.
+    Received security event: <b>\(desc)</b> for child <b>\(userName)</b>.
     <br />
     <br />
     \(event.explanation)

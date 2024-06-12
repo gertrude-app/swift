@@ -34,7 +34,7 @@ enum AdminBetsy {
 
     let text = try await Reset.createNotification(
       betsy,
-      .text(phoneNumber: "555-555-5555")
+      .text(phoneNumber: "+15555555555")
     )
 
     try await Reset.createNotification(

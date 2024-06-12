@@ -29,6 +29,10 @@ extension LogSecurityEvent: Resolver {
     await Current.slack
       .sysLog("Received security event: `\(event)` for child: `\(context.user.name)`")
 
+    if userDevice.isAdmin != true {
+      return .success
+    }
+
     await Current.adminNotifier.notify(
       context.user.adminId,
       .adminChildSecurityEvent(.init(

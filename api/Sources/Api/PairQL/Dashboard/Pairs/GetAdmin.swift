@@ -5,14 +5,14 @@ struct GetAdmin: Pair {
   static var auth: ClientAuth = .admin
 
   struct Notification: PairNestable {
-    let id: AdminNotification.Id
-    let trigger: AdminNotification.Trigger
-    let methodId: AdminVerifiedNotificationMethod.Id
+    var id: AdminNotification.Id
+    var trigger: AdminNotification.Trigger
+    var methodId: AdminVerifiedNotificationMethod.Id
   }
 
   struct VerifiedNotificationMethod: PairNestable {
-    let id: AdminVerifiedNotificationMethod.Id
-    let config: AdminVerifiedNotificationMethod.Config
+    var id: AdminVerifiedNotificationMethod.Id
+    var config: AdminVerifiedNotificationMethod.Config
   }
 
   enum SubscriptionStatus: PairNestable {
@@ -24,11 +24,12 @@ struct GetAdmin: Pair {
   }
 
   struct Output: PairOutput {
-    let id: Admin.Id
-    let email: String
-    let subscriptionStatus: SubscriptionStatus
-    let notifications: [Notification]
-    let verifiedNotificationMethods: [VerifiedNotificationMethod]
+    var id: Admin.Id
+    var email: String
+    var subscriptionStatus: SubscriptionStatus
+    var notifications: [Notification]
+    var verifiedNotificationMethods: [VerifiedNotificationMethod]
+    var hasAdminChild: Bool
   }
 }
 
@@ -37,18 +38,24 @@ struct GetAdmin: Pair {
 extension GetAdmin: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let admin = context.admin
-    let notifications = try await admin.notifications()
-    let methods = try await admin.verifiedNotificationMethods()
+    async let notifications = admin.notifications()
+    async let methods = admin.verifiedNotificationMethods()
+    async let hasAdminChild = try await admin.users()
+      .concurrentMap { try await $0.devices() }
+      .flatMap { $0 }
+      .contains { $0.isAdmin == true }
+
     return .init(
       id: admin.id,
       email: admin.email.rawValue,
       subscriptionStatus: try .init(admin),
-      notifications: notifications.map {
+      notifications: try await notifications.map {
         .init(id: $0.id, trigger: $0.trigger, methodId: $0.methodId)
       },
-      verifiedNotificationMethods: methods.map {
+      verifiedNotificationMethods: try await methods.map {
         .init(id: $0.id, config: $0.config)
-      }
+      },
+      hasAdminChild: try await hasAdminChild
     )
   }
 }

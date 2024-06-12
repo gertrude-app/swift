@@ -2,8 +2,7 @@ import Foundation
 
 extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
   func sendEmail(to address: String) async throws {
-    let subject =
-      "[Gertrude App] New suspend filter request from \(userName)".withEmailSubjectDisambiguator
+    let subject = "[Gertrude App] New suspend filter request from \(userName)"
     let html = """
     User \(userName) submitted a new <b>suspend filter request</b>.
      \(Email.link(url: self.url, text: "Click here")) to view the details and approve or deny.

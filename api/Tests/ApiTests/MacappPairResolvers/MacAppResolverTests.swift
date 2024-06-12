@@ -211,7 +211,9 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testLogsAndNotifiesSecurityEvent() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await Entities.user().withDevice {
+      $0.isAdmin = true
+    }
 
     let output = try await LogSecurityEvent.resolve(
       with: .init(deviceId: user.device.id.rawValue, event: "appQuit", detail: "foo"),
