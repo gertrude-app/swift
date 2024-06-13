@@ -4,7 +4,7 @@ import XCore
 
 public struct UserDefaultsClient: Sendable {
   public var setInt: @Sendable (String, Int) -> Void
-  public var getInt: @Sendable (String) -> Int?
+  public var getInt: @Sendable (String) -> Int
   public var setString: @Sendable (String, String) -> Void
   public var getString: @Sendable (String) -> String?
   public var remove: @Sendable (String) -> Void
@@ -12,7 +12,7 @@ public struct UserDefaultsClient: Sendable {
 
   public init(
     setInt: @escaping @Sendable (String, Int) -> Void,
-    getInt: @escaping @Sendable (String) -> Int?,
+    getInt: @escaping @Sendable (String) -> Int,
     setString: @escaping @Sendable (String, String) -> Void,
     getString: @escaping @Sendable (String) -> String?,
     remove: @escaping @Sendable (String) -> Void,
@@ -61,7 +61,7 @@ extension UserDefaultsClient: TestDependencyKey {
   )
   public static let mock = Self(
     setInt: { _, _ in },
-    getInt: { _ in nil },
+    getInt: { _ in 0 },
     setString: { _, _ in },
     getString: { _ in nil },
     remove: { _ in },

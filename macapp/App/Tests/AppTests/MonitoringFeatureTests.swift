@@ -742,7 +742,7 @@ import XExpect
   func testNumMacosUsersSecurityEvent() async throws {
     let key = "numMacOsUsers"
     let (store, _) = AppReducer.testStore()
-    let getInt = spySync(on: String.self, returning: [nil, 2, 2], then: 3)
+    let getInt = spySync(on: String.self, returning: [0, 2, 2], then: 3)
     store.deps.api.logSecurityEvent = unimplemented("should not be called")
     store.deps.userDefaults.getInt = getInt.fn
     store.deps.device.listMacOSUsers = { [.dad, .franny] }
