@@ -51,6 +51,12 @@
 - `2.1.3` (1/16/24 as `beta` for new customers only)
   - multi-stage gifs for onboarding instructions
   - new "how to use gifs" & "don't fall for trick" onboarding screens
+- `2.2.0` (released only in canary for testing)
+  - app watches and relaunches self on unexpected termination
+  - relaunches app if filter gets ahead
+  - use updateable api data for browser identification
+- `2.3.0` (canary as of 6/13/24)
+  - feature: security events
 
 ## Sparkle Releases
 
