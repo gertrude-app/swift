@@ -72,7 +72,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
     }
 
     if let range = byteString.range(
-      of: #"[a-z0-9_-]{2,}\.[a-z0-9_-]{2,}(\.[a-z0-9_-]{2,}){0,5}"#,
+      of: #"[a-z0-9_-]{1,}(\.[a-z0-9_-]{1,}){0,5}\.[a-z0-9_-]{2,}"#,
       options: .regularExpression
     ) {
       self.hostname = String(byteString[range])
