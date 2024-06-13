@@ -1,16 +1,20 @@
 import Core
 
 extension BlockedRequest {
-  func mergeable(with other: BlockedRequest) -> Bool {
-    if app.bundleId != other.app.bundleId {
+  func mergeable(with newer: BlockedRequest) -> Bool {
+    if newer.hostname != nil, self.hostname == nil {
       return false
-    } else if ipProtocol != other.ipProtocol {
+    } else if newer.url != nil, self.url == nil {
       return false
-    } else if url != nil, url == other.url {
+    } else if self.app.bundleId != newer.app.bundleId {
+      return false
+    } else if self.ipProtocol != newer.ipProtocol {
+      return false
+    } else if self.url != nil, self.url == newer.url {
       return true
-    } else if hostname != nil, hostname == other.hostname {
+    } else if self.hostname != nil, self.hostname == newer.hostname {
       return true
-    } else if ipAddress != nil, ipAddress == other.ipAddress {
+    } else if self.ipAddress != nil, self.ipAddress == newer.ipAddress {
       return true
     }
     return false
