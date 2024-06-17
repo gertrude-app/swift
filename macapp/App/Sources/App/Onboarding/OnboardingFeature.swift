@@ -600,12 +600,12 @@ struct OnboardingFeature: Feature {
 
 extension OnboardingFeature.State {
   var exemptableUsers: [MacUser] {
-    guard users.count > 1, let filterUsers = filterUsers else {
+    guard users.count > 1 else {
       return []
     }
 
     return users.filter {
-      $0.id != currentUser?.id && filterUsers.protected.contains($0.id) == false
+      $0.id != currentUser?.id
     }
   }
 }

@@ -10,7 +10,36 @@ import XExpect
 @testable import App
 @testable import ClientInterfaces
 
-@MainActor final class AdminWindowTests: XCTestCase {
+@MainActor final class AdminWindowFeatureTests: XCTestCase {
+  /// NB: see https://github.com/gertrude-app/project/issues/163
+  /// for context, and future directions when `filtering` becomes option
+  func testAllNonCurrentUsersConsideredExemptable() async {
+    await withDependencies {
+      $0.app.installedVersion = { "1.0.0" }
+    } operation: {
+      let (store, _) = AppReducer.testStore(mockDeps: false) {
+        $0.adminWindow.windowOpen = true
+        $0.user = .init(data: .mock)
+        $0.history.userConnection = .established(welcomeDismissed: true)
+      }
+
+      // this replicates rachel's current setup, she is protected + exempt
+      await store.send(.adminWindow(.setExemptionData(
+        .ok(value: [
+          .init(id: 503, name: "Monitored", type: .standard),
+          .init(id: 501, name: "Rachel", type: .admin),
+        ]),
+        .ok(value: .init(exempt: [501], protected: [503, 502, 501]))
+      )))
+
+      let viewState = AdminWindowFeature.State.View(rootState: store.state)
+      expect(viewState.exemptableUsers).toEqual(.ok(value: [
+        .init(id: 503, name: "Monitored", isAdmin: false, isExempt: false),
+        .init(id: 501, name: "Rachel", isAdmin: true, isExempt: true),
+      ]))
+    }
+  }
+
   func testDisconnectUserClicked() async {
     let (store, _) = AppReducer.testStore(mockDeps: false) {
       $0.adminWindow.windowOpen = true

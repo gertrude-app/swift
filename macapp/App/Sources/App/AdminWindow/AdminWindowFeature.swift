@@ -323,11 +323,8 @@ extension AdminWindowFeature.RootReducer {
         case .error(let err):
           state.adminWindow.exemptUserIds = .error(message: err)
         }
-        if case .ok(let exemptable) = exemptableUsers,
-           case .ok(let filterUsers) = filterUsersResult {
-          state.adminWindow.exemptableUsers = .ok(value: exemptable.filter {
-            filterUsers.protected.contains($0.id) == false
-          })
+        if case .ok(let exemptable) = exemptableUsers {
+          state.adminWindow.exemptableUsers = .ok(value: exemptable)
         }
         return .none
 

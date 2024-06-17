@@ -361,23 +361,6 @@ import XExpect
     await expect(stopRelaunchWatcher.invocations).toEqual(1)
   }
 
-  func testSkipsExemptScreenIfSysExtHasntCommunicatedIds() async {
-    let store = self.featureStore {
-      $0.step = .installSysExt_success
-      $0.users = [
-        .init(id: 501, name: "Dad", isAdmin: true),
-        .init(id: 502, name: "franny", isAdmin: false),
-      ]
-      // below is only non-nil if the sys-ext is installed, and we've
-      // been able to communicate with it, so if nil, we should skip
-      $0.filterUsers = nil
-    }
-
-    await store.send(.webview(.primaryBtnClicked)) {
-      $0.step = .locateMenuBarIcon
-    }
-  }
-
   func testSingleUserOnlySkipsExemptUserScreen() async {
     let store = self.featureStore {
       $0.step = .installSysExt_success
@@ -390,7 +373,7 @@ import XExpect
     }
   }
 
-  func testSkipsExemptScreenIfAllOtherUsersAlreadyProtected() async {
+  func testDoesntSkipExemptScreenIfOtherUsers() async {
     let store = self.featureStore {
       $0.step = .installSysExt_success
       $0.currentUser = .init(id: 502, name: "Lil jimmy", isAdmin: false)
@@ -402,7 +385,7 @@ import XExpect
     }
 
     await store.send(.webview(.primaryBtnClicked)) {
-      $0.step = .locateMenuBarIcon
+      $0.step = .exemptUsers // <-- but we still show him
     }
   }
 
@@ -1316,6 +1299,20 @@ import XExpect
     store.assert {
       $0.step = .installSysExt_failed // ...and they SHOULD be moved to fail
     }
+  }
+
+  func testAllNonCurrentUsersConsideredExemptable() {
+    var state = OnboardingFeature.State()
+    state.users = [
+      .init(id: 501, name: "Dad", isAdmin: true),
+      .init(id: 502, name: "Mom", isAdmin: true),
+      .init(id: 503, name: "liljimmy", isAdmin: false),
+    ]
+    state.currentUser = .init(id: 503, name: "liljimmy", isAdmin: false)
+    expect(state.exemptableUsers).toEqual([
+      .init(id: 501, name: "Dad", isAdmin: true),
+      .init(id: 502, name: "Mom", isAdmin: true),
+    ])
   }
 
   // helpers
