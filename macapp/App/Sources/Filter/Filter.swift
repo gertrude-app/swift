@@ -178,8 +178,10 @@ public struct Filter: Reducer, Sendable {
       }.cancellable(id: CancelId.suspensionTimer(for: userId), cancelInFlight: true)
 
     case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
-      state.userKeys[userId] = keys
-      state.exemptUsers.remove(userId)
+      if !keys.isEmpty {
+        state.userKeys[userId] = keys
+        state.exemptUsers.remove(userId)
+      }
       state.appIdManifest = manifest
       state.appCache = [:]
       return self.saving(state.persistent)

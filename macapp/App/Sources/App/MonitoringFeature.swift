@@ -116,14 +116,12 @@ extension MonitoringFeature.RootReducer {
     case .heartbeat(.everyTwentyMinutes) where state.admin.accountStatus != .inactive:
       return .exec { _ in
         let users = try await self.device.listMacOSUsers()
-        guard let prevNum = self.userDefaults.getInt("numMacOsUsers") else {
-          self.userDefaults.setInt("numMacOsUsers", users.count)
-          return
-        }
+        let prevNum = self.userDefaults.getInt("numMacOsUsers")
         if users.count != prevNum {
           self.userDefaults.setInt("numMacOsUsers", users.count)
         }
-        if users.count > prevNum {
+        // 0 means it's the first time we've checked, nil is coerced to 0
+        if prevNum != 0, users.count > prevNum {
           await self.api.securityEvent(.newMacOsUserCreated)
         }
       }

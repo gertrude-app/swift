@@ -73,7 +73,7 @@ import XExpect
     await store.send(.extensionStopping)
   }
 
-  func testReceivingRulesClearsExemptStatus() async {
+  func testReceivingRulesWithAtLeastOneKeyClearsExemptStatus() async {
     let (store, _) = Filter.testStore {
       $0.exemptUsers = [501, 504]
     }
@@ -86,6 +86,24 @@ import XExpect
       manifest: .mock
     )))) {
       $0.exemptUsers = [504] // ... so they are removed from the exempt list
+    }
+  }
+
+  // this is a bit of a hack until we support the concept of "non-filtered" children
+  // see https://github.com/gertrude-app/project/issues/163
+  func testReceivingRulesWithZeroKeysDoesNotClearExemptStatus() async {
+    let (store, _) = Filter.testStore {
+      $0.exemptUsers = [501, 504]
+    }
+    store.deps.filterExtension = .mock
+    store.deps.storage = .mock
+
+    await store.send(.xpc(.receivedAppMessage(.userRules(
+      userId: 501, // we get rules about user 501
+      keys: [], // <-- but there are ZERO keys
+      manifest: .mock
+    )))) {
+      $0.exemptUsers = [501, 504] // ... so they are NOT removed from the exempt list
     }
   }
 

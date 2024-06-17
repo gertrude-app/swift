@@ -38,7 +38,7 @@ extension Signup: Resolver {
     if Env.mode == .prod, !isTestAddress(email) {
       Current.sendGrid.fireAndForget(.toJared(
         "signup",
-        "email: \(email)<br />gclid: \(input.gclid ?? "(nil)"))"
+        "email: \(email)<br />gclid: \(input.gclid ?? "(nil)")"
       ))
     }
 
