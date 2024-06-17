@@ -70,7 +70,8 @@
 ## Dmg woes...
 
 - runing `run dmg` fouls up the signature somehow, instead:
-- after exporting the notarized app, run it through the `DropDMG` app
+- after exporting the notarized app, run it through the `DropDMG` app by opening the app
+  and choosing `File` -> `New from Folder/File...` and pointing it at the new app
 - once it makes the `.dmg` file, double check it by opening the dmg (so the disk is
   _mounted_), and then run:
 
