@@ -132,7 +132,8 @@ import XExpect
 
     await expect(suspendFilter.invocations).toEqual([30])
     await expect(resumeFilter.invoked).toEqual(false)
-    await expect(securityEvent.invocations).toEqual([.init(.filterSuspensionGrantedByAdmin)])
+    await expect(securityEvent.invocations)
+      .toEqual([.init(.filterSuspensionGrantedByAdmin, "for < 1 min")])
 
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()

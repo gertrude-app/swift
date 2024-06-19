@@ -237,7 +237,8 @@ extension FilterFeature.RootReducer {
     comment: String? = nil,
     extraMonitoring: Bool = false
   ) -> Effect<Action> {
-    state.filter.currentSuspensionExpiration = now.advanced(by: Double(seconds.rawValue))
+    let expiration = now.advanced(by: Double(seconds.rawValue))
+    state.filter.currentSuspensionExpiration = expiration
     return .merge(
       .exec { _ in
         _ = await xpc.suspendFilter(seconds)
@@ -254,7 +255,8 @@ extension FilterFeature.RootReducer {
         await api.securityEvent(
           fromAdmin
             ? .filterSuspensionGrantedByAdmin
-            : .filterSuspendedRemotely
+            : .filterSuspendedRemotely,
+          "for \(now.shortDuration(until: expiration))"
         )
       },
       .cancel(id: FilterFeature.CancelId.quitBrowsers)

@@ -27,6 +27,28 @@ extension Date {
       return "\(secondsRemaining / 86400) days from now"
     }
   }
+
+  func shortDuration(until future: Date = Date()) -> String {
+    let secondsRemaining = Int(future.timeIntervalSince1970 - timeIntervalSince1970)
+    switch secondsRemaining {
+    case ...35:
+      return "< 1 min"
+    case 36 ..< 85:
+      return "1 min"
+    case 85 ..< 100:
+      return "\(secondsRemaining) sec"
+    case 100 ..< 120:
+      return "2 min"
+    case 120 ..< 4200:
+      return "\(Int(round(Double(secondsRemaining) / 60.0))) min"
+    case 4200 ..< 7200:
+      return "1 hr \((secondsRemaining - 3600) / 60) min"
+    case 7200 ..< 172_800:
+      return "\(Int(round(Double(secondsRemaining) / 3600.0))) hrs"
+    default:
+      return "\(secondsRemaining / 86400) days"
+    }
+  }
 }
 
 extension FilterSuspension {

@@ -57,6 +57,8 @@
   - use updateable api data for browser identification
 - `2.3.0` (canary as of 6/13/24)
   - feature: security events
+- `2.3.1` (canary as of 6/19/24)
+  - refinement, filter suspension security details suspension duration
 
 ## Sparkle Releases
 
