@@ -132,7 +132,7 @@ enum Reset {
       let (width, height) = [(800, 600), (900, 600), (800, 500), (900, 500)].shuffled().first!
       return .left(Screenshot(
         userDeviceId: userDeviceId,
-        url: "https://placekitten.com/\(width)/\(height)",
+        url: "https://fakeimg.pl/\(width)x\(height)/3e2a73/ffffff",
         width: width,
         height: height
       ))
