@@ -59,6 +59,7 @@
   - feature: security events
 - `2.3.1` (canary as of 6/19/24)
   - refinement, filter suspension security details suspension duration
+  - refinement, remove .appUpdateInitiated event, noisy and not useful
 
 ## Sparkle Releases
 

@@ -170,7 +170,6 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     _ query: AppcastQuery,
     _ persist: Persistent.State
   ) async throws {
-    await api.securityEvent(.appUpdateInitiated)
     let feedUrl = "\(updater.endpoint.absoluteString)\(query.urlString)"
     try await storage.savePersistentState(persist)
     try await updater.triggerUpdate(feedUrl)

@@ -11,7 +11,6 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case newMacOsUserCreated
     case macosUserExempted
     case childDisconnected
-    case appUpdateInitiated
     case appUpdateSucceeded
     case appUpdateFailedToReplaceSystemExtension
     case advancedSettingsOpened
@@ -48,8 +47,6 @@ public extension SecurityEvent.MacApp {
       return "App quit"
     case .appUpdateFailedToReplaceSystemExtension:
       return "App update failed to replace system extension"
-    case .appUpdateInitiated:
-      return "App update initiated"
     case .appUpdateSucceeded:
       return "App update succeeded"
     case .childDisconnected:
@@ -83,8 +80,6 @@ public extension SecurityEvent.MacApp {
       return "This event occurs when an admin-privileged user quits the Gertrude app. For a protected child, this should not occur and should be investigated."
     case .appUpdateFailedToReplaceSystemExtension:
       return "This is a rare event that occurs when a Gertrude update fails. It does not represent any attempt by the protected child to bypass Gertrude, but should be investigated to make sure the filter is functioning correctly."
-    case .appUpdateInitiated:
-      return "This event occurs when an upgrade to the Gertrude app is initiated. It is normal, but should be infrequent."
     case .appUpdateSucceeded:
       return "This event occurs when an upgrade to the Gertrude app finishes successfully. It is normal, but should be infrequent."
     case .childDisconnected:
