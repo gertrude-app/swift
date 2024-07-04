@@ -17,6 +17,16 @@ public extension UUID {
   static let zeros = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
   static let ones = UUID(uuidString: "11111111-1111-1111-1111-111111111111")!
   static let twos = UUID(uuidString: "22222222-2222-2222-2222-222222222222")!
+
+  init(_ intValue: Int) {
+    self.init(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", intValue))")!
+  }
+}
+
+extension UUID: ExpressibleByIntegerLiteral {
+  public init(integerLiteral value: Int) {
+    self.init(value)
+  }
 }
 
 public extension Date {

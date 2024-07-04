@@ -57,9 +57,11 @@
   - use updateable api data for browser identification
 - `2.3.0` (canary as of 6/13/24)
   - feature: security events
-- `2.3.1` (canary as of 6/19/24)
+- `2.3.1` (beta as of 6/19/24, released for new users)
   - refinement, filter suspension security details suspension duration
   - refinement, remove .appUpdateInitiated event, noisy and not useful
+- `2.3.2` (stable, 7/4/24)
+  - buffer security events when no internet
 
 ## Sparkle Releases
 

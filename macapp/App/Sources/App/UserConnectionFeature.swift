@@ -82,6 +82,7 @@ extension UserConnectionFeature.RootReducer {
   func disconnectUser(_ name: String?, persisting updated: Persistent.State) -> Effect<Action> {
     .merge(
       .exec { _ in
+        // NB: security event should go FIRST, before necessary data deleted
         await api.securityEvent(.childDisconnected, "name: \(name ?? "(nil)")")
         await api.clearUserToken()
         try await storage.savePersistentState(updated)

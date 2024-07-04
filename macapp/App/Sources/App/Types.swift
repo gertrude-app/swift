@@ -1,7 +1,6 @@
 import ClientInterfaces
 import ComposableArchitecture
 import Foundation
-import Gertie
 import MacAppRoute
 
 typealias FeatureReducer = Reducer
@@ -65,23 +64,6 @@ public extension ApiClient {
         osVersion: device.osVersion().semver
       )
     )
-  }
-
-  func securityEvent(_ event: SecurityEvent.MacApp, _ detail: String? = nil) async {
-    @Dependency(\.storage) var storage
-    guard let deviceId = try? await storage.loadPersistentState()?.user?.deviceId else {
-      return
-    }
-    await self.securityEvent(deviceId: deviceId, event: event, detail: detail)
-  }
-
-  func securityEvent(deviceId: UUID, event: SecurityEvent.MacApp, detail: String? = nil) async {
-    @Dependency(\.network) var network
-    guard network.isConnected() else {
-      // TODO: buffer/resend https://github.com/gertrude-app/project/issues/243
-      return
-    }
-    await self.logSecurityEvent(.init(deviceId: deviceId, event: event.rawValue, detail: detail))
   }
 }
 
