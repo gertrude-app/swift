@@ -65,6 +65,7 @@ final class ConnectUserResolversTests: ApiTestCase {
 
   // re-connect from a macOS user that has had gertrude installed before
   func testConnectUser_ReassignToDifferentUserOwnedBySameAdmin() async throws {
+    Current.date = { Date() }
     let existingUser = try await Entities.user().withDevice()
     let existingUserToken = try await Current.db.create(UserToken(
       userId: existingUser.id,
@@ -93,8 +94,8 @@ final class ConnectUserResolversTests: ApiTestCase {
     let retrievedDevice = try await Current.db.find(existingUser.device.id)
     expect(retrievedDevice.userId).toEqual(newUser.model.id)
 
-    let retrievedOldToken = try? await Current.db.find(existingUserToken.id)
-    XCTAssertNil(retrievedOldToken)
+    let retrievedOldToken = try await Current.db.find(existingUserToken.id)
+    XCTAssertNotNil(retrievedOldToken.deletedAt)
   }
 
   // test sanity check, computer/user registered to a different admin

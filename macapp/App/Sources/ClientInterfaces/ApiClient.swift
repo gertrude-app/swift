@@ -11,8 +11,9 @@ public struct ApiClient: Sendable {
   public var createSuspendFilterRequest: @Sendable (CreateSuspendFilterRequest.Input) async throws
     -> Void
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void
+  public var getUserToken: @Sendable () async throws -> UUID?
   public var logInterestingEvent: @Sendable (LogInterestingEvent.Input) async -> Void
-  public var logSecurityEvent: @Sendable (LogSecurityEvent.Input) async -> Void
+  public var logSecurityEvent: @Sendable (LogSecurityEvent.Input, UUID?) async -> Void
   public var recentAppVersions: @Sendable () async throws -> [String: String]
   public var reportBrowsers: @Sendable (ReportBrowsers.Input) async throws -> Void
   public var setAccountActive: @Sendable (Bool) async -> Void
@@ -27,8 +28,9 @@ public struct ApiClient: Sendable {
     createSuspendFilterRequest: @escaping @Sendable (CreateSuspendFilterRequest.Input) async throws
       -> Void,
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void,
+    getUserToken: @escaping @Sendable () async throws -> UUID?,
     logInterestingEvent: @escaping @Sendable (LogInterestingEvent.Input) async -> Void,
-    logSecurityEvent: @escaping @Sendable (LogSecurityEvent.Input) async -> Void,
+    logSecurityEvent: @escaping @Sendable (LogSecurityEvent.Input, UUID?) async -> Void,
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     reportBrowsers: @escaping @Sendable (ReportBrowsers.Input) async throws -> Void,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
@@ -41,6 +43,7 @@ public struct ApiClient: Sendable {
     self.createKeystrokeLines = createKeystrokeLines
     self.createSuspendFilterRequest = createSuspendFilterRequest
     self.createUnlockRequests = createUnlockRequests
+    self.getUserToken = getUserToken
     self.logInterestingEvent = logInterestingEvent
     self.logSecurityEvent = logSecurityEvent
     self.recentAppVersions = recentAppVersions
@@ -96,6 +99,7 @@ extension ApiClient: TestDependencyKey {
     createKeystrokeLines: unimplemented("ApiClient.createKeystrokeLines"),
     createSuspendFilterRequest: unimplemented("ApiClient.createSuspendFilterRequest"),
     createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
+    getUserToken: unimplemented("ApiClient.getUserToken"),
     logInterestingEvent: unimplemented("ApiClient.logInterestingEvent"),
     logSecurityEvent: unimplemented("ApiClient.logSecurityEvent"),
     recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
@@ -112,8 +116,9 @@ extension ApiClient: TestDependencyKey {
     createKeystrokeLines: { _ in },
     createSuspendFilterRequest: { _ in },
     createUnlockRequests: { _ in },
+    getUserToken: { nil },
     logInterestingEvent: { _ in },
-    logSecurityEvent: { _ in },
+    logSecurityEvent: { _, _ in },
     recentAppVersions: { [:] },
     reportBrowsers: { _ in },
     setAccountActive: { _ in },

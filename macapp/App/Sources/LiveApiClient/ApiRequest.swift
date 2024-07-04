@@ -5,9 +5,12 @@ import XCore
 
 func output<T: Pair>(
   from pair: T.Type,
-  with route: AuthedUserRoute
+  with route: AuthedUserRoute,
+  using overrideToken: UUID? = nil
 ) async throws -> T.Output {
-  guard let token = await userToken.value else {
+  let currentToken = await userToken.value
+  // NB: prefer overrideToken
+  guard let token = overrideToken ?? currentToken else {
     throw ApiClient.Error.missingUserToken
   }
   return try await request(root: .userAuthed(token, route), pair: T.self)

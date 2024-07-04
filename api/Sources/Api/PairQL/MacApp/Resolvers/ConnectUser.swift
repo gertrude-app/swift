@@ -56,10 +56,16 @@ extension ConnectUser: Resolver {
       // update the device to be attached to the user issuing this request
       userDevice = try await existingUserDevice.save()
 
-      try await UserToken.query()
+      let oldTokens = try await UserToken.query()
         .where(.userDeviceId == userDevice.id)
         .where(.userId == oldUserId)
-        .delete()
+        .all()
+
+      for token in oldTokens {
+        // wait 14 days, so buffered security events can be resent
+        token.deletedAt = Current.date().advanced(by: .days(14))
+        try await token.save()
+      }
 
     } else {
       if adminDevice == nil {

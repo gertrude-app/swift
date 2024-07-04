@@ -163,6 +163,7 @@ extension AppReducer {
       store.deps.filterExtension = .mock
       store.deps.filterXpc = .mock
       store.deps.websocket = .mock
+      store.deps.userDefaults.getString = { _ in nil }
     }
     return (store, scheduler)
   }

@@ -24,7 +24,7 @@ import XExpect
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
     let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
     store.deps.device.quitBrowsers = quitBrowsers.fn
-    let securityEvent = spy(on: LogSecurityEvent.Input.self, returning: ())
+    let securityEvent = spy2(on: (LogSecurityEvent.Input.self, UUID?.self), returning: ())
     store.deps.api.logSecurityEvent = securityEvent.fn
     store.deps.storage.loadPersistentState = { .mock }
 
@@ -34,7 +34,7 @@ import XExpect
 
     await expect(filterNotify.invoked).toEqual(true)
     await expect(notification.invocations.value[0].a).toContain("browsers quitting soon")
-    await expect(securityEvent.invocations).toEqual([.init(.filterSuspensionEndedEarly)])
+    await expect(securityEvent.invocations).toEqual([Both(.init(.filterSuspensionEndedEarly), nil)])
 
     await scheduler.advance(by: 59)
     await expect(quitBrowsers.invoked).toEqual(false)
@@ -117,7 +117,7 @@ import XExpect
     store.deps.filterXpc.suspendFilter = suspendFilter.fn
     let resumeFilter = mock(returning: [Result<Void, XPCErr>.success(())])
     store.deps.filterXpc.endFilterSuspension = resumeFilter.fn
-    let securityEvent = spy(on: LogSecurityEvent.Input.self, returning: ())
+    let securityEvent = spy2(on: (LogSecurityEvent.Input.self, UUID?.self), returning: ())
     store.deps.api.logSecurityEvent = securityEvent.fn
 
     expect(store.state.filter.currentSuspensionExpiration).toBeNil()
@@ -133,7 +133,7 @@ import XExpect
     await expect(suspendFilter.invocations).toEqual([30])
     await expect(resumeFilter.invoked).toEqual(false)
     await expect(securityEvent.invocations)
-      .toEqual([.init(.filterSuspensionGrantedByAdmin, "for < 1 min")])
+      .toEqual([Both(.init(.filterSuspensionGrantedByAdmin, "for < 1 min"), nil)])
 
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()

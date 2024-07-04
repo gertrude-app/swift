@@ -768,13 +768,13 @@ import XExpect
       .franny,
       .init(id: 503, name: "suspicious", type: .admin), // <-- new user
     ] }
-    let securityEvent = spy(on: LogSecurityEvent.Input.self, returning: ())
+    let securityEvent = spy2(on: (LogSecurityEvent.Input.self, UUID?.self), returning: ())
     store.deps.api.logSecurityEvent = securityEvent.fn
 
     await store.send(.heartbeat(.everyTwentyMinutes))
     expect(getInt.invocations).toEqual([key, key, key])
     expect(setNumCalls.value).toEqual([.init(key, 2), .init(key, 3)])
-    await expect(securityEvent.invocations).toEqual([.init(.newMacOsUserCreated)])
+    await expect(securityEvent.invocations).toEqual([Both(.init(.newMacOsUserCreated), nil)])
 
     // removing a user does not emit a security event
     store.deps.device.listMacOSUsers = { [.dad, .franny] }

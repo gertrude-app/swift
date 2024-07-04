@@ -23,6 +23,8 @@ enum ApplicationFeature {
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.filterExtension) var filterExtension
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.network) var network
+    @Dependency(\.userDefaults) var userDefaults
   }
 }
 
@@ -65,6 +67,28 @@ extension ApplicationFeature.RootReducer: RootReducing {
             .receive(on: mainQueue)
         }
       )
+
+    case .heartbeat(.everyFiveMinutes):
+      guard network.isConnected() else {
+        return .none
+      }
+      return .exec { _ in
+        guard let bufferedSecurityEvents = try? userDefaults.loadJson(
+          at: .bufferedSecurityEventsKey,
+          decoding: [BufferedSecurityEvent].self
+        ) else { return }
+        userDefaults.remove(.bufferedSecurityEventsKey)
+        for buffered in bufferedSecurityEvents {
+          await api.logSecurityEvent(
+            .init(
+              deviceId: buffered.deviceId,
+              event: buffered.event.rawValue,
+              detail: buffered.detail
+            ),
+            buffered.userToken
+          )
+        }
+      }
 
     case .application(.willTerminate):
       return .merge(

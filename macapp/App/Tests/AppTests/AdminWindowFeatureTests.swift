@@ -56,7 +56,7 @@ import XExpect
     store.deps.storage.loadPersistentState = { .mock }
     let filterNotify = mock(once: Result<Void, XPCErr>.success(()))
     store.deps.filterXpc.disconnectUser = filterNotify.fn
-    let securityEvent = spy(on: LogSecurityEvent.Input.self, returning: ())
+    let securityEvent = spy2(on: (LogSecurityEvent.Input.self, UUID?.self), returning: ())
     store.deps.api.logSecurityEvent = securityEvent.fn
 
     await store.send(.adminAuthed(.adminWindow(.webview(.disconnectUserClicked)))) {
@@ -76,7 +76,7 @@ import XExpect
       resumeOnboarding: nil
     )])
     await expect(securityEvent.invocations)
-      .toEqual([.init(.childDisconnected, "name: Mock User")])
+      .toEqual([Both(.init(.childDisconnected, "name: Mock User"), nil)])
   }
 
   func testSuspendFilter() async {

@@ -12,7 +12,9 @@ extension ApiClient: DependencyKey {
         with: .checkIn(input)
       )
     },
-    clearUserToken: { await userToken.setValue(nil) },
+    clearUserToken: {
+      await userToken.setValue(nil)
+    },
     connectUser: { input in
       try await output(
         from: ConnectUser.self,
@@ -43,13 +45,16 @@ extension ApiClient: DependencyKey {
         with: .createUnlockRequests_v2(input)
       )
     },
+    getUserToken: {
+      await userToken.value
+    },
     logInterestingEvent: { input in
       _ = try? await output(
         from: LogInterestingEvent.self,
         withUnauthed: .logInterestingEvent(input)
       )
     },
-    logSecurityEvent: { input in
+    logSecurityEvent: { input, bufferedToken in
       // sleep allows us to log events possibly before token/account resolved
       if input.event == "appLaunched" {
         try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
@@ -57,10 +62,14 @@ extension ApiClient: DependencyKey {
         try? await Task.sleep(nanoseconds: 1_000_000) // 1ms
       }
       guard await accountActive.value else { return }
-      guard await userToken.value != nil else { return }
+      let currentToken = await userToken.value
+      // NB: prefer bufferedToken
+      let token = bufferedToken ?? currentToken
+      guard token != nil else { return }
       _ = try? await output(
         from: LogSecurityEvent.self,
-        with: .logSecurityEvent(input)
+        with: .logSecurityEvent(input),
+        using: token
       )
     },
     recentAppVersions: {
