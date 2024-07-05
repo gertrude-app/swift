@@ -27,6 +27,7 @@ struct QueryAdmins: Pair {
     }
 
     var id: Admin.Id
+    var hasGclid: Bool
     var email: EmailAddress
     var subscriptionId: Admin.SubscriptionId?
     var subscriptionStatus: Admin.SubscriptionStatus
@@ -100,6 +101,7 @@ extension QueryAdmins: NoInputResolver {
       guard !isTestAddress(row.email.rawValue) else { continue }
       admins[row.adminId] = .init(
         id: row.adminId,
+        hasGclid: row.hasGclid,
         email: row.email,
         subscriptionId: row.subscriptionId,
         subscriptionStatus: row.subscriptionStatus,
@@ -127,6 +129,7 @@ struct AdminQuery: CustomQueryable {
     SELECT
         admins.id AS admin_id,
         admins.email,
+        admins.gclid IS NOT NULL AS has_gclid,
         admins.subscription_id,
         admins.subscription_status,
         admins.created_at AS admin_created_at,
@@ -206,6 +209,7 @@ struct AdminQuery: CustomQueryable {
 
   // admin
   let adminId: Admin.Id
+  let hasGclid: Bool
   let email: EmailAddress
   let subscriptionId: Admin.SubscriptionId?
   let subscriptionStatus: Admin.SubscriptionStatus
