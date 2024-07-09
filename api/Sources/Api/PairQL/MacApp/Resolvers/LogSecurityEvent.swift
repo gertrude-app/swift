@@ -25,10 +25,6 @@ extension LogSecurityEvent: Resolver {
       return .success
     }
 
-    // temp, while observing beta feature
-    await Current.slack
-      .sysLog("Received security event: `\(event)` for child: `\(context.user.name)`")
-
     if userDevice.isAdmin != true {
       return .success
     }
