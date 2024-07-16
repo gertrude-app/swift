@@ -11,6 +11,7 @@ struct Signup: Pair {
     var email: String
     var password: String
     var gclid: String?
+    var abTestVariant: String?
   }
 }
 
@@ -38,7 +39,11 @@ extension Signup: Resolver {
     if Env.mode == .prod, !isTestAddress(email) {
       Current.sendGrid.fireAndForget(.toJared(
         "signup",
-        "email: \(email)<br />gclid: \(input.gclid ?? "(nil)")"
+        [
+          "email: \(email)",
+          "g-ad: \(input.gclid != nil)",
+          "A/B: \(input.abTestVariant ?? "(nil)")",
+        ].joined(separator: "<br />")
       ))
     }
 
@@ -47,7 +52,8 @@ extension Signup: Resolver {
       password: Env.mode == .test ? input.password : try Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
       subscriptionStatusExpiration: Current.date().advanced(by: .days(7)),
-      gclid: input.gclid
+      gclid: input.gclid,
+      abTestVariant: input.abTestVariant
     ))
 
     try await sendVerificationEmail(to: admin, in: context)

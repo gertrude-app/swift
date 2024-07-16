@@ -111,6 +111,7 @@ extension Admin {
     case subscriptionStatus
     case subscriptionStatusExpiration
     case gclid
+    case abTestVariant
     case createdAt
     case updatedAt
   }

@@ -25,5 +25,6 @@ extension Configure {
     app.migrations.add(AddAdminGclid())
     app.migrations.add(BrowsersTable())
     app.migrations.add(SecurityEvents())
+    app.migrations.add(ABTestVariants())
   }
 }

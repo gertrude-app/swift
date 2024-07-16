@@ -18,6 +18,11 @@ public extension Configure {
       use: DashboardTsCodegenRoute.handler(_:)
     )
 
+    app.post(
+      "site-forms",
+      use: SiteFormsRoute.handler(_:)
+    )
+
     app.on(
       .POST,
       "pairql", ":domain", ":operation",

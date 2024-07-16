@@ -42,9 +42,15 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     expect(sent.postmarkEmails[0].html).toContain("verify your email address")
   }
 
-  func testInitiateSignupWithGclid() async throws {
+  func testInitiateSignupWithGclidAndABVariant() async throws {
     let email = "signup".random + "@example.com"
-    let input = Signup.Input(email: email, password: "pass", gclid: "gclid-123")
+    let input = Signup.Input(
+      email: email,
+      password: "pass",
+      gclid: "gclid-123",
+      abTestVariant: "old_site"
+    )
+
     _ = try await Signup.resolve(with: input, in: self.context)
 
     let admin = try await Current.db.query(Admin.self)
@@ -52,6 +58,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
       .first()
 
     expect(admin.gclid).toEqual("gclid-123")
+    expect(admin.abTestVariant).toEqual("old_site")
   }
 
   func testLoginFromMagicLink() async throws {
