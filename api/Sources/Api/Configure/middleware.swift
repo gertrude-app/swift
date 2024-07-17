@@ -14,7 +14,12 @@ private func corsMiddleware(_ app: Application) -> CORSMiddleware {
   let configuration = CORSMiddleware.Configuration(
     allowedOrigin: app
       .environment == .production ?
-      .any(["https://parents.gertrude.app", "https://dash.gertrude.app"]) : .all,
+      .any([
+        "https://parents.gertrude.app",
+        "https://dash.gertrude.app",
+        "https://gertrude.app",
+        "https://www.gertrude.app",
+      ]) : .all,
     allowedMethods: [.GET, .POST, .PUT, .OPTIONS, .DELETE, .PATCH],
     allowedHeaders: [
       .accept,

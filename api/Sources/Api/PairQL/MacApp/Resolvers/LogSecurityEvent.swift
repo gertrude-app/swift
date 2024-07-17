@@ -18,10 +18,12 @@ extension LogSecurityEvent: Resolver {
     ).create()
 
     guard let event = Gertie.SecurityEvent.MacApp(rawValue: input.event) else {
-      await Current.slack.sysLog(
-        to: "errors",
-        "Received unknown security event: `\(input.event)`"
-      )
+      if input.event != "appUpdateInitiated" { // <-- removed for noise
+        await Current.slack.sysLog(
+          to: "errors",
+          "Received unknown security event: `\(input.event)`"
+        )
+      }
       return .success
     }
 
