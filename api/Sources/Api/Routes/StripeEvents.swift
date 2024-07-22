@@ -28,6 +28,7 @@ enum StripeEventsRoute {
         switch (admin.subscriptionId, event?.data?.object?.subscription) {
         case (.none, .some(let subscriptionId)):
           admin.subscriptionId = .init(rawValue: subscriptionId)
+          Task { await Current.slack.sysLog("*FIRST Payment* from `\(email)`") }
         case (.some(let existing), .some(let subscriptionId))
           where existing.rawValue != subscriptionId:
           admin.subscriptionId = .init(rawValue: subscriptionId)
