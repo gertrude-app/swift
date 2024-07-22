@@ -31,6 +31,7 @@ struct QueryAdmins: Pair {
     var email: EmailAddress
     var subscriptionId: Admin.SubscriptionId?
     var subscriptionStatus: Admin.SubscriptionStatus
+    var abTestVariant: String?
     var numNotifications: Int
     var numKeychains: Int
     var children: [Child]
@@ -105,6 +106,7 @@ extension QueryAdmins: NoInputResolver {
         email: row.email,
         subscriptionId: row.subscriptionId,
         subscriptionStatus: row.subscriptionStatus,
+        abTestVariant: row.abTestVariant,
         numNotifications: row.numNotifications,
         numKeychains: row.numKeychains,
         children: [],
@@ -132,6 +134,7 @@ struct AdminQuery: CustomQueryable {
         admins.gclid IS NOT NULL AS has_gclid,
         admins.subscription_id,
         admins.subscription_status,
+        admins.ab_test_variant,
         admins.created_at AS admin_created_at,
         COUNT(DISTINCT CASE WHEN keychains.deleted_at IS NULL THEN keychains.id END) AS num_keychains,
         COALESCE(an.num_notifications, 0) AS num_notifications,
@@ -213,6 +216,7 @@ struct AdminQuery: CustomQueryable {
   let email: EmailAddress
   let subscriptionId: Admin.SubscriptionId?
   let subscriptionStatus: Admin.SubscriptionStatus
+  let abTestVariant: String?
   let numNotifications: Int
   let numKeychains: Int
   let adminCreatedAt: Date
