@@ -12,9 +12,15 @@ let package = Package(
     .package(path: "../x-expect"),
   ],
   targets: [
-    .target(name: "XAws", dependencies: [
-      .product(name: "Crypto", package: "swift-crypto"),
-    ]),
+    .target(
+      name: "XAws",
+      dependencies: [.product(name: "Crypto", package: "swift-crypto")],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
     .testTarget(
       name: "XAwsTests",
       dependencies: ["XAws", .product(name: "XExpect", package: "x-expect")]

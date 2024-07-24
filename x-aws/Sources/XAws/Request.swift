@@ -6,7 +6,7 @@ import Foundation
 extension AWS.Request {
   private typealias Util = AWS.Util
 
-  enum HttpVerb: String {
+  enum HttpVerb: String, Sendable {
     case GET
     case PUT
     case POST

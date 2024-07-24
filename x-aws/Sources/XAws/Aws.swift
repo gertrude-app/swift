@@ -1,11 +1,11 @@
 import Foundation
 
 public enum AWS {
-  public struct Client {
-    public var signedS3UploadUrl: (String) throws -> URL
+  public struct Client: Sendable {
+    public var signedS3UploadUrl: @Sendable (String) throws -> URL
   }
 
-  public struct Error: Swift.Error {
+  public struct Error: Swift.Error, Sendable {
     public let message: String
   }
 }
