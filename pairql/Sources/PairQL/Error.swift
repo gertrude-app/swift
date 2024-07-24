@@ -1,4 +1,4 @@
-public struct PqlError: Error, Codable, Equatable {
+public struct PqlError: Error, Codable, Equatable, Sendable {
   public var version = 1
   public var id: String
   public var requestId: String
@@ -39,7 +39,7 @@ public struct PqlError: Error, Codable, Equatable {
 }
 
 public extension PqlError {
-  enum Kind: String, Codable, CaseIterable {
+  enum Kind: String, Codable, CaseIterable, Sendable {
     case notFound
     case badRequest
     case serverError
@@ -57,13 +57,13 @@ public extension PqlError {
     }
   }
 
-  enum DashboardTag: String, Codable, CaseIterable {
+  enum DashboardTag: String, Codable, CaseIterable, Sendable {
     case magicLinkTokenNotFound
     case slackVerificationFailed
     case emailAlreadyVerified
   }
 
-  enum AppTag: String, Codable, CaseIterable {
+  enum AppTag: String, Codable, CaseIterable, Sendable {
     case userTokenNotFound
     case connectionCodeNotFound
   }

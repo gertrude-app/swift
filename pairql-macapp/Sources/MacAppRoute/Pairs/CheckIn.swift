@@ -4,7 +4,7 @@ import PairQL
 
 /// in use: v2.0.4 - present
 public struct CheckIn: Pair {
-  public static var auth: ClientAuth = .user
+  public static let auth: ClientAuth = .user
 
   public struct Input: PairInput {
     public var appVersion: String

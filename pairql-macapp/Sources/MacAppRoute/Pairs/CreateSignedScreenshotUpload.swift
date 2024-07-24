@@ -1,5 +1,10 @@
-import Foundation
 import PairQL
+
+#if os(Linux)
+  @preconcurrency import Foundation
+#else
+  import Foundation
+#endif
 
 /// in use: v2.0.0 - present
 public struct CreateSignedScreenshotUpload: Pair {
