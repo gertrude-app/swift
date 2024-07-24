@@ -30,7 +30,8 @@ private func request<T: Pair>(
   pair: T.Type
 ) async throws -> T.Output {
   let router = App.router.baseURL(ApiClient.endpoint.absoluteString)
-  let request = try router.request(for: .wrap(route))
+  var request = try router.request(for: .wrap(route))
+  request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
   let (data, response) = try await data(for: request)
   if let httpResponse = response as? HTTPURLResponse,
      httpResponse.statusCode >= 300 {
