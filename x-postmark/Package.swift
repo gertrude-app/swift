@@ -11,8 +11,14 @@ let package = Package(
     .package(path: "../x-http"),
   ],
   targets: [
-    .target(name: "XPostmark", dependencies: [
-      .product(name: "XHttp", package: "x-http"),
-    ]),
+    .target(
+      name: "XPostmark",
+      dependencies: [.product(name: "XHttp", package: "x-http")],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
   ]
 )

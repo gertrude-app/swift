@@ -5,15 +5,15 @@ import XHttp
   import FoundationNetworking
 #endif
 
-public struct Client {
-  public var send: (Email) async throws -> Void
+public struct Client: Sendable {
+  public var send: @Sendable (Email) async throws -> Void
 
-  public init(send: @escaping (Email) async throws -> Void) {
+  public init(send: @Sendable @escaping (Email) async throws -> Void) {
     self.send = send
   }
 }
 
-public struct Email {
+public struct Email: Sendable {
   public var to: String
   public var from: String
   public var replyTo: String?
@@ -32,7 +32,7 @@ public struct Email {
 // extensions
 
 public extension Client {
-  struct Error: Swift.Error {
+  struct Error: Swift.Error, Sendable {
     public let statusCode: Int
     public let errorCode: Int
     public let message: String
@@ -73,7 +73,7 @@ public extension Client {
 }
 
 public extension Client {
-  static var mock: Self = .init(send: { _ in })
+  static let mock: Self = .init(send: { _ in })
 }
 
 // api types
