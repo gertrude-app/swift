@@ -11,10 +11,18 @@ let package = Package(
     .package(path: "../x-expect"),
   ],
   targets: [
-    .target(name: "Gertie", dependencies: [
-      .product(name: "XCore", package: "x-kit"),
-      .product(name: "TaggedTime", package: "swift-tagged"),
-    ]),
+    .target(
+      name: "Gertie",
+      dependencies: [
+        .product(name: "XCore", package: "x-kit"),
+        .product(name: "TaggedTime", package: "swift-tagged"),
+      ],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
     .testTarget(
       name: "GertieTests",
       dependencies: [
