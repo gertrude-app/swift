@@ -25,6 +25,7 @@ let package = Package(
         .unsafeFlags([
           "-Xfrontend", "-warn-concurrency",
           "-Xfrontend", "-enable-actor-data-race-checks",
+          "-Xfrontend", "-warnings-as-errors",
         ]),
       ]
     ),
