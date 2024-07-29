@@ -1,4 +1,4 @@
-public protocol SQLQuerying {
+public protocol SQLQuerying: Sendable {
   func select<M: Model>(
     _ Model: M.Type,
     where: SQL.WhereConstraint<M>,

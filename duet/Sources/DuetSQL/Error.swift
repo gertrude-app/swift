@@ -32,6 +32,6 @@ public enum DuetSQLError: Error, Equatable, LocalizedError {
   }
 
   public var errorDescription: String? {
-    self.errorMessage
+    errorMessage
   }
 }

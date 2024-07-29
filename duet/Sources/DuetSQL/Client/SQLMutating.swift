@@ -1,4 +1,4 @@
-public protocol SQLMutating {
+public protocol SQLMutating: Sendable {
   @discardableResult
   func create<M: Model>(_ models: [M]) async throws -> [M]
 

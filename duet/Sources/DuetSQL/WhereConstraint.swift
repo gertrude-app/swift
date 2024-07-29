@@ -1,6 +1,6 @@
 public extension SQL {
 
-  enum WhereConstraint<M: Model>: Equatable {
+  enum WhereConstraint<M: Model>: Equatable, Sendable {
     case equals(M.ColumnName, Postgres.Data)
     case lessThan(M.ColumnName, Postgres.Data)
     case greaterThan(M.ColumnName, Postgres.Data)
@@ -16,7 +16,7 @@ public extension SQL {
     indirect case and(WhereConstraint<M>, WhereConstraint<M>)
     indirect case not(WhereConstraint<M>)
 
-    func isSatisfied(by model: M) -> Bool {
+    public func isSatisfied(by model: M) -> Bool {
       switch self {
       case .not(let constraint):
         return !constraint.isSatisfied(by: model)
@@ -27,6 +27,18 @@ public extension SQL {
         return values.contains { value in data == value }
       case .isNull(let column):
         return model.postgresData(for: column).holdsNull
+      case .like(let column, let pattern):
+        guard case .string(.some(let string)) = model.postgresData(for: column) else {
+          return false
+        }
+        let regex = "^" + pattern.replacingOccurrences(of: "%", with: ".*") + "$"
+        return string.range(of: regex, options: .regularExpression) != nil
+      case .ilike(let column, let pattern):
+        guard case .string(.some(let string)) = model.postgresData(for: column) else {
+          return false
+        }
+        let regex = "^" + pattern.replacingOccurrences(of: "%", with: ".*") + "$"
+        return string.lowercased().range(of: regex, options: .regularExpression) != nil
       case .or(let lhs, let rhs):
         return lhs.isSatisfied(by: model) || rhs.isSatisfied(by: model)
       case .and(let lhs, let rhs):
@@ -43,18 +55,6 @@ public extension SQL {
       case .greaterThanOrEqualTo(let column, let data):
         let colData = model.postgresData(for: column)
         return colData >= data
-      case .like(let column, let pattern):
-        guard case .string(.some(let string)) = model.postgresData(for: column) else {
-          return false
-        }
-        let regex = "^" + pattern.replacingOccurrences(of: "%", with: ".*") + "$"
-        return string.range(of: regex, options: .regularExpression) != nil
-      case .ilike(let column, let pattern):
-        guard case .string(.some(let string)) = model.postgresData(for: column) else {
-          return false
-        }
-        let regex = "^" + pattern.replacingOccurrences(of: "%", with: ".*") + "$"
-        return string.lowercased().range(of: regex, options: .regularExpression) != nil
       case .always:
         return true
       case .never:
