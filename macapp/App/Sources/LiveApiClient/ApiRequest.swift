@@ -63,9 +63,9 @@ private func data(for request: URLRequest) async throws -> (Data, URLResponse) {
 
 private enum App {
   case wrap(MacAppRoute)
-  static let router = OneOf {
+  nonisolated(unsafe) static let router = OneOf {
     Route(.case(App.wrap)) {
-      Method.post
+      Method("POST")
       Path { "macos-app" }
       MacAppRoute.router
     }
