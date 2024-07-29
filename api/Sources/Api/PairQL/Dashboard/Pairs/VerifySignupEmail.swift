@@ -8,7 +8,7 @@ struct AdminAuth: PairOutput {
 }
 
 struct VerifySignupEmail: Pair {
-  static var auth: ClientAuth = .none
+  static let auth: ClientAuth = .none
 
   struct Input: PairInput {
     let token: UUID
@@ -25,7 +25,7 @@ extension VerifySignupEmail: Resolver {
 
     // happy path: verification is successful
     case .notExpired(let adminId):
-      let admin = try await Admin.find(adminId)
+      var admin = try await Admin.find(adminId)
       let token = try await AdminToken.create(.init(adminId: admin.id))
       if admin.subscriptionStatus != .pendingEmailVerification {
         return .init(token: token.value, adminId: admin.id)

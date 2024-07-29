@@ -3,7 +3,7 @@ import Gertie
 import PairQL
 
 struct QueryAdmins: Pair {
-  static var auth: ClientAuth = .superAdmin
+  static let auth: ClientAuth = .superAdmin
 
   struct AdminData: PairOutput {
     struct Child: PairNestable {

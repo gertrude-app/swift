@@ -3,7 +3,7 @@ import PairQL
 import Vapor
 
 struct CombinedUsersActivityFeed: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     var range: DateRange

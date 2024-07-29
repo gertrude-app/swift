@@ -3,13 +3,17 @@ import Foundation
 import PairQL
 import Vapor
 
+#if os(Linux)
+  extension ISO8601DateFormatter: @unchecked Sendable {}
+#endif
+
 enum DashboardRoute: PairRoute {
   case adminAuthed(UUID, AuthedAdminRoute)
   case unauthed(UnauthedRoute)
 }
 
 extension DashboardRoute {
-  static let router = OneOf {
+  nonisolated(unsafe) static let router = OneOf {
     Route(/Self.adminAuthed) {
       Headers { Field("X-AdminToken") { UUID.parser() } }
       AuthedAdminRoute.router

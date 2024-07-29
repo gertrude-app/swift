@@ -2,7 +2,7 @@ import DuetSQL
 import PairQL
 
 struct GetSelectableKeychains: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Output: PairOutput {
     let own: [KeychainSummary]

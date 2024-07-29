@@ -3,7 +3,7 @@ import Gertie
 import PairQL
 
 struct SaveKey: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     var isNew: Bool
@@ -21,7 +21,7 @@ extension SaveKey: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     let keychain = try await context.admin.keychain(input.keychainId)
     if input.isNew {
-      let key = try await Current.db.create(Key(
+      var key = try await Current.db.create(Key(
         id: input.id,
         keychainId: keychain.id,
         key: input.key,
@@ -34,7 +34,7 @@ extension SaveKey: Resolver {
         try await Current.db.update(key)
       }
     } else {
-      let key = try await Current.db.find(input.id)
+      var key = try await Current.db.find(input.id)
       key.comment = input.comment
       key.key = input.key
       key.deletedAt = input.expiration

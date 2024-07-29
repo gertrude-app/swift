@@ -121,7 +121,7 @@ func replaceAllReleases(with releases: [Release]) async throws {
 extension Release: HasCreatedAt {}
 
 extension Release {
-  convenience init(
+  init(
     _ semver: String,
     channel: ReleaseChannel = .stable,
     pace requirementPace: Int? = nil,

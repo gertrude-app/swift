@@ -22,7 +22,7 @@ actor Ephemeral {
     _ adminId: Admin.Id,
     expiration: Date = Current.date() + ONE_HOUR
   ) -> UUID {
-    let token = UUID.new()
+    let token = Current.uuid()
     self.adminIds[token] = (adminId: adminId, expiration: expiration)
     return token
   }

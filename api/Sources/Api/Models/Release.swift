@@ -1,7 +1,7 @@
 import Duet
 import Gertie
 
-final class Release: Codable {
+struct Release: Codable, Sendable {
   var id: Id
   var semver: String
   var channel: ReleaseChannel

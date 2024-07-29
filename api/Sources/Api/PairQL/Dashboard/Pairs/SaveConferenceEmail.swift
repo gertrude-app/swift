@@ -2,7 +2,7 @@ import PairQL
 import Vapor
 
 struct SaveConferenceEmail: Pair {
-  static var auth: ClientAuth = .none
+  static let auth: ClientAuth = .none
 
   struct Input: PairInput {
     enum Source: String, Codable {

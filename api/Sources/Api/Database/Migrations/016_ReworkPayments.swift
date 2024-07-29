@@ -47,8 +47,9 @@ struct ReworkPayments: GertieMigration {
       try await sql.execute("""
         UPDATE \(table: Admin.M1.self)
         SET
-          \(col: Admin.M1.subscriptionStatus) = '\(raw: status.rawValue)',
-          \(col: Admin.M16.subscriptionStatusExpiration) = '\(raw: date.postgresTimestampString)'
+          \(col: Admin.M1.subscriptionStatus) = '\(unsafeRaw: status.rawValue)',
+          \(col: Admin.M16.subscriptionStatusExpiration) = '\(unsafeRaw: date
+        .postgresTimestampString)'
         WHERE \(col: .id) = '\(uuid: id)'
       """)
     }
@@ -112,7 +113,7 @@ struct ReworkPayments: GertieMigration {
     for (id, status) in updates {
       try await sql.execute("""
         UPDATE \(table: Admin.M1.self)
-        SET \(col: Admin.M1.subscriptionStatus) = '\(raw: status.rawValue)'
+        SET \(col: Admin.M1.subscriptionStatus) = '\(unsafeRaw: status.rawValue)'
         WHERE \(col: .id) = '\(uuid: id)'
       """)
     }

@@ -1,6 +1,6 @@
 import Foundation
 
-final class InterestingEvent: Codable {
+struct InterestingEvent: Codable, Sendable {
   var id: Id
   var eventId: String
   var kind: String

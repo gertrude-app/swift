@@ -33,7 +33,7 @@ struct SubscriptionManager: AsyncScheduledJob {
   func advanceExpired() async throws {
     var logs: [String] = []
     let admins = try await Admin.query().all()
-    for admin in admins {
+    for var admin in admins {
       guard let update = try await subscriptionUpdate(for: admin) else {
         continue
       }

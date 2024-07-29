@@ -33,6 +33,8 @@ class ApiTestCase: XCTestCase {
 
   override static func setUp() {
     Current = .mock
+    UUID.new = UUID.init
+    Current.uuid = { UUID.new() }
     self.app = Application(.testing)
     try! Configure.app(self.app)
     self.app.logger = .null
@@ -51,7 +53,7 @@ class ApiTestCase: XCTestCase {
     Current.postmark.send = { [self] email in
       self.sent.postmarkEmails.append(email)
     }
-    Current.slack.send = { [self] message, token in
+    Current.slack.send = { @Sendable [self] message, token in
       sent.slacks.append((message, token))
       return nil
     }

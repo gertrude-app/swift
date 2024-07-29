@@ -2,7 +2,7 @@ import Foundation
 import PairQL
 
 struct HandleCheckoutSuccess: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     var stripeCheckoutSessionId: String
@@ -14,7 +14,7 @@ struct HandleCheckoutSuccess: Pair {
 extension HandleCheckoutSuccess: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionId)
-    let admin = try await Current.db.find(session.adminId)
+    var admin = try await Current.db.find(session.adminId)
     let subscriptionId = try session.adminUserSubscriptionId
     let subscription = try await Current.stripe.getSubscription(subscriptionId.rawValue)
     switch (admin.subscriptionStatus, subscription.status) {

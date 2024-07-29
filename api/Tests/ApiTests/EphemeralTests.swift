@@ -15,7 +15,7 @@ class EphemeralTests: XCTestCase {
   }
 
   func testExpiredAdminTokenReturnsNil() async {
-    Current.date = Date.init
+    Current.date = { Date() }
     let ephemeral = Ephemeral()
     let admin = Admin.mock
     let token = await ephemeral.createAdminIdToken(admin.id, expiration: Date(subtractingDays: 5))

@@ -47,9 +47,9 @@ extension Migration {
     let sql = db as! SQLDatabase
     _ = try await sql.raw(
       """
-      ALTER TABLE "\(raw: tableName)"
-      ALTER COLUMN "\(raw: column.description)" TYPE jsonb
-      USING \(raw: column.description)::jsonb;
+      ALTER TABLE "\(unsafeRaw: tableName)"
+      ALTER COLUMN "\(unsafeRaw: column.description)" TYPE jsonb
+      USING \(unsafeRaw: column.description)::jsonb;
       """
     ).all()
   }
@@ -62,8 +62,8 @@ extension Migration {
     let sql = db as! SQLDatabase
     _ = try await sql.raw(
       """
-      ALTER TABLE "\(raw: tableName)"
-      ALTER COLUMN "\(raw: column.description)" TYPE string;
+      ALTER TABLE "\(unsafeRaw: tableName)"
+      ALTER COLUMN "\(unsafeRaw: column.description)" TYPE string;
       """
     ).all()
   }

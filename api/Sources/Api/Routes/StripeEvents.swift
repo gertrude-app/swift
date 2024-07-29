@@ -4,7 +4,7 @@ import Vapor
 import XCore
 
 enum StripeEventsRoute {
-  static func handler(_ request: Request) async throws -> Response {
+  @Sendable static func handler(_ request: Request) async throws -> Response {
     guard let json = try await request.collectedBody() else {
       return Response(status: .badRequest)
     }
@@ -19,7 +19,7 @@ enum StripeEventsRoute {
         .where(.email == email.lowercased())
         .first()
 
-      if let admin {
+      if var admin {
         admin.subscriptionStatus = .paid
         admin.subscriptionStatusExpiration = event?.data?.object?.lines?.data?.first?.period?.end
           .map { Date(timeIntervalSince1970: TimeInterval($0)).advanced(by: .days(2)) }

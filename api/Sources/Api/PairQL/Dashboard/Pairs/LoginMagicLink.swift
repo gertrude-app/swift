@@ -2,7 +2,7 @@ import PairQL
 import Vapor
 
 struct LoginMagicLink: Pair {
-  static var auth: ClientAuth = .none
+  static let auth: ClientAuth = .none
 
   struct Input: PairInput {
     var token: UUID

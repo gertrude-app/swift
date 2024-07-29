@@ -3,7 +3,7 @@ import Gertie
 import PairQL
 
 struct CreateRelease: Pair {
-  static var auth: ClientAuth = .superAdmin
+  static let auth: ClientAuth = .superAdmin
 
   struct Input: PairInput {
     let semver: String
@@ -34,7 +34,7 @@ extension CreateRelease: Resolver {
       .where(.semver == .string(input.semver))
       .first()
 
-    if let existing = existing {
+    if var existing {
       existing.channel = input.channel
       existing.signature = input.signature
       existing.length = input.length

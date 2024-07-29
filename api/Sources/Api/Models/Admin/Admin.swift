@@ -1,7 +1,7 @@
 import DuetSQL
 import Gertie
 
-final class Admin: Codable {
+struct Admin: Codable, Sendable {
   var id: Id
   var email: EmailAddress
   var password: String
@@ -14,12 +14,9 @@ final class Admin: Codable {
   var updatedAt = Date()
   var deletedAt: Date?
 
-  var devices = Children<Device>.notLoaded
-  var keychains = Children<Keychain>.notLoaded
-  var users = Children<User>.notLoaded
-  var notifications = Children<AdminNotification>.notLoaded
-  var verifiedNotificationMethods = Children<AdminVerifiedNotificationMethod>.notLoaded
-  var accountStatus: AdminAccountStatus { self.subscriptionStatus.accountStatus }
+  var accountStatus: AdminAccountStatus {
+    self.subscriptionStatus.accountStatus
+  }
 
   init(
     id: Id = .init(),
@@ -46,11 +43,9 @@ final class Admin: Codable {
 
 extension Admin {
   func keychains() async throws -> [Keychain] {
-    try await self.keychains.useLoaded(or: {
-      try await Current.db.query(Keychain.self)
-        .where(.authorId == id)
-        .all()
-    })
+    try await Current.db.query(Keychain.self)
+      .where(.authorId == self.id)
+      .all()
   }
 
   func keychain(_ keychainId: Keychain.Id) async throws -> Keychain {
@@ -61,35 +56,27 @@ extension Admin {
   }
 
   func users() async throws -> [User] {
-    try await self.users.useLoaded(or: {
-      try await Current.db.query(User.self)
-        .where(.adminId == id)
-        .all()
-    })
+    try await Current.db.query(User.self)
+      .where(.adminId == self.id)
+      .all()
   }
 
   func devices() async throws -> [Device] {
-    try await self.devices.useLoaded(or: {
-      try await Current.db.query(Device.self)
-        .where(.adminId == id)
-        .all()
-    })
+    try await Current.db.query(Device.self)
+      .where(.adminId == self.id)
+      .all()
   }
 
   func notifications() async throws -> [AdminNotification] {
-    try await self.notifications.useLoaded(or: {
-      try await Current.db.query(AdminNotification.self)
-        .where(.adminId == id)
-        .all()
-    })
+    try await Current.db.query(AdminNotification.self)
+      .where(.adminId == self.id)
+      .all()
   }
 
   func verifiedNotificationMethods() async throws -> [AdminVerifiedNotificationMethod] {
-    try await self.verifiedNotificationMethods.useLoaded(or: {
-      try await Current.db.query(AdminVerifiedNotificationMethod.self)
-        .where(.adminId == id)
-        .all()
-    })
+    try await Current.db.query(AdminVerifiedNotificationMethod.self)
+      .where(.adminId == self.id)
+      .all()
   }
 }
 
@@ -98,7 +85,7 @@ extension Admin {
 extension Admin {
   typealias SubscriptionId = Tagged<Admin, String>
 
-  enum SubscriptionStatus: String, Codable, Equatable, CaseIterable {
+  enum SubscriptionStatus: String, Codable, Equatable, CaseIterable, Sendable {
     case pendingEmailVerification
     case trialing
     case trialExpiringSoon

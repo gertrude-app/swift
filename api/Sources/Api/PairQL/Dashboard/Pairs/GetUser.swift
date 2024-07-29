@@ -13,7 +13,7 @@ struct KeychainSummary: PairNestable {
 }
 
 struct GetUser: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct User: PairOutput {
     var id: Api.User.Id

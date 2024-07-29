@@ -2,7 +2,7 @@ import DuetSQL
 import PairQL
 
 struct GetUnlockRequests: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
   typealias Output = [GetUnlockRequest.Output]
 }
 

@@ -1,6 +1,6 @@
 import Duet
 
-final class Screenshot: Codable {
+struct Screenshot: Codable, Sendable {
   var id: Id
   var userDeviceId: UserDevice.Id
   var url: String
@@ -9,8 +9,6 @@ final class Screenshot: Codable {
   var filterSuspended: Bool
   var createdAt: Date
   var deletedAt: Date?
-
-  var userDevice = Parent<UserDevice>.notLoaded
 
   init(
     id: Id = .init(),

@@ -1,7 +1,7 @@
 import Duet
 import Gertie
 
-final class Browser: Codable {
+struct Browser: Codable, Sendable {
   var id: Id
   var match: BrowserMatch
   var createdAt = Date()

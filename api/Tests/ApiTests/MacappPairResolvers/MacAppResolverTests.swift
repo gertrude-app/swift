@@ -70,7 +70,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     // we want to test the LIVE admin notifier implementation
     Current.adminNotifier = .live
-    Current.slack.send = { _, _ in "oh noes!" } // slack fails
+    Current.slack.send = { @Sendable _, _ in "oh noes!" } // slack fails
 
     _ = try await CreateSuspendFilterRequest.resolve(
       with: .init(duration: 1111, comment: "test"),
@@ -175,7 +175,7 @@ final class MacAppResolverTests: ApiTestCase {
   func testCreateSignedScreenshotUploadWithDate() async throws {
     let user = try await Entities.user().withDevice()
 
-    let (uuid, _) = mockUUIDs()
+    let (_, uuid) = mockUUIDs()
     Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
 
     _ = try await CreateSignedScreenshotUpload.resolve(

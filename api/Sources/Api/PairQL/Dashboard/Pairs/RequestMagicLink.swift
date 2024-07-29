@@ -3,7 +3,7 @@ import PairQL
 import Vapor
 
 struct RequestMagicLink: Pair {
-  static var auth: ClientAuth = .none
+  static let auth: ClientAuth = .none
 
   struct Input: PairInput {
     var email: String

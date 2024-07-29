@@ -19,10 +19,10 @@ actor AppConnections {
     self.connections.removeValue(forKey: connection.id)
   }
 
-  func filterState(for userDeviceId: UserDevice.Id) -> UserFilterState? {
+  func filterState(for userDeviceId: UserDevice.Id) async -> UserFilterState? {
     for connection in self.connections.values {
       if connection.ids.userDevice == userDeviceId {
-        return connection.filterState
+        return await connection.filterState
       }
     }
     return nil
@@ -48,29 +48,29 @@ actor AppConnections {
     case .keychainUpdated(let keychainId):
       try await self.currentConnections
         .filter { $0.ids.keychains.contains(keychainId) }
-        .asyncForEach {
-          try await $0.ws.send(codable: OutgoingMessage.userUpdated)
+        .asyncForEach { @Sendable conn in
+          try await conn.ws.send(codable: OutgoingMessage.userUpdated)
         }
 
     case .userUpdated(let userId):
       try await self.currentConnections
         .filter { $0.ids.user == userId }
-        .asyncForEach {
-          try await $0.ws.send(codable: OutgoingMessage.userUpdated)
+        .asyncForEach { @Sendable conn in
+          try await conn.ws.send(codable: OutgoingMessage.userUpdated)
         }
 
     case .userDeleted(let userId):
       try await self.currentConnections
         .filter { $0.ids.user == userId }
-        .asyncForEach {
-          try await $0.ws.send(codable: OutgoingMessage.userDeleted)
+        .asyncForEach { @Sendable conn in
+          try await conn.ws.send(codable: OutgoingMessage.userDeleted)
         }
 
     case .unlockRequestUpdated(let payload):
       try await self.currentConnections
         .filter { $0.ids.userDevice == payload.userDeviceId }
-        .asyncForEach {
-          try await $0.ws.send(
+        .asyncForEach { @Sendable conn in
+          try await conn.ws.send(
             codable:
             OutgoingMessage.unlockRequestUpdated(
               status: payload.status,
@@ -83,8 +83,8 @@ actor AppConnections {
     case .suspendFilterRequestDecided(let userDeviceId, let decision, let comment):
       try await self.currentConnections
         .filter { $0.ids.userDevice == userDeviceId }
-        .asyncForEach {
-          try await $0.ws.send(
+        .asyncForEach { @Sendable conn in
+          try await conn.ws.send(
             codable:
             OutgoingMessage.filterSuspensionRequestDecided(decision: decision, comment: comment)
           )
@@ -94,8 +94,8 @@ actor AppConnections {
       if payload.status == .accepted {
         try await self.currentConnections
           .filter { $0.ids.userDevice == payload.userDeviceId }
-          .asyncForEach {
-            try await $0.ws.send(
+          .asyncForEach { @Sendable conn in
+            try await conn.ws.send(
               codable:
               OutgoingMessage.suspendFilter(
                 for: payload.duration,
@@ -106,8 +106,8 @@ actor AppConnections {
       } else {
         try await self.currentConnections
           .filter { $0.ids.userDevice == payload.userDeviceId }
-          .asyncForEach {
-            try await $0.ws.send(
+          .asyncForEach { @Sendable conn in
+            try await conn.ws.send(
               codable:
               OutgoingMessage.suspendFilterRequestDenied(
                 parentComment: payload.responseComment

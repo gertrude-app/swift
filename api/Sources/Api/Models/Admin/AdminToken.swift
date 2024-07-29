@@ -1,18 +1,16 @@
 import Duet
 import Tagged
 
-final class AdminToken: Codable {
+struct AdminToken: Codable, Sendable {
   var id: Id
   var adminId: Admin.Id
   var value: Value
   var createdAt = Date()
   var deletedAt: Date
 
-  var admin = Parent<Admin>.notLoaded
-
   init(
     id: Id = .init(),
-    value: Value = .init(rawValue: UUID.new()),
+    value: Value = .init(Current.uuid()),
     adminId: Admin.Id,
     deletedAt: Date? = nil
   ) {

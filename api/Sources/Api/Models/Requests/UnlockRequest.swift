@@ -1,7 +1,7 @@
 import DuetSQL
 import Gertie
 
-final class UnlockRequest: Codable {
+struct UnlockRequest: Codable, Sendable {
   var id: Id
   var userDeviceId: UserDevice.Id
   var status: RequestStatus
@@ -13,8 +13,6 @@ final class UnlockRequest: Codable {
   var ipAddress: String?
   var createdAt = Date()
   var updatedAt = Date()
-
-  var userDevice = Parent<UserDevice>.notLoaded
 
   var target: String? {
     self.url ?? self.hostname ?? self.ipAddress
@@ -47,10 +45,8 @@ final class UnlockRequest: Codable {
 
 extension UnlockRequest {
   func userDevice() async throws -> UserDevice {
-    try await self.userDevice.useLoaded(or: {
-      try await Current.db.query(UserDevice.self)
-        .where(.id == userDeviceId)
-        .first()
-    })
+    try await Current.db.query(UserDevice.self)
+      .where(.id == self.userDeviceId)
+      .first()
   }
 }

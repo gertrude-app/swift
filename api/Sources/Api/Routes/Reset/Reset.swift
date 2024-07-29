@@ -182,9 +182,9 @@ extension DuetSQL.Model where Self: HasCreatedAt {
 
     try await client.sql.execute(
       """
-      UPDATE \(raw: Self.tableName)
-      SET \(col: .createdAt) = '\(raw: createdAt.isoString)'
-      WHERE id = '\(raw: id.uuidString.lowercased())'
+      UPDATE \(unsafeRaw: Self.tableName)
+      SET \(col: .createdAt) = '\(unsafeRaw: createdAt.isoString)'
+      WHERE id = '\(unsafeRaw: id.uuidString.lowercased())'
       """
     )
   }

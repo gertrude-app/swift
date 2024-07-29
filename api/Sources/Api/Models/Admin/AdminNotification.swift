@@ -1,15 +1,12 @@
 import DuetSQL
 import Tagged
 
-final class AdminNotification: Codable {
+struct AdminNotification: Codable, Sendable {
   var id: Id
   var adminId: Admin.Id
   var methodId: AdminVerifiedNotificationMethod.Id
   var trigger: Trigger
   var createdAt = Date()
-
-  var admin = Parent<Admin>.notLoaded
-  var method = Parent<AdminVerifiedNotificationMethod>.notLoaded
 
   init(
     id: Id = .init(),
@@ -27,7 +24,7 @@ final class AdminNotification: Codable {
 // extensions
 
 extension AdminNotification {
-  enum Trigger: String, Codable, CaseIterable, Equatable {
+  enum Trigger: String, Codable, CaseIterable, Equatable, Sendable {
     case unlockRequestSubmitted
     case suspendFilterRequestSubmitted
     case adminChildSecurityEvent
@@ -38,10 +35,8 @@ extension AdminNotification {
 
 extension AdminNotification {
   func method() async throws -> AdminVerifiedNotificationMethod {
-    try await self.method.useLoaded(or: {
-      try await Current.db.query(AdminVerifiedNotificationMethod.self)
-        .where(.id == methodId)
-        .first()
-    })
+    try await Current.db.query(AdminVerifiedNotificationMethod.self)
+      .where(.id == self.methodId)
+      .first()
   }
 }

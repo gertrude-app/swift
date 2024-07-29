@@ -5,7 +5,7 @@ import Vapor
 import XPostmark
 
 struct Signup: Pair {
-  static var auth: ClientAuth = .none
+  static let auth: ClientAuth = .none
 
   struct Input: PairInput {
     var email: String

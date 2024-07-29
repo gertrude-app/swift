@@ -1,10 +1,10 @@
 @testable import Api
 
 @dynamicMemberLookup
-struct UserEntities {
-  let model: User
-  let token: UserToken
-  let admin: AdminEntities
+class UserEntities {
+  var model: User
+  var token: UserToken
+  var admin: AdminEntities
 
   var context: UserContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
@@ -13,15 +13,21 @@ struct UserEntities {
   subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
     self.model[keyPath: keyPath]
   }
+
+  init(model: User, token: UserToken, admin: AdminEntities) {
+    self.model = model
+    self.token = token
+    self.admin = admin
+  }
 }
 
 @dynamicMemberLookup
 struct UserWithDeviceEntities {
-  let model: User
-  let adminDevice: Device
-  let device: UserDevice
-  let token: UserToken
-  let admin: AdminEntities
+  var model: User
+  var adminDevice: Device
+  var device: UserDevice
+  var token: UserToken
+  var admin: AdminEntities
 
   var context: UserContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
@@ -34,8 +40,8 @@ struct UserWithDeviceEntities {
 
 @dynamicMemberLookup
 struct AdminEntities {
-  let model: Admin
-  let token: AdminToken
+  var model: Admin
+  var token: AdminToken
 
   var context: AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)
@@ -48,10 +54,10 @@ struct AdminEntities {
 
 @dynamicMemberLookup
 struct AdminWithKeychainEntities {
-  let model: Admin
-  let token: AdminToken
-  let keychain: Keychain
-  let key: Key
+  var model: Admin
+  var token: AdminToken
+  var keychain: Keychain
+  var key: Key
 
   var context: AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)
@@ -64,11 +70,11 @@ struct AdminWithKeychainEntities {
 
 @dynamicMemberLookup
 struct AdminWithOnboardedChildEntities {
-  let model: Admin
-  let token: AdminToken
-  let child: User
-  let userDevice: UserDevice
-  let adminDevice: Device
+  var model: Admin
+  var token: AdminToken
+  var child: User
+  var userDevice: UserDevice
+  var adminDevice: Device
 
   var context: AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)

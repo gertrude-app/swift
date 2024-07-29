@@ -1,7 +1,7 @@
 import PairQL
 
 struct SaveKeychain: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     let isNew: Bool
@@ -24,7 +24,7 @@ extension SaveKeychain: Resolver {
         description: input.description
       ))
     } else {
-      let keychain = try await Current.db.find(input.id)
+      var keychain = try await Current.db.find(input.id)
       keychain.name = input.name
       keychain.description = input.description
       try await Current.db.update(keychain)

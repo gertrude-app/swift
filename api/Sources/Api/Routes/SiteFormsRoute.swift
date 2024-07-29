@@ -15,7 +15,7 @@ private struct FormData: Decodable {
 }
 
 enum SiteFormsRoute {
-  static func handler(_ req: Request) async throws -> Response {
+  @Sendable static func handler(_ req: Request) async throws -> Response {
     guard let data = try? req.content.decode(FormData.self) else {
       await Current.slack.sysLog(to: "errors", """
       *Invalid site form data*

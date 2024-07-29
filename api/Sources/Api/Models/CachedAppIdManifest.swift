@@ -1,3 +1,4 @@
+import Foundation
 import Gertie
 
 // public interface
@@ -41,12 +42,20 @@ private func loadAppIdManifest() async throws -> AppIdManifest {
   let bundleIds = try await Current.db.query(AppBundleId.self).all()
   let categories = try await Current.db.query(AppCategory.self).all()
 
+  struct AppData {
+    let bundleIds: [AppBundleId]
+    let category: AppCategory?
+  }
+
+  var appData: [IdentifiedApp.Id: AppData] = [:]
+
   apps.forEach { app in
     let ids = bundleIds.filter { $0.identifiedAppId == app.id }
-    app.bundleIds = .loaded(ids)
-    if let categoryId = app.categoryId {
-      app.category = .loaded(categories.first { $0.id == categoryId })
-    }
+    appData[app.id] = AppData(
+      bundleIds: ids,
+      category: app.categoryId
+        .flatMap { cid in categories.first { $0.id == cid } }
+    )
   }
 
   var manifest = AppIdManifest()
@@ -56,9 +65,10 @@ private func loadAppIdManifest() async throws -> AppIdManifest {
 
   for app in apps {
     manifest.displayNames[app.slug] = app.name
-    manifest.apps[app.slug] = Set(try app.bundleIds.models.map(\.bundleId))
-    if let cat = try? app.category.model {
-      manifest.categories[cat.slug]?.insert(app.slug)
+    let data = appData[app.id]!
+    manifest.apps[app.slug] = Set(data.bundleIds.map(\.bundleId))
+    if let category = data.category {
+      manifest.categories[category.slug]?.insert(app.slug)
     }
   }
 

@@ -76,7 +76,7 @@ final class UsersResolversTests: ApiTestCase {
 
   func testSetsNewKeychainsFromEmpty() async throws {
     let user = try await Entities.user()
-    let keychain = Keychain.random
+    var keychain = Keychain.random
     keychain.authorId = user.admin.id
     try await Current.db.create(keychain)
 
@@ -93,7 +93,7 @@ final class UsersResolversTests: ApiTestCase {
 
   func testDeletesExistingKeychains() async throws {
     let user = try await Entities.user()
-    let keychain = Keychain.random
+    var keychain = Keychain.random
     keychain.authorId = user.admin.id
     try await Current.db.create(keychain)
     let pivot = try await Current.db.create(UserKeychain(userId: user.id, keychainId: keychain.id))
@@ -113,9 +113,9 @@ final class UsersResolversTests: ApiTestCase {
   func testReplacesExistingKeychains() async throws {
     let user = try await Entities.user()
 
-    let keychain1 = Keychain.random
+    var keychain1 = Keychain.random
     keychain1.authorId = user.admin.id
-    let keychain2 = Keychain.random
+    var keychain2 = Keychain.random
     keychain2.authorId = user.admin.id
     try await Current.db.create([keychain1, keychain2])
 

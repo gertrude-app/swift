@@ -35,8 +35,8 @@ struct SecurityEvents: GertieMigration {
 
     // add new enum case
     try await sql.execute("""
-      ALTER TYPE \(raw: AdminNotification.Trigger.typeName)
-      ADD VALUE '\(raw: AdminNotification.Trigger.adminChildSecurityEvent.rawValue)'
+      ALTER TYPE \(unsafeRaw: AdminNotification.Trigger.typeName)
+      ADD VALUE '\(unsafeRaw: AdminNotification.Trigger.adminChildSecurityEvent.rawValue)'
     """)
   }
 
@@ -71,8 +71,8 @@ struct SecurityEvents: GertieMigration {
     try await sql.execute("""
       ALTER TABLE \(table: AdminNotification.M1.self)
       ALTER COLUMN \(col: AdminNotification.M1.trigger)
-      TYPE \(raw: AdminNotification.Trigger.typeName)
-      USING \(col: AdminNotification.M1.trigger)::\(raw: AdminNotification.Trigger.typeName)
+      TYPE \(unsafeRaw: AdminNotification.Trigger.typeName)
+      USING \(col: AdminNotification.M1.trigger)::\(unsafeRaw: AdminNotification.Trigger.typeName)
     """)
   }
 }

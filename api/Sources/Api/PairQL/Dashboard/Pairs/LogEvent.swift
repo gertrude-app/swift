@@ -2,7 +2,7 @@ import PairQL
 import Vapor
 
 struct LogEvent: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     var eventId: String

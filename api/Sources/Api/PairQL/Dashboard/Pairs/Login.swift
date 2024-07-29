@@ -4,7 +4,7 @@ import Vapor
 import XCore
 
 struct Login: Pair {
-  static var auth: ClientAuth = .none
+  static let auth: ClientAuth = .none
 
   struct Input: PairInput {
     let email: String
