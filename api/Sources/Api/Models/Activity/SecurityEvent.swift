@@ -1,6 +1,6 @@
 import Duet
 
-final class SecurityEvent: Codable {
+struct SecurityEvent: Codable, Sendable {
   var id: Id
   var adminId: Admin.Id
   var userDeviceId: UserDevice.Id?

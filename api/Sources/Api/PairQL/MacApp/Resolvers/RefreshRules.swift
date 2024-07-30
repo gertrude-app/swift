@@ -10,7 +10,7 @@ extension RefreshRules: Resolver {
     }.flatMap { $0 }
 
     // update the app version if it changed
-    if let userDevice = try? await context.userDevice(),
+    if var userDevice = try? await context.userDevice(),
        !input.appVersion.isEmpty,
        input.appVersion != userDevice.appVersion {
       userDevice.appVersion = input.appVersion

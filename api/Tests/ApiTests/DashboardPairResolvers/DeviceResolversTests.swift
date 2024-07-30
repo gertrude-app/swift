@@ -7,7 +7,7 @@ final class DeviceResolversTests: ApiTestCase {
   func testGetDevices() async throws {
     try await Device.deleteAll()
     let user = try await Entities.user().withDevice { $0.appVersion = "2.2.2" }
-    let device = user.adminDevice
+    var device = user.adminDevice
     device.appReleaseChannel = .canary
     device.customName = "Pinky"
     device.serialNumber = "1234567890"
@@ -55,7 +55,7 @@ final class DeviceResolversTests: ApiTestCase {
 
   func testSaveDevice() async throws {
     let user = try await Entities.user().withDevice()
-    let device = user.adminDevice
+    var device = user.adminDevice
     device.appReleaseChannel = .stable
     device.customName = nil
     try await device.save()

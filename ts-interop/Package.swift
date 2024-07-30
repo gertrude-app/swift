@@ -21,12 +21,11 @@ let package = Package(
       dependencies: [
         .product(name: "Runtime", package: "Runtime"),
       ],
-      swiftSettings: [
-        .unsafeFlags([
-          "-Xfrontend", "-warn-concurrency",
-          "-Xfrontend", "-enable-actor-data-race-checks",
-        ]),
-      ]
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
     ),
     .testTarget(
       name: "TypeScriptInteropTests",

@@ -1,12 +1,10 @@
 import Duet
 
-final class AdminVerifiedNotificationMethod: Codable {
+struct AdminVerifiedNotificationMethod: Codable, Sendable {
   var id: Id
   var adminId: Admin.Id
   var config: Config
   var createdAt = Date()
-
-  var admin = Parent<Admin>.notLoaded
 
   init(id: Id = .init(), adminId: Admin.Id, config: Config) {
     self.id = id
@@ -18,7 +16,7 @@ final class AdminVerifiedNotificationMethod: Codable {
 // extensions
 
 extension AdminVerifiedNotificationMethod {
-  enum Config: Codable, Equatable {
+  enum Config: Codable, Equatable, Sendable {
     case slack(channelId: String, channelName: String, token: String)
     case email(email: String)
     case text(phoneNumber: String)

@@ -12,16 +12,16 @@ final class AppcastTests: ApiTestCase {
       Release("2.1.1", channel: .stable, pace: nil, createdAt: .epoch.advanced(by: .days(20))),
     ])
 
-    try app.test(.GET, "appcast.xml", afterResponse: { res in
-      expect(filenames(from: res)).toEqual([
+    try await app.test(.GET, "appcast.xml", afterResponse: { res in
+      expect(await filenames(from: res)).toEqual([
         "Gertrude.2.1.1.zip",
         "Gertrude.2.0.0.zip",
       ])
     })
 
     // canary is one behind stable, so...
-    try app.test(.GET, "appcast.xml?channel=canary", afterResponse: { res in
-      expect(filenames(from: res)).toEqual([
+    try await app.test(.GET, "appcast.xml?channel=canary", afterResponse: { res in
+      expect(await filenames(from: res)).toEqual([
         "Gertrude.2.1.1.zip", // <-- ...includes stable
         "Gertrude.2.1.0.zip",
         "Gertrude.2.0.0.zip",
@@ -29,7 +29,8 @@ final class AppcastTests: ApiTestCase {
     })
   }
 
-  func filenames(from response: XCTHTTPResponse) -> [String] {
+  // NB: async just to force selection of async overload of `app.test()`
+  func filenames(from response: XCTHTTPResponse) async -> [String] {
     response.body.string.split(separator: "\n")
       .filter { $0.contains("url=") }
       .map { $0.trimmingCharacters(in: .whitespaces) }

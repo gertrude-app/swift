@@ -2,14 +2,16 @@ import Foundation
 
 extension UUID: UUIDStringable {}
 
-public extension UUID {
-  static var new: () -> UUID = UUID.init
-}
+#if DEBUG
+  public extension UUID {
+    nonisolated(unsafe) static var new: () -> UUID = UUID.init
+  }
+#endif
 
-public protocol UUIDStringable {
+public protocol UUIDStringable: Sendable {
   var uuidString: String { get }
 }
 
-public protocol UUIDIdentifiable {
+public protocol UUIDIdentifiable: Sendable {
   var uuidId: UUID { get }
 }

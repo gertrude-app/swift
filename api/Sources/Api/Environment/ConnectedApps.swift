@@ -1,11 +1,11 @@
 import Gertie
 
-struct ConnectedApps {
-  var add: (AppConnection) async -> Void
-  var remove: (AppConnection) async -> Void
-  var filterState: (UserDevice.Id) async -> UserFilterState?
-  var isUserDeviceOnline: (UserDevice.Id) async -> Bool
-  var notify: (AppEvent) async throws -> Void
+struct ConnectedApps: Sendable {
+  var add: @Sendable (AppConnection) async -> Void
+  var remove: @Sendable (AppConnection) async -> Void
+  var filterState: @Sendable (UserDevice.Id) async -> UserFilterState?
+  var isUserDeviceOnline: @Sendable (UserDevice.Id) async -> Bool
+  var notify: @Sendable (AppEvent) async throws -> Void
 }
 
 extension ConnectedApps {

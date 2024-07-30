@@ -2,7 +2,7 @@ import Foundation
 import PairQL
 
 struct GetAdmin: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Notification: PairNestable {
     var id: AdminNotification.Id

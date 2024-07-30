@@ -1,6 +1,6 @@
 import Duet
 
-final class IdentifiedApp: Codable {
+struct IdentifiedApp: Codable, Sendable {
   var id: Id
   var categoryId: AppCategory.Id?
   var name: String
@@ -9,9 +9,6 @@ final class IdentifiedApp: Codable {
   var description: String?
   var createdAt = Date()
   var updatedAt = Date()
-
-  var category = OptionalParent<AppCategory>.notLoaded
-  var bundleIds = Children<AppBundleId>.notLoaded
 
   init(
     id: Id = .init(),

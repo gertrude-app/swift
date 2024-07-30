@@ -4,18 +4,16 @@ import Vapor
 import WebSocketKit
 
 enum AppWebsocket {
-  static func handler(_ request: Request, _ ws: WebSocket) {
-    Task {
-      do {
-        try await establish(request, ws)
-      } catch is UserTokenNotFound {
-        Current.logger.debug("WS: connection error: user token not found")
-        let code = Int(WebSocketMessage.ErrorCode.userTokenNotFound.rawValue)
-        try await ws.close(code: .init(codeNumber: code))
-      } catch {
-        Current.logger.error("WS: unexpected connection error: \(error)")
-        try await ws.close()
-      }
+  @Sendable static func handler(_ request: Request, _ ws: WebSocket) async {
+    do {
+      try await self.establish(request, ws)
+    } catch is UserTokenNotFound {
+      Current.logger.debug("WS: connection error: user token not found")
+      let code = Int(WebSocketMessage.ErrorCode.userTokenNotFound.rawValue)
+      try? await ws.close(code: .init(codeNumber: code))
+    } catch {
+      Current.logger.error("WS: unexpected connection error: \(error)")
+      try? await ws.close()
     }
   }
 

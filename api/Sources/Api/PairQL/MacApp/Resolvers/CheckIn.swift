@@ -6,8 +6,8 @@ extension CheckIn: Resolver {
     async let v1 = RefreshRules.resolve(with: .init(appVersion: input.appVersion), in: context)
     async let admin = context.user.admin()
     async let browsers = Browser.query().all()
-    let userDevice = try await context.userDevice()
-    let adminDevice = try await userDevice.adminDevice()
+    var userDevice = try await context.userDevice()
+    var adminDevice = try await userDevice.adminDevice()
     let channel = adminDevice.appReleaseChannel
 
     async let latestRelease = LatestAppVersion.resolve(

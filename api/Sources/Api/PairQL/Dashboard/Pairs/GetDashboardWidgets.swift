@@ -4,7 +4,7 @@ import Gertie
 import PairQL
 
 struct GetDashboardWidgets: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct User: PairNestable {
     var id: Api.User.Id

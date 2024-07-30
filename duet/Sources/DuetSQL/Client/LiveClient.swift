@@ -11,7 +11,7 @@ public struct LiveClient: Client {
   public func create<M: Model>(_ models: [M]) async throws -> [M] {
     guard !models.isEmpty else { return models }
     let prepared = try SQL.insert(into: M.self, values: models.map(\.insertValues))
-    try await SQL.execute(prepared, on: self.sql)
+    try await SQL.execute(prepared, on: sql)
     return models
   }
 
@@ -29,10 +29,10 @@ public struct LiveClient: Client {
       where: M.column("id") == .id(model),
       returning: .all
     )
-    let models = try await SQL.execute(prepared, on: self.sql)
+    let model = try await SQL.execute(prepared, on: sql)
       .compactMap { try $0.decode(M.self) }
       .first()
-    return models
+    return model
   }
 
   @discardableResult
@@ -52,7 +52,7 @@ public struct LiveClient: Client {
       .all()
     guard !models.isEmpty else { return models }
     let prepared = SQL.delete(from: M.self, where: constraint)
-    try await SQL.execute(prepared, on: self.sql)
+    try await SQL.execute(prepared, on: sql)
     return models
   }
 
@@ -78,7 +78,7 @@ public struct LiveClient: Client {
         offset: offset
       )
     }
-    try await SQL.execute(prepared, on: self.sql)
+    try await SQL.execute(prepared, on: sql)
     return models
   }
 
@@ -98,7 +98,7 @@ public struct LiveClient: Client {
       limit: limit,
       offset: offset
     )
-    let rows = try await SQL.execute(prepared, on: self.sql)
+    let rows = try await SQL.execute(prepared, on: sql)
     return try rows.compactMap { try $0.decode(Model.self) }
   }
 
@@ -108,7 +108,7 @@ public struct LiveClient: Client {
   ) async throws -> [T] {
     let query = Custom.query(numBindings: bindings?.count ?? 0)
     let prepared = SQL.PreparedStatement(query: query, bindings: bindings ?? [])
-    let rows = try await SQL.execute(prepared, on: self.sql)
+    let rows = try await SQL.execute(prepared, on: sql)
     return try Custom.decode(fromSqlRows: rows)
   }
 
@@ -119,7 +119,7 @@ public struct LiveClient: Client {
   ) async throws -> Int {
     let rows = try await SQL.execute(
       SQL.count(M.self, where: constraint + (withSoftDeleted ? .always : .notSoftDeleted)),
-      on: self.sql
+      on: sql
     )
     guard let row = rows.first else {
       throw DuetSQLError.notFound("\(M.self)")

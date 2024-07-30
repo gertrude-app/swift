@@ -1,7 +1,7 @@
 import DuetSQL
 import Tagged
 
-final class Thing: Codable {
+struct Thing: Codable {
   enum CustomEnum: String, Codable {
     case foo
     case bar
@@ -21,7 +21,7 @@ final class Thing: Codable {
   var deletedAt: Date?
 
   init(
-    id: Id = .init(),
+    id: Id = .init(UUID()),
     string: String = "foo",
     version: String = "1.0.0",
     int: Int = 123,
@@ -59,14 +59,14 @@ extension Thing {
   var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .string: .string(self.string),
-      .version: .varchar(self.version),
-      .int: .int(self.int),
-      .bool: .bool(self.bool),
-      .optionalInt: .int(self.optionalInt),
-      .optionalString: .string(self.optionalString),
-      .customEnum: .enum(self.customEnum),
-      .optionalCustomEnum: .enum(self.optionalCustomEnum),
+      .string: .string(string),
+      .version: .varchar(version),
+      .int: .int(int),
+      .bool: .bool(bool),
+      .optionalInt: .int(optionalInt),
+      .optionalString: .string(optionalString),
+      .customEnum: .enum(customEnum),
+      .optionalCustomEnum: .enum(optionalCustomEnum),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -99,27 +99,27 @@ extension Thing: Model {
     case .id:
       return .id(self)
     case .string:
-      return .string(self.string)
+      return .string(string)
     case .version:
-      return .varchar(self.version)
+      return .varchar(version)
     case .int:
-      return .int(self.int)
+      return .int(int)
     case .bool:
-      return .bool(self.bool)
+      return .bool(bool)
     case .optionalInt:
-      return .int(self.optionalInt)
+      return .int(optionalInt)
     case .optionalString:
-      return .string(self.optionalString)
+      return .string(optionalString)
     case .customEnum:
-      return .enum(self.customEnum)
+      return .enum(customEnum)
     case .optionalCustomEnum:
-      return .enum(self.optionalCustomEnum)
+      return .enum(optionalCustomEnum)
     case .createdAt:
-      return .date(self.createdAt)
+      return .date(createdAt)
     case .updatedAt:
-      return .date(self.updatedAt)
+      return .date(updatedAt)
     case .deletedAt:
-      return .date(self.deletedAt)
+      return .date(deletedAt)
     }
   }
 }

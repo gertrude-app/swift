@@ -13,6 +13,7 @@ extension Admin: RandomMocked {
 
   public static var random: Admin {
     Admin(
+      id: .init(.init()),
       email: .init(rawValue: "random@random\(Int.random).com"),
       password: "@random".random
     )

@@ -10,8 +10,24 @@ let package = Package(
   ],
   dependencies: [],
   targets: [
-    .target(name: "XCore", dependencies: []),
-    .target(name: "XBase64", dependencies: []),
+    .target(
+      name: "XCore",
+      dependencies: [],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
+    .target(
+      name: "XBase64",
+      dependencies: [],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
     .testTarget(name: "XCoreTests", dependencies: ["XCore"]),
   ]
 )

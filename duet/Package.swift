@@ -11,7 +11,7 @@ let package = Package(
   dependencies: [
     .package(path: "../x-kit"),
     .package(path: "../x-expect"),
-    .package("vapor/fluent-kit@1.16.0"),
+    .package("vapor/fluent-kit@1.48.2"),
     .package("jaredh159/swift-tagged@0.8.2"),
     .package("wickwirew/Runtime@2.2.7"),
   ],
@@ -21,6 +21,13 @@ let package = Package(
       dependencies: [
         .product(name: "XCore", package: "x-kit"),
         .product(name: "Tagged", package: "swift-tagged"),
+      ],
+      swiftSettings: [
+        .unsafeFlags([
+          "-Xfrontend", "-warn-concurrency",
+          "-Xfrontend", "-enable-actor-data-race-checks",
+          "-Xfrontend", "-warnings-as-errors",
+        ]),
       ]
     ),
     .target(
@@ -31,6 +38,13 @@ let package = Package(
         .product(name: "FluentSQL", package: "fluent-kit"),
         .product(name: "XCore", package: "x-kit"),
         .product(name: "Tagged", package: "swift-tagged"),
+      ],
+      swiftSettings: [
+        .unsafeFlags([
+          "-Xfrontend", "-warn-concurrency",
+          "-Xfrontend", "-enable-actor-data-race-checks",
+          "-Xfrontend", "-warnings-as-errors",
+        ]),
       ]
     ),
     .testTarget(

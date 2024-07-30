@@ -5,11 +5,11 @@ import Foundation
   import FoundationNetworking
 #endif
 
-struct TwilioSmsClient {
+struct TwilioSmsClient: Sendable {
   var send = send(_:)
 }
 
-private func send(_ text: Text) {
+@Sendable private func send(_ text: Text) {
   let (sid, auth, from) = (Env.TWILIO_ACCOUNT_SID, Env.TWILIO_AUTH_TOKEN, Env.TWILIO_FROM_PHONE)
   let url = "https://\(sid):\(auth)@api.twilio.com/2010-04-01/Accounts/\(sid)/Messages.json"
 

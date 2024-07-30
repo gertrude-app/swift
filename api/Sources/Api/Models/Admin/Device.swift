@@ -1,7 +1,7 @@
 import DuetSQL
 import Gertie
 
-final class Device: Codable {
+struct Device: Codable, Sendable {
   var id: Id
   var adminId: Admin.Id
   var customName: String?
@@ -12,9 +12,6 @@ final class Device: Codable {
   var osVersion: Semver?
   var createdAt = Date()
   var updatedAt = Date()
-
-  var admin = Parent<Admin>.notLoaded
-  var userDevices = Children<UserDevice>.notLoaded
 
   init(
     id: Id = .init(),
@@ -41,18 +38,14 @@ final class Device: Codable {
 
 extension Device {
   func admin() async throws -> Admin {
-    try await self.admin.useLoaded(or: {
-      try await Current.db.query(Admin.self)
-        .where(.id == adminId)
-        .first()
-    })
+    try await Current.db.query(Admin.self)
+      .where(.id == self.adminId)
+      .first()
   }
 
   func userDevices() async throws -> [UserDevice] {
-    try await self.userDevices.useLoaded(or: {
-      try await Current.db.query(UserDevice.self)
-        .where(.deviceId == id)
-        .all()
-    })
+    try await Current.db.query(UserDevice.self)
+      .where(.deviceId == self.id)
+      .all()
   }
 }

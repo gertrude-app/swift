@@ -2,7 +2,7 @@ import Foundation
 import NonEmpty
 
 public enum SendGrid {
-  public struct EmailAddress: Encodable, ExpressibleByStringLiteral {
+  public struct EmailAddress: Encodable, ExpressibleByStringLiteral, Sendable {
     public var email: String
     public var name: String?
 
@@ -17,12 +17,12 @@ public enum SendGrid {
     }
   }
 
-  public struct Email: Encodable {
-    public struct Personalization: Encodable {
+  public struct Email: Encodable, Sendable {
+    public struct Personalization: Encodable, Sendable {
       public var to: NonEmpty<[EmailAddress]>
     }
 
-    public struct Attachment: Encodable {
+    public struct Attachment: Encodable, Sendable {
       public var type = "text/plain"
       public var filename: String
       public var content: String // base64 encoded
@@ -43,7 +43,7 @@ public enum SendGrid {
       }
     }
 
-    public struct Content: Encodable {
+    public struct Content: Encodable, Sendable {
       public var type: String
       public var value: String
     }

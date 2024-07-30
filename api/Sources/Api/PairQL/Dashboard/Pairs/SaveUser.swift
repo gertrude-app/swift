@@ -2,7 +2,7 @@ import DuetSQL
 import PairQL
 
 struct SaveUser: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     var id: User.Id
@@ -21,7 +21,7 @@ struct SaveUser: Pair {
 
 extension SaveUser: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    let user: User
+    var user: User
     if input.isNew {
       user = try await Current.db.create(User(
         id: input.id,

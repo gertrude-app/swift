@@ -12,9 +12,15 @@ let package = Package(
     .package(path: "../x-expect"),
   ],
   targets: [
-    .target(name: "PairQL", dependencies: [
-      .product(name: "URLRouting", package: "swift-url-routing"),
-    ]),
+    .target(
+      name: "PairQL",
+      dependencies: [.product(name: "URLRouting", package: "swift-url-routing")],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
     .testTarget(name: "PairQLTests", dependencies: [
       .target(name: "PairQL"),
       .product(name: "XExpect", package: "x-expect"),

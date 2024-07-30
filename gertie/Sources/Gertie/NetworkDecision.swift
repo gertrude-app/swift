@@ -1,9 +1,9 @@
-public enum NetworkDecisionVerdict: String, Codable, Equatable, CaseIterable {
+public enum NetworkDecisionVerdict: String, Codable, Equatable, CaseIterable, Sendable {
   case block
   case allow
 }
 
-public enum NetworkDecisionReason: String, Codable, Equatable, CaseIterable {
+public enum NetworkDecisionReason: String, Codable, Equatable, CaseIterable, Sendable {
   case systemUser
   case userIsExempt
   case missingKeychains

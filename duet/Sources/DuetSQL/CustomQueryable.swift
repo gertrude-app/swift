@@ -1,6 +1,6 @@
 import FluentSQL
 
-public protocol CustomQueryable: Decodable {
+public protocol CustomQueryable: Decodable, Sendable {
   static func query(numBindings: Int) -> String
   static func decode(fromSqlRows rows: [SQLRow]) throws -> [Self]
 }

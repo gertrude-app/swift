@@ -105,7 +105,7 @@ final class CheckInResolverTests: ApiTestCase {
     await clearCachedAppIdManifest()
 
     let app = try await Current.db.create(IdentifiedApp.random)
-    let id = AppBundleId.random
+    var id = AppBundleId.random
     id.identifiedAppId = app.id
     try await Current.db.create(id)
 

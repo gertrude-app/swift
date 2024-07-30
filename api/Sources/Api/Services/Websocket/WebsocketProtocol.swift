@@ -3,7 +3,7 @@ import Vapor
 import XCore
 
 protocol WebsocketProtocol {
-  func onText(_ callback: @escaping (Self, String) async -> Void)
+  func onText(_ callback: @Sendable @escaping (Self, String) async -> Void)
   func close(code: WebSocketErrorCode) async throws
   func close(code: WebSocketErrorCode) -> EventLoopFuture<Void>
   var onClose: EventLoopFuture<Void> { get }

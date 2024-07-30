@@ -2,7 +2,7 @@ import Gertie
 import PairQL
 
 struct DecideFilterSuspensionRequest: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   enum Decision: PairNestable {
     case rejected
@@ -20,7 +20,7 @@ struct DecideFilterSuspensionRequest: Pair {
 
 extension DecideFilterSuspensionRequest: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    let request = try await Current.db.find(input.id)
+    var request = try await Current.db.find(input.id)
     let userDevice = try await request.userDevice()
     try await context.verifiedUser(from: userDevice.userId)
 

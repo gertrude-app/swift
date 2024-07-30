@@ -19,7 +19,7 @@ extension SQLDatabase {
   ) async throws {
     try await self.execute("""
       CREATE TABLE \(table: table) (
-        \(raw: columns().map(\.sql).joined(separator: ",\n    "))
+        \(unsafeRaw: columns().map(\.sql).joined(separator: ",\n    "))
       )
     """)
   }
@@ -70,7 +70,7 @@ extension SQLDatabase {
     let defaultValue = `default`.map { " DEFAULT \($0.sql)" } ?? ""
     try await self.execute("""
       ALTER TABLE \(table: Migration.self)
-      ADD COLUMN \(col: column) \(type: type)\(raw: nullConstraint)\(raw: defaultValue)
+      ADD COLUMN \(col: column) \(type: type)\(unsafeRaw: nullConstraint)\(unsafeRaw: defaultValue)
     """)
   }
 
@@ -98,21 +98,21 @@ extension SQLDatabase {
     try await self.execute("""
       ALTER TABLE \(table: Migration.self)
       ALTER COLUMN \(col: column)
-      SET DEFAULT \(raw: `default`.sql)
+      SET DEFAULT \(unsafeRaw: `default`.sql)
     """)
   }
 
   func create<T>(enum Enum: T.Type) async throws
     where T: PostgresEnum, T: RawRepresentable, T: CaseIterable {
     try await self.execute("""
-      CREATE TYPE \(raw: Enum.typeName) AS ENUM (
-        '\(raw: Enum.allCases.map(\.rawValue).joined(separator: "',\n    '"))'
+      CREATE TYPE \(unsafeRaw: Enum.typeName) AS ENUM (
+        '\(unsafeRaw: Enum.allCases.map(\.rawValue).joined(separator: "',\n    '"))'
       )
     """)
   }
 
   func drop<T>(enum Enum: T.Type) async throws
     where T: PostgresEnum, T: RawRepresentable, T: CaseIterable {
-    try await self.execute("DROP TYPE \(raw: Enum.typeName)")
+    try await self.execute("DROP TYPE \(unsafeRaw: Enum.typeName)")
   }
 }

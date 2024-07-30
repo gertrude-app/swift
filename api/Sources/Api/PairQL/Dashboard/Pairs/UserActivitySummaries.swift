@@ -7,7 +7,7 @@ struct DateRange: PairNestable, PairInput {
 }
 
 struct UserActivitySummaries: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     let userId: User.Id

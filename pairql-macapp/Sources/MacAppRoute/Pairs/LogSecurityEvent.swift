@@ -3,7 +3,7 @@ import PairQL
 
 /// in use: v2.2.0 - present
 public struct LogSecurityEvent: Pair {
-  public static var auth: ClientAuth = .user
+  public static let auth: ClientAuth = .user
 
   public struct Input: PairInput {
     public var deviceId: UUID

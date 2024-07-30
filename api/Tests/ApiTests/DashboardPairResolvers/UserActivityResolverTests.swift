@@ -8,10 +8,10 @@ final class UserActivityResolverTests: ApiTestCase {
   func testGetActivityDay() async throws {
     Current.date = { Date() }
     let user = try await Entities.user().withDevice()
-    let screenshot = Screenshot.random
+    var screenshot = Screenshot.random
     screenshot.userDeviceId = user.device.id
     try await Current.db.create(screenshot)
-    let keystrokeLine = KeystrokeLine.random
+    var keystrokeLine = KeystrokeLine.random
     keystrokeLine.userDeviceId = user.device.id
     try await Current.db.create(keystrokeLine)
     let twoDaysAgo = Date(subtractingDays: 2)
@@ -62,20 +62,20 @@ final class UserActivityResolverTests: ApiTestCase {
     let _ignoreDate = Date(subtractingDays: 2)
 
     let user1 = try await Entities.user().withDevice()
-    let screenshot = Screenshot.random
+    var screenshot = Screenshot.random
     screenshot.userDeviceId = user1.device.id
     try await Current.db.create(screenshot)
-    let keystrokeLine = KeystrokeLine.random
+    var keystrokeLine = KeystrokeLine.random
     keystrokeLine.userDeviceId = user1.device.id
     try await Current.db.create(keystrokeLine)
 
-    let user2 = try await Entities.user().withDevice()
+    var user2 = try await Entities.user().withDevice()
     user2.model.adminId = user1.adminId
     try await Current.db.update(user2.model)
-    let screenshot2 = Screenshot.random
+    var screenshot2 = Screenshot.random
     screenshot2.userDeviceId = user2.device.id
     try await Current.db.create(screenshot2)
-    let keystrokeLine2 = KeystrokeLine.random
+    var keystrokeLine2 = KeystrokeLine.random
     keystrokeLine2.userDeviceId = user2.device.id
     try await Current.db.create(keystrokeLine2)
     try await Current.db.delete(keystrokeLine2.id) // <-- soft-deleted
@@ -156,10 +156,10 @@ final class UserActivityResolverTests: ApiTestCase {
 
   func testDeleteActivityItems_v2() async throws {
     let user = try await Entities.user().withDevice()
-    let screenshot = Screenshot.random
+    var screenshot = Screenshot.random
     screenshot.userDeviceId = user.device.id
     try await Current.db.create(screenshot)
-    let keystrokeLine = KeystrokeLine.random
+    var keystrokeLine = KeystrokeLine.random
     keystrokeLine.userDeviceId = user.device.id
     try await Current.db.create(keystrokeLine)
 

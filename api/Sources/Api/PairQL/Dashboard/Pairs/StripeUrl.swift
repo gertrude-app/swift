@@ -4,7 +4,7 @@ import Vapor
 import XStripe
 
 struct StripeUrl: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
   struct Output: PairOutput {
     var url: String
   }

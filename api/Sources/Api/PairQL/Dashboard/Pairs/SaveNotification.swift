@@ -3,7 +3,7 @@ import Foundation
 import PairQL
 
 struct SaveNotification: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     let id: AdminNotification.Id
@@ -18,7 +18,7 @@ struct SaveNotification: Pair {
 extension SaveNotification: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     if !input.isNew {
-      let existing = try await Current.db.query(AdminNotification.self)
+      var existing = try await Current.db.query(AdminNotification.self)
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .first()

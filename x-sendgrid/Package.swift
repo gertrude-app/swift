@@ -12,9 +12,17 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/swift-nonempty.git", from: "0.5.0"),
   ],
   targets: [
-    .target(name: "XSendGrid", dependencies: [
-      .product(name: "XHttp", package: "x-http"),
-      .product(name: "NonEmpty", package: "swift-nonempty"),
-    ]),
+    .target(
+      name: "XSendGrid",
+      dependencies: [
+        .product(name: "XHttp", package: "x-http"),
+        .product(name: "NonEmpty", package: "swift-nonempty"),
+      ],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
   ]
 )

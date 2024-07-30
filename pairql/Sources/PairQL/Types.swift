@@ -1,5 +1,10 @@
 import Foundation
 
+#if os(Linux)
+  extension JSONEncoder: @unchecked Sendable {}
+  extension JSONDecoder.DateDecodingStrategy: @unchecked Sendable {}
+#endif
+
 @_exported import CasePaths
 @_exported import URLRouting
 
@@ -7,7 +12,7 @@ public protocol PairRoute: Equatable {}
 
 public typealias PairNestable = Codable & Equatable & Sendable
 
-public protocol PairInput: Codable, Equatable {}
+public protocol PairInput: Codable, Equatable, Sendable {}
 
 public protocol PairOutput: Codable, Equatable, Sendable {
   func jsonData() throws -> Data
@@ -24,7 +29,7 @@ public extension Pair {
   static var name: String { "\(Self.self)" }
 }
 
-public enum ClientAuth: String {
+public enum ClientAuth: String, Sendable {
   case none
   case user
   case admin

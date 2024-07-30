@@ -5,7 +5,7 @@ import Vapor
 import XPostmark
 
 struct SendPasswordResetEmail: Pair {
-  static var auth: ClientAuth = .none
+  static let auth: ClientAuth = .none
 
   struct Input: PairInput {
     var email: String

@@ -5,12 +5,12 @@ let package = Package(
   name: "api",
   platforms: [.macOS(.v12)],
   dependencies: [
-    .package("vapor/vapor@4.67.4"),
-    .package("vapor/fluent@4.5.0"),
-    .package("vapor/fluent-postgres-driver@2.4.0"),
+    .package("vapor/vapor@4.93.0"),
+    .package("vapor/fluent@4.9.0"),
+    .package("vapor/fluent-postgres-driver@2.8.0"),
     .package("onevcat/Rainbow@4.0.1"),
     .package("jaredh159/swift-tagged@0.8.2"),
-    .package("pointfreeco/vapor-routing@0.1.2"),
+    .package("pointfreeco/vapor-routing@0.1.3"),
     .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta"),
     .package(path: "../duet"),
     .package(path: "../gertie"),
@@ -48,6 +48,10 @@ let package = Package(
         "Rainbow",
       ],
       swiftSettings: [
+        .unsafeFlags([
+          "-Xfrontend", "-warn-concurrency",
+          "-Xfrontend", "-enable-actor-data-race-checks",
+        ]),
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
       ]
     ),
@@ -59,6 +63,14 @@ let package = Package(
     ]),
   ]
 )
+
+import Foundation
+
+if ProcessInfo.processInfo.environment["CI"] != nil {
+  package.targets[0].swiftSettings?.append(
+    .unsafeFlags(["-Xfrontend", "-warnings-as-errors"])
+  )
+}
 
 // helpers
 

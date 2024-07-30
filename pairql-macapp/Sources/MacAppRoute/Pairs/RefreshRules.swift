@@ -5,7 +5,7 @@ import PairQL
 /// deprecated: v2.0.0 - v2.0.3
 /// remove when v2.0.4 is MSV
 public struct RefreshRules: Pair {
-  public static var auth: ClientAuth = .user
+  public static let auth: ClientAuth = .user
 
   public struct Input: PairInput {
     public var appVersion: String

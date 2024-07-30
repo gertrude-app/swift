@@ -31,7 +31,7 @@ extension ConnectUser: Resolver {
         .first()
     }
 
-    if let existingUserDevice {
+    if var existingUserDevice {
       // we get in here if the gertrude app was already installed for this macOS user
       // at some point in the past, so we will update the UserDevice to be attached to this
       // user, after double-checking below that the user belongs to the same admin acct
@@ -61,7 +61,7 @@ extension ConnectUser: Resolver {
         .where(.userId == oldUserId)
         .all()
 
-      for token in oldTokens {
+      for var token in oldTokens {
         // wait 14 days, so buffered security events can be resent
         token.deletedAt = Current.date().advanced(by: .days(14))
         try await token.save()

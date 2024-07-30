@@ -3,7 +3,7 @@ import Vapor
 import XCore
 
 enum ReleasesRoute {
-  static func handler(_ request: Request) async throws -> Response {
+  @Sendable static func handler(_ request: Request) async throws -> Response {
     struct Item: Encodable {
       var version: String
       var channel: ReleaseChannel

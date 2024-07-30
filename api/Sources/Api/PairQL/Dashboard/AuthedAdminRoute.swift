@@ -41,139 +41,140 @@ enum AuthedAdminRoute: PairRoute {
 }
 
 extension AuthedAdminRoute {
-  static let router: AnyParserPrinter<URLRequestData, AuthedAdminRoute> = OneOf {
-    Route(/Self.confirmPendingNotificationMethod) {
-      Operation(ConfirmPendingNotificationMethod.self)
-      Body(.dashboardInput(ConfirmPendingNotificationMethod.self))
+  nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, AuthedAdminRoute> =
+    OneOf {
+      Route(/Self.confirmPendingNotificationMethod) {
+        Operation(ConfirmPendingNotificationMethod.self)
+        Body(.dashboardInput(ConfirmPendingNotificationMethod.self))
+      }
+      Route(/Self.createPendingAppConnection) {
+        Operation(CreatePendingAppConnection.self)
+        Body(.dashboardInput(CreatePendingAppConnection.self))
+      }
+      Route(/Self.createPendingNotificationMethod) {
+        Operation(CreatePendingNotificationMethod.self)
+        Body(.dashboardInput(CreatePendingNotificationMethod.self))
+      }
+      Route(/Self.decideFilterSuspensionRequest) {
+        Operation(DecideFilterSuspensionRequest.self)
+        Body(.dashboardInput(DecideFilterSuspensionRequest.self))
+      }
+      Route(/Self.deleteActivityItems_v2) {
+        Operation(DeleteActivityItems_v2.self)
+        Body(.dashboardInput(DeleteActivityItems_v2.self))
+      }
+      Route(/Self.deleteEntity) {
+        Operation(DeleteEntity.self)
+        Body(.dashboardInput(DeleteEntity.self))
+      }
+      Route(/Self.getAdmin) {
+        Operation(GetAdmin.self)
+      }
+      Route(/Self.getAdminKeychain) {
+        Operation(GetAdminKeychain.self)
+        Body(.dashboardInput(GetAdminKeychain.self))
+      }
+      Route(/Self.getAdminKeychains) {
+        Operation(GetAdminKeychains.self)
+      }
+      Route(/Self.getDashboardWidgets) {
+        Operation(GetDashboardWidgets.self)
+      }
+      Route(/Self.getDevice) {
+        Operation(GetDevice.self)
+        Body(.dashboardInput(GetDevice.self))
+      }
+      Route(/Self.getDevices) {
+        Operation(GetDevices.self)
+      }
+      Route(/Self.getIdentifiedApps) {
+        Operation(GetIdentifiedApps.self)
+      }
+      Route(/Self.getSelectableKeychains) {
+        Operation(GetSelectableKeychains.self)
+      }
+      Route(/Self.getSuspendFilterRequest) {
+        Operation(GetSuspendFilterRequest.self)
+        Body(.dashboardInput(GetSuspendFilterRequest.self))
+      }
+      Route(/Self.getUnlockRequest) {
+        Operation(GetUnlockRequest.self)
+        Body(.dashboardInput(GetUnlockRequest.self))
+      }
+      Route(/Self.getUnlockRequests) {
+        Operation(GetUnlockRequests.self)
+      }
+      Route(/Self.getUser) {
+        Operation(GetUser.self)
+        Body(.dashboardInput(GetUser.self))
+      }
+      Route(/Self.handleCheckoutCancel) {
+        Operation(HandleCheckoutCancel.self)
+        Body(.dashboardInput(HandleCheckoutCancel.self))
+      }
+      Route(/Self.handleCheckoutSuccess) {
+        Operation(HandleCheckoutSuccess.self)
+        Body(.dashboardInput(HandleCheckoutSuccess.self))
+      }
+      Route(/Self.logEvent) {
+        Operation(LogEvent.self)
+        Body(.dashboardInput(LogEvent.self))
+      }
+      Route(/Self.userActivitySummaries) {
+        Operation(UserActivitySummaries.self)
+        Body(.dashboardInput(UserActivitySummaries.self))
+      }
+      Route(/Self.userActivityFeed) {
+        Operation(UserActivityFeed.self)
+        Body(.dashboardInput(UserActivityFeed.self))
+      }
+      Route(/Self.combinedUsersActivityFeed) {
+        Operation(CombinedUsersActivityFeed.self)
+        Body(.dashboardInput(CombinedUsersActivityFeed.self))
+      }
+      Route(/Self.getUsers) {
+        Operation(GetUsers.self)
+      }
+      Route(/Self.getUserUnlockRequests) {
+        Operation(GetUserUnlockRequests.self)
+        Body(.dashboardInput(GetUserUnlockRequests.self))
+      }
+      Route(/Self.latestAppVersions) {
+        Operation(LatestAppVersions.self)
+      }
+      Route(/Self.saveDevice) {
+        Operation(SaveDevice.self)
+        Body(.dashboardInput(SaveDevice.self))
+      }
+      Route(/Self.saveKey) {
+        Operation(SaveKey.self)
+        Body(.dashboardInput(SaveKey.self))
+      }
+      Route(/Self.saveKeychain) {
+        Operation(SaveKeychain.self)
+        Body(.dashboardInput(SaveKeychain.self))
+      }
+      Route(/Self.saveNotification) {
+        Operation(SaveNotification.self)
+        Body(.dashboardInput(SaveNotification.self))
+      }
+      Route(/Self.saveUser) {
+        Operation(SaveUser.self)
+        Body(.dashboardInput(SaveUser.self))
+      }
+      Route(/Self.stripeUrl) {
+        Operation(StripeUrl.self)
+      }
+      Route(/Self.updateUnlockRequest) {
+        Operation(UpdateUnlockRequest.self)
+        Body(.dashboardInput(UpdateUnlockRequest.self))
+      }
+      Route(/Self.combinedUsersActivitySummaries) {
+        Operation(CombinedUsersActivitySummaries.self)
+        Body(.dashboardInput(CombinedUsersActivitySummaries.self))
+      }
     }
-    Route(/Self.createPendingAppConnection) {
-      Operation(CreatePendingAppConnection.self)
-      Body(.dashboardInput(CreatePendingAppConnection.self))
-    }
-    Route(/Self.createPendingNotificationMethod) {
-      Operation(CreatePendingNotificationMethod.self)
-      Body(.dashboardInput(CreatePendingNotificationMethod.self))
-    }
-    Route(/Self.decideFilterSuspensionRequest) {
-      Operation(DecideFilterSuspensionRequest.self)
-      Body(.dashboardInput(DecideFilterSuspensionRequest.self))
-    }
-    Route(/Self.deleteActivityItems_v2) {
-      Operation(DeleteActivityItems_v2.self)
-      Body(.dashboardInput(DeleteActivityItems_v2.self))
-    }
-    Route(/Self.deleteEntity) {
-      Operation(DeleteEntity.self)
-      Body(.dashboardInput(DeleteEntity.self))
-    }
-    Route(/Self.getAdmin) {
-      Operation(GetAdmin.self)
-    }
-    Route(/Self.getAdminKeychain) {
-      Operation(GetAdminKeychain.self)
-      Body(.dashboardInput(GetAdminKeychain.self))
-    }
-    Route(/Self.getAdminKeychains) {
-      Operation(GetAdminKeychains.self)
-    }
-    Route(/Self.getDashboardWidgets) {
-      Operation(GetDashboardWidgets.self)
-    }
-    Route(/Self.getDevice) {
-      Operation(GetDevice.self)
-      Body(.dashboardInput(GetDevice.self))
-    }
-    Route(/Self.getDevices) {
-      Operation(GetDevices.self)
-    }
-    Route(/Self.getIdentifiedApps) {
-      Operation(GetIdentifiedApps.self)
-    }
-    Route(/Self.getSelectableKeychains) {
-      Operation(GetSelectableKeychains.self)
-    }
-    Route(/Self.getSuspendFilterRequest) {
-      Operation(GetSuspendFilterRequest.self)
-      Body(.dashboardInput(GetSuspendFilterRequest.self))
-    }
-    Route(/Self.getUnlockRequest) {
-      Operation(GetUnlockRequest.self)
-      Body(.dashboardInput(GetUnlockRequest.self))
-    }
-    Route(/Self.getUnlockRequests) {
-      Operation(GetUnlockRequests.self)
-    }
-    Route(/Self.getUser) {
-      Operation(GetUser.self)
-      Body(.dashboardInput(GetUser.self))
-    }
-    Route(/Self.handleCheckoutCancel) {
-      Operation(HandleCheckoutCancel.self)
-      Body(.dashboardInput(HandleCheckoutCancel.self))
-    }
-    Route(/Self.handleCheckoutSuccess) {
-      Operation(HandleCheckoutSuccess.self)
-      Body(.dashboardInput(HandleCheckoutSuccess.self))
-    }
-    Route(/Self.logEvent) {
-      Operation(LogEvent.self)
-      Body(.dashboardInput(LogEvent.self))
-    }
-    Route(/Self.userActivitySummaries) {
-      Operation(UserActivitySummaries.self)
-      Body(.dashboardInput(UserActivitySummaries.self))
-    }
-    Route(/Self.userActivityFeed) {
-      Operation(UserActivityFeed.self)
-      Body(.dashboardInput(UserActivityFeed.self))
-    }
-    Route(/Self.combinedUsersActivityFeed) {
-      Operation(CombinedUsersActivityFeed.self)
-      Body(.dashboardInput(CombinedUsersActivityFeed.self))
-    }
-    Route(/Self.getUsers) {
-      Operation(GetUsers.self)
-    }
-    Route(/Self.getUserUnlockRequests) {
-      Operation(GetUserUnlockRequests.self)
-      Body(.dashboardInput(GetUserUnlockRequests.self))
-    }
-    Route(/Self.latestAppVersions) {
-      Operation(LatestAppVersions.self)
-    }
-    Route(/Self.saveDevice) {
-      Operation(SaveDevice.self)
-      Body(.dashboardInput(SaveDevice.self))
-    }
-    Route(/Self.saveKey) {
-      Operation(SaveKey.self)
-      Body(.dashboardInput(SaveKey.self))
-    }
-    Route(/Self.saveKeychain) {
-      Operation(SaveKeychain.self)
-      Body(.dashboardInput(SaveKeychain.self))
-    }
-    Route(/Self.saveNotification) {
-      Operation(SaveNotification.self)
-      Body(.dashboardInput(SaveNotification.self))
-    }
-    Route(/Self.saveUser) {
-      Operation(SaveUser.self)
-      Body(.dashboardInput(SaveUser.self))
-    }
-    Route(/Self.stripeUrl) {
-      Operation(StripeUrl.self)
-    }
-    Route(/Self.updateUnlockRequest) {
-      Operation(UpdateUnlockRequest.self)
-      Body(.dashboardInput(UpdateUnlockRequest.self))
-    }
-    Route(/Self.combinedUsersActivitySummaries) {
-      Operation(CombinedUsersActivitySummaries.self)
-      Body(.dashboardInput(CombinedUsersActivitySummaries.self))
-    }
-  }
-  .eraseToAnyParserPrinter()
+    .eraseToAnyParserPrinter()
 }
 
 extension AuthedAdminRoute: RouteResponder {

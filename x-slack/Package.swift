@@ -11,9 +11,15 @@ let package = Package(
     .package(path: "../x-http"),
   ],
   targets: [
-    .target(name: "XSlack", dependencies: [
-      .product(name: "XHttp", package: "x-http"),
-    ]),
+    .target(
+      name: "XSlack",
+      dependencies: [.product(name: "XHttp", package: "x-http")],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
     .testTarget(name: "XSlackTests", dependencies: ["XSlack"]),
   ]
 )

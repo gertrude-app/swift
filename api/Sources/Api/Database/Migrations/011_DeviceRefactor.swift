@@ -111,7 +111,7 @@ struct DeviceRefactor: GertieMigration {
           '\(id: device.adminId)',
           \(nullable: device.customName),
           '\(escaping: device.modelIdentifier)',
-          '\(raw: device.serialNumber)',
+          '\(unsafeRaw: device.serialNumber)',
           'stable',
           '\(timestamp: device.createdAt)',
           '\(timestamp: device.updatedAt)'
@@ -144,13 +144,13 @@ struct DeviceRefactor: GertieMigration {
         ) VALUES (
           '\(uuid: record.id)',
           '\(uuid: record.userId)',
-          '\(raw: record.appVersion)',
+          '\(unsafeRaw: record.appVersion)',
           \(nullable: record.customName),
           '\(escaping: record.modelIdentifier)',
           '\(escaping: record.username)',
           '\(escaping: record.fullUsername)',
           \(literal: record.numericId),
-          '\(raw: record.serialNumber)',
+          '\(unsafeRaw: record.serialNumber)',
           '\(timestamp: record.createdAt)',
           '\(timestamp: record.updatedAt)'
         );

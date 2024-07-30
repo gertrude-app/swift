@@ -3,7 +3,7 @@ import Gertie
 import PairQL
 
 struct GetSuspendFilterRequest: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
   typealias Input = SuspendFilterRequest.Id
 
   struct Output: PairOutput {

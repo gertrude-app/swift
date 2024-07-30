@@ -9,7 +9,7 @@ enum AuthedSuperAdminRoute: PairRoute {
   case createRelease(CreateRelease.Input)
   case queryAdmins
 
-  static let router = OneOf {
+  nonisolated(unsafe) static let router = OneOf {
     Route(/Self.createRelease) {
       Operation(CreateRelease.self)
       Body(.input(CreateRelease.self))
@@ -21,7 +21,7 @@ enum AuthedSuperAdminRoute: PairRoute {
 }
 
 extension SuperAdminRoute {
-  static let router = OneOf {
+  nonisolated(unsafe) static let router = OneOf {
     Route(/Self.authed) {
       Headers { Field("X-SuperAdminToken") { UUID.parser() } }
       AuthedSuperAdminRoute.router

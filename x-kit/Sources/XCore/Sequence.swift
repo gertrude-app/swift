@@ -18,9 +18,11 @@ public extension Sequence {
 
     return values
   }
+}
 
-  func concurrentMap<T>(
-    _ transform: @escaping (Element) async throws -> T
+public extension Sequence where Element: Sendable {
+  func concurrentMap<T: Sendable>(
+    _ transform: @Sendable @escaping (Element) async throws -> T
   ) async throws -> [T] {
     let tasks = map { element in
       Task {

@@ -5,14 +5,14 @@ import Foundation
 #endif
 
 public enum HTTP {
-  public enum AuthType {
+  public enum AuthType: Sendable {
     case bearer(String)
     case basic(String, String)
     case basicUnencoded(String)
     case basicEncoded(String)
   }
 
-  public enum Method: String {
+  public enum Method: String, Sendable {
     case post = "POST"
     case get = "GET"
   }

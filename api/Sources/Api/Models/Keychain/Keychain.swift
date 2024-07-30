@@ -1,6 +1,6 @@
 import DuetSQL
 
-final class Keychain: Codable {
+struct Keychain: Codable, Sendable {
   var id: Id
   var authorId: Admin.Id
   var name: String
@@ -9,10 +9,6 @@ final class Keychain: Codable {
   var createdAt = Date()
   var updatedAt = Date()
   var deletedAt: Date?
-
-  var author = Parent<Admin>.notLoaded
-  var keys = Children<Key>.notLoaded
-  var users = Siblings<User>.notLoaded
 
   init(
     id: Id = .init(),
@@ -33,10 +29,8 @@ final class Keychain: Codable {
 
 extension Keychain {
   func keys() async throws -> [Key] {
-    try await self.keys.useLoaded(or: {
-      try await Current.db.query(Key.self)
-        .where(.keychainId == id)
-        .all()
-    })
+    try await Current.db.query(Key.self)
+      .where(.keychainId == self.id)
+      .all()
   }
 }

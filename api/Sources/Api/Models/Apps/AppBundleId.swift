@@ -1,13 +1,11 @@
 import Duet
 
-final class AppBundleId: Codable {
+struct AppBundleId: Codable, Sendable {
   var id: Id
   var bundleId: String
   var identifiedAppId: IdentifiedApp.Id
   var createdAt = Date()
   var updatedAt = Date()
-
-  var app = Parent<IdentifiedApp>.notLoaded
 
   init(
     id: Id = .init(),

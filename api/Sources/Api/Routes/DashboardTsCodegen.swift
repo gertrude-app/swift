@@ -92,7 +92,7 @@ enum DashboardTsCodegenRoute {
     ]
   }
 
-  static func handler(_ request: Request) async throws -> Response {
+  @Sendable static func handler(_ request: Request) async throws -> Response {
     var shared: [String: String] = [:]
     var sharedAliases: [Config.Alias] = [
       .init(NoInput.self, as: "void"),

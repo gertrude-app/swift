@@ -1,6 +1,6 @@
 import DuetSQL
 
-final class UserDevice: Codable {
+struct UserDevice: Codable, Sendable {
   var id: Id
   var userId: User.Id
   var deviceId: Device.Id
@@ -11,11 +11,6 @@ final class UserDevice: Codable {
   var numericId: Int
   var createdAt = Date()
   var updatedAt = Date()
-
-  var user = Parent<User>.notLoaded
-  var device = Parent<Device>.notLoaded
-  var unlockRequests = Children<UnlockRequest>.notLoaded
-  var suspendFilterRequests = Children<SuspendFilterRequest>.notLoaded
 
   init(
     id: Id = .init(),
@@ -42,19 +37,15 @@ final class UserDevice: Codable {
 
 extension UserDevice {
   func user() async throws -> User {
-    try await self.user.useLoaded(or: {
-      try await Current.db.query(User.self)
-        .where(.id == userId)
-        .first()
-    })
+    try await Current.db.query(User.self)
+      .where(.id == self.userId)
+      .first()
   }
 
   func adminDevice() async throws -> Device {
-    try await self.device.useLoaded(or: {
-      try await Current.db.query(Device.self)
-        .where(.id == deviceId)
-        .first()
-    })
+    try await Current.db.query(Device.self)
+      .where(.id == self.deviceId)
+      .first()
   }
 }
 

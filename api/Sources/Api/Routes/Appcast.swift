@@ -3,7 +3,7 @@ import Gertie
 import Vapor
 
 enum AppcastRoute {
-  static func handler(_ request: Request) async throws -> Response {
+  @Sendable static func handler(_ request: Request) async throws -> Response {
     let query = try request.query.decode(AppcastQuery.self)
     let releases = try await Current.db.query(Release.self)
       .orderBy(.createdAt, .desc)

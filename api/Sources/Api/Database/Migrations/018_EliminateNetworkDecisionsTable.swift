@@ -47,7 +47,7 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
       try await sql.execute("""
         UPDATE \(table: UnlockRequest.M5.self)
         SET
-          \(col: UnlockRequest.M18.appBundleId) = '\(raw: decision.appBundleId)',
+          \(col: UnlockRequest.M18.appBundleId) = '\(unsafeRaw: decision.appBundleId)',
           \(col: UnlockRequest.M18.url) = \(nullable: decision.url),
           \(col: UnlockRequest.M18.hostname) = \(nullable: decision.hostname),
           \(col: UnlockRequest.M18.ipAddress) = \(nullable: decision.ipAddress)

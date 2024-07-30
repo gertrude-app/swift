@@ -3,7 +3,7 @@ import Vapor
 import XHttp
 
 enum TestEmailInboxRoute {
-  static func handler(_ request: Request) async throws -> Response {
+  @Sendable static func handler(_ request: Request) async throws -> Response {
     guard Env.mode != .prod else {
       throw Abort(.notFound)
     }

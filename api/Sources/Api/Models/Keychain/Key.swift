@@ -1,7 +1,7 @@
 import Duet
 import Gertie
 
-final class Key: Codable {
+struct Key: Codable, Sendable {
   var id: Id
   var keychainId: Keychain.Id
   var key: Gertie.Key
@@ -9,8 +9,6 @@ final class Key: Codable {
   var createdAt = Date()
   var updatedAt = Date()
   var deletedAt: Date?
-
-  var keychain = Parent<Keychain>.notLoaded
 
   init(
     id: Id = .init(),
@@ -31,8 +29,6 @@ final class Key: Codable {
 
 extension Key {
   func keychain() async throws -> Keychain {
-    try await self.keychain.useLoaded(or: {
-      try await Current.db.find(keychainId)
-    })
+    try await Current.db.find(self.keychainId)
   }
 }

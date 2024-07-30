@@ -14,11 +14,19 @@ let package = Package(
     .package(path: "../x-expect"),
   ],
   targets: [
-    .target(name: "MacAppRoute", dependencies: [
-      .product(name: "URLRouting", package: "swift-url-routing"),
-      .product(name: "PairQL", package: "pairql"),
-      .product(name: "Gertie", package: "gertie"),
-    ]),
+    .target(
+      name: "MacAppRoute",
+      dependencies: [
+        .product(name: "URLRouting", package: "swift-url-routing"),
+        .product(name: "PairQL", package: "pairql"),
+        .product(name: "Gertie", package: "gertie"),
+      ],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
     .testTarget(name: "MacAppRouteTests", dependencies: [
       .target(name: "MacAppRoute"),
       .product(name: "XExpect", package: "x-expect"),

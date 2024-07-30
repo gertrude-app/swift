@@ -12,7 +12,7 @@ enum UnauthedRoute: PairRoute {
   case signup(Signup.Input)
   case verifySignupEmail(VerifySignupEmail.Input)
 
-  static let router = OneOf {
+  nonisolated(unsafe) static let router = OneOf {
     Route(/Self.login) {
       Operation(Login.self)
       Body(.dashboardInput(Login.self))

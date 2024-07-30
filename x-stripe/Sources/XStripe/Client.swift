@@ -6,28 +6,35 @@ import XHttp
 #endif
 
 public extension Stripe {
-  struct Client {
-    public var createPaymentIntent: (Int, Stripe.Api.Currency, [String: String]) async throws
-      -> Stripe.Api.PaymentIntent
-    public var cancelPaymentIntent: (String) async throws -> Stripe.Api.PaymentIntent
-    public var createRefund: (String) async throws -> Stripe.Api.Refund
-    public var getCheckoutSession: (String) async throws -> Stripe.Api.CheckoutSession
-    public var createCheckoutSession: (CheckoutSessionData) async throws
+  struct Client: Sendable {
+    public var createPaymentIntent: @Sendable (
+      Int,
+      Stripe.Api.Currency,
+      [String: String]
+    ) async throws -> Stripe.Api.PaymentIntent
+    public var cancelPaymentIntent: @Sendable (String) async throws -> Stripe.Api.PaymentIntent
+    public var createRefund: @Sendable (String) async throws -> Stripe.Api.Refund
+    public var getCheckoutSession: @Sendable (String) async throws -> Stripe.Api.CheckoutSession
+    public var createCheckoutSession: @Sendable (CheckoutSessionData) async throws
       -> Stripe.Api.CheckoutSession
-    public var getSubscription: (String) async throws -> Stripe.Api.Subscription
-    public var createBillingPortalSession: (String) async throws
+    public var getSubscription: @Sendable (String) async throws -> Stripe.Api.Subscription
+    public var createBillingPortalSession: @Sendable (String) async throws
       -> Stripe.Api.BillingPortalSession
 
     public init(
-      createPaymentIntent: @escaping (Int, Stripe.Api.Currency, [String: String]) async throws
-        -> Stripe.Api.PaymentIntent,
-      cancelPaymentIntent: @escaping (String) async throws -> Stripe.Api.PaymentIntent,
-      createRefund: @escaping (String) async throws -> Stripe.Api.Refund,
-      getCheckoutSession: @escaping (String) async throws -> Stripe.Api.CheckoutSession,
-      createCheckoutSession: @escaping (CheckoutSessionData) async throws -> Stripe.Api
-        .CheckoutSession,
-      getSubscription: @escaping (String) async throws -> Stripe.Api.Subscription,
-      createBillingPortalSession: @escaping (String) async throws -> Stripe.Api.BillingPortalSession
+      createPaymentIntent: @Sendable @escaping (
+        Int,
+        Stripe.Api.Currency,
+        [String: String]
+      ) async throws -> Stripe.Api.PaymentIntent,
+      cancelPaymentIntent: @Sendable @escaping (String) async throws -> Stripe.Api.PaymentIntent,
+      createRefund: @Sendable @escaping (String) async throws -> Stripe.Api.Refund,
+      getCheckoutSession: @Sendable @escaping (String) async throws -> Stripe.Api.CheckoutSession,
+      createCheckoutSession: @Sendable @escaping (CheckoutSessionData) async throws
+        -> Stripe.Api.CheckoutSession,
+      getSubscription: @Sendable @escaping (String) async throws -> Stripe.Api.Subscription,
+      createBillingPortalSession: @Sendable @escaping (String) async throws
+        -> Stripe.Api.BillingPortalSession
     ) {
       self.createPaymentIntent = createPaymentIntent
       self.cancelPaymentIntent = cancelPaymentIntent

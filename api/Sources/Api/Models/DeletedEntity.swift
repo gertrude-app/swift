@@ -1,6 +1,6 @@
 import Foundation
 
-final class DeletedEntity: Codable {
+struct DeletedEntity: Codable, Sendable {
   var id: Id
   var type: String
   var reason: String

@@ -3,7 +3,7 @@ import Gertie
 import PairQL
 
 struct SaveDevice: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     var id: Device.Id
@@ -16,7 +16,7 @@ struct SaveDevice: Pair {
 
 extension SaveDevice: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    let device = try await Device.find(input.id)
+    var device = try await Device.find(input.id)
     device.customName = input.name
     device.appReleaseChannel = input.releaseChannel
     try await device.save()

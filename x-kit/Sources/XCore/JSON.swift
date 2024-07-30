@@ -6,7 +6,7 @@ public enum JSON {
     case stringToDataConversionError
   }
 
-  public struct EncodeOptions: OptionSet {
+  public struct EncodeOptions: OptionSet, Sendable {
     public let rawValue: Int
     public static let isoDates = EncodeOptions(rawValue: 1 << 0)
     public static let prettyPrinted = EncodeOptions(rawValue: 2 << 0)
@@ -16,7 +16,7 @@ public enum JSON {
     }
   }
 
-  public struct DecodeOptions: OptionSet {
+  public struct DecodeOptions: OptionSet, Sendable {
     public let rawValue: Int
     public static let isoDates = DecodeOptions(rawValue: 1 << 0)
 

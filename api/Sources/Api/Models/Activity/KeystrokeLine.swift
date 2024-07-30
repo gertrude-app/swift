@@ -1,6 +1,6 @@
 import Duet
 
-final class KeystrokeLine: Codable {
+struct KeystrokeLine: Codable, Sendable {
   var id: Id
   var userDeviceId: UserDevice.Id
   var appName: String
@@ -8,8 +8,6 @@ final class KeystrokeLine: Codable {
   var filterSuspended: Bool
   var createdAt: Date
   var deletedAt: Date?
-
-  var userDevice = Parent<UserDevice>.notLoaded
 
   init(
     id: Id = .init(),

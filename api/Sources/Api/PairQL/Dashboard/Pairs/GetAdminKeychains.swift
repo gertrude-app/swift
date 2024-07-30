@@ -3,7 +3,7 @@ import Gertie
 import PairQL
 
 struct GetAdminKeychains: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Key: PairNestable {
     let id: Api.Key.Id

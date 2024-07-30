@@ -9,7 +9,18 @@ let package = Package(
   ],
   dependencies: [],
   targets: [
-    .target(name: "XHttp", dependencies: []),
-    .testTarget(name: "XHttpTests", dependencies: ["XHttp"]),
+    .target(
+      name: "XHttp",
+      dependencies: [],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
+    ),
+    .testTarget(
+      name: "XHttpTests",
+      dependencies: ["XHttp"]
+    ),
   ]
 )

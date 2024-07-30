@@ -1,7 +1,7 @@
 import DuetSQL
 import Tagged
 
-final class UserToken: Codable {
+struct UserToken: Codable, Sendable {
   var id: Id
   var userId: User.Id
   var userDeviceId: UserDevice.Id? // TODO: why is this nullable?
@@ -10,14 +10,11 @@ final class UserToken: Codable {
   var updatedAt = Date()
   var deletedAt: Date?
 
-  var user = Parent<User>.notLoaded
-  var userDevice = OptionalParent<UserDevice>.notLoaded
-
   init(
     id: Id = .init(),
     userId: User.Id,
     userDeviceId: UserDevice.Id? = nil,
-    value: Value = .init(rawValue: UUID.new())
+    value: Value = .init(Current.uuid())
   ) {
     self.id = id
     self.value = value
@@ -36,19 +33,15 @@ extension UserToken {
 
 extension UserToken {
   func user() async throws -> User {
-    try await self.user.useLoaded(or: {
-      try await Current.db.query(User.self)
-        .where(.id == userId)
-        .first()
-    })
+    try await Current.db.query(User.self)
+      .where(.id == self.userId)
+      .first()
   }
 
   func userDevice() async throws -> UserDevice? {
-    try await self.userDevice.useLoaded(or: { () async throws -> UserDevice? in
-      guard let userDeviceId else { return nil }
-      return try await Current.db.query(UserDevice.self)
-        .where(.id == userDeviceId)
-        .first()
-    })
+    guard let userDeviceId else { return nil }
+    return try await Current.db.query(UserDevice.self)
+      .where(.id == userDeviceId)
+      .first()
   }
 }

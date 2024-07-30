@@ -2,7 +2,7 @@ import DuetSQL
 import Gertie
 import TaggedTime
 
-final class SuspendFilterRequest: Codable {
+struct SuspendFilterRequest: Codable, Sendable {
   var id: Id
   var userDeviceId: UserDevice.Id
   var status: RequestStatus
@@ -12,8 +12,6 @@ final class SuspendFilterRequest: Codable {
   var responseComment: String?
   var createdAt = Date()
   var updatedAt = Date()
-
-  var userDevice = Parent<UserDevice>.notLoaded
 
   init(
     id: Id = .init(),
@@ -38,10 +36,8 @@ final class SuspendFilterRequest: Codable {
 
 extension SuspendFilterRequest {
   func userDevice() async throws -> UserDevice {
-    try await self.userDevice.useLoaded(or: {
-      try await Current.db.query(UserDevice.self)
-        .where(.id == userDeviceId)
-        .first()
-    })
+    try await Current.db.query(UserDevice.self)
+      .where(.id == self.userDeviceId)
+      .first()
   }
 }

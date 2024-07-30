@@ -2,14 +2,14 @@ import Foundation
 import XHttp
 
 #if canImport(FoundationNetworking)
-  import FoundationNetworking
+  @preconcurrency import FoundationNetworking
 #endif
 
 public extension SendGrid {
-  struct Client {
-    public var send: (Email) async throws -> Void
+  struct Client: Sendable {
+    public var send: @Sendable (Email) async throws -> Void
 
-    public init(send: @escaping (Email) async throws -> Void) {
+    public init(send: @Sendable @escaping (Email) async throws -> Void) {
       self.send = send
     }
 
@@ -26,7 +26,7 @@ public extension SendGrid {
 // extensions
 
 public extension SendGrid.Client {
-  enum Error: Swift.Error {
+  enum Error: Swift.Error, Sendable {
     case unexpectedResponse(statusCode: Int, response: URLResponse)
   }
 
@@ -46,5 +46,5 @@ public extension SendGrid.Client {
 }
 
 public extension SendGrid.Client {
-  static var mock: Self = .init(send: { _ in })
+  static let mock: Self = .init(send: { _ in })
 }

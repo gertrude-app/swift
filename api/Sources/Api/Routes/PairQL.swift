@@ -13,19 +13,19 @@ enum PairQLRoute: Equatable, RouteResponder {
   case macApp(MacAppRoute)
   case superAdmin(SuperAdminRoute)
 
-  static let router = OneOf {
+  nonisolated(unsafe) static let router = OneOf {
     Route(.case(PairQLRoute.macApp)) {
-      Method.post
+      Method("POST")
       Path { "macos-app" }
       MacAppRoute.router
     }
     Route(.case(PairQLRoute.dashboard)) {
-      Method.post
+      Method("POST")
       Path { "dashboard" }
       DashboardRoute.router
     }
     Route(.case(PairQLRoute.superAdmin)) {
-      Method.post
+      Method("POST")
       Path { "super-admin" }
       SuperAdminRoute.router
     }
@@ -42,7 +42,7 @@ enum PairQLRoute: Equatable, RouteResponder {
     }
   }
 
-  static func handler(_ request: Request) async throws -> Response {
+  @Sendable static func handler(_ request: Request) async throws -> Response {
     guard var requestData = URLRequestData(request: request),
           requestData.path.removeFirst() == "pairql" else {
       throw Abort(.badRequest)

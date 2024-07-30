@@ -3,7 +3,7 @@ import PairQL
 import XCore
 
 struct HandleCheckoutCancel: Pair {
-  static var auth: ClientAuth = .admin
+  static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     var stripeCheckoutSessionId: String

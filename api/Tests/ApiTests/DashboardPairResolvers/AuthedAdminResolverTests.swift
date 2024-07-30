@@ -102,7 +102,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
       config: .email(email: "blob@blob.com")
     )
     try await Current.db.create(method)
-    let notification = AdminNotification.random
+    var notification = AdminNotification.random
     notification.adminId = admin.id
     notification.methodId = method.id
     try await Current.db.create(notification)
@@ -366,10 +366,10 @@ final class AuthedAdminResolverTests: ApiTestCase {
     try await Current.db.query(AppBundleId.self).delete()
 
     let cat = try await Current.db.create(AppCategory.random)
-    let app = IdentifiedApp.random
+    var app = IdentifiedApp.random
     app.categoryId = cat.id
     try await Current.db.create(app)
-    let bundleId = AppBundleId.random
+    var bundleId = AppBundleId.random
     bundleId.identifiedAppId = app.id
     try await Current.db.create(bundleId)
 
@@ -420,7 +420,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     }
 
     let otherAdmin = try await Entities.admin()
-    let publicKeychain = Keychain.random
+    var publicKeychain = Keychain.random
     publicKeychain.authorId = otherAdmin.id
     publicKeychain.isPublic = true
     try await Current.db.create(publicKeychain)
@@ -480,7 +480,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
   func testGetSuspendFilterRequest() async throws {
     let user = try await Entities.user().withDevice()
-    let request = SuspendFilterRequest.random
+    var request = SuspendFilterRequest.random
     request.userDeviceId = user.device.id
     try await Current.db.create(request)
 
@@ -499,7 +499,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testGetUnlockRequests() async throws {
     let user = try await Entities.user().withDevice()
 
-    let request = UnlockRequest.mock
+    var request = UnlockRequest.mock
     request.userDeviceId = user.device.id
     request.status = .pending
     request.requestComment = "please dad"
@@ -593,7 +593,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testUpdateUnlockRequest() async throws {
     let user = try await Entities.user().withDevice()
 
-    let request = UnlockRequest.mock
+    var request = UnlockRequest.mock
     request.userDeviceId = user.device.id
     request.status = .pending
     request.requestComment = "please dad"

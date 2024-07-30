@@ -1,5 +1,5 @@
-struct AdminNotifier {
-  var notify: (Admin.Id, AdminEvent) async -> Void
+struct AdminNotifier: Sendable {
+  var notify: @Sendable (Admin.Id, AdminEvent) async -> Void
 }
 
 extension AdminNotifier {
@@ -13,7 +13,7 @@ extension AdminNotifier {
   }
 }
 
-private func notify(adminId: Admin.Id, event: AdminEvent) async {
+@Sendable private func notify(adminId: Admin.Id, event: AdminEvent) async {
   do {
     let admin = try await Current.db.find(adminId)
     let notifications = try await admin.notifications()

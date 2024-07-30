@@ -5,7 +5,7 @@ import Tagged
 import Vapor
 import XCore
 
-class AppConnection {
+actor AppConnection {
   struct Ids {
     let userDevice: UserDevice.Id
     let user: User.Id
@@ -14,18 +14,17 @@ class AppConnection {
 
   let id: Id
   let ids: Ids
-  let ws: WebsocketProtocol
+  let ws: WebSocket
   var filterState: UserFilterState?
 
-  init(ws: WebsocketProtocol, ids: Ids) {
+  init(ws: WebSocket, ids: Ids) {
     self.id = .init(UUID())
     self.ids = ids
     self.ws = ws
-    ws.onText { ws, string in
-      self.onText(ws, string)
+    self.ws.onText { ws, string in
+      await self.onText(ws, string)
     }
-
-    ws.onClose.whenComplete { result in
+    self.ws.onClose.whenComplete { result in
       Current.logger.debug("WS: closed with result \(result)")
       switch result {
       case .success:

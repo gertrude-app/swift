@@ -1,9 +1,13 @@
-import Foundation
+#if os(Linux)
+  @preconcurrency import Foundation
+#else
+  import Foundation
+#endif
 
 public enum Slack {}
 
 public extension Slack {
-  enum Emoji {
+  enum Emoji: Sendable {
     case fireEngine
     case robotFace
     case books
@@ -11,9 +15,9 @@ public extension Slack {
     case custom(String)
   }
 
-  struct Message {
-    public enum Content {
-      public indirect enum Block {
+  struct Message: Sendable {
+    public enum Content: Sendable {
+      public indirect enum Block: Sendable {
         case header(text: String)
         case image(url: URL, altText: String)
         case section(text: String, accessory: Block?)

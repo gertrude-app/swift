@@ -15,7 +15,7 @@ public enum AuthedUserRoute: PairRoute {
 }
 
 public extension AuthedUserRoute {
-  static let router: AnyParserPrinter<URLRequestData, AuthedUserRoute> = OneOf {
+  nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, AuthedUserRoute> = OneOf {
     Route(/Self.checkIn) {
       Operation(CheckIn.self)
       Body(.json(CheckIn.Input.self))

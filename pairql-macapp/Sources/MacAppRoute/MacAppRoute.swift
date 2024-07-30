@@ -7,7 +7,7 @@ public enum MacAppRoute: PairRoute {
 }
 
 public extension MacAppRoute {
-  static let router: AnyParserPrinter<URLRequestData, MacAppRoute> = OneOf {
+  nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, MacAppRoute> = OneOf {
     Route(/Self.userAuthed) {
       Headers { Field("X-UserToken") { UUID.parser() } }
       AuthedUserRoute.router

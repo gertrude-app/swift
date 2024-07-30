@@ -64,12 +64,12 @@ enum Constraint {
     case .unique(let Migration, let columns):
       return """
         ALTER TABLE \(table: Migration)
-        ADD CONSTRAINT \(constraint: self) UNIQUE (\(raw: columns.csv))
+        ADD CONSTRAINT \(constraint: self) UNIQUE (\(unsafeRaw: columns.csv))
       """
     case .primaryKey(let Migration, let columns):
       return """
         ALTER TABLE \(table: Migration)
-        ADD CONSTRAINT \(constraint: self) PRIMARY KEY (\(raw: columns.csv))
+        ADD CONSTRAINT \(constraint: self) PRIMARY KEY (\(unsafeRaw: columns.csv))
       """
     case .foreignKey(let Table, let ReferencedTable, let column, let onDelete):
       return """
@@ -77,7 +77,7 @@ enum Constraint {
         ADD CONSTRAINT \(constraint: self)
           FOREIGN KEY (\(col: column))
           REFERENCES \(table: ReferencedTable) (\(col: .id))
-          ON DELETE \(raw: onDelete.sql)
+          ON DELETE \(unsafeRaw: onDelete.sql)
       """
     }
   }
