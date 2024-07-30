@@ -101,4 +101,5 @@ extension Vapor.Environment {
   static let TWILIO_FROM_PHONE = get("TWILIO_FROM_PHONE")!
   static let STRIPE_SUBSCRIPTION_PRICE_ID = get("STRIPE_SUBSCRIPTION_PRICE_ID")!
   static let STRIPE_SECRET_KEY = get("STRIPE_SECRET_KEY")!
+  static let ANALYTICS_SITE_URL = get("ANALYTICS_SITE_URL")!
 }
