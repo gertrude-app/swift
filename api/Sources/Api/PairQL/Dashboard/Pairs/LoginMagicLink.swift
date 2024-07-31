@@ -23,7 +23,10 @@ extension LoginMagicLink: Resolver {
         .magicLinkTokenNotFound
       )
     }
-    let token = try await Current.db.create(AdminToken(adminId: adminId))
+
+    dashSecurityEvent(.login, adminId, context.ipAddress, "using magic link")
+
+    let token = try await AdminToken.create(.init(adminId: adminId))
     return Output(token: token.value, adminId: adminId)
   }
 }

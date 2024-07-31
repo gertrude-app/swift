@@ -80,7 +80,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     let output = try await RequestMagicLink.resolve(
       with: .init(email: admin.email.rawValue, redirect: nil),
-      in: .init(requestId: "", dashboardUrl: "/dash")
+      in: .init(requestId: "", dashboardUrl: "/dash", ipAddress: nil)
     )
 
     expect(output).toEqual(.success)
@@ -95,7 +95,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     let output = try await RequestMagicLink.resolve(
       with: .init(email: admin.email.rawValue, redirect: "/foo"),
-      in: .init(requestId: "", dashboardUrl: "/dash")
+      in: .init(requestId: "", dashboardUrl: "/dash", ipAddress: nil)
     )
 
     expect(output).toEqual(.success)

@@ -6,6 +6,7 @@ import VaporRouting
 struct Context: ResolverContext {
   let requestId: String
   let dashboardUrl: String
+  let ipAddress: String?
 }
 
 enum PairQLRoute: Equatable, RouteResponder {
@@ -48,7 +49,11 @@ enum PairQLRoute: Equatable, RouteResponder {
       throw Abort(.badRequest)
     }
 
-    let context = Context(requestId: request.id, dashboardUrl: request.dashboardUrl)
+    let context = Context(
+      requestId: request.id,
+      dashboardUrl: request.dashboardUrl,
+      ipAddress: request.ipAddress
+    )
     do {
       let route = try PairQLRoute.router.parse(requestData)
       logOperation(route, request)

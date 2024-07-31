@@ -16,11 +16,9 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case advancedSettingsOpened
   }
 
-  // NB: not used yet
   public enum Dashboard: String, Codable, Equatable, Sendable {
     case login
     case loginFailed
-    case logout
     case passwordResetRequested
     case passwordChanged
     case childDeleted
