@@ -856,6 +856,8 @@ extension SecurityEvent: Model {
       return .string(event)
     case .detail:
       return .string(detail)
+    case .ipAddress:
+      return .string(ipAddress)
     case .createdAt:
       return .date(createdAt)
     }
@@ -868,6 +870,7 @@ extension SecurityEvent: Model {
       .userDeviceId: .uuid(userDeviceId),
       .event: .string(event),
       .detail: .string(detail),
+      .ipAddress: .string(ipAddress),
       .createdAt: .currentTimestamp,
     ]
   }

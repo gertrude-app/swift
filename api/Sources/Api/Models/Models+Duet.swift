@@ -500,6 +500,7 @@ extension SecurityEvent {
     case userDeviceId
     case event
     case detail
+    case ipAddress
     case createdAt
   }
 }
