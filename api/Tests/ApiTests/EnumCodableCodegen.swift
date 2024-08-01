@@ -25,6 +25,7 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
         (AdminVerifiedNotificationMethod.Config.self, false),
         (DecideFilterSuspensionRequest.Decision.self, false),
         (GetAdmin.SubscriptionStatus.self, false),
+        (SecurityEventsFeed.FeedEvent.self, false),
         (UserActivity.Item.self, true),
       ],
       imports: ["Tagged": "Tagged"],
