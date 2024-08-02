@@ -4,6 +4,7 @@ import Core
 import Dependencies
 import Foundation
 import Gertie
+import os.log
 import Starscream
 
 extension ClientInterfaces.WebSocketClient: DependencyKey {
@@ -36,14 +37,18 @@ extension ClientInterfaces.WebSocketClient: DependencyKey {
         await tearDownCurrentConnection()
         let newConnection =
           WebSocketConnection(
-            log: {
+            log: { message in
               #if DEBUG
-                print("• WebSocketConnection log: \($0)\n")
+                print("• WebSocketConnection log: \(message)\n")
+              #else
+                os_log("[G•] APP WebSocket log: %{public}s", message)
               #endif
             },
-            logError: {
+            logError: { message in
               #if DEBUG
-                print("• WebSocketConnection error: \($0)\n")
+                print("• WebSocketConnection error: \(message)\n")
+              #else
+                os_log("[G•] APP WebSocket ERROR: %{public}s", message)
               #endif
             },
             messageSubject: messageSubject
