@@ -33,6 +33,8 @@ extension SaveKey: Resolver {
         key.deletedAt = expiration
         try await Current.db.update(key)
       }
+      let detail = "key opening \(input.key.simpleDescription) added to keychain '\(keychain.name)'"
+      dashSecurityEvent(.keyCreated, detail, in: context)
     } else {
       var key = try await Current.db.find(input.id)
       key.comment = input.comment
@@ -42,5 +44,48 @@ extension SaveKey: Resolver {
     }
     try await Current.connectedApps.notify(.keychainUpdated(keychain.id))
     return .success
+  }
+}
+
+extension Gertie.Key {
+  var simpleDescription: String {
+    switch self {
+    case .anySubdomain(let domain, let scope):
+      "any subdomain of \(domain.string) for \(scope.simpleDescription)"
+    case .domain(let domain, let scope):
+      "domain \(domain.string) for \(scope.simpleDescription)"
+    case .domainRegex(let pattern, let scope):
+      "domains matching pattern: \(pattern.string) for \(scope.simpleDescription)"
+    case .ipAddress(let ipAddress, let scope):
+      "ip \(ipAddress.string) for \(scope.simpleDescription)"
+    case .path(let path, let scope):
+      "path \(path.domain.string)\(path.path) for \(scope.simpleDescription)"
+    case .skeleton(let scope):
+      "unrestricted access for \(scope.simpleDescription)"
+    }
+  }
+}
+
+extension AppScope {
+  var simpleDescription: String {
+    switch self {
+    case .unrestricted:
+      "unrestricted"
+    case .webBrowsers:
+      "all web browsers"
+    case .single(let single):
+      "single app, \(single.simpleDescription)"
+    }
+  }
+}
+
+extension AppScope.Single {
+  var simpleDescription: String {
+    switch self {
+    case .bundleId(let bundleId):
+      "bundle=\(bundleId)"
+    case .identifiedAppSlug(let slug):
+      "slug=\(slug)"
+    }
   }
 }

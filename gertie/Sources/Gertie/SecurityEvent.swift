@@ -16,11 +16,9 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case advancedSettingsOpened
   }
 
-  // NB: not used yet
   public enum Dashboard: String, Codable, Equatable, Sendable {
     case login
     case loginFailed
-    case logout
     case passwordResetRequested
     case passwordChanged
     case childDeleted
@@ -34,6 +32,62 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
 
   case macApp(MacApp)
   case dashboard(Dashboard)
+}
+
+public extension SecurityEvent.Dashboard {
+  var toWords: String {
+    switch self {
+    case .childAdded:
+      return "New child added"
+    case .childDeleted:
+      return "Child deleted"
+    case .keyCreated:
+      return "Key created"
+    case .keychainCreated:
+      return "Keychain created"
+    case .keychainsChanged:
+      return "Child keychains changed"
+    case .login:
+      return "Successful login"
+    case .loginFailed:
+      return "Failed login"
+    case .monitoringDecreased:
+      return "Child monitoring decreased"
+    case .notificationDeleted:
+      return "Admin notification deleted"
+    case .passwordChanged:
+      return "Password changed"
+    case .passwordResetRequested:
+      return "Password reset requested"
+    }
+  }
+
+  var explanation: String {
+    switch self {
+    case .childAdded:
+      return "This event occurs when an parent creates a new child from the Gertrude parents admin site. It should occur very rarely, usually during account setup or when starting protection for a child. Should be investigated if it happened without your knowledge."
+    case .childDeleted:
+      return "This event occurs when a parent deletes a child from the Gertrude parents admin site. It should occur very rarely, when a child is no longer being protected. Should be investigated if it happened without your knowledge."
+    case .keyCreated:
+      return "This event occurs when a new key is created and added to a keychain by a parent, either manually or by accepting an unlock request."
+    case .keychainCreated:
+      return "This event occurs when a parent creates a new keychain."
+    case .keychainsChanged:
+      return "This event occurs when a parent changes which keychains are assigned to a child. Should be investigated if the change was not made by you."
+    case .login:
+      return "This event occurs whenever a parent successfully logs into the parents admin website. Should be investigated if you do not recognize the successful login as your own."
+    case .loginFailed:
+      return "This event occurs whenever a parent fails to log into the parents admin website, usually from an incorrect password. Should be investigated if you do not recognize the failed attempt as your own."
+    case .monitoringDecreased:
+      return "This event occurs when the monitoring level for a child is decreased by a parent. It should be investigated if the monitoring level is decreased without your knowledge."
+    case .notificationDeleted:
+      return "This event occurs when a parent deletes a notification from the parents admin site. It should be investigated if a notification was deleted without your knowledge."
+    case .passwordChanged:
+      return "This event occurs when a parent changes their password for the parents admin site. Should be investigated if you did not change your password."
+    case .passwordResetRequested:
+      return "This event occurs when a parent requests a password reset for the parents admin site. Should be investigated if you did not request a password reset."
+    }
+  }
 }
 
 public extension SecurityEvent.MacApp {

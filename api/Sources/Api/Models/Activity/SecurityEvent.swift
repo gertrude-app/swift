@@ -6,6 +6,7 @@ struct SecurityEvent: Codable, Sendable {
   var userDeviceId: UserDevice.Id?
   var event: String
   var detail: String?
+  var ipAddress: String?
   var createdAt: Date
 
   init(
@@ -14,6 +15,7 @@ struct SecurityEvent: Codable, Sendable {
     userDeviceId: UserDevice.Id? = nil,
     event: String,
     detail: String? = nil,
+    ipAddress: String? = nil,
     createdAt: Date = Date()
   ) {
     self.id = id
@@ -21,6 +23,7 @@ struct SecurityEvent: Codable, Sendable {
     self.userDeviceId = userDeviceId
     self.event = event
     self.detail = detail
+    self.ipAddress = ipAddress
     self.createdAt = createdAt
   }
 }

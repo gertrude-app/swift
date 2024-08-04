@@ -158,6 +158,6 @@ final class ConnectUserResolversTests: ApiTestCase {
   }
 
   var context: Context {
-    .init(requestId: "", dashboardUrl: "")
+    .init(requestId: "", dashboardUrl: "", ipAddress: nil)
   }
 }

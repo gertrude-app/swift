@@ -43,6 +43,7 @@ extension DeleteEntity: Resolver {
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .delete()
+      dashSecurityEvent(.notificationDeleted, in: context)
 
     case .adminVerifiedNotificationMethod:
       try await Current.db.query(AdminVerifiedNotificationMethod.self)
@@ -78,10 +79,12 @@ extension DeleteEntity: Resolver {
 
     case .user:
       let deviceIds = try await context.userDevices().map(\.deviceId)
-      try await User.query()
+      let user = try await User.query()
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
-        .delete(force: true)
+        .first()
+      dashSecurityEvent(.childDeleted, "name: \(user.name)", in: context)
+      try await user.delete(force: true)
       let devices = try await Device.query()
         .where(.id |=| deviceIds)
         .all()

@@ -26,5 +26,6 @@ extension Configure {
     app.migrations.add(BrowsersTable())
     app.migrations.add(SecurityEvents())
     app.migrations.add(ABTestVariants())
+    app.migrations.add(ModifySecurityEventsTable())
   }
 }

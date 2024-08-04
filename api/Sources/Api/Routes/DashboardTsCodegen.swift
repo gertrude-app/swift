@@ -89,6 +89,7 @@ enum DashboardTsCodegenRoute {
       UpdateUnlockRequest.self,
       VerifySignupEmail.self,
       SaveConferenceEmail.self,
+      SecurityEventsFeed.self,
     ]
   }
 

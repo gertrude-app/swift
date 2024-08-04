@@ -39,7 +39,8 @@ extension DashboardRoute: RouteResponder {
       let adminContext = AdminContext(
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,
-        admin: admin
+        admin: admin,
+        ipAddress: context.ipAddress
       )
 
       return try await AuthedAdminRoute.respond(to: adminRoute, in: adminContext)

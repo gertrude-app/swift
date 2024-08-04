@@ -4,6 +4,7 @@ struct AdminContext: ResolverContext {
   let requestId: String
   let dashboardUrl: String
   let admin: Admin
+  let ipAddress: String?
 
   @discardableResult
   func verifiedUser(from id: User.Id) async throws -> User {
