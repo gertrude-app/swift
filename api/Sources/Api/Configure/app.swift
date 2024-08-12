@@ -9,5 +9,6 @@ public enum Configure {
     try Configure.migrations(app)
     try Configure.router(app)
     try Configure.jobs(app)
+    Configure.lifecycleHandlers(app)
   }
 }
