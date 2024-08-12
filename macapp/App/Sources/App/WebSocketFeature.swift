@@ -23,7 +23,7 @@ extension WebSocketFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .heartbeat(.everyFiveMinutes):
+    case .heartbeat(.everyMinute):
       guard state.admin.accountStatus != .inactive else { return .none }
       guard let user = state.user.data else { return .none }
       return .exec { [state] send in

@@ -25,9 +25,10 @@ public class WebSocketConnection: WebSocketDelegate {
 
   public init(
     scheduler: AnySchedulerOf<DispatchQueue> = .global(qos: .background),
-    // use `300` literal instead of `60 * 5`, believe it or not, crashes in 10.15
+    // use bare literal, instead of `60 * 5`, believe it or not, crashes in 10.15
     // https://github.com/OpenCombine/OpenCombine/issues/214#issuecomment-888958786
-    pingInterval: IntervalInSeconds = 300, // five minutes
+    // 90 seconds allows us to stay under cloudflare's 100 second read timeout
+    pingInterval: IntervalInSeconds = 90,
     log: @escaping @Sendable (String) -> Void = { _ in },
     logError: @escaping @Sendable (String) -> Void = { _ in },
     messageSubject: Mutex<PassthroughSubject<WebSocketMessage.FromApiToApp, Never>>,
