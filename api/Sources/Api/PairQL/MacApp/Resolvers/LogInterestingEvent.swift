@@ -63,6 +63,8 @@ private func shorten(_ detail: String) -> String {
     return "Failed to Connect Error =-1004\(errorLoc(detail))"
   } else if detail.contains("Code=-1017") {
     return "Parse Response Error =-1017\(errorLoc(detail))"
+  } else if detail.contains("[onboarding]") {
+    return detail
   } else if detail.count > 100 {
     return detail.prefix(50) + " [...]"
   } else {
