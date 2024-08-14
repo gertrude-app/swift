@@ -74,15 +74,15 @@ class ApiTestCase: XCTestCase {
   }
 
   func context(_ admin: Admin) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin)
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin, ipAddress: nil)
   }
 
   func context(_ admin: AdminEntities) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model, ipAddress: nil)
   }
 
   func context(_ admin: AdminWithKeychainEntities) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model)
+    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model, ipAddress: nil)
   }
 
   func context(_ user: UserEntities) async throws -> UserContext {

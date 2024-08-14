@@ -44,7 +44,7 @@ struct AdminEntities {
   var token: AdminToken
 
   var context: AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model, ipAddress: nil)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
@@ -60,7 +60,7 @@ struct AdminWithKeychainEntities {
   var key: Key
 
   var context: AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model, ipAddress: nil)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
@@ -77,7 +77,7 @@ struct AdminWithOnboardedChildEntities {
   var adminDevice: Device
 
   var context: AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model, ipAddress: nil)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {

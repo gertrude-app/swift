@@ -12,7 +12,11 @@ extension CheckIn: Resolver {
 
     async let latestRelease = LatestAppVersion.resolve(
       with: .init(releaseChannel: channel, currentVersion: input.appVersion),
-      in: .init(requestId: context.requestId, dashboardUrl: context.dashboardUrl)
+      in: .init(
+        requestId: context.requestId,
+        dashboardUrl: context.dashboardUrl,
+        ipAddress: nil
+      )
     )
 
     if let filterVersionSemver = input.filterVersion,

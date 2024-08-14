@@ -33,24 +33,31 @@ extension SaveUser: Resolver {
         screenshotsFrequency: input.screenshotsFrequency,
         showSuspensionActivity: input.showSuspensionActivity
       ))
+      dashSecurityEvent(.childAdded, "name: \(user.name)", in: context)
     } else {
-      user = try await Current.db.find(input.id)
+      user = try await User.find(input.id)
+      if let details = monitoringDecreased(user: user, input: input) {
+        let detail = "for child: \(user.name), \(details)"
+        dashSecurityEvent(.monitoringDecreased, detail, in: context)
+      }
       user.name = input.name
       user.keyloggingEnabled = input.keyloggingEnabled
       user.screenshotsEnabled = input.screenshotsEnabled
       user.screenshotsResolution = input.screenshotsResolution
       user.screenshotsFrequency = input.screenshotsFrequency
       user.showSuspensionActivity = input.showSuspensionActivity
-      try await Current.db.update(user)
+      try await user.save()
     }
 
     let existing = try await user.keychains().map(\.id)
     if existing.elementsEqual(input.keychainIds) {
       try await Current.connectedApps.notify(.userUpdated(user.id))
-      return .init(true)
+      return .success
     }
 
-    try await Current.db.query(UserKeychain.self)
+    dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
+
+    try await UserKeychain.query()
       .where(.userId == user.id)
       .delete()
 
@@ -58,8 +65,29 @@ extension SaveUser: Resolver {
       .map { UserKeychain(userId: user.id, keychainId: $0) }
 
     try await Current.db.create(pivots)
-
     try await Current.connectedApps.notify(.userUpdated(user.id))
-    return .init(true)
+    return .success
   }
+}
+
+// helpers
+
+func monitoringDecreased(user: User, input: SaveUser.Input) -> String? {
+  var parts: [String] = []
+  if user.keyloggingEnabled, !input.keyloggingEnabled {
+    parts.append("keylogging disabled")
+  }
+  if user.screenshotsEnabled, !input.screenshotsEnabled {
+    parts.append("screenshots disabled")
+  }
+  if user.screenshotsResolution > input.screenshotsResolution {
+    parts.append("screenshots resolution decreased")
+  }
+  if user.screenshotsFrequency > input.screenshotsFrequency {
+    parts.append("screenshots frequency decreased")
+  }
+  if user.showSuspensionActivity, !input.showSuspensionActivity {
+    parts.append("suspension activity visibility disabled")
+  }
+  return parts.isEmpty ? nil : parts.joined(separator: ", ")
 }

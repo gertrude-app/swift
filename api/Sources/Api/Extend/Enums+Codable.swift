@@ -164,6 +164,101 @@ extension GetAdmin.SubscriptionStatus {
   }
 }
 
+extension SecurityEventsFeed.FeedEvent {
+  private struct _NamedCase: Codable {
+    var `case`: String
+    static func extract(from decoder: Decoder) throws -> String {
+      let container = try decoder.singleValueContainer()
+      return try container.decode(_NamedCase.self).case
+    }
+  }
+
+  private struct _TypeScriptDecodeError: Error {
+    var message: String
+  }
+
+  private struct _CaseChild: Codable {
+    var `case` = "child"
+    var id: Tagged<Api.SecurityEvent, UUID>
+    var childId: Tagged<Api.User, UUID>
+    var childName: String
+    var deviceId: Tagged<Api.Device, UUID>
+    var deviceName: String
+    var event: String
+    var detail: String?
+    var explanation: String
+    var createdAt: Date
+  }
+
+  private struct _CaseAdmin: Codable {
+    var `case` = "admin"
+    var id: Tagged<Api.SecurityEvent, UUID>
+    var event: String
+    var detail: String?
+    var explanation: String
+    var ipAddress: String?
+    var createdAt: Date
+  }
+
+  func encode(to encoder: Encoder) throws {
+    switch self {
+    case .child(let unflat):
+      try _CaseChild(
+        id: unflat.id,
+        childId: unflat.childId,
+        childName: unflat.childName,
+        deviceId: unflat.deviceId,
+        deviceName: unflat.deviceName,
+        event: unflat.event,
+        detail: unflat.detail,
+        explanation: unflat.explanation,
+        createdAt: unflat.createdAt
+      ).encode(to: encoder)
+    case .admin(let unflat):
+      try _CaseAdmin(
+        id: unflat.id,
+        event: unflat.event,
+        detail: unflat.detail,
+        explanation: unflat.explanation,
+        ipAddress: unflat.ipAddress,
+        createdAt: unflat.createdAt
+      ).encode(to: encoder)
+    }
+  }
+
+  init(from decoder: Decoder) throws {
+    let caseName = try _NamedCase.extract(from: decoder)
+    let container = try decoder.singleValueContainer()
+    switch caseName {
+    case "child":
+      let value = try container.decode(_CaseChild.self)
+      self = .child(.init(
+        id: value.id,
+        childId: value.childId,
+        childName: value.childName,
+        deviceId: value.deviceId,
+        deviceName: value.deviceName,
+        event: value.event,
+        detail: value.detail,
+        explanation: value.explanation,
+        createdAt: value.createdAt
+      ))
+    case "admin":
+      let value = try container.decode(_CaseAdmin.self)
+      self = .admin(.init(
+        id: value.id,
+        event: value.event,
+        detail: value.detail,
+        explanation: value.explanation,
+        ipAddress: value.ipAddress,
+        createdAt: value.createdAt
+      ))
+    default:
+      throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
+    }
+  }
+}
+
 public extension UserActivity.Item {
   private struct _NamedCase: Codable {
     var `case`: String

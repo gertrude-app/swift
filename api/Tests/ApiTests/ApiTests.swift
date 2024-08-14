@@ -118,6 +118,6 @@ final class ApiTests: ApiTestCase {
 
 extension Context {
   static var mock: Self {
-    .init(requestId: "mock-req-id", dashboardUrl: "/")
+    .init(requestId: "mock-req-id", dashboardUrl: "/", ipAddress: nil)
   }
 }

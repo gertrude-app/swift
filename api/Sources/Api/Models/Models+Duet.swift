@@ -22,8 +22,8 @@ extension Model {
     }
   }
 
-  func delete() async throws {
-    try await Current.db.query(Self.self).byId(id).delete()
+  func delete(force: Bool = false) async throws {
+    try await Current.db.query(Self.self).byId(id).delete(force: force)
   }
 
   static func find(_ id: Tagged<Self, UUID>) async throws -> Self {
@@ -500,6 +500,7 @@ extension SecurityEvent {
     case userDeviceId
     case event
     case detail
+    case ipAddress
     case createdAt
   }
 }

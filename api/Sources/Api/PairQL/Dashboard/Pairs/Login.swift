@@ -1,4 +1,5 @@
 import DuetSQL
+import Gertie
 import PairQL
 import Vapor
 import XCore
@@ -23,7 +24,7 @@ extension Login: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     let admin = try await Current.db.query(Admin.self)
       .where(.email == .string(input.email.lowercased()))
-      .first(orThrow: context |> error)
+      .first(orThrow: context |> loginError)
 
     if admin.subscriptionStatus == .pendingEmailVerification {
       try await sendVerificationEmail(to: admin, in: context)
@@ -49,7 +50,12 @@ extension Login: Resolver {
       match = try Bcrypt.verify(input.password, created: admin.password)
     }
 
-    if !match { throw context |> error }
+    if match {
+      dashSecurityEvent(.login, admin.id, context.ipAddress, "using email/password")
+    } else {
+      dashSecurityEvent(.loginFailed, admin.id, context.ipAddress, "incorrect password")
+      throw context |> loginError
+    }
 
     let token = try await Current.db.create(AdminToken(adminId: admin.id))
     return .init(adminId: admin.id, token: token.value)
@@ -57,7 +63,7 @@ extension Login: Resolver {
 }
 
 extension Login {
-  static func error(_ context: Context) -> PqlError {
+  static func loginError(_ context: Context) -> PqlError {
     context.error("1e087878", .unauthorized, user: "Incorrect email or password")
   }
 }
