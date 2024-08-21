@@ -54,6 +54,7 @@ extension ClientInterfaces.WebSocketClient: DependencyKey {
             messageSubject: messageSubject
           ) { [token] in
             var request = URLRequest(url: Self.endpoint)
+            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             return WebSocket(request: request)
           }
