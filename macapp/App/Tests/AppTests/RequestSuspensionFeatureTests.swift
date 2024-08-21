@@ -20,12 +20,12 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     await store
       .send(.requestSuspension(.webview(.requestSubmitted(durationInSeconds: 30, comment: nil))))
 
-    await expect(connect.invocations.value).toHaveCount(1)
+    expect(await connect.calls.count).toEqual(1)
 
     await store
       .send(.blockedRequests(.webview(.unlockRequestSubmitted(comment: nil))))
 
-    await expect(connect.invocations.value).toHaveCount(2)
+    expect(await connect.calls.count).toEqual(2)
   }
 
   func testFilterCommunicationConfirmationSucceeded() async {

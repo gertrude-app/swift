@@ -6,7 +6,7 @@ import XExpect
 
 @testable import App
 
-@MainActor final class UserConnectionTests: XCTestCase {
+final class UserConnectionTests: XCTestCase {
   func testDisconnectingUserFromAdminWindowStateAndEffects() async {
     await disconnectTest(
       action: .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))),
@@ -91,11 +91,11 @@ import XExpect
     await store.receive(action)
   }
 
-  await expect(clearApiToken.invocations).toEqual(1)
-  await expect(saveState.invocations.value).toHaveCount(1)
-  await expect(xpcDisconnect.invocations).toEqual(1)
-  await expect(disableLaunchAtLogin.invocations).toEqual(1)
-  await expect(stopRelaunchWatcher.invocations).toEqual(1)
+  await expect(clearApiToken.calls.count).toEqual(1)
+  await expect(saveState.calls.count).toEqual(1)
+  await expect(xpcDisconnect.calls.count).toEqual(1)
+  await expect(disableLaunchAtLogin.calls.count).toEqual(1)
+  await expect(stopRelaunchWatcher.calls.count).toEqual(1)
 
   // no heartbeat actions received, no timed screenshots
   await bgQueue.advance(by: .seconds(60 * 10))

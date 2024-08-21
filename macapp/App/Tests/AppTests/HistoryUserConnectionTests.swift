@@ -5,7 +5,8 @@ import XExpect
 
 @testable import App
 
-@MainActor final class HistoryUserConnectionTests: XCTestCase {
+final class HistoryUserConnectionTests: XCTestCase {
+  @MainActor
   func testHistoryUserConnectionHappyPath() async {
     let (store, _) = AppReducer.testStore()
     store.dependencies.api.connectUser = { _ in .mock }
@@ -32,14 +33,15 @@ import XExpect
 
     await store.receive(.websocket(.connectedSuccessfully))
 
-    await expect(saveState.invocations).toEqual([.mock])
-    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
+    await expect(saveState.calls).toEqual([.mock])
+    await expect(setUserToken.calls).toEqual([UserData.mock.token])
 
     await store.send(.menuBar(.welcomeAdminClicked)) {
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
   }
 
+  @MainActor
   func testHistoryUserConnectionError() async {
     let (store, _) = AppReducer.testStore()
     store.dependencies.api.connectUser = { _ in throw TestErr("Oh no!") }

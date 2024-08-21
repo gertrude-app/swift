@@ -5,7 +5,8 @@ import XExpect
 
 @testable import App
 
-@MainActor final class CheckInFeatureTests: XCTestCase {
+final class CheckInFeatureTests: XCTestCase {
+  @MainActor
   func testReceivingCheckInSuccess() async throws {
     let (store, _) = AppReducer.testStore {
       $0.user.data = .mock
@@ -39,9 +40,10 @@ import XExpect
     }
 
     await store.receive(.user(.updated(previous: previousUserData)))
-    await expect(setAccountActive.invocations).toEqual([false])
+    await expect(setAccountActive.calls).toEqual([false])
   }
 
+  @MainActor
   func testReceivingCheckInDataStoresToPersistentState() async throws {
     let (store, _) = AppReducer.testStore()
 
@@ -55,7 +57,7 @@ import XExpect
 
     await store.send(.checkIn(result: .success(checkInResult), reason: .heartbeat))
 
-    await expect(saveState.invocations).toEqual([.init(
+    await expect(saveState.calls).toEqual([.init(
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .canary,
       filterVersion: "1.0.0",
@@ -64,6 +66,7 @@ import XExpect
     )])
   }
 
+  @MainActor
   func testCheckInInHeartbeat() async {
     let (store, bgQueue) = AppReducer.testStore()
     // ignore checking num mac users
@@ -84,6 +87,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testClickingCheckIn_Success_FilterReachable() async {
     let (store, bgQueue) = AppReducer.testStore()
     let notifications = spyOnNotifications(store)
@@ -96,6 +100,7 @@ import XExpect
     await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
   }
 
+  @MainActor
   func testClickingCheckIn_Success_FilterUnreachable() async {
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.filterExtension.setup = { .notInstalled }
@@ -109,6 +114,7 @@ import XExpect
     await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
   }
 
+  @MainActor
   func testClickingCheckIn_FilterError() async {
     let (store, bgQueue) = AppReducer.testStore()
     let notifications = spyOnNotifications(store)
@@ -125,6 +131,7 @@ import XExpect
     )])
   }
 
+  @MainActor
   func testClickingCheckIn_ApiError() async {
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.api.checkIn = { _ in throw TestErr("Oh noes!") }
@@ -141,6 +148,7 @@ import XExpect
     )])
   }
 
+  @MainActor
   func testCheckingInAndInactiveAccounts() async {
     let (store, _) = AppReducer.testStore {
       $0.filter.extension = .installedAndRunning
@@ -160,16 +168,16 @@ import XExpect
     store.deps.api.checkIn = checkIn1.fn
 
     await store.send(.heartbeat(.everyTwentyMinutes))
-    await expect(checkIn1.invoked).toEqual(false)
+    await expect(checkIn1.called).toEqual(false)
 
     await store.send(.heartbeat(.everySixHours))
-    await expect(checkIn1.invoked).toEqual(true)
+    await expect(checkIn1.called).toEqual(true)
 
     // we don't update anything if the account is inactive
     await store.receive(.checkIn(result: .success(output1), reason: .heartbeat)) {
       $0.user.data?.name = "old name"
     }
-    await expect(setAccountActive.invocations).toEqual([false])
+    await expect(setAccountActive.calls).toEqual([false])
 
     // now, simulate the account owner fixing the issue
     let output2 = CheckIn.Output.mock {
@@ -181,11 +189,11 @@ import XExpect
     store.deps.filterXpc.sendUserRules = { _, _ in .success(()) }
 
     await store.send(.heartbeat(.everySixHours))
-    await expect(checkIn2.invoked).toEqual(true)
+    await expect(checkIn2.called).toEqual(true)
 
     await store.receive(.checkIn(result: .success(output2), reason: .heartbeat)) {
       $0.user.data?.name = "new name" // update data since account back to good
     }
-    await expect(setAccountActive.invocations).toEqual([false, true])
+    await expect(setAccountActive.calls).toEqual([false, true])
   }
 }

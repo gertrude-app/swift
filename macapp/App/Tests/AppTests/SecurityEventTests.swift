@@ -71,7 +71,7 @@ final class SecurityEventTests: XCTestCase {
 
     await store.send(.heartbeat(.everyFiveMinutes))
 
-    await expect(securityEvent.invocations).toEqual([
+    await expect(securityEvent.calls).toEqual([
       Both(
         .init(
           deviceId: .deadbeef,
@@ -91,6 +91,6 @@ final class SecurityEventTests: XCTestCase {
     ])
 
     // buffered events should be cleared and not resent
-    expect(removeFn.invocations).toEqual([.bufferedSecurityEventsKey])
+    expect(removeFn.calls).toEqual([.bufferedSecurityEventsKey])
   }
 }

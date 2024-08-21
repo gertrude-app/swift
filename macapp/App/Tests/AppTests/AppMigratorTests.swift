@@ -28,7 +28,7 @@ class AppMigratorTests: XCTestCase {
     migrator.userDefaults.getString = getString.fn
     let result = await migrator.migrate()
     expect(result).toEqual(.mock)
-    expect(getString.invocations.value).toEqual([Persistent.State.storageKey])
+    expect(getString.calls).toEqual([Persistent.State.storageKey])
   }
 
   func testMigratesV1Data() async {
@@ -134,8 +134,8 @@ class AppMigratorTests: XCTestCase {
       }
 
       let result = await migrator.migrate()
-      await expect(setApiToken.invocations).toEqual([.deadbeef])
-      expect(await checkIn.invocations.value).toHaveCount(1)
+      await expect(setApiToken.calls).toEqual([.deadbeef])
+      expect(await checkIn.calls.count).toEqual(1)
       expect(getStringInvocations.value).toEqual([
         "persistent.state.v2",
         "persistent.state.v1",
@@ -225,7 +225,7 @@ class AppMigratorTests: XCTestCase {
         connectedAt: Date(timeIntervalSince1970: 0)
       )
 
-      await expect(setApiToken.invocations).toEqual([.ones])
+      await expect(setApiToken.calls).toEqual([.ones])
       expect(getStringInvocations.value).toEqual([
         "persistent.state.v2",
         "persistent.state.v1",

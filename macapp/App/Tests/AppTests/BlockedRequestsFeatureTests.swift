@@ -7,7 +7,8 @@ import XExpect
 
 @testable import App
 
-@MainActor final class BlockedRequestsFeatureTests: XCTestCase {
+final class BlockedRequestsFeatureTests: XCTestCase {
+  @MainActor
   func testFilterCommunicationConfirmationSucceeded() async {
     let (store, _) = AppReducer.testStore {
       $0.blockedRequests.filterCommunicationConfirmed = false
@@ -26,6 +27,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testFilterCommunicationConfirmationFailed() async {
     let (store, _) = AppReducer.testStore {
       $0.blockedRequests.filterCommunicationConfirmed = true
@@ -45,6 +47,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testClickingAdministrateFromFilterCommFailureOpensAdmin() async {
     let (store, _) = AppReducer.testStore {
       $0.adminWindow.windowOpen = false
@@ -59,6 +62,7 @@ import XExpect
       }
   }
 
+  @MainActor
   func testBlockedReqsFromFilterAddedToState() async {
     let (store, _) = AppReducer.testStore()
 
@@ -68,7 +72,7 @@ import XExpect
     await store.send(.menuBar(.viewNetworkTrafficClicked)) {
       $0.blockedRequests.windowOpen = true
     }
-    await expect(setBlockStreaming.invocations).toEqual([true])
+    await expect(setBlockStreaming.calls).toEqual([true])
 
     let req = BlockedRequest.mock
     await store.send(.xpc(.receivedExtensionMessage(.blockedRequest(req)))) {
@@ -76,6 +80,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testMergeableBlockedRequestNotAdded() async {
     let (store, _) = AppReducer.testStore()
 
@@ -90,6 +95,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testSimpleActions() async {
     let req = BlockedRequest.mock
     let (store, _) = AppReducer.testStore {
@@ -102,17 +108,17 @@ import XExpect
     await store.send(.menuBar(.viewNetworkTrafficClicked)) {
       $0.blockedRequests.windowOpen = true
     }
-    await expect(setBlockStreaming.invocations).toEqual([true])
+    await expect(setBlockStreaming.calls).toEqual([true])
 
     await store.send(.blockedRequests(.webview(.filterTextUpdated(text: "foo")))) {
       $0.blockedRequests.filterText = "foo"
     }
-    await expect(setBlockStreaming.invocations).toEqual([true, true])
+    await expect(setBlockStreaming.calls).toEqual([true, true])
 
     await store.send(.blockedRequests(.webview(.tcpOnlyToggled))) {
       $0.blockedRequests.tcpOnly = false
     }
-    await expect(setBlockStreaming.invocations).toEqual([true, true, true])
+    await expect(setBlockStreaming.calls).toEqual([true, true, true])
 
     await store.send(.blockedRequests(.webview(.toggleRequestSelected(id: req.id)))) {
       $0.blockedRequests.selectedRequestIds = [req.id]
@@ -130,14 +136,15 @@ import XExpect
       $0.blockedRequests.requests = []
       $0.blockedRequests.selectedRequestIds = []
     }
-    await expect(setBlockStreaming.invocations).toEqual([true, true, true, true])
+    await expect(setBlockStreaming.calls).toEqual([true, true, true, true])
 
     await store.send(.blockedRequests(.closeWindow)) {
       $0.blockedRequests.windowOpen = false
     }
-    await expect(setBlockStreaming.invocations).toEqual([true, true, true, true, false])
+    await expect(setBlockStreaming.calls).toEqual([true, true, true, true, false])
   }
 
+  @MainActor
   func testSubmitUnlockRequests() async {
     var state = BlockedRequestsFeature.State()
     let blocked = BlockedRequest.mock
@@ -166,6 +173,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testTogglingRequestReturnsToIdleFromSuccess() async {
     var state = BlockedRequestsFeature.State()
     let req1 = BlockedRequest.mock

@@ -9,14 +9,14 @@ import XExpect
 @testable import App
 @testable import ClientInterfaces
 
-@MainActor final class UpdateTests: XCTestCase {
+final class UpdateTests: XCTestCase {
   func testAppLaunchNoPersistentStateSavesNewState() async {
     let (store, _) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { nil }
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
     await store.send(.application(.didFinishLaunching))
-    await expect(saveState.invocations).toEqual([.init(
+    await expect(saveState.calls).toEqual([.init(
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
@@ -42,7 +42,7 @@ import XExpect
     await store.send(.application(.didFinishLaunching))
 
     // we saved the new state
-    await expect(saveState.invocations).toEqual([.init(
+    await expect(saveState.calls).toEqual([.init(
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .stable,
       filterVersion: "0.9.9",
@@ -50,7 +50,7 @@ import XExpect
     )])
 
     // and replaced the filter
-    await expect(filterReplaced.invoked).toEqual(true)
+    await expect(filterReplaced.called).toEqual(true)
   }
 
   func testAppLaunchDetectingUpdateJustOccurred_RepeatsFilterReplaceOnFail() async {
@@ -73,7 +73,7 @@ import XExpect
 
     await store.send(.application(.didFinishLaunching))
 
-    await expect(replaceFilterMock.invocations).toEqual(2)
+    await expect(replaceFilterMock.calls.count).toEqual(2)
     expect(store.state.adminWindow.windowOpen).toEqual(false)
   }
 
@@ -87,7 +87,7 @@ import XExpect
     store.deps.filterXpc.checkConnectionHealth = mockFn(always: .failure(.timeout))
 
     await store.send(.application(.didFinishLaunching))
-    await expect(replaceFilterMock.invocations).toEqual(4)
+    await expect(replaceFilterMock.calls.count).toEqual(4)
 
     await store.receive(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
 
