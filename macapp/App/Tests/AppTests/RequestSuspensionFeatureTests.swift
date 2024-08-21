@@ -1,3 +1,4 @@
+import ClientInterfaces
 import ComposableArchitecture
 import Core
 import TestSupport
@@ -7,7 +8,26 @@ import XExpect
 
 @testable import App
 
-@MainActor final class RequestSuspensionFeatureTests: XCTestCase {
+final class RequestSuspensionFeatureTests: XCTestCase {
+  func testRequestingFilterSuspensionOrUnlockChecksAndRepairsWebsocketConnection() async {
+    let (store, _) = AppReducer.testStore {
+      $0.user.data = .mock
+    }
+    store.deps.websocket.state = { .notConnected }
+    let connect = spy(on: UUID.self, returning: WebSocketClient.State.connected)
+    store.deps.websocket.connect = connect.fn
+
+    await store
+      .send(.requestSuspension(.webview(.requestSubmitted(durationInSeconds: 30, comment: nil))))
+
+    await expect(connect.invocations.value).toHaveCount(1)
+
+    await store
+      .send(.blockedRequests(.webview(.unlockRequestSubmitted(comment: nil))))
+
+    await expect(connect.invocations.value).toHaveCount(2)
+  }
+
   func testFilterCommunicationConfirmationSucceeded() async {
     let (store, _) = AppReducer.testStore {
       $0.requestSuspension.filterCommunicationConfirmed = false // <-- prove nilling out

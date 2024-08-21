@@ -16,6 +16,7 @@ enum WebSocketFeature {
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.device) var device
     @Dependency(\.websocket) var websocket
+    @Dependency(\.network) var network
   }
 }
 
@@ -23,9 +24,14 @@ extension WebSocketFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .heartbeat(.everyMinute):
-      guard state.admin.accountStatus != .inactive else { return .none }
-      guard let user = state.user.data else { return .none }
+    case .heartbeat(.everyMinute),
+         .requestSuspension(.webview(.requestSubmitted)),
+         .blockedRequests(.webview(.unlockRequestSubmitted)):
+      guard state.admin.accountStatus != .inactive,
+            let user = state.user.data,
+            network.isConnected() else {
+        return .none
+      }
       return .exec { [state] send in
         guard try await websocket.state() != .connected else {
           return
