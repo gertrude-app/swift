@@ -83,7 +83,7 @@ func monitoringDecreased(user: User, input: SaveUser.Input) -> String? {
   if user.screenshotsResolution > input.screenshotsResolution {
     parts.append("screenshots resolution decreased")
   }
-  if user.screenshotsFrequency > input.screenshotsFrequency {
+  if user.screenshotsFrequency < input.screenshotsFrequency {
     parts.append("screenshots frequency decreased")
   }
   if user.showSuspensionActivity, !input.showSuspensionActivity {
