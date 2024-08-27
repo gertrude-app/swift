@@ -50,22 +50,20 @@ extension SaveUser: Resolver {
     }
 
     let existing = try await user.keychains().map(\.id)
-    if existing.elementsEqual(input.keychainIds) {
-      try await Current.connectedApps.notify(.userUpdated(user.id))
-      return .success
+    if !existing.elementsEqual(input.keychainIds) {
+      dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
+
+      try await UserKeychain.query()
+        .where(.userId == user.id)
+        .delete()
+
+      let pivots = input.keychainIds
+        .map { UserKeychain(userId: user.id, keychainId: $0) }
+
+      try await Current.db.create(pivots)
     }
 
-    dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
-
-    try await UserKeychain.query()
-      .where(.userId == user.id)
-      .delete()
-
-    let pivots = input.keychainIds
-      .map { UserKeychain(userId: user.id, keychainId: $0) }
-
-    try await Current.db.create(pivots)
-    try await Current.connectedApps.notify(.userUpdated(user.id))
+    try await Current.websockets.send(.userUpdated, to: .user(user.id))
     return .success
   }
 }

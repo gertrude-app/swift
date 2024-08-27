@@ -4,6 +4,7 @@ import XExpect
 @testable import Api
 
 final class DeviceResolversTests: ApiTestCase {
+  // TODO: fix racy flaky test
   func testGetDevices() async throws {
     try await Device.deleteAll()
     let user = try await Entities.user().withDevice { $0.appVersion = "2.2.2" }

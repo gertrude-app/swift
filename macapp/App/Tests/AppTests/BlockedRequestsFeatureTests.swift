@@ -28,6 +28,38 @@ final class BlockedRequestsFeatureTests: XCTestCase {
   }
 
   @MainActor
+  func testStoringAndClearingPendingUnlockRequestIds() async {
+    let (store, _) = AppReducer.testStore()
+    store.deps.date.now = .epoch
+
+    let id1 = UUID()
+    let id2 = UUID()
+    await store.send(.blockedRequests(.createUnlockRequests(.success(.init([id1, id2]))))) {
+      $0.blockedRequests.pendingUnlockRequests = [
+        .init(id: id1, createdAt: .epoch),
+        .init(id: id2, createdAt: .epoch),
+      ]
+    }
+
+    await store.send(.websocket(.receivedMessage(.unlockRequestUpdated_v2(
+      id: id1,
+      status: .rejected,
+      target: "",
+      comment: nil
+    )))) {
+      $0.blockedRequests.pendingUnlockRequests = [
+        .init(id: id2, createdAt: .epoch),
+      ]
+    }
+
+    // heartbeat clears out old unlock requests
+    store.deps.date.now = .epoch.advanced(by: .minutes(21))
+    await store.send(.heartbeat(.everyMinute)) {
+      $0.blockedRequests.pendingUnlockRequests = []
+    }
+  }
+
+  @MainActor
   func testFilterCommunicationConfirmationFailed() async {
     let (store, _) = AppReducer.testStore {
       $0.blockedRequests.filterCommunicationConfirmed = true
@@ -151,7 +183,7 @@ final class BlockedRequestsFeatureTests: XCTestCase {
     state.requests = [blocked]
     state.selectedRequestIds = [blocked.id]
     let store = TestStore(initialState: state, reducer: { BlockedRequestsFeature.Reducer() })
-    store.deps.api.createUnlockRequests = { _ in }
+    store.deps.api.createUnlockRequests = { _ in [] }
     let scheduler = DispatchQueue.test
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
 
@@ -182,7 +214,7 @@ final class BlockedRequestsFeatureTests: XCTestCase {
     state.requests = [req1, req2, req3]
     state.selectedRequestIds = [req1.id]
     let store = TestStore(initialState: state, reducer: { BlockedRequestsFeature.Reducer() })
-    store.deps.api.createUnlockRequests = { _ in }
+    store.deps.api.createUnlockRequests = { _ in [] }
     store.deps.mainQueue = DispatchQueue.test.eraseToAnyScheduler()
 
     await store.send(.webview(.unlockRequestSubmitted(comment: "please"))) {

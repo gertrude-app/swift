@@ -1,3 +1,4 @@
+import Gertie
 import NIOWebSocket
 import Vapor
 import XCore
@@ -17,5 +18,9 @@ extension WebSocket: WebsocketProtocol {}
 extension WebsocketProtocol {
   func send<T: Codable>(codable msg: T) async throws {
     try await self.send(try JSON.encode(msg))
+  }
+
+  func send(app: WebSocketMessage.FromApiToApp) async throws {
+    try await self.send(codable: app)
   }
 }

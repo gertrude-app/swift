@@ -1,6 +1,8 @@
 import ClientInterfaces
 import ComposableArchitecture
 import Core
+import MacAppRoute
+import TaggedTime
 import TestSupport
 import XCore
 import XCTest
@@ -9,6 +11,158 @@ import XExpect
 @testable import App
 
 final class RequestSuspensionFeatureTests: XCTestCase {
+  @MainActor
+  func testRequestSuspensionHappyPath() async throws {
+    let (store, bgQueue) = AppReducer.testStore { $0.user.data = .mock }
+    await store.send(.application(.didFinishLaunching)) // start heartbeat
+
+    let reqId = UUID()
+    await store.send(.requestSuspension(.createSuspensionRequest(.success(reqId)))) {
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+
+    let checkIn = spy(on: CheckIn.Input.self, returning: CheckIn.Output.mock)
+    store.deps.api.checkIn = checkIn.fn
+
+    // because we have a pending suspension, the .everyMinute heartbeat will check
+    expect(await checkIn.calls.count).toEqual(0)
+    await bgQueue.advance(by: .seconds(60))
+    expect(await checkIn.calls.count).toEqual(1)
+    expect(await checkIn.calls[0].pendingFilterSuspension).toEqual(reqId)
+
+    store.assert {
+      // heartbeat check returned nada, so we're still waiting for parent response
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+
+    // now the websocket gets the decision from the parent
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: reqId,
+      decision: .accepted(duration: 33, extraMonitoring: nil),
+      comment: nil
+    )))) {
+      // so we we nil out the pending request..
+      $0.requestSuspension.pending = nil
+    }
+
+    // ...and don't check in the heartbeat again
+    await bgQueue.advance(by: .seconds(60 * 10))
+    expect(await checkIn.calls.count).toEqual(1)
+  }
+
+  @MainActor
+  func testHearbeatFallbackCanStartAFilterSuspensionIfWebsocketNeverGetsMessage() async {
+    let (store, bgQueue) = AppReducer.testStore { $0.user.data = .mock }
+    await store.send(.application(.didFinishLaunching)) // start heartbeat
+
+    let reqId = UUID()
+    await store.send(.requestSuspension(.createSuspensionRequest(.success(reqId)))) {
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+
+    let checkIn: Spy<CheckIn.Output, CheckIn.Input> = spy(returning: [
+      CheckIn.Output.mock,
+      CheckIn.Output.mock,
+      CheckIn.Output.empty {
+        $0.resolvedFilterSuspension = .init(
+          id: reqId,
+          decision: .accepted(duration: 33, extraMonitoring: .setScreenshotFreq(10)),
+          comment: "ok"
+        )
+      },
+    ])
+
+    store.deps.api.checkIn = checkIn.fn
+    let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
+    store.deps.filterXpc.suspendFilter = suspendFilter.fn
+    store.deps.date.now = .epoch
+
+    await store.send(.requestSuspension(.createSuspensionRequest(.success(reqId)))) {
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+
+    // first two .everyMinute heartbeats come up empty...
+    await expect(checkIn.calls.count).toEqual(0)
+    await bgQueue.advance(by: .seconds(60))
+    await expect(checkIn.calls.count).toEqual(1)
+    await bgQueue.advance(by: .seconds(60))
+    await expect(checkIn.calls.count).toEqual(2)
+    store.assert {
+      // ... so we're still pending
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+
+    let notification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = notification.fn
+
+    await bgQueue.advance(by: .seconds(60))
+    await expect(checkIn.calls.count).toEqual(3)
+
+    await store.receive(.checkIn(result: .success(.init(
+      adminAccountStatus: .active,
+      appManifest: .empty,
+      keys: [],
+      latestRelease: .init(semver: "2.0.4"),
+      updateReleaseChannel: .stable,
+      userData: .empty,
+      browsers: [],
+      resolvedFilterSuspension: .init(
+        id: reqId,
+        decision: .accepted(duration: 33, extraMonitoring: .setScreenshotFreq(10)),
+        comment: "ok"
+      )
+    )), reason: .pendingRequest)) {
+      $0.requestSuspension.pending = nil
+      $0.monitoring.suspensionMonitoring!.screenshotFrequency = 10
+    }
+
+    // the filter was suspended
+    await expect(suspendFilter.calls).toEqual([33])
+    // with a notification
+    await expect(notification.calls.count).toEqual(1)
+    await expect(notification.calls[0].a).toEqual("👀 Temporarily disabling filter")
+
+    // we should not poll again
+    await bgQueue.advance(by: .seconds(60 * 5))
+    await expect(checkIn.calls.count).toEqual(3)
+  }
+
+  @MainActor
+  func testHeartbeatPollFallbackEventuallyGivesUp() async {
+    let (store, bgQueue) = AppReducer.testStore { $0.user.data = .mock }
+    let time = ControllingNow(starting: .epoch, with: bgQueue)
+    store.deps.date = time.generator
+    await store.send(.application(.didFinishLaunching)) // start heartbeat
+
+    let reqId = UUID()
+    await store.send(.requestSuspension(.createSuspensionRequest(.success(reqId)))) {
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+
+    let checkIn = spy(on: CheckIn.Input.self, returning: CheckIn.Output.mock)
+    store.deps.api.checkIn = checkIn.fn
+
+    for i in 1 ... 10 {
+      await time.advance(seconds: 60)
+      expect(await checkIn.calls.count).toEqual(i)
+    }
+
+    store.assert {
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+
+    await time.advance(seconds: 60)
+    expect(await checkIn.calls.count).toEqual(10)
+    await store.skipReceivedActions()
+    store.assert {
+      $0.requestSuspension.pending = nil
+    }
+
+    await time.advance(seconds: 60 * 4)
+    expect(await checkIn.calls.count).toEqual(10) // still 10
+  }
+
+  @MainActor
   func testRequestingFilterSuspensionOrUnlockChecksAndRepairsWebsocketConnection() async {
     let (store, _) = AppReducer.testStore {
       $0.user.data = .mock
@@ -17,8 +171,11 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     let connect = spy(on: UUID.self, returning: WebSocketClient.State.connected)
     store.deps.websocket.connect = connect.fn
 
-    await store
-      .send(.requestSuspension(.webview(.requestSubmitted(durationInSeconds: 30, comment: nil))))
+    await store.send(
+      .requestSuspension(
+        .webview(.requestSubmitted(durationInSeconds: 30, comment: nil))
+      )
+    )
 
     expect(await connect.calls.count).toEqual(1)
 
@@ -28,6 +185,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     expect(await connect.calls.count).toEqual(2)
   }
 
+  @MainActor
   func testFilterCommunicationConfirmationSucceeded() async {
     let (store, _) = AppReducer.testStore {
       $0.requestSuspension.filterCommunicationConfirmed = false // <-- prove nilling out
@@ -46,6 +204,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testFilterCommunicationConfirmationFailed() async {
     let (store, _) = AppReducer.testStore {
       $0.requestSuspension.filterCommunicationConfirmed = true
@@ -65,6 +224,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testClickingAdministrateFromFilterCommFailureOpensAdmin() async {
     let (store, _) = AppReducer.testStore {
       $0.adminWindow.windowOpen = false

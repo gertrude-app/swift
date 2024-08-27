@@ -104,7 +104,12 @@ extension WebSocketFeature.RootReducer {
           unexpectedError(id: "2b1c3cf3") // api should not be sending this legacy event
         }
 
-      case .receivedMessage(.unlockRequestUpdated(let status, let target, let comment)):
+      case .receivedMessage(.unlockRequestUpdated):
+        return .exec { _ in
+          unexpectedError(id: "4dfcde92") // api should not be sending this legacy event
+        }
+
+      case .receivedMessage(.unlockRequestUpdated_v2(_, let status, let target, let comment)):
         return .exec { _ in
           await device.notifyUnlockRequestUpdated(
             accepted: status == .accepted,
@@ -123,6 +128,11 @@ extension WebSocketFeature.RootReducer {
         return .none // handled by filter feature
 
       case .receivedMessage(.filterSuspensionRequestDecided):
+        return .exec { _ in
+          unexpectedError(id: "a307cfe7") // api should not be sending this legacy event
+        }
+
+      case .receivedMessage(.filterSuspensionRequestDecided_v2):
         return .none // handled by filter feature AND monitoring feature
       }
 

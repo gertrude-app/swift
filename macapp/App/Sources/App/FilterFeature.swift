@@ -56,6 +56,7 @@ struct FilterFeature: Feature {
     @Dependency(\.filterExtension) var filterExtension
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.network) var network
     @Dependency(\.storage) var storage
     @Dependency(\.websocket) var websocket
   }
@@ -87,8 +88,10 @@ extension FilterFeature.RootReducer {
     switch action {
 
     case .websocket(.receivedMessage(.filterSuspensionRequestDecided(
-      .accepted(let seconds, let extraMonitoring),
-      let comment
+      .accepted(let seconds, let extraMonitoring), let comment
+    ))),
+    .websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      _, .accepted(let seconds, let extraMonitoring), let comment
     ))):
       return self.suspendFilter(
         for: seconds,
@@ -109,6 +112,29 @@ extension FilterFeature.RootReducer {
     case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):
       state.requestSuspension.windowOpen = false
       return self.suspendFilter(for: .init(seconds), with: &state, fromAdmin: true)
+
+    // handle filter suspension decision checkIn, when websocket fails
+    case .checkIn(result: .success(let output), reason: _):
+      if let resolvedSuspension = output.resolvedFilterSuspension,
+         resolvedSuspension.id == state.requestSuspension.pending?.id,
+         !state.filter.isSuspended {
+        interestingEvent(id: "f4f564a4", "fallback poll resolved filter suspension")
+        state.requestSuspension.pending = nil
+        switch resolvedSuspension.decision {
+        case .accepted(let duration, let extraMonitoring):
+          return self.suspendFilter(
+            for: duration,
+            with: &state,
+            comment: resolvedSuspension.comment,
+            extraMonitoring: extraMonitoring != nil
+          )
+        case .rejected:
+          return .exec { _ in
+            await device.notifyFilterSuspensionDenied(with: resolvedSuspension.comment)
+          }
+        }
+      }
+      return .none
 
     case .heartbeat(.everyMinute):
       if let expiration = state.filter.currentSuspensionExpiration, expiration <= now {
@@ -239,6 +265,7 @@ extension FilterFeature.RootReducer {
   ) -> Effect<Action> {
     let expiration = now.advanced(by: Double(seconds.rawValue))
     state.filter.currentSuspensionExpiration = expiration
+    state.requestSuspension.pending = nil
     return .merge(
       .exec { _ in
         _ = await xpc.suspendFilter(seconds)

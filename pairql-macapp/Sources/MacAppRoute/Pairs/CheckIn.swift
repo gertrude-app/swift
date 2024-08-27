@@ -11,17 +11,23 @@ public struct CheckIn: Pair {
     public var filterVersion: String?
     public var userIsAdmin: Bool?
     public var osVersion: String?
+    public var pendingFilterSuspension: UUID?
+    public var pendingUnlockRequests: [UUID]?
 
     public init(
       appVersion: String,
       filterVersion: String?,
       userIsAdmin: Bool? = nil,
-      osVersion: String? = nil
+      osVersion: String? = nil,
+      pendingFilterSuspension: UUID? = nil,
+      pendingUnlockRequests: [UUID]? = nil
     ) {
       self.appVersion = appVersion
       self.filterVersion = filterVersion
       self.userIsAdmin = userIsAdmin
       self.osVersion = osVersion
+      self.pendingFilterSuspension = pendingFilterSuspension
+      self.pendingUnlockRequests = pendingUnlockRequests
     }
   }
 
@@ -55,6 +61,32 @@ public struct CheckIn: Pair {
     }
   }
 
+  public struct ResolvedFilterSuspension: PairNestable {
+    public var id: UUID
+    public var decision: FilterSuspensionDecision
+    public var comment: String?
+
+    public init(id: UUID, decision: FilterSuspensionDecision, comment: String?) {
+      self.id = id
+      self.decision = decision
+      self.comment = comment
+    }
+  }
+
+  public struct ResolvedUnlockRequest: PairNestable {
+    public var id: UUID
+    public var status: RequestStatus
+    public var target: String
+    public var comment: String?
+
+    public init(id: UUID, status: RequestStatus, target: String, comment: String?) {
+      self.id = id
+      self.status = status
+      self.target = target
+      self.comment = comment
+    }
+  }
+
   public struct Output: PairOutput {
     public var adminAccountStatus: AdminAccountStatus
     public var appManifest: AppIdManifest
@@ -63,6 +95,8 @@ public struct CheckIn: Pair {
     public var updateReleaseChannel: ReleaseChannel
     public var userData: UserData
     public var browsers: [BrowserMatch]
+    public var resolvedFilterSuspension: ResolvedFilterSuspension?
+    public var resolvedUnlockRequests: [ResolvedUnlockRequest]?
 
     public init(
       adminAccountStatus: AdminAccountStatus,
@@ -71,7 +105,9 @@ public struct CheckIn: Pair {
       latestRelease: LatestRelease,
       updateReleaseChannel: ReleaseChannel,
       userData: UserData,
-      browsers: [BrowserMatch]
+      browsers: [BrowserMatch],
+      resolvedFilterSuspension: ResolvedFilterSuspension? = nil,
+      resolvedUnlockRequests: [ResolvedUnlockRequest]? = nil
     ) {
       self.adminAccountStatus = adminAccountStatus
       self.appManifest = appManifest
@@ -80,6 +116,8 @@ public struct CheckIn: Pair {
       self.updateReleaseChannel = updateReleaseChannel
       self.userData = userData
       self.browsers = browsers
+      self.resolvedFilterSuspension = resolvedFilterSuspension
+      self.resolvedUnlockRequests = resolvedUnlockRequests
     }
   }
 }

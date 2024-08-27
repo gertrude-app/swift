@@ -52,8 +52,17 @@ enum NotificationsSetting: String, Equatable, Codable {
   case alert
 }
 
+struct PendingRequest: Equatable, Codable {
+  var id: UUID
+  var createdAt: Date
+}
+
 public extension ApiClient {
-  func appCheckIn(_ filterVersion: String?) async throws -> CheckIn.Output {
+  func appCheckIn(
+    _ filterVersion: String?,
+    pendingFilterSuspension: UUID? = nil,
+    pendingUnlockRequests: [UUID]? = nil
+  ) async throws -> CheckIn.Output {
     @Dependency(\.app) var appClient
     @Dependency(\.device) var device
     return try await self.checkIn(
@@ -61,7 +70,9 @@ public extension ApiClient {
         appVersion: appClient.installedVersion() ?? "unknown",
         filterVersion: filterVersion,
         userIsAdmin: device.currentMacOsUserType() == .admin,
-        osVersion: device.osVersion().semver
+        osVersion: device.osVersion().semver,
+        pendingFilterSuspension: pendingFilterSuspension,
+        pendingUnlockRequests: pendingUnlockRequests
       )
     )
   }

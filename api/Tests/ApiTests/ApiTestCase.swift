@@ -1,4 +1,5 @@
 import DuetSQL
+import Gertie
 import Vapor
 import XCTest
 import XPostmark
@@ -22,7 +23,7 @@ class ApiTestCase: XCTestCase {
     var slacks: [(XSlack.Slack.Message, String)] = []
     var texts: [Text] = []
     var adminNotifications: [AdminNotification] = []
-    var appEvents: [AppEvent] = []
+    var websocketMessages: [AppEvent] = []
   }
 
   var sent = Sent()
@@ -63,8 +64,8 @@ class ApiTestCase: XCTestCase {
     Current.adminNotifier.notify = { [self] adminId, event in
       sent.adminNotifications.append(.init(adminId: adminId, event: event))
     }
-    Current.connectedApps.notify = { [self] event in
-      sent.appEvents.append(event)
+    Current.websockets.sendEvent = { [self] event in
+      sent.websocketMessages.append(event)
     }
   }
 
@@ -134,4 +135,10 @@ func mockUUIDs() -> (UUID, UUID) {
 public extension Date {
   static let epoch = Date(timeIntervalSince1970: 0)
   static let reference = Date(timeIntervalSinceReferenceDate: 0)
+}
+
+extension AppEvent {
+  init(_ message: WebSocketMessage.FromApiToApp, to matcher: Matcher) {
+    self.init(matcher: matcher, message: message)
+  }
 }

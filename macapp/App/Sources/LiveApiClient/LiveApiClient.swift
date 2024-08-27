@@ -30,19 +30,17 @@ extension ApiClient: DependencyKey {
       )
     },
     createSuspendFilterRequest: { input in
-      guard await accountActive.value else { return }
-      // always produces `.success` if it doesn't throw
-      _ = try await output(
-        from: CreateSuspendFilterRequest.self,
-        with: .createSuspendFilterRequest(input)
+      guard await accountActive.value else { return .init() }
+      return try await output(
+        from: CreateSuspendFilterRequest_v2.self,
+        with: .createSuspendFilterRequest_v2(input)
       )
     },
     createUnlockRequests: { input in
-      guard await accountActive.value else { return }
-      // always produces `.success` if it doesn't throw
-      _ = try await output(
-        from: CreateUnlockRequests_v2.self,
-        with: .createUnlockRequests_v2(input)
+      guard await accountActive.value else { return [] }
+      return try await output(
+        from: CreateUnlockRequests_v3.self,
+        with: .createUnlockRequests_v3(input)
       )
     },
     getUserToken: {

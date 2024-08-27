@@ -1,4 +1,6 @@
+import Core
 import MacAppRoute
+import TaggedTime
 import TestSupport
 import XCTest
 import XExpect
@@ -195,5 +197,73 @@ final class CheckInFeatureTests: XCTestCase {
       $0.user.data?.name = "new name" // update data since account back to good
     }
     await expect(setAccountActive.calls).toEqual([false, true])
+  }
+
+  @MainActor
+  func testGettingFilterSuspensionByClickingRefreshRules() async throws {
+    let reqId = UUID()
+    let (store, _) = AppReducer.testStore {
+      $0.filter.extension = .installedAndRunning
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+    let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
+    store.deps.filterXpc.suspendFilter = suspendFilter.fn
+    let notification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = notification.fn
+
+    let checkInResult = CheckIn.Output.empty {
+      $0.resolvedFilterSuspension = .init(
+        id: reqId,
+        decision: .accepted(duration: 44, extraMonitoring: nil),
+        comment: "ok!"
+      )
+    }
+
+    await store.send(.checkIn(result: .success(checkInResult), reason: .userRefreshedRules)) {
+      $0.requestSuspension.pending = nil
+    }
+
+    await expect(suspendFilter.calls).toEqual([44])
+
+    // becuase they got a filter suspension, we don't want to show the normal
+    // "Refreshed rules successfully" notification, only the filter suspension
+    await expect(notification.calls.count).toEqual(1)
+    await expect(notification.calls[0].a).toEqual("🟠 Temporarily disabling filter")
+  }
+
+  @MainActor
+  func testGettingUnlockRequestDecisionsFromCheckIn() async throws {
+    let (store, _) = AppReducer.testStore()
+    let notification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = notification.fn
+
+    let id1 = UUID()
+    let id2 = UUID()
+    let id3 = UUID()
+    await store.send(.blockedRequests(.createUnlockRequests(.success(.init([id1, id2, id3]))))) {
+      $0.blockedRequests.pendingUnlockRequests = [
+        .init(id: id1, createdAt: .epoch),
+        .init(id: id2, createdAt: .epoch),
+        .init(id: id3, createdAt: .epoch),
+      ]
+    }
+
+    let checkInResult = CheckIn.Output.empty {
+      $0.resolvedUnlockRequests = [
+        .init(id: id1, status: .rejected, target: "foo.com", comment: nil),
+        .init(id: id2, status: .accepted, target: "bar.com", comment: "ok"),
+      ]
+    }
+
+    // because the unlocks came IN a checkIn, we don't need to check in again
+    store.deps.api.checkIn = { _ in fatalError("not called") }
+
+    await store.send(.checkIn(result: .success(checkInResult), reason: .pendingRequest)) {
+      $0.blockedRequests.pendingUnlockRequests = [
+        .init(id: id3, createdAt: .epoch),
+      ]
+    }
+
+    await expect(notification.calls.count).toEqual(2) // one for each unlock request
   }
 }

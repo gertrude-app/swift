@@ -42,7 +42,7 @@ extension SaveKey: Resolver {
       key.deletedAt = input.expiration
       try await Current.db.update(key)
     }
-    try await Current.connectedApps.notify(.keychainUpdated(keychain.id))
+    try await Current.websockets.send(.userUpdated, to: .usersWith(keychain: keychain.id))
     return .success
   }
 }

@@ -1,3 +1,4 @@
+import DuetSQL
 import Gertie
 import MacAppRoute
 
@@ -39,6 +40,35 @@ extension CheckIn: Resolver {
       try await userDevice.save()
     }
 
+    var resolvedFilterSuspension: ResolvedFilterSuspension?
+    if let suspensionReqId = input.pendingFilterSuspension,
+       let resolved = try? await SuspendFilterRequest.query()
+       .where(.id == suspensionReqId)
+       .where(.userDeviceId == userDevice.id)
+       .where(.status != .enum(RequestStatus.pending))
+       .first() {
+      resolvedFilterSuspension = .init(
+        id: resolved.id.rawValue,
+        decision: resolved.decision ?? .rejected,
+        comment: resolved.responseComment
+      )
+    }
+
+    var resolvedUnlockRequests: [ResolvedUnlockRequest]?
+    if let unlockIds = input.pendingUnlockRequests {
+      let resolved = try await UnlockRequest.query()
+        .where(.id |=| unlockIds)
+        .where(.userDeviceId == userDevice.id)
+        .where(.status != .enum(RequestStatus.pending))
+        .all()
+      resolvedUnlockRequests = resolved.map { .init(
+        id: $0.id.rawValue,
+        status: $0.status,
+        target: $0.target ?? "",
+        comment: $0.responseComment
+      ) }
+    }
+
     return Output(
       adminAccountStatus: try await admin.accountStatus,
       appManifest: try await v1.appManifest,
@@ -56,7 +86,9 @@ extension CheckIn: Resolver {
         screenshotSize: context.user.screenshotsResolution,
         connectedAt: userDevice.createdAt
       ),
-      browsers: try await browsers.map(\.match)
+      browsers: try await browsers.map(\.match),
+      resolvedFilterSuspension: resolvedFilterSuspension,
+      resolvedUnlockRequests: resolvedUnlockRequests
     )
   }
 }

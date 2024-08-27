@@ -1,16 +1,7 @@
 import PairQL
 
-/// in use: v2.0.0 - present
+/// @deprecated, in use from v2.0.0 - v2.3.2
 public struct CreateSuspendFilterRequest: Pair {
   public static let auth: ClientAuth = .user
-
-  public struct Input: PairInput {
-    public var duration: Int
-    public var comment: String?
-
-    public init(duration: Int, comment: String?) {
-      self.duration = duration
-      self.comment = comment
-    }
-  }
+  public typealias Input = CreateSuspendFilterRequest_v2.Input
 }

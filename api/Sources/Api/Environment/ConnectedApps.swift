@@ -6,7 +6,14 @@ struct ConnectedApps: Sendable {
   var remove: @Sendable (AppConnection) async -> Void
   var filterState: @Sendable (UserDevice.Id) async -> UserFilterState?
   var isUserDeviceOnline: @Sendable (UserDevice.Id) async -> Bool
-  var notify: @Sendable (AppEvent) async throws -> Void
+  var sendEvent: @Sendable (AppEvent) async throws -> Void
+
+  func send(
+    _ message: WebSocketMessage.FromApiToApp,
+    to matcher: AppEvent.Matcher
+  ) async throws {
+    try await self.sendEvent(.init(matcher: matcher, message: message))
+  }
 }
 
 extension ConnectedApps {
@@ -18,7 +25,7 @@ extension ConnectedApps {
       remove: { await AppConnections.shared.remove($0) },
       filterState: { await AppConnections.shared.filterState(for: $0) },
       isUserDeviceOnline: { await AppConnections.shared.isUserDeviceOnline($0) },
-      notify: { try await AppConnections.shared.notify($0) }
+      sendEvent: { try await AppConnections.shared.send($0) }
     )
   }
 
@@ -29,7 +36,7 @@ extension ConnectedApps {
       remove: { _ in },
       filterState: { _ in nil },
       isUserDeviceOnline: { _ in false },
-      notify: { _ in }
+      sendEvent: { _ in }
     )
   }
 }

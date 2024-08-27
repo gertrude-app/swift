@@ -1,6 +1,7 @@
 import DuetSQL
+import Gertie
 
-struct UserDevice: Codable, Sendable {
+struct UserDevice: Codable, Sendable, Equatable {
   var id: Id
   var userId: User.Id
   var deviceId: Device.Id
@@ -36,6 +37,10 @@ struct UserDevice: Codable, Sendable {
 // extensions
 
 extension UserDevice {
+  var appSemver: Semver {
+    Semver(self.appVersion)!
+  }
+
   func user() async throws -> User {
     try await Current.db.query(User.self)
       .where(.id == self.userId)
@@ -51,6 +56,6 @@ extension UserDevice {
 
 extension UserDevice {
   func isOnline() async -> Bool {
-    await Current.connectedApps.isUserDeviceOnline(self.id)
+    await Current.websockets.isUserDeviceOnline(self.id)
   }
 }

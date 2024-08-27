@@ -68,8 +68,8 @@ extension DeleteEntity: Resolver {
       guard keychain.authorId == context.admin.id else {
         throw Abort(.unauthorized)
       }
-      try await Current.db.delete(key.id)
-      try await Current.connectedApps.notify(.keychainUpdated(keychain.id))
+      try await key.delete()
+      try await Current.websockets.send(.userUpdated, to: .usersWith(keychain: keychain.id))
 
     case .keychain:
       try await Current.db.query(Keychain.self)
@@ -93,7 +93,7 @@ extension DeleteEntity: Resolver {
           try await Current.db.delete(device.id)
         }
       }
-      try await Current.connectedApps.notify(.userDeleted(.init(input.id)))
+      try await Current.websockets.send(.userDeleted, to: .user(user.id))
     }
 
     return .success

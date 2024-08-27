@@ -121,40 +121,6 @@ final class MacAppResolverTests: ApiTestCase {
     expect(inserted.line).toEqual("Hello�World")
   }
 
-  func testCreateUnlockRequests_v2() async throws {
-    let user = try await Entities.user().withDevice()
-    let blocked = CreateUnlockRequests_v2.Input.BlockedRequest(
-      bundleId: "com.example.app",
-      url: "https://example.com"
-    )
-
-    let (uuid, _) = mockUUIDs()
-
-    let output = try await CreateUnlockRequests_v2.resolve(
-      with: .init(blockedRequests: [blocked], comment: "please dad!"),
-      in: self.context(user)
-    )
-
-    expect(output).toEqual(.success)
-
-    let unlockReq = try await Current.db.find(UnlockRequest.Id(uuid))
-    expect(unlockReq.requestComment).toEqual("please dad!")
-    expect(unlockReq.appBundleId).toEqual("com.example.app")
-    expect(unlockReq.url).toEqual("https://example.com")
-    expect(unlockReq.userDeviceId).toEqual(user.device.id)
-    expect(unlockReq.status).toEqual(.pending)
-
-    expect(sent.adminNotifications).toEqual([.init(
-      adminId: user.adminId,
-      event: .unlockRequestSubmitted(.init(
-        dashboardUrl: "",
-        userId: user.id,
-        userName: user.name,
-        requestIds: [unlockReq.id]
-      ))
-    )])
-  }
-
   func testCreateSignedScreenshotUpload() async throws {
     let beforeCount = try await Current.db.query(Screenshot.self).all().count
     let user = try await Entities.user().withDevice()

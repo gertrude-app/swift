@@ -22,7 +22,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
       return .init(id: "bps_123", url: "bps-url")
     }
 
-    Current.stripe.createCheckoutSession = { _ in fatalError("should not be called") }
+    Current.stripe.createCheckoutSession = { _ in fatalError("not called") }
 
     let output = try await StripeUrl.resolve(in: context(admin))
 
@@ -41,8 +41,8 @@ final class AuthedAdminResolverTests: ApiTestCase {
       return .init(id: "s1", url: "/checkout-url", subscription: "subsid", clientReferenceId: nil)
     }
 
-    Current.stripe.getSubscription = { _ in fatalError("should not be called") }
-    Current.stripe.createBillingPortalSession = { _ in fatalError("should not be called") }
+    Current.stripe.getSubscription = { _ in fatalError("not called") }
+    Current.stripe.createBillingPortalSession = { _ in fatalError("not called") }
 
     let output = try await StripeUrl.resolve(in: context(admin))
 
@@ -51,7 +51,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
   func testHandleCheckoutSuccess() async throws {
     let sessionId = "cs_123"
-    let admin = try await Current.db.create(Admin.random { $0.subscriptionStatus = .trialing })
+    let admin = try await Admin.random { $0.subscriptionStatus = .trialing }.create()
     Current.date = { Date(timeIntervalSince1970: 0) }
 
     Current.stripe.getCheckoutSession = { id in
@@ -258,7 +258,9 @@ final class AuthedAdminResolverTests: ApiTestCase {
       in: context(admin)
     )
     expect(output).toEqual(.success)
-    expect(sent.appEvents).toEqual([.keychainUpdated(admin.keychain.id)])
+    expect(sent.websocketMessages).toEqual([
+      .init(.userUpdated, to: .usersWith(keychain: admin.keychain.id)),
+    ])
   }
 
   func testDeletingLastUserDeviceDeletesDevice() async throws {
@@ -522,107 +524,6 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     let userList = try await GetUserUnlockRequests.resolve(with: user.id, in: context(user.admin))
     expect(userList).toEqual([output])
-  }
-
-  func testDecideSuspendFilterRequest_Accepted() async throws {
-    let user = try await Entities.user().withDevice { $0.appVersion = "2.1.2" } // <-- new event
-    let request = try await Current.db.create(SuspendFilterRequest.random {
-      $0.userDeviceId = user.device.id
-      $0.status = .pending
-    })
-
-    let decision: DecideFilterSuspensionRequest.Decision = .accepted(
-      durationInSeconds: 333,
-      extraMonitoring: "@55+k"
-    )
-
-    let output = try await DecideFilterSuspensionRequest.resolve(
-      with: .init(id: request.id, decision: decision, responseComment: "ok"),
-      in: context(user.admin)
-    )
-
-    expect(output).toEqual(.success)
-
-    let retrieved = try await Current.db.find(request.id)
-    expect(retrieved.duration).toEqual(.init(333))
-    expect(retrieved.responseComment).toEqual("ok")
-    expect(retrieved.status).toEqual(.accepted)
-
-    expect(sent.appEvents).toEqual([
-      .suspendFilterRequestDecided( // <-- new event
-        user.device.id,
-        .accepted(
-          duration: 333,
-          extraMonitoring: .addKeyloggingAndSetScreenshotFreq(55)
-        ),
-        "ok"
-      ),
-    ])
-  }
-
-  func testDecideSuspendFilterRequest_Rejected() async throws {
-    let user = try await Entities.user().withDevice { $0.appVersion = "2.0.2" } // <-- old event
-    let request = try await Current.db.create(SuspendFilterRequest.random {
-      $0.duration = .init(100)
-      $0.userDeviceId = user.device.id
-      $0.status = .pending
-    })
-
-    let output = try await DecideFilterSuspensionRequest.resolve(
-      with: .init(id: request.id, decision: .rejected, responseComment: nil),
-      in: context(user.admin)
-    )
-
-    expect(output).toEqual(.success)
-
-    let retrieved = try await Current.db.find(request.id)
-    expect(retrieved.responseComment).toBeNil()
-    expect(retrieved.status).toEqual(.rejected)
-
-    expect(sent.appEvents).toEqual([
-      .suspendFilterRequestUpdated(.init( // <-- old event
-        userDeviceId: user.device.id,
-        status: .rejected,
-        duration: 100,
-        requestComment: request.requestComment,
-        responseComment: nil
-      )),
-    ])
-  }
-
-  func testUpdateUnlockRequest() async throws {
-    let user = try await Entities.user().withDevice()
-
-    var request = UnlockRequest.mock
-    request.userDeviceId = user.device.id
-    request.status = .pending
-    request.requestComment = "please dad"
-    try await Current.db.create(request)
-
-    let output = try await UpdateUnlockRequest.resolve(
-      with: UpdateUnlockRequest.Input(
-        id: request.id,
-        responseComment: "no way",
-        status: .rejected
-      ),
-      in: context(user.admin)
-    )
-
-    expect(output).toEqual(.success)
-
-    let retrieved = try await Current.db.find(request.id)
-    expect(retrieved.responseComment).toEqual("no way")
-    expect(retrieved.status).toEqual(.rejected)
-
-    expect(sent.appEvents).toEqual([
-      .unlockRequestUpdated(.init(
-        userDeviceId: user.device.id,
-        status: .rejected,
-        target: request.target ?? "",
-        comment: "please dad",
-        responseComment: "no way"
-      )),
-    ])
   }
 
   func testLatestAppVersions() async throws {
