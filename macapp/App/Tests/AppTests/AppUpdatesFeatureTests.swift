@@ -144,7 +144,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
     await store.send(.adminWindow(.delegate(.triggerAppUpdate)))
     await expect(saveState.called).toEqual(true)
     await expect(triggerUpdate.calls)
-      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=stable"])
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=stable&requestingAppVersion=1.0.0"])
   }
 
   @MainActor
@@ -155,7 +155,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
 
     await store.send(.adminWindow(.delegate(.triggerAppUpdate)))
     await expect(triggerUpdate.calls)
-      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta"])
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta&requestingAppVersion=1.0.0"])
   }
 
   @MainActor
@@ -187,7 +187,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
 
     await expect(saveState.called).toEqual(true)
     await expect(triggerUpdate.calls)
-      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta"])
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta&requestingAppVersion=1.0.0"])
   }
 
   @MainActor
