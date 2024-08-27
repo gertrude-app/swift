@@ -8,7 +8,8 @@ import XExpect
 
 @testable import Filter
 
-@MainActor final class FilterReducerTests: XCTestCase {
+final class FilterReducerTests: XCTestCase {
+  @MainActor
   func testExtensionStarted_Exhaustive() async {
     let (store, mainQueue) = Filter.testStore(exhaustive: true)
     let subject = PassthroughSubject<XPCEvent.Filter, Never>()
@@ -24,7 +25,7 @@ import XExpect
     ) }
 
     await store.send(.extensionStarted)
-    await expect(startListener.invoked).toEqual(true)
+    await expect(startListener.called).toEqual(true)
 
     await store.receive(.loadedPersistentState(.init(
       userKeys: [:],
@@ -61,7 +62,7 @@ import XExpect
       $0.appCache = [:] // clears out app cache when new manifest is received
     }
 
-    await expect(saveState.invocations).toEqual([.init(
+    await expect(saveState.calls).toEqual([.init(
       userKeys: [502: [key]], //  <-- new info from user rules
       appIdManifest: manifest, // <-- new info from user rules
       exemptUsers: [501] // <-- preserving existing unchanged data
@@ -73,6 +74,7 @@ import XExpect
     await store.send(.extensionStopping)
   }
 
+  @MainActor
   func testReceivingRulesWithAtLeastOneKeyClearsExemptStatus() async {
     let (store, _) = Filter.testStore {
       $0.exemptUsers = [501, 504]
@@ -91,6 +93,7 @@ import XExpect
 
   // this is a bit of a hack until we support the concept of "non-filtered" children
   // see https://github.com/gertrude-app/project/issues/163
+  @MainActor
   func testReceivingRulesWithZeroKeysDoesNotClearExemptStatus() async {
     let (store, _) = Filter.testStore {
       $0.exemptUsers = [501, 504]
@@ -107,6 +110,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testStreamBlockedRequests() async {
     let (store, _) = Filter.testStore(exhaustive: true)
     store.deps.filterExtension = .mock
@@ -133,7 +137,7 @@ import XExpect
     let flow = FilterFlow(userId: 502)
     await store.send(.flowBlocked(flow, .mock))
     await store.send(.flowBlocked(FilterFlow(userId: 503), .mock)) // <-- different user
-    await expect(sendBlocked.invocations).toEqual([Both(502, flow.testBlockedReq())])
+    await expect(sendBlocked.calls).toEqual([Both(502, flow.testBlockedReq())])
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: false,
@@ -147,6 +151,7 @@ import XExpect
     await store.send(.flowBlocked(FilterFlow(userId: 502), .mock))
   }
 
+  @MainActor
   func testBlockStreamingExpiration() async {
     let (store, _) = Filter.testStore()
     let sendBlocked = spy2(on: (uid_t.self, BlockedRequest.self), returning: ())
@@ -166,7 +171,7 @@ import XExpect
     let flow1 = FilterFlow(userId: 502)
     let flow1Block = flow1.testBlockedReq(time: store.deps.date.now)
     await store.send(.flowBlocked(flow1, .mock))
-    await expect(sendBlocked.invocations).toEqual([Both(502, flow1Block)])
+    await expect(sendBlocked.calls).toEqual([Both(502, flow1Block)])
 
     // one second AFTER expiration
     store.deps.date.now = Date(timeIntervalSince1970: 60 * 5 + 1)
@@ -174,9 +179,10 @@ import XExpect
       $0.blockListeners = [:]
     }
 
-    await expect(sendBlocked.invocations).toEqual([Both(502, flow1Block)])
+    await expect(sendBlocked.calls).toEqual([Both(502, flow1Block)])
   }
 
+  @MainActor
   func testDisconnectUser() async {
     let key1 = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
     let key2 = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
@@ -205,13 +211,14 @@ import XExpect
       $0.exemptUsers = [501]
     }
 
-    await expect(save.invocations).toEqual([.init(
+    await expect(save.calls).toEqual([.init(
       userKeys: [503: [key2]],
       appIdManifest: .init(),
       exemptUsers: [501]
     )])
   }
 
+  @MainActor
   func testSetUserExemption() async {
     let (store, _) = Filter.testStore { $0.exemptUsers = [501] }
     store.deps.filterExtension = .mock
@@ -227,12 +234,13 @@ import XExpect
       $0.exemptUsers = [502]
     }
 
-    await expect(save.invocations).toEqual([
+    await expect(save.calls).toEqual([
       .init(userKeys: [:], appIdManifest: .init(), exemptUsers: [501, 502]),
       .init(userKeys: [:], appIdManifest: .init(), exemptUsers: [502]),
     ])
   }
 
+  @MainActor
   func testStartFilterSuspension() async {
     let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
     let (store, mainQueue) = Filter.testStore {
@@ -251,16 +259,17 @@ import XExpect
     }
 
     await mainQueue.advance(by: .seconds(599))
-    await expect(notifyExpired.invoked).toEqual(false)
+    await expect(notifyExpired.called).toEqual(false)
 
     await mainQueue.advance(by: .seconds(1))
-    await expect(notifyExpired.invocations).toEqual([502])
+    await expect(notifyExpired.calls).toEqual([502])
 
     await store.receive(.suspensionTimerEnded(502)) {
       $0.suspensions[502] = nil
     }
   }
 
+  @MainActor
   func testExtendSuspensionWhenReceivingASecond() async {
     let (store, mainQueue) = Filter.testStore {
       $0.suspensions = [:]
@@ -285,7 +294,7 @@ import XExpect
     }
 
     await time.advance(seconds: 500)
-    await expect(notifyExpired.invoked).toEqual(false)
+    await expect(notifyExpired.called).toEqual(false)
 
     await store.send(.xpc(.receivedAppMessage(.suspendFilter(userId: 502, duration: 600)))) {
       $0.suspensions = [
@@ -299,17 +308,18 @@ import XExpect
 
     // going past first expiration does not notify app of end
     await time.advance(seconds: 200)
-    await expect(notifyExpired.invoked).toEqual(false)
+    await expect(notifyExpired.called).toEqual(false)
 
     // moving past second suspension end does notify and clean up
     await time.advance(seconds: 400)
-    await expect(notifyExpired.invocations).toEqual([502])
+    await expect(notifyExpired.calls).toEqual([502])
 
     await store.receive(.suspensionTimerEnded(502)) {
       $0.suspensions[502] = nil
     }
   }
 
+  @MainActor
   func testCancelledFilterSuspension() async {
     let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
     let (store, mainQueue) = Filter.testStore {
@@ -332,9 +342,10 @@ import XExpect
     }
 
     await mainQueue.advance(by: .seconds(600))
-    await expect(notifyExpired.invoked).toEqual(false)
+    await expect(notifyExpired.called).toEqual(false)
   }
 
+  @MainActor
   func testSimultaneousSuspensions() async {
     let (store, mainQueue) = Filter.testStore()
 
@@ -367,11 +378,11 @@ import XExpect
       ]
     }
 
-    await expect(notifyExpired.invocations).toEqual([])
+    await expect(notifyExpired.calls).toEqual([])
 
     // now let recently received suspension expire
     await mainQueue.advance(by: .seconds(100))
-    await expect(notifyExpired.invocations).toEqual([504])
+    await expect(notifyExpired.calls).toEqual([504])
 
     await store.receive(.suspensionTimerEnded(504)) {
       $0.suspensions = [
@@ -390,12 +401,13 @@ import XExpect
 
     // last remaining suspension expires
     await mainQueue.advance(by: .seconds(200))
-    await expect(notifyExpired.invocations).toEqual([504, 502])
+    await expect(notifyExpired.calls).toEqual([504, 502])
     await store.receive(.suspensionTimerEnded(502)) {
       $0.suspensions = [:]
     }
   }
 
+  @MainActor
   func testHeartbeatCleansUpDanglingSuspensionFromSleepConfusingTimer() async {
     let (store, mainQueue) = Filter.testStore()
     store.deps.filterExtension = .mock
@@ -441,13 +453,13 @@ import XExpect
     }
 
     // ... and we have notified the app so browsers can be quit
-    await expect(notifyExpired.invocations).toEqual([502])
+    await expect(notifyExpired.calls).toEqual([502])
 
     // now advance long enough that the confused timer would expire...
     await time.advance(seconds: 60 * 10)
 
     // and assert that we haven't notified the app again
-    await expect(notifyExpired.invocations).toEqual([502])
+    await expect(notifyExpired.calls).toEqual([502])
   }
 }
 

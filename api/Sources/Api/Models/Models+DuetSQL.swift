@@ -542,6 +542,8 @@ extension SuspendFilterRequest: Model {
       return .string(requestComment)
     case .responseComment:
       return .string(responseComment)
+    case .extraMonitoring:
+      return .string(extraMonitoring)
     case .createdAt:
       return .date(createdAt)
     case .updatedAt:
@@ -558,6 +560,7 @@ extension SuspendFilterRequest: Model {
       .duration: .int(duration.rawValue),
       .requestComment: .string(requestComment),
       .responseComment: .string(responseComment),
+      .extraMonitoring: .string(extraMonitoring),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

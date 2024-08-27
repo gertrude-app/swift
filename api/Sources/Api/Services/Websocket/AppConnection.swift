@@ -28,7 +28,7 @@ actor AppConnection {
       Current.logger.debug("WS: closed with result \(result)")
       switch result {
       case .success:
-        Task { await Current.connectedApps.remove(self) }
+        Task { await Current.websockets.remove(self) }
       case .failure:
         break
       }
@@ -45,7 +45,7 @@ actor AppConnection {
     case .currentFilterState(let filterState):
       self.filterState = filterState
     case .goingOffline:
-      Task { await Current.connectedApps.remove(self) }
+      Task { await Current.websockets.remove(self) }
     }
   }
 }

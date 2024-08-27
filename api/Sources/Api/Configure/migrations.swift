@@ -27,5 +27,6 @@ extension Configure {
     app.migrations.add(SecurityEvents())
     app.migrations.add(ABTestVariants())
     app.migrations.add(ModifySecurityEventsTable())
+    app.migrations.add(AddExtraMonitoring())
   }
 }

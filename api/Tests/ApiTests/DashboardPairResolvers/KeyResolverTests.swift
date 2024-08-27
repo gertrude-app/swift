@@ -27,7 +27,8 @@ final class KeyResolverTests: ApiTestCase {
     let key = try await Current.db.find(input.id)
     expect(key.comment).toEqual(input.comment)
     expect(key.key).toEqual(input.key)
-    expect(sent.appEvents).toEqual([.keychainUpdated(admin.keychain.id)])
+    expect(sent.websocketMessages)
+      .toEqual([.init(.userUpdated, to: .usersWith(keychain: admin.keychain.id))])
   }
 
   func testCreateKeyRecordWithExpiration() async throws {
@@ -64,7 +65,8 @@ final class KeyResolverTests: ApiTestCase {
     let updatedKey = try await Current.db.find(key.id)
     expect(updatedKey.comment).toEqual(input.comment)
     expect(updatedKey.key).toEqual(input.key)
-    expect(sent.appEvents).toEqual([.keychainUpdated(admin.keychain.id)])
+    expect(sent.websocketMessages)
+      .toEqual([.init(.userUpdated, to: .usersWith(keychain: admin.keychain.id))])
   }
 
   func testUpdateKeyRecordWithExpiration() async throws {

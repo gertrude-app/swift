@@ -20,44 +20,56 @@ struct DecideFilterSuspensionRequest: Pair {
 
 extension DecideFilterSuspensionRequest: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    var request = try await Current.db.find(input.id)
-    let userDevice = try await request.userDevice()
+    var suspendFilterRequest = try await SuspendFilterRequest.find(input.id)
+    let userDevice = try await suspendFilterRequest.userDevice()
     try await context.verifiedUser(from: userDevice.userId)
 
-    request.responseComment = input.responseComment
+    suspendFilterRequest.responseComment = input.responseComment
     let decision = input.decision.filterSuspensionDecision
 
     switch decision {
-    case .accepted(let duration, _):
-      request.duration = duration
-      request.status = .accepted
+    case .accepted(let duration, let extraMonitoring):
+      suspendFilterRequest.duration = duration
+      suspendFilterRequest.status = .accepted
+      suspendFilterRequest.extraMonitoring = extraMonitoring?.magicString
     case .rejected:
-      request.status = .rejected
+      suspendFilterRequest.status = .rejected
     }
 
-    try await request.save()
+    try await suspendFilterRequest.save()
 
-    if Semver(userDevice.appVersion)! >= .init("2.1.0")! {
-      try await Current.connectedApps.notify(.suspendFilterRequestDecided(
-        userDevice.id,
-        decision,
-        input.responseComment
-      ))
-    } else {
-      try await Current.connectedApps.notify(.suspendFilterRequestUpdated(.init(
-        userDeviceId: userDevice.id,
-        status: request.status,
-        duration: request.duration,
-        requestComment: request.requestComment,
-        responseComment: request.responseComment
-      )))
-    }
+    try await Current.websockets.send(
+      suspendFilterRequest.updated(for: userDevice.appSemver),
+      to: .userDevice(userDevice.id)
+    )
 
     return .success
   }
 }
 
 // extensions
+
+extension SuspendFilterRequest {
+  func updated(for version: Semver) -> WebSocketMessage.FromApiToApp {
+    switch self.status {
+    case .accepted where version < .init("2.1.0")!:
+      .suspendFilter(for: self.duration, parentComment: self.responseComment)
+    case _ where version < .init("2.1.0")!:
+      .suspendFilterRequestDenied(parentComment: self.responseComment)
+    case _ where version < .init("2.4.0")!:
+      .filterSuspensionRequestDecided(
+        decision: self.decision ?? .rejected,
+        comment: self.responseComment
+      )
+    default:
+      .filterSuspensionRequestDecided_v2(
+        id: self.id.rawValue,
+        decision: self.decision ?? .rejected,
+        comment: self.responseComment
+      )
+    }
+  }
+}
 
 extension DecideFilterSuspensionRequest.Decision {
   var filterSuspensionDecision: FilterSuspensionDecision {

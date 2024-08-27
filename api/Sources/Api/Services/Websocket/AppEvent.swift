@@ -2,28 +2,26 @@ import Foundation
 import Gertie
 import TaggedTime
 
-enum AppEvent: Equatable {
-  case keychainUpdated(Keychain.Id)
-  case suspendFilterRequestDecided(UserDevice.Id, FilterSuspensionDecision, String?)
-  case unlockRequestUpdated(UnlockRequestUpdated)
-  case userUpdated(User.Id)
-  case userDeleted(User.Id)
-
-  struct UnlockRequestUpdated: Equatable {
-    let userDeviceId: UserDevice.Id
-    let status: RequestStatus
-    let target: String
-    let comment: String?
-    let responseComment: String?
+struct AppEvent: Equatable {
+  enum Matcher: Equatable {
+    case user(User.Id)
+    case usersWith(keychain: Keychain.Id)
+    case userDevice(UserDevice.Id)
   }
 
-  // deprecated, remove when app MSV is 2.1.0
-  case suspendFilterRequestUpdated(SuspendFilterRequestUpdated)
-  struct SuspendFilterRequestUpdated: Equatable {
-    let userDeviceId: UserDevice.Id
-    let status: RequestStatus
-    let duration: Seconds<Int>
-    let requestComment: String?
-    let responseComment: String?
+  var matcher: Matcher
+  var message: WebSocketMessage.FromApiToApp
+}
+
+extension AppConnection.Ids {
+  func satisfies(matcher: AppEvent.Matcher) -> Bool {
+    switch matcher {
+    case .user(let userId):
+      return self.user == userId
+    case .usersWith(let keychainId):
+      return self.keychains.contains(keychainId)
+    case .userDevice(let userDeviceId):
+      return self.userDevice == userDeviceId
+    }
   }
 }

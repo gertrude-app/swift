@@ -1,5 +1,6 @@
 import ClientInterfaces
 import ComposableArchitecture
+import Foundation
 import Gertie
 
 struct RequestSuspensionFeature: Feature {
@@ -8,6 +9,7 @@ struct RequestSuspensionFeature: Feature {
     var request = RequestState<String>.idle
     var adminAccountStatus: AdminAccountStatus = .active
     var filterCommunicationConfirmed: Bool?
+    var pending: PendingRequest?
 
     struct View: Equatable, Codable {
       var windowOpen: Bool
@@ -31,16 +33,17 @@ struct RequestSuspensionFeature: Feature {
 
     case webview(View)
     case closeWindow
-    case createSuspensionRequest(TaskResult<EquatableVoid>)
+    case createSuspensionRequest(TaskResult<UUID>)
     case createSuspensionRequestSuccessTimedOut
     case receivedFilterCommunicationConfirmation(Bool)
   }
 
-  private enum CancelId { case successTimeout }
+  enum CancelId { case successTimeout }
 
   struct Reducer: FeatureReducer {
     @Dependency(\.api) var api
     @Dependency(\.backgroundQueue) var bgQueue
+    @Dependency(\.date.now) var now
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
@@ -73,11 +76,9 @@ struct RequestSuspensionFeature: Feature {
           }))
         }
 
-      case .webview(.grantSuspensionClicked):
-        return .none // handled by root reducer
-
-      case .createSuspensionRequest(.success):
+      case .createSuspensionRequest(.success(let id)):
         state.request = .succeeded
+        state.pending = .init(id: id, createdAt: self.now)
         return .exec { send in
           try await bgQueue.sleep(for: .seconds(10))
           await send(.createSuspensionRequestSuccessTimedOut)
@@ -91,6 +92,9 @@ struct RequestSuspensionFeature: Feature {
         state.request = .idle
         state.windowOpen = false
         return .none
+
+      case .webview(.grantSuspensionClicked):
+        return .none // handled by root reducer
       }
     }
   }
@@ -100,6 +104,7 @@ struct RequestSuspensionFeature: Feature {
     typealias State = AppReducer.State
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.security) var security
+    @Dependency(\.date.now) var now
   }
 }
 
@@ -117,6 +122,17 @@ extension RequestSuspensionFeature.RootReducer {
 
     case .requestSuspension(.webview(.grantSuspensionClicked)):
       return adminAuthenticated(action)
+
+    case .websocket(.receivedMessage(.filterSuspensionRequestDecided_v2)):
+      state.requestSuspension.pending = nil
+      return .none
+
+    case .heartbeat(.everyMinute):
+      if state.requestSuspension.pending
+        .map({ $0.createdAt.advanced(by: .minutes(10)) < now }) == true {
+        state.requestSuspension.pending = nil
+      }
+      return .none
 
     default:
       return .none

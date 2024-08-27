@@ -6,7 +6,9 @@ public enum AuthedUserRoute: PairRoute {
   case createKeystrokeLines(CreateKeystrokeLines.Input)
   case createSignedScreenshotUpload(CreateSignedScreenshotUpload.Input)
   case createSuspendFilterRequest(CreateSuspendFilterRequest.Input)
+  case createSuspendFilterRequest_v2(CreateSuspendFilterRequest_v2.Input)
   case createUnlockRequests_v2(CreateUnlockRequests_v2.Input)
+  case createUnlockRequests_v3(CreateUnlockRequests_v3.Input)
   case getAccountStatus
   case getUserData
   case logSecurityEvent(LogSecurityEvent.Input)
@@ -32,9 +34,17 @@ public extension AuthedUserRoute {
       Operation(CreateSuspendFilterRequest.self)
       Body(.json(CreateSuspendFilterRequest.Input.self))
     }
+    Route(/Self.createSuspendFilterRequest_v2) {
+      Operation(CreateSuspendFilterRequest_v2.self)
+      Body(.json(CreateSuspendFilterRequest_v2.Input.self))
+    }
     Route(/Self.createUnlockRequests_v2) {
       Operation(CreateUnlockRequests_v2.self)
       Body(.json(CreateUnlockRequests_v2.Input.self))
+    }
+    Route(/Self.createUnlockRequests_v3) {
+      Operation(CreateUnlockRequests_v3.self)
+      Body(.json(CreateUnlockRequests_v3.Input.self))
     }
     Route(/Self.getAccountStatus) {
       Operation(GetAccountStatus.self)

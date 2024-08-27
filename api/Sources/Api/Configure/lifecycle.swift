@@ -9,6 +9,6 @@ public extension Configure {
 struct ApiLifecyle: LifecycleHandler {
   func shutdownAsync(_ app: Application) async {
     Current.logger.info("Shutting down...")
-    await Current.connectedApps.disconnectAll()
+    await Current.websockets.disconnectAll()
   }
 }

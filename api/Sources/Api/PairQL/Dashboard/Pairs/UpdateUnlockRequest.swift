@@ -15,21 +15,37 @@ struct UpdateUnlockRequest: Pair {
 
 extension UpdateUnlockRequest: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    var request = try await Current.db.find(input.id)
-    let userDevice = try await request.userDevice()
+    var unlockRequest = try await UnlockRequest.find(input.id)
+    let userDevice = try await unlockRequest.userDevice()
     try await context.verifiedUser(from: userDevice.userId)
-    request.responseComment = input.responseComment
-    request.status = input.status
-    try await Current.db.update(request)
-
-    try await Current.connectedApps.notify(.unlockRequestUpdated(.init(
-      userDeviceId: userDevice.id,
-      status: request.status,
-      target: request.target ?? "",
-      comment: request.requestComment,
-      responseComment: request.responseComment
-    )))
-
+    unlockRequest.responseComment = input.responseComment
+    unlockRequest.status = input.status
+    try await unlockRequest.save()
+    try await Current.websockets.send(
+      unlockRequest.updated(for: userDevice.appSemver),
+      to: .userDevice(userDevice.id)
+    )
     return .success
+  }
+}
+
+// extensions
+
+extension UnlockRequest {
+  func updated(for version: Semver) -> WebSocketMessage.FromApiToApp {
+    if version >= .init("2.4.0")! {
+      return .unlockRequestUpdated_v2(
+        id: self.id.rawValue,
+        status: self.status,
+        target: self.target ?? "",
+        comment: self.responseComment
+      )
+    } else {
+      return .unlockRequestUpdated(
+        status: self.status,
+        target: self.target ?? "",
+        parentComment: self.responseComment
+      )
+    }
   }
 }

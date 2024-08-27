@@ -7,11 +7,9 @@ import XExpect
 
 @testable import App
 
-@MainActor final class UserFeatureTests: XCTestCase {
+final class UserFeatureTests: XCTestCase {
   func testUserDisconnectsAfterFiveApiCallsShowMissingToken() async {
-    let (store, _) = AppReducer.testStore {
-      $0.user = .init(data: .mock)
-    }
+    let (store, _) = AppReducer.testStore { $0.user = .init(data: .mock) }
 
     let error = PqlError(
       id: "123",

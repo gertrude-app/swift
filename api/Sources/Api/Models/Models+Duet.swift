@@ -372,6 +372,7 @@ extension SuspendFilterRequest {
     case duration
     case requestComment
     case responseComment
+    case extraMonitoring
     case createdAt
     case updatedAt
   }

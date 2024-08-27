@@ -84,6 +84,7 @@ public struct SuccessOutput: PairOutput {
 extension String: PairOutput {}
 extension String: PairInput {}
 extension UUID: PairInput {}
+extension UUID: PairOutput {}
 
 public struct Operation<P: Pair>: ParserPrinter {
   private var pair: P.Type

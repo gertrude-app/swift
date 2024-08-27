@@ -1,11 +1,14 @@
+import Core
 import MacAppRoute
+import TaggedTime
 import TestSupport
 import XCTest
 import XExpect
 
 @testable import App
 
-@MainActor final class CheckInFeatureTests: XCTestCase {
+final class CheckInFeatureTests: XCTestCase {
+  @MainActor
   func testReceivingCheckInSuccess() async throws {
     let (store, _) = AppReducer.testStore {
       $0.user.data = .mock
@@ -39,9 +42,10 @@ import XExpect
     }
 
     await store.receive(.user(.updated(previous: previousUserData)))
-    await expect(setAccountActive.invocations).toEqual([false])
+    await expect(setAccountActive.calls).toEqual([false])
   }
 
+  @MainActor
   func testReceivingCheckInDataStoresToPersistentState() async throws {
     let (store, _) = AppReducer.testStore()
 
@@ -55,7 +59,7 @@ import XExpect
 
     await store.send(.checkIn(result: .success(checkInResult), reason: .heartbeat))
 
-    await expect(saveState.invocations).toEqual([.init(
+    await expect(saveState.calls).toEqual([.init(
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .canary,
       filterVersion: "1.0.0",
@@ -64,6 +68,7 @@ import XExpect
     )])
   }
 
+  @MainActor
   func testCheckInInHeartbeat() async {
     let (store, bgQueue) = AppReducer.testStore()
     // ignore checking num mac users
@@ -84,6 +89,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testClickingCheckIn_Success_FilterReachable() async {
     let (store, bgQueue) = AppReducer.testStore()
     let notifications = spyOnNotifications(store)
@@ -96,6 +102,7 @@ import XExpect
     await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
   }
 
+  @MainActor
   func testClickingCheckIn_Success_FilterUnreachable() async {
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.filterExtension.setup = { .notInstalled }
@@ -109,6 +116,7 @@ import XExpect
     await expect(notifications).toEqual([.init("Refreshed rules successfully", "")])
   }
 
+  @MainActor
   func testClickingCheckIn_FilterError() async {
     let (store, bgQueue) = AppReducer.testStore()
     let notifications = spyOnNotifications(store)
@@ -125,6 +133,7 @@ import XExpect
     )])
   }
 
+  @MainActor
   func testClickingCheckIn_ApiError() async {
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.api.checkIn = { _ in throw TestErr("Oh noes!") }
@@ -141,6 +150,7 @@ import XExpect
     )])
   }
 
+  @MainActor
   func testCheckingInAndInactiveAccounts() async {
     let (store, _) = AppReducer.testStore {
       $0.filter.extension = .installedAndRunning
@@ -160,16 +170,16 @@ import XExpect
     store.deps.api.checkIn = checkIn1.fn
 
     await store.send(.heartbeat(.everyTwentyMinutes))
-    await expect(checkIn1.invoked).toEqual(false)
+    await expect(checkIn1.called).toEqual(false)
 
     await store.send(.heartbeat(.everySixHours))
-    await expect(checkIn1.invoked).toEqual(true)
+    await expect(checkIn1.called).toEqual(true)
 
     // we don't update anything if the account is inactive
     await store.receive(.checkIn(result: .success(output1), reason: .heartbeat)) {
       $0.user.data?.name = "old name"
     }
-    await expect(setAccountActive.invocations).toEqual([false])
+    await expect(setAccountActive.calls).toEqual([false])
 
     // now, simulate the account owner fixing the issue
     let output2 = CheckIn.Output.mock {
@@ -181,11 +191,79 @@ import XExpect
     store.deps.filterXpc.sendUserRules = { _, _ in .success(()) }
 
     await store.send(.heartbeat(.everySixHours))
-    await expect(checkIn2.invoked).toEqual(true)
+    await expect(checkIn2.called).toEqual(true)
 
     await store.receive(.checkIn(result: .success(output2), reason: .heartbeat)) {
       $0.user.data?.name = "new name" // update data since account back to good
     }
-    await expect(setAccountActive.invocations).toEqual([false, true])
+    await expect(setAccountActive.calls).toEqual([false, true])
+  }
+
+  @MainActor
+  func testGettingFilterSuspensionByClickingRefreshRules() async throws {
+    let reqId = UUID()
+    let (store, _) = AppReducer.testStore {
+      $0.filter.extension = .installedAndRunning
+      $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
+    }
+    let suspendFilter = spy(on: Seconds<Int>.self, returning: Result<Void, XPCErr>.success(()))
+    store.deps.filterXpc.suspendFilter = suspendFilter.fn
+    let notification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = notification.fn
+
+    let checkInResult = CheckIn.Output.empty {
+      $0.resolvedFilterSuspension = .init(
+        id: reqId,
+        decision: .accepted(duration: 44, extraMonitoring: nil),
+        comment: "ok!"
+      )
+    }
+
+    await store.send(.checkIn(result: .success(checkInResult), reason: .userRefreshedRules)) {
+      $0.requestSuspension.pending = nil
+    }
+
+    await expect(suspendFilter.calls).toEqual([44])
+
+    // becuase they got a filter suspension, we don't want to show the normal
+    // "Refreshed rules successfully" notification, only the filter suspension
+    await expect(notification.calls.count).toEqual(1)
+    await expect(notification.calls[0].a).toEqual("🟠 Temporarily disabling filter")
+  }
+
+  @MainActor
+  func testGettingUnlockRequestDecisionsFromCheckIn() async throws {
+    let (store, _) = AppReducer.testStore()
+    let notification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = notification.fn
+
+    let id1 = UUID()
+    let id2 = UUID()
+    let id3 = UUID()
+    await store.send(.blockedRequests(.createUnlockRequests(.success(.init([id1, id2, id3]))))) {
+      $0.blockedRequests.pendingUnlockRequests = [
+        .init(id: id1, createdAt: .epoch),
+        .init(id: id2, createdAt: .epoch),
+        .init(id: id3, createdAt: .epoch),
+      ]
+    }
+
+    let checkInResult = CheckIn.Output.empty {
+      $0.resolvedUnlockRequests = [
+        .init(id: id1, status: .rejected, target: "foo.com", comment: nil),
+        .init(id: id2, status: .accepted, target: "bar.com", comment: "ok"),
+      ]
+    }
+
+    // because the unlocks came IN a checkIn, we don't need to check in again
+    store.deps.api.checkIn = { _ in fatalError("not called") }
+
+    await store.send(.checkIn(result: .success(checkInResult), reason: .pendingRequest)) {
+      $0.blockedRequests.pendingUnlockRequests = [
+        .init(id: id3, createdAt: .epoch),
+      ]
+    }
+
+    await expect(notification.calls.count).toEqual(2) // one for each unlock request
   }
 }

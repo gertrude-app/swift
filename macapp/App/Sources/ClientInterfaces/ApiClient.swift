@@ -9,8 +9,8 @@ public struct ApiClient: Sendable {
   public var connectUser: @Sendable (ConnectUser.Input) async throws -> UserData
   public var createKeystrokeLines: @Sendable (CreateKeystrokeLines.Input) async throws -> Void
   public var createSuspendFilterRequest: @Sendable (CreateSuspendFilterRequest.Input) async throws
-    -> Void
-  public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void
+    -> UUID
+  public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> [UUID]
   public var getUserToken: @Sendable () async throws -> UUID?
   public var logInterestingEvent: @Sendable (LogInterestingEvent.Input) async -> Void
   public var logSecurityEvent: @Sendable (LogSecurityEvent.Input, UUID?) async -> Void
@@ -26,8 +26,9 @@ public struct ApiClient: Sendable {
     connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> UserData,
     createKeystrokeLines: @escaping @Sendable (CreateKeystrokeLines.Input) async throws -> Void,
     createSuspendFilterRequest: @escaping @Sendable (CreateSuspendFilterRequest.Input) async throws
-      -> Void,
-    createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws -> Void,
+      -> UUID,
+    createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws
+      -> [UUID],
     getUserToken: @escaping @Sendable () async throws -> UUID?,
     logInterestingEvent: @escaping @Sendable (LogInterestingEvent.Input) async -> Void,
     logSecurityEvent: @escaping @Sendable (LogSecurityEvent.Input, UUID?) async -> Void,
@@ -114,8 +115,8 @@ extension ApiClient: TestDependencyKey {
     clearUserToken: {},
     connectUser: { _ in throw Error.unexpectedError(statusCode: 888) },
     createKeystrokeLines: { _ in },
-    createSuspendFilterRequest: { _ in },
-    createUnlockRequests: { _ in },
+    createSuspendFilterRequest: { _ in .init() },
+    createUnlockRequests: { _ in [] },
     getUserToken: { nil },
     logInterestingEvent: { _ in },
     logSecurityEvent: { _, _ in },

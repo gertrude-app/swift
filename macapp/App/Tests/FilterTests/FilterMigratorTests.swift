@@ -8,7 +8,6 @@ import XExpect
 @testable import Filter
 
 class FilterMigratorTests: XCTestCase {
-
   var testMigrator: FilterMigrator {
     FilterMigrator(userDefaults: .failing)
   }
@@ -27,7 +26,7 @@ class FilterMigratorTests: XCTestCase {
     migrator.userDefaults.getString = getString.fn
     let result = await migrator.migrate()
     expect(result).toEqual(.mock)
-    expect(getString.invocations.value).toEqual(["persistent.state.v1"])
+    expect(getString.calls).toEqual(["persistent.state.v1"])
   }
 
   func testMigratesV1Data() async {

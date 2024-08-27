@@ -142,7 +142,10 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       let persist = state.persistent
       return .exec { _ in
         if network.isConnected() {
-          try await triggerUpdate(.init(force: true, version: version), persist)
+          try await triggerUpdate(
+            .init(force: true, version: version, requestingAppVersion: persist.appVersion),
+            persist
+          )
         } else {
           await device.notifyNoInternet()
         }
@@ -162,8 +165,12 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     _ persist: Persistent.State,
     force: Bool? = nil
   ) async throws {
-    let query = AppcastQuery(channel: channel, force: force)
-    try await triggerUpdate(query, persist)
+    let query = AppcastQuery(
+      channel: channel,
+      force: force,
+      requestingAppVersion: persist.appVersion
+    )
+    try await self.triggerUpdate(query, persist)
   }
 
   func triggerUpdate(

@@ -1,4 +1,3 @@
-import XCore
 import XCTest
 import XExpect
 
@@ -21,7 +20,7 @@ final class UserActivityResolverTests: ApiTestCase {
         userId: user.id,
         range: .init(
           start: twoDaysAgo.isoString,
-          end: Date(addingDays: 2).isoString
+          end: twoDaysAgo.advanced(by: .days(2)).isoString
         )
       ),
       in: context(user.admin)
@@ -57,9 +56,10 @@ final class UserActivityResolverTests: ApiTestCase {
     ))
   }
 
+  @MainActor
   func testCombinedUserActivity() async throws {
     Current.date = { Date() }
-    let _ignoreDate = Date(subtractingDays: 2)
+    let twoDaysAgo = Date(subtractingDays: 2)
 
     let user1 = try await Entities.user().withDevice()
     var screenshot = Screenshot.random
@@ -81,8 +81,8 @@ final class UserActivityResolverTests: ApiTestCase {
     try await Current.db.delete(keystrokeLine2.id) // <-- soft-deleted
 
     let dateRange = DateRange(
-      start: Date(subtractingDays: 2).isoString,
-      end: Date(addingDays: 2).isoString
+      start: twoDaysAgo.isoString,
+      end: twoDaysAgo.advanced(by: .days(4)).isoString
     )
 
     // test getting the activity overview summaries
@@ -111,7 +111,7 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(userDay1.items).toHaveCount(2)
 
     var firstItem = try XCTUnwrap(userDay1.items.first?.keystrokeLine)
-    firstItem.createdAt = _ignoreDate
+    firstItem.createdAt = twoDaysAgo
 
     expect(firstItem).toEqual(.init(
       id: keystrokeLine.id,
@@ -119,11 +119,11 @@ final class UserActivityResolverTests: ApiTestCase {
       appName: keystrokeLine.appName,
       line: keystrokeLine.line,
       duringSuspension: keystrokeLine.filterSuspended,
-      createdAt: _ignoreDate
+      createdAt: twoDaysAgo
     ))
 
     var secondItem = try XCTUnwrap(userDay1.items.last?.screenshot)
-    secondItem.createdAt = _ignoreDate
+    secondItem.createdAt = twoDaysAgo
 
     expect(secondItem).toEqual(.init(
       id: screenshot.id,
@@ -132,7 +132,7 @@ final class UserActivityResolverTests: ApiTestCase {
       width: screenshot.width,
       height: screenshot.height,
       duringSuspension: screenshot.filterSuspended,
-      createdAt: _ignoreDate
+      createdAt: twoDaysAgo
     ))
 
     let userDay2 = dayOutput[1]
@@ -141,7 +141,7 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(userDay2.items).toHaveCount(1)
 
     var user2Item = try XCTUnwrap(userDay2.items.first?.screenshot)
-    user2Item.createdAt = _ignoreDate
+    user2Item.createdAt = twoDaysAgo
 
     expect(user2Item).toEqual(.init(
       id: screenshot2.id,
@@ -150,7 +150,7 @@ final class UserActivityResolverTests: ApiTestCase {
       width: screenshot2.width,
       height: screenshot2.height,
       duringSuspension: screenshot2.filterSuspended,
-      createdAt: _ignoreDate
+      createdAt: twoDaysAgo
     ))
   }
 

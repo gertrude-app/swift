@@ -10,7 +10,7 @@ import XStripe
   struct Environment: Sendable {
     let adminNotifier: AdminNotifier = .live
     var aws: AWS.Client = .mock
-    let connectedApps: ConnectedApps = .live
+    let websockets: ConnectedApps = .live
     let date: @Sendable () -> Date = { Date() }
     var db: DuetSQL.Client = ThrowingClient()
     let ephemeral: Ephemeral = .init()
@@ -28,7 +28,7 @@ import XStripe
   struct Environment: Sendable {
     var adminNotifier: AdminNotifier = .live
     var aws: AWS.Client = .mock
-    var connectedApps: ConnectedApps = .live
+    var websockets: ConnectedApps = .live
     var date: @Sendable () -> Date = { Date() }
     var db: DuetSQL.Client = ThrowingClient()
     var ephemeral: Ephemeral = .init()
@@ -54,7 +54,7 @@ nonisolated(unsafe) var Current = Environment()
     static let mock = Environment(
       adminNotifier: .mock,
       aws: .mock,
-      connectedApps: .mock,
+      websockets: .mock,
       date: { .mock },
       db: ThrowingClient(),
       ephemeral: .init(),

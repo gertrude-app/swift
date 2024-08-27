@@ -62,6 +62,9 @@
   - refinement, remove .appUpdateInitiated event, noisy and not useful
 - `2.3.2` (stable, 7/4/24)
   - buffer security events when no internet
+- `2.4.0` (beta as of 8/29/24)
+  - websocket improvements, faster repair, fallback polling
+  - send current app version when requesting appcast
 
 ## Sparkle Releases
 

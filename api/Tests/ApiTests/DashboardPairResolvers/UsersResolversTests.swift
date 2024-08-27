@@ -14,7 +14,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(output).toEqual(.success)
     let retrieved = try? await Current.db.find(user.id)
     expect(retrieved).toBeNil()
-    expect(sent.appEvents).toEqual([.userDeleted(user.id)])
+    expect(sent.websocketMessages).toEqual([.init(.userDeleted, to: .user(user.id))])
   }
 
   func testSaveNewUser() async throws {
@@ -71,7 +71,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(retrieved.screenshotsFrequency).toEqual(444)
     expect(retrieved.showSuspensionActivity).toEqual(true)
 
-    expect(sent.appEvents).toEqual([.userUpdated(user.id)])
+    expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(user.id))])
   }
 
   func testSetsNewKeychainsFromEmpty() async throws {
@@ -89,6 +89,7 @@ final class UsersResolversTests: ApiTestCase {
       .map(\.keychainId)
 
     expect(keychainIds).toEqual([keychain.id])
+    expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(user.id))])
   }
 
   func testDeletesExistingKeychains() async throws {

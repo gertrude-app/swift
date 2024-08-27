@@ -16,6 +16,7 @@ enum WebSocketFeature {
     @Dependency(\.backgroundQueue) var bgQueue
     @Dependency(\.device) var device
     @Dependency(\.websocket) var websocket
+    @Dependency(\.network) var network
   }
 }
 
@@ -23,9 +24,14 @@ extension WebSocketFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .heartbeat(.everyMinute):
-      guard state.admin.accountStatus != .inactive else { return .none }
-      guard let user = state.user.data else { return .none }
+    case .heartbeat(.everyMinute),
+         .requestSuspension(.webview(.requestSubmitted)),
+         .blockedRequests(.webview(.unlockRequestSubmitted)):
+      guard state.admin.accountStatus != .inactive,
+            let user = state.user.data,
+            network.isConnected() else {
+        return .none
+      }
       return .exec { [state] send in
         guard try await websocket.state() != .connected else {
           return
@@ -98,7 +104,12 @@ extension WebSocketFeature.RootReducer {
           unexpectedError(id: "2b1c3cf3") // api should not be sending this legacy event
         }
 
-      case .receivedMessage(.unlockRequestUpdated(let status, let target, let comment)):
+      case .receivedMessage(.unlockRequestUpdated):
+        return .exec { _ in
+          unexpectedError(id: "4dfcde92") // api should not be sending this legacy event
+        }
+
+      case .receivedMessage(.unlockRequestUpdated_v2(_, let status, let target, let comment)):
         return .exec { _ in
           await device.notifyUnlockRequestUpdated(
             accepted: status == .accepted,
@@ -117,6 +128,11 @@ extension WebSocketFeature.RootReducer {
         return .none // handled by filter feature
 
       case .receivedMessage(.filterSuspensionRequestDecided):
+        return .exec { _ in
+          unexpectedError(id: "a307cfe7") // api should not be sending this legacy event
+        }
+
+      case .receivedMessage(.filterSuspensionRequestDecided_v2):
         return .none // handled by filter feature AND monitoring feature
       }
 

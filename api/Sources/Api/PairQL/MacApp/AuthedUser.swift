@@ -45,8 +45,14 @@ extension AuthedUserRoute: RouteResponder {
     case .createSuspendFilterRequest(let input):
       let output = try await CreateSuspendFilterRequest.resolve(with: input, in: context)
       return try await self.respond(with: output)
+    case .createSuspendFilterRequest_v2(let input):
+      let output = try await CreateSuspendFilterRequest_v2.resolve(with: input, in: context)
+      return try await self.respond(with: output)
     case .createUnlockRequests_v2(let input):
       let output = try await CreateUnlockRequests_v2.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .createUnlockRequests_v3(let input):
+      let output = try await CreateUnlockRequests_v3.resolve(with: input, in: context)
       return try await self.respond(with: output)
     case .reportBrowsers(let input):
       let output = try await ReportBrowsers.resolve(with: input, in: context)

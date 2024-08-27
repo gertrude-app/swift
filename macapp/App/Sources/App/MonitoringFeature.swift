@@ -75,25 +75,46 @@ extension MonitoringFeature.RootReducer {
             let lastMonitoring = state.monitoring.lastSuspensionMonitoring else {
         return .none
       }
-      // reuse the last extra suspension monitoring sent by via the parents dashboard
+      // reuse the last extra suspension monitoring sent via the dashboard
       state.monitoring.suspensionMonitoring = lastMonitoring
       state.monitoring.lastSuspensionMonitoring = lastMonitoring
       return self.configureMonitoring(current: lastMonitoring, previous: user)
 
-    case .websocket(.receivedMessage(.filterSuspensionRequestDecided(.accepted(_, .none), _))):
-      state.monitoring.lastSuspensionMonitoring = nil
-      return .none
+    case .websocket(.receivedMessage(let message)):
+      switch message {
+      case .filterSuspensionRequestDecided(.accepted(_, .none), _),
+           .filterSuspensionRequestDecided_v2(_, .accepted(_, .none), _):
+        state.monitoring.lastSuspensionMonitoring = nil
+        return .none
 
-    case .websocket(.receivedMessage(.filterSuspensionRequestDecided(
-      .accepted(_, .some(let extraMonitoring)), _
-    ))):
-      guard let user = state.user.data else { return .none }
-      let suspensionMonitoring = user.monitoring(merging: extraMonitoring)
-      state.monitoring.suspensionMonitoring = suspensionMonitoring
-      state.monitoring.lastSuspensionMonitoring = suspensionMonitoring
-      return self.configureMonitoring(current: suspensionMonitoring, previous: user)
+      case .filterSuspensionRequestDecided(.accepted(_, .some(let extraMonitoring)), _),
+           .filterSuspensionRequestDecided_v2(_, .accepted(_, .some(let extraMonitoring)), _):
+        guard let user = state.user.data else { return .none }
+        let suspensionMonitoring = user.monitoring(merging: extraMonitoring)
+        state.monitoring.suspensionMonitoring = suspensionMonitoring
+        state.monitoring.lastSuspensionMonitoring = suspensionMonitoring
+        return self.configureMonitoring(current: suspensionMonitoring, previous: user)
 
-    case .heartbeat(.everyMinute):
+      case .userDeleted:
+        return .cancel(id: CancelId.screenshots)
+
+      default:
+        return .none
+      }
+
+    case .checkIn(result: .success(let output), reason: _):
+      if let resolvedSuspension = output.resolvedFilterSuspension,
+         let user = state.user.data,
+         case .accepted(_, let extraMonitoring) = resolvedSuspension.decision {
+        if let extraMonitoring {
+          let suspensionMonitoring = output.userData.monitoring(merging: extraMonitoring)
+          state.monitoring.suspensionMonitoring = suspensionMonitoring
+          state.monitoring.lastSuspensionMonitoring = suspensionMonitoring
+          return self.configureMonitoring(current: suspensionMonitoring, previous: user)
+        } else {
+          state.monitoring.lastSuspensionMonitoring = nil
+        }
+      }
       return .none
 
     case .heartbeat(.everyFiveMinutes):
@@ -147,8 +168,7 @@ extension MonitoringFeature.RootReducer {
       )
 
     case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))),
-         .history(.userConnection(.disconnectMissingUser)),
-         .websocket(.receivedMessage(.userDeleted)):
+         .history(.userConnection(.disconnectMissingUser)):
       return .cancel(id: CancelId.screenshots)
 
     // try to catch the moment when they've fixed monitoring permissions issues
@@ -242,10 +262,10 @@ extension MonitoringConfig {
 }
 
 struct UserMonitoringConfig: MonitoringConfig, Equatable, Sendable {
-  let keyloggingEnabled: Bool
-  let screenshotsEnabled: Bool
-  let screenshotSize: Int
-  let screenshotFrequency: Int
+  var keyloggingEnabled: Bool
+  var screenshotsEnabled: Bool
+  var screenshotSize: Int
+  var screenshotFrequency: Int
 }
 
 extension UserData: MonitoringConfig {

@@ -6,7 +6,8 @@ import XExpect
 
 @testable import App
 
-@MainActor final class AppUpdatesFeatureTests: XCTestCase {
+final class AppUpdatesFeatureTests: XCTestCase {
+  @MainActor
   func testReceivingLatestVersionFromCheckInSetsLatestReleaseAndChannel() async {
     let (store, _) = AppReducer.testStore {
       $0.appUpdates.releaseChannel = .stable
@@ -38,6 +39,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testHeartbeatCleansUpNagDismissal() async {
     let (store, _) = AppReducer.testStore {
       $0.appUpdates.releaseChannel = .stable
@@ -51,6 +53,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testMenuBarUpdateState() async {
     let cases: [(AppUpdatesFeature.State, MenuBarFeature.State.View.Connected.UpdateStatus?)] = [
       (.init(installedVersion: "1.0.0", latestVersion: nil), nil),
@@ -130,6 +133,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testTriggeredUpdateSavesStateAndCallsMethodOnClient() async {
     let (store, _) = AppReducer.testStore()
     let saveState = spy(on: Persistent.State.self, returning: ())
@@ -138,21 +142,23 @@ import XExpect
     store.deps.updater.triggerUpdate = triggerUpdate.fn
 
     await store.send(.adminWindow(.delegate(.triggerAppUpdate)))
-    await expect(saveState.invoked).toEqual(true)
-    await expect(triggerUpdate.invocations)
-      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=stable"])
+    await expect(saveState.called).toEqual(true)
+    await expect(triggerUpdate.calls)
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=stable&requestingAppVersion=1.0.0"])
   }
 
+  @MainActor
   func testTriggeredUpdateChecksCorrectChannel() async {
     let (store, _) = AppReducer.testStore { $0.appUpdates.releaseChannel = .beta }
     let triggerUpdate = spy(on: String.self, returning: ())
     store.deps.updater.triggerUpdate = triggerUpdate.fn
 
     await store.send(.adminWindow(.delegate(.triggerAppUpdate)))
-    await expect(triggerUpdate.invocations)
-      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta"])
+    await expect(triggerUpdate.calls)
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta&requestingAppVersion=1.0.0"])
   }
 
+  @MainActor
   func testHeartbeatCheck_TriggersUpdateSavingStateWhenBehind() async {
     let (store, scheduler) = AppReducer.testStore {
       $0.appUpdates.latestVersion = .init(semver: "3.9.0") // <-- update available
@@ -173,17 +179,18 @@ import XExpect
 
     await store.send(.application(.didFinishLaunching)) // <-- start the heartbeat
     await scheduler.advance(by: .seconds(60 * 60 * 6 - 1)) // one second before 6 hours
-    await expect(saveState.invoked).toEqual(false)
-    await expect(triggerUpdate.invoked).toEqual(false)
+    await expect(saveState.called).toEqual(false)
+    await expect(triggerUpdate.called).toEqual(false)
 
     await scheduler.advance(by: .seconds(1))
     await Task.repeatYield(count: IS_CI ? 60 : 25)
 
-    await expect(saveState.invoked).toEqual(true)
-    await expect(triggerUpdate.invocations)
-      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta"])
+    await expect(saveState.called).toEqual(true)
+    await expect(triggerUpdate.calls)
+      .toEqual(["http://127.0.0.1:8080/appcast.xml?channel=beta&requestingAppVersion=1.0.0"])
   }
 
+  @MainActor
   func testHeartbeatCheck_DoesntTriggerUpdateWhenUpToDate() async {
     let (store, scheduler) = AppReducer.testStore()
 
@@ -198,6 +205,6 @@ import XExpect
     await store.send(.application(.didFinishLaunching)) // <-- start the heartbeat
     await scheduler.advance(by: .seconds(60 * 60 * 6))
 
-    await expect(triggerUpdate.invoked).toEqual(false)
+    await expect(triggerUpdate.called).toEqual(false)
   }
 }

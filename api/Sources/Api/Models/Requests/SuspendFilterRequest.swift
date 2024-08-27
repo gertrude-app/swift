@@ -2,7 +2,7 @@ import DuetSQL
 import Gertie
 import TaggedTime
 
-struct SuspendFilterRequest: Codable, Sendable {
+struct SuspendFilterRequest: Codable, Sendable, Equatable {
   var id: Id
   var userDeviceId: UserDevice.Id
   var status: RequestStatus
@@ -10,6 +10,7 @@ struct SuspendFilterRequest: Codable, Sendable {
   var duration: Seconds<Int>
   var requestComment: String?
   var responseComment: String?
+  var extraMonitoring: String?
   var createdAt = Date()
   var updatedAt = Date()
 
@@ -20,7 +21,8 @@ struct SuspendFilterRequest: Codable, Sendable {
     scope: AppScope,
     duration: Seconds<Int> = 180,
     requestComment: String? = nil,
-    responseComment: String? = nil
+    responseComment: String? = nil,
+    extraMonitoring: String? = nil
   ) {
     self.id = id
     self.userDeviceId = userDeviceId
@@ -29,6 +31,7 @@ struct SuspendFilterRequest: Codable, Sendable {
     self.duration = duration
     self.requestComment = requestComment
     self.responseComment = responseComment
+    self.extraMonitoring = extraMonitoring
   }
 }
 
@@ -39,5 +42,20 @@ extension SuspendFilterRequest {
     try await Current.db.query(UserDevice.self)
       .where(.id == self.userDeviceId)
       .first()
+  }
+
+  var decision: FilterSuspensionDecision? {
+    switch self.status {
+    case .pending:
+      return nil
+    case .rejected:
+      return .rejected
+    case .accepted:
+      return .accepted(
+        duration: self.duration,
+        extraMonitoring: self.extraMonitoring
+          .flatMap(FilterSuspensionDecision.ExtraMonitoring.init(magicString:))
+      )
+    }
   }
 }

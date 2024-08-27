@@ -9,7 +9,8 @@ import XExpect
 @testable import App
 @testable import Gertie
 
-@MainActor final class AppReducerTests: XCTestCase {
+final class AppReducerTests: XCTestCase {
+  @MainActor
   func testDidFinishLaunching_Exhaustive() async {
     let (store, _) = AppReducer.testStore(exhaustive: true)
 
@@ -33,7 +34,7 @@ import XExpect
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
-    await expect(extSetup.invocations).toEqual(1)
+    await expect(extSetup.calls.count).toEqual(1)
 
     await store.receive(.filter(.receivedState(.installedButNotRunning))) {
       $0.filter.extension = .installedButNotRunning
@@ -42,9 +43,9 @@ import XExpect
     await store.receive(.startProtecting(user: .mock))
     await store.receive(.websocket(.connectedSuccessfully))
 
-    await expect(setUserToken.invocations).toEqual([UserData.mock.token])
-    await expect(enableLaunchAtLogin.invocations).toEqual(1)
-    await expect(startRelaunchWatcher.invocations).toEqual(1)
+    await expect(setUserToken.calls).toEqual([UserData.mock.token])
+    await expect(enableLaunchAtLogin.calls.count).toEqual(1)
+    await expect(startRelaunchWatcher.calls.count).toEqual(1)
 
     let prevUser = store.state.user.data
 
@@ -73,16 +74,18 @@ import XExpect
     await store.send(.application(.willTerminate)) // cancel heartbeat
   }
 
+  @MainActor
   func testOnboardingDelegateSaveStepPersists() async {
     let (store, _) = AppReducer.testStore()
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
 
     await store.send(.onboarding(.delegate(.saveForResume(.at(step: .macosUserAccountType)))))
-    await expect(saveState.invocations.value[0].resumeOnboarding)
+    await expect(saveState.calls[0].resumeOnboarding)
       .toEqual(.at(step: .macosUserAccountType))
   }
 
+  @MainActor
   func testDidFinishLaunching_EstablishesConnectionIfFilterOn() async {
     let (store, bgQueue) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { nil }
@@ -101,6 +104,7 @@ import XExpect
     await expect(connectionEstablished).toEqual(true)
   }
 
+  @MainActor
   func testDidFinishLaunching_NoPersistentUser() async {
     let (store, _) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { nil }
@@ -109,6 +113,7 @@ import XExpect
     await store.receive(.loadedPersistentState(nil))
   }
 
+  @MainActor
   func testHeartbeatClearSuspensionFallback() async {
     let now = Date()
     let (store, scheduler) = AppReducer.testStore {

@@ -18,27 +18,24 @@ extension CheckInFeature.RootReducer {
     switch action {
 
     case .heartbeat(.everyTwentyMinutes) where state.admin.accountStatus != .inactive:
-      return self.checkIn(
-        reason: .heartbeat,
-        filterVersion: state.filter.version,
-        notifyNoInternet: false
-      )
+      return self.checkIn(reason: .heartbeat, state: state)
 
     case .heartbeat(.everySixHours) where state.admin.accountStatus == .inactive:
-      return self.checkIn(
-        reason: .heartbeat,
-        filterVersion: state.filter.version,
-        notifyNoInternet: false
-      )
+      return self.checkIn(reason: .heartbeat, state: state)
+
+    case .heartbeat(.everyMinute) where
+      state.requestSuspension.pending != nil
+      || !state.blockedRequests.pendingUnlockRequests.isEmpty:
+      return self.checkIn(reason: .pendingRequest, state: state)
 
     case .menuBar(.refreshRulesClicked),
          .adminWindow(.webview(.healthCheck(.zeroKeysRefreshRulesClicked))):
-      return self.checkIn(reason: .userRefreshedRules, filterVersion: state.filter.version)
+      return self.checkIn(reason: .userRefreshedRules, state: state)
 
     case .adminWindow(.webview(.inactiveAccountRecheckClicked)),
          .blockedRequests(.webview(.inactiveAccountRecheckClicked)),
          .requestSuspension(.webview(.inactiveAccountRecheckClicked)):
-      return self.checkIn(reason: .inactiveAccountRechecked, filterVersion: state.filter.version)
+      return self.checkIn(reason: .inactiveAccountRechecked, state: state)
 
     case .checkIn(.success(let output), let reason):
       guard output.adminAccountStatus != .inactive else {
@@ -77,6 +74,11 @@ extension CheckInFeature.RootReducer {
             output.keys.map { .init(id: $0.id, key: $0.key) }
           )
 
+          if case .some(let suspension) = output.resolvedFilterSuspension,
+             suspension.decision != .rejected {
+            return // only show the suspension notification
+          }
+
           if reason == .userRefreshedRules {
             if sendToFilterResult.isSuccess {
               await device.notify("Refreshed rules successfully")
@@ -108,19 +110,21 @@ extension CheckInFeature.RootReducer {
     }
   }
 
-  func checkIn(
-    reason: CheckIn.Reason,
-    filterVersion: String,
-    notifyNoInternet: Bool = true
-  ) -> Effect<Action> {
+  func checkIn(reason: CheckIn.Reason, state: State) -> Effect<Action> {
     .exec { send in
       if !network.isConnected() {
-        if notifyNoInternet {
+        if reason == .userRefreshedRules {
           await device.notifyNoInternet()
         }
       } else {
         await send(.checkIn(
-          result: TaskResult { try await api.appCheckIn(filterVersion) },
+          result: TaskResult {
+            try await api.appCheckIn(
+              state.filter.version,
+              pendingFilterSuspension: state.requestSuspension.pending?.id,
+              pendingUnlockRequests: state.blockedRequests.pendingUnlockRequests.map(\.id)
+            )
+          },
           reason: reason
         ))
       }
@@ -139,5 +143,6 @@ extension CheckIn {
     case inactiveAccountRechecked
     case receivedWebsocketMessage
     case userRefreshedRules
+    case pendingRequest
   }
 }

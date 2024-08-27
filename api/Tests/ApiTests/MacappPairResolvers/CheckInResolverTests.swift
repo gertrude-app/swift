@@ -140,6 +140,105 @@ final class CheckInResolverTests: ApiTestCase {
     )
     expect(output.keys.contains(.init(id: autoKey.id.rawValue, key: autoKey.key))).toBeTrue()
   }
+
+  func testIncludesResolvedFilterSuspension() async throws {
+    let user = try await Entities.user().withDevice()
+    let susp = try await SuspendFilterRequest.mock {
+      $0.userDeviceId = user.device.id
+      $0.status = .accepted
+      $0.duration = 777
+      $0.extraMonitoring = "@55+k"
+      $0.responseComment = "susp2 response comment"
+    }.create()
+
+    let output = try await CheckIn.resolve(
+      with: .init(
+        appVersion: "1.0.0",
+        filterVersion: nil,
+        pendingFilterSuspension: susp.id.rawValue
+      ),
+      in: user.context
+    )
+
+    expect(output.resolvedFilterSuspension).toEqual(.init(
+      id: susp.id.rawValue,
+      decision: .accepted(
+        duration: 777,
+        extraMonitoring: .addKeyloggingAndSetScreenshotFreq(55)
+      ),
+      comment: "susp2 response comment"
+    ))
+
+    let notRequested = try await CheckIn.resolve(
+      with: .init(appVersion: "1.0.0", filterVersion: nil),
+      in: user.context
+    )
+    expect(notRequested.resolvedFilterSuspension).toBeNil()
+  }
+
+  func testDoesNotIncludeUnresolvedSuspension() async throws {
+    let user = try await Entities.user().withDevice()
+    let susp = try await SuspendFilterRequest.mock {
+      $0.userDeviceId = user.device.id
+      $0.status = .pending // <-- still pending!
+    }.create()
+
+    let output = try await CheckIn.resolve(
+      with: .init(
+        appVersion: "1.0.0",
+        filterVersion: nil,
+        pendingFilterSuspension: susp.id.rawValue
+      ),
+      in: user.context
+    )
+
+    expect(output.resolvedFilterSuspension).toBeNil()
+  }
+
+  func testIncludesResolvedUnlockRequests() async throws {
+    let user = try await Entities.user().withDevice()
+    let unlock1 = UnlockRequest.mock {
+      $0.userDeviceId = user.device.id
+      $0.status = .pending // <-- pending, will not be returned
+    }
+
+    let unlock2 = UnlockRequest.mock {
+      $0.userDeviceId = user.device.id
+      $0.status = .accepted // <-- resolved, will be returned
+      $0.responseComment = "unlock2 response comment"
+    }
+
+    let unlock3 = UnlockRequest.mock {
+      $0.userDeviceId = user.device.id
+      $0.status = .rejected // <-- resolved, but not requested, not returned
+    }
+
+    try await UnlockRequest.create([unlock1, unlock2, unlock3])
+
+    let output = try await CheckIn.resolve(
+      with: .init(
+        appVersion: "1.0.0",
+        filterVersion: nil,
+        pendingUnlockRequests: [unlock1.id.rawValue, unlock2.id.rawValue]
+      ),
+      in: user.context
+    )
+
+    expect(output.resolvedUnlockRequests).toEqual(
+      [.init(
+        id: unlock2.id.rawValue,
+        status: .accepted,
+        target: "",
+        comment: "unlock2 response comment"
+      )]
+    )
+
+    let notRequested = try await CheckIn.resolve(
+      with: .init(appVersion: "1.0.0", filterVersion: nil),
+      in: user.context
+    )
+    expect(notRequested.resolvedUnlockRequests).toBeNil()
+  }
 }
 
 // helpers

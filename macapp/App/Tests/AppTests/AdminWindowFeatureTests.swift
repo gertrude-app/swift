@@ -10,9 +10,10 @@ import XExpect
 @testable import App
 @testable import ClientInterfaces
 
-@MainActor final class AdminWindowFeatureTests: XCTestCase {
+final class AdminWindowFeatureTests: XCTestCase {
   /// NB: see https://github.com/gertrude-app/project/issues/163
   /// for context, and future directions when `filtering` becomes option
+  @MainActor
   func testAllNonCurrentUsersConsideredExemptable() async {
     await withDependencies {
       $0.app.installedVersion = { "1.0.0" }
@@ -40,6 +41,7 @@ import XExpect
     }
   }
 
+  @MainActor
   func testDisconnectUserClicked() async {
     let (store, _) = AppReducer.testStore(mockDeps: false) {
       $0.adminWindow.windowOpen = true
@@ -66,19 +68,20 @@ import XExpect
       $0.menuBar.dropdownOpen = true
     }
 
-    await expect(clearUserToken.invoked).toEqual(true)
-    await expect(filterNotify.invoked).toEqual(true)
-    await expect(saveState.invocations).toEqual([.init(
+    await expect(clearUserToken.called).toEqual(true)
+    await expect(filterNotify.called).toEqual(true)
+    await expect(saveState.calls).toEqual([.init(
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
       user: nil,
       resumeOnboarding: nil
     )])
-    await expect(securityEvent.invocations)
+    await expect(securityEvent.calls)
       .toEqual([Both(.init(.childDisconnected, "name: Mock User"), nil)])
   }
 
+  @MainActor
   func testSuspendFilter() async {
     let (store, _) = AppReducer.testStore()
 
@@ -94,9 +97,10 @@ import XExpect
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
     }
 
-    await expect(suspendFilter.invocations).toEqual([.init(90)])
+    await expect(suspendFilter.calls).toEqual([.init(90)])
   }
 
+  @MainActor
   func testLatestAppResponseFromHealthCheckDoesntTriggerUpdate() async {
     let (store, _) = AppReducer.testStore {
       $0.appUpdates.installedVersion = "1.0.0"
@@ -108,10 +112,10 @@ import XExpect
     let checkInRes = CheckIn.Output.mock { $0.latestRelease = .init(semver: "2.0.0") }
 
     await store.send(.checkIn(result: .success(checkInRes), reason: .healthCheck))
-    await expect(triggerUpdate.invoked).toEqual(false)
+    await expect(triggerUpdate.called).toEqual(false)
 
     // but the heartbeat will pick up the new version and prompt
     await store.send(.heartbeat(.everySixHours))
-    await expect(triggerUpdate.invoked).toEqual(true)
+    await expect(triggerUpdate.called).toEqual(true)
   }
 }

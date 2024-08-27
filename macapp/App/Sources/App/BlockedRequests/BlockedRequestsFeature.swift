@@ -14,6 +14,7 @@ struct BlockedRequestsFeature: Feature {
     var tcpOnly = true
     var createUnlockRequests = RequestState<String>.idle
     var filterCommunicationConfirmed: Bool?
+    var pendingUnlockRequests: [PendingRequest] = []
   }
 
   enum Action: Equatable, Sendable {
@@ -32,7 +33,7 @@ struct BlockedRequestsFeature: Feature {
 
     case closeWindow
     case webview(View)
-    case createUnlockRequests(TaskResult<EquatableVoid>)
+    case createUnlockRequests(TaskResult<[UUID]>)
     case createUnlockRequestsSuccessTimedOut
     case receivedFilterCommunicationConfirmation(Bool)
   }
@@ -43,6 +44,7 @@ struct BlockedRequestsFeature: Feature {
     @Dependency(\.api) var api
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.date.now) var now
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
@@ -112,8 +114,9 @@ struct BlockedRequestsFeature: Feature {
           }))
         }
 
-      case .createUnlockRequests(.success):
+      case .createUnlockRequests(.success(let ids)):
         state.createUnlockRequests = .succeeded
+        state.pendingUnlockRequests = ids.map { .init(id: $0, createdAt: now) }
         state.selectedRequestIds = []
         return .exec { send in
           try await mainQueue.sleep(for: .seconds(10))
@@ -137,6 +140,8 @@ struct BlockedRequestsFeature: Feature {
     typealias Action = AppReducer.Action
     typealias State = AppReducer.State
     @Dependency(\.filterXpc) var filterXpc
+    @Dependency(\.date.now) var now
+    @Dependency(\.device) var device
   }
 }
 
@@ -160,6 +165,36 @@ extension BlockedRequestsFeature.RootReducer {
       let recent = state.blockedRequests.requests.suffix(15)
       if !recent.contains(where: { existing in existing.mergeable(with: newReq) }) {
         state.blockedRequests.requests.append(newReq)
+      }
+      return .none
+
+    case .websocket(.receivedMessage(.unlockRequestUpdated_v2(let id, _, _, _))):
+      state.blockedRequests.pendingUnlockRequests.removeAll(where: { $0.id == id })
+      return .none
+
+    case .heartbeat(.everyMinute):
+      state.blockedRequests.pendingUnlockRequests
+        .removeAll(where: { $0.createdAt.advanced(by: .minutes(20)) < now })
+      return .none
+
+    case .checkIn(result: .success(let checkInResult), reason: _):
+      if let unlockRequests = checkInResult.resolvedUnlockRequests {
+        interestingEvent(id: "5d5360f4", "fallback poll resolved unlock requests")
+        state.blockedRequests.pendingUnlockRequests.removeAll { pending in
+          unlockRequests.contains { $0.id == pending.id }
+        }
+        guard checkInResult.resolvedFilterSuspension == nil else {
+          return .none // to prioritize filter suspension notification
+        }
+        return .exec { _ in
+          for unlockRequest in unlockRequests {
+            await device.notifyUnlockRequestUpdated(
+              accepted: unlockRequest.status == .accepted,
+              target: unlockRequest.target,
+              comment: unlockRequest.comment
+            )
+          }
+        }
       }
       return .none
 
