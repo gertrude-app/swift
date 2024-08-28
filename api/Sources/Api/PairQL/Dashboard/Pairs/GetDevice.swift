@@ -52,10 +52,9 @@ extension GetDevice: Resolver {
       name: device.customName,
       releaseChannel: device.appReleaseChannel,
       users: try userDevices.concurrentMap { userDevice in
-        let user = try await userDevice.user()
-        return .init(
+        .init(
           id: userDevice.userId,
-          name: user.name,
+          name: (try await userDevice.user()).name,
           isOnline: await userDevice.isOnline()
         )
       },

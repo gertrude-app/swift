@@ -4,7 +4,6 @@ import XExpect
 @testable import Api
 
 final class DeviceResolversTests: ApiTestCase {
-  // TODO: fix racy flaky test
   func testGetDevices() async throws {
     try await Device.deleteAll()
     let user = try await Entities.user().withDevice { $0.appVersion = "2.2.2" }
@@ -28,12 +27,12 @@ final class DeviceResolversTests: ApiTestCase {
       numericId: 504
     ))
 
-    let singleOutput = try await GetDevice.resolve(
+    var singleOutput = try await GetDevice.resolve(
       with: device.id.rawValue,
       in: context(user.admin)
     )
 
-    let expectedDeviceOutput = GetDevice.Output(
+    var expectedDeviceOutput = GetDevice.Output(
       id: device.id,
       name: "Pinky",
       releaseChannel: .canary,
@@ -48,9 +47,12 @@ final class DeviceResolversTests: ApiTestCase {
       modelTitle: "16\" MacBook Pro (2019)"
     )
 
+    sortUsers(in: &singleOutput, atPath: \.users)
+    sortUsers(in: &expectedDeviceOutput, atPath: \.users)
     expect(singleOutput).toEqual(expectedDeviceOutput)
 
-    let allDevicesOutput = try await GetDevices.resolve(in: context(user.admin))
+    var allDevicesOutput = try await GetDevices.resolve(in: context(user.admin))
+    sortUsers(in: &allDevicesOutput, atPath: \.[0].users)
     expect(allDevicesOutput).toEqual([expectedDeviceOutput])
   }
 
@@ -84,4 +86,13 @@ final class DeviceResolversTests: ApiTestCase {
     let retrievedAgain = try await Device.find(device.id)
     expect(retrievedAgain.customName).toBeNil()
   }
+}
+
+// helpers
+
+func sortUsers<Root>(
+  in root: inout Root,
+  atPath keyPath: WritableKeyPath<Root, [GetDevice.Output.User]>
+) {
+  root[keyPath: keyPath].sort(by: { $0.name < $1.name })
 }
