@@ -55,18 +55,21 @@ extension CheckIn: Resolver {
     }
 
     var resolvedUnlockRequests: [ResolvedUnlockRequest]?
-    if let unlockIds = input.pendingUnlockRequests {
+    if let unlockIds = input.pendingUnlockRequests,
+       !unlockIds.isEmpty {
       let resolved = try await UnlockRequest.query()
         .where(.id |=| unlockIds)
         .where(.userDeviceId == userDevice.id)
         .where(.status != .enum(RequestStatus.pending))
         .all()
-      resolvedUnlockRequests = resolved.map { .init(
-        id: $0.id.rawValue,
-        status: $0.status,
-        target: $0.target ?? "",
-        comment: $0.responseComment
-      ) }
+      if !resolved.isEmpty {
+        resolvedUnlockRequests = resolved.map { .init(
+          id: $0.id.rawValue,
+          status: $0.status,
+          target: $0.target ?? "",
+          comment: $0.responseComment
+        ) }
+      }
     }
 
     return Output(
