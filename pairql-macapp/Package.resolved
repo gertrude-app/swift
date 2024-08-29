@@ -48,10 +48,10 @@
     {
       "identity" : "swift-url-routing",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-url-routing.git",
+      "location" : "https://github.com/gertrude-app/swift-url-routing",
       "state" : {
-        "revision" : "13f65cec4de950ba30f08d9bc4abcfa41f9479b9",
-        "version" : "0.6.0"
+        "branch" : "1cf1ca6",
+        "revision" : "1cf1ca67f4a4e442a599473e320049a85cd31588"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",
       "state" : {
-        "revision" : "302891700c7fa3b92ebde9fe7b42933f8349f3c7",
-        "version" : "1.0.0"
+        "revision" : "96beb108a57f24c8476ae1f309239270772b2940",
+        "version" : "1.2.5"
       }
     }
   ],

@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import Vapor
@@ -8,7 +9,56 @@ import XSlack
 
 @testable import Api
 
-class ApiTestCase: XCTestCase {
+class DependencyTestCase: XCTestCase {
+  override open func invokeTest() {
+    withDependencies {
+      $0.uuid = UUIDGenerator { UUID() }
+    } operation: {
+      super.invokeTest()
+    }
+  }
+}
+
+extension UUIDGenerator {
+  static func mock(_ uuids: MockUUIDs) -> Self {
+    Self { uuids() }
+  }
+}
+
+final class MockUUIDs: @unchecked Sendable {
+  private let lock = NSLock()
+  private var stack: [UUID]
+  private var copy: [UUID]
+
+  var first: UUID { self.copy[0] }
+  var second: UUID { self.copy[1] }
+  var third: UUID { self.copy[2] }
+  var all: [UUID] { self.copy }
+
+  init() {
+    self.stack = [UUID(), UUID(), UUID(), UUID(), UUID(), UUID()]
+    self.copy = self.stack
+  }
+
+  func callAsFunction() -> UUID {
+    self.lock.lock()
+    let uuid = self.stack.removeFirst()
+    self.lock.unlock()
+    return uuid
+  }
+
+  subscript(index: Int) -> UUID {
+    self.copy[index]
+  }
+
+  func printDebug() {
+    for (i, uuid) in self.copy.enumerated() {
+      print("MockUUIDs[\(i)]: \(uuid)")
+    }
+  }
+}
+
+class ApiTestCase: DependencyTestCase {
   static var app: Application!
   static var migrated = false
 
@@ -34,8 +84,6 @@ class ApiTestCase: XCTestCase {
 
   override static func setUp() {
     Current = .mock
-    UUID.new = UUID.init
-    Current.uuid = { UUID.new() }
     self.app = Application(.testing)
     try! Configure.app(self.app)
     self.app.logger = .null
@@ -120,16 +168,14 @@ func sync(
   }
 }
 
-func mockUUIDs() -> (UUID, UUID) {
-  let uuids = (UUID(), UUID())
-  var array = [uuids.0, uuids.1]
-
-  UUID.new = {
-    guard !array.isEmpty else { return UUID() }
-    return array.removeFirst()
+func withUUID<R>(operation: () async throws -> R) async rethrows -> (UUID, R) {
+  let uuid = UUID()
+  let result = try await withDependencies {
+    $0.uuid = UUIDGenerator { uuid }
+  } operation: {
+    try await operation()
   }
-
-  return uuids
+  return (uuid, result)
 }
 
 public extension Date {

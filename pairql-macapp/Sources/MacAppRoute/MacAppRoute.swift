@@ -8,11 +8,11 @@ public enum MacAppRoute: PairRoute {
 
 public extension MacAppRoute {
   nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, MacAppRoute> = OneOf {
-    Route(/Self.userAuthed) {
+    Route(.case(Self.userAuthed)) {
       Headers { Field("X-UserToken") { UUID.parser() } }
       AuthedUserRoute.router
     }
-    Route(/Self.unauthed) {
+    Route(.case(Self.unauthed)) {
       UnauthedRoute.router
     }
   }

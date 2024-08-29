@@ -5,13 +5,15 @@ let package = Package(
   name: "api",
   platforms: [.macOS(.v12)],
   dependencies: [
-    .package("vapor/vapor@4.93.0"),
-    .package("vapor/fluent@4.9.0"),
-    .package("vapor/fluent-postgres-driver@2.8.0"),
+    .package("vapor/vapor@4.104.0"),
+    .package("vapor/fluent@4.11.0"),
+    .package("vapor/fluent-postgres-driver@2.9.2"),
     .package("onevcat/Rainbow@4.0.1"),
     .package("jaredh159/swift-tagged@0.8.2"),
-    .package("pointfreeco/vapor-routing@0.1.3"),
-    .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta"),
+    .package("pointfreeco/swift-dependencies@1.0.0"),
+    .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta1"),
+    // fork avoids swift-syntax transitive dep via swift-url-routing -> case-paths
+    .package(url: "https://github.com/gertrude-app/vapor-routing", revision: "8e1028d"),
     .package(path: "../duet"),
     .package(path: "../gertie"),
     .package(path: "../pairql"),
@@ -40,6 +42,7 @@ let package = Package(
         .product(name: "MacAppRoute", package: "pairql-macapp"),
         .product(name: "TaggedTime", package: "swift-tagged"),
         .product(name: "VaporRouting", package: "vapor-routing"),
+        .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "XAws", package: "x-aws"),
         .product(name: "XSendGrid", package: "x-sendgrid"),
         .product(name: "XPostmark", package: "x-postmark"),
@@ -55,7 +58,10 @@ let package = Package(
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
       ]
     ),
-    .executableTarget(name: "Run", dependencies: [.target(name: "Api")]),
+    .executableTarget(name: "Run", dependencies: [
+      .target(name: "Api"),
+      .product(name: "Dependencies", package: "swift-dependencies"),
+    ]),
     .testTarget(name: "ApiTests", dependencies: [
       .target(name: "Api"),
       .product(name: "XExpect", package: "x-expect"),
@@ -79,7 +85,7 @@ extension PackageDescription.Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
       url: "https://github.com/\(parts[0]).git",
-      from: .init(stringLiteral: "\(parts[1])")
+      exact: .init(stringLiteral: "\(parts[1])")
     )
   }
 }

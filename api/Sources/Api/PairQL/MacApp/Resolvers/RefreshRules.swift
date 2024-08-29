@@ -20,7 +20,7 @@ extension RefreshRules: Resolver {
     // ...merging in AUTO-INCLUDED Keychain
     if !keys.isEmpty {
       let autoId = Env.get("AUTO_INCLUDED_KEYCHAIN_ID")
-        .flatMap(UUID.init(uuidString:)) ?? Current.uuid()
+        .flatMap(UUID.init(uuidString:)) ?? context.uuid()
       let autoKeychain = try? await Keychain.find(.init(autoId))
       if let autoKeychain = autoKeychain {
         let autoKeys = try await autoKeychain.keys()

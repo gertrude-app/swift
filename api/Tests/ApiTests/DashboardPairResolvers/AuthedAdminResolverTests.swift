@@ -126,12 +126,13 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testCreatePendingMethod_Text() async throws {
     Current.verificationCode.generate = { 987_654 }
     let admin = try await Entities.admin()
-    let (id, _) = mockUUIDs()
 
-    let output = try await CreatePendingNotificationMethod.resolve(
-      with: .text(phoneNumber: "+12345678901"),
-      in: context(admin)
-    )
+    let (id, output) = try await withUUID {
+      try await CreatePendingNotificationMethod.resolve(
+        with: .text(phoneNumber: "+12345678901"),
+        in: context(admin)
+      )
+    }
 
     expect(output).toEqual(.init(methodId: .init(id)))
 
@@ -163,12 +164,13 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testCreatePendingMethod_Slack() async throws {
     Current.verificationCode.generate = { 123_456 }
     let admin = try await Entities.admin()
-    let (id, _) = mockUUIDs()
 
-    let output = try await CreatePendingNotificationMethod.resolve(
-      with: .slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"),
-      in: context(admin)
-    )
+    let (id, output) = try await withUUID {
+      try await CreatePendingNotificationMethod.resolve(
+        with: .slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"),
+        in: context(admin)
+      )
+    }
 
     expect(output).toEqual(.init(methodId: .init(id)))
 
@@ -202,12 +204,13 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testCreatePendingMethod_Email() async throws {
     Current.verificationCode.generate = { 123_456 }
     let admin = try await Entities.admin()
-    let (id, _) = mockUUIDs()
 
-    let output = try await CreatePendingNotificationMethod.resolve(
-      with: .email(email: "blob@blob.com"),
-      in: context(admin)
-    )
+    let (id, output) = try await withUUID {
+      try await CreatePendingNotificationMethod.resolve(
+        with: .email(email: "blob@blob.com"),
+        in: context(admin)
+      )
+    }
 
     expect(output).toEqual(.init(methodId: .init(id)))
 

@@ -1,3 +1,4 @@
+import Dependencies
 import MacAppRoute
 import Vapor
 
@@ -6,6 +7,8 @@ struct UserContext: ResolverContext {
   let dashboardUrl: String
   let user: User
   let token: UserToken
+
+  @Dependency(\.uuid) var uuid
 
   func userDevice() async throws -> UserDevice {
     guard let userDevice = try await token.userDevice() else {

@@ -18,49 +18,49 @@ public enum AuthedUserRoute: PairRoute {
 
 public extension AuthedUserRoute {
   nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, AuthedUserRoute> = OneOf {
-    Route(/Self.checkIn) {
+    Route(.case(Self.checkIn)) {
       Operation(CheckIn.self)
       Body(.json(CheckIn.Input.self))
     }
-    Route(/Self.createKeystrokeLines) {
+    Route(.case(Self.createKeystrokeLines)) {
       Operation(CreateKeystrokeLines.self)
       Body(.json(CreateKeystrokeLines.Input.self))
     }
-    Route(/Self.createSignedScreenshotUpload) {
+    Route(.case(Self.createSignedScreenshotUpload)) {
       Operation(CreateSignedScreenshotUpload.self)
       Body(.json(CreateSignedScreenshotUpload.Input.self))
     }
-    Route(/Self.createSuspendFilterRequest) {
+    Route(.case(Self.createSuspendFilterRequest)) {
       Operation(CreateSuspendFilterRequest.self)
       Body(.json(CreateSuspendFilterRequest.Input.self))
     }
-    Route(/Self.createSuspendFilterRequest_v2) {
+    Route(.case(Self.createSuspendFilterRequest_v2)) {
       Operation(CreateSuspendFilterRequest_v2.self)
       Body(.json(CreateSuspendFilterRequest_v2.Input.self))
     }
-    Route(/Self.createUnlockRequests_v2) {
+    Route(.case(Self.createUnlockRequests_v2)) {
       Operation(CreateUnlockRequests_v2.self)
       Body(.json(CreateUnlockRequests_v2.Input.self))
     }
-    Route(/Self.createUnlockRequests_v3) {
+    Route(.case(Self.createUnlockRequests_v3)) {
       Operation(CreateUnlockRequests_v3.self)
       Body(.json(CreateUnlockRequests_v3.Input.self))
     }
-    Route(/Self.getAccountStatus) {
+    Route(.case(Self.getAccountStatus)) {
       Operation(GetAccountStatus.self)
     }
-    Route(/Self.getUserData) {
+    Route(.case(Self.getUserData)) {
       Operation(GetUserData.self)
     }
-    Route(/Self.logSecurityEvent) {
+    Route(.case(Self.logSecurityEvent)) {
       Operation(LogSecurityEvent.self)
       Body(.json(LogSecurityEvent.Input.self))
     }
-    Route(/Self.refreshRules) {
+    Route(.case(Self.refreshRules)) {
       Operation(RefreshRules.self)
       Body(.json(RefreshRules.Input.self))
     }
-    Route(/Self.reportBrowsers) {
+    Route(.case(Self.reportBrowsers)) {
       Operation(ReportBrowsers.self)
       Body(.json(ReportBrowsers.Input.self))
     }

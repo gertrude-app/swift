@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Tagged
 
@@ -14,10 +15,11 @@ struct UserToken: Codable, Sendable {
     id: Id = .init(),
     userId: User.Id,
     userDeviceId: UserDevice.Id? = nil,
-    value: Value = .init(Current.uuid())
+    value: Value? = nil
   ) {
+    @Dependency(\.uuid) var uuid
     self.id = id
-    self.value = value
+    self.value = value ?? .init(uuid())
     self.userId = userId
     self.userDeviceId = userDeviceId
   }

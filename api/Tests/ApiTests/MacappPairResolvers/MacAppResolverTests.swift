@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import MacAppRoute
 import XCore
@@ -83,17 +84,18 @@ final class MacAppResolverTests: ApiTestCase {
 
   func testCreateKeystrokeLines() async throws {
     let user = try await Entities.user().withDevice()
-    let (uuid, _) = mockUUIDs()
 
-    let output = try await CreateKeystrokeLines.resolve(
-      with: [.init(
-        appName: "Xcode",
-        line: "import Foundation",
-        filterSuspended: false,
-        time: .epoch
-      )],
-      in: self.context(user)
-    )
+    let (uuid, output) = try await withUUID {
+      try await CreateKeystrokeLines.resolve(
+        with: [.init(
+          appName: "Xcode",
+          line: "import Foundation",
+          filterSuspended: false,
+          time: .epoch
+        )],
+        in: self.context(user)
+      )
+    }
 
     expect(output).toEqual(.success)
     let inserted = try await Current.db.find(KeystrokeLine.Id(uuid))
@@ -104,17 +106,18 @@ final class MacAppResolverTests: ApiTestCase {
 
   func testInsertKeystrokeLineWithNullByte() async throws {
     let user = try await Entities.user().withDevice()
-    let (uuid, _) = mockUUIDs()
 
-    let output = try await CreateKeystrokeLines.resolve(
-      with: [.init(
-        appName: "Xcode",
-        line: "Hello\0World", // <-- causes postgres to choke
-        filterSuspended: false,
-        time: .epoch
-      )],
-      in: self.context(user)
-    )
+    let (uuid, output) = try await withUUID {
+      try await CreateKeystrokeLines.resolve(
+        with: [.init(
+          appName: "Xcode",
+          line: "Hello\0World", // <-- causes postgres to choke
+          filterSuspended: false,
+          time: .epoch
+        )],
+        in: self.context(user)
+      )
+    }
 
     expect(output).toEqual(.success)
     let inserted = try await Current.db.find(KeystrokeLine.Id(uuid))
@@ -141,13 +144,14 @@ final class MacAppResolverTests: ApiTestCase {
   func testCreateSignedScreenshotUploadWithDate() async throws {
     let user = try await Entities.user().withDevice()
 
-    let (_, uuid) = mockUUIDs()
     Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
 
-    _ = try await CreateSignedScreenshotUpload.resolve(
-      with: .init(width: 1116, height: 222, createdAt: .epoch),
-      in: self.context(user)
-    )
+    let (uuid, _) = try await withUUID {
+      try await CreateSignedScreenshotUpload.resolve(
+        with: .init(width: 1116, height: 222, createdAt: .epoch),
+        in: self.context(user)
+      )
+    }
 
     let screenshot = try await Current.db.find(Screenshot.Id(uuid))
     expect(screenshot.width).toEqual(1116)

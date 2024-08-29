@@ -21,7 +21,6 @@ import XStripe
     let slack = XSlack.Slack.Client()
     var stripe: Stripe.Client = .mock
     let twilio: TwilioSmsClient = .init()
-    let uuid: @Sendable () -> UUID = { UUID() }
     let verificationCode: VerificationCodeGenerator = .live
   }
 #else
@@ -39,7 +38,6 @@ import XStripe
     var slack = XSlack.Slack.Client()
     var stripe: Stripe.Client = .mock
     var twilio: TwilioSmsClient = .init()
-    var uuid: @Sendable () -> UUID = { UUID.new() }
     var verificationCode: VerificationCodeGenerator = .live
   }
 #endif
@@ -65,7 +63,6 @@ nonisolated(unsafe) var Current = Environment()
       slack: .mock,
       stripe: .mock,
       twilio: .mock,
-      uuid: { .mock },
       verificationCode: .mock
     )
   }

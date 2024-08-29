@@ -14,11 +14,11 @@ enum DashboardRoute: PairRoute {
 
 extension DashboardRoute {
   nonisolated(unsafe) static let router = OneOf {
-    Route(/Self.adminAuthed) {
+    Route(.case(Self.adminAuthed)) {
       Headers { Field("X-AdminToken") { UUID.parser() } }
       AuthedAdminRoute.router
     }
-    Route(/Self.unauthed) {
+    Route(.case(Self.unauthed)) {
       UnauthedRoute.router
     }
   }

@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 
 // @SCOPE: when the API restarts, we'll lose all magic links, eventually
@@ -5,6 +6,8 @@ import Foundation
 actor Ephemeral {
   private var adminIds: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
   private var retrievedAdminIds: [UUID: Admin.Id] = [:]
+
+  @Dependency(\.uuid) private var uuid
 
   enum AdminId: Equatable {
     case notFound
@@ -22,7 +25,7 @@ actor Ephemeral {
     _ adminId: Admin.Id,
     expiration: Date = Current.date() + ONE_HOUR
   ) -> UUID {
-    let token = Current.uuid()
+    let token = self.uuid()
     self.adminIds[token] = (adminId: adminId, expiration: expiration)
     return token
   }

@@ -2,7 +2,7 @@ import XCTest
 
 @testable import Api
 
-class CoalesceMonitoringItemsTests: XCTestCase {
+class CoalesceMonitoringItemsTests: DependencyTestCase {
   func testAlternatingItemsDontCoalesce() {
     var screenshot1 = Screenshot.random
     screenshot1.createdAt = Date(timeIntervalSince1970: 0)

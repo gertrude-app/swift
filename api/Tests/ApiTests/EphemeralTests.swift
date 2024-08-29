@@ -3,7 +3,7 @@ import XExpect
 
 @testable import Api
 
-class EphemeralTests: XCTestCase {
+class EphemeralTests: DependencyTestCase {
   func testAddingAndRetrievingAdminToken() async {
     let ephemeral = Ephemeral()
     let admin = Admin.mock

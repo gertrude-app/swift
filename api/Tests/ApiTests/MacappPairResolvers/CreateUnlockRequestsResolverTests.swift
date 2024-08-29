@@ -1,3 +1,4 @@
+import Dependencies
 import MacAppRoute
 import XCTest
 import XExpect
@@ -16,23 +17,26 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase {
       url: "https://foo.com"
     )
 
-    let (uuid1, uuid2) = mockUUIDs()
+    let uuids = MockUUIDs()
+    let output = try await withDependencies {
+      $0.uuid = .mock(uuids)
+    } operation: {
+      try await CreateUnlockRequests_v3.resolve(
+        with: .init(blockedRequests: [blocked, blocked2], comment: nil),
+        in: self.context(user)
+      )
+    }
 
-    let output = try await CreateUnlockRequests_v3.resolve(
-      with: .init(blockedRequests: [blocked, blocked2], comment: nil),
-      in: self.context(user)
-    )
+    expect(output).toEqual([uuids[0], uuids[1]])
 
-    expect(output).toEqual([uuid1, uuid2])
-
-    let unlockReq1 = try await UnlockRequest.find(.init(uuid1))
+    let unlockReq1 = try await UnlockRequest.find(.init(uuids[0]))
     expect(unlockReq1.requestComment).toEqual(nil)
     expect(unlockReq1.appBundleId).toEqual("com.example.app")
     expect(unlockReq1.url).toEqual("https://example.com")
     expect(unlockReq1.userDeviceId).toEqual(user.device.id)
     expect(unlockReq1.status).toEqual(.pending)
 
-    let unlockReq2 = try await UnlockRequest.find(.init(uuid2))
+    let unlockReq2 = try await UnlockRequest.find(.init(uuids[1]))
     expect(unlockReq2.requestComment).toEqual(nil)
     expect(unlockReq2.appBundleId).toEqual("com.other.thing")
     expect(unlockReq2.url).toEqual("https://foo.com")
@@ -57,12 +61,12 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase {
       url: "https://example.com"
     )
 
-    let (uuid, _) = mockUUIDs()
-
-    let output = try await CreateUnlockRequests_v2.resolve(
-      with: .init(blockedRequests: [blocked], comment: "please dad!"),
-      in: self.context(user)
-    )
+    let (uuid, output) = try await withUUID {
+      try await CreateUnlockRequests_v2.resolve(
+        with: .init(blockedRequests: [blocked], comment: "please dad!"),
+        in: self.context(user)
+      )
+    }
 
     expect(output).toEqual(.success)
 
