@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Foundation
 import Gertie
@@ -25,6 +26,8 @@ struct SubscriptionUpdate: Equatable {
 }
 
 struct SubscriptionManager: AsyncScheduledJob {
+  @Dependency(\.stripe) var stripe
+
   func run(context: QueueContext) async throws {
     guard Env.mode == .prod else { return }
     try await self.advanceExpired()
@@ -34,7 +37,7 @@ struct SubscriptionManager: AsyncScheduledJob {
     var logs: [String] = []
     let admins = try await Admin.query().all()
     for var admin in admins {
-      guard let update = try await subscriptionUpdate(for: admin) else {
+      guard let update = try await self.subscriptionUpdate(for: admin) else {
         continue
       }
 
@@ -69,68 +72,88 @@ struct SubscriptionManager: AsyncScheduledJob {
       ))
     }
   }
-}
 
-func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
-  if admin.subscriptionStatusExpiration > Current.date() {
-    return nil
+  func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
+    if admin.subscriptionStatusExpiration > Current.date() {
+      return nil
+    }
+
+    let completedOnboarding = try await admin.completedOnboarding()
+    switch admin.subscriptionStatus {
+
+    case .pendingEmailVerification:
+      return .init(
+        action: .delete(reason: "email never verified"),
+        email: .deleteEmailUnverified
+      )
+
+    case .trialing:
+      return .init(
+        action: .update(
+          status: .trialExpiringSoon,
+          expiration: Current.date().advanced(by: .days(7))
+        ),
+        // NB: trial ending soon email is ALWAYS sent, regardless of onboarding status
+        // but if they have never onboarded, it will be the only email they receive
+        email: .trialEndingSoon
+      )
+
+    case .trialExpiringSoon:
+      return .init(
+        action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
+        email: completedOnboarding ? .trialEndedToOverdue : nil
+      )
+
+    case .overdue:
+      return try await self.updateIfPaid(admin.subscriptionId) ?? .init(
+        action: .update(status: .unpaid, expiration: Current.date().advanced(by: .days(365))),
+        email: completedOnboarding ? .overdueToUnpaid : nil
+      )
+
+    case .pendingAccountDeletion:
+      return .init(
+        action: .delete(reason: "account unpaid > 1yr"),
+        email: nil
+      )
+
+    case .unpaid:
+      return .init(
+        action: .update(
+          status: .pendingAccountDeletion,
+          expiration: Current.date().advanced(by: .days(30))
+        ),
+        email: completedOnboarding ? .unpaidToPendingDelete : nil
+      )
+
+    case .paid:
+      return try await self.updateIfPaid(admin.subscriptionId) ?? .init(
+        action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
+        email: .paidToOverdue
+      )
+
+    case .complimentary:
+      unexpected("2d1710c2", admin.id)
+      return nil
+    }
   }
 
-  let completedOnboarding = try await admin.completedOnboarding()
-  switch admin.subscriptionStatus {
-
-  case .pendingEmailVerification:
-    return .init(
-      action: .delete(reason: "email never verified"),
-      email: .deleteEmailUnverified
-    )
-
-  case .trialing:
-    return .init(
-      action: .update(
-        status: .trialExpiringSoon,
-        expiration: Current.date().advanced(by: .days(7))
-      ),
-      // NB: trial ending soon email is ALWAYS sent, regardless of onboarding status
-      // but if they have never onboarded, it will be the only email they receive
-      email: .trialEndingSoon
-    )
-
-  case .trialExpiringSoon:
-    return .init(
-      action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
-      email: completedOnboarding ? .trialEndedToOverdue : nil
-    )
-
-  case .overdue:
-    return try await updateIfPaid(admin.subscriptionId) ?? .init(
-      action: .update(status: .unpaid, expiration: Current.date().advanced(by: .days(365))),
-      email: completedOnboarding ? .overdueToUnpaid : nil
-    )
-
-  case .pendingAccountDeletion:
-    return .init(
-      action: .delete(reason: "account unpaid > 1yr"),
-      email: nil
-    )
-
-  case .unpaid:
-    return .init(
-      action: .update(
-        status: .pendingAccountDeletion,
-        expiration: Current.date().advanced(by: .days(30))
-      ),
-      email: completedOnboarding ? .unpaidToPendingDelete : nil
-    )
-
-  case .paid:
-    return try await updateIfPaid(admin.subscriptionId) ?? .init(
-      action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
-      email: .paidToOverdue
-    )
-
-  case .complimentary:
-    unexpected("2d1710c2", admin.id)
+  // failsafe in case webhook missed the `invoice.paid` event
+  // theoretically, we should never find a subscription active
+  private func updateIfPaid(
+    _ subscriptionId: Admin.SubscriptionId?
+  ) async throws -> SubscriptionUpdate? {
+    if let subsId = subscriptionId?.rawValue,
+       let subscription = try? await self.stripe.getSubscription(subsId),
+       subscription.status == .active {
+      return .init(
+        action: .update(
+          status: .paid,
+          expiration: Date(timeIntervalSince1970: TimeInterval(subscription.currentPeriodEnd))
+            .advanced(by: .days(2)) // +2 days is for a little leeway, recommended by stripe docs
+        ),
+        email: nil
+      )
+    }
     return nil
   }
 }
@@ -145,24 +168,4 @@ private extension Admin {
     }.flatMap { $0 }
     return !childDevices.isEmpty
   }
-}
-
-// failsafe in case webhook missed the `invoice.paid` event
-// theoretically, we should never find a subscription active
-private func updateIfPaid(
-  _ subscriptionId: Admin.SubscriptionId?
-) async throws -> SubscriptionUpdate? {
-  if let subsId = subscriptionId?.rawValue,
-     let subscription = try? await Current.stripe.getSubscription(subsId),
-     subscription.status == .active {
-    return .init(
-      action: .update(
-        status: .paid,
-        expiration: Date(timeIntervalSince1970: TimeInterval(subscription.currentPeriodEnd))
-          .advanced(by: .days(2)) // +2 days is for a little leeway, recommended by stripe docs
-      ),
-      email: nil
-    )
-  }
-  return nil
 }

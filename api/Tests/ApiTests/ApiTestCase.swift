@@ -13,6 +13,8 @@ class DependencyTestCase: XCTestCase {
   override open func invokeTest() {
     withDependencies {
       $0.uuid = UUIDGenerator { UUID() }
+      $0.env = .liveValue
+      $0.stripe = .failing
     } operation: {
       super.invokeTest()
     }

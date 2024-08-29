@@ -4,7 +4,6 @@ import XAws
 import XPostmark
 import XSendGrid
 import XSlack
-import XStripe
 
 #if !DEBUG
   struct Environment: Sendable {
@@ -19,7 +18,6 @@ import XStripe
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
     let slack = XSlack.Slack.Client()
-    var stripe: Stripe.Client = .mock
     let twilio: TwilioSmsClient = .init()
     let verificationCode: VerificationCodeGenerator = .live
   }
@@ -36,7 +34,6 @@ import XStripe
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
     var slack = XSlack.Slack.Client()
-    var stripe: Stripe.Client = .mock
     var twilio: TwilioSmsClient = .init()
     var verificationCode: VerificationCodeGenerator = .live
   }
@@ -61,7 +58,6 @@ nonisolated(unsafe) var Current = Environment()
       postmark: .mock,
       sendGrid: .mock,
       slack: .mock,
-      stripe: .mock,
       twilio: .mock,
       verificationCode: .mock
     )

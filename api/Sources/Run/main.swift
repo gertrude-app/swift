@@ -9,6 +9,8 @@ defer { app.shutdown() }
 
 try withDependencies {
   $0.uuid = UUIDGenerator { UUID() }
+  $0.env = .liveValue
+  $0.stripe = .liveValue
 } operation: {
   try Configure.app(app)
   try app.run()

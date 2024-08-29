@@ -25,13 +25,13 @@ extension StripeUrl: NoInputResolver {
     case (.paid, .some(let subscription)),
          (.overdue, .some(let subscription)),
          (.unpaid, .some(let subscription)):
-      return .init(url: try await billingPortalSessionUrl(for: subscription))
+      return .init(url: try await billingPortalSessionUrl(for: subscription, in: context))
 
     // should never happen...
     case (let status, let subscription):
       unexpected("65554aa1", context, ".\(status), \(subscription ?? "nil")")
       if let subscription {
-        return .init(url: try await billingPortalSessionUrl(for: subscription))
+        return .init(url: try await billingPortalSessionUrl(for: subscription, in: context))
       } else {
         return .init(url: try await checkoutSessionUrl(for: context))
       }
@@ -56,7 +56,7 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
     paymentMethodCollection: nil
   )
 
-  let session = try await Current.stripe.createCheckoutSession(sessionData)
+  let session = try await context.stripe.createCheckoutSession(sessionData)
   guard let url = session.url else {
     Current.sendGrid.fireAndForget(.unexpected("b66e1eaf", "admin: \(context.admin.id)"))
     throw Abort(.internalServerError)
@@ -65,9 +65,10 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
 }
 
 private func billingPortalSessionUrl(
-  for subscriptionId: Admin.SubscriptionId
+  for subscriptionId: Admin.SubscriptionId,
+  in context: AdminContext
 ) async throws -> String {
-  let subscription = try await Current.stripe.getSubscription(subscriptionId.rawValue)
-  let portal = try await Current.stripe.createBillingPortalSession(subscription.customer)
+  let subscription = try await context.stripe.getSubscription(subscriptionId.rawValue)
+  let portal = try await context.stripe.createBillingPortalSession(subscription.customer)
   return portal.url
 }

@@ -1,3 +1,4 @@
+import Dependencies
 import Gertie
 import XCore
 import XCTest
@@ -12,19 +13,18 @@ final class AuthedAdminResolverTests: ApiTestCase {
       $0.subscriptionStatus = .paid
     }
 
-    Current.stripe.getSubscription = { subId in
-      expect(subId).toBe("sub_123")
-      return .init(id: "sub_123", status: .active, customer: "cus_123", currentPeriodEnd: 0)
+    let output = try await withDependencies {
+      $0.stripe.getSubscription = { subId in
+        expect(subId).toBe("sub_123")
+        return .init(id: "sub_123", status: .active, customer: "cus_123", currentPeriodEnd: 0)
+      }
+      $0.stripe.createBillingPortalSession = { cusId in
+        expect(cusId).toBe("cus_123")
+        return .init(id: "bps_123", url: "bps-url")
+      }
+    } operation: {
+      try await StripeUrl.resolve(in: context(admin))
     }
-
-    Current.stripe.createBillingPortalSession = { cusId in
-      expect(cusId).toBe("cus_123")
-      return .init(id: "bps_123", url: "bps-url")
-    }
-
-    Current.stripe.createCheckoutSession = { _ in fatalError("not called") }
-
-    let output = try await StripeUrl.resolve(in: context(admin))
 
     expect(output).toEqual(.init(url: "bps-url"))
   }
@@ -35,16 +35,15 @@ final class AuthedAdminResolverTests: ApiTestCase {
       $0.subscriptionStatus = .trialing
     }
 
-    Current.stripe.createCheckoutSession = { sessionData in
-      expect(sessionData.clientReferenceId).toEqual(admin.id.lowercased)
-      expect(sessionData.customerEmail).toEqual(admin.email.rawValue)
-      return .init(id: "s1", url: "/checkout-url", subscription: "subsid", clientReferenceId: nil)
+    let output = try await withDependencies {
+      $0.stripe.createCheckoutSession = { sessionData in
+        expect(sessionData.clientReferenceId).toEqual(admin.id.lowercased)
+        expect(sessionData.customerEmail).toEqual(admin.email.rawValue)
+        return .init(id: "s1", url: "/checkout-url", subscription: "subsid", clientReferenceId: nil)
+      }
+    } operation: {
+      try await StripeUrl.resolve(in: context(admin))
     }
-
-    Current.stripe.getSubscription = { _ in fatalError("not called") }
-    Current.stripe.createBillingPortalSession = { _ in fatalError("not called") }
-
-    let output = try await StripeUrl.resolve(in: context(admin))
 
     expect(output).toEqual(.init(url: "/checkout-url"))
   }
@@ -54,25 +53,26 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let admin = try await Admin.random { $0.subscriptionStatus = .trialing }.create()
     Current.date = { Date(timeIntervalSince1970: 0) }
 
-    Current.stripe.getCheckoutSession = { id in
-      expect(id).toBe(sessionId)
-      return .init(
-        id: "cs_123",
-        url: nil,
-        subscription: "sub_123",
-        clientReferenceId: admin.id.lowercased
+    let output = try await withDependencies {
+      $0.stripe.getCheckoutSession = { id in
+        expect(id).toBe(sessionId)
+        return .init(
+          id: "cs_123",
+          url: nil,
+          subscription: "sub_123",
+          clientReferenceId: admin.id.lowercased
+        )
+      }
+      $0.stripe.getSubscription = { id in
+        expect(id).toBe("sub_123")
+        return .init(id: id, status: .active, customer: "cus_123", currentPeriodEnd: 0)
+      }
+    } operation: {
+      try await HandleCheckoutSuccess.resolve(
+        with: .init(stripeCheckoutSessionId: sessionId),
+        in: context(admin)
       )
     }
-
-    Current.stripe.getSubscription = { id in
-      expect(id).toBe("sub_123")
-      return .init(id: id, status: .active, customer: "cus_123", currentPeriodEnd: 0)
-    }
-
-    let output = try await HandleCheckoutSuccess.resolve(
-      with: .init(stripeCheckoutSessionId: sessionId),
-      in: context(admin)
-    )
 
     expect(output).toEqual(.success)
     let retrieved = try await Current.db.find(admin.id)

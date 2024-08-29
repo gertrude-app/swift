@@ -10,7 +10,6 @@ extension Configure {
     guard Env.mode != .test else { return }
 
     Current.logger = app.logger
-    Current.stripe = .live(secretKey: Env.STRIPE_SECRET_KEY)
     Current.aws = .live(
       accessKeyId: Env.CLOUD_STORAGE_KEY,
       secretAccessKey: Env.CLOUD_STORAGE_SECRET,

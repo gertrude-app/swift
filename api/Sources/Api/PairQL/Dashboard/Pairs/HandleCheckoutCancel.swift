@@ -14,7 +14,7 @@ struct HandleCheckoutCancel: Pair {
 
 extension HandleCheckoutCancel: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    let session = try await Current.stripe.getCheckoutSession(input.stripeCheckoutSessionId)
+    let session = try await context.stripe.getCheckoutSession(input.stripeCheckoutSessionId)
     let detail = "admin: \(context.admin.id), session: \(try JSON.encode(session)))"
     Current.sendGrid.fireAndForget(.toJared("Checkout canceled", detail))
     return .success

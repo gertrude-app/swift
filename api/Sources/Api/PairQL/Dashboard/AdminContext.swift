@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 
 struct AdminContext: ResolverContext {
@@ -5,6 +6,8 @@ struct AdminContext: ResolverContext {
   let dashboardUrl: String
   let admin: Admin
   let ipAddress: String?
+
+  @Dependency(\.stripe) var stripe
 
   @discardableResult
   func verifiedUser(from id: User.Id) async throws -> User {
