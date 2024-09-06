@@ -28,7 +28,7 @@ struct GetUnlockRequest: Pair {
 
 extension GetUnlockRequest: Resolver {
   static func resolve(with id: Input, in context: AdminContext) async throws -> Output {
-    let request = try await Current.db.find(id)
+    let request = try await UnlockRequest.find(id)
     return try await Output(from: request, in: context)
   }
 }

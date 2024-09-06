@@ -1,5 +1,10 @@
-public extension SQL {
+import Duet
+import Foundation
+import PostgresKit
 
+public enum SQL {}
+
+public extension SQL {
   enum WhereConstraint<M: Model>: Equatable, Sendable {
     case equals(M.ColumnName, Postgres.Data)
     case lessThan(M.ColumnName, Postgres.Data)
@@ -15,117 +20,81 @@ public extension SQL {
     indirect case or(WhereConstraint<M>, WhereConstraint<M>)
     indirect case and(WhereConstraint<M>, WhereConstraint<M>)
     indirect case not(WhereConstraint<M>)
+  }
+}
 
-    public func isSatisfied(by model: M) -> Bool {
-      switch self {
-      case .not(let constraint):
-        return !constraint.isSatisfied(by: model)
-      case .equals(let column, let data):
-        return model.postgresData(for: column) == data
-      case .in(let column, let values):
-        let data = model.postgresData(for: column)
-        return values.contains { value in data == value }
-      case .isNull(let column):
-        return model.postgresData(for: column).holdsNull
-      case .like(let column, let pattern):
-        guard case .string(.some(let string)) = model.postgresData(for: column) else {
-          return false
-        }
-        let regex = "^" + pattern.replacingOccurrences(of: "%", with: ".*") + "$"
-        return string.range(of: regex, options: .regularExpression) != nil
-      case .ilike(let column, let pattern):
-        guard case .string(.some(let string)) = model.postgresData(for: column) else {
-          return false
-        }
-        let regex = "^" + pattern.replacingOccurrences(of: "%", with: ".*") + "$"
-        return string.lowercased().range(of: regex, options: .regularExpression) != nil
-      case .or(let lhs, let rhs):
-        return lhs.isSatisfied(by: model) || rhs.isSatisfied(by: model)
-      case .and(let lhs, let rhs):
-        return lhs.isSatisfied(by: model) && rhs.isSatisfied(by: model)
-      case .lessThan(let column, let data):
-        let colData = model.postgresData(for: column)
-        return colData < data
-      case .greaterThan(let column, let data):
-        let colData = model.postgresData(for: column)
-        return colData > data
-      case .lessThanOrEqualTo(let column, let data):
-        let colData = model.postgresData(for: column)
-        return colData <= data
-      case .greaterThanOrEqualTo(let column, let data):
-        let colData = model.postgresData(for: column)
-        return colData >= data
-      case .always:
-        return true
-      case .never:
-        return false
+public extension SQL.WhereConstraint {
+  internal var sql: [SQL.Statement.Component]? {
+    switch self {
+    case .always:
+      return nil
+    case .never:
+      return [.sql("FALSE")]
+    case .equals(let column, let value):
+      return [.sql("\"\(M.columnName(column))\" = "), .binding(value)]
+    case .lessThan(let column, let value):
+      return [.sql("\"\(M.columnName(column))\" < "), .binding(value)]
+    case .greaterThan(let column, let value):
+      return [.sql("\"\(M.columnName(column))\" > "), .binding(value)]
+    case .lessThanOrEqualTo(let column, let value):
+      return [.sql("\"\(M.columnName(column))\" <= "), .binding(value)]
+    case .greaterThanOrEqualTo(let column, let value):
+      return [.sql("\"\(M.columnName(column))\" >= "), .binding(value)]
+    case .isNull(let column):
+      return [.sql("\"\(M.columnName(column))\" IS NULL")]
+    case .not(let inner):
+      return inner.sql.map { [.sql("NOT ")] + $0 }
+    case .and(.never, _), .and(_, .never):
+      return [.sql("FALSE")]
+    case .and(let lhs, .always):
+      return lhs.sql
+    case .and(.always, let rhs):
+      return rhs.sql
+    case .and(let lhs, let rhs):
+      guard let lhsSql = lhs.sql, let rhsSql = rhs.sql else { return nil }
+      return [.sql("(")] + lhsSql + [.sql(" AND ")] + rhsSql + [.sql(")")]
+    case .or(_, .always):
+      return nil
+    case .or(.always, _):
+      return nil
+    case .or(let lhs, let rhs):
+      guard let lhsSql = lhs.sql, let rhsSql = rhs.sql else { return nil }
+      return [.sql("(")] + lhsSql + [.sql(" OR ")] + rhsSql + [.sql(")")]
+    case .in(let column, let values):
+      guard !values.isEmpty else {
+        return [.sql("FALSE")]
       }
-    }
-
-    public static var notSoftDeleted: WhereConstraint<M> {
-      if let deletedAt = try? M.column("deleted_at") {
-        return WhereConstraint<M>.isNull(deletedAt) .|| deletedAt > .currentTimestamp
+      if values.count == 1 {
+        return SQL.WhereConstraint<M>.equals(column, values[0]).sql
       }
-      return .always
-    }
-
-    public var andNotSoftDeleted: WhereConstraint<M> {
-      self .&& .notSoftDeleted
-    }
-
-    func sql(boundTo bindings: inout [Postgres.Data]) -> String {
-      switch self {
-      case .not(let constraint):
-        return "NOT \(constraint.sql(boundTo: &bindings))"
-      case .isNull(let column):
-        return "\"\(M.columnName(column))\" IS NULL"
-      case .equals(let column, let value):
-        bindings.append(value)
-        return "\"\(M.columnName(column))\" = $\(bindings.count)"
-      case .lessThan(let column, let value):
-        bindings.append(value)
-        return "\"\(M.columnName(column))\" < $\(bindings.count)"
-      case .greaterThan(let column, let value):
-        bindings.append(value)
-        return "\"\(M.columnName(column))\" > $\(bindings.count)"
-      case .lessThanOrEqualTo(let column, let value):
-        bindings.append(value)
-        return "\"\(M.columnName(column))\" <= $\(bindings.count)"
-      case .greaterThanOrEqualTo(let column, let value):
-        bindings.append(value)
-        return "\"\(M.columnName(column))\" >= $\(bindings.count)"
-      case .in(let column, let values):
-        guard !values.isEmpty else {
-          return WhereConstraint<M>.never.sql(boundTo: &bindings)
-        }
-        var placeholders: [String] = []
-        for value in values {
-          bindings.append(value)
-          placeholders.append("$\(bindings.count)")
-        }
-        return "\"\(M.columnName(column))\" IN (\(placeholders.list))"
-      case .and(.never, _), .and(_, .never):
-        return WhereConstraint<M>.never.sql(boundTo: &bindings)
-      case .and(let lhs, .always):
-        return lhs.sql(boundTo: &bindings)
-      case .and(.always, let rhs):
-        return rhs.sql(boundTo: &bindings)
-      case .and(let lhs, let rhs):
-        return "(\(lhs.sql(boundTo: &bindings)) AND \(rhs.sql(boundTo: &bindings)))"
-      case .or(let lhs, let rhs):
-        return "(\(lhs.sql(boundTo: &bindings)) OR \(rhs.sql(boundTo: &bindings)))"
-      case .like(let column, let pattern):
-        bindings.append(.string(pattern))
-        return "\"\(M.columnName(column))\" LIKE $\(bindings.count)"
-      case .ilike(let column, let pattern):
-        bindings.append(.string(pattern))
-        return "\"\(M.columnName(column))\" ILIKE $\(bindings.count)"
-      case .always:
-        return "TRUE"
-      case .never:
-        return "FALSE"
+      var components: [SQL.Statement.Component] = [.sql("\"\(M.columnName(column))\" IN (")]
+      for value in values {
+        components.append(.binding(value))
+        components.append(.sql(", "))
       }
+      components.removeLast()
+      components.append(.sql(")"))
+      return components
+    case .like(let column, let pattern):
+      return [.sql("\"\(M.columnName(column))\" LIKE "), .binding(.string(pattern))]
+    case .ilike(let column, let pattern):
+      return [.sql("\"\(M.columnName(column))\" ILIKE "), .binding(.string(pattern))]
     }
+  }
+
+  static var notSoftDeleted: Self {
+    if let deletedAt = try? M.column("deleted_at") {
+      return .isNull(deletedAt) .|| deletedAt > .currentTimestamp
+    }
+    return .always
+  }
+
+  var andNotSoftDeleted: Self {
+    self .&& .notSoftDeleted
+  }
+
+  static func withSoftDeleted(if included: Bool) -> Self {
+    included ? .always : .notSoftDeleted
   }
 }
 

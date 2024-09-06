@@ -1,3 +1,4 @@
+import Dependencies
 import MacAppRoute
 import URLRouting
 import Vapor
@@ -7,6 +8,9 @@ struct Context: ResolverContext {
   let requestId: String
   let dashboardUrl: String
   let ipAddress: String?
+
+  @Dependency(\.db) var db
+  @Dependency(\.env) var env
 }
 
 enum PairQLRoute: Equatable, RouteResponder {

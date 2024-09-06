@@ -8,7 +8,6 @@ struct Keychain: Codable, Sendable {
   var isPublic: Bool
   var createdAt = Date()
   var updatedAt = Date()
-  var deletedAt: Date?
 
   init(
     id: Id = .init(),
@@ -29,7 +28,7 @@ struct Keychain: Codable, Sendable {
 
 extension Keychain {
   func keys() async throws -> [Key] {
-    try await Current.db.query(Key.self)
+    try await Key.query()
       .where(.keychainId == self.id)
       .all()
   }

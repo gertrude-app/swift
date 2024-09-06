@@ -12,25 +12,25 @@ enum AdminBetsy {
   }
 
   static func create() async throws {
-    let betsy = try await Current.db.create(Admin(
+    let betsy = try await Admin(
       id: Ids.betsy,
       email: "betsy-mcstandard" |> Reset.testEmail,
       password: try Bcrypt.hash("betsy123"),
       subscriptionStatus: .trialing,
       subscriptionStatusExpiration: Date().advanced(by: .days(53)),
       subscriptionId: nil
-    ))
+    ).create()
 
     let email = try await Reset.createNotification(
       betsy,
       .email(email: betsy.email.rawValue)
     )
 
-    try await Current.db.create(AdminNotification(
+    try await AdminNotification(
       adminId: betsy.id,
       methodId: email.id,
       trigger: .unlockRequestSubmitted
-    ))
+    ).create()
 
     let text = try await Reset.createNotification(
       betsy,
@@ -42,21 +42,21 @@ enum AdminBetsy {
       .slack(channelId: "CQ1325FCA", channelName: "#Gertrude", token: "xoxb-123-456-789")
     )
 
-    try await Current.db.create(AdminNotification(
+    try await AdminNotification(
       adminId: betsy.id,
       methodId: text.id,
       trigger: .suspendFilterRequestSubmitted
-    ))
+    ).create()
 
-    try await Current.db.create(AdminToken(
+    try await AdminToken(
       value: .init(rawValue: betsy.id.rawValue),
       adminId: betsy.id
-    ))
+    ).create()
 
     let (jimmy, sally, _) = try await createUsers(betsy)
     let (musicTheory, misc) = try await createKeychains(betsy)
 
-    try await Current.db.create([
+    try await UserKeychain.create([
       UserKeychain(userId: jimmy.id, keychainId: musicTheory.id),
       UserKeychain(userId: jimmy.id, keychainId: misc.id),
       UserKeychain(userId: jimmy.id, keychainId: Reset.Ids.htcKeychain),
@@ -68,22 +68,22 @@ enum AdminBetsy {
   }
 
   private static func createUsers(_ betsy: Admin) async throws -> (User, User, User) {
-    let jimmy = try await Current.db.create(User(
+    let jimmy = try await User(
       id: Ids.jimmysId,
       adminId: betsy.id,
       name: "Little Jimmy",
       keyloggingEnabled: true,
       screenshotsEnabled: true
-    ))
+    ).create()
 
-    let macAir = try await Current.db.create(Device(
+    let macAir = try await Device(
       adminId: betsy.id,
       customName: nil,
       modelIdentifier: "Mac14,2",
       serialNumber: "JIMMY-AIR-123456"
-    ))
+    ).create()
 
-    let userDevice = try await Current.db.create(UserDevice(
+    let userDevice = try await UserDevice(
       userId: jimmy.id,
       deviceId: macAir.id,
       isAdmin: false,
@@ -91,18 +91,18 @@ enum AdminBetsy {
       username: "jimmy",
       fullUsername: "Jimmy McStandard",
       numericId: 502
-    ))
+    ).create()
 
     try await self.createTransientRequests(userDevice)
 
-    let imac = try await Current.db.create(Device(
+    let imac = try await Device(
       adminId: betsy.id,
       customName: nil,
       modelIdentifier: "iMac19,2",
       serialNumber: "JIMMY-IMAC-123456"
-    ))
+    ).create()
 
-    try await Current.db.create(UserDevice(
+    try await UserDevice(
       id: Ids.jimmysDevice,
       userId: jimmy.id,
       deviceId: imac.id,
@@ -111,23 +111,23 @@ enum AdminBetsy {
       username: "jimmy",
       fullUsername: "Jimmy McStandard",
       numericId: 504
-    ))
+    ).create()
 
-    let sally = try await Current.db.create(User(
+    let sally = try await User(
       adminId: betsy.id,
       name: "Sally",
       keyloggingEnabled: false,
       screenshotsEnabled: false
-    ))
+    ).create()
 
-    let macbookPro = try await Current.db.create(Device(
+    let macbookPro = try await Device(
       adminId: betsy.id,
       customName: "dads mbp",
       modelIdentifier: "MacBookPro18,1",
       serialNumber: "SALLY-MBP-123456"
-    ))
+    ).create()
 
-    try await Current.db.create(UserDevice(
+    try await UserDevice(
       id: Ids.sallysDevice,
       userId: sally.id,
       deviceId: macbookPro.id,
@@ -136,15 +136,15 @@ enum AdminBetsy {
       username: "sally",
       fullUsername: "Sally McStandard",
       numericId: 503
-    ))
+    ).create()
 
     // henry has no devices
-    let henry = try await Current.db.create(User(
+    let henry = try await User(
       adminId: betsy.id,
       name: "Henry",
       keyloggingEnabled: true,
       screenshotsEnabled: false
-    ))
+    ).create()
 
     return (jimmy, sally, henry)
   }
@@ -202,7 +202,7 @@ enum AdminBetsy {
   }
 
   private static func createTransientRequests(_ userDevice: UserDevice) async throws {
-    try await Current.db.create(UnlockRequest(
+    try await UnlockRequest(
       userDeviceId: userDevice.id,
       appBundleId: ".com.apple.Safari",
       url: "https://www.youtube.com/watch?v=123456789",
@@ -210,23 +210,23 @@ enum AdminBetsy {
       ipAddress: "234.423.32.2423",
       requestComment: "I want to watch a video",
       status: .pending
-    ))
+    ).create()
 
-    try await Current.db.create(UnlockRequest(
+    try await UnlockRequest(
       userDeviceId: userDevice.id,
       appBundleId: "BQR82RBBHL.com.tinyspeck.slackmacgap.helper",
       hostname: "someotherwebsite.com",
       ipAddress: "234.423.32.2423",
       requestComment: "Need this for my dinasours class, k thx",
       status: .pending
-    ))
+    ).create()
 
-    try await Current.db.create(SuspendFilterRequest(
+    try await SuspendFilterRequest(
       id: Ids.suspendFilter,
       userDeviceId: userDevice.id,
       status: .pending,
       scope: .webBrowsers,
       requestComment: "I want to watch a video"
-    ))
+    ).create()
   }
 }

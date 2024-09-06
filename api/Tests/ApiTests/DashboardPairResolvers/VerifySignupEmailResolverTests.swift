@@ -8,15 +8,15 @@ import XStripe
 final class VerifySignupEmailResolverTests: ApiTestCase {
   let context = Context.mock
 
-  func testVerifySignupEmailSetsSubsriptionStatusAndCreatesNotificationMethod() async throws {
+  func testVerifySignupEmailSetsSubscriptionStatusAndCreatesNotificationMethod() async throws {
     Current.date = { .epoch }
     let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
     let token = await Current.ephemeral.createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
-    let retrieved = try await Current.db.find(admin.id)
-    let method = try await Current.db.query(AdminVerifiedNotificationMethod.self)
+    let retrieved = try await self.db.find(admin.id)
+    let method = try await self.db.query(AdminVerifiedNotificationMethod.self)
       .where(.adminId == admin.id)
       .first()
 
@@ -60,7 +60,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
-    let retrieved = try await Current.db.find(admin.id)
+    let retrieved = try await self.db.find(admin.id)
 
     expect(output.adminId).toEqual(admin.id)
     expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed

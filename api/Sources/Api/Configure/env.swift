@@ -1,3 +1,4 @@
+import Dependencies
 import Rainbow
 import Vapor
 
@@ -17,10 +18,13 @@ extension Configure {
       bucket: Env.CLOUD_STORAGE_BUCKET
     )
 
-    Current.logger.notice("App environment is \(Env.mode.coloredName)")
+    @Dependency(\.env) var env
+    app.databases.use(.from(env: env), as: .psql)
 
-    if Env.mode == .dev {
-      Current.logger.notice("Connected to database `\(Env.DATABASE_NAME)`")
+    Current.logger.notice("App environment is \(env.mode.coloredName)")
+
+    if env.mode == .dev {
+      Current.logger.notice("Connected to database `\(env.database.name)`")
     }
   }
 }

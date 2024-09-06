@@ -26,14 +26,14 @@ extension CreateSignedScreenshotUpload: Resolver {
 
     let signedUrl = try Current.aws.signedS3UploadUrl(objectName)
 
-    try await Current.db.create(Screenshot(
+    try await Screenshot(
       userDeviceId: userDevice.id,
       url: webUrlString,
       width: input.width,
       height: input.height,
       filterSuspended: input.filterSuspended ?? false,
       createdAt: input.createdAt ?? Date()
-    ))
+    ).create()
 
     return .init(uploadUrl: signedUrl, webUrl: webUrl)
   }

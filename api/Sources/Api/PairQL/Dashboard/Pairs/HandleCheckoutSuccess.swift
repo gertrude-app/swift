@@ -14,7 +14,7 @@ struct HandleCheckoutSuccess: Pair {
 extension HandleCheckoutSuccess: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     let session = try await context.stripe.getCheckoutSession(input.stripeCheckoutSessionId)
-    var admin = try await Current.db.find(session.adminId)
+    var admin = try await Admin.find(session.adminId)
     let subscriptionId = try session.adminUserSubscriptionId
     let subscription = try await context.stripe.getSubscription(subscriptionId.rawValue)
     switch (admin.subscriptionStatus, subscription.status) {

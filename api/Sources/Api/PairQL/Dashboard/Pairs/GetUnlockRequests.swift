@@ -10,13 +10,13 @@ struct GetUnlockRequests: Pair {
 
 extension GetUnlockRequests: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let users = try await Current.db.query(User.self)
+    let users = try await User.query()
       .where(.adminId == context.admin.id)
       .all()
-    let userDevices = try await Current.db.query(UserDevice.self)
+    let userDevices = try await UserDevice.query()
       .where(.userId |=| users.map { .id($0) })
       .all()
-    let requests = try await Current.db.query(UnlockRequest.self)
+    let requests = try await UnlockRequest.query()
       .where(.userDeviceId |=| userDevices.map { .id($0) })
       .all()
 

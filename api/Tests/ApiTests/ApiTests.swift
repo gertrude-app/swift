@@ -1,3 +1,4 @@
+import DuetSQL
 import Gertie
 import MacAppRoute
 import Vapor
@@ -23,6 +24,21 @@ final class ApiTests: ApiTestCase {
     let route = PairQLRoute.dashboard(.adminAuthed(token.rawValue, .getIdentifiedApps))
     let matched = try PairQLRoute.router.match(request: request)
     expect(matched).toEqual(route)
+  }
+
+  func testDuetDeleteReturnsRealNumDeleted() async throws {
+    let m1 = Browser(match: .bundleId("m".random))
+    let m2 = Browser(match: .bundleId("m".random))
+    try await self.db.create([m1, m2])
+    let numDeleted = try await self.db.delete(Browser.self, where: .id |=| [m1.id, m2.id])
+    expect(numDeleted).toEqual(2)
+  }
+
+  func testDuetEscapesStringsProperly() async throws {
+    let admin = try await Admin.random.create()
+    let m = try await Api.SecurityEvent(adminId: admin.id, event: "foo'bar").create()
+    let retrieved = try await Api.SecurityEvent.find(m.id)
+    expect(retrieved.event).toEqual("foo'bar")
   }
 
   func testDateDecodingInPairQL() async throws {

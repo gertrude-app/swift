@@ -1,5 +1,6 @@
 import Api
 import Dependencies
+import DuetSQL
 import Vapor
 
 var env = try Environment.detect()
@@ -9,8 +10,9 @@ defer { app.shutdown() }
 
 try withDependencies {
   $0.uuid = UUIDGenerator { UUID() }
-  $0.env = .liveValue
+  $0.env = .fromProcess(mode: app.environment)
   $0.stripe = .liveValue
+  $0.db = PgClient(threadCount: System.coreCount, env: $0.env)
 } operation: {
   try Configure.app(app)
   try app.run()

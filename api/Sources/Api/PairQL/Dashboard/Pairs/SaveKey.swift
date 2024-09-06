@@ -21,26 +21,26 @@ extension SaveKey: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     let keychain = try await context.admin.keychain(input.keychainId)
     if input.isNew {
-      var key = try await Current.db.create(Key(
+      var key = try await Key(
         id: input.id,
         keychainId: keychain.id,
         key: input.key,
         comment: input.comment,
         deletedAt: input.expiration
-      ))
+      ).create()
       // duet struggles creating models with `deletedAt` set
       if let expiration = input.expiration {
         key.deletedAt = expiration
-        try await Current.db.update(key)
+        try await key.save()
       }
       let detail = "key opening \(input.key.simpleDescription) added to keychain '\(keychain.name)'"
       dashSecurityEvent(.keyCreated, detail, in: context)
     } else {
-      var key = try await Current.db.find(input.id)
+      var key = try await Key.find(input.id)
       key.comment = input.comment
       key.key = input.key
       key.deletedAt = input.expiration
-      try await Current.db.update(key)
+      try await key.save()
     }
     try await Current.websockets.send(.userUpdated, to: .usersWith(keychain: keychain.id))
     return .success

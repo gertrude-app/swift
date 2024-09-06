@@ -4,46 +4,46 @@ import Vapor
 
 // TODO: rename Env
 public struct EnvVars: Sendable {
-  var mode: AppMode
-  var s3: S3
-  var sendgridApiKey: String
-  var postmarkApiKey: String
-  var database: Database
-  var dashboardUrl: String
-  var twilio: Twilio
-  var stripe: Stripe
-  var analyticsSiteUrl: String
+  public var mode: AppMode
+  public var s3: S3
+  public var sendgridApiKey: String
+  public var postmarkApiKey: String
+  public var database: Database
+  public var dashboardUrl: String
+  public var twilio: Twilio
+  public var stripe: Stripe
+  public var analyticsSiteUrl: String
 
-  enum AppMode: Equatable, Sendable {
+  public enum AppMode: Equatable, Sendable {
     case prod
     case dev
     case staging
     case test
   }
 
-  struct S3: Sendable {
-    var key: String
-    var secret: String
-    var endpoint: String
-    var bucketUrl: String
-    var bucket: String
+  public struct S3: Sendable {
+    public var key: String
+    public var secret: String
+    public var endpoint: String
+    public var bucketUrl: String
+    public var bucket: String
   }
 
-  struct Database: Sendable {
-    var name: String
-    var username: String
-    var password: String
+  public struct Database: Sendable {
+    public var name: String
+    public var username: String
+    public var password: String
   }
 
-  struct Stripe: Sendable {
-    var secretKey: String
-    var subscriptionPriceId: String
+  public struct Stripe: Sendable {
+    public var secretKey: String
+    public var subscriptionPriceId: String
   }
 
-  struct Twilio: Sendable {
-    var accountSid: String
-    var authToken: String
-    var fromPhone: String
+  public struct Twilio: Sendable {
+    public var accountSid: String
+    public var authToken: String
+    public var fromPhone: String
   }
 }
 
@@ -62,12 +62,31 @@ extension EnvVars.AppMode {
       fatalError("Unexpected Vapor.Environment: \(String(describing: env))")
     }
   }
+
+  var name: String {
+    switch self {
+    case .prod: "production"
+    case .dev: "development"
+    case .staging: "staging"
+    case .test: "testing"
+    }
+  }
+
+  var coloredName: String {
+    switch self {
+    case .prod: self.name.uppercased().red.bold
+    case .dev: self.name.uppercased().green.bold
+    case .staging: self.name.uppercased().yellow.bold
+    case .test: self.name.uppercased().magenta.bold
+    }
+  }
 }
 
 extension EnvVars: DependencyKey {
-  public static var liveValue: EnvVars {
-    EnvVars(
-      mode: AppMode(from: try? Vapor.Environment.detect()),
+  public static func fromProcess(mode vaporEnv: Vapor.Environment?) -> EnvVars {
+    let mode = AppMode(from: vaporEnv)
+    return EnvVars(
+      mode: mode,
       s3: S3(
         key: processEnv("CLOUD_STORAGE_KEY"),
         secret: processEnv("CLOUD_STORAGE_SECRET"),
@@ -78,7 +97,9 @@ extension EnvVars: DependencyKey {
       sendgridApiKey: processEnv("SENDGRID_API_KEY"),
       postmarkApiKey: processEnv("POSTMARK_API_KEY"),
       database: Database(
-        name: processEnv("DATABASE_NAME"),
+        name: mode == .test
+          ? processEnv("TEST_DATABASE_NAME")
+          : processEnv("DATABASE_NAME"),
         username: processEnv("DATABASE_USERNAME"),
         password: processEnv("DATABASE_PASSWORD")
       ),
@@ -95,6 +116,14 @@ extension EnvVars: DependencyKey {
       analyticsSiteUrl: processEnv("ANALYTICS_SITE_URL")
     )
   }
+
+  public static var liveValue: EnvVars {
+    self.fromProcess(mode: try? Vapor.Environment.detect())
+  }
+
+  public static var fromProcess: EnvVars {
+    .liveValue
+  }
 }
 
 public extension DependencyValues {
@@ -106,6 +135,9 @@ public extension DependencyValues {
 
 func processEnv(_ key: String) -> String {
   guard let envVar = ProcessInfo.processInfo.environment[key] else {
+    let stackTrace = Thread.callStackSymbols
+    print(stackTrace.joined(separator: "\n"))
+    fflush(stdout)
     fatalError("Missing required environment variable: `\(key)`")
   }
   return envVar
@@ -113,33 +145,6 @@ func processEnv(_ key: String) -> String {
 
 extension EnvVars: TestDependencyKey {
   public static var testValue: EnvVars {
-    EnvVars(
-      mode: .test,
-      s3: S3(
-        key: "@test_var_cloud_storage_key",
-        secret: "@test_var_cloud_storage_secret",
-        endpoint: "@test_var_cloud_storage_endpoint",
-        bucketUrl: "@test_var_cloud_storage_bucket_url",
-        bucket: "@test_var_cloud_storage_bucket"
-      ),
-      sendgridApiKey: "@test_var_sendgrid_api_key",
-      postmarkApiKey: "@test_var_postmark_api_key",
-      database: Database(
-        name: "@test_var_database_name",
-        username: "@test_var_database_username",
-        password: "@test_var_database_password"
-      ),
-      dashboardUrl: "@test_var_dashboard_url",
-      twilio: Twilio(
-        accountSid: "@test_var_twilio_account_sid",
-        authToken: "@test_var_twilio_auth_token",
-        fromPhone: "@test_var_twilio_from_phone"
-      ),
-      stripe: Stripe(
-        secretKey: "@test_var_stripe_secret_key",
-        subscriptionPriceId: "@test_var_stripe_subscription_price_id"
-      ),
-      analyticsSiteUrl: "@test_var_analytics_site_url"
-    )
+    .fromProcess(mode: .testing)
   }
 }

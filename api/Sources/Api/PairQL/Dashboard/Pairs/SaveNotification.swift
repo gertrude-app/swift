@@ -18,20 +18,20 @@ struct SaveNotification: Pair {
 extension SaveNotification: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     if !input.isNew {
-      var existing = try await Current.db.query(AdminNotification.self)
+      var existing = try await AdminNotification.query()
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .first()
       existing.methodId = input.methodId
       existing.trigger = input.trigger
-      try await Current.db.update(existing)
+      try await existing.save()
       return .success
     } else {
-      try await Current.db.create(AdminNotification(
+      try await AdminNotification(
         adminId: context.admin.id,
         methodId: input.methodId,
         trigger: input.trigger
-      ))
+      ).create()
       return .success
     }
   }

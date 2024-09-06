@@ -18,8 +18,8 @@ final class ConnectUserResolversTests: ApiTestCase {
     expect(userData.id).toEqual(user.id.rawValue)
     expect(userData.name).toEqual(user.name)
 
-    let userDevice = try await Current.db.find(UserDevice.Id(userData.deviceId))
-    let device = try await Current.db.find(userDevice.deviceId)
+    let userDevice = try await self.db.find(UserDevice.Id(userData.deviceId))
+    let device = try await self.db.find(userDevice.deviceId)
 
     expect(userDevice.username).toEqual(input.username)
     expect(userDevice.fullUsername).toEqual(input.fullUsername)
@@ -30,7 +30,7 @@ final class ConnectUserResolversTests: ApiTestCase {
     expect(device.modelIdentifier).toEqual(input.modelIdentifier)
     expect(device.osVersion).toEqual(Semver("14.2.0"))
 
-    let token = try await Current.db.query(UserToken.self)
+    let token = try await self.db.query(UserToken.self)
       .where(.value == userData.token)
       .first()
 
@@ -67,7 +67,7 @@ final class ConnectUserResolversTests: ApiTestCase {
   func testConnectUser_ReassignToDifferentUserOwnedBySameAdmin() async throws {
     Current.date = { Date() }
     let existingUser = try await Entities.user().withDevice()
-    let existingUserToken = try await Current.db.create(UserToken(
+    let existingUserToken = try await self.db.create(UserToken(
       userId: existingUser.id,
       userDeviceId: existingUser.device.id
     ))
@@ -80,7 +80,7 @@ final class ConnectUserResolversTests: ApiTestCase {
     // happy path, the device exists, registered to another user, but that's OK
     // because the same admin owns both users, so switch it over
     newUser.model.adminId = existingUser.admin.model.id
-    try await Current.db.update(newUser.model)
+    try await self.db.update(newUser.model)
 
     var input = input(code)
     input.numericId = existingUser.device.numericId
@@ -91,17 +91,17 @@ final class ConnectUserResolversTests: ApiTestCase {
     expect(userData.id).toEqual(newUser.id.rawValue)
     expect(userData.name).toEqual(newUser.name)
 
-    let retrievedDevice = try await Current.db.find(existingUser.device.id)
+    let retrievedDevice = try await self.db.find(existingUser.device.id)
     expect(retrievedDevice.userId).toEqual(newUser.model.id)
 
-    let retrievedOldToken = try await Current.db.find(existingUserToken.id)
+    let retrievedOldToken = try await self.db.find(existingUserToken.id)
     XCTAssertNotNil(retrievedOldToken.deletedAt)
   }
 
   // test sanity check, computer/user registered to a different admin
   func testConnectUser_ExistingDeviceToDifferentUser_FailsIfDifferentAdmin() async throws {
     let existingUser = try await Entities.user().withDevice()
-    let existingUserToken = try await Current.db.create(UserToken(
+    let existingUserToken = try await self.db.create(UserToken(
       userId: existingUser.model.id,
       userDeviceId: existingUser.device.id
     ))
@@ -120,7 +120,7 @@ final class ConnectUserResolversTests: ApiTestCase {
     }.toContain("associated with another Gertrude parent account")
 
     // old token is not deleted
-    let retrievedOldToken = try? await Current.db.find(existingUserToken.id)
+    let retrievedOldToken = try? await self.db.find(existingUserToken.id)
     XCTAssertNotNil(retrievedOldToken)
   }
 

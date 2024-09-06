@@ -68,7 +68,7 @@ extension UserActivityFeed: Resolver {
     let user = try await context.verifiedUser(from: input.userId)
     let userDeviceIds = try await user.devices().map(\.id)
 
-    async let keystrokes = Current.db.query(KeystrokeLine.self)
+    async let keystrokes = KeystrokeLine.query()
       .where(.userDeviceId |=| userDeviceIds)
       .where(.createdAt <= .date(before))
       .where(.createdAt > .date(after))
@@ -76,7 +76,7 @@ extension UserActivityFeed: Resolver {
       .withSoftDeleted()
       .all()
 
-    async let screenshots = Current.db.query(Screenshot.self)
+    async let screenshots = Screenshot.query()
       .where(.userDeviceId |=| userDeviceIds)
       .where(.createdAt <= .date(before))
       .where(.createdAt > .date(after))

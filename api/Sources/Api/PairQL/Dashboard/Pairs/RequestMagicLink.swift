@@ -20,7 +20,7 @@ extension RequestMagicLink: Resolver {
       throw Abort(.badRequest)
     }
 
-    let admin = try? await Current.db.query(Admin.self)
+    let admin = try? await Admin.query()
       .where(.email == .string(email))
       .first()
 

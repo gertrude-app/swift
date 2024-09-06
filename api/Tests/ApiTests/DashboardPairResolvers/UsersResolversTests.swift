@@ -12,7 +12,7 @@ final class UsersResolversTests: ApiTestCase {
       in: user.admin.context
     )
     expect(output).toEqual(.success)
-    let retrieved = try? await Current.db.find(user.id)
+    let retrieved = try? await self.db.find(user.id)
     expect(retrieved).toBeNil()
     expect(sent.websocketMessages).toEqual([.init(.userDeleted, to: .user(user.id))])
   }
@@ -34,7 +34,7 @@ final class UsersResolversTests: ApiTestCase {
 
     let output = try await SaveUser.resolve(with: input, in: admin.context)
 
-    let user = try await Current.db.find(input.id)
+    let user = try await self.db.find(input.id)
     expect(output).toEqual(.success)
     expect(user.name).toEqual("Test User")
     expect(user.keyloggingEnabled).toEqual(true)
@@ -62,7 +62,7 @@ final class UsersResolversTests: ApiTestCase {
       in: user.admin.context
     )
 
-    let retrieved = try await Current.db.find(user.id)
+    let retrieved = try await self.db.find(user.id)
     expect(output).toEqual(.success)
     expect(retrieved.name).toEqual("New name")
     expect(retrieved.keyloggingEnabled).toEqual(false)
@@ -78,12 +78,12 @@ final class UsersResolversTests: ApiTestCase {
     let user = try await Entities.user()
     var keychain = Keychain.random
     keychain.authorId = user.admin.id
-    try await Current.db.create(keychain)
+    try await self.db.create(keychain)
 
     let input = SaveUser.Input(from: user, keychainIds: [keychain.id])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychainIds = try await Current.db.query(UserKeychain.self)
+    let keychainIds = try await self.db.query(UserKeychain.self)
       .where(.userId == user.id)
       .all()
       .map(\.keychainId)
@@ -96,18 +96,18 @@ final class UsersResolversTests: ApiTestCase {
     let user = try await Entities.user()
     var keychain = Keychain.random
     keychain.authorId = user.admin.id
-    try await Current.db.create(keychain)
-    let pivot = try await Current.db.create(UserKeychain(userId: user.id, keychainId: keychain.id))
+    try await self.db.create(keychain)
+    let pivot = try await self.db.create(UserKeychain(userId: user.id, keychainId: keychain.id))
 
     let input = SaveUser.Input(from: user, keychainIds: [])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychains = try await Current.db.query(UserKeychain.self)
+    let keychains = try await self.db.query(UserKeychain.self)
       .where(.userId == user.id)
       .all()
 
     expect(keychains.isEmpty).toBeTrue()
-    let retrievedPivot = try? await Current.db.find(pivot.id)
+    let retrievedPivot = try? await self.db.find(pivot.id)
     expect(retrievedPivot).toBeNil()
   }
 
@@ -118,20 +118,20 @@ final class UsersResolversTests: ApiTestCase {
     keychain1.authorId = user.admin.id
     var keychain2 = Keychain.random
     keychain2.authorId = user.admin.id
-    try await Current.db.create([keychain1, keychain2])
+    try await self.db.create([keychain1, keychain2])
 
-    let pivot = try await Current.db.create(UserKeychain(userId: user.id, keychainId: keychain1.id))
+    let pivot = try await self.db.create(UserKeychain(userId: user.id, keychainId: keychain1.id))
 
     let input = SaveUser.Input(from: user, keychainIds: [keychain2.id])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychainIds = try await Current.db.query(UserKeychain.self)
+    let keychainIds = try await self.db.query(UserKeychain.self)
       .where(.userId == user.id)
       .all()
       .map(\.keychainId)
 
     expect(keychainIds).toEqual([keychain2.id])
-    let retrievedPivot = try? await Current.db.find(pivot.id)
+    let retrievedPivot = try? await self.db.find(pivot.id)
     expect(retrievedPivot).toBeNil()
   }
 }

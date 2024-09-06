@@ -22,7 +22,7 @@ struct Login: Pair {
 
 extension Login: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    let admin = try await Current.db.query(Admin.self)
+    let admin = try await Admin.query()
       .where(.email == .string(input.email.lowercased()))
       .first(orThrow: context |> loginError)
 
@@ -36,7 +36,7 @@ extension Login: Resolver {
     }
 
     let match: Bool
-    switch Env.mode {
+    switch context.env.mode {
     case .test:
       // for test speed, bcrypt verification is slow, by design
       match = input.password == admin.password
@@ -57,7 +57,7 @@ extension Login: Resolver {
       throw context |> loginError
     }
 
-    let token = try await Current.db.create(AdminToken(adminId: admin.id))
+    let token = try await AdminToken(adminId: admin.id).create()
     return .init(adminId: admin.id, token: token.value)
   }
 }

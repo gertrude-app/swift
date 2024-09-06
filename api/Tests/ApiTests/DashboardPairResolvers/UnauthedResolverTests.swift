@@ -15,7 +15,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
   }
 
   func testInitiateSignupWithExistingEmailSendsEmail() async throws {
-    let existing = try await Current.db.create(Admin.random)
+    let existing = try await self.db.create(Admin.random)
 
     let input = Signup.Input(email: existing.email.rawValue, password: "pass")
     let output = try await Signup.resolve(with: input, in: self.context)
@@ -31,7 +31,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     let input = Signup.Input(email: email, password: "pass")
     let output = try await Signup.resolve(with: input, in: self.context)
 
-    let admin = try await Current.db.query(Admin.self)
+    let admin = try await self.db.query(Admin.self)
       .where(.email == email)
       .first()
 
@@ -54,7 +54,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     _ = try await Signup.resolve(with: input, in: self.context)
 
-    let admin = try await Current.db.query(Admin.self)
+    let admin = try await self.db.query(Admin.self)
       .where(.email == email)
       .first()
 
@@ -63,7 +63,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
   }
 
   func testLoginFromMagicLink() async throws {
-    let admin = try await Current.db.create(Admin.random)
+    let admin = try await self.db.create(Admin.random)
     let uuids = MockUUIDs()
 
     let output = try await withDependencies {
@@ -73,14 +73,14 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
       return try await LoginMagicLink.resolve(with: .init(token: token), in: self.context)
     }
 
-    let adminToken = try await Current.db.find(AdminToken.Id(uuids[1]))
+    let adminToken = try await self.db.find(AdminToken.Id(uuids[1]))
     expect(output).toEqual(.init(token: .init(uuids[2]), adminId: admin.id))
     expect(adminToken.value).toEqual(.init(uuids[2]))
     expect(adminToken.adminId).toEqual(admin.id)
   }
 
   func testRequestMagicLink() async throws {
-    let admin = try await Current.db.create(Admin.random)
+    let admin = try await self.db.create(Admin.random)
 
     let (token, output) = try await withUUID {
       try await RequestMagicLink.resolve(
@@ -96,7 +96,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
   }
 
   func testSendMagicLinkWithRedirect() async throws {
-    let admin = try await Current.db.create(Admin.random)
+    let admin = try await self.db.create(Admin.random)
 
     let (token, output) = try await withUUID {
       try await RequestMagicLink.resolve(

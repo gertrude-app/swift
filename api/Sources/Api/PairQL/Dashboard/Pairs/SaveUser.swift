@@ -23,7 +23,7 @@ extension SaveUser: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     var user: User
     if input.isNew {
-      user = try await Current.db.create(User(
+      user = try await User(
         id: input.id,
         adminId: context.admin.id,
         name: input.name,
@@ -32,7 +32,7 @@ extension SaveUser: Resolver {
         screenshotsResolution: input.screenshotsResolution,
         screenshotsFrequency: input.screenshotsFrequency,
         showSuspensionActivity: input.showSuspensionActivity
-      ))
+      ).create()
       dashSecurityEvent(.childAdded, "name: \(user.name)", in: context)
     } else {
       user = try await User.find(input.id)
@@ -60,7 +60,7 @@ extension SaveUser: Resolver {
       let pivots = input.keychainIds
         .map { UserKeychain(userId: user.id, keychainId: $0) }
 
-      try await Current.db.create(pivots)
+      try await context.db.create(pivots)
     }
 
     try await Current.websockets.send(.userUpdated, to: .user(user.id))

@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
   name: "api",
-  platforms: [.macOS(.v12)],
+  platforms: [.macOS(.v13)],
   dependencies: [
     .package("vapor/vapor@4.104.0"),
     .package("vapor/fluent@4.11.0"),

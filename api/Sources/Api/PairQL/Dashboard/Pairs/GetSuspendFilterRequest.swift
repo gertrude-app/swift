@@ -23,7 +23,7 @@ struct GetSuspendFilterRequest: Pair {
 
 extension GetSuspendFilterRequest: Resolver {
   static func resolve(with id: Input, in context: AdminContext) async throws -> Output {
-    let request = try await Current.db.find(id)
+    let request = try await SuspendFilterRequest.find(id)
     let userDevice = try await request.userDevice()
     let user = try await userDevice.user()
     var extraMonitoringOptions: [String: String] = [:]

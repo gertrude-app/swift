@@ -1,8 +1,11 @@
+import Dependencies
 import DuetSQL
 import FluentSQL
 import Gertie
 
 struct SecurityEvents: GertieMigration {
+  @Dependency(\.db) var db
+
   let securityEventFk = Constraint.foreignKey(
     from: SecurityEvent.M21.self,
     to: UserDevice.M11.self,
@@ -46,9 +49,11 @@ struct SecurityEvents: GertieMigration {
     try await sql.drop(constraint: self.securityEventFk)
     try await sql.drop(table: SecurityEvent.M21.self)
 
-    try await AdminNotification.query()
-      .where(.trigger == .enum(AdminNotification.Trigger.adminChildSecurityEvent))
-      .delete()
+    try await sql.execute("""
+      DELETE FROM \(table: AdminNotification.M1.self)
+      WHERE \(col: AdminNotification.M1.trigger)
+        = '\(unsafeRaw: AdminNotification.Trigger.adminChildSecurityEvent.rawValue)'
+    """)
 
     try await self.dropEnumCase(sql)
   }

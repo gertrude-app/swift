@@ -12,7 +12,6 @@ struct Admin: Codable, Sendable {
   var abTestVariant: String?
   var createdAt = Date()
   var updatedAt = Date()
-  var deletedAt: Date?
 
   var accountStatus: AdminAccountStatus {
     self.subscriptionStatus.accountStatus
@@ -43,38 +42,38 @@ struct Admin: Codable, Sendable {
 
 extension Admin {
   func keychains() async throws -> [Keychain] {
-    try await Current.db.query(Keychain.self)
+    try await Keychain.query()
       .where(.authorId == self.id)
       .all()
   }
 
   func keychain(_ keychainId: Keychain.Id) async throws -> Keychain {
-    try await Current.db.query(Keychain.self)
+    try await Keychain.query()
       .where(.authorId == self.id)
       .where(.id == keychainId)
       .first()
   }
 
   func users() async throws -> [User] {
-    try await Current.db.query(User.self)
+    try await User.query()
       .where(.adminId == self.id)
       .all()
   }
 
   func devices() async throws -> [Device] {
-    try await Current.db.query(Device.self)
+    try await Device.query()
       .where(.adminId == self.id)
       .all()
   }
 
   func notifications() async throws -> [AdminNotification] {
-    try await Current.db.query(AdminNotification.self)
+    try await AdminNotification.query()
       .where(.adminId == self.id)
       .all()
   }
 
   func verifiedNotificationMethods() async throws -> [AdminVerifiedNotificationMethod] {
-    try await Current.db.query(AdminVerifiedNotificationMethod.self)
+    try await AdminVerifiedNotificationMethod.query()
       .where(.adminId == self.id)
       .all()
   }

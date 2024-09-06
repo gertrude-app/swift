@@ -1,5 +1,9 @@
 import Dependencies
+import DuetSQL
+import PostgresKit
 import XStripe
+
+import FluentKit
 
 extension Stripe.Client: DependencyKey {
   public static var liveValue: Stripe.Client {
@@ -12,6 +16,51 @@ public extension DependencyValues {
   var stripe: Stripe.Client {
     get { self[Stripe.Client.self] }
     set { self[Stripe.Client.self] = newValue }
+  }
+}
+
+public extension DependencyValues {
+  var db: any DuetSQL.Client {
+    get { self[DbClientKey.self] }
+    set { self[DbClientKey.self] = newValue }
+  }
+}
+
+public enum DbClientKey: TestDependencyKey {
+  public static var testValue: any DuetSQL.Client {
+    PgClient(threadCount: 1, env: .fromProcess(mode: .testing))
+  }
+}
+
+extension DbClientKey: DependencyKey {
+  public static var liveValue: any DuetSQL.Client {
+    PgClient(threadCount: System.coreCount, env: .fromProcess)
+  }
+}
+
+public extension PgClient {
+  init(threadCount: Int, env: EnvVars) {
+    self = PgClient(
+      factory: .from(env: env),
+      logger: .null,
+      numberOfThreads: threadCount
+    )
+  }
+}
+
+extension DatabaseConfigurationFactory {
+  static func from(env: EnvVars) -> DatabaseConfigurationFactory {
+    .postgres(configuration: .init(
+      hostname: env.get("DATABASE_HOST") ?? "localhost",
+      username: env.database.username,
+      password: env.database.password,
+      database: env.database.name,
+      tls: .disable
+    ))
+  }
+
+  static var testDb: DatabaseConfigurationFactory {
+    .from(env: .testValue)
   }
 }
 

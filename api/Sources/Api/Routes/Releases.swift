@@ -1,3 +1,4 @@
+import Dependencies
 import Gertie
 import Vapor
 import XCore
@@ -9,7 +10,8 @@ enum ReleasesRoute {
       var channel: ReleaseChannel
     }
 
-    let releases = try await Current.db.query(Release.self)
+    @Dependency(\.db) var db
+    let releases = try await db.query(Release.self)
       .orderBy(.createdAt, .desc)
       .all()
 

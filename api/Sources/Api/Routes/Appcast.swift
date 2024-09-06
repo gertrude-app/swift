@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import Vapor
@@ -5,7 +6,8 @@ import Vapor
 enum AppcastRoute {
   @Sendable static func handler(_ request: Request) async throws -> Response {
     let query = try request.query.decode(AppcastQuery.self)
-    let releases = try await Current.db.query(Release.self)
+    @Dependency(\.db) var db
+    let releases = try await db.query(Release.self)
       .orderBy(.createdAt, .desc)
       .all()
       .filter { $0.channel.isAtLeastAsStable(as: query.channel ?? .stable) }

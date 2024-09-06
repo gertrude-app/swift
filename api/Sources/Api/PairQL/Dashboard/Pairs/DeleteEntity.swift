@@ -25,45 +25,48 @@ struct DeleteEntity: Pair {
 // resolver
 
 extension DeleteEntity: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(
+    with input: Input,
+    in context: AdminContext
+  ) async throws -> Output {
     switch input.type {
     case .admin:
       guard input.id == context.admin.id else {
         throw Abort(.unauthorized)
       }
-      try await Current.db.create(DeletedEntity(
+      try await DeletedEntity(
         type: "Admin",
         reason: "self-deleted from use-case initial screen",
         data: try JSON.encode(context.admin, [.isoDates])
-      ))
+      ).create()
       try await context.admin.delete()
 
     case .adminNotification:
-      try await Current.db.query(AdminNotification.self)
+      try await AdminNotification.query()
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .delete()
       dashSecurityEvent(.notificationDeleted, in: context)
 
     case .adminVerifiedNotificationMethod:
-      try await Current.db.query(AdminVerifiedNotificationMethod.self)
+      try await AdminVerifiedNotificationMethod.query()
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
         .delete()
 
     case .userDevice:
-      let userDevice = try await Current.db.find(UserDevice.Id(input.id))
+      let userDevice = try await UserDevice.find(.init(input.id))
       try await context.verifiedUser(from: userDevice.userId)
-      try await Current.db.delete(userDevice.id)
+      try await userDevice.delete()
       let remainingUserDevices = try await UserDevice.query()
         .where(.deviceId == userDevice.deviceId)
         .all()
       if remainingUserDevices.isEmpty {
-        try await Current.db.delete(userDevice.deviceId)
+        try await context.db.delete(userDevice.deviceId)
       }
 
     case .key:
-      let key = try await Current.db.find(Key.Id(input.id))
+      let key = try await Key.find(Key.Id(input.id))
       let keychain = try await key.keychain()
       guard keychain.authorId == context.admin.id else {
         throw Abort(.unauthorized)
@@ -72,7 +75,7 @@ extension DeleteEntity: Resolver {
       try await Current.websockets.send(.userUpdated, to: .usersWith(keychain: keychain.id))
 
     case .keychain:
-      try await Current.db.query(Keychain.self)
+      try await Keychain.query()
         .where(.id == input.id)
         .where(.authorId == context.admin.id)
         .delete()
@@ -90,7 +93,7 @@ extension DeleteEntity: Resolver {
         .all()
       for device in devices {
         if try await device.userDevices().isEmpty {
-          try await Current.db.delete(device.id)
+          try await device.delete()
         }
       }
       try await Current.websockets.send(.userDeleted, to: .user(user.id))

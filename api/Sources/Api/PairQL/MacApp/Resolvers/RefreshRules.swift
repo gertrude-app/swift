@@ -14,7 +14,7 @@ extension RefreshRules: Resolver {
        !input.appVersion.isEmpty,
        input.appVersion != userDevice.appVersion {
       userDevice.appVersion = input.appVersion
-      try await Current.db.update(userDevice)
+      try await userDevice.save()
     }
 
     // ...merging in AUTO-INCLUDED Keychain

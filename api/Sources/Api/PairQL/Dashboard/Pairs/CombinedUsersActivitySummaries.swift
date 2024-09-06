@@ -17,14 +17,14 @@ extension CombinedUsersActivitySummaries: Resolver {
     let dateRanges = input.compactMap(\.dates)
     let userDeviceIds = try await context.userDevices().map(\.id)
     return try await dateRanges.concurrentMap { start, end in
-      async let screenshots = Current.db.query(Screenshot.self)
+      async let screenshots = Screenshot.query()
         .where(.userDeviceId |=| userDeviceIds)
         .where(.createdAt <= .date(end))
         .where(.createdAt > .date(start))
         .orderBy(.createdAt, .desc)
         .withSoftDeleted()
         .all()
-      async let keystrokeLines = Current.db.query(KeystrokeLine.self)
+      async let keystrokeLines = KeystrokeLine.query()
         .where(.userDeviceId |=| userDeviceIds)
         .where(.createdAt <= .date(end))
         .where(.createdAt > .date(start))
@@ -37,11 +37,8 @@ extension CombinedUsersActivitySummaries: Resolver {
       let coalesced = try await coalesce(screenshots, keystrokeLines)
       let deletedCount = coalesced.lazy.filter(\.isDeleted).count
 
-      var day = start
-      day.addTimeInterval(.hours(12))
-
       return UserActivitySummaries.Day(
-        date: day,
+        date: start + .hours(12),
         numApproved: deletedCount,
         totalItems: coalesced.count
       )

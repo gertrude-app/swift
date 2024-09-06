@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import Tagged
@@ -5,17 +6,20 @@ import Tagged
 extension Model {
   @discardableResult
   func save() async throws -> Self {
-    try await Current.db.update(self)
+    @Dependency(\.db) var db
+    return try await db.update(self)
   }
 
   @discardableResult
   func create() async throws -> Self {
-    try await Current.db.create(self)
+    @Dependency(\.db) var db
+    return try await db.create(self)
   }
 
   @discardableResult
   func upsert() async throws -> Self {
-    if (try? await Current.db.query(Self.self).byId(id).first()) == nil {
+    @Dependency(\.db) var db
+    if (try? await db.query(Self.self).byId(id).first()) == nil {
       return try await self.create()
     } else {
       return try await self.save()
@@ -23,41 +27,49 @@ extension Model {
   }
 
   func delete(force: Bool = false) async throws {
-    try await Current.db.query(Self.self).byId(id).delete(force: force)
+    @Dependency(\.db) var db
+    try await db.query(Self.self).byId(id).delete(force: force)
   }
 
   static func find(_ id: Tagged<Self, UUID>) async throws -> Self {
-    try await Current.db.query(Self.self).byId(id).first()
+    @Dependency(\.db) var db
+    return try await db.query(Self.self).byId(id).first()
   }
 
   static func deleteAll() async throws {
-    try await Current.db.query(Self.self).delete()
+    @Dependency(\.db) var db
+    try await db.query(Self.self).delete()
   }
 
   static func query() -> DuetQuery<Self> {
-    Current.db.query(Self.self)
+    @Dependency(\.db) var db
+    return db.query(Self.self)
   }
 
   @discardableResult
   static func create(_ model: Self) async throws -> Self {
-    try await Current.db.create(model)
+    @Dependency(\.db) var db
+    return try await db.create(model)
   }
 
   @discardableResult
   static func create(_ models: [Self]) async throws -> [Self] {
-    try await Current.db.create(models)
+    @Dependency(\.db) var db
+    return try await db.create(models)
   }
 }
 
 extension Array where Element: Model {
   @discardableResult
   func create() async throws -> Self {
-    try await Current.db.create(self)
+    @Dependency(\.db) var db
+    return try await db.create(self)
   }
 
   @discardableResult
   func save() async throws -> Self {
-    try await Current.db.update(self)
+    @Dependency(\.db) var db
+    return try await db.update(self)
   }
 }
 
@@ -103,7 +115,7 @@ extension Admin: Duet.Identifiable {
 }
 
 extension Admin {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case email
     case password
@@ -126,7 +138,7 @@ extension AdminNotification: Duet.Identifiable {
 }
 
 extension AdminNotification {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case adminId
     case methodId
@@ -144,7 +156,7 @@ extension AdminToken: Duet.Identifiable {
 }
 
 extension AdminToken {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case adminId
     case value
@@ -158,7 +170,7 @@ extension AdminVerifiedNotificationMethod: Duet.Identifiable {
 }
 
 extension AdminVerifiedNotificationMethod {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case adminId
     case config
@@ -171,7 +183,7 @@ extension AppCategory: Duet.Identifiable {
 }
 
 extension AppCategory {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case name
     case slug
@@ -186,7 +198,7 @@ extension AppBundleId: Duet.Identifiable {
 }
 
 extension AppBundleId {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case bundleId
     case identifiedAppId
@@ -200,7 +212,7 @@ extension Device: Duet.Identifiable {
 }
 
 extension Device {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case adminId
     case customName
@@ -219,7 +231,7 @@ extension UserDevice: Duet.Identifiable {
 }
 
 extension UserDevice {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case userId
     case deviceId
@@ -238,7 +250,7 @@ extension IdentifiedApp: Duet.Identifiable {
 }
 
 extension IdentifiedApp {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case categoryId
     case name
@@ -255,7 +267,7 @@ extension Keychain: Duet.Identifiable {
 }
 
 extension Keychain {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case authorId
     case name
@@ -263,7 +275,6 @@ extension Keychain {
     case isPublic
     case createdAt
     case updatedAt
-    case deletedAt
   }
 }
 
@@ -272,7 +283,7 @@ extension Key: Duet.Identifiable {
 }
 
 extension Key {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case keychainId
     case key
@@ -288,7 +299,7 @@ extension KeystrokeLine: Duet.Identifiable {
 }
 
 extension KeystrokeLine {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case userDeviceId
     case appName
@@ -312,7 +323,7 @@ extension Release: Duet.Identifiable {
 }
 
 extension Release {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case semver
     case channel
@@ -335,7 +346,7 @@ extension StripeEvent: Duet.Identifiable {
 }
 
 extension StripeEvent {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case json
     case createdAt
@@ -347,7 +358,7 @@ extension Screenshot: Duet.Identifiable {
 }
 
 extension Screenshot {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case userDeviceId
     case url
@@ -364,7 +375,7 @@ extension SuspendFilterRequest: Duet.Identifiable {
 }
 
 extension SuspendFilterRequest {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case userDeviceId
     case status
@@ -383,7 +394,7 @@ extension UnlockRequest: Duet.Identifiable {
 }
 
 extension UnlockRequest {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case userDeviceId
     case status
@@ -403,7 +414,7 @@ extension User: Duet.Identifiable {
 }
 
 extension User {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case adminId
     case name
@@ -414,7 +425,6 @@ extension User {
     case showSuspensionActivity
     case createdAt
     case updatedAt
-    case deletedAt
   }
 }
 
@@ -423,7 +433,7 @@ extension UserKeychain: Duet.Identifiable {
 }
 
 extension UserKeychain {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case userId
     case keychainId
@@ -436,7 +446,7 @@ extension UserToken: Duet.Identifiable {
 }
 
 extension UserToken {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case userId
     case userDeviceId
@@ -452,7 +462,7 @@ extension InterestingEvent: Duet.Identifiable {
 }
 
 extension InterestingEvent {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case eventId
     case kind
@@ -469,7 +479,7 @@ extension DeletedEntity: Duet.Identifiable {
 }
 
 extension DeletedEntity {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case type
     case reason
@@ -483,7 +493,7 @@ extension Browser: Duet.Identifiable {
 }
 
 extension Browser {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case match
     case createdAt
@@ -495,7 +505,7 @@ extension SecurityEvent: Duet.Identifiable {
 }
 
 extension SecurityEvent {
-  enum CodingKeys: String, CodingKey, CaseIterable {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case adminId
     case userDeviceId

@@ -7,18 +7,19 @@ struct AdminContext: ResolverContext {
   let admin: Admin
   let ipAddress: String?
 
+  @Dependency(\.db) var db
   @Dependency(\.stripe) var stripe
 
   @discardableResult
   func verifiedUser(from id: User.Id) async throws -> User {
-    try await Current.db.query(User.self)
+    try await User.query()
       .where(.id == id)
       .where(.adminId == self.admin.id)
       .first()
   }
 
   func users() async throws -> [User] {
-    try await Current.db.query(User.self)
+    try await User.query()
       .where(.adminId == self.admin.id)
       .all()
   }

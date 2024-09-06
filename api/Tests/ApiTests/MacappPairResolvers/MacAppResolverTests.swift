@@ -98,7 +98,7 @@ final class MacAppResolverTests: ApiTestCase {
     }
 
     expect(output).toEqual(.success)
-    let inserted = try await Current.db.find(KeystrokeLine.Id(uuid))
+    let inserted = try await self.db.find(KeystrokeLine.Id(uuid))
     expect(inserted.appName).toEqual("Xcode")
     expect(inserted.line).toEqual("import Foundation")
     expect(inserted.createdAt).toEqual(.epoch)
@@ -120,12 +120,12 @@ final class MacAppResolverTests: ApiTestCase {
     }
 
     expect(output).toEqual(.success)
-    let inserted = try await Current.db.find(KeystrokeLine.Id(uuid))
+    let inserted = try await self.db.find(KeystrokeLine.Id(uuid))
     expect(inserted.line).toEqual("Hello�World")
   }
 
   func testCreateSignedScreenshotUpload() async throws {
-    let beforeCount = try await Current.db.query(Screenshot.self).all().count
+    let beforeCount = try await self.db.query(Screenshot.self).all().count
     let user = try await Entities.user().withDevice()
 
     Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
@@ -137,7 +137,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     expect(output.uploadUrl.absoluteString).toEqual("from-aws.com")
 
-    let afterCount = try await Current.db.query(Screenshot.self).all().count
+    let afterCount = try await self.db.query(Screenshot.self).all().count
     expect(afterCount).toEqual(beforeCount + 1)
   }
 
@@ -153,7 +153,7 @@ final class MacAppResolverTests: ApiTestCase {
       )
     }
 
-    let screenshot = try await Current.db.find(Screenshot.Id(uuid))
+    let screenshot = try await self.db.find(Screenshot.Id(uuid))
     expect(screenshot.width).toEqual(1116)
     expect(screenshot.createdAt).toEqual(.epoch)
   }

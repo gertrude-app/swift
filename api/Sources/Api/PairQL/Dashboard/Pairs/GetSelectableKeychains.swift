@@ -15,7 +15,7 @@ struct GetSelectableKeychains: Pair {
 extension GetSelectableKeychains: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     async let own = context.admin.keychains()
-    async let `public` = Current.db.query(Api.Keychain.self)
+    async let `public` = Api.Keychain.query()
       .where(.isPublic == true)
       .where(.authorId != context.admin.id)
       .all()

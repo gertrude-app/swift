@@ -99,15 +99,15 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testCheckIn_AppManifest() async throws {
-    try await Current.db.query(IdentifiedApp.self).delete(force: true)
-    try await Current.db.query(AppBundleId.self).delete(force: true)
-    try await Current.db.query(AppCategory.self).delete(force: true)
+    try await self.db.query(IdentifiedApp.self).delete(force: true)
+    try await self.db.query(AppBundleId.self).delete(force: true)
+    try await self.db.query(AppCategory.self).delete(force: true)
     await clearCachedAppIdManifest()
 
-    let app = try await Current.db.create(IdentifiedApp.random)
+    let app = try await self.db.create(IdentifiedApp.random)
     var id = AppBundleId.random
     id.identifiedAppId = app.id
-    try await Current.db.create(id)
+    try await self.db.create(id)
 
     let user = try await Entities.user().withDevice()
     let output = try await CheckIn.resolve(
@@ -119,7 +119,7 @@ final class CheckInResolverTests: ApiTestCase {
 
   func testUserWithNoKeychainsDoesNotGetAutoIncluded() async throws {
     let user = try await Entities.user().withDevice()
-    try await createAutoIncludeKeychain()
+    try await self.createAutoIncludeKeychain()
 
     let output = try await CheckIn.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
@@ -131,7 +131,7 @@ final class CheckInResolverTests: ApiTestCase {
   func testUserWithAtLeastOneKeyGetsAutoIncluded() async throws {
     let user = try await Entities.user().withDevice()
     let admin = try await Entities.admin().withKeychain()
-    try await Current.db.create(UserKeychain(userId: user.id, keychainId: admin.keychain.id))
+    try await self.db.create(UserKeychain(userId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
 
     let output = try await CheckIn.resolve(
@@ -239,29 +239,4 @@ final class CheckInResolverTests: ApiTestCase {
     )
     expect(notRequested.resolvedUnlockRequests).toBeNil()
   }
-}
-
-// helpers
-
-@discardableResult
-func createAutoIncludeKeychain() async throws -> (Keychain, Api.Key) {
-  guard let autoIdStr = Env.get("AUTO_INCLUDED_KEYCHAIN_ID"),
-        let autoId = UUID(uuidString: autoIdStr) else {
-    fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")
-  }
-  let admin = try await Entities.admin()
-  try await Current.db.query(Keychain.self)
-    .where(.id == autoId)
-    .delete(force: true)
-
-  let keychain = try await Current.db.create(Keychain(
-    id: .init(autoId),
-    authorId: admin.model.id,
-    name: "Auto Included (test)"
-  ))
-  let key = try await Current.db.create(Key(
-    keychainId: keychain.id,
-    key: .domain(domain: "foo.com", scope: .webBrowsers)
-  ))
-  return (keychain, key)
 }

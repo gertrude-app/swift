@@ -24,7 +24,7 @@ extension Signup: Resolver {
       throw Abort(.badRequest)
     }
 
-    let existing = try? await Current.db.query(Admin.self)
+    let existing = try? await Admin.query()
       .where(.email == email)
       .first()
 
@@ -47,14 +47,14 @@ extension Signup: Resolver {
       ))
     }
 
-    let admin = try await Current.db.create(Admin(
+    let admin = try await Admin(
       email: .init(rawValue: email),
       password: Env.mode == .test ? input.password : try Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
       subscriptionStatusExpiration: Current.date().advanced(by: .days(7)),
       gclid: input.gclid,
       abTestVariant: input.abTestVariant
-    ))
+    ).create()
 
     try await sendVerificationEmail(to: admin, in: context)
     return .success

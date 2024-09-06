@@ -31,7 +31,7 @@ extension Request {
       throw Abort(.badRequest, reason: "invalid user auth token")
     }
 
-    let userToken = try? await Current.db.query(UserToken.self)
+    let userToken = try? await UserToken.query()
       .where(.value == uuid)
       .first()
 

@@ -39,7 +39,7 @@ struct SuspendFilterRequest: Codable, Sendable, Equatable {
 
 extension SuspendFilterRequest {
   func userDevice() async throws -> UserDevice {
-    try await Current.db.query(UserDevice.self)
+    try await UserDevice.query()
       .where(.id == self.userDeviceId)
       .first()
   }

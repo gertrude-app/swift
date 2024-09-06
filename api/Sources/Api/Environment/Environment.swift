@@ -11,7 +11,6 @@ import XSlack
     var aws: AWS.Client = .mock
     let websockets: ConnectedApps = .live
     let date: @Sendable () -> Date = { Date() }
-    var db: DuetSQL.Client = ThrowingClient()
     let ephemeral: Ephemeral = .init()
     let env: EnvironmentVariables = .live
     var logger: Logger = .null
@@ -27,7 +26,6 @@ import XSlack
     var aws: AWS.Client = .mock
     var websockets: ConnectedApps = .live
     var date: @Sendable () -> Date = { Date() }
-    var db: DuetSQL.Client = ThrowingClient()
     var ephemeral: Ephemeral = .init()
     var env: EnvironmentVariables = .live
     var logger: Logger = .null
@@ -51,7 +49,6 @@ nonisolated(unsafe) var Current = Environment()
       aws: .mock,
       websockets: .mock,
       date: { .mock },
-      db: ThrowingClient(),
       ephemeral: .init(),
       env: .mock,
       logger: .null,
@@ -93,14 +90,14 @@ func unexpected(_ id: String, _ adminId: Admin.Id? = nil, _ detail: String = "")
   Current.sendGrid.fireAndForget(.unexpected(id, detail))
 
   Task { [detail] in
-    try await Current.db.create(InterestingEvent(
+    try await InterestingEvent(
       eventId: id,
       kind: "event",
       context: "api",
       userDeviceId: nil,
       adminId: adminId,
       detail: detail
-    ))
+    ).create()
   }
 }
 

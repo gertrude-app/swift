@@ -49,7 +49,7 @@ struct GetDashboardWidgets: Pair {
 
 extension GetDashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let users = try await Current.db.query(Api.User.self)
+    let users = try await Api.User.query()
       .where(.adminId == context.admin.id)
       .all()
 
@@ -63,11 +63,11 @@ extension GetDashboardWidgets: NoInputResolver {
       )
     }
 
-    let userDevices = try await Current.db.query(UserDevice.self)
+    let userDevices = try await UserDevice.query()
       .where(.userId |=| users.map(\.id))
       .all()
 
-    let unlockRequests = try await Current.db.query(Api.UnlockRequest.self)
+    let unlockRequests = try await Api.UnlockRequest.query()
       .where(.userDeviceId |=| userDevices.map(\.id))
       .where(.status == .enum(RequestStatus.pending))
       .all()
@@ -76,14 +76,14 @@ extension GetDashboardWidgets: NoInputResolver {
       map[device.id] = users.first(where: { $0.id == device.userId })
     }
 
-    async let keystrokes = Current.db.query(KeystrokeLine.self)
+    async let keystrokes = KeystrokeLine.query()
       .where(.userDeviceId |=| userDevices.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
       .all()
 
-    async let screenshots = Current.db.query(Screenshot.self)
+    async let screenshots = Screenshot.query()
       .where(.userDeviceId |=| userDevices.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)

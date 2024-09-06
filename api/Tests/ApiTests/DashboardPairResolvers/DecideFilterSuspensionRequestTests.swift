@@ -47,7 +47,7 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase {
     let user = try await Entities.user().withDevice {
       $0.appVersion = "2.1.7" // <-- older version...
     }
-    let request = try await Current.db.create(SuspendFilterRequest.random {
+    let request = try await self.db.create(SuspendFilterRequest.random {
       $0.duration = .init(100)
       $0.userDeviceId = user.device.id
       $0.status = .pending

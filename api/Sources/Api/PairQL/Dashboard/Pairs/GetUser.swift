@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Foundation
 import Gertie
@@ -54,7 +55,8 @@ extension GetUser: Resolver {
 
 extension KeychainSummary {
   init(from keychain: Keychain) async throws {
-    let numKeys = try await Current.db.count(
+    @Dependency(\.db) var db
+    let numKeys = try await db.count(
       Key.self,
       where: .keychainId == keychain.id,
       withSoftDeleted: false
@@ -75,7 +77,7 @@ extension GetUser.User {
     async let userKeychains = user.keychains()
       .concurrentMap { try await KeychainSummary(from: $0) }
 
-    async let devices = Current.db.query(UserDevice.self)
+    async let devices = UserDevice.query()
       .where(.userId == user.id)
       .all()
       .concurrentMap { userDevice in

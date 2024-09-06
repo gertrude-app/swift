@@ -5,22 +5,24 @@ import XExpect
 
 final class UserActivityResolverTests: ApiTestCase {
   func testGetActivityDay() async throws {
-    Current.date = { Date() }
+    Current.date = { .reference }
     let user = try await Entities.user().withDevice()
     var screenshot = Screenshot.random
     screenshot.userDeviceId = user.device.id
-    try await Current.db.create(screenshot)
+    screenshot.createdAt = .reference - 1
+    try await self.db.create(screenshot)
     var keystrokeLine = KeystrokeLine.random
     keystrokeLine.userDeviceId = user.device.id
-    try await Current.db.create(keystrokeLine)
-    let twoDaysAgo = Date(subtractingDays: 2)
+    keystrokeLine.createdAt = .reference
+    try await self.db.create(keystrokeLine)
+    let twoDaysAgo = Date.reference - .days(2)
 
     let output = try await UserActivityFeed.resolve(
       with: .init(
         userId: user.id,
         range: .init(
           start: twoDaysAgo.isoString,
-          end: twoDaysAgo.advanced(by: .days(2)).isoString
+          end: Date.reference.isoString
         )
       ),
       in: context(user.admin)
@@ -30,55 +32,53 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(output.numDeleted).toEqual(0)
     expect(output.items).toHaveCount(2)
 
-    var firstItem = try XCTUnwrap(output.items.first?.keystrokeLine)
-    firstItem.createdAt = twoDaysAgo // prevent test failure for time
-
-    expect(firstItem).toEqual(.init(
+    expect(output.items.first?.keystrokeLine).toEqual(.init(
       id: keystrokeLine.id,
       ids: [keystrokeLine.id],
       appName: keystrokeLine.appName,
       line: keystrokeLine.line,
       duringSuspension: keystrokeLine.filterSuspended,
-      createdAt: twoDaysAgo
+      createdAt: keystrokeLine.createdAt
     ))
 
-    var secondItem = try XCTUnwrap(output.items.last?.screenshot)
-    secondItem.createdAt = twoDaysAgo // prevent test failure for time
-
-    expect(secondItem).toEqual(.init(
+    expect(output.items.last?.screenshot).toEqual(.init(
       id: screenshot.id,
       ids: [screenshot.id],
       url: screenshot.url,
       width: screenshot.width,
       height: screenshot.height,
       duringSuspension: screenshot.filterSuspended,
-      createdAt: twoDaysAgo
+      createdAt: screenshot.createdAt
     ))
   }
 
   @MainActor
   func testCombinedUserActivity() async throws {
-    Current.date = { Date() }
-    let twoDaysAgo = Date(subtractingDays: 2)
+    Current.date = { .reference }
+    let twoDaysAgo = Date.reference - .days(2)
 
     let user1 = try await Entities.user().withDevice()
     var screenshot = Screenshot.random
     screenshot.userDeviceId = user1.device.id
-    try await Current.db.create(screenshot)
+    screenshot.createdAt = .reference - 5
+    try await self.db.create(screenshot)
     var keystrokeLine = KeystrokeLine.random
     keystrokeLine.userDeviceId = user1.device.id
-    try await Current.db.create(keystrokeLine)
+    keystrokeLine.createdAt = .reference - 4
+    try await self.db.create(keystrokeLine)
 
     var user2 = try await Entities.user().withDevice()
     user2.model.adminId = user1.adminId
-    try await Current.db.update(user2.model)
+    try await self.db.update(user2.model)
     var screenshot2 = Screenshot.random
     screenshot2.userDeviceId = user2.device.id
-    try await Current.db.create(screenshot2)
+    screenshot2.createdAt = .reference - 3
+    try await self.db.create(screenshot2)
     var keystrokeLine2 = KeystrokeLine.random
     keystrokeLine2.userDeviceId = user2.device.id
-    try await Current.db.create(keystrokeLine2)
-    try await Current.db.delete(keystrokeLine2.id) // <-- soft-deleted
+    keystrokeLine2.createdAt = .reference - 2
+    keystrokeLine2.deletedAt = .reference - 1 // <-- soft-deleted
+    try await self.db.create(keystrokeLine2)
 
     let dateRange = DateRange(
       start: twoDaysAgo.isoString,
@@ -86,7 +86,6 @@ final class UserActivityResolverTests: ApiTestCase {
     )
 
     // test getting the activity overview summaries
-
     let summaryOutput = try await CombinedUsersActivitySummaries.resolve(
       with: [dateRange],
       in: context(user1.admin)
@@ -98,7 +97,6 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(day.totalItems).toEqual(4)
 
     // test getting the activity day detail (screenshots and keystrokes)
-
     let dayOutput = try await CombinedUsersActivityFeed.resolve(
       with: .init(range: dateRange),
       in: context(user1.admin)
@@ -110,29 +108,23 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(userDay1.numDeleted).toEqual(0)
     expect(userDay1.items).toHaveCount(2)
 
-    var firstItem = try XCTUnwrap(userDay1.items.first?.keystrokeLine)
-    firstItem.createdAt = twoDaysAgo
-
-    expect(firstItem).toEqual(.init(
+    expect(userDay1.items.first?.keystrokeLine).toEqual(.init(
       id: keystrokeLine.id,
       ids: [keystrokeLine.id],
       appName: keystrokeLine.appName,
       line: keystrokeLine.line,
       duringSuspension: keystrokeLine.filterSuspended,
-      createdAt: twoDaysAgo
+      createdAt: keystrokeLine.createdAt
     ))
 
-    var secondItem = try XCTUnwrap(userDay1.items.last?.screenshot)
-    secondItem.createdAt = twoDaysAgo
-
-    expect(secondItem).toEqual(.init(
+    expect(userDay1.items.last?.screenshot).toEqual(.init(
       id: screenshot.id,
       ids: [screenshot.id],
       url: screenshot.url,
       width: screenshot.width,
       height: screenshot.height,
       duringSuspension: screenshot.filterSuspended,
-      createdAt: twoDaysAgo
+      createdAt: screenshot.createdAt
     ))
 
     let userDay2 = dayOutput[1]
@@ -140,17 +132,14 @@ final class UserActivityResolverTests: ApiTestCase {
     expect(userDay2.numDeleted).toEqual(1)
     expect(userDay2.items).toHaveCount(1)
 
-    var user2Item = try XCTUnwrap(userDay2.items.first?.screenshot)
-    user2Item.createdAt = twoDaysAgo
-
-    expect(user2Item).toEqual(.init(
+    expect(userDay2.items.first?.screenshot).toEqual(.init(
       id: screenshot2.id,
       ids: [screenshot2.id],
       url: screenshot2.url,
       width: screenshot2.width,
       height: screenshot2.height,
       duringSuspension: screenshot2.filterSuspended,
-      createdAt: twoDaysAgo
+      createdAt: screenshot2.createdAt
     ))
   }
 
@@ -158,10 +147,10 @@ final class UserActivityResolverTests: ApiTestCase {
     let user = try await Entities.user().withDevice()
     var screenshot = Screenshot.random
     screenshot.userDeviceId = user.device.id
-    try await Current.db.create(screenshot)
+    try await self.db.create(screenshot)
     var keystrokeLine = KeystrokeLine.random
     keystrokeLine.userDeviceId = user.device.id
-    try await Current.db.create(keystrokeLine)
+    try await self.db.create(keystrokeLine)
 
     let output = try await DeleteActivityItems_v2.resolve(
       with: DeleteActivityItems_v2.Input(
@@ -172,7 +161,7 @@ final class UserActivityResolverTests: ApiTestCase {
     )
 
     expect(output).toEqual(.success)
-    expect(try? await Current.db.find(keystrokeLine.id)).toBeNil()
-    expect(try? await Current.db.find(screenshot.id)).toBeNil()
+    expect(try? await self.db.find(keystrokeLine.id)).toBeNil()
+    expect(try? await self.db.find(screenshot.id)).toBeNil()
   }
 }

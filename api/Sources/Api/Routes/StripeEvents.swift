@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import Vapor
@@ -9,7 +10,8 @@ enum StripeEventsRoute {
       return Response(status: .badRequest)
     }
 
-    let stripeEvent = try await Current.db.create(StripeEvent(json: json))
+    @Dependency(\.db) var db
+    let stripeEvent = try await db.create(StripeEvent(json: json))
     let event = try? JSON.decode(json, as: EventInfo.self)
 
     if event?.type == "invoice.paid",

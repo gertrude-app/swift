@@ -28,11 +28,11 @@ extension DashboardRoute: RouteResponder {
   static func respond(to route: Self, in context: Context) async throws -> Response {
     switch route {
     case .adminAuthed(let uuid, let adminRoute):
-      let token = try await Current.db.query(AdminToken.self)
+      let token = try await AdminToken.query()
         .where(.value == uuid)
         .first(orThrow: context.error("8df93d61", .loggedOut, "Admin token not found"))
 
-      let admin = try await Current.db.query(Admin.self)
+      let admin = try await Admin.query()
         .where(.id == token.adminId)
         .first()
 

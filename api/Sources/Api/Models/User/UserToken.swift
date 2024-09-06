@@ -35,14 +35,14 @@ extension UserToken {
 
 extension UserToken {
   func user() async throws -> User {
-    try await Current.db.query(User.self)
+    try await User.query()
       .where(.id == self.userId)
       .first()
   }
 
   func userDevice() async throws -> UserDevice? {
     guard let userDeviceId else { return nil }
-    return try await Current.db.query(UserDevice.self)
+    return try await UserDevice.query()
       .where(.id == userDeviceId)
       .first()
   }

@@ -50,11 +50,11 @@ struct SubscriptionManager: AsyncScheduledJob {
         logs.append("Updated admin \(admin.email) to `.\(status)` until \(expiration)")
 
       case .delete(let reason):
-        try await Current.db.create(DeletedEntity(
+        try await DeletedEntity(
           type: "Admin",
           reason: reason,
           data: try JSON.encode(admin, [.isoDates])
-        ))
+        ).create()
         try await admin.delete()
         logs.append("Deleted admin \(admin.email) reason: \(reason)")
       }

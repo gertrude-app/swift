@@ -31,9 +31,9 @@ struct GetIdentifiedApps: Pair {
 
 extension GetIdentifiedApps: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    async let apps = Current.db.query(IdentifiedApp.self).all()
-    async let categories = Current.db.query(AppCategory.self).all()
-    async let bundleIds = Current.db.query(AppBundleId.self).all()
+    async let apps = IdentifiedApp.query().all()
+    async let categories = AppCategory.query().all()
+    async let bundleIds = AppBundleId.query().all()
 
     let categoryMap: [AppCategory.Id: App.Category] = (try await categories)
       .reduce(into: [:]) { $0[$1.id] = .init(from: $1) }

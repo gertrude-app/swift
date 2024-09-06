@@ -1,3 +1,5 @@
+import Dependencies
+
 @testable import Api
 
 @dynamicMemberLookup
@@ -89,8 +91,9 @@ enum Entities {
   static func admin(
     config: (inout Admin) -> Void = { _ in }
   ) async throws -> AdminEntities {
-    let admin = try await Current.db.create(Admin.random(with: config))
-    let token = try await Current.db.create(AdminToken(adminId: admin.id))
+    @Dependency(\.db) var db
+    let admin = try await db.create(Admin.random(with: config))
+    let token = try await db.create(AdminToken(adminId: admin.id))
     return AdminEntities(model: admin, token: token)
   }
 
@@ -98,12 +101,13 @@ enum Entities {
     config: (inout User) -> Void = { _ in },
     admin: (inout Admin) -> Void = { _ in }
   ) async throws -> UserEntities {
+    @Dependency(\.db) var db
     let admin = try await Self.admin(config: admin)
-    let user = try await Current.db.create(User.random {
+    let user = try await db.create(User.random {
       config(&$0)
       $0.adminId = admin.id
     })
-    let token = try await Current.db.create(UserToken(userId: user.id))
+    let token = try await db.create(UserToken(userId: user.id))
     return UserEntities(model: user, token: token, admin: admin)
   }
 }
@@ -112,19 +116,21 @@ extension AdminEntities {
   func withKeychain(
     config: (inout Keychain, inout Key) -> Void = { _, _ in }
   ) async throws -> AdminWithKeychainEntities {
+    @Dependency(\.db) var db
     var keychain = Keychain.random
     keychain.authorId = self.model.id
     var key = Key.random
     key.keychainId = keychain.id
     config(&keychain, &key)
-    try await Current.db.create(keychain)
-    try await Current.db.create(key)
+    try await db.create(keychain)
+    try await db.create(key)
     return .init(model: self.model, token: self.token, keychain: keychain, key: key)
   }
 
   func withOnboardedChild(
     config: (inout User, inout UserDevice, inout Device) -> Void = { _, _, _ in }
   ) async throws -> AdminWithOnboardedChildEntities {
+    @Dependency(\.db) var db
     var child = User.random { $0.adminId = model.id }
     var adminDevice = Device.random { $0.adminId = model.id }
     var userDevice = UserDevice.random {
@@ -132,9 +138,9 @@ extension AdminEntities {
       $0.deviceId = adminDevice.id
     }
     config(&child, &userDevice, &adminDevice)
-    try await Current.db.create(child)
-    try await Current.db.create(adminDevice)
-    try await Current.db.create(userDevice)
+    try await db.create(child)
+    try await db.create(adminDevice)
+    try await db.create(userDevice)
     return .init(
       model: self.model,
       token: self.token,
@@ -150,17 +156,18 @@ extension UserEntities {
     config: (inout UserDevice) -> Void = { _ in },
     adminDevice: (inout Device) -> Void = { _ in }
   ) async throws -> UserWithDeviceEntities {
-    let device = try await Current.db.create(Device.random {
+    @Dependency(\.db) var db
+    let device = try await db.create(Device.random {
       adminDevice(&$0)
       $0.adminId = admin.id
     })
-    let userDevice = try await Current.db.create(UserDevice.random {
+    let userDevice = try await db.create(UserDevice.random {
       config(&$0)
       $0.userId = model.id
       $0.deviceId = device.id
     })
     self.token.userDeviceId = userDevice.id
-    try await Current.db.update(self.token)
+    try await db.update(self.token)
     return .init(
       model: self.model,
       adminDevice: device,

@@ -1,5 +1,6 @@
 import Dependencies
 import DuetSQL
+import FluentPostgresDriver
 import Gertie
 import Vapor
 import XCTest
@@ -13,8 +14,6 @@ class DependencyTestCase: XCTestCase {
   override open func invokeTest() {
     withDependencies {
       $0.uuid = UUIDGenerator { UUID() }
-      $0.env = .liveValue
-      $0.stripe = .failing
     } operation: {
       super.invokeTest()
     }
@@ -60,9 +59,11 @@ final class MockUUIDs: @unchecked Sendable {
   }
 }
 
-class ApiTestCase: DependencyTestCase {
+class ApiTestCase: XCTestCase {
   static var app: Application!
   static var migrated = false
+
+  @Dependency(\.db) var db
 
   struct Sent {
     struct AdminNotification: Equatable {
@@ -84,13 +85,26 @@ class ApiTestCase: DependencyTestCase {
     Self.app
   }
 
+  override open func invokeTest() {
+    withDependencies {
+      $0.uuid = UUIDGenerator { UUID() }
+      $0.env = .fromProcess(mode: .testing)
+      $0.stripe = .failing
+    } operation: {
+      super.invokeTest()
+    }
+  }
+
   override static func setUp() {
     Current = .mock
     self.app = Application(.testing)
-    try! Configure.app(self.app)
     self.app.logger = .null
+    try! Configure.app(self.app)
+
     // doing this once per test run gives about a 10x speedup when running all tests
     if !self.migrated {
+      // app needs a db for migrations
+      Self.app.databases.use(.testDb, as: .psql, isDefault: true)
       try! self.app.autoRevert().wait()
       try! self.app.autoMigrate().wait()
       self.migrated = true
@@ -121,7 +135,6 @@ class ApiTestCase: DependencyTestCase {
 
   override static func tearDown() {
     self.app.shutdown()
-    sync { await SQL.resetPreparedStatements() }
   }
 
   func context(_ admin: Admin) -> AdminContext {
@@ -143,30 +156,29 @@ class ApiTestCase: DependencyTestCase {
   func context(_ user: UserWithDeviceEntities) async throws -> UserContext {
     .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
   }
-}
 
-func sync(
-  function: StaticString = #function,
-  line: UInt = #line,
-  column: UInt = #column,
-  _ f: @escaping () async throws -> Void
-) {
-  let exp = XCTestExpectation(description: "sync:\(function):\(line):\(column)")
-  Task {
-    do {
-      try await f()
-      exp.fulfill()
-    } catch {
-      fatalError("Error awaiting \(exp.description) -- \(error)")
+  @discardableResult
+  func createAutoIncludeKeychain() async throws -> (Keychain, Api.Key) {
+    guard let autoIdStr = Env.get("AUTO_INCLUDED_KEYCHAIN_ID"),
+          let autoId = UUID(uuidString: autoIdStr) else {
+      fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")
     }
-  }
-  switch XCTWaiter.wait(for: [exp], timeout: 10) {
-  case .completed:
-    return
-  case .timedOut:
-    fatalError("Timed out waiting for \(exp.description)")
-  default:
-    fatalError("Unexpected result waiting for \(exp.description)")
+    let admin = try await Entities.admin()
+    try await self.db.query(Keychain.self)
+      .where(.id == autoId)
+      .delete(force: true)
+
+    let keychain = try await self.db.create(Keychain(
+      id: .init(autoId),
+      authorId: admin.model.id,
+      name: "Auto Included (test)"
+    ))
+
+    let key = try await self.db.create(Key(
+      keychainId: keychain.id,
+      key: .domain(domain: "foo.com", scope: .webBrowsers)
+    ))
+    return (keychain, key)
   }
 }
 

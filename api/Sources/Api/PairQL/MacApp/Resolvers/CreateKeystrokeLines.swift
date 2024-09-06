@@ -15,7 +15,7 @@ extension CreateKeystrokeLines: Resolver {
         createdAt: input.time
       )
     }
-    try await Current.db.create(keystrokeLines)
+    try await keystrokeLines.create()
     return .success
   }
 }

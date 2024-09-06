@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import Gertie
 
@@ -38,9 +39,10 @@ private actor CachedAppIdManifest {
 private let cachedAppIdManifest = CachedAppIdManifest()
 
 private func loadAppIdManifest() async throws -> AppIdManifest {
-  let apps = try await Current.db.query(IdentifiedApp.self).all()
-  let bundleIds = try await Current.db.query(AppBundleId.self).all()
-  let categories = try await Current.db.query(AppCategory.self).all()
+  @Dependency(\.db) var db
+  let apps = try await db.query(IdentifiedApp.self).all()
+  let bundleIds = try await db.query(AppBundleId.self).all()
+  let categories = try await db.query(AppCategory.self).all()
 
   struct AppData {
     let bundleIds: [AppBundleId]

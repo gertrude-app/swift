@@ -42,13 +42,13 @@ extension UserDevice {
   }
 
   func user() async throws -> User {
-    try await Current.db.query(User.self)
+    try await User.query()
       .where(.id == self.userId)
       .first()
   }
 
   func adminDevice() async throws -> Device {
-    try await Current.db.query(Device.self)
+    try await Device.query()
       .where(.id == self.deviceId)
       .first()
   }

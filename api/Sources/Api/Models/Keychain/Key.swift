@@ -29,6 +29,6 @@ struct Key: Codable, Sendable {
 
 extension Key {
   func keychain() async throws -> Keychain {
-    try await Current.db.find(self.keychainId)
+    try await Keychain.find(self.keychainId)
   }
 }

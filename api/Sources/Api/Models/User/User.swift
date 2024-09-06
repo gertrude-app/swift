@@ -11,7 +11,6 @@ struct User: Codable, Sendable {
   var showSuspensionActivity: Bool
   var createdAt = Date()
   var updatedAt = Date()
-  var deletedAt: Date?
 
   init(
     id: Id = .init(),
@@ -38,22 +37,22 @@ struct User: Codable, Sendable {
 
 extension User {
   func devices() async throws -> [UserDevice] {
-    try await Current.db.query(UserDevice.self)
+    try await UserDevice.query()
       .where(.userId == self.id)
       .all()
   }
 
   func keychains() async throws -> [Keychain] {
-    let pivots = try await Current.db.query(UserKeychain.self)
+    let pivots = try await UserKeychain.query()
       .where(.userId == self.id)
       .all()
-    return try await Current.db.query(Keychain.self)
+    return try await Keychain.query()
       .where(.id |=| pivots.map(\.keychainId))
       .all()
   }
 
   func admin() async throws -> Admin {
-    try await Current.db.query(Admin.self)
+    try await Admin.query()
       .where(.id == self.adminId)
       .first()
   }

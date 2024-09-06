@@ -38,13 +38,13 @@ struct Device: Codable, Sendable {
 
 extension Device {
   func admin() async throws -> Admin {
-    try await Current.db.query(Admin.self)
+    try await Admin.query()
       .where(.id == self.adminId)
       .first()
   }
 
   func userDevices() async throws -> [UserDevice] {
-    try await Current.db.query(UserDevice.self)
+    try await UserDevice.query()
       .where(.deviceId == self.id)
       .all()
   }

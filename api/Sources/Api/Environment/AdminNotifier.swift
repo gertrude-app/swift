@@ -15,7 +15,7 @@ extension AdminNotifier {
 
 @Sendable private func notify(adminId: Admin.Id, event: AdminEvent) async {
   do {
-    let admin = try await Current.db.find(adminId)
+    let admin = try await Admin.find(adminId)
     let notifications = try await admin.notifications()
     for notification in notifications {
       do {

@@ -42,14 +42,14 @@ extension UserActivitySummaries: Resolver {
     ) { group -> [UserActivitySummaries.Day] in
       for (start, end) in dateRanges {
         group.addTask {
-          async let screenshots = Current.db.query(Screenshot.self)
+          async let screenshots = Screenshot.query()
             .where(.userDeviceId |=| userDeviceIds)
             .where(.createdAt <= .date(end))
             .where(.createdAt > .date(start))
             .orderBy(.createdAt, .desc)
             .withSoftDeleted()
             .all()
-          async let keystrokeLines = Current.db.query(KeystrokeLine.self)
+          async let keystrokeLines = KeystrokeLine.query()
             .where(.userDeviceId |=| userDeviceIds)
             .where(.createdAt <= .date(end))
             .where(.createdAt > .date(start))
