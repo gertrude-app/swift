@@ -13,6 +13,7 @@ try withDependencies {
   $0.env = .fromProcess(mode: app.environment)
   $0.stripe = .liveValue
   $0.db = PgClient(threadCount: System.coreCount, env: $0.env)
+  $0.aws = .liveValue
 } operation: {
   try Configure.app(app)
   try app.run()

@@ -1,9 +1,29 @@
 import Dependencies
 import DuetSQL
 import PostgresKit
+import XAws
 import XStripe
 
 import FluentKit
+
+extension AWS.Client: DependencyKey {
+  public static var liveValue: AWS.Client {
+    @Dependency(\.env.s3) var s3
+    return .live(
+      accessKeyId: s3.key,
+      secretAccessKey: s3.secret,
+      endpoint: s3.endpoint,
+      bucket: s3.bucket
+    )
+  }
+}
+
+public extension DependencyValues {
+  var aws: AWS.Client {
+    get { self[AWS.Client.self] }
+    set { self[AWS.Client.self] = newValue }
+  }
+}
 
 extension Stripe.Client: DependencyKey {
   public static var liveValue: Stripe.Client {
@@ -75,5 +95,13 @@ extension DatabaseConfigurationFactory {
       getSubscription: unimplemented("Stripe.Client.getSubscription()"),
       createBillingPortalSession: unimplemented("Stripe.Client.createBillingPortalSession()")
     )
+  }
+
+  extension AWS.Client: TestDependencyKey {
+    public static var testValue: AWS.Client {
+      .init(signedS3UploadUrl: { _ in
+        unimplemented("AWS.Client.signedS3UploadUrl", placeholder: URL(string: "")!)
+      })
+    }
   }
 #endif

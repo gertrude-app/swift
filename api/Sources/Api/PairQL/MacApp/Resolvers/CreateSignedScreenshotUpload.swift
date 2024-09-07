@@ -1,3 +1,4 @@
+import Dependencies
 import MacAppRoute
 import Vapor
 
@@ -24,7 +25,8 @@ extension CreateSignedScreenshotUpload: Resolver {
       )
     }
 
-    let signedUrl = try Current.aws.signedS3UploadUrl(objectName)
+    @Dependency(\.aws) var aws
+    let signedUrl = try aws.signedS3UploadUrl(objectName)
 
     try await context.db.create(Screenshot(
       userDeviceId: userDevice.id,

@@ -7,12 +7,6 @@ extension Configure {
     guard app.env.mode != .test else { return }
 
     Current.logger = app.logger
-    Current.aws = .live(
-      accessKeyId: app.env.s3.key,
-      secretAccessKey: app.env.s3.secret,
-      endpoint: app.env.s3.endpoint,
-      bucket: app.env.s3.bucket
-    )
 
     app.databases.use(.from(env: app.env), as: .psql)
 

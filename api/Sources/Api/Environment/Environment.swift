@@ -9,7 +9,6 @@ import XSlack
 #if !DEBUG
   struct Environment: Sendable {
     let adminNotifier: AdminNotifier = .live
-    var aws: AWS.Client = .mock
     let websockets: ConnectedApps = .live
     let date: @Sendable () -> Date = { Date() }
     let ephemeral: Ephemeral = .init()
@@ -23,7 +22,6 @@ import XSlack
 #else
   struct Environment: Sendable {
     var adminNotifier: AdminNotifier = .live
-    var aws: AWS.Client = .mock
     var websockets: ConnectedApps = .live
     var date: @Sendable () -> Date = { Date() }
     var ephemeral: Ephemeral = .init()
@@ -45,7 +43,6 @@ nonisolated(unsafe) var Current = Environment()
   extension Environment {
     static let mock = Environment(
       adminNotifier: .mock,
-      aws: .mock,
       websockets: .mock,
       date: { .mock },
       ephemeral: .init(),

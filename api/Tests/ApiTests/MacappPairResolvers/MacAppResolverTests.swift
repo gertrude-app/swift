@@ -128,12 +128,14 @@ final class MacAppResolverTests: ApiTestCase {
     let beforeCount = try await self.db.count(Screenshot.self)
     let user = try await Entities.user().withDevice()
 
-    Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
-
-    let output = try await CreateSignedScreenshotUpload.resolve(
-      with: .init(width: 111, height: 222),
-      in: self.context(user)
-    )
+    let output = try await withDependencies {
+      $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
+    } operation: {
+      try await CreateSignedScreenshotUpload.resolve(
+        with: .init(width: 111, height: 222),
+        in: self.context(user)
+      )
+    }
 
     expect(output.uploadUrl.absoluteString).toEqual("from-aws.com")
 
@@ -143,17 +145,19 @@ final class MacAppResolverTests: ApiTestCase {
 
   func testCreateSignedScreenshotUploadWithDate() async throws {
     let user = try await Entities.user().withDevice()
+    let uuids = MockUUIDs()
 
-    Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
-
-    let (uuid, _) = try await withUUID {
+    try await withDependencies {
+      $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
+      $0.uuid = .mock(uuids)
+    } operation: {
       try await CreateSignedScreenshotUpload.resolve(
         with: .init(width: 1116, height: 222, createdAt: .epoch),
         in: self.context(user)
       )
     }
 
-    let screenshot = try await self.db.find(Screenshot.Id(uuid))
+    let screenshot = try await self.db.find(Screenshot.Id(uuids[1]))
     expect(screenshot.width).toEqual(1116)
     expect(screenshot.createdAt).toEqual(.epoch)
   }
