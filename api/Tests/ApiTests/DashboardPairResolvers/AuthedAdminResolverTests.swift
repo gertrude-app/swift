@@ -50,7 +50,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
   func testHandleCheckoutSuccess() async throws {
     let sessionId = "cs_123"
-    let admin = try await Admin.random { $0.subscriptionStatus = .trialing }.create()
+    let admin = try await self.db.create(Admin.random { $0.subscriptionStatus = .trialing })
     Current.date = { Date(timeIntervalSince1970: 0) }
 
     let output = try await withDependencies {
@@ -272,7 +272,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
       with: .init(id: user.device.id.rawValue, type: .userDevice),
       in: context(user.admin)
     )
-    let retrieved = try? await Device.find(user.adminDevice.id)
+    let retrieved = try? await self.db.find(user.adminDevice.id)
     expect(retrieved).toBeNil()
   }
 
@@ -282,12 +282,12 @@ final class AuthedAdminResolverTests: ApiTestCase {
       with: .init(id: user.id.rawValue, type: .user),
       in: context(user.admin)
     )
-    let retrieved = try? await Device.find(user.adminDevice.id)
+    let retrieved = try? await self.db.find(user.adminDevice.id)
     expect(retrieved).toBeNil()
   }
 
   func testDeletingAdminDeletesAdminAndCreatesDeletedEntity() async throws {
-    try await DeletedEntity.deleteAll()
+    try await self.db.delete(all: DeletedEntity.self)
     let admin = try await Entities.admin()
 
     _ = try await DeleteEntity.resolve(
@@ -295,12 +295,12 @@ final class AuthedAdminResolverTests: ApiTestCase {
       in: context(admin)
     )
 
-    let deleted = try await DeletedEntity.query().all()
+    let deleted = try await self.db.select(all: DeletedEntity.self)
     expect(deleted).toHaveCount(1)
     expect(deleted.first?.type).toEqual("Admin")
     expect(deleted.first?.reason).toEqual("self-deleted from use-case initial screen")
     expect(deleted.first!.data).toContain(admin.id.lowercased)
-    expect(try? await Admin.find(admin.id)).toBeNil()
+    expect(try? await self.db.find(admin.id)).toBeNil()
   }
 
   func testAdminCantDeleteOtherAdmin() async throws {
@@ -316,7 +316,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testLogDashboardEvent() async throws {
-    try await InterestingEvent.deleteAll()
+    try await self.db.delete(all: InterestingEvent.self)
     let admin = try await Entities.admin()
 
     let output = try await LogEvent.resolve(
@@ -325,7 +325,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     )
 
     expect(output).toEqual(.success)
-    let retrieved = try await InterestingEvent.query().all()
+    let retrieved = try await self.db.select(all: InterestingEvent.self)
     expect(retrieved).toHaveCount(1)
     expect(retrieved.first?.eventId).toEqual("123")
     expect(retrieved.first?.kind).toEqual("event")
@@ -366,9 +366,9 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testGetIdentifiedApps() async throws {
-    try await self.db.query(IdentifiedApp.self).delete()
-    try await self.db.query(AppCategory.self).delete()
-    try await self.db.query(AppBundleId.self).delete()
+    try await self.db.delete(all: IdentifiedApp.self)
+    try await self.db.delete(all: AppCategory.self)
+    try await self.db.delete(all: AppBundleId.self)
 
     let cat = try await self.db.create(AppCategory.random)
     var app = IdentifiedApp.random
@@ -417,8 +417,8 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testGetSelectableKeychains() async throws {
-    try await self.db.query(Key.self).delete()
-    try await self.db.query(Keychain.self).delete()
+    try await self.db.delete(all: Key.self)
+    try await self.db.delete(all: Keychain.self)
 
     let admin = try await Entities.admin().withKeychain { keychain, _ in
       keychain.isPublic = false
@@ -530,9 +530,9 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testLatestAppVersions() async throws {
-    try await Release.deleteAll()
-    try await Release.create([
-      .mock {
+    try await self.db.delete(all: Release.self)
+    try await self.db.create([
+      Release.mock {
         $0.semver = "2.0.0"
         $0.channel = .stable
       },

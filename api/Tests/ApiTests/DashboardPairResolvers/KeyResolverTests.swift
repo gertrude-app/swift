@@ -24,7 +24,7 @@ final class KeyResolverTests: ApiTestCase {
     let output = try await SaveKey.resolve(with: input, in: admin.context)
     expect(output).toEqual(.success)
 
-    let key = try await Key.find(input.id)
+    let key = try await self.db.find(input.id)
     expect(key.comment).toEqual(input.comment)
     expect(key.key).toEqual(input.key)
     expect(sent.websocketMessages)
@@ -38,7 +38,7 @@ final class KeyResolverTests: ApiTestCase {
     let output = try await SaveKey.resolve(with: input, in: admin.context)
     expect(output).toEqual(.success)
 
-    let key = try await Key.find(input.id)
+    let key = try await self.db.find(input.id)
     expect(key.deletedAt).not.toBeNil()
   }
 

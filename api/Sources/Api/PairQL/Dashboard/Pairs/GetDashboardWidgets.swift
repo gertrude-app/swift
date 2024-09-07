@@ -51,7 +51,7 @@ extension GetDashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let users = try await Api.User.query()
       .where(.adminId == context.admin.id)
-      .all()
+      .all(in: context.db)
 
     guard !users.isEmpty else {
       return Output(
@@ -65,12 +65,12 @@ extension GetDashboardWidgets: NoInputResolver {
 
     let userDevices = try await UserDevice.query()
       .where(.userId |=| users.map(\.id))
-      .all()
+      .all(in: context.db)
 
     let unlockRequests = try await Api.UnlockRequest.query()
       .where(.userDeviceId |=| userDevices.map(\.id))
       .where(.status == .enum(RequestStatus.pending))
-      .all()
+      .all(in: context.db)
 
     let deviceToUserMap: [UserDevice.Id: Api.User] = userDevices.reduce(into: [:]) { map, device in
       map[device.id] = users.first(where: { $0.id == device.userId })
@@ -81,16 +81,16 @@ extension GetDashboardWidgets: NoInputResolver {
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
-      .all()
+      .all(in: context.db)
 
     async let screenshots = Screenshot.query()
       .where(.userDeviceId |=| userDevices.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
-      .all()
+      .all(in: context.db)
 
-    async let notifications = context.admin.notifications()
+    async let notifications = context.admin.notifications(in: context.db)
 
     return try await .init(
       users: users.concurrentMap { user in .init(

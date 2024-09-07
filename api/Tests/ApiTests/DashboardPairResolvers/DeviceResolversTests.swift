@@ -5,19 +5,19 @@ import XExpect
 
 final class DeviceResolversTests: ApiTestCase {
   func testGetDevices() async throws {
-    try await Device.deleteAll()
+    try await self.db.delete(all: Device.self)
     let user = try await Entities.user().withDevice { $0.appVersion = "2.2.2" }
     var device = user.adminDevice
     device.appReleaseChannel = .canary
     device.customName = "Pinky"
     device.serialNumber = "1234567890"
     device.modelIdentifier = "MacBookPro16,1"
-    try await device.save()
+    try await self.db.update(device)
 
-    let user2 = try await User.create(.init(adminId: user.adminId, name: "Bob"))
+    let user2 = try await self.db.create(User(adminId: user.adminId, name: "Bob"))
 
     // proves that we take the highest app version
-    try await UserDevice.create(.init(
+    try await self.db.create(UserDevice(
       userId: user2.id,
       deviceId: device.id,
       isAdmin: false,
@@ -61,7 +61,7 @@ final class DeviceResolversTests: ApiTestCase {
     var device = user.adminDevice
     device.appReleaseChannel = .stable
     device.customName = nil
-    try await device.save()
+    try await self.db.update(device)
 
     var output = try await SaveDevice.resolve(
       with: .init(id: device.id, name: "Pinky", releaseChannel: .beta),
@@ -70,7 +70,7 @@ final class DeviceResolversTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let retrieved = try await Device.find(device.id)
+    let retrieved = try await self.db.find(device.id)
     expect(retrieved.customName).toEqual("Pinky")
     expect(retrieved.appReleaseChannel).toEqual(.beta)
 
@@ -83,7 +83,7 @@ final class DeviceResolversTests: ApiTestCase {
       in: context(user.admin)
     )
 
-    let retrievedAgain = try await Device.find(device.id)
+    let retrievedAgain = try await self.db.find(device.id)
     expect(retrievedAgain.customName).toBeNil()
   }
 }

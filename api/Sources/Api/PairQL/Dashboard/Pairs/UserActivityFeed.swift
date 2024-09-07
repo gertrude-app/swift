@@ -66,7 +66,7 @@ extension UserActivityFeed: Resolver {
     }
 
     let user = try await context.verifiedUser(from: input.userId)
-    let userDeviceIds = try await user.devices().map(\.id)
+    let userDeviceIds = try await user.devices(in: context.db).map(\.id)
 
     async let keystrokes = KeystrokeLine.query()
       .where(.userDeviceId |=| userDeviceIds)
@@ -74,7 +74,7 @@ extension UserActivityFeed: Resolver {
       .where(.createdAt > .date(after))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
-      .all()
+      .all(in: context.db)
 
     async let screenshots = Screenshot.query()
       .where(.userDeviceId |=| userDeviceIds)
@@ -82,7 +82,7 @@ extension UserActivityFeed: Resolver {
       .where(.createdAt > .date(after))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
-      .all()
+      .all(in: context.db)
 
     let coalesced = try await coalesce(screenshots, keystrokes)
 

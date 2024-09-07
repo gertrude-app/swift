@@ -36,24 +36,24 @@ struct User: Codable, Sendable {
 // loaders
 
 extension User {
-  func devices() async throws -> [UserDevice] {
+  func devices(in db: any DuetSQL.Client) async throws -> [UserDevice] {
     try await UserDevice.query()
       .where(.userId == self.id)
-      .all()
+      .all(in: db)
   }
 
-  func keychains() async throws -> [Keychain] {
+  func keychains(in db: any DuetSQL.Client) async throws -> [Keychain] {
     let pivots = try await UserKeychain.query()
       .where(.userId == self.id)
-      .all()
+      .all(in: db)
     return try await Keychain.query()
       .where(.id |=| pivots.map(\.keychainId))
-      .all()
+      .all(in: db)
   }
 
-  func admin() async throws -> Admin {
+  func admin(in db: any DuetSQL.Client) async throws -> Admin {
     try await Admin.query()
       .where(.id == self.adminId)
-      .first()
+      .first(in: db)
   }
 }

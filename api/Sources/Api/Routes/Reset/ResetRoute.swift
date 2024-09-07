@@ -7,7 +7,7 @@ enum ResetRoute {
     guard env.mode != .prod else { throw Abort(.notFound) }
 
     try await Reset.run()
-    let betsy = try await Admin.find(AdminBetsy.Ids.betsy)
+    let betsy = try await request.context.db.find(AdminBetsy.Ids.betsy)
     return .init(
       status: .ok,
       headers: ["Content-Type": "text/html"],

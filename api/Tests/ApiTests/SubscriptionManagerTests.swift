@@ -10,8 +10,8 @@ final class SubscriptionManagerTests: ApiTestCase {
   }
 
   func testAdvanceExpiredFn() async throws {
-    try await Admin.deleteAll()
-    try await DeletedEntity.deleteAll()
+    try await self.db.delete(all: Admin.self)
+    try await self.db.delete(all: DeletedEntity.self)
 
     let nonExpired = Admin.random {
       $0.subscriptionStatus = .trialing
@@ -28,22 +28,22 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatusExpiration = .reference.advanced(by: .days(-1))
     }
 
-    try await Admin.create([nonExpired, trialEndingSoon, shouldDelete])
+    try await self.db.create([nonExpired, trialEndingSoon, shouldDelete])
     try await SubscriptionManager().advanceExpired()
 
-    let retrievedNonExpired = try await Admin.find(nonExpired.id)
+    let retrievedNonExpired = try await self.db.find(nonExpired.id)
     expect(retrievedNonExpired.subscriptionStatus).toEqual(.trialing)
     expect(retrievedNonExpired.subscriptionStatusExpiration)
       .toEqual(.reference.advanced(by: .days(40)))
 
-    let retrievedTrialEndingSoon = try await Admin.find(trialEndingSoon.id)
+    let retrievedTrialEndingSoon = try await self.db.find(trialEndingSoon.id)
     expect(retrievedTrialEndingSoon.subscriptionStatus).toEqual(.trialExpiringSoon)
     expect(retrievedTrialEndingSoon.subscriptionStatusExpiration)
       .toEqual(.reference.advanced(by: .days(7)))
 
-    let retrievedShouldDelete = try? await Admin.find(shouldDelete.id)
+    let retrievedShouldDelete = try? await self.db.find(shouldDelete.id)
     expect(retrievedShouldDelete).toBeNil()
-    let retrievedDeleted = try await DeletedEntity.query().all()
+    let retrievedDeleted = try await self.db.select(all: DeletedEntity.self)
     expect(retrievedDeleted.count).toEqual(1)
     XCTAssert(retrievedDeleted[0].data.contains(shouldDelete.id.lowercased))
 

@@ -1,3 +1,5 @@
+import Dependencies
+
 struct AdminNotifier: Sendable {
   var notify: @Sendable (Admin.Id, AdminEvent) async -> Void
 }
@@ -14,20 +16,22 @@ extension AdminNotifier {
 }
 
 @Sendable private func notify(adminId: Admin.Id, event: AdminEvent) async {
+  // TODO: think about improving the perf of this by injecting a db
+  @Dependency(\.db) var db
   do {
-    let admin = try await Admin.find(adminId)
-    let notifications = try await admin.notifications()
+    let admin = try await db.find(adminId)
+    let notifications = try await admin.notifications(in: db)
     for notification in notifications {
       do {
         switch (notification.trigger, event) {
         case (.suspendFilterRequestSubmitted, .suspendFilterRequestSubmitted(let event)):
-          let method = try await notification.method()
+          let method = try await notification.method(in: db)
           try await event.send(with: method.config)
         case (.unlockRequestSubmitted, .unlockRequestSubmitted(let event)):
-          let method = try await notification.method()
+          let method = try await notification.method(in: db)
           try await event.send(with: method.config)
         case (.adminChildSecurityEvent, .adminChildSecurityEvent(let event)):
-          let method = try await notification.method()
+          let method = try await notification.method(in: db)
           try await event.send(with: method.config)
         default:
           break

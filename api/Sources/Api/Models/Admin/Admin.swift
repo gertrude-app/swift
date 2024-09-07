@@ -41,41 +41,43 @@ struct Admin: Codable, Sendable {
 // loaders
 
 extension Admin {
-  func keychains() async throws -> [Keychain] {
+  func keychains(in db: any DuetSQL.Client) async throws -> [Keychain] {
     try await Keychain.query()
       .where(.authorId == self.id)
-      .all()
+      .all(in: db)
   }
 
-  func keychain(_ keychainId: Keychain.Id) async throws -> Keychain {
+  func keychain(_ keychainId: Keychain.Id, in db: any DuetSQL.Client) async throws -> Keychain {
     try await Keychain.query()
       .where(.authorId == self.id)
       .where(.id == keychainId)
-      .first()
+      .first(in: db)
   }
 
-  func users() async throws -> [User] {
+  func users(in db: any DuetSQL.Client) async throws -> [User] {
     try await User.query()
       .where(.adminId == self.id)
-      .all()
+      .all(in: db)
   }
 
-  func devices() async throws -> [Device] {
+  func devices(in db: any DuetSQL.Client) async throws -> [Device] {
     try await Device.query()
       .where(.adminId == self.id)
-      .all()
+      .all(in: db)
   }
 
-  func notifications() async throws -> [AdminNotification] {
+  func notifications(in db: any DuetSQL.Client) async throws -> [AdminNotification] {
     try await AdminNotification.query()
       .where(.adminId == self.id)
-      .all()
+      .all(in: db)
   }
 
-  func verifiedNotificationMethods() async throws -> [AdminVerifiedNotificationMethod] {
+  func verifiedNotificationMethods(
+    in db: any DuetSQL.Client
+  ) async throws -> [AdminVerifiedNotificationMethod] {
     try await AdminVerifiedNotificationMethod.query()
       .where(.adminId == self.id)
-      .all()
+      .all(in: db)
   }
 }
 

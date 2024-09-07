@@ -31,9 +31,10 @@ struct GetIdentifiedApps: Pair {
 
 extension GetIdentifiedApps: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    async let apps = IdentifiedApp.query().all()
-    async let categories = AppCategory.query().all()
-    async let bundleIds = AppBundleId.query().all()
+    // TODO: why aren't i using the cached app id manifest?
+    async let apps = try await context.db.select(all: IdentifiedApp.self)
+    async let bundleIds = try await context.db.select(all: AppBundleId.self)
+    async let categories = try await context.db.select(all: AppCategory.self)
 
     let categoryMap: [AppCategory.Id: App.Category] = (try await categories)
       .reduce(into: [:]) { $0[$1.id] = .init(from: $1) }

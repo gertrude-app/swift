@@ -40,9 +40,9 @@ private let cachedAppIdManifest = CachedAppIdManifest()
 
 private func loadAppIdManifest() async throws -> AppIdManifest {
   @Dependency(\.db) var db
-  let apps = try await db.query(IdentifiedApp.self).all()
-  let bundleIds = try await db.query(AppBundleId.self).all()
-  let categories = try await db.query(AppCategory.self).all()
+  let apps = try await db.select(all: IdentifiedApp.self)
+  let bundleIds = try await db.select(all: AppBundleId.self)
+  let categories = try await db.select(all: AppCategory.self)
 
   struct AppData {
     let bundleIds: [AppBundleId]

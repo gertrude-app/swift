@@ -1,7 +1,6 @@
 import Duet
 
 public struct DuetQuery<M: Model> {
-  public let db: Client
   public let constraint: SQL.WhereConstraint<M>
   public let order: SQL.Order<M>?
   public let limit: Int?
@@ -9,14 +8,12 @@ public struct DuetQuery<M: Model> {
   public let _withSoftDeleted: Bool
 
   public init(
-    db: Client, // can i remove this?
     constraint: SQL.WhereConstraint<M> = .always,
     order: SQL.Order<M>? = nil,
     limit: Int? = nil,
     offset: Int? = nil,
     withSoftDeleted: Bool = false
   ) {
-    self.db = db
     self.constraint = constraint
     self.limit = limit
     self.order = order
@@ -26,7 +23,6 @@ public struct DuetQuery<M: Model> {
 
   public func byId(_ id: UUIDStringable, withSoftDeleted: Bool = false) throws -> DuetQuery<M> {
     try .init(
-      db: self.db,
       constraint: self.constraint + (M.column("id") == .uuid(id)),
       order: self.order,
       limit: self.limit,
@@ -37,7 +33,6 @@ public struct DuetQuery<M: Model> {
 
   public func withSoftDeleted() -> DuetQuery<M> {
     .init(
-      db: self.db,
       constraint: self.constraint,
       order: self.order,
       limit: self.limit,
@@ -48,7 +43,6 @@ public struct DuetQuery<M: Model> {
 
   public func `where`(_ constraint: SQL.WhereConstraint<M>) -> DuetQuery<M> {
     .init(
-      db: self.db,
       constraint: self.constraint + constraint,
       order: self.order,
       limit: self.limit,
@@ -59,7 +53,6 @@ public struct DuetQuery<M: Model> {
 
   public func limit(_ limit: Int?) -> DuetQuery<M> {
     .init(
-      db: self.db,
       constraint: self.constraint,
       order: self.order,
       limit: limit,
@@ -70,7 +63,6 @@ public struct DuetQuery<M: Model> {
 
   public func offset(_ offset: Int?) -> DuetQuery<M> {
     .init(
-      db: self.db,
       constraint: self.constraint,
       order: self.order,
       limit: self.limit,
@@ -81,7 +73,6 @@ public struct DuetQuery<M: Model> {
 
   public func orderBy(_ order: SQL.Order<M>?) -> DuetQuery<M> {
     .init(
-      db: self.db,
       constraint: self.constraint,
       order: order,
       limit: self.limit,
@@ -92,7 +83,6 @@ public struct DuetQuery<M: Model> {
 
   public func orderBy(_ column: M.ColumnName, _ direction: SQL.OrderDirection) -> DuetQuery<M> {
     .init(
-      db: self.db,
       constraint: self.constraint,
       order: .init(column: column, direction: direction),
       limit: self.limit,
@@ -102,9 +92,9 @@ public struct DuetQuery<M: Model> {
   }
 
   @discardableResult
-  public func delete(force: Bool = false) async throws -> Int {
+  public func delete(in db: any DuetSQL.Client, force: Bool = false) async throws -> Int {
     if force || self._withSoftDeleted {
-      try await self.db.forceDelete(
+      try await db.forceDelete(
         M.self,
         where: self.constraint,
         orderBy: self.order,
@@ -112,7 +102,7 @@ public struct DuetQuery<M: Model> {
         offset: self.offset
       )
     } else {
-      try await self.db.delete(
+      try await db.delete(
         M.self,
         where: self.constraint,
         orderBy: self.order,
@@ -123,7 +113,7 @@ public struct DuetQuery<M: Model> {
   }
 
   @discardableResult
-  public func deleteOne(force: Bool = false) async throws -> M {
+  public func deleteOne(in db: any DuetSQL.Client, force: Bool = false) async throws -> M {
     let models = try await db.select(
       M.self,
       where: self.constraint,
@@ -135,7 +125,7 @@ public struct DuetQuery<M: Model> {
     guard !models.isEmpty else { throw DuetSQLError.notFound("\(M.self)") }
     guard models.count == 1 else { throw DuetSQLError.tooManyResultsForDeleteOne }
     if force {
-      try await self.db.forceDelete(
+      try await db.forceDelete(
         M.self,
         where: self.constraint,
         orderBy: self.order,
@@ -143,7 +133,7 @@ public struct DuetQuery<M: Model> {
         offset: self.offset
       )
     } else {
-      try await self.db.delete(
+      try await db.delete(
         M.self,
         where: self.constraint,
         orderBy: self.order,
@@ -154,8 +144,8 @@ public struct DuetQuery<M: Model> {
     return models.first!
   }
 
-  public func all() async throws -> [M] {
-    try await self.db.select(
+  public func all(in db: any DuetSQL.Client) async throws -> [M] {
+    try await db.select(
       M.self,
       where: self.constraint,
       orderBy: self.order,
@@ -165,14 +155,17 @@ public struct DuetQuery<M: Model> {
     )
   }
 
-  public func first(orThrow error: Error = DuetSQLError.notFound("\(M.self)")) async throws -> M {
-    guard let first = try await self.all().first else {
+  public func first(
+    in db: any DuetSQL.Client,
+    orThrow error: Error = DuetSQLError.notFound("\(M.self)")
+  ) async throws -> M {
+    guard let first = try await self.all(in: db).first else {
       throw error
     }
     return first
   }
 
-  public func count() async throws -> Int {
-    try await self.db.count(M.self, where: self.constraint, withSoftDeleted: self._withSoftDeleted)
+  public func count(in db: any DuetSQL.Client) async throws -> Int {
+    try await db.count(M.self, where: self.constraint, withSoftDeleted: self._withSoftDeleted)
   }
 }

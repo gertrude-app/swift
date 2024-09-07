@@ -20,8 +20,8 @@ struct DecideFilterSuspensionRequest: Pair {
 
 extension DecideFilterSuspensionRequest: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    var suspendFilterRequest = try await SuspendFilterRequest.find(input.id)
-    let userDevice = try await suspendFilterRequest.userDevice()
+    var suspendFilterRequest = try await context.db.find(input.id)
+    let userDevice = try await suspendFilterRequest.userDevice(in: context.db)
     try await context.verifiedUser(from: userDevice.userId)
 
     suspendFilterRequest.responseComment = input.responseComment
@@ -36,7 +36,7 @@ extension DecideFilterSuspensionRequest: Resolver {
       suspendFilterRequest.status = .rejected
     }
 
-    try await suspendFilterRequest.save()
+    try await context.db.update(suspendFilterRequest)
 
     try await Current.websockets.send(
       suspendFilterRequest.updated(for: userDevice.appSemver),

@@ -35,9 +35,9 @@ final class ApiTests: ApiTestCase {
   }
 
   func testDuetEscapesStringsProperly() async throws {
-    let admin = try await Admin.random.create()
-    let m = try await Api.SecurityEvent(adminId: admin.id, event: "foo'bar").create()
-    let retrieved = try await Api.SecurityEvent.find(m.id)
+    let admin = try await self.db.create(Admin.random)
+    let m = try await self.db.create(Api.SecurityEvent(adminId: admin.id, event: "foo'bar"))
+    let retrieved = try await self.db.find(m.id)
     expect(retrieved.event).toEqual("foo'bar")
   }
 

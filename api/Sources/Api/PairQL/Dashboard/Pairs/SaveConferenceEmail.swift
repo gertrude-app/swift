@@ -20,7 +20,7 @@ struct SaveConferenceEmail: Pair {
 extension SaveConferenceEmail: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     let detail = "SaveConferenceEmail: \(input.email), source: \(input.source)"
-    _ = try? await InterestingEvent.create(.init(
+    _ = try? await context.db.create(InterestingEvent(
       eventId: "cc29a271",
       kind: "event",
       context: "marketing",

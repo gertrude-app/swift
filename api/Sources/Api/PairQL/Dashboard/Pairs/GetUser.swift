@@ -49,7 +49,7 @@ extension GetUser: Resolver {
     with id: Api.User.Id,
     in context: AdminContext
   ) async throws -> Output {
-    try await Output(from: context.verifiedUser(from: id))
+    try await Output(from: context.verifiedUser(from: id), in: context.db)
   }
 }
 
@@ -73,15 +73,15 @@ extension KeychainSummary {
 }
 
 extension GetUser.User {
-  init(from user: Api.User) async throws {
-    async let userKeychains = user.keychains()
+  init(from user: Api.User, in db: any DuetSQL.Client) async throws {
+    async let userKeychains = user.keychains(in: db)
       .concurrentMap { try await KeychainSummary(from: $0) }
 
     async let devices = UserDevice.query()
       .where(.userId == user.id)
-      .all()
+      .all(in: db)
       .concurrentMap { userDevice in
-        let adminDevice = try await userDevice.adminDevice()
+        let adminDevice = try await userDevice.adminDevice(in: db)
         return GetUser.Device(
           id: adminDevice.id,
           isOnline: await userDevice.isOnline(),

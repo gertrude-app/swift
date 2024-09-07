@@ -18,7 +18,7 @@ extension LatestAppVersions: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let releases = try await Release.query()
       .orderBy(.semver, .asc)
-      .all()
+      .all(in: context.db)
 
     var latest = Output(
       stable: "0.0.0",

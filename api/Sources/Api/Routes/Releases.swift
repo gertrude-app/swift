@@ -10,10 +10,9 @@ enum ReleasesRoute {
       var channel: ReleaseChannel
     }
 
-    @Dependency(\.db) var db
-    let releases = try await db.query(Release.self)
+    let releases = try await request.context.db.query(Release.self)
       .orderBy(.createdAt, .desc)
-      .all()
+      .all(in: request.context.db)
 
     let items = releases.map {
       Item(version: $0.semver, channel: $0.channel)

@@ -10,8 +10,7 @@ enum StripeEventsRoute {
       return Response(status: .badRequest)
     }
 
-    @Dependency(\.db) var db
-    let stripeEvent = try await db.create(StripeEvent(json: json))
+    let stripeEvent = try await request.context.db.create(StripeEvent(json: json))
     let event = try? JSON.decode(json, as: EventInfo.self)
 
     if event?.type == "invoice.paid",
@@ -19,7 +18,7 @@ enum StripeEventsRoute {
 
       let admin = try? await Admin.query()
         .where(.email == email.lowercased())
-        .first()
+        .first(in: request.context.db)
 
       if var admin {
         admin.subscriptionStatus = .paid
@@ -38,7 +37,7 @@ enum StripeEventsRoute {
         default:
           break
         }
-        try await admin.save()
+        try await request.context.db.update(admin)
       } else {
         unexpected("b3aaf12c", detail: "email: \(email), event: \(stripeEvent.id)")
       }

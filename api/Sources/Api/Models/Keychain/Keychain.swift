@@ -27,9 +27,9 @@ struct Keychain: Codable, Sendable {
 // loaders
 
 extension Keychain {
-  func keys() async throws -> [Key] {
+  func keys(in db: any DuetSQL.Client) async throws -> [Key] {
     try await Key.query()
       .where(.keychainId == self.id)
-      .all()
+      .all(in: db)
   }
 }

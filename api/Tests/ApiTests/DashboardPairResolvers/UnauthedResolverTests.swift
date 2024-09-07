@@ -31,9 +31,9 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     let input = Signup.Input(email: email, password: "pass")
     let output = try await Signup.resolve(with: input, in: self.context)
 
-    let admin = try await self.db.query(Admin.self)
+    let admin = try await Admin.query()
       .where(.email == email)
-      .first()
+      .first(in: self.db)
 
     expect(output).toEqual(.success)
     expect(admin.subscriptionStatus).toEqual(.pendingEmailVerification)
@@ -54,9 +54,9 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     _ = try await Signup.resolve(with: input, in: self.context)
 
-    let admin = try await self.db.query(Admin.self)
+    let admin = try await Admin.query()
       .where(.email == email)
-      .first()
+      .first(in: self.db)
 
     expect(admin.gclid).toEqual("gclid-123")
     expect(admin.abTestVariant).toEqual("old_site")

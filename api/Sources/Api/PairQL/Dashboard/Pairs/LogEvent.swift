@@ -17,14 +17,14 @@ extension LogEvent: Resolver {
     if isTestAddress(context.admin.email.rawValue) {
       return .success
     }
-    try await InterestingEvent(
+    try await context.db.create(InterestingEvent(
       eventId: input.eventId,
       kind: "event",
       context: "dash",
       userDeviceId: nil,
       adminId: context.admin.id,
       detail: input.detail
-    ).create()
+    ))
     let msg = "Dash interesting event: \(input.eventId)  \(input.detail)"
     await Current.slack.sysLog(msg)
     return .success

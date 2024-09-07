@@ -30,14 +30,14 @@ extension CombinedUsersActivityFeed: Resolver {
     let users = try await context.users()
 
     return try await users.concurrentMap { user in
-      let userDeviceIds = try await user.devices().map(\.id)
+      let userDeviceIds = try await user.devices(in: context.db).map(\.id)
       async let keystrokes = KeystrokeLine.query()
         .where(.userDeviceId |=| userDeviceIds)
         .where(.createdAt <= .date(before))
         .where(.createdAt > .date(after))
         .orderBy(.createdAt, .desc)
         .withSoftDeleted()
-        .all()
+        .all(in: context.db)
 
       async let screenshots = Screenshot.query()
         .where(.userDeviceId |=| userDeviceIds)
@@ -45,7 +45,7 @@ extension CombinedUsersActivityFeed: Resolver {
         .where(.createdAt > .date(after))
         .orderBy(.createdAt, .desc)
         .withSoftDeleted()
-        .all()
+        .all(in: context.db)
 
       let coalesced = try await coalesce(screenshots, keystrokes)
 

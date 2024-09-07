@@ -8,10 +8,10 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase {
     let user = try await Entities.user().withDevice {
       $0.appVersion = "2.4.0" // current version...
     }
-    let request = try await SuspendFilterRequest.random {
+    let request = try await self.db.create(SuspendFilterRequest.random {
       $0.userDeviceId = user.device.id
       $0.status = .pending
-    }.create()
+    })
 
     let decision: DecideFilterSuspensionRequest.Decision = .accepted(
       durationInSeconds: 333,
@@ -25,7 +25,7 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let updated = try await SuspendFilterRequest.find(request.id)
+    let updated = try await self.db.find(request.id)
     expect(updated.duration).toEqual(.init(333))
     expect(updated.responseComment).toEqual("ok")
     expect(updated.status).toEqual(.accepted)
@@ -60,7 +60,7 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let updated = try await SuspendFilterRequest.find(request.id)
+    let updated = try await self.db.find(request.id)
     expect(updated.responseComment).toBeNil()
     expect(updated.status).toEqual(.rejected)
 

@@ -23,14 +23,14 @@ extension CombinedUsersActivitySummaries: Resolver {
         .where(.createdAt > .date(start))
         .orderBy(.createdAt, .desc)
         .withSoftDeleted()
-        .all()
+        .all(in: context.db)
       async let keystrokeLines = KeystrokeLine.query()
         .where(.userDeviceId |=| userDeviceIds)
         .where(.createdAt <= .date(end))
         .where(.createdAt > .date(start))
         .orderBy(.createdAt, .desc)
         .withSoftDeleted()
-        .all()
+        .all(in: context.db)
 
       _ = try await (screenshots, keystrokeLines)
 

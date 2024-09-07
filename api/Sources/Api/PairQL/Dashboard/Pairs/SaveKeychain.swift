@@ -16,19 +16,19 @@ struct SaveKeychain: Pair {
 extension SaveKeychain: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     if input.isNew {
-      let keychain = try await Keychain(
+      let keychain = try await context.db.create(Keychain(
         id: input.id,
         authorId: context.admin.id,
         name: input.name,
         isPublic: false,
         description: input.description
-      ).create()
+      ))
       dashSecurityEvent(.keychainCreated, "name: \(keychain.name)", in: context)
     } else {
-      var keychain = try await Keychain.find(input.id)
+      var keychain = try await context.db.find(input.id)
       keychain.name = input.name
       keychain.description = input.description
-      try await keychain.save()
+      try await context.db.update(keychain)
     }
     return .success
   }

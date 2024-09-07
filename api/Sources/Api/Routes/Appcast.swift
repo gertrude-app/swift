@@ -8,7 +8,7 @@ enum AppcastRoute {
     let query = try request.query.decode(AppcastQuery.self)
     let releases = try await request.context.db.query(Release.self)
       .orderBy(.createdAt, .desc)
-      .all()
+      .all(in: request.context.db)
       .filter { $0.channel.isAtLeastAsStable(as: query.channel ?? .stable) }
 
     return Response(

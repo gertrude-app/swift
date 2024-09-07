@@ -29,14 +29,14 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase {
 
     expect(output).toEqual([uuids[0], uuids[1]])
 
-    let unlockReq1 = try await UnlockRequest.find(.init(uuids[0]))
+    let unlockReq1 = try await self.db.find(UnlockRequest.Id(uuids[0]))
     expect(unlockReq1.requestComment).toEqual(nil)
     expect(unlockReq1.appBundleId).toEqual("com.example.app")
     expect(unlockReq1.url).toEqual("https://example.com")
     expect(unlockReq1.userDeviceId).toEqual(user.device.id)
     expect(unlockReq1.status).toEqual(.pending)
 
-    let unlockReq2 = try await UnlockRequest.find(.init(uuids[1]))
+    let unlockReq2 = try await self.db.find(UnlockRequest.Id(uuids[1]))
     expect(unlockReq2.requestComment).toEqual(nil)
     expect(unlockReq2.appBundleId).toEqual("com.other.thing")
     expect(unlockReq2.url).toEqual("https://foo.com")
@@ -70,7 +70,7 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let unlockReq = try await UnlockRequest.find(.init(uuid))
+    let unlockReq = try await self.db.find(UnlockRequest.Id(uuid))
     expect(unlockReq.requestComment).toEqual("please dad!")
     expect(unlockReq.appBundleId).toEqual("com.example.app")
     expect(unlockReq.url).toEqual("https://example.com")

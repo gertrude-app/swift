@@ -44,9 +44,9 @@ struct UnlockRequest: Codable, Sendable {
 // loaders
 
 extension UnlockRequest {
-  func userDevice() async throws -> UserDevice {
+  func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice {
     try await UserDevice.query()
       .where(.id == self.userDeviceId)
-      .first()
+      .first(in: db)
   }
 }

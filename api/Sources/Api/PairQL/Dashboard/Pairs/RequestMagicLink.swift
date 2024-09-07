@@ -22,7 +22,7 @@ extension RequestMagicLink: Resolver {
 
     let admin = try? await Admin.query()
       .where(.email == .string(email))
-      .first()
+      .first(in: context.db)
 
     guard let admin else {
       let noAccountEmail = Email.fromApp(

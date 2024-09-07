@@ -34,16 +34,16 @@ extension UserToken {
 // loaders
 
 extension UserToken {
-  func user() async throws -> User {
+  func user(in db: any DuetSQL.Client) async throws -> User {
     try await User.query()
       .where(.id == self.userId)
-      .first()
+      .first(in: db)
   }
 
-  func userDevice() async throws -> UserDevice? {
+  func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice? {
     guard let userDeviceId else { return nil }
     return try await UserDevice.query()
       .where(.id == userDeviceId)
-      .first()
+      .first(in: db)
   }
 }

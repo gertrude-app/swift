@@ -21,17 +21,17 @@ extension SaveNotification: Resolver {
       var existing = try await AdminNotification.query()
         .where(.id == input.id)
         .where(.adminId == context.admin.id)
-        .first()
+        .first(in: context.db)
       existing.methodId = input.methodId
       existing.trigger = input.trigger
-      try await existing.save()
+      try await context.db.update(existing)
       return .success
     } else {
-      try await AdminNotification(
+      try await context.db.create(AdminNotification(
         adminId: context.admin.id,
         methodId: input.methodId,
         trigger: input.trigger
-      ).create()
+      ))
       return .success
     }
   }

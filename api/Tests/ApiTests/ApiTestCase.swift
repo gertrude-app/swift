@@ -165,9 +165,9 @@ class ApiTestCase: XCTestCase {
       fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")
     }
     let admin = try await Entities.admin()
-    try await self.db.query(Keychain.self)
+    try await Keychain.query()
       .where(.id == autoId)
-      .delete(force: true)
+      .delete(in: self.db)
 
     let keychain = try await self.db.create(Keychain(
       id: .init(autoId),

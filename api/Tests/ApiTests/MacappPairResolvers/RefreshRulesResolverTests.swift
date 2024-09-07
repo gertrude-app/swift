@@ -23,9 +23,9 @@ final class RefreshResolverTests: ApiTestCase {
   }
 
   func testRefreshRules_AppManifest() async throws {
-    try await self.db.query(IdentifiedApp.self).delete(force: true)
-    try await self.db.query(AppBundleId.self).delete(force: true)
-    try await self.db.query(AppCategory.self).delete(force: true)
+    try await self.db.delete(all: IdentifiedApp.self)
+    try await self.db.delete(all: AppBundleId.self)
+    try await self.db.delete(all: AppCategory.self)
     await clearCachedAppIdManifest()
 
     let app = try await self.db.create(IdentifiedApp.random)

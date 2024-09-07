@@ -28,6 +28,7 @@ struct SubscriptionUpdate: Equatable {
 struct SubscriptionManager: AsyncScheduledJob {
   @Dependency(\.stripe) var stripe
   @Dependency(\.env) var env
+  @Dependency(\.db) var db
 
   func run(context: QueueContext) async throws {
     guard self.env.mode == .prod else { return }
@@ -36,7 +37,7 @@ struct SubscriptionManager: AsyncScheduledJob {
 
   func advanceExpired() async throws {
     var logs: [String] = []
-    let admins = try await Admin.query().all()
+    let admins = try await Admin.query().all(in: self.db)
     for var admin in admins {
       guard let update = try await self.subscriptionUpdate(for: admin) else {
         continue
@@ -47,16 +48,16 @@ struct SubscriptionManager: AsyncScheduledJob {
       case .update(let status, let expiration):
         admin.subscriptionStatus = status
         admin.subscriptionStatusExpiration = expiration
-        try await admin.save()
+        try await self.db.update(admin)
         logs.append("Updated admin \(admin.email) to `.\(status)` until \(expiration)")
 
       case .delete(let reason):
-        try await DeletedEntity(
+        try await self.db.create(DeletedEntity(
           type: "Admin",
           reason: reason,
           data: try JSON.encode(admin, [.isoDates])
-        ).create()
-        try await admin.delete()
+        ))
+        try await self.db.delete(admin)
         logs.append("Deleted admin \(admin.email) reason: \(reason)")
       }
 
@@ -79,7 +80,7 @@ struct SubscriptionManager: AsyncScheduledJob {
       return nil
     }
 
-    let completedOnboarding = try await admin.completedOnboarding()
+    let completedOnboarding = try await admin.completedOnboarding(self.db)
     switch admin.subscriptionStatus {
 
     case .pendingEmailVerification:
@@ -162,10 +163,10 @@ struct SubscriptionManager: AsyncScheduledJob {
 // helpers
 
 private extension Admin {
-  func completedOnboarding() async throws -> Bool {
-    let children = try await users()
+  func completedOnboarding(_ db: any DuetSQL.Client) async throws -> Bool {
+    let children = try await users(in: db)
     let childDevices = try await children.concurrentMap {
-      try await $0.devices()
+      try await $0.devices(in: db)
     }.flatMap { $0 }
     return !childDevices.isEmpty
   }

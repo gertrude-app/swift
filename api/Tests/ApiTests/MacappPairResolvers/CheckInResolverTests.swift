@@ -25,7 +25,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(output.userData.screenshotFrequency).toEqual(376)
     expect(output.userData.screenshotSize).toEqual(1081)
 
-    let device = try await Device.find(user.adminDevice.id)
+    let device = try await self.db.find(user.adminDevice.id)
     expect(device.filterVersion).toEqual("3.3.3")
   }
 
@@ -69,9 +69,9 @@ final class CheckInResolverTests: ApiTestCase {
       in: user.context
     )
 
-    let device = try await Device.find(user.adminDevice.id)
+    let device = try await self.db.find(user.adminDevice.id)
     expect(device.osVersion).toEqual(Semver("14.5.0"))
-    let userDevice = try await UserDevice.find(user.device.id)
+    let userDevice = try await self.db.find(user.device.id)
     expect(userDevice.isAdmin).toEqual(true)
   }
 
@@ -92,16 +92,16 @@ final class CheckInResolverTests: ApiTestCase {
       in: user.context
     )
 
-    let device = try await Device.find(user.adminDevice.id)
+    let device = try await self.db.find(user.adminDevice.id)
     expect(device.osVersion).toEqual(Semver("14.5.0"))
-    let userDevice = try await UserDevice.find(user.device.id)
+    let userDevice = try await self.db.find(user.device.id)
     expect(userDevice.isAdmin).toEqual(false)
   }
 
   func testCheckIn_AppManifest() async throws {
-    try await self.db.query(IdentifiedApp.self).delete(force: true)
-    try await self.db.query(AppBundleId.self).delete(force: true)
-    try await self.db.query(AppCategory.self).delete(force: true)
+    try await self.db.delete(all: IdentifiedApp.self)
+    try await self.db.delete(all: AppBundleId.self)
+    try await self.db.delete(all: AppCategory.self)
     await clearCachedAppIdManifest()
 
     let app = try await self.db.create(IdentifiedApp.random)
@@ -143,13 +143,13 @@ final class CheckInResolverTests: ApiTestCase {
 
   func testIncludesResolvedFilterSuspension() async throws {
     let user = try await Entities.user().withDevice()
-    let susp = try await SuspendFilterRequest.mock {
+    let susp = try await self.db.create(SuspendFilterRequest.mock {
       $0.userDeviceId = user.device.id
       $0.status = .accepted
       $0.duration = 777
       $0.extraMonitoring = "@55+k"
       $0.responseComment = "susp2 response comment"
-    }.create()
+    })
 
     let output = try await CheckIn.resolve(
       with: .init(
@@ -178,10 +178,10 @@ final class CheckInResolverTests: ApiTestCase {
 
   func testDoesNotIncludeUnresolvedSuspension() async throws {
     let user = try await Entities.user().withDevice()
-    let susp = try await SuspendFilterRequest.mock {
+    let susp = try await self.db.create(SuspendFilterRequest.mock {
       $0.userDeviceId = user.device.id
       $0.status = .pending // <-- still pending!
-    }.create()
+    })
 
     let output = try await CheckIn.resolve(
       with: .init(
@@ -213,7 +213,7 @@ final class CheckInResolverTests: ApiTestCase {
       $0.status = .rejected // <-- resolved, but not requested, not returned
     }
 
-    try await UnlockRequest.create([unlock1, unlock2, unlock3])
+    try await self.db.create([unlock1, unlock2, unlock3])
 
     let output = try await CheckIn.resolve(
       with: .init(

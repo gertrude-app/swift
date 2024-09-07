@@ -15,11 +15,11 @@ extension ConnectUser: Resolver {
     ) }
 
     let userDevice: UserDevice
-    let user = try await User.find(userId)
+    let user = try await context.db.find(userId)
 
     var adminDevice = try? await Device.query()
       .where(.serialNumber == input.serialNumber)
-      .first()
+      .first(in: context.db)
 
     // there should only ever be a single gertrude user
     // per computer + macOS user (represented by os user numeric id)
@@ -28,7 +28,7 @@ extension ConnectUser: Resolver {
       existingUserDevice = try? await UserDevice.query()
         .where(.deviceId == adminDevice.id)
         .where(.numericId == .int(input.numericId))
-        .first()
+        .first(in: context.db)
     }
 
     if var existingUserDevice {
@@ -37,7 +37,7 @@ extension ConnectUser: Resolver {
       // user, after double-checking below that the user belongs to the same admin acct
 
       // sanity check - we only "transfer" a device, if the admin accounts match
-      let existingUser = try await existingUserDevice.user()
+      let existingUser = try await existingUserDevice.user(in: context.db)
       if existingUser.adminId != user.adminId {
         throw context.error(
           id: "41a43089",
@@ -54,32 +54,32 @@ extension ConnectUser: Resolver {
       existingUserDevice.isAdmin = input.isAdmin
 
       // update the device to be attached to the user issuing this request
-      userDevice = try await existingUserDevice.save()
+      userDevice = try await context.db.update(existingUserDevice)
 
       let oldTokens = try await UserToken.query()
         .where(.userDeviceId == userDevice.id)
         .where(.userId == oldUserId)
-        .all()
+        .all(in: context.db)
 
       for var token in oldTokens {
         // wait 14 days, so buffered security events can be resent
         token.deletedAt = Current.date().advanced(by: .days(14))
-        try await token.save()
+        try await context.db.update(token)
       }
 
     } else {
       if adminDevice == nil {
         // create new admin device if we don't have one
-        adminDevice = try await Device(
+        adminDevice = try await context.db.create(Device(
           adminId: user.adminId,
           osVersion: input.osVersion.flatMap(Semver.init),
           modelIdentifier: input.modelIdentifier,
           serialNumber: input.serialNumber
-        ).create()
+        ))
       }
 
       // ...and create the user device
-      userDevice = try await UserDevice(
+      userDevice = try await context.db.create(UserDevice(
         userId: user.id,
         deviceId: adminDevice?.id ?? .init(),
         isAdmin: input.isAdmin,
@@ -87,13 +87,13 @@ extension ConnectUser: Resolver {
         username: input.username,
         fullUsername: input.fullUsername,
         numericId: input.numericId
-      ).create()
+      ))
     }
 
-    let token = try await UserToken(
+    let token = try await context.db.create(UserToken(
       userId: user.id,
       userDeviceId: userDevice.id
-    ).create()
+    ))
 
     return Output(
       id: user.id.rawValue,

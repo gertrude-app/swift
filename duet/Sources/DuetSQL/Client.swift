@@ -14,15 +14,23 @@ public protocol Client: Sendable {
 
 public extension Client {
   func query<M: Model>(_ Model: M.Type) -> DuetQuery<M> {
-    DuetQuery<M>(db: self)
-  }
-
-  func find<M: Model>(_: M.Type, byId id: UUID, withSoftDeleted: Bool = false) async throws -> M {
-    try await self.query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
+    DuetQuery<M>()
   }
 
   func find<M: Model>(_ id: Tagged<M, UUID>, withSoftDeleted: Bool = false) async throws -> M {
-    try await self.query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
+    try await self.find(M.self, byId: id.rawValue, withSoftDeleted: withSoftDeleted)
+  }
+
+  func find<M: Model>(_: M.Type, byId id: UUID, withSoftDeleted: Bool = false) async throws -> M {
+    let models = try await self.select(
+      M.self,
+      where: .equals(M.ColumnName.id, .uuid(id)),
+      withSoftDeleted: withSoftDeleted
+    )
+    guard let model = models.first else {
+      throw DuetSQLError.notFound("\(M.self)")
+    }
+    return model
   }
 
   func find<M: Model>(
@@ -30,7 +38,24 @@ public extension Client {
     byId id: M.IdValue,
     withSoftDeleted: Bool = false
   ) async throws -> M {
-    try await self.query(M.self).byId(id, withSoftDeleted: withSoftDeleted).first()
+    let models = try await self.select(
+      M.self,
+      where: .equals(M.ColumnName.id, .uuid(id)),
+      withSoftDeleted: withSoftDeleted
+    )
+    guard let model = models.first else {
+      throw DuetSQLError.notFound("\(M.self)")
+    }
+    return model
+  }
+
+  @discardableResult
+  func upsert<M: Model>(_ model: M) async throws -> M {
+    if (try? await self.find(M.self, byId: model.id)) == nil {
+      return try await self.create(model)
+    } else {
+      return try await self.update(model)
+    }
   }
 
   @discardableResult
@@ -89,6 +114,13 @@ public extension Client {
       offset: offset
     )
     return try await execute(statement: stmt, returning: M.self)
+  }
+
+  func select<M: Model>(
+    all _: M.Type,
+    withSoftDeleted: Bool = false
+  ) async throws -> [M] {
+    try await self.select(M.self, withSoftDeleted: withSoftDeleted)
   }
 
   func count<M: Model>(
@@ -159,17 +191,26 @@ public extension Client {
     _: M.Type,
     byId id: UUIDStringable,
     force: Bool = false
-  ) async throws -> M {
-    try await self.query(M.self).where(M.column("id") == id).deleteOne(force: force)
+  ) async throws -> Int {
+    try await self.delete(
+      M.self,
+      where: .equals(M.column("id"), .uuid(id)) + .withSoftDeleted(if: force)
+    )
   }
 
   @discardableResult
-  func delete<M: Model>(_ id: Tagged<M, UUID>, force: Bool = false) async throws -> M {
-    try await self.query(M.self).where(M.column("id") == id).deleteOne(force: force)
+  func delete<M: Model>(_ model: M, force: Bool = false) async throws -> M {
+    try await self.delete(M.self, byId: model.id, force: force)
+    return model
   }
 
-  func deleteAll<M: Model>(_: M.Type, force: Bool = false) async throws {
-    _ = try await self.query(M.self).delete(force: force)
+  @discardableResult
+  func delete<M: Model>(_ id: Tagged<M, UUID>, force: Bool = false) async throws -> Int {
+    try await self.delete(M.self, byId: id, force: force)
+  }
+
+  func delete<M: Model>(all _: M.Type, force: Bool = false) async throws {
+    _ = try await self.delete(M.self, where: .always + .withSoftDeleted(if: force))
   }
 
   func customQuery<T: CustomQueryable>(

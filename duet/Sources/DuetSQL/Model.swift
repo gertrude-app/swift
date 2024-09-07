@@ -16,6 +16,10 @@ public protocol ModelColumns {
 }
 
 public extension Model {
+  static func query() -> DuetQuery<Self> {
+    DuetQuery()
+  }
+
   static func column(_ name: String) throws -> ColumnName {
     for column in ColumnName.allCases {
       if Self.columnName(column) == name {

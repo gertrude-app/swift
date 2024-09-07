@@ -7,16 +7,17 @@ import XCore
 enum Reset {
   static func run() async throws {
     @Dependency(\.db) var db
-    try await db.deleteAll(Admin.self, force: true)
+    try await db.delete(all: Admin.self)
     try await self.createHtcPublicKeychain()
     try await AdminBetsy.create()
   }
 
   static func createHtcPublicKeychain() async throws {
-    let jared = try await Admin(
+    @Dependency(\.db) var db
+    let jared = try await db.create(Admin(
       email: "jared-htc-author" |> self.testEmail,
       password: try Bcrypt.hash("jared123")
-    ).create()
+    ))
     try await self.createKeychain(
       id: Ids.htcKeychain,
       adminId: jared.id,
@@ -50,7 +51,8 @@ enum Reset {
     _ admin: Admin,
     _ config: AdminVerifiedNotificationMethod.Config
   ) async throws -> AdminVerifiedNotificationMethod {
-    try await AdminVerifiedNotificationMethod(adminId: admin.id, config: config).create()
+    @Dependency(\.db) var db
+    return try await db.create(AdminVerifiedNotificationMethod(adminId: admin.id, config: config))
   }
 
   static func testEmail(_ tag: String) -> EmailAddress {
@@ -66,13 +68,14 @@ enum Reset {
     description: String? = nil,
     keys: [Gertie.Key] = []
   ) async throws -> Keychain {
-    let keychain = try await Keychain(
+    @Dependency(\.db) var db
+    let keychain = try await db.create(Keychain(
       id: id,
       authorId: adminId,
       name: name,
       isPublic: isPublic,
       description: description
-    ).create()
+    ))
 
     var keyRecords: [Key] = []
     for (index, key) in keys.enumerated() {
@@ -82,7 +85,7 @@ enum Reset {
         comment: index & 3 == 0 ? "here is a lovely comment" : nil
       ))
     }
-    try await Key.create(keyRecords)
+    try await db.create(keyRecords)
     return keychain
   }
 
@@ -92,10 +95,11 @@ enum Reset {
     subtractingDays: Int = 0,
     percentDeleted: Int = 0
   ) async throws {
+    @Dependency(\.db) var db
     let items = Array(repeating: (), count: num)
       .map { createActivityItem(deviceId, subtractingDays: subtractingDays) }
-    let keystrokeLines = try await items.compactMap(\.right).create()
-    let screenshots = try await items.compactMap(\.left).create()
+    let keystrokeLines = try await db.create(items.compactMap(\.right))
+    let screenshots = try await db.create(items.compactMap(\.left))
 
     var deleteBeforeIndex = percentDeleted == 0
       ? -1 : Int(Double(screenshots.count) * (Double(percentDeleted) / 100))
@@ -107,7 +111,7 @@ enum Reset {
         try await screenshot.modifyCreatedAt(.subtracting(.jitter))
       }
       if index < deleteBeforeIndex {
-        try await screenshot.delete()
+        try await db.delete(screenshot)
       }
     }
 
@@ -121,7 +125,7 @@ enum Reset {
         try await keystroke.modifyCreatedAt(.subtracting(.jitter))
       }
       if index < deleteBeforeIndex {
-        try await keystroke.delete()
+        try await db.delete(keystroke)
       }
     }
   }

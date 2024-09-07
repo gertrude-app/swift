@@ -20,7 +20,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     let suspendRequests = try await SuspendFilterRequest.query()
       .where(.userDeviceId == user.device.id)
-      .all()
+      .all(in: self.db)
 
     expect(suspendRequests).toHaveCount(1)
     expect(suspendRequests.first?.duration.rawValue).toEqual(1111)
@@ -46,7 +46,7 @@ final class MacAppResolverTests: ApiTestCase {
     let user = try await Entities.user().withDevice()
 
     // admin gets two notifications on suspend filter request
-    let slack = try await AdminVerifiedNotificationMethod.create(.init(
+    let slack = try await self.db.create(AdminVerifiedNotificationMethod(
       adminId: user.adminId,
       config: .slack(
         channelId: "#gertie",
@@ -54,16 +54,16 @@ final class MacAppResolverTests: ApiTestCase {
         token: "definitely-not-a-real-token"
       )
     ))
-    let text = try await AdminVerifiedNotificationMethod.create(.init(
+    let text = try await self.db.create(AdminVerifiedNotificationMethod(
       adminId: user.adminId,
       config: .text(phoneNumber: "1234567890")
     ))
-    try await AdminNotification.create(.init(
+    try await self.db.create(AdminNotification(
       adminId: user.adminId,
       methodId: slack.id,
       trigger: .suspendFilterRequestSubmitted
     ))
-    try await AdminNotification.create(.init(
+    try await self.db.create(AdminNotification(
       adminId: user.adminId,
       methodId: text.id,
       trigger: .suspendFilterRequestSubmitted
@@ -125,7 +125,7 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testCreateSignedScreenshotUpload() async throws {
-    let beforeCount = try await self.db.query(Screenshot.self).all().count
+    let beforeCount = try await self.db.count(Screenshot.self)
     let user = try await Entities.user().withDevice()
 
     Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
@@ -137,7 +137,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     expect(output.uploadUrl.absoluteString).toEqual("from-aws.com")
 
-    let afterCount = try await self.db.query(Screenshot.self).all().count
+    let afterCount = try await self.db.count(Screenshot.self)
     expect(afterCount).toEqual(beforeCount + 1)
   }
 
@@ -192,7 +192,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     let retrieved = try await SecurityEvent.query()
       .where(.userDeviceId == user.device.id)
-      .first()
+      .first(in: self.db)
 
     expect(output).toEqual(.success)
     expect(retrieved.event).toEqual("appQuit")

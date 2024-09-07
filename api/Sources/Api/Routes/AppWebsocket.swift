@@ -22,12 +22,12 @@ enum AppWebsocket {
     _ ws: WebSocket
   ) async throws {
     guard let token = try? await request.userToken(),
-          let userDevice = try? await token.userDevice() else {
+          let userDevice = try? await token.userDevice(in: request.context.db) else {
       throw UserTokenNotFound()
     }
 
-    let user = try await token.user()
-    let keychains = try await user.keychains()
+    let user = try await token.user(in: request.context.db)
+    let keychains = try await user.keychains(in: request.context.db)
 
     let entityIds = AppConnection.Ids(
       userDevice: userDevice.id,

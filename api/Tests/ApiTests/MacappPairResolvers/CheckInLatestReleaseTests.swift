@@ -113,7 +113,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
 
 extension ApiTestCase {
   func replaceAllReleases(with releases: [Release]) async throws {
-    try await self.db.deleteAll(Release.self)
+    try await self.db.delete(all: Release.self)
     try await self.db.create(releases)
     for var release in releases {
       try await release.modifyCreatedAt(.exact(release.createdAt))

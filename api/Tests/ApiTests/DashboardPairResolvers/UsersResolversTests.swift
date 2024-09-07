@@ -83,9 +83,9 @@ final class UsersResolversTests: ApiTestCase {
     let input = SaveUser.Input(from: user, keychainIds: [keychain.id])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychainIds = try await self.db.query(UserKeychain.self)
+    let keychainIds = try await UserKeychain.query()
       .where(.userId == user.id)
-      .all()
+      .all(in: self.db)
       .map(\.keychainId)
 
     expect(keychainIds).toEqual([keychain.id])
@@ -102,9 +102,9 @@ final class UsersResolversTests: ApiTestCase {
     let input = SaveUser.Input(from: user, keychainIds: [])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychains = try await self.db.query(UserKeychain.self)
+    let keychains = try await UserKeychain.query()
       .where(.userId == user.id)
-      .all()
+      .all(in: self.db)
 
     expect(keychains.isEmpty).toBeTrue()
     let retrievedPivot = try? await self.db.find(pivot.id)
@@ -125,9 +125,9 @@ final class UsersResolversTests: ApiTestCase {
     let input = SaveUser.Input(from: user, keychainIds: [keychain2.id])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychainIds = try await self.db.query(UserKeychain.self)
+    let keychainIds = try await UserKeychain.query()
       .where(.userId == user.id)
-      .all()
+      .all(in: self.db)
       .map(\.keychainId)
 
     expect(keychainIds).toEqual([keychain2.id])

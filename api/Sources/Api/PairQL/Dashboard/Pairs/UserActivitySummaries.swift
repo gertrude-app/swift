@@ -35,7 +35,7 @@ extension UserActivitySummaries: Resolver {
   ) async throws -> Output {
     let user = try await context.verifiedUser(from: input.userId)
     let dateRanges = input.dateRanges.compactMap(\.dates)
-    let userDeviceIds = try await user.devices().map(\.id)
+    let userDeviceIds = try await user.devices(in: context.db).map(\.id)
 
     let days = try await withThrowingTaskGroup(
       of: UserActivitySummaries.Day.self
@@ -48,14 +48,14 @@ extension UserActivitySummaries: Resolver {
             .where(.createdAt > .date(start))
             .orderBy(.createdAt, .desc)
             .withSoftDeleted()
-            .all()
+            .all(in: context.db)
           async let keystrokeLines = KeystrokeLine.query()
             .where(.userDeviceId |=| userDeviceIds)
             .where(.createdAt <= .date(end))
             .where(.createdAt > .date(start))
             .orderBy(.createdAt, .desc)
             .withSoftDeleted()
-            .all()
+            .all(in: context.db)
 
           _ = try await (screenshots, keystrokeLines)
 

@@ -16,9 +16,9 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
     let retrieved = try await self.db.find(admin.id)
-    let method = try await self.db.query(AdminVerifiedNotificationMethod.self)
+    let method = try await AdminVerifiedNotificationMethod.query()
       .where(.adminId == admin.id)
-      .first()
+      .first(in: self.db)
 
     expect(output.adminId).toEqual(admin.id)
     expect(retrieved.subscriptionStatus).toEqual(.trialing)

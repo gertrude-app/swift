@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Vapor
 import XAws
@@ -79,16 +80,16 @@ func unexpected(_ id: String, detail: String = "") {
 func unexpected(_ id: String, _ adminId: Admin.Id? = nil, _ detail: String = "") {
   Current.logger.error("Unexpected event `\(id)`, \(detail)")
   Current.sendGrid.fireAndForget(.unexpected(id, detail))
-
   Task { [detail] in
-    try await InterestingEvent(
+    @Dependency(\.db) var db
+    try await db.create(InterestingEvent(
       eventId: id,
       kind: "event",
       context: "api",
       userDeviceId: nil,
       adminId: adminId,
       detail: detail
-    ).create()
+    ))
   }
 }
 

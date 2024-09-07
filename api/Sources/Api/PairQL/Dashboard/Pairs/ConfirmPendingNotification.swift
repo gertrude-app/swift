@@ -22,7 +22,7 @@ extension ConfirmPendingNotificationMethod: Resolver {
     guard method.adminId == context.admin.id else {
       throw Abort(.unauthorized)
     }
-    try await method.create()
+    try await context.db.create(method)
     return .success
   }
 }

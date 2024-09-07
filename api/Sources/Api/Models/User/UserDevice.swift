@@ -41,16 +41,16 @@ extension UserDevice {
     Semver(self.appVersion)!
   }
 
-  func user() async throws -> User {
+  func user(in db: any DuetSQL.Client) async throws -> User {
     try await User.query()
       .where(.id == self.userId)
-      .first()
+      .first(in: db)
   }
 
-  func adminDevice() async throws -> Device {
+  func adminDevice(in db: any DuetSQL.Client) async throws -> Device {
     try await Device.query()
       .where(.id == self.deviceId)
-      .first()
+      .first(in: db)
   }
 }
 

@@ -20,9 +20,11 @@ extension SendPasswordResetEmail: Resolver {
     if !email.isValidEmail {
       throw Abort(.badRequest)
     }
-    if let admin = try? await Admin.query().where(.email == email).first() {
+    if let admin = try? await Admin.query()
+      .where(.email == email)
+      .first(in: context.db) {
       let token = await Current.ephemeral.createAdminIdToken(admin.id)
-      dashSecurityEvent(.passwordResetRequested, admin.id, context.ipAddress)
+      dashSecurityEvent(.passwordResetRequested, admin: admin.id, in: context)
       try await Current.postmark.send(reset(email, context.dashboardUrl, token))
     } else {
       try await Current.postmark.send(notFound(email))

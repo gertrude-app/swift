@@ -30,16 +30,16 @@ final class ConnectUserResolversTests: ApiTestCase {
     expect(device.modelIdentifier).toEqual(input.modelIdentifier)
     expect(device.osVersion).toEqual(Semver("14.2.0"))
 
-    let token = try await self.db.query(UserToken.self)
+    let token = try await UserToken.query()
       .where(.value == userData.token)
-      .first()
+      .first(in: self.db)
 
     expect(token.userId).toEqual(user.id)
   }
 
   func testConnectUser_twoUsersSameComputer() async throws {
     Current.verificationCode = .live
-    try await Device.deleteAll()
+    try await self.db.delete(all: Device.self)
     let user1 = try await Entities.user()
     let code1 = await Current.ephemeral.createPendingAppConnection(user1.id)
 

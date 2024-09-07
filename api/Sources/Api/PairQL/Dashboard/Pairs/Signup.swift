@@ -26,7 +26,7 @@ extension Signup: Resolver {
 
     let existing = try? await Admin.query()
       .where(.email == email)
-      .first()
+      .first(in: context.db)
 
     if existing != nil {
       if context.env.mode == .prod, !isTestAddress(email) {
@@ -47,14 +47,14 @@ extension Signup: Resolver {
       ))
     }
 
-    let admin = try await Admin(
+    let admin = try await context.db.create(Admin(
       email: .init(rawValue: email),
       password: context.env.mode == .test ? input.password : try Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
       subscriptionStatusExpiration: Current.date().advanced(by: .days(7)),
       gclid: input.gclid,
       abTestVariant: input.abTestVariant
-    ).create()
+    ))
 
     try await sendVerificationEmail(to: admin, in: context)
     return .success

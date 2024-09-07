@@ -70,7 +70,7 @@ extension Request {
 
     let userToken = try? await UserToken.query()
       .where(.value == uuid)
-      .first()
+      .first(in: self.context.db)
 
     guard let userToken = userToken else {
       // the mac app looks for this specific error message (for now, at least)

@@ -30,11 +30,14 @@ extension DashboardRoute: RouteResponder {
     case .adminAuthed(let uuid, let adminRoute):
       let token = try await AdminToken.query()
         .where(.value == uuid)
-        .first(orThrow: context.error("8df93d61", .loggedOut, "Admin token not found"))
+        .first(
+          in: context.db,
+          orThrow: context.error("8df93d61", .loggedOut, "Admin token not found")
+        )
 
       let admin = try await Admin.query()
         .where(.id == token.adminId)
-        .first()
+        .first(in: context.db)
 
       let adminContext = AdminContext(
         requestId: context.requestId,
