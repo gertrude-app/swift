@@ -35,11 +35,7 @@ struct ReworkPayments: GertieMigration {
       case "trialing", "emailVerified":
         return (admin.id, .trialing, admin.createdAt.advanced(by: .days(60 - 7)))
       default:
-        if Env.mode == .prod {
-          fatalError("unexpected subscription status: `\(admin.subscriptionStatus)`")
-        } else {
-          return (admin.id, .complimentary, .distantFuture)
-        }
+        return (admin.id, .complimentary, .distantFuture)
       }
     }
 

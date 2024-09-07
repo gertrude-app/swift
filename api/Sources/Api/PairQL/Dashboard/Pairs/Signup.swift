@@ -29,14 +29,14 @@ extension Signup: Resolver {
       .first()
 
     if existing != nil {
-      if Env.mode == .prod, !isTestAddress(email) {
+      if context.env.mode == .prod, !isTestAddress(email) {
         Current.sendGrid.fireAndForget(.toJared("signup [exists]", email))
       }
       try await Current.postmark.send(accountExists(with: email))
       return .success
     }
 
-    if Env.mode == .prod, !isTestAddress(email) {
+    if context.env.mode == .prod, !isTestAddress(email) {
       Current.sendGrid.fireAndForget(.toJared(
         "signup",
         [
@@ -49,7 +49,7 @@ extension Signup: Resolver {
 
     let admin = try await Admin(
       email: .init(rawValue: email),
-      password: Env.mode == .test ? input.password : try Bcrypt.hash(input.password),
+      password: context.env.mode == .test ? input.password : try Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
       subscriptionStatusExpiration: Current.date().advanced(by: .days(7)),
       gclid: input.gclid,

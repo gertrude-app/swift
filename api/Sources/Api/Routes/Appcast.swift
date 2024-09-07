@@ -6,8 +6,7 @@ import Vapor
 enum AppcastRoute {
   @Sendable static func handler(_ request: Request) async throws -> Response {
     let query = try request.query.decode(AppcastQuery.self)
-    @Dependency(\.db) var db
-    let releases = try await db.query(Release.self)
+    let releases = try await request.context.db.query(Release.self)
       .orderBy(.createdAt, .desc)
       .all()
       .filter { $0.channel.isAtLeastAsStable(as: query.channel ?? .stable) }
@@ -42,6 +41,7 @@ func feedXml(for releases: [Release], force: Bool = false) -> String {
 
 extension Release {
   func sparkleItemXml(forceUpdate: Bool = false) -> String {
+    @Dependency(\.env) var env
     let description = notes.map { "\n  <description><![CDATA[\($0)]]></description>" } ?? ""
     let formatter = DateFormatter()
     formatter.timeZone = .init(abbreviation: "UTC")
@@ -54,7 +54,7 @@ extension Release {
       <sparkle:shortVersionString>\(forceUpdate ? "99.99.99" : semver)</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
       <enclosure
-        url="\(Env.CLOUD_STORAGE_BUCKET_URL)/releases/Gertrude.\(semver).zip"
+        url="\(env.s3.bucketUrl)/releases/Gertrude.\(semver).zip"
         length="\(length)"
         type="application/octet-stream"
         sparkle:edSignature="\(signature)"

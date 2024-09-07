@@ -42,7 +42,7 @@ extension VerifySignupEmail: Resolver {
         config: .email(email: admin.email.rawValue)
       ))
 
-      if Env.mode == .prod, !isTestAddress(admin.email.rawValue) {
+      if context.env.mode == .prod, !isTestAddress(admin.email.rawValue) {
         Current.sendGrid.fireAndForget(.toJared("email verified", admin.email.rawValue))
       }
 

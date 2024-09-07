@@ -4,11 +4,11 @@ import XSendGrid
 
 extension Configure {
   static func emails(_ app: Application) {
-    guard Env.mode != .test else { return }
+    guard app.env.mode != .test else { return }
 
     // configure live clients
-    Current.sendGrid = .live(apiKey: Env.SENDGRID_API_KEY)
-    Current.postmark = .live(apiKey: Env.POSTMARK_API_KEY)
+    Current.sendGrid = .live(apiKey: app.env.sendgridApiKey)
+    Current.postmark = .live(apiKey: app.env.postmarkApiKey)
 
     // never send emails to integration test addresses
     let sendGridSend = Current.sendGrid.send
@@ -31,7 +31,7 @@ extension Configure {
     }
 
     // to stay under 100 emails/month, only use postmark in prod
-    if Env.mode != .prod {
+    if app.env.mode != .prod {
       Current.postmark.send = { email in
         try await Current.sendGrid.send(.init(postmark: email))
       }

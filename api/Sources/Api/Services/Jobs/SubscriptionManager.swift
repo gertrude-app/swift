@@ -27,9 +27,10 @@ struct SubscriptionUpdate: Equatable {
 
 struct SubscriptionManager: AsyncScheduledJob {
   @Dependency(\.stripe) var stripe
+  @Dependency(\.env) var env
 
   func run(context: QueueContext) async throws {
-    guard Env.mode == .prod else { return }
+    guard self.env.mode == .prod else { return }
     try await self.advanceExpired()
   }
 
@@ -65,7 +66,7 @@ struct SubscriptionManager: AsyncScheduledJob {
       }
     }
 
-    if Env.mode == .prod, !logs.isEmpty {
+    if self.env.mode == .prod, !logs.isEmpty {
       Current.sendGrid.fireAndForget(.toJared(
         "Gertrude subscription manager events",
         "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>"

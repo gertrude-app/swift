@@ -2,8 +2,7 @@ import Dependencies
 import Foundation
 import Vapor
 
-// TODO: rename Env
-public struct EnvVars: Sendable {
+public struct Env: Sendable {
   public var mode: AppMode
   public var s3: S3
   public var sendgridApiKey: String
@@ -13,6 +12,7 @@ public struct EnvVars: Sendable {
   public var twilio: Twilio
   public var stripe: Stripe
   public var analyticsSiteUrl: String
+  public var get: @Sendable (String) -> String?
 
   public enum AppMode: Equatable, Sendable {
     case prod
@@ -47,7 +47,7 @@ public struct EnvVars: Sendable {
   }
 }
 
-extension EnvVars.AppMode {
+extension Env.AppMode {
   init(from env: Vapor.Environment?) {
     switch env?.name {
     case "production":
@@ -82,10 +82,10 @@ extension EnvVars.AppMode {
   }
 }
 
-extension EnvVars: DependencyKey {
-  public static func fromProcess(mode vaporEnv: Vapor.Environment?) -> EnvVars {
+extension Env: DependencyKey {
+  public static func fromProcess(mode vaporEnv: Vapor.Environment?) -> Env {
     let mode = AppMode(from: vaporEnv)
-    return EnvVars(
+    return Env(
       mode: mode,
       s3: S3(
         key: processEnv("CLOUD_STORAGE_KEY"),
@@ -113,23 +113,24 @@ extension EnvVars: DependencyKey {
         secretKey: processEnv("STRIPE_SECRET_KEY"),
         subscriptionPriceId: processEnv("STRIPE_SUBSCRIPTION_PRICE_ID")
       ),
-      analyticsSiteUrl: processEnv("ANALYTICS_SITE_URL")
+      analyticsSiteUrl: processEnv("ANALYTICS_SITE_URL"),
+      get: { ProcessInfo.processInfo.environment[$0] }
     )
   }
 
-  public static var liveValue: EnvVars {
+  public static var liveValue: Env {
     self.fromProcess(mode: try? Vapor.Environment.detect())
   }
 
-  public static var fromProcess: EnvVars {
+  public static var fromProcess: Env {
     .liveValue
   }
 }
 
 public extension DependencyValues {
-  var env: EnvVars {
-    get { self[EnvVars.self] }
-    set { self[EnvVars.self] = newValue }
+  var env: Env {
+    get { self[Env.self] }
+    set { self[Env.self] = newValue }
   }
 }
 
@@ -143,8 +144,8 @@ func processEnv(_ key: String) -> String {
   return envVar
 }
 
-extension EnvVars: TestDependencyKey {
-  public static var testValue: EnvVars {
+extension Env: TestDependencyKey {
+  public static var testValue: Env {
     .fromProcess(mode: .testing)
   }
 }

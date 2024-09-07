@@ -1,6 +1,6 @@
+import Dependencies
 import Foundation
 
-// linux
 #if canImport(FoundationNetworking)
   import FoundationNetworking
 #endif
@@ -10,7 +10,8 @@ struct TwilioSmsClient: Sendable {
 }
 
 @Sendable private func send(_ text: Text) {
-  let (sid, auth, from) = (Env.TWILIO_ACCOUNT_SID, Env.TWILIO_AUTH_TOKEN, Env.TWILIO_FROM_PHONE)
+  @Dependency(\.env.twilio) var env
+  let (sid, auth, from) = (env.accountSid, env.authToken, env.fromPhone)
   let url = "https://\(sid):\(auth)@api.twilio.com/2010-04-01/Accounts/\(sid)/Messages.json"
 
   var request = URLRequest(url: URL(string: url)!)

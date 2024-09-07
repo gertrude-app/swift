@@ -12,7 +12,6 @@ import XSlack
     let websockets: ConnectedApps = .live
     let date: @Sendable () -> Date = { Date() }
     let ephemeral: Ephemeral = .init()
-    let env: EnvironmentVariables = .live
     var logger: Logger = .null
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
@@ -27,7 +26,6 @@ import XSlack
     var websockets: ConnectedApps = .live
     var date: @Sendable () -> Date = { Date() }
     var ephemeral: Ephemeral = .init()
-    var env: EnvironmentVariables = .live
     var logger: Logger = .null
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
@@ -50,7 +48,6 @@ nonisolated(unsafe) var Current = Environment()
       websockets: .mock,
       date: { .mock },
       ephemeral: .init(),
-      env: .mock,
       logger: .null,
       postmark: .mock,
       sendGrid: .mock,
@@ -65,12 +62,6 @@ struct VerificationCodeGenerator: Sendable {
   var generate: @Sendable () -> Int
   static let live = Self { Int.random(in: 100_000 ... 999_999) }
   static let mock = Self { 0 }
-}
-
-struct EnvironmentVariables: Sendable {
-  var get: @Sendable (String) -> String?
-  static let live = EnvironmentVariables(get: { Env.get($0) })
-  static let mock = EnvironmentVariables(get: { _ in nil })
 }
 
 extension Date {

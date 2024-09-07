@@ -8,6 +8,7 @@ struct AdminContext: ResolverContext {
   let ipAddress: String?
 
   @Dependency(\.db) var db
+  @Dependency(\.env) var env
   @Dependency(\.stripe) var stripe
 
   @discardableResult

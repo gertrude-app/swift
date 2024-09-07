@@ -64,7 +64,7 @@ enum PairQLRoute: Equatable, RouteResponder {
       return try await PairQLRoute.respond(to: route, in: context)
     } catch {
       if "\(type(of: error))" == "ParsingError" {
-        switch Env.mode {
+        switch request.context.env.mode {
         case .prod:
           await slackPairQLRouteNotFound(request, error)
         case .dev:
@@ -76,7 +76,9 @@ enum PairQLRoute: Equatable, RouteResponder {
           id: "0f5a25c9",
           requestId: context.requestId,
           type: .notFound,
-          debugMessage: Env.mode == .dev ? "PairQL routing \(error)" : "PairQL route not found",
+          debugMessage: request.context.env.mode == .dev
+            ? "PairQL routing \(error)"
+            : "PairQL route not found",
           showContactSupport: true
         ))
       } else if let pqlError = error as? PqlError {

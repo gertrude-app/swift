@@ -9,6 +9,7 @@ struct UserContext: ResolverContext {
   let token: UserToken
 
   @Dependency(\.uuid) var uuid
+  @Dependency(\.env) var env
 
   func userDevice() async throws -> UserDevice {
     guard let userDevice = try await token.userDevice() else {

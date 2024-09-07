@@ -13,9 +13,9 @@ extension CreateSignedScreenshotUpload: Resolver {
     let unixTime = Int(Date().timeIntervalSince1970)
     let filename = "\(unixTime)--\(context.uuid().lowercased).jpg"
     let filepath = "\(userDevice.id.lowercased)/\(filename)"
-    let dir = "\(Env.mode == .prod ? "" : "\(Env.mode)-")screenshots"
+    let dir = "\(context.env.mode == .prod ? "" : "\(context.env.mode)-")screenshots"
     let objectName = "\(dir)/\(filepath)"
-    let webUrlString = "\(Env.CLOUD_STORAGE_BUCKET_URL)/\(objectName)"
+    let webUrlString = "\(context.env.s3.bucketUrl)/\(objectName)"
 
     guard let webUrl = URL(string: webUrlString) else {
       throw Abort(

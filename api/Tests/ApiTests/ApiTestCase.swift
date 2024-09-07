@@ -64,6 +64,7 @@ class ApiTestCase: XCTestCase {
   static var migrated = false
 
   @Dependency(\.db) var db
+  @Dependency(\.env) var env
 
   struct Sent {
     struct AdminNotification: Equatable {
@@ -159,7 +160,7 @@ class ApiTestCase: XCTestCase {
 
   @discardableResult
   func createAutoIncludeKeychain() async throws -> (Keychain, Api.Key) {
-    guard let autoIdStr = Env.get("AUTO_INCLUDED_KEYCHAIN_ID"),
+    guard let autoIdStr = self.env.get("AUTO_INCLUDED_KEYCHAIN_ID"),
           let autoId = UUID(uuidString: autoIdStr) else {
       fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")
     }

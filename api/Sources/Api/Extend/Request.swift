@@ -1,5 +1,34 @@
+import Dependencies
 import DuetSQL
 import Vapor
+
+struct AppContext {
+  var db: any DuetSQL.Client
+  var env: Env
+}
+
+extension AppContext {
+  static var shared: AppContext {
+    @Dependency(\.db) var db
+    @Dependency(\.env) var env
+    return .init(db: db, env: env)
+  }
+}
+
+extension AppContext: StorageKey {
+  typealias Value = AppContext
+}
+
+extension Vapor.Application {
+  var context: AppContext {
+    get { self.storage[AppContext.self] ?? .shared }
+    set { self.storage[AppContext.self] = newValue }
+  }
+
+  var env: Env {
+    self.context.env
+  }
+}
 
 extension Request {
   var id: String {
@@ -9,6 +38,14 @@ extension Request {
     } else {
       return UUID().uuidString.lowercased()
     }
+  }
+
+  var context: AppContext {
+    self.application.context
+  }
+
+  var env: Env {
+    self.application.context.env
   }
 
   // get the entire request body as a string, collecting if necessary

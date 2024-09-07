@@ -39,7 +39,7 @@ extension DbClientKey: DependencyKey {
 }
 
 public extension PgClient {
-  init(threadCount: Int, env: EnvVars) {
+  init(threadCount: Int, env: Env) {
     self = PgClient(
       factory: .from(env: env),
       logger: .null,
@@ -49,7 +49,7 @@ public extension PgClient {
 }
 
 extension DatabaseConfigurationFactory {
-  static func from(env: EnvVars) -> DatabaseConfigurationFactory {
+  static func from(env: Env) -> DatabaseConfigurationFactory {
     .postgres(configuration: .init(
       hostname: env.get("DATABASE_HOST") ?? "localhost",
       username: env.database.username,

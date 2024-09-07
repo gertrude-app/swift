@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Foundation
 import Gertie
@@ -5,8 +6,12 @@ import Queues
 import Vapor
 
 struct CleanupJob: AsyncScheduledJob {
+  @Dependency(\.env) var env
+
   func run(context: QueueContext) async throws {
-    guard Env.mode == .prod else { return }
+    guard self.env.mode == .prod else {
+      return
+    }
 
     let logs = try await cleanupDb()
     for log in logs {

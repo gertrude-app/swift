@@ -31,7 +31,7 @@ enum ResetRoute {
         </p>
         <p>
           To test a filter suspension, use
-          <a href ="\(Env.DASHBOARD_URL)/children/\(AdminBetsy.Ids
+          <a href ="\(request.env.dashboardUrl)/children/\(AdminBetsy.Ids
         .jimmysId)/suspend-filter-requests/\(AdminBetsy.Ids.suspendFilter.lowercased)">
           this route</a> in the dashboard web app:<br />
         </p>

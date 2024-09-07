@@ -34,7 +34,7 @@ extension LogInterestingEvent: Resolver {
          let user = try? await userDevice.user(),
          let admin = try? await user.admin() {
         adminLink = "\n  -> " + Slack.link(
-          to: "\(Env.ANALYTICS_SITE_URL)/admins/\(admin.id.lowercased)",
+          to: "\(context.env.analyticsSiteUrl)/admins/\(admin.id.lowercased)",
           withText: "\(admin.email), \(user.name)"
         )
       }
@@ -46,7 +46,7 @@ extension LogInterestingEvent: Resolver {
       }
     }
 
-    if Env.mode == .test {
+    if context.env.mode == .test {
       try await task.value
     }
 

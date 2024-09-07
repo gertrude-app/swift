@@ -35,7 +35,7 @@ public extension Configure {
       use: ReleasesRoute.handler(_:)
     )
 
-    if let suffix = Env.get("RESET_ROUTE_SUFFIX") {
+    if let suffix = app.env.get("RESET_ROUTE_SUFFIX") {
       app.get(
         "reset-\(suffix)",
         use: ResetRoute.handler(_:)

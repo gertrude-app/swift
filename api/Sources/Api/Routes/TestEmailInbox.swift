@@ -4,11 +4,11 @@ import XHttp
 
 enum TestEmailInboxRoute {
   @Sendable static func handler(_ request: Request) async throws -> Response {
-    guard Env.mode != .prod else {
+    guard request.env.mode != .prod else {
       throw Abort(.notFound)
     }
 
-    guard let API_KEY = Env.get("TESTMAIL_API_KEY") else {
+    guard let API_KEY = request.env.get("TESTMAIL_API_KEY") else {
       throw Abort(.badRequest, reason: "TESTMAIL_API_KEY is not set")
     }
 

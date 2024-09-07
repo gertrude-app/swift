@@ -45,7 +45,7 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
   let sessionData = Stripe.CheckoutSessionData(
     successUrl: "\(context.dashboardUrl)/checkout-success?session_id={CHECKOUT_SESSION_ID}",
     cancelUrl: "\(context.dashboardUrl)/checkout-cancel?session_id={CHECKOUT_SESSION_ID}",
-    lineItems: [.init(quantity: 1, priceId: Env.STRIPE_SUBSCRIPTION_PRICE_ID)],
+    lineItems: [.init(quantity: 1, priceId: context.env.stripe.subscriptionPriceId)],
     mode: .subscription,
     clientReferenceId: context.admin.id.lowercased,
     customerEmail: context.admin.email.rawValue,
