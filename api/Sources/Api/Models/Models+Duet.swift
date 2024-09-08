@@ -18,7 +18,8 @@ protocol HasOptionalDeletedAt {
 extension HasOptionalDeletedAt {
   var isDeleted: Bool {
     guard let deletedAt = deletedAt else { return false }
-    return deletedAt < Current.date()
+    @Dependency(\.date.now) var now
+    return deletedAt < now
   }
 
   var notDeleted: Bool { !self.isDeleted }

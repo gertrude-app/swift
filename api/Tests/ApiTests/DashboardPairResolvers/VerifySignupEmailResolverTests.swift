@@ -9,7 +9,6 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
   let context = Context.mock
 
   func testVerifySignupEmailSetsSubscriptionStatusAndCreatesNotificationMethod() async throws {
-    Current.date = { .epoch }
     let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
     let token = await Current.ephemeral.createAdminIdToken(admin.id)
 
@@ -22,7 +21,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
 
     expect(output.adminId).toEqual(admin.id)
     expect(retrieved.subscriptionStatus).toEqual(.trialing)
-    expect(retrieved.subscriptionStatusExpiration).toEqual(.epoch.advanced(by: .days(53)))
+    expect(retrieved.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(53)))
     expect(method.config).toEqual(.email(email: admin.email.rawValue))
   }
 
@@ -30,7 +29,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
     let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
     let token = await Current.ephemeral.createAdminIdToken(
       admin.id,
-      expiration: Current.date().advanced(by: .days(-1))
+      expiration: Date.reference - .days(1)
     )
 
     let result = await VerifySignupEmail.result(with: .init(token: token), in: self.context)
@@ -46,7 +45,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
       .admin { $0.subscriptionStatus = .trialing } // <-- already verified
     let token = await Current.ephemeral.createAdminIdToken(
       admin.id,
-      expiration: Current.date().advanced(by: .days(-1))
+      expiration: Date.reference - .days(1)
     )
 
     let result = await VerifySignupEmail.result(with: .init(token: token), in: self.context)

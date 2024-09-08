@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import MacAppRoute
@@ -61,9 +62,10 @@ extension ConnectUser: Resolver {
         .where(.userId == oldUserId)
         .all(in: context.db)
 
+      @Dependency(\.date.now) var now
       for var token in oldTokens {
         // wait 14 days, so buffered security events can be resent
-        token.deletedAt = Current.date().advanced(by: .days(14))
+        token.deletedAt = now + .days(14)
         try await context.db.update(token)
       }
 

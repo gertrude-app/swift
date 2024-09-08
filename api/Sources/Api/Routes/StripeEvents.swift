@@ -21,10 +21,11 @@ enum StripeEventsRoute {
         .first(in: request.context.db)
 
       if var admin {
+        @Dependency(\.date.now) var now
         admin.subscriptionStatus = .paid
         admin.subscriptionStatusExpiration = event?.data?.object?.lines?.data?.first?.period?.end
           .map { Date(timeIntervalSince1970: TimeInterval($0)).advanced(by: .days(2)) }
-          ?? Current.date().advanced(by: .days(33))
+          ?? now + .days(33)
 
         switch (admin.subscriptionId, event?.data?.object?.subscription) {
         case (.none, .some(let subscriptionId)):

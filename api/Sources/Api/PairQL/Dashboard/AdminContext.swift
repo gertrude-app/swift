@@ -9,7 +9,6 @@ struct AdminContext: ResolverContext {
 
   @Dependency(\.db) var db
   @Dependency(\.env) var env
-  @Dependency(\.stripe) var stripe
 
   @discardableResult
   func verifiedUser(from id: User.Id) async throws -> User {

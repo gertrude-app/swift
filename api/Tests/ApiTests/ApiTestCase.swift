@@ -14,6 +14,7 @@ class DependencyTestCase: XCTestCase {
   override open func invokeTest() {
     withDependencies {
       $0.uuid = UUIDGenerator { UUID() }
+      $0.date = .constant(.reference)
     } operation: {
       super.invokeTest()
     }
@@ -91,6 +92,7 @@ class ApiTestCase: XCTestCase {
       $0.uuid = UUIDGenerator { UUID() }
       $0.env = .fromProcess(mode: .testing)
       $0.stripe = .failing
+      $0.date = .constant(.reference)
     } operation: {
       super.invokeTest()
     }

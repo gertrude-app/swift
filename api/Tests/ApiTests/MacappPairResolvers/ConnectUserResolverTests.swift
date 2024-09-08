@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import MacAppRoute
@@ -65,7 +66,6 @@ final class ConnectUserResolversTests: ApiTestCase {
 
   // re-connect from a macOS user that has had gertrude installed before
   func testConnectUser_ReassignToDifferentUserOwnedBySameAdmin() async throws {
-    Current.date = { Date() }
     let existingUser = try await Entities.user().withDevice()
     let existingUserToken = try await self.db.create(UserToken(
       userId: existingUser.id,
@@ -75,7 +75,12 @@ final class ConnectUserResolversTests: ApiTestCase {
     // different user, owned by same admin
     let newUser = try await Entities.user { $0.adminId = existingUser.admin.id }
     Current.verificationCode = .live
-    let code = await Current.ephemeral.createPendingAppConnection(newUser.model.id)
+
+    let code = await withDependencies {
+      $0.date = .init { Date() }
+    } operation: {
+      await Current.ephemeral.createPendingAppConnection(newUser.model.id)
+    }
 
     // happy path, the device exists, registered to another user, but that's OK
     // because the same admin owns both users, so switch it over
@@ -86,7 +91,11 @@ final class ConnectUserResolversTests: ApiTestCase {
     input.numericId = existingUser.device.numericId
     input.serialNumber = existingUser.adminDevice.serialNumber
 
-    let userData = try await ConnectUser.resolve(with: input, in: self.context)
+    let userData = try await withDependencies {
+      $0.date = .init { Date() }
+    } operation: {
+      try await ConnectUser.resolve(with: input, in: self.context)
+    }
 
     expect(userData.id).toEqual(newUser.id.rawValue)
     expect(userData.name).toEqual(newUser.name)

@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Foundation
 import PairQL
@@ -47,11 +48,12 @@ extension Signup: Resolver {
       ))
     }
 
+    @Dependency(\.date.now) var now
     let admin = try await context.db.create(Admin(
       email: .init(rawValue: email),
       password: context.env.mode == .test ? input.password : try Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
-      subscriptionStatusExpiration: Current.date().advanced(by: .days(7)),
+      subscriptionStatusExpiration: now + .days(7),
       gclid: input.gclid,
       abTestVariant: input.abTestVariant
     ))
@@ -64,9 +66,10 @@ extension Signup: Resolver {
 // helpers
 
 func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
+  @Dependency(\.date.now) var now
   let token = await Current.ephemeral.createAdminIdToken(
     admin.id,
-    expiration: Current.date().advanced(by: .hours(24))
+    expiration: now + .hours(24)
   )
 
   try await Current.postmark.send(verify(admin.email.rawValue, context.dashboardUrl, token))

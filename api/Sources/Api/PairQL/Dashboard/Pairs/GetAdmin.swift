@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import PairQL
 
@@ -62,14 +63,15 @@ extension GetAdmin: NoInputResolver {
 
 extension GetAdmin.SubscriptionStatus {
   init(_ admin: Admin) throws {
+    @Dependency(\.date.now) var now
     switch admin.subscriptionStatus {
     case .complimentary:
       self = .complimentary
     case .trialing:
-      let delta = Current.date().distance(to: admin.subscriptionStatusExpiration)
+      let delta = now.distance(to: admin.subscriptionStatusExpiration)
       self = .trialing(daysLeft: Int(delta / 86400) + 7) // 7 days in "expiring soon"
     case .trialExpiringSoon:
-      let delta = Current.date().distance(to: admin.subscriptionStatusExpiration)
+      let delta = now.distance(to: admin.subscriptionStatusExpiration)
       self = .trialing(daysLeft: Int(delta / 86400))
     case .paid:
       self = .paid

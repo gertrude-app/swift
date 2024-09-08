@@ -29,6 +29,7 @@ struct SubscriptionManager: AsyncScheduledJob {
   @Dependency(\.stripe) var stripe
   @Dependency(\.env) var env
   @Dependency(\.db) var db
+  @Dependency(\.date.now) var now
 
   func run(context: QueueContext) async throws {
     guard self.env.mode == .prod else { return }
@@ -76,7 +77,7 @@ struct SubscriptionManager: AsyncScheduledJob {
   }
 
   func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
-    if admin.subscriptionStatusExpiration > Current.date() {
+    if admin.subscriptionStatusExpiration > self.now {
       return nil
     }
 
@@ -93,7 +94,7 @@ struct SubscriptionManager: AsyncScheduledJob {
       return .init(
         action: .update(
           status: .trialExpiringSoon,
-          expiration: Current.date().advanced(by: .days(7))
+          expiration: self.now + .days(7)
         ),
         // NB: trial ending soon email is ALWAYS sent, regardless of onboarding status
         // but if they have never onboarded, it will be the only email they receive
@@ -102,13 +103,13 @@ struct SubscriptionManager: AsyncScheduledJob {
 
     case .trialExpiringSoon:
       return .init(
-        action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
+        action: .update(status: .overdue, expiration: self.now + .days(14)),
         email: completedOnboarding ? .trialEndedToOverdue : nil
       )
 
     case .overdue:
       return try await self.updateIfPaid(admin.subscriptionId) ?? .init(
-        action: .update(status: .unpaid, expiration: Current.date().advanced(by: .days(365))),
+        action: .update(status: .unpaid, expiration: self.now + .days(365)),
         email: completedOnboarding ? .overdueToUnpaid : nil
       )
 
@@ -122,14 +123,14 @@ struct SubscriptionManager: AsyncScheduledJob {
       return .init(
         action: .update(
           status: .pendingAccountDeletion,
-          expiration: Current.date().advanced(by: .days(30))
+          expiration: self.now + .days(30)
         ),
         email: completedOnboarding ? .unpaidToPendingDelete : nil
       )
 
     case .paid:
       return try await self.updateIfPaid(admin.subscriptionId) ?? .init(
-        action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
+        action: .update(status: .overdue, expiration: self.now + .days(14)),
         email: .paidToOverdue
       )
 

@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import PairQL
 import Vapor
@@ -56,7 +57,8 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
     paymentMethodCollection: nil
   )
 
-  let session = try await context.stripe.createCheckoutSession(sessionData)
+  @Dependency(\.stripe) var stripe
+  let session = try await stripe.createCheckoutSession(sessionData)
   guard let url = session.url else {
     Current.sendGrid.fireAndForget(.unexpected("b66e1eaf", "admin: \(context.admin.id)"))
     throw Abort(.internalServerError)
@@ -68,7 +70,8 @@ private func billingPortalSessionUrl(
   for subscriptionId: Admin.SubscriptionId,
   in context: AdminContext
 ) async throws -> String {
-  let subscription = try await context.stripe.getSubscription(subscriptionId.rawValue)
-  let portal = try await context.stripe.createBillingPortalSession(subscription.customer)
+  @Dependency(\.stripe) var stripe
+  let subscription = try await stripe.getSubscription(subscriptionId.rawValue)
+  let portal = try await stripe.createBillingPortalSession(subscription.customer)
   return portal.url
 }

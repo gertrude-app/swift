@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import PairQL
 import Vapor
@@ -31,8 +32,9 @@ extension VerifySignupEmail: Resolver {
         return .init(token: token.value, adminId: admin.id)
       }
 
+      @Dependency(\.date.now) var now
+      admin.subscriptionStatusExpiration = now + .days(60 - 7)
       admin.subscriptionStatus = .trialing
-      admin.subscriptionStatusExpiration = Current.date().advanced(by: .days(60 - 7))
 
       try await context.db.update(admin)
 

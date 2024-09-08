@@ -29,7 +29,7 @@ struct ReworkPayments: GertieMigration {
       case "pendingEmailVerification":
         return (admin.id, .pendingEmailVerification, admin.createdAt.advanced(by: .days(7)))
       case "canceled":
-        return (admin.id, .unpaid, Current.date().advanced(by: .days(365)))
+        return (admin.id, .unpaid, Date().advanced(by: .days(365)))
       case "complimentary":
         return (admin.id, .complimentary, .distantFuture)
       case "trialing", "emailVerified":

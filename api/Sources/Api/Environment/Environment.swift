@@ -10,7 +10,6 @@ import XSlack
   struct Environment: Sendable {
     let adminNotifier: AdminNotifier = .live
     let websockets: ConnectedApps = .live
-    let date: @Sendable () -> Date = { Date() }
     let ephemeral: Ephemeral = .init()
     var logger: Logger = .null
     var postmark: XPostmark.Client = .mock
@@ -23,7 +22,6 @@ import XSlack
   struct Environment: Sendable {
     var adminNotifier: AdminNotifier = .live
     var websockets: ConnectedApps = .live
-    var date: @Sendable () -> Date = { Date() }
     var ephemeral: Ephemeral = .init()
     var logger: Logger = .null
     var postmark: XPostmark.Client = .mock
@@ -44,7 +42,6 @@ nonisolated(unsafe) var Current = Environment()
     static let mock = Environment(
       adminNotifier: .mock,
       websockets: .mock,
-      date: { .mock },
       ephemeral: .init(),
       logger: .null,
       postmark: .mock,

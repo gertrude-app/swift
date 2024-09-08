@@ -8,6 +8,7 @@ actor Ephemeral {
   private var retrievedAdminIds: [UUID: Admin.Id] = [:]
 
   @Dependency(\.uuid) private var uuid
+  @Dependency(\.date.now) private var now
 
   enum AdminId: Equatable {
     case notFound
@@ -23,10 +24,13 @@ actor Ephemeral {
 
   func createAdminIdToken(
     _ adminId: Admin.Id,
-    expiration: Date = Current.date() + ONE_HOUR
+    expiration: Date? = nil
   ) -> UUID {
     let token = self.uuid()
-    self.adminIds[token] = (adminId: adminId, expiration: expiration)
+    self.adminIds[token] = (
+      adminId: adminId,
+      expiration: expiration ?? self.now + ONE_HOUR
+    )
     return token
   }
 
@@ -41,7 +45,7 @@ actor Ephemeral {
 
   func adminIdFromToken(_ token: UUID) -> AdminId {
     if let (adminId, expiration) = adminIds.removeValue(forKey: token) {
-      if expiration > Current.date() {
+      if expiration > self.now {
         self.retrievedAdminIds[token] = adminId
         return .notExpired(adminId)
       } else {
@@ -64,10 +68,14 @@ actor Ephemeral {
 
   func createPendingNotificationMethod(
     _ model: AdminVerifiedNotificationMethod,
-    expiration: Date = Current.date() + ONE_HOUR
+    expiration: Date? = nil
   ) -> Int {
     let code = Current.verificationCode.generate()
-    self.pendingMethods[model.id] = (model: model, code: code, expiration: expiration)
+    self.pendingMethods[model.id] = (
+      model: model,
+      code: code,
+      expiration: expiration ?? self.now + ONE_HOUR
+    )
     return code
   }
 
@@ -77,7 +85,7 @@ actor Ephemeral {
   ) -> AdminVerifiedNotificationMethod? {
     guard let (model, storedCode, expiration) = pendingMethods.removeValue(forKey: modelId),
           code == storedCode,
-          expiration > Current.date() else {
+          expiration > self.now else {
       return nil
     }
     return model
@@ -87,13 +95,16 @@ actor Ephemeral {
 
   func createPendingAppConnection(
     _ userId: User.Id,
-    expiration: Date = Current.date() + ONE_HOUR
+    expiration: Date? = nil
   ) -> Int {
     let code = Current.verificationCode.generate()
     if self.pendingAppConnections[code] != nil {
       return self.createPendingAppConnection(userId)
     }
-    self.pendingAppConnections[code] = (userId: userId, expiration: expiration)
+    self.pendingAppConnections[code] = (
+      userId: userId,
+      expiration: expiration ?? self.now + ONE_HOUR
+    )
     return code
   }
 
@@ -102,7 +113,7 @@ actor Ephemeral {
       if code == 999_999 { return AdminBetsy.Ids.jimmysId }
     #endif
     guard let (userId, expiration) = pendingAppConnections[code],
-          expiration > Current.date() else {
+          expiration > self.now else {
       return nil
     }
     return userId

@@ -51,7 +51,6 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testHandleCheckoutSuccess() async throws {
     let sessionId = "cs_123"
     let admin = try await self.db.create(Admin.random { $0.subscriptionStatus = .trialing })
-    Current.date = { Date(timeIntervalSince1970: 0) }
 
     let output = try await withDependencies {
       $0.stripe.getCheckoutSession = { id in
@@ -78,9 +77,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let retrieved = try await self.db.find(admin.id)
     expect(retrieved.subscriptionId).toEqual(.init(rawValue: "sub_123"))
     expect(retrieved.subscriptionStatus).toEqual(.paid)
-    expect(retrieved.subscriptionStatusExpiration).toEqual(
-      Date(timeIntervalSince1970: 0).advanced(by: .days(33))
-    )
+    expect(retrieved.subscriptionStatusExpiration).toEqual(Date.reference + .days(33))
   }
 
   func testCreatePendingAppConnection() async throws {

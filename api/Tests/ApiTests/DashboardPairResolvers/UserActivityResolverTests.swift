@@ -5,7 +5,6 @@ import XExpect
 
 final class UserActivityResolverTests: ApiTestCase {
   func testGetActivityDay() async throws {
-    Current.date = { .reference }
     let user = try await Entities.user().withDevice()
     var screenshot = Screenshot.random
     screenshot.userDeviceId = user.device.id
@@ -54,7 +53,6 @@ final class UserActivityResolverTests: ApiTestCase {
 
   @MainActor
   func testCombinedUserActivity() async throws {
-    Current.date = { .reference }
     let twoDaysAgo = Date.reference - .days(2)
 
     let user1 = try await Entities.user().withDevice()
