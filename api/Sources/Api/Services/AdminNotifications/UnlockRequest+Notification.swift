@@ -28,7 +28,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
      \(Slack.link(to: url, withText: "Click here")) to view the details and approve or deny.
     """
 
-    try await Current.slack.send(Slack(text: text, channel: channel, token: token))
+    try await with(dependency: \.slack)
+      .send(Slack(text: text, channel: channel, token: token))
   }
 
   func sendEmail(to address: String) async throws {

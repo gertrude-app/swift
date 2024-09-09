@@ -3,6 +3,7 @@ import DuetSQL
 import FluentKit
 import PostgresKit
 import XAws
+import XSlack
 import XStripe
 
 func with<Value>(dependency keyPath: KeyPath<DependencyValues, Value>) -> Value {
@@ -31,6 +32,19 @@ public extension DependencyValues {
   var aws: AWS.Client {
     get { self[AWS.Client.self] }
     set { self[AWS.Client.self] = newValue }
+  }
+}
+
+public extension DependencyValues {
+  var slack: XSlack.Slack.Client {
+    get { self[XSlack.Slack.Client.self] }
+    set { self[XSlack.Slack.Client.self] = newValue }
+  }
+}
+
+extension XSlack.Slack.Client: DependencyKey {
+  public static var liveValue: XSlack.Slack.Client {
+    .live
   }
 }
 
@@ -109,7 +123,15 @@ extension DatabaseConfigurationFactory {
   extension AWS.Client: TestDependencyKey {
     public static var testValue: AWS.Client {
       .init(signedS3UploadUrl: { _ in
-        unimplemented("AWS.Client.signedS3UploadUrl", placeholder: URL(string: "")!)
+        unimplemented("AWS.Client.signedS3UploadUrl()", placeholder: URL(string: "")!)
+      })
+    }
+  }
+
+  extension XSlack.Slack.Client: TestDependencyKey {
+    public static var testValue: XSlack.Slack.Client {
+      .init(send: { _, _ in
+        unimplemented("XSlack.Client.send()", placeholder: "")
       })
     }
   }

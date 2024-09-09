@@ -113,7 +113,7 @@ private func logOperation(_ route: PairQLRoute, _ request: Request) {
 private func slackPairQLRouteNotFound(_ request: Request, _ error: Error) async {
   let domain = request.parameters.get("domain") ?? ""
   let operation = request.parameters.get("operation") ?? ""
-  try? await Current.slack.sysLog(to: "errors", """
+  try? await with(dependency: \.slack).sysLog(to: "errors", """
   *PairQL parsing error:*
   domain: `\(domain)`
   operation: `\(operation)`

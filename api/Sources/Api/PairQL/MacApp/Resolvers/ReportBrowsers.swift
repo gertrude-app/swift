@@ -9,7 +9,7 @@ extension ReportBrowsers: Resolver {
 
     if !new.isEmpty {
       try await context.db.create(new.map { Browser(match: .bundleId($0.bundleId)) })
-      await Current.slack.sysLog("""
+      await with(dependency: \.slack).sysLog("""
         *Received new browser bundle ids:*
         \(new.map(\.slack).joined(separator: "\n"))
       """)

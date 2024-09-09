@@ -16,7 +16,8 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
     New *suspend filter request* from user `\(userName)`.\
      \(Slack.link(to: self.url, withText: "Click here")) to view the details and approve or deny.
     """
-    try await Current.slack.send(Slack(text: text, channel: channel, token: token))
+    try await with(dependency: \.slack)
+      .send(Slack(text: text, channel: channel, token: token))
   }
 
   func sendText(to phoneNumber: String) async throws {

@@ -71,12 +71,15 @@ final class MacAppResolverTests: ApiTestCase {
 
     // we want to test the LIVE admin notifier implementation
     Current.adminNotifier = .live
-    Current.slack.send = { @Sendable _, _ in "oh noes!" } // slack fails
 
-    _ = try await CreateSuspendFilterRequest.resolve(
-      with: .init(duration: 1111, comment: "test"),
-      in: self.context(user)
-    )
+    try await withDependencies {
+      $0.slack.send = { @Sendable _, _ in "oh noes!" } // <-- slack fails
+    } operation: {
+      try await CreateSuspendFilterRequest.resolve(
+        with: .init(duration: 1111, comment: "test"),
+        in: self.context(user)
+      )
+    }
 
     expect(sent.slacks).toHaveCount(0)
     expect(sent.texts).toHaveCount(1)

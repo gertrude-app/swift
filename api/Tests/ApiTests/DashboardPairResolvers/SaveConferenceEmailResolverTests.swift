@@ -17,6 +17,6 @@ final class SaveConferenceEmailResolverTests: ApiTestCase {
     expect(events).toHaveCount(1)
     expect(events[0].detail).toEqual(expected)
     expect(sent.slacks).toHaveCount(1)
-    expect(sent.slacks[0].0.content).toEqual(.text(expected))
+    expect(sent.slacks[0].message.content).toEqual(.text(expected))
   }
 }

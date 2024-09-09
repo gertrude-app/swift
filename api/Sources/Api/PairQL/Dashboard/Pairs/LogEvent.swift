@@ -26,7 +26,7 @@ extension LogEvent: Resolver {
       detail: input.detail
     ))
     let msg = "Dash interesting event: \(input.eventId)  \(input.detail)"
-    await Current.slack.sysLog(msg)
+    await with(dependency: \.slack).sysLog(msg)
     return .success
   }
 }

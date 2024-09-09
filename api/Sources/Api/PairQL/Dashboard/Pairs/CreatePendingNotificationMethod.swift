@@ -37,11 +37,12 @@ private func sendVerification(
   switch method {
   case .slack(channelId: let channel, channelName: _, token: let token):
     do {
-      try await Current.slack.send(.init(
-        text: "Your verification code is `\(code)`",
-        channel: channel,
-        token: token
-      ))
+      try await with(dependency: \.slack)
+        .send(Slack(
+          text: "Your verification code is `\(code)`",
+          channel: channel,
+          token: token
+        ))
     } catch {
       throw context.error(
         id: "df619205",

@@ -177,10 +177,9 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     // check that slack was sent
     expect(sent.slacks).toHaveCount(1)
-    let (slack, token) = try XCTUnwrap(sent.slacks.first)
-    expect(token).toBe("xoxb-123")
-    expect(slack.channel).toBe("C123")
-    expect(slack.text).toContain("123456")
+    expect(sent.slacks[0].token).toBe("xoxb-123")
+    expect(sent.slacks[0].message.channel).toBe("C123")
+    expect(sent.slacks[0].message.text).toContain("123456")
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(

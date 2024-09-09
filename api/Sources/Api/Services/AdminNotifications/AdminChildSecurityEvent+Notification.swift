@@ -37,6 +37,7 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
 
     \(event.explanation)
     """
-    try await Current.slack.send(Slack(text: text, channel: channel, token: token))
+    try await with(dependency: \.slack)
+      .send(Slack(text: text, channel: channel, token: token))
   }
 }

@@ -4,7 +4,6 @@ import Vapor
 import XAws
 import XPostmark
 import XSendGrid
-import XSlack
 
 #if !DEBUG
   struct Environment: Sendable {
@@ -14,7 +13,6 @@ import XSlack
     var logger: Logger = .null
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
-    let slack = XSlack.Slack.Client()
     let verificationCode: VerificationCodeGenerator = .live
   }
 #else
@@ -25,7 +23,6 @@ import XSlack
     var logger: Logger = .null
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
-    var slack = XSlack.Slack.Client()
     var verificationCode: VerificationCodeGenerator = .live
   }
 #endif
@@ -44,7 +41,6 @@ nonisolated(unsafe) var Current = Environment()
       logger: .null,
       postmark: .mock,
       sendGrid: .mock,
-      slack: .mock,
       verificationCode: .mock
     )
   }

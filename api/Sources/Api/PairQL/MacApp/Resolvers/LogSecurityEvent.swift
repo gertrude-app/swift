@@ -5,7 +5,7 @@ import MacAppRoute
 extension LogSecurityEvent: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
     guard let userDevice = try? await context.db.find(UserDevice.Id(input.deviceId)) else {
-      await Current.slack
+      await with(dependency: \.slack)
         .sysLog("UserDevice \(input.deviceId) not found, security event: \(input.event)")
       return .success
     }
@@ -19,10 +19,8 @@ extension LogSecurityEvent: Resolver {
 
     guard let event = Gertie.SecurityEvent.MacApp(rawValue: input.event) else {
       if input.event != "appUpdateInitiated" { // <-- removed for noise
-        await Current.slack.sysLog(
-          to: "errors",
-          "Received unknown security event: `\(input.event)`"
-        )
+        await with(dependency: \.slack)
+          .sysLog(to: "errors", "Received unknown security event: `\(input.event)`")
       }
       return .success
     }

@@ -19,7 +19,7 @@ final class LogInterestingEventResolverTests: ApiTestCase {
     _ = try await LogInterestingEvent.resolve(with: input, in: .mock)
 
     expect(sent.slacks).toHaveCount(1)
-    expect(sent.slacks[0].0.text).not.toContain("github.com/search")
+    expect(sent.slacks[0].message.text).not.toContain("github.com/search")
   }
 
   func testSearchableIdSlacksCodeSearchLink() async throws {
@@ -33,7 +33,7 @@ final class LogInterestingEventResolverTests: ApiTestCase {
     _ = try await LogInterestingEvent.resolve(with: input, in: .mock)
 
     expect(sent.slacks).toHaveCount(1)
-    expect(sent.slacks[0].0.text).toContain("github.com/search")
+    expect(sent.slacks[0].message.text).toContain("github.com/search")
   }
 
   func testShortensVerboseNSUrlErrors() async throws {
@@ -58,8 +58,8 @@ final class LogInterestingEventResolverTests: ApiTestCase {
       _ = try await LogInterestingEvent.resolve(with: input, in: .mock)
 
       expect(sent.slacks).toHaveCount(i + 1)
-      expect(sent.slacks[i].0.text).not.toContain(detail)
-      expect(sent.slacks[i].0.text).toContain(expected)
+      expect(sent.slacks[i].message.text).not.toContain(detail)
+      expect(sent.slacks[i].message.text).toContain(expected)
     }
   }
 }

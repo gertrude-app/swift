@@ -73,9 +73,14 @@ class ApiTestCase: XCTestCase {
       let event: AdminEvent
     }
 
+    struct Slack: Equatable {
+      let message: XSlack.Slack.Message
+      let token: String
+    }
+
     var emails: [SendGrid.Email] = []
     var postmarkEmails: [XPostmark.Email] = []
-    var slacks: [(XSlack.Slack.Message, String)] = []
+    var slacks: [Slack] = []
     var texts: [Text] = []
     var adminNotifications: [AdminNotification] = []
     var websocketMessages: [AppEvent] = []
@@ -93,7 +98,13 @@ class ApiTestCase: XCTestCase {
       $0.env = .fromProcess(mode: .testing)
       $0.stripe = .failing
       $0.date = .constant(.reference)
-      $0.twilio.send = { self.sent.texts.append($0) }
+      $0.twilio.send = {
+        self.sent.texts.append($0)
+      }
+      $0.slack.send = {
+        self.sent.slacks.append(.init(message: $0, token: $1))
+        return nil
+      }
     } operation: {
       super.invokeTest()
     }
@@ -121,10 +132,6 @@ class ApiTestCase: XCTestCase {
     }
     Current.postmark.send = { [self] email in
       self.sent.postmarkEmails.append(email)
-    }
-    Current.slack.send = { @Sendable [self] message, token in
-      sent.slacks.append((message, token))
-      return nil
     }
     Current.adminNotifier.notify = { [self] adminId, event in
       sent.adminNotifications.append(.init(adminId: adminId, event: event))

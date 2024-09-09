@@ -40,9 +40,11 @@ extension LogInterestingEvent: Resolver {
       }
 
       if input.kind == "unexpected error" {
-        await Current.slack.sysLog("Unexpected *macapp* error: \(searchLink)\(detail)\(adminLink)")
+        await with(dependency: \.slack)
+          .sysLog("Unexpected *macapp* error: \(searchLink)\(detail)\(adminLink)")
       } else {
-        await Current.slack.sysLog("Macapp interesting event: \(searchLink)\(detail)\(adminLink)")
+        await with(dependency: \.slack)
+          .sysLog("Macapp interesting event: \(searchLink)\(detail)\(adminLink)")
       }
     }
 

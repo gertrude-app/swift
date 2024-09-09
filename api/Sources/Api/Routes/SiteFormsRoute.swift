@@ -17,7 +17,7 @@ private struct FormData: Decodable {
 enum SiteFormsRoute {
   @Sendable static func handler(_ req: Request) async throws -> Response {
     guard let data = try? req.content.decode(FormData.self) else {
-      await Current.slack.sysLog(to: "errors", """
+      await with(dependency: \.slack).sysLog(to: "errors", """
       *Invalid site form data*
       Body: `\((try? await req.collectedBody()).map { $0 } ?? "(nil)")`
       """)
@@ -25,7 +25,7 @@ enum SiteFormsRoute {
     }
 
     Task {
-      await Current.slack.sysLog(data.slackText)
+      await with(dependency: \.slack).sysLog(data.slackText)
       try await Current.sendGrid.send(.init(
         to: "jared@netrivet.com",
         from: "Gertrude App <noreply@gertrude.app>",
