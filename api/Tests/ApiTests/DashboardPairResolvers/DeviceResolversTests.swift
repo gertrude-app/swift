@@ -6,7 +6,7 @@ import XExpect
 final class DeviceResolversTests: ApiTestCase {
   func testGetDevices() async throws {
     try await self.db.delete(all: Device.self)
-    let user = try await Entities.user().withDevice { $0.appVersion = "2.2.2" }
+    let user = try await self.user().withDevice { $0.appVersion = "2.2.2" }
     var device = user.adminDevice
     device.appReleaseChannel = .canary
     device.customName = "Pinky"
@@ -57,7 +57,7 @@ final class DeviceResolversTests: ApiTestCase {
   }
 
   func testSaveDevice() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     var device = user.adminDevice
     device.appReleaseChannel = .stable
     device.customName = nil

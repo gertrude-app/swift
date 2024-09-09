@@ -10,7 +10,7 @@ import XExpect
 final class CheckInLatestReleaseTests: ApiTestCase {
   func test(releaseChannel: ReleaseChannel, currentVersion: String) async throws -> CheckIn
     .LatestRelease {
-    let user = try await Entities.user().withDevice(adminDevice: {
+    let user = try await self.user().withDevice(adminDevice: {
       $0.appReleaseChannel = releaseChannel
     })
     let output = try await CheckIn.resolve(
@@ -75,7 +75,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
       Release("2.0.0", channel: .beta, pace: 10, createdAt: .epoch.advanced(by: .days(20))),
     ])
 
-    let user = try await Entities.user().withDevice(adminDevice: {
+    let user = try await self.user().withDevice(adminDevice: {
       $0.appReleaseChannel = .stable // set to stable, but they're on beta
     })
 
@@ -95,7 +95,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
       Release("2.1.1", channel: .stable, pace: nil, createdAt: .epoch.advanced(by: .days(20))),
     ])
 
-    let user = try await Entities.user().withDevice(adminDevice: {
+    let user = try await self.user().withDevice(adminDevice: {
       $0.appReleaseChannel = .canary
     })
 

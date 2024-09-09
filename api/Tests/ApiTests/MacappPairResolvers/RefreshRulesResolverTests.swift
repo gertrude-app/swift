@@ -8,7 +8,7 @@ import XExpect
 // deprecated: when RefreshRules is removed, this file can be removed
 final class RefreshResolverTests: ApiTestCase {
   func testRefreshRules_UserProps() async throws {
-    let user = try await Entities.user(config: {
+    let user = try await self.user(with: {
       $0.keyloggingEnabled = false
       $0.screenshotsEnabled = true
       $0.screenshotsFrequency = 376
@@ -33,13 +33,13 @@ final class RefreshResolverTests: ApiTestCase {
     id.identifiedAppId = app.id
     try await self.db.create(id)
 
-    let user = try await Entities.user()
+    let user = try await self.user()
     let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
     expect(output.appManifest.apps).toEqual([app.slug: [id.bundleId]])
   }
 
   func testUserWithNoKeychainsDoesNotGetAutoIncluded() async throws {
-    let user = try await Entities.user()
+    let user = try await self.user()
     try await createAutoIncludeKeychain()
 
     let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
@@ -47,8 +47,8 @@ final class RefreshResolverTests: ApiTestCase {
   }
 
   func testUserWithAtLeastOneKeyGetsAutoIncluded() async throws {
-    let user = try await Entities.user()
-    let admin = try await Entities.admin().withKeychain()
+    let user = try await self.user()
+    let admin = try await self.admin().withKeychain()
     try await self.db.create(UserKeychain(userId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
 

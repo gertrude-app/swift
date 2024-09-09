@@ -7,7 +7,7 @@ import XExpect
 
 final class UpdateUnlockRequestTests: ApiTestCase {
   func testUpdateUnlockRequest_legacyVersion() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.appVersion = "2.1.7" // <-- older version...
     }
 
@@ -44,7 +44,7 @@ final class UpdateUnlockRequestTests: ApiTestCase {
   }
 
   func testUpdateUnlockRequest() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.appVersion = "2.4.0" // <-- current version...
     }
 

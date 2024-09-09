@@ -10,7 +10,7 @@ import XExpect
 
 final class ConnectUserResolversTests: ApiTestCase {
   func testConnectUser_createNewDevice() async throws {
-    let user = try await Entities.user()
+    let user = try await self.user()
     let code = await Current.ephemeral.createPendingAppConnection(user.id)
 
     let input = input(code)
@@ -41,10 +41,10 @@ final class ConnectUserResolversTests: ApiTestCase {
   func testConnectUser_twoUsersSameComputer() async throws {
     Current.verificationCode = .live
     try await self.db.delete(all: Device.self)
-    let user1 = try await Entities.user()
+    let user1 = try await self.user()
     let code1 = await Current.ephemeral.createPendingAppConnection(user1.id)
 
-    let user2 = try await Entities.user { $0.adminId = user1.admin.id }
+    let user2 = try await self.user { $0.adminId = user1.admin.id }
     let code2 = await Current.ephemeral.createPendingAppConnection(user2.id)
 
     var input1 = self.input(code1)
@@ -66,14 +66,14 @@ final class ConnectUserResolversTests: ApiTestCase {
 
   // re-connect from a macOS user that has had gertrude installed before
   func testConnectUser_ReassignToDifferentUserOwnedBySameAdmin() async throws {
-    let existingUser = try await Entities.user().withDevice()
+    let existingUser = try await self.userWithDevice()
     let existingUserToken = try await self.db.create(UserToken(
       userId: existingUser.id,
       userDeviceId: existingUser.device.id
     ))
 
     // different user, owned by same admin
-    let newUser = try await Entities.user { $0.adminId = existingUser.admin.id }
+    let newUser = try await self.user(with: \.adminId, of: existingUser.admin.id)
     Current.verificationCode = .live
 
     let code = await withDependencies {
@@ -109,14 +109,14 @@ final class ConnectUserResolversTests: ApiTestCase {
 
   // test sanity check, computer/user registered to a different admin
   func testConnectUser_ExistingDeviceToDifferentUser_FailsIfDifferentAdmin() async throws {
-    let existingUser = try await Entities.user().withDevice()
+    let existingUser = try await self.userWithDevice()
     let existingUserToken = try await self.db.create(UserToken(
       userId: existingUser.model.id,
       userDeviceId: existingUser.device.id
     ))
 
     // // this user is from a DIFFERENT admin, so it should fail
-    let newUser = try await Entities.user()
+    let newUser = try await self.user()
     Current.verificationCode = .live
     let code = await Current.ephemeral.createPendingAppConnection(newUser.model.id)
 

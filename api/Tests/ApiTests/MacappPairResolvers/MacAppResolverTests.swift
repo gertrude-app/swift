@@ -9,7 +9,7 @@ import XExpect
 
 final class MacAppResolverTests: ApiTestCase {
   func testCreateSuspendFilterRequest() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
 
     let output = try await CreateSuspendFilterRequest.resolve(
       with: .init(duration: 1111, comment: "test"),
@@ -43,7 +43,7 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testOneFailedNotificationDoesntBlockRest() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
 
     // admin gets two notifications on suspend filter request
     let slack = try await self.db.create(AdminVerifiedNotificationMethod(
@@ -83,7 +83,7 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testCreateKeystrokeLines() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
 
     let (uuid, output) = try await withUUID {
       try await CreateKeystrokeLines.resolve(
@@ -105,7 +105,7 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testInsertKeystrokeLineWithNullByte() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
 
     let (uuid, output) = try await withUUID {
       try await CreateKeystrokeLines.resolve(
@@ -126,7 +126,7 @@ final class MacAppResolverTests: ApiTestCase {
 
   func testCreateSignedScreenshotUpload() async throws {
     let beforeCount = try await self.db.count(Screenshot.self)
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
 
     let output = try await withDependencies {
       $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
@@ -144,7 +144,7 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testCreateSignedScreenshotUploadWithDate() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     let uuids = MockUUIDs()
 
     try await withDependencies {
@@ -185,7 +185,7 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testLogsAndNotifiesSecurityEvent() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.isAdmin = true
     }
 

@@ -79,7 +79,7 @@ final class SubscriptionManagerTests: ApiTestCase {
   }
 
   func testTrialEnded_Onboarded() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionStatus = .trialExpiringSoon
       $0.subscriptionStatusExpiration = .epoch
     }.withOnboardedChild().model
@@ -101,7 +101,7 @@ final class SubscriptionManagerTests: ApiTestCase {
   }
 
   func testOverdueToUnpaid_Onboarded() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionStatus = .overdue
       $0.subscriptionStatusExpiration = .epoch
     }.withOnboardedChild().model
@@ -126,7 +126,7 @@ final class SubscriptionManagerTests: ApiTestCase {
   }
 
   func testUnpaidToPendingDeletion_Onboarded() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionStatus = .unpaid
       $0.subscriptionStatusExpiration = .epoch
     }.withOnboardedChild().model
@@ -222,5 +222,30 @@ final class SubscriptionManagerTests: ApiTestCase {
         email: nil
       ))
     }
+  }
+}
+
+private extension AdminEntities {
+  func withOnboardedChild(
+    config: (inout User, inout UserDevice, inout Device) -> Void = { _, _, _ in }
+  ) async throws -> AdminWithOnboardedChildEntities {
+    @Dependency(\.db) var db
+    var child = User.random { $0.adminId = model.id }
+    var adminDevice = Device.random { $0.adminId = model.id }
+    var userDevice = UserDevice.random {
+      $0.userId = child.id
+      $0.deviceId = adminDevice.id
+    }
+    config(&child, &userDevice, &adminDevice)
+    try await db.create(child)
+    try await db.create(adminDevice)
+    try await db.create(userDevice)
+    return .init(
+      model: self.model,
+      token: self.token,
+      child: child,
+      userDevice: userDevice,
+      adminDevice: adminDevice
+    )
   }
 }

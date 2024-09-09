@@ -6,7 +6,7 @@ import XExpect
 
 final class UsersResolversTests: ApiTestCase {
   func testDeleteUser() async throws {
-    let user = try await Entities.user()
+    let user = try await self.user()
     let output = try await DeleteEntity.resolve(
       with: .init(id: user.id.rawValue, type: .user),
       in: user.admin.context
@@ -18,7 +18,7 @@ final class UsersResolversTests: ApiTestCase {
   }
 
   func testSaveNewUser() async throws {
-    let admin = try await Entities.admin()
+    let admin = try await self.admin()
 
     let input = SaveUser.Input(
       id: .init(),
@@ -45,7 +45,7 @@ final class UsersResolversTests: ApiTestCase {
   }
 
   func testExistingUserUpdated() async throws {
-    let user = try await Entities.user()
+    let user = try await self.user()
 
     let output = try await SaveUser.resolve(
       with: SaveUser.Input(
@@ -75,7 +75,7 @@ final class UsersResolversTests: ApiTestCase {
   }
 
   func testSetsNewKeychainsFromEmpty() async throws {
-    let user = try await Entities.user()
+    let user = try await self.user()
     var keychain = Keychain.random
     keychain.authorId = user.admin.id
     try await self.db.create(keychain)
@@ -93,7 +93,7 @@ final class UsersResolversTests: ApiTestCase {
   }
 
   func testDeletesExistingKeychains() async throws {
-    let user = try await Entities.user()
+    let user = try await self.user()
     var keychain = Keychain.random
     keychain.authorId = user.admin.id
     try await self.db.create(keychain)
@@ -112,7 +112,7 @@ final class UsersResolversTests: ApiTestCase {
   }
 
   func testReplacesExistingKeychains() async throws {
-    let user = try await Entities.user()
+    let user = try await self.user()
 
     var keychain1 = Keychain.random
     keychain1.authorId = user.admin.id

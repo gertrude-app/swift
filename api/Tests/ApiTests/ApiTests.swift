@@ -16,7 +16,7 @@ final class ApiTests: ApiTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
   func testDashboardRoute() async throws {
-    let admin = try await Entities.admin()
+    let admin = try await self.admin()
     let token = admin.token.value
     var request = URLRequest(url: URL(string: "dashboard/GetIdentifiedApps")!)
     request.httpMethod = "POST"
@@ -50,7 +50,7 @@ final class ApiTests: ApiTestCase {
       comment: nil,
       expiration: Date(timeIntervalSince1970: 0)
     )
-    let admin = try await Entities.admin()
+    let admin = try await self.admin()
     let token = admin.token.value
     var request = URLRequest(url: URL(string: "dashboard/SaveKey")!)
     request.httpMethod = "POST"
@@ -114,7 +114,8 @@ final class ApiTests: ApiTestCase {
   }
 
   func testUserContextCreated() async throws {
-    let user = try await Entities.user(admin: { $0.subscriptionStatus = .paid }).withDevice()
+    let user = try await self.user(withAdmin: { $0.subscriptionStatus = .paid })
+      .withDevice()
 
     let response = try await PairQLRoute.respond(
       to: .macApp(.userAuthed(user.token.value.rawValue, .getAccountStatus)),
@@ -125,7 +126,7 @@ final class ApiTests: ApiTestCase {
   }
 
   func testResolveUsersAdminAccountStatus() async throws {
-    let user = try await Entities.user(admin: { $0.subscriptionStatus = .paid })
+    let user = try await self.user(withAdmin: { $0.subscriptionStatus = .paid })
     let context = UserContext(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
     let output = try await GetAccountStatus.resolve(in: context)
     expect(output.status).toEqual(.active)

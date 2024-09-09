@@ -5,7 +5,7 @@ import XExpect
 
 final class UserActivityResolverTests: ApiTestCase {
   func testGetActivityDay() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     var screenshot = Screenshot.random
     screenshot.userDeviceId = user.device.id
     screenshot.createdAt = .reference - 1
@@ -55,7 +55,7 @@ final class UserActivityResolverTests: ApiTestCase {
   func testCombinedUserActivity() async throws {
     let twoDaysAgo = Date.reference - .days(2)
 
-    let user1 = try await Entities.user().withDevice()
+    let user1 = try await self.userWithDevice()
     var screenshot = Screenshot.random
     screenshot.userDeviceId = user1.device.id
     screenshot.createdAt = .reference - 5
@@ -65,7 +65,7 @@ final class UserActivityResolverTests: ApiTestCase {
     keystrokeLine.createdAt = .reference - 4
     try await self.db.create(keystrokeLine)
 
-    var user2 = try await Entities.user().withDevice()
+    var user2 = try await self.userWithDevice()
     user2.model.adminId = user1.adminId
     try await self.db.update(user2.model)
     var screenshot2 = Screenshot.random
@@ -142,7 +142,7 @@ final class UserActivityResolverTests: ApiTestCase {
   }
 
   func testDeleteActivityItems_v2() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     var screenshot = Screenshot.random
     screenshot.userDeviceId = user.device.id
     try await self.db.create(screenshot)

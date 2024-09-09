@@ -9,7 +9,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
   let context = Context.mock
 
   func testVerifySignupEmailSetsSubscriptionStatusAndCreatesNotificationMethod() async throws {
-    let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
+    let admin = try await self.admin(with: \.subscriptionStatus, of: .pendingEmailVerification)
     let token = await Current.ephemeral.createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
@@ -26,7 +26,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
   }
 
   func testVerifyingWithExpiredTokenErrorsButSendsNewVerification() async throws {
-    let admin = try await Entities.admin { $0.subscriptionStatus = .pendingEmailVerification }
+    let admin = try await self.admin(with: \.subscriptionStatus, of: .pendingEmailVerification)
     let token = await Current.ephemeral.createAdminIdToken(
       admin.id,
       expiration: Date.reference - .days(1)
@@ -41,8 +41,8 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
   }
 
   func testReVerifyingExpiredTokenErrorsWithHelpfulMessage() async throws {
-    let admin = try await Entities
-      .admin { $0.subscriptionStatus = .trialing } // <-- already verified
+    let admin = try await self
+      .admin(with: \.subscriptionStatus, of: .trialing) // <- already verified
     let token = await Current.ephemeral.createAdminIdToken(
       admin.id,
       expiration: Date.reference - .days(1)
@@ -54,7 +54,8 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
   }
 
   func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
-    let admin = try await Entities.admin { $0.subscriptionStatus = .trialing } // <-- not pending
+    let admin = try await self
+      .admin(with: \.subscriptionStatus, of: .trialing) // <- not pending
     let token = await Current.ephemeral.createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
@@ -66,7 +67,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
   }
 
   func testAttemptToLoginWhenEmailNotVerifiedBlocksAndSendsEmail() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionStatus = .pendingEmailVerification
       $0.password = "lol-lol-lol"
     }

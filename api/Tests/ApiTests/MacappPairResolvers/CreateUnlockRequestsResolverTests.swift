@@ -7,7 +7,7 @@ import XExpect
 
 final class CreateUnlockRequestsResolverTests: ApiTestCase {
   func testCreateUnlockRequests_v3() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     let blocked = CreateUnlockRequests_v3.Input.BlockedRequest(
       bundleId: "com.example.app",
       url: "https://example.com"
@@ -55,7 +55,7 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase {
   }
 
   func testCreateUnlockRequests_v2() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     let blocked = CreateUnlockRequests_v2.Input.BlockedRequest(
       bundleId: "com.example.app",
       url: "https://example.com"

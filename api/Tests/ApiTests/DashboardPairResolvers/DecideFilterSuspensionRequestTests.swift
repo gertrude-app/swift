@@ -5,7 +5,7 @@ import XExpect
 
 final class DecideFilterSuspensionRequestTests: ApiTestCase {
   func testDecideSuspendFilterRequest_Accepted() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.appVersion = "2.4.0" // current version...
     }
     let request = try await self.db.create(SuspendFilterRequest.random {
@@ -44,7 +44,7 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase {
   }
 
   func testDecideSuspendFilterRequest_Rejected() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.appVersion = "2.1.7" // <-- older version...
     }
     let request = try await self.db.create(SuspendFilterRequest.random {

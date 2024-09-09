@@ -6,7 +6,7 @@ import XExpect
 
 final class KeyResolverTests: ApiTestCase {
   func prepare() async throws -> (SaveKey.Input, AdminWithKeychainEntities) {
-    let admin = try await Entities.admin().withKeychain()
+    let admin = try await self.admin().withKeychain()
     let input = SaveKey.Input(
       isNew: true,
       id: .init(),

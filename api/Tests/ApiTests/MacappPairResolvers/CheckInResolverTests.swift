@@ -8,7 +8,7 @@ import XExpect
 
 final class CheckInResolverTests: ApiTestCase {
   func testCheckIn_UserProps() async throws {
-    let user = try await Entities.user(config: {
+    let user = try await self.user(with: {
       $0.keyloggingEnabled = false
       $0.screenshotsEnabled = true
       $0.screenshotsFrequency = 376
@@ -36,7 +36,7 @@ final class CheckInResolverTests: ApiTestCase {
       Release("3.0.0", channel: .beta),
     ])
 
-    let user = try await Entities.user(admin: {
+    let user = try await self.user(withAdmin: {
       $0.subscriptionStatus = .overdue
     }).withDevice(adminDevice: {
       $0.appReleaseChannel = .beta
@@ -53,7 +53,7 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testCheckInUpdatesDeviceData() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.isAdmin = nil
     } adminDevice: {
       $0.osVersion = nil
@@ -76,7 +76,7 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testCheckInDoesntOverwriteDeviceDataWithNil() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.isAdmin = false
     } adminDevice: {
       $0.osVersion = Semver("14.5.0")
@@ -109,7 +109,7 @@ final class CheckInResolverTests: ApiTestCase {
     id.identifiedAppId = app.id
     try await self.db.create(id)
 
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     let output = try await CheckIn.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
       in: user.context
@@ -118,7 +118,7 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testUserWithNoKeychainsDoesNotGetAutoIncluded() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     try await self.createAutoIncludeKeychain()
 
     let output = try await CheckIn.resolve(
@@ -129,8 +129,8 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testUserWithAtLeastOneKeyGetsAutoIncluded() async throws {
-    let user = try await Entities.user().withDevice()
-    let admin = try await Entities.admin().withKeychain()
+    let user = try await self.userWithDevice()
+    let admin = try await self.admin().withKeychain()
     try await self.db.create(UserKeychain(userId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
 
@@ -142,7 +142,7 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testIncludesResolvedFilterSuspension() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     let susp = try await self.db.create(SuspendFilterRequest.mock {
       $0.userDeviceId = user.device.id
       $0.status = .accepted
@@ -177,7 +177,7 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testDoesNotIncludeUnresolvedSuspension() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     let susp = try await self.db.create(SuspendFilterRequest.mock {
       $0.userDeviceId = user.device.id
       $0.status = .pending // <-- still pending!
@@ -196,7 +196,7 @@ final class CheckInResolverTests: ApiTestCase {
   }
 
   func testIncludesResolvedUnlockRequests() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     let unlock1 = UnlockRequest.mock {
       $0.userDeviceId = user.device.id
       $0.status = .pending // <-- pending, will not be returned
