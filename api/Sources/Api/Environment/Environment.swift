@@ -15,7 +15,6 @@ import XSlack
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
     let slack = XSlack.Slack.Client()
-    let twilio: TwilioSmsClient = .init()
     let verificationCode: VerificationCodeGenerator = .live
   }
 #else
@@ -27,7 +26,6 @@ import XSlack
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
     var slack = XSlack.Slack.Client()
-    var twilio: TwilioSmsClient = .init()
     var verificationCode: VerificationCodeGenerator = .live
   }
 #endif
@@ -47,7 +45,6 @@ nonisolated(unsafe) var Current = Environment()
       postmark: .mock,
       sendGrid: .mock,
       slack: .mock,
-      twilio: .mock,
       verificationCode: .mock
     )
   }

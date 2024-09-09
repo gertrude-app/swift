@@ -1,10 +1,19 @@
 import Dependencies
 import DuetSQL
+import FluentKit
 import PostgresKit
 import XAws
 import XStripe
 
-import FluentKit
+func with<Value>(dependency keyPath: KeyPath<DependencyValues, Value>) -> Value {
+  @Dependency(keyPath) var value
+  return value
+}
+
+func get<Value>(dependency keyPath: KeyPath<DependencyValues, Value>) -> Value {
+  @Dependency(keyPath) var value
+  return value
+}
 
 extension AWS.Client: DependencyKey {
   public static var liveValue: AWS.Client {

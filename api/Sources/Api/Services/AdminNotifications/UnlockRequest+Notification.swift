@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 
 extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
@@ -12,7 +13,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
      View the details and approve or deny at \(url)
     """
 
-    Current.twilio.send(Text(to: .init(phoneNumber), message: message))
+    try await with(dependency: \.twilio)
+      .send(Text(to: .init(phoneNumber), message: message))
   }
 
   func sendSlack(channel: String, token: String) async throws {

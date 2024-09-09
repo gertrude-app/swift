@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 
 extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
@@ -23,7 +24,8 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
     [Gertrude App] New suspend filter request from user "\(userName)".\
      View the details and approve or deny at \(url)
     """
-    Current.twilio.send(Text(to: .init(rawValue: phoneNumber), message: message))
+    try await with(dependency: \.twilio)
+      .send(Text(to: .init(rawValue: phoneNumber), message: message))
   }
 
   var url: String {

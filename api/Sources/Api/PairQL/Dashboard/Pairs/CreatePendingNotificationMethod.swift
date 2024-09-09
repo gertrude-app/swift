@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import PairQL
 import Vapor
@@ -65,9 +66,10 @@ private func sendVerification(
     ))
 
   case .text(phoneNumber: let phoneNumber):
-    Current.twilio.send(.init(
-      to: .init(rawValue: phoneNumber),
-      message: "Your verification code is \(code)"
-    ))
+    try await with(dependency: \.twilio)
+      .send(Text(
+        to: .init(rawValue: phoneNumber),
+        message: "Your verification code is \(code)"
+      ))
   }
 }

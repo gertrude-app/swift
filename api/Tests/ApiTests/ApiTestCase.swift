@@ -93,6 +93,7 @@ class ApiTestCase: XCTestCase {
       $0.env = .fromProcess(mode: .testing)
       $0.stripe = .failing
       $0.date = .constant(.reference)
+      $0.twilio.send = { self.sent.texts.append($0) }
     } operation: {
       super.invokeTest()
     }
@@ -124,9 +125,6 @@ class ApiTestCase: XCTestCase {
     Current.slack.send = { @Sendable [self] message, token in
       sent.slacks.append((message, token))
       return nil
-    }
-    Current.twilio.send = { [self] text in
-      sent.texts.append(text)
     }
     Current.adminNotifier.notify = { [self] adminId, event in
       sent.adminNotifications.append(.init(adminId: adminId, event: event))

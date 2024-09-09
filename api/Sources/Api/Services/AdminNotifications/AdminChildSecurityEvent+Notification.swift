@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 
 extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
@@ -11,7 +12,9 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
 
     \(event.explanation)
     """
-    Current.twilio.send(Text(to: .init(phoneNumber), message: message))
+
+    try await with(dependency: \.twilio)
+      .send(Text(to: .init(phoneNumber), message: message))
   }
 
   func sendEmail(to address: String) async throws {
