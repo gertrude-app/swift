@@ -13,7 +13,6 @@ import XSendGrid
     var logger: Logger = .null
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
-    let verificationCode: VerificationCodeGenerator = .live
   }
 #else
   struct Environment: Sendable {
@@ -23,7 +22,6 @@ import XSendGrid
     var logger: Logger = .null
     var postmark: XPostmark.Client = .mock
     var sendGrid: SendGrid.Client = .mock
-    var verificationCode: VerificationCodeGenerator = .live
   }
 #endif
 
@@ -40,16 +38,13 @@ nonisolated(unsafe) var Current = Environment()
       ephemeral: .init(),
       logger: .null,
       postmark: .mock,
-      sendGrid: .mock,
-      verificationCode: .mock
+      sendGrid: .mock
     )
   }
 #endif
 
 struct VerificationCodeGenerator: Sendable {
   var generate: @Sendable () -> Int
-  static let live = Self { Int.random(in: 100_000 ... 999_999) }
-  static let mock = Self { 0 }
 }
 
 extension Date {

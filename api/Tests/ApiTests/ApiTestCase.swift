@@ -73,7 +73,7 @@ class ApiTestCase: XCTestCase {
       let event: AdminEvent
     }
 
-    struct Slack: Equatable {
+    struct Slack: Equatable, Sendable {
       let message: XSlack.Slack.Message
       let token: String
     }

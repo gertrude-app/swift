@@ -48,6 +48,19 @@ extension XSlack.Slack.Client: DependencyKey {
   }
 }
 
+extension DependencyValues {
+  var verificationCode: VerificationCodeGenerator {
+    get { self[VerificationCodeGenerator.self] }
+    set { self[VerificationCodeGenerator.self] = newValue }
+  }
+}
+
+extension VerificationCodeGenerator: DependencyKey {
+  public static var liveValue: VerificationCodeGenerator {
+    VerificationCodeGenerator { Int.random(in: 100_000 ... 999_999) }
+  }
+}
+
 extension Stripe.Client: DependencyKey {
   public static var liveValue: Stripe.Client {
     @Dependency(\.env.stripe.secretKey) var secretKey
@@ -132,6 +145,14 @@ extension DatabaseConfigurationFactory {
     public static var testValue: XSlack.Slack.Client {
       .init(send: { _, _ in
         unimplemented("XSlack.Client.send()", placeholder: "")
+      })
+    }
+  }
+
+  extension VerificationCodeGenerator: TestDependencyKey {
+    public static var testValue: VerificationCodeGenerator {
+      .init(generate: {
+        unimplemented("VerificationCodeGenerator.generate()", placeholder: 0)
       })
     }
   }

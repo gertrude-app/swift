@@ -9,6 +9,7 @@ actor Ephemeral {
 
   @Dependency(\.uuid) private var uuid
   @Dependency(\.date.now) private var now
+  @Dependency(\.verificationCode) private var verificationCode
 
   enum AdminId: Equatable {
     case notFound
@@ -70,7 +71,7 @@ actor Ephemeral {
     _ model: AdminVerifiedNotificationMethod,
     expiration: Date? = nil
   ) -> Int {
-    let code = Current.verificationCode.generate()
+    let code = self.verificationCode.generate()
     self.pendingMethods[model.id] = (
       model: model,
       code: code,
@@ -97,7 +98,7 @@ actor Ephemeral {
     _ userId: User.Id,
     expiration: Date? = nil
   ) -> Int {
-    let code = Current.verificationCode.generate()
+    let code = self.verificationCode.generate()
     if self.pendingAppConnections[code] != nil {
       return self.createPendingAppConnection(userId)
     }

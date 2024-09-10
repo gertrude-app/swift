@@ -81,13 +81,16 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testCreatePendingAppConnection() async throws {
-    Current.verificationCode.generate = { 1234 }
     let user = try await self.user()
 
-    let output = try await CreatePendingAppConnection.resolve(
-      with: .init(userId: user.id),
-      in: context(user.admin)
-    )
+    let output = try await withDependencies {
+      $0.verificationCode.generate = { 1234 }
+    } operation: {
+      try await CreatePendingAppConnection.resolve(
+        with: .init(userId: user.id),
+        in: context(user.admin)
+      )
+    }
 
     expect(output).toEqual(.init(code: 1234))
   }
@@ -121,10 +124,14 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testCreatePendingMethod_Text() async throws {
-    Current.verificationCode.generate = { 987_654 }
     let admin = try await self.admin()
+    let uuids = MockUUIDs()
+    let id = uuids[0]
 
-    let (id, output) = try await withUUID {
+    let output = try await withDependencies {
+      $0.verificationCode.generate = { 987_654 }
+      $0.uuid = .mock(uuids)
+    } operation: {
       try await CreatePendingNotificationMethod.resolve(
         with: .text(phoneNumber: "+12345678901"),
         in: context(admin)
@@ -159,10 +166,14 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testCreatePendingMethod_Slack() async throws {
-    Current.verificationCode.generate = { 123_456 }
     let admin = try await self.admin()
+    let uuids = MockUUIDs()
+    let id = uuids[0]
 
-    let (id, output) = try await withUUID {
+    let output = try await withDependencies {
+      $0.verificationCode.generate = { 123_456 }
+      $0.uuid = .mock(uuids)
+    } operation: {
       try await CreatePendingNotificationMethod.resolve(
         with: .slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"),
         in: context(admin)
@@ -198,10 +209,14 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testCreatePendingMethod_Email() async throws {
-    Current.verificationCode.generate = { 123_456 }
     let admin = try await self.admin()
+    let uuids = MockUUIDs()
+    let id = uuids[0]
 
-    let (id, output) = try await withUUID {
+    let output = try await withDependencies {
+      $0.verificationCode.generate = { 123_456 }
+      $0.uuid = .mock(uuids)
+    } operation: {
       try await CreatePendingNotificationMethod.resolve(
         with: .email(email: "blob@blob.com"),
         in: context(admin)
