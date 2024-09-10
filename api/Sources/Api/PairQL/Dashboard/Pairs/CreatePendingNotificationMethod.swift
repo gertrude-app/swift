@@ -53,7 +53,7 @@ private func sendVerification(
     }
 
   case .email(email: let email):
-    _ = try await Current.sendGrid.send(.fromApp(
+    _ = try await with(dependency: \.sendgrid).send(.fromApp(
       to: email,
       subject: "Gertrude App verification code",
       html: """

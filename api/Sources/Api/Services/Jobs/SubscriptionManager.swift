@@ -30,6 +30,8 @@ struct SubscriptionManager: AsyncScheduledJob {
   @Dependency(\.env) var env
   @Dependency(\.db) var db
   @Dependency(\.date.now) var now
+  @Dependency(\.postmark) var postmark
+  @Dependency(\.sendgrid) var sendgrid
 
   func run(context: QueueContext) async throws {
     guard self.env.mode == .prod else { return }
@@ -63,13 +65,13 @@ struct SubscriptionManager: AsyncScheduledJob {
       }
 
       if let event = update.email {
-        try await Current.postmark.send(SubscriptionEmails.email(event, to: admin.email))
+        try await self.postmark.send(SubscriptionEmails.email(event, to: admin.email))
         logs.append("Sent `.\(event)` email to admin \(admin.email)")
       }
     }
 
     if self.env.mode == .prod, !logs.isEmpty {
-      Current.sendGrid.fireAndForget(.toJared(
+      self.sendgrid.fireAndForget(.toJared(
         "Gertrude subscription manager events",
         "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>"
       ))

@@ -4,12 +4,12 @@ import Foundation
 // @SCOPE: when the API restarts, we'll lose all magic links, eventually
 // this should be backed by the DB or some sort of persistent storage
 actor Ephemeral {
-  private var adminIds: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
-  private var retrievedAdminIds: [UUID: Admin.Id] = [:]
-
   @Dependency(\.uuid) private var uuid
   @Dependency(\.date.now) private var now
   @Dependency(\.verificationCode) private var verificationCode
+
+  private var adminIds: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
+  private var retrievedAdminIds: [UUID: Admin.Id] = [:]
 
   enum AdminId: Equatable {
     case notFound

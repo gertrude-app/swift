@@ -50,8 +50,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
      \(Email.link(url: url, text: "Click here")) to view the details and approve or deny.
     """
 
-    let email = Email.fromApp(to: address, subject: subject, html: html)
-    try await Current.sendGrid.send(email)
+    try await with(dependency: \.sendgrid)
+      .send(Email.fromApp(to: address, subject: subject, html: html))
   }
 }
 

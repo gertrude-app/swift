@@ -20,6 +20,10 @@ struct Signup: Pair {
 
 extension Signup: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
+    @Dependency(\.date.now) var now
+    @Dependency(\.sendgrid) var sendgrid
+    @Dependency(\.postmark) var postmark
+
     let email = input.email.lowercased()
     if !email.isValidEmail {
       throw Abort(.badRequest)
@@ -31,14 +35,14 @@ extension Signup: Resolver {
 
     if existing != nil {
       if context.env.mode == .prod, !isTestAddress(email) {
-        Current.sendGrid.fireAndForget(.toJared("signup [exists]", email))
+        sendgrid.fireAndForget(.toJared("signup [exists]", email))
       }
-      try await Current.postmark.send(accountExists(with: email))
+      try await postmark.send(accountExists(with: email))
       return .success
     }
 
     if context.env.mode == .prod, !isTestAddress(email) {
-      Current.sendGrid.fireAndForget(.toJared(
+      sendgrid.fireAndForget(.toJared(
         "signup",
         [
           "email: \(email)",
@@ -48,7 +52,6 @@ extension Signup: Resolver {
       ))
     }
 
-    @Dependency(\.date.now) var now
     let admin = try await context.db.create(Admin(
       email: .init(rawValue: email),
       password: context.env.mode == .test ? input.password : try Bcrypt.hash(input.password),
@@ -66,13 +69,13 @@ extension Signup: Resolver {
 // helpers
 
 func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
-  @Dependency(\.date.now) var now
   let token = await Current.ephemeral.createAdminIdToken(
     admin.id,
-    expiration: now + .hours(24)
+    expiration: get(dependency: \.date.now) + .hours(24)
   )
 
-  try await Current.postmark.send(verify(admin.email.rawValue, context.dashboardUrl, token))
+  try await with(dependency: \.postmark)
+    .send(verify(admin.email.rawValue, context.dashboardUrl, token))
 }
 
 private func accountExists(with email: String) -> XPostmark.Email {

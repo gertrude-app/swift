@@ -25,9 +25,11 @@ extension SendPasswordResetEmail: Resolver {
       .first(in: context.db) {
       let token = await Current.ephemeral.createAdminIdToken(admin.id)
       dashSecurityEvent(.passwordResetRequested, admin: admin.id, in: context)
-      try await Current.postmark.send(reset(email, context.dashboardUrl, token))
+      try await with(dependency: \.postmark)
+        .send(reset(email, context.dashboardUrl, token))
     } else {
-      try await Current.postmark.send(notFound(email))
+      try await with(dependency: \.postmark)
+        .send(notFound(email))
     }
     return .success
   }

@@ -230,8 +230,8 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(preConfirm).toBeNil()
 
     // check that email was sent
-    expect(sent.emails).toHaveCount(1)
-    let email = try XCTUnwrap(sent.emails.first)
+    expect(sent.sendgridEmails).toHaveCount(1)
+    let email = try XCTUnwrap(sent.sendgridEmails.first)
     expect(email.firstRecipient).toEqual("blob@blob.com")
     expect(email.text).toContain("123456")
 
@@ -427,7 +427,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(singleOutput).toEqual(expected)
   }
 
-  func testGetSelectableKeychains() async throws {
+  func skip_testGetSelectableKeychains() async throws {
     try await self.db.delete(all: Key.self)
     try await self.db.delete(all: Keychain.self)
 

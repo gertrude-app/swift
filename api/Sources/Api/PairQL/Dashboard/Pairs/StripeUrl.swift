@@ -57,10 +57,12 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
     paymentMethodCollection: nil
   )
 
-  @Dependency(\.stripe) var stripe
-  let session = try await stripe.createCheckoutSession(sessionData)
+  let session = try await with(dependency: \.stripe)
+    .createCheckoutSession(sessionData)
+
   guard let url = session.url else {
-    Current.sendGrid.fireAndForget(.unexpected("b66e1eaf", "admin: \(context.admin.id)"))
+    with(dependency: \.sendgrid)
+      .fireAndForget(.unexpected("b66e1eaf", "admin: \(context.admin.id)"))
     throw Abort(.internalServerError)
   }
   return url

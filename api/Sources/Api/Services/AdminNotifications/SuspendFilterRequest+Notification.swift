@@ -8,7 +8,8 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
     User \(userName) submitted a new <b>suspend filter request</b>.
      \(Email.link(url: self.url, text: "Click here")) to view the details and approve or deny.
     """
-    try await Current.sendGrid.send(Email.fromApp(to: address, subject: subject, html: html))
+    try await with(dependency: \.sendgrid)
+      .send(Email.fromApp(to: address, subject: subject, html: html))
   }
 
   func sendSlack(channel: String, token: String) async throws {

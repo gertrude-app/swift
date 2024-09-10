@@ -89,9 +89,9 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     }
 
     expect(output).toEqual(.success)
-    expect(sent.emails).toHaveCount(1)
-    expect(sent.emails.first!.text).toContain("href='/dash/otp/\(token.lowercased)'")
-    expect(sent.emails.first!.text).not.toContain("redirect=")
+    expect(sent.sendgridEmails).toHaveCount(1)
+    expect(sent.sendgridEmails.first!.text).toContain("href='/dash/otp/\(token.lowercased)'")
+    expect(sent.sendgridEmails.first!.text).not.toContain("redirect=")
   }
 
   func testSendMagicLinkWithRedirect() async throws {
@@ -105,8 +105,8 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     }
 
     expect(output).toEqual(.success)
-    expect(sent.emails).toHaveCount(1)
-    expect(sent.emails.first!.text).toContain("/otp/\(token.lowercased)?redirect=%2Ffoo")
+    expect(sent.sendgridEmails).toHaveCount(1)
+    expect(sent.sendgridEmails.first!.text).toContain("/otp/\(token.lowercased)?redirect=%2Ffoo")
   }
 
   func testSendMagicLinkToUnknownEmailReturnsSuccessSendingNoAccountEmail() async throws {
@@ -116,7 +116,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     )
 
     expect(output).toEqual(.success)
-    expect(sent.emails).toHaveCount(1)
-    expect(sent.emails.first!.text).toContain("no Gertrude account exists")
+    expect(sent.sendgridEmails).toHaveCount(1)
+    expect(sent.sendgridEmails.first!.text).toContain("no Gertrude account exists")
   }
 }

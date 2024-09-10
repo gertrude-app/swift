@@ -32,8 +32,7 @@ extension VerifySignupEmail: Resolver {
         return .init(token: token.value, adminId: admin.id)
       }
 
-      @Dependency(\.date.now) var now
-      admin.subscriptionStatusExpiration = now + .days(60 - 7)
+      admin.subscriptionStatusExpiration = get(dependency: \.date.now) + .days(60 - 7)
       admin.subscriptionStatus = .trialing
 
       try await context.db.update(admin)
@@ -45,7 +44,8 @@ extension VerifySignupEmail: Resolver {
       ))
 
       if context.env.mode == .prod, !isTestAddress(admin.email.rawValue) {
-        Current.sendGrid.fireAndForget(.toJared("email verified", admin.email.rawValue))
+        with(dependency: \.sendgrid)
+          .fireAndForget(.toJared("email verified", admin.email.rawValue))
       }
 
       return Output(token: token.value, adminId: admin.id)

@@ -35,7 +35,7 @@ extension RequestMagicLink: Resolver {
         Or, if you did not request a magic link, you can safely ignore this email.
         """
       )
-      try await Current.sendGrid.send(noAccountEmail)
+      try await with(dependency: \.sendgrid).send(noAccountEmail)
       return .success
     }
 
@@ -48,7 +48,7 @@ extension RequestMagicLink: Resolver {
     }
     let html = "<a href='\(url)'>Click here</a> to log in to the Gertrude dashboard."
     let magicLinkEmail = Email.fromApp(to: admin.email.rawValue, subject: subject, html: html)
-    try await Current.sendGrid.send(magicLinkEmail)
+    try await with(dependency: \.sendgrid).send(magicLinkEmail)
 
     return .success
   }

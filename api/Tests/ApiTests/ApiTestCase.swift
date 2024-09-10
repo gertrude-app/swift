@@ -67,7 +67,7 @@ class ApiTestCase: XCTestCase {
   @Dependency(\.db) var db
   @Dependency(\.env) var env
 
-  struct Sent {
+  struct Sent: Sendable {
     struct AdminNotification: Equatable {
       let adminId: Admin.Id
       let event: AdminEvent
@@ -78,7 +78,7 @@ class ApiTestCase: XCTestCase {
       let token: String
     }
 
-    var emails: [SendGrid.Email] = []
+    var sendgridEmails: [SendGrid.Email] = []
     var postmarkEmails: [XPostmark.Email] = []
     var slacks: [Slack] = []
     var texts: [Text] = []
@@ -101,9 +101,15 @@ class ApiTestCase: XCTestCase {
       $0.twilio.send = {
         self.sent.texts.append($0)
       }
-      $0.slack.send = {
-        self.sent.slacks.append(.init(message: $0, token: $1))
+      $0.slack.send = { @Sendable msg, tok in
+        self.sent.slacks.append(.init(message: msg, token: tok))
         return nil
+      }
+      $0.postmark.send = {
+        self.sent.postmarkEmails.append($0)
+      }
+      $0.sendgrid.send = {
+        self.sent.sendgridEmails.append($0)
       }
     } operation: {
       super.invokeTest()
@@ -127,12 +133,6 @@ class ApiTestCase: XCTestCase {
   }
 
   override func setUp() {
-    Current.sendGrid.send = { [self] email in
-      self.sent.emails.append(email)
-    }
-    Current.postmark.send = { [self] email in
-      self.sent.postmarkEmails.append(email)
-    }
     Current.adminNotifier.notify = { [self] adminId, event in
       sent.adminNotifications.append(.init(adminId: adminId, event: event))
     }

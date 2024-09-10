@@ -18,7 +18,7 @@ extension HandleCheckoutCancel: Resolver {
     @Dependency(\.stripe) var stripe
     let session = try await stripe.getCheckoutSession(input.stripeCheckoutSessionId)
     let detail = "admin: \(context.admin.id), session: \(try JSON.encode(session)))"
-    Current.sendGrid.fireAndForget(.toJared("Checkout canceled", detail))
+    with(dependency: \.sendgrid).fireAndForget(.toJared("Checkout canceled", detail))
     return .success
   }
 }

@@ -26,7 +26,7 @@ enum SiteFormsRoute {
 
     Task {
       await with(dependency: \.slack).sysLog(data.slackText)
-      try await Current.sendGrid.send(.init(
+      try await with(dependency: \.sendgrid).send(.init(
         to: "jared@netrivet.com",
         from: "Gertrude App <noreply@gertrude.app>",
         replyTo: .init(email: data.email),
