@@ -27,7 +27,7 @@ actor AppConnection {
     self.ws.onClose.whenComplete { result in
       switch result {
       case .success:
-        Task { await Current.websockets.remove(self) }
+        Task { await with(dependency: \.websockets).remove(self) }
       case .failure:
         break
       }
@@ -46,7 +46,7 @@ actor AppConnection {
     case .currentFilterState(let filterState):
       self.filterState = filterState
     case .goingOffline:
-      Task { await Current.websockets.remove(self) }
+      Task { await with(dependency: \.websockets).remove(self) }
     }
   }
 }

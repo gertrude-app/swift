@@ -56,6 +56,6 @@ extension UserDevice {
 
 extension UserDevice {
   func isOnline() async -> Bool {
-    await Current.websockets.isUserDeviceOnline(self.id)
+    await with(dependency: \.websockets).isUserDeviceOnline(self.id)
   }
 }

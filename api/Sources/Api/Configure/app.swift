@@ -23,6 +23,6 @@ public enum Configure {
 private struct ApiLifecyle: LifecycleHandler {
   func shutdownAsync(_ app: Application) async {
     app.logger.info("Shutting down")
-    await Current.websockets.disconnectAll()
+    await with(dependency: \.websockets).disconnectAll()
   }
 }

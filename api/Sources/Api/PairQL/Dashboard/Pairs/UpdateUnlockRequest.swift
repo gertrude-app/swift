@@ -21,7 +21,7 @@ extension UpdateUnlockRequest: Resolver {
     unlockRequest.responseComment = input.responseComment
     unlockRequest.status = input.status
     try await context.db.update(unlockRequest)
-    try await Current.websockets.send(
+    try await with(dependency: \.websockets).send(
       unlockRequest.updated(for: userDevice.appSemver),
       to: .userDevice(userDevice.id)
     )

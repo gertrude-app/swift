@@ -63,7 +63,8 @@ extension SaveUser: Resolver {
       try await context.db.create(pivots)
     }
 
-    try await Current.websockets.send(.userUpdated, to: .user(user.id))
+    try await with(dependency: \.websockets)
+      .send(.userUpdated, to: .user(user.id))
     return .success
   }
 }

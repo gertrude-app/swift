@@ -39,6 +39,9 @@ class ApiTestCase: XCTestCase {
       $0.sendgrid.send = {
         self.sent.sendgridEmails.append($0)
       }
+      $0.websockets.sendEvent = {
+        self.sent.websocketMessages.append($0)
+      }
       $0.logger = .null
     } operation: {
       super.invokeTest()
@@ -64,9 +67,6 @@ class ApiTestCase: XCTestCase {
   override func setUp() {
     Current.adminNotifier.notify = { [self] adminId, event in
       sent.adminNotifications.append(.init(adminId: adminId, event: event))
-    }
-    Current.websockets.sendEvent = { [self] event in
-      sent.websocketMessages.append(event)
     }
   }
 

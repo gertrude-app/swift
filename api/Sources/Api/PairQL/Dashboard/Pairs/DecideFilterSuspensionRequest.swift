@@ -38,7 +38,7 @@ extension DecideFilterSuspensionRequest: Resolver {
 
     try await context.db.update(suspendFilterRequest)
 
-    try await Current.websockets.send(
+    try await with(dependency: \.websockets).send(
       suspendFilterRequest.updated(for: userDevice.appSemver),
       to: .userDevice(userDevice.id)
     )

@@ -8,12 +8,10 @@ import XSendGrid
 #if !DEBUG
   struct Environment: Sendable {
     let adminNotifier: AdminNotifier = .live
-    let websockets: ConnectedApps = .live
   }
 #else
   struct Environment: Sendable {
     var adminNotifier: AdminNotifier = .live
-    var websockets: ConnectedApps = .live
   }
 #endif
 
@@ -25,8 +23,7 @@ nonisolated(unsafe) var Current = Environment()
 #if DEBUG
   extension Environment {
     static let mock = Environment(
-      adminNotifier: .mock,
-      websockets: .mock
+      adminNotifier: .mock
     )
   }
 #endif

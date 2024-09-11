@@ -72,7 +72,8 @@ extension DeleteEntity: Resolver {
         throw Abort(.unauthorized)
       }
       try await context.db.delete(key)
-      try await Current.websockets.send(.userUpdated, to: .usersWith(keychain: keychain.id))
+      try await with(dependency: \.websockets)
+        .send(.userUpdated, to: .usersWith(keychain: keychain.id))
 
     case .keychain:
       try await Keychain.query()
@@ -96,7 +97,8 @@ extension DeleteEntity: Resolver {
           try await context.db.delete(device)
         }
       }
-      try await Current.websockets.send(.userDeleted, to: .user(user.id))
+      try await with(dependency: \.websockets)
+        .send(.userDeleted, to: .user(user.id))
     }
 
     return .success

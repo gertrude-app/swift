@@ -36,7 +36,7 @@ enum AppWebsocket {
     )
 
     let connection = AppConnection(ws: ws, ids: entityIds)
-    await Current.websockets.add(connection)
+    await with(dependency: \.websockets).add(connection)
   }
 }
 

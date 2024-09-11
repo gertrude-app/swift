@@ -37,7 +37,8 @@ extension SaveKey: Resolver {
       key.deletedAt = input.expiration
       try await context.db.update(key)
     }
-    try await Current.websockets.send(.userUpdated, to: .usersWith(keychain: keychain.id))
+    try await with(dependency: \.websockets)
+      .send(.userUpdated, to: .usersWith(keychain: keychain.id))
     return .success
   }
 }

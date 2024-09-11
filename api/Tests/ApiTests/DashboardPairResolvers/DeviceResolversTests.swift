@@ -1,3 +1,4 @@
+import Dependencies
 import XCTest
 import XExpect
 
@@ -27,33 +28,37 @@ final class DeviceResolversTests: ApiTestCase {
       numericId: 504
     ))
 
-    var singleOutput = try await GetDevice.resolve(
-      with: device.id.rawValue,
-      in: context(user.admin)
-    )
+    try await withDependencies {
+      $0.websockets.isUserDeviceOnline = { _ in false }
+    } operation: {
+      var singleOutput = try await GetDevice.resolve(
+        with: device.id.rawValue,
+        in: context(user.admin)
+      )
 
-    var expectedDeviceOutput = GetDevice.Output(
-      id: device.id,
-      name: "Pinky",
-      releaseChannel: .canary,
-      users: [
-        .init(id: user.id, name: user.name, isOnline: false),
-        .init(id: user2.id, name: user2.name, isOnline: false),
-      ],
-      appVersion: "2.2.2",
-      serialNumber: "1234567890",
-      modelIdentifier: "MacBookPro16,1",
-      modelFamily: .macBookPro,
-      modelTitle: "16\" MacBook Pro (2019)"
-    )
+      var expectedDeviceOutput = GetDevice.Output(
+        id: device.id,
+        name: "Pinky",
+        releaseChannel: .canary,
+        users: [
+          .init(id: user.id, name: user.name, isOnline: false),
+          .init(id: user2.id, name: user2.name, isOnline: false),
+        ],
+        appVersion: "2.2.2",
+        serialNumber: "1234567890",
+        modelIdentifier: "MacBookPro16,1",
+        modelFamily: .macBookPro,
+        modelTitle: "16\" MacBook Pro (2019)"
+      )
 
-    sortUsers(in: &singleOutput, atPath: \.users)
-    sortUsers(in: &expectedDeviceOutput, atPath: \.users)
-    expect(singleOutput).toEqual(expectedDeviceOutput)
+      sortUsers(in: &singleOutput, atPath: \.users)
+      sortUsers(in: &expectedDeviceOutput, atPath: \.users)
+      expect(singleOutput).toEqual(expectedDeviceOutput)
 
-    var allDevicesOutput = try await GetDevices.resolve(in: context(user.admin))
-    sortUsers(in: &allDevicesOutput, atPath: \.[0].users)
-    expect(allDevicesOutput).toEqual([expectedDeviceOutput])
+      var allDevicesOutput = try await GetDevices.resolve(in: context(user.admin))
+      sortUsers(in: &allDevicesOutput, atPath: \.[0].users)
+      expect(allDevicesOutput).toEqual([expectedDeviceOutput])
+    }
   }
 
   func testSaveDevice() async throws {
