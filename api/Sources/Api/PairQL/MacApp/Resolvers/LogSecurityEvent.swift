@@ -29,7 +29,7 @@ extension LogSecurityEvent: Resolver {
       return .success
     }
 
-    await Current.adminNotifier.notify(
+    await with(dependency: \.adminNotifier).notify(
       context.user.adminId,
       .adminChildSecurityEvent(.init(
         userName: context.user.name,

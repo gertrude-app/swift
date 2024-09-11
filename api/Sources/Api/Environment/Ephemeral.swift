@@ -30,7 +30,9 @@ import Foundation
     _ adminId: Admin.Id,
     expiration: Date? = nil
   ) -> UUID {
-    let token = self.uuid()
+    let token = get(dependency: \.uuid)()
+    print("token, should be 0: \(token)")
+    fflush(stdout)
     self.adminIds[token] = (
       adminId: adminId,
       expiration: expiration ?? self.now + ONE_HOUR

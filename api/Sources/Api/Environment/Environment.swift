@@ -5,29 +5,6 @@ import XAws
 import XPostmark
 import XSendGrid
 
-#if !DEBUG
-  struct Environment: Sendable {
-    let adminNotifier: AdminNotifier = .live
-  }
-#else
-  struct Environment: Sendable {
-    var adminNotifier: AdminNotifier = .live
-  }
-#endif
-
-// SAFETY: in non-debug, the mutable members are only
-// mutated synchronously during bootstrapping
-// before the app starts serving requests
-nonisolated(unsafe) var Current = Environment()
-
-#if DEBUG
-  extension Environment {
-    static let mock = Environment(
-      adminNotifier: .mock
-    )
-  }
-#endif
-
 struct VerificationCodeGenerator: Sendable {
   var generate: @Sendable () -> Int
 }

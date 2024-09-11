@@ -42,6 +42,9 @@ class ApiTestCase: XCTestCase {
       $0.websockets.sendEvent = {
         self.sent.websocketMessages.append($0)
       }
+      $0.adminNotifier.notify = {
+        self.sent.adminNotifications.append(.init(adminId: $0, event: $1))
+      }
       $0.logger = .null
     } operation: {
       super.invokeTest()
@@ -49,7 +52,6 @@ class ApiTestCase: XCTestCase {
   }
 
   override static func setUp() {
-    Current = .mock
     self.app = Application(.testing)
     self.app.logger = .null
     try! Configure.app(self.app)
@@ -61,12 +63,6 @@ class ApiTestCase: XCTestCase {
       try! self.app.autoRevert().wait()
       try! self.app.autoMigrate().wait()
       self.migrated = true
-    }
-  }
-
-  override func setUp() {
-    Current.adminNotifier.notify = { [self] adminId, event in
-      sent.adminNotifications.append(.init(adminId: adminId, event: event))
     }
   }
 
@@ -157,7 +153,42 @@ extension UUIDGenerator {
   }
 }
 
-final class MockUUIDs: @unchecked Sendable {
+struct MockUUIDs: Sendable {
+  // private let lock = NSLock()
+  private var stack: LockIsolated<[UUID]>
+  private var copy: LockIsolated<[UUID]>
+
+  var first: UUID { self.copy[0] }
+  var second: UUID { self.copy[1] }
+  var third: UUID { self.copy[2] }
+  var all: [UUID] { self.copy.withValue { $0 } }
+
+  init() {
+    let uuids = [UUID(), UUID(), UUID(), UUID(), UUID(), UUID()]
+    self.stack = .init(uuids)
+    self.copy = .init(uuids)
+  }
+
+  func callAsFunction() -> UUID {
+    self.stack.withValue { $0.removeFirst() }
+  }
+
+  subscript(index: Int) -> UUID {
+    self.copy[index]
+  }
+
+  func printDebug() {
+    self.copy.withValue {
+      print("MockUUIDs[0]: \($0[0])")
+      print("MockUUIDs[1]: \($0[1])")
+      print("MockUUIDs[2]: \($0[2])")
+      print("MockUUIDs[3]: \($0[3])")
+      print("MockUUIDs[4]: \($0[4])")
+    }
+  }
+}
+
+final class XMockUUIDs: @unchecked Sendable {
   private let lock = NSLock()
   private var stack: [UUID]
   private var copy: [UUID]

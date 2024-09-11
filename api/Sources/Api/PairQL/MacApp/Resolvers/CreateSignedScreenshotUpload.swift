@@ -34,7 +34,7 @@ extension CreateSignedScreenshotUpload: Resolver {
       width: input.width,
       height: input.height,
       filterSuspended: input.filterSuspended ?? false,
-      createdAt: input.createdAt ?? Date()
+      createdAt: input.createdAt ?? get(dependency: \.date.now)
     ))
 
     return .init(uploadUrl: signedUrl, webUrl: webUrl)

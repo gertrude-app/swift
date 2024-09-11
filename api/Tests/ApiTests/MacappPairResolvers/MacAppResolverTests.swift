@@ -69,11 +69,10 @@ final class MacAppResolverTests: ApiTestCase {
       trigger: .suspendFilterRequestSubmitted
     ))
 
-    // we want to test the LIVE admin notifier implementation
-    Current.adminNotifier = .live
-
     try await withDependencies {
       $0.slack.send = { @Sendable _, _ in "oh noes!" } // <-- slack fails
+      // we want to test the LIVE admin notifier implementation
+      $0.adminNotifier = .liveValue
     } operation: {
       try await CreateSuspendFilterRequest.resolve(
         with: .init(duration: 1111, comment: "test"),
@@ -154,15 +153,14 @@ final class MacAppResolverTests: ApiTestCase {
       $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
       $0.uuid = .mock(uuids)
     } operation: {
-      try await CreateSignedScreenshotUpload.resolve(
+      _ = try await CreateSignedScreenshotUpload.resolve(
         with: .init(width: 1116, height: 222, createdAt: .epoch),
         in: self.context(user)
       )
+      let screenshot = try await self.db.find(Screenshot.Id(uuids[1]))
+      expect(screenshot.width).toEqual(1116)
+      expect(screenshot.createdAt).toEqual(.epoch)
     }
-
-    let screenshot = try await self.db.find(Screenshot.Id(uuids[1]))
-    expect(screenshot.width).toEqual(1116)
-    expect(screenshot.createdAt).toEqual(.epoch)
   }
 
   func testPre_2_1_0_AppSendingMonitoringItemsWithoutFilterSuspendedBool() {

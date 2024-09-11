@@ -61,22 +61,24 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     expect(admin.abTestVariant).toEqual("old_site")
   }
 
+  // so racy
   func testLoginFromMagicLink() async throws {
     let admin = try await self.db.create(Admin.random)
     let uuids = MockUUIDs()
 
-    let output = try await withDependencies {
+    try await withDependencies {
       $0.uuid = .mock(uuids)
       $0.date = .init { Date() }
     } operation: {
       let token = await Ephemeral.shared.createAdminIdToken(admin.id)
-      return try await LoginMagicLink.resolve(with: .init(token: token), in: self.context)
+      let output = try await LoginMagicLink.resolve(with: .init(token: token), in: self.context)
+      uuids.printDebug()
+      fflush(stdout)
+      let adminToken = try await self.db.find(AdminToken.Id(uuids[1]))
+      expect(output).toEqual(.init(token: .init(uuids[2]), adminId: admin.id))
+      expect(adminToken.value).toEqual(.init(uuids[2]))
+      expect(adminToken.adminId).toEqual(admin.id)
     }
-
-    let adminToken = try await self.db.find(AdminToken.Id(uuids[1]))
-    expect(output).toEqual(.init(token: .init(uuids[2]), adminId: admin.id))
-    expect(adminToken.value).toEqual(.init(uuids[2]))
-    expect(adminToken.adminId).toEqual(admin.id)
   }
 
   func testRequestMagicLink() async throws {

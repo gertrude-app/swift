@@ -16,7 +16,7 @@ extension CreateUnlockRequests_v3: Resolver {
       )
     })
 
-    await Current.adminNotifier.notify(
+    await with(dependency: \.adminNotifier).notify(
       context.user.adminId,
       .unlockRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,
