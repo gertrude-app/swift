@@ -3,16 +3,13 @@ import Foundation
 
 // @SCOPE: when the API restarts, we'll lose all magic links, eventually
 // this should be backed by the DB or some sort of persistent storage
-
-@globalActor actor Ephemeral {
+actor Ephemeral {
   @Dependency(\.uuid) private var uuid
   @Dependency(\.date.now) private var now
   @Dependency(\.verificationCode) private var verificationCode
 
   private var adminIds: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
   private var retrievedAdminIds: [UUID: Admin.Id] = [:]
-
-  static let shared = Ephemeral()
 
   enum AdminId: Equatable {
     case notFound
@@ -30,9 +27,7 @@ import Foundation
     _ adminId: Admin.Id,
     expiration: Date? = nil
   ) -> UUID {
-    let token = get(dependency: \.uuid)()
-    print("token, should be 0: \(token)")
-    fflush(stdout)
+    let token = self.uuid()
     self.adminIds[token] = (
       adminId: adminId,
       expiration: expiration ?? self.now + ONE_HOUR
@@ -127,3 +122,26 @@ import Foundation
 }
 
 private let ONE_HOUR: TimeInterval = 60 * 60
+
+// dependency
+
+extension DependencyValues {
+  var ephemeral: Ephemeral {
+    get { self[Ephemeral.self] }
+    set { self[Ephemeral.self] = newValue }
+  }
+}
+
+extension Ephemeral: DependencyKey {
+  public static var liveValue: Ephemeral {
+    .init()
+  }
+}
+
+#if DEBUG
+  extension Ephemeral: TestDependencyKey {
+    public static var testValue: Ephemeral {
+      .init()
+    }
+  }
+#endif

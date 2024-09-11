@@ -22,7 +22,7 @@ struct VerifySignupEmail: Pair {
 
 extension VerifySignupEmail: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    switch await Ephemeral.shared.adminIdFromToken(input.token) {
+    switch await with(dependency: \.ephemeral).adminIdFromToken(input.token) {
 
     // happy path: verification is successful
     case .notExpired(let adminId):

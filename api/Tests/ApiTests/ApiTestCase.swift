@@ -26,6 +26,7 @@ class ApiTestCase: XCTestCase {
       $0.env = .fromProcess(mode: .testing)
       $0.stripe = .failing
       $0.date = .constant(.reference)
+      $0.ephemeral = Ephemeral()
       $0.twilio.send = {
         self.sent.texts.append($0)
       }
@@ -154,7 +155,6 @@ extension UUIDGenerator {
 }
 
 struct MockUUIDs: Sendable {
-  // private let lock = NSLock()
   private var stack: LockIsolated<[UUID]>
   private var copy: LockIsolated<[UUID]>
 
@@ -181,42 +181,7 @@ struct MockUUIDs: Sendable {
     self.copy.withValue {
       print("MockUUIDs[0]: \($0[0])")
       print("MockUUIDs[1]: \($0[1])")
-      print("MockUUIDs[2]: \($0[2])")
-      print("MockUUIDs[3]: \($0[3])")
-      print("MockUUIDs[4]: \($0[4])")
-    }
-  }
-}
-
-final class XMockUUIDs: @unchecked Sendable {
-  private let lock = NSLock()
-  private var stack: [UUID]
-  private var copy: [UUID]
-
-  var first: UUID { self.copy[0] }
-  var second: UUID { self.copy[1] }
-  var third: UUID { self.copy[2] }
-  var all: [UUID] { self.copy }
-
-  init() {
-    self.stack = [UUID(), UUID(), UUID(), UUID(), UUID(), UUID()]
-    self.copy = self.stack
-  }
-
-  func callAsFunction() -> UUID {
-    self.lock.lock()
-    let uuid = self.stack.removeFirst()
-    self.lock.unlock()
-    return uuid
-  }
-
-  subscript(index: Int) -> UUID {
-    self.copy[index]
-  }
-
-  func printDebug() {
-    for (i, uuid) in self.copy.enumerated() {
-      print("MockUUIDs[\(i)]: \(uuid)")
+      print("MockUUIDs[2]: \($0[2]) [...]")
     }
   }
 }

@@ -11,7 +11,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
 
   func testVerifySignupEmailSetsSubscriptionStatusAndCreatesNotificationMethod() async throws {
     let admin = try await self.admin(with: \.subscriptionStatus, of: .pendingEmailVerification)
-    let token = await Ephemeral.shared.createAdminIdToken(admin.id)
+    let token = await with(dependency: \.ephemeral).createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
@@ -28,7 +28,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
 
   func testVerifyingWithExpiredTokenErrorsButSendsNewVerification() async throws {
     let admin = try await self.admin(with: \.subscriptionStatus, of: .pendingEmailVerification)
-    let token = await Ephemeral.shared.createAdminIdToken(
+    let token = await with(dependency: \.ephemeral).createAdminIdToken(
       admin.id,
       expiration: Date.reference - .days(1)
     )
@@ -47,7 +47,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
     } operation: {
       let admin = try await self
         .admin(with: \.subscriptionStatus, of: .trialing) // <- already verified
-      let token = await Ephemeral.shared.createAdminIdToken(
+      let token = await with(dependency: \.ephemeral).createAdminIdToken(
         admin.id,
         expiration: Date() - .days(1)
       )
@@ -60,7 +60,8 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
   func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
     let admin = try await self
       .admin(with: \.subscriptionStatus, of: .trialing) // <- not pending
-    let token = await Ephemeral.shared.createAdminIdToken(admin.id)
+    let token = await with(dependency: \.ephemeral)
+      .createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 

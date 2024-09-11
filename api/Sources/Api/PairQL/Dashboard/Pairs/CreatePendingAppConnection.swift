@@ -18,7 +18,8 @@ struct CreatePendingAppConnection: Pair {
 extension CreatePendingAppConnection: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     let user = try await context.verifiedUser(from: input.userId)
-    let code = await Ephemeral.shared.createPendingAppConnection(user.id)
+    let code = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(user.id)
     return Output(code: code)
   }
 }

@@ -19,7 +19,8 @@ final class ConnectUserResolversTests: ApiTestCase {
 
   func testConnectUser_createNewDevice() async throws {
     let user = try await self.user()
-    let code = await Ephemeral.shared.createPendingAppConnection(user.id)
+    let code = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(user.id)
 
     let input = input(code)
     let userData = try await ConnectUser.resolve(with: input, in: self.context)
@@ -49,10 +50,12 @@ final class ConnectUserResolversTests: ApiTestCase {
   func testConnectUser_twoUsersSameComputer() async throws {
     try await self.db.delete(all: Device.self)
     let user1 = try await self.user()
-    let code1 = await Ephemeral.shared.createPendingAppConnection(user1.id)
+    let code1 = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(user1.id)
 
     let user2 = try await self.user { $0.adminId = user1.admin.id }
-    let code2 = await Ephemeral.shared.createPendingAppConnection(user2.id)
+    let code2 = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(user2.id)
 
     var input1 = self.input(code1)
     input1.numericId = 501
@@ -85,7 +88,8 @@ final class ConnectUserResolversTests: ApiTestCase {
 
       // different user, owned by same admin
       let newUser = try await self.user(with: \.adminId, of: existingUser.admin.id)
-      let code = await Ephemeral.shared.createPendingAppConnection(newUser.model.id)
+      let code = await with(dependency: \.ephemeral)
+        .createPendingAppConnection(newUser.model.id)
 
       // happy path, the device exists, registered to another user, but that's OK
       // because the same admin owns both users, so switch it over
@@ -118,7 +122,8 @@ final class ConnectUserResolversTests: ApiTestCase {
 
     // // this user is from a DIFFERENT admin, so it should fail
     let newUser = try await self.user()
-    let code = await Ephemeral.shared.createPendingAppConnection(newUser.model.id)
+    let code = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(newUser.model.id)
 
     var input = input(code)
     input.numericId = existingUser.device.numericId

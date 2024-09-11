@@ -6,14 +6,16 @@ import Vapor
 
 extension ConnectUser: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    guard let userId = await Ephemeral.shared.getPendingAppConnection(input.verificationCode)
-    else { throw context.error(
-      id: "6e7fc234",
-      type: .unauthorized,
-      debugMessage: "verification code not found",
-      userMessage: "Connection code not found, or expired. Please try again.",
-      appTag: .connectionCodeNotFound
-    ) }
+    guard let userId = await with(dependency: \.ephemeral)
+      .getPendingAppConnection(input.verificationCode) else {
+      throw context.error(
+        id: "6e7fc234",
+        type: .unauthorized,
+        debugMessage: "verification code not found",
+        userMessage: "Connection code not found, or expired. Please try again.",
+        appTag: .connectionCodeNotFound
+      )
+    }
 
     let userDevice: UserDevice
     let user = try await context.db.find(userId)

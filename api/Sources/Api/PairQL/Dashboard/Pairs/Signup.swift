@@ -69,10 +69,11 @@ extension Signup: Resolver {
 // helpers
 
 func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
-  let token = await Ephemeral.shared.createAdminIdToken(
-    admin.id,
-    expiration: get(dependency: \.date.now) + .hours(24)
-  )
+  let token = await with(dependency: \.ephemeral)
+    .createAdminIdToken(
+      admin.id,
+      expiration: get(dependency: \.date.now) + .hours(24)
+    )
 
   try await with(dependency: \.postmark)
     .send(verify(admin.email.rawValue, context.dashboardUrl, token))
