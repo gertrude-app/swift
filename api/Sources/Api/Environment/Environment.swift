@@ -9,13 +9,11 @@ import XSendGrid
   struct Environment: Sendable {
     let adminNotifier: AdminNotifier = .live
     let websockets: ConnectedApps = .live
-    var logger: Logger = .null
   }
 #else
   struct Environment: Sendable {
     var adminNotifier: AdminNotifier = .live
     var websockets: ConnectedApps = .live
-    var logger: Logger = .null
   }
 #endif
 
@@ -28,8 +26,7 @@ nonisolated(unsafe) var Current = Environment()
   extension Environment {
     static let mock = Environment(
       adminNotifier: .mock,
-      websockets: .mock,
-      logger: .null
+      websockets: .mock
     )
   }
 #endif
@@ -51,9 +48,9 @@ func unexpected(_ id: String, detail: String = "") {
 }
 
 func unexpected(_ id: String, _ adminId: Admin.Id? = nil, _ detail: String = "") {
-  Current.logger.error("Unexpected event `\(id)`, \(detail)")
-  with(dependency: \.sendgrid).fireAndForget(.unexpected(id, detail))
   Task { [detail] in
+    with(dependency: \.logger).error("Unexpected event `\(id)`, \(detail)")
+    with(dependency: \.sendgrid).fireAndForget(.unexpected(id, detail))
     try await with(dependency: \.db).create(InterestingEvent(
       eventId: id,
       kind: "event",

@@ -99,13 +99,13 @@ private func logOperation(_ route: PairQLRoute, _ request: Request) {
   let operation = request.parameters.get("operation") ?? ""
   switch route {
   case .macApp:
-    Current.logger
+    request.logger
       .notice("PairQL request: \("MacApp".magenta) \(operation.yellow)")
   case .dashboard:
-    Current.logger
+    request.logger
       .notice("PairQL request: \("Dashboard".green) \(operation.yellow)")
   case .superAdmin:
-    Current.logger
+    request.logger
       .notice("PairQL request: \("SuperAdmin".cyan) \(operation.yellow)")
   }
 }

@@ -31,7 +31,8 @@ extension XSlack.Slack.Client {
     )
 
     if let error = await send(slack, token) {
-      Current.logger.error("Error sending slack: \(error)")
+      with(dependency: \.logger)
+        .error("Error sending slack: \(error)")
     }
   }
 }

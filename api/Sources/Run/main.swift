@@ -9,6 +9,7 @@ let app = Application(env)
 defer { app.shutdown() }
 
 try withDependencies { deps in
+  deps.logger = app.logger
   deps.uuid = UUIDGenerator { UUID() }
   deps.env = .fromProcess(mode: app.environment)
   deps.stripe = .liveValue

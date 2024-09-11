@@ -148,6 +148,18 @@ extension DatabaseConfigurationFactory {
   }
 }
 
+public extension DependencyValues {
+  var logger: Logger {
+    get { self[LoggerKey.self] }
+    set { self[LoggerKey.self] = newValue }
+  }
+}
+
+private enum LoggerKey: DependencyKey {
+  static let liveValue: Logger = .init(label: "gertrude.api")
+  static let testValue: Logger = .null
+}
+
 #if DEBUG
   public extension Stripe.Client {
     static let failing = Stripe.Client(

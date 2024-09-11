@@ -37,10 +37,12 @@ extension AdminNotifier {
           break
         }
       } catch {
-        Current.logger.error("failed to notify admin \(adminId) of event \(event): \(error)")
+        with(dependency: \.logger)
+          .error("failed to notify admin \(adminId) of event \(event): \(error)")
       }
     }
   } catch {
-    Current.logger.error("failed to find admin \(adminId) data for event \(event): \(error)")
+    with(dependency: \.logger)
+      .error("failed to find admin \(adminId) data for event \(event): \(error)")
   }
 }

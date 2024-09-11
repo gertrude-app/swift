@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import Gertie
 
@@ -6,6 +7,8 @@ import Gertie
 
   let id = UUID()
   var connections: [AppConnection.Id: AppConnection] = [:]
+
+  @Dependency(\.logger) private var logger
 
   func start() async {
     while true {
@@ -19,12 +22,12 @@ import Gertie
       existing.ids.userDevice == newConnection.ids.userDevice
     }.count
     if numDupes > 0 {
-      Current.logger.error("AppConnections: opening duplicate connection (ws)")
-      Current.logger.error("  -> \(numDupes) connection/s already existed (ws)")
-      Current.logger.error("  -> matching user device id: \(newConnection.ids.userDevice) (ws)")
+      self.logger.error("AppConnections: opening duplicate connection (ws)")
+      self.logger.error("  -> \(numDupes) connection/s already existed (ws)")
+      self.logger.error("  -> matching user device id: \(newConnection.ids.userDevice) (ws)")
     } else {
-      Current.logger.notice("AppConnections: opening new connection (ws)")
-      Current.logger.notice("  -> for user device id: \(newConnection.ids.userDevice) (ws)")
+      self.logger.notice("AppConnections: opening new connection (ws)")
+      self.logger.notice("  -> for user device id: \(newConnection.ids.userDevice) (ws)")
     }
     self.connections[newConnection.id] = newConnection
   }
@@ -34,7 +37,7 @@ import Gertie
   }
 
   func disconnectAll() async {
-    Current.logger.notice("AppConnections: disconnecting all (ws)")
+    self.logger.notice("AppConnections: disconnecting all (ws)")
     for connection in self.connections.values {
       try? await connection.ws.close(code: .goingAway)
       self.remove(connection)
@@ -55,11 +58,11 @@ import Gertie
   }
 
   private func flush() {
-    Current.logger.notice("AppConnections: flushing closed connections (ws)")
-    Current.logger.notice("  -> self.id: \(self.id.lowercased) (ws)")
+    self.logger.notice("AppConnections: flushing closed connections (ws)")
+    self.logger.notice("  -> self.id: \(self.id.lowercased) (ws)")
     self.connections.values.filter(\.ws.isClosed).forEach { connection in
-      Current.logger.notice("  -> removing connection: \(connection.id) (ws)")
-      Current.logger.notice("  -> for user device id: \(connection.ids.userDevice) (ws)")
+      self.logger.notice("  -> removing connection: \(connection.id) (ws)")
+      self.logger.notice("  -> for user device id: \(connection.ids.userDevice) (ws)")
       self.remove(connection)
     }
   }

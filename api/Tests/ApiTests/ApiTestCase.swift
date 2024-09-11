@@ -10,87 +10,15 @@ import XSlack
 
 @testable import Api
 
-class DependencyTestCase: XCTestCase {
-  override open func invokeTest() {
-    withDependencies {
-      $0.uuid = UUIDGenerator { UUID() }
-      $0.date = .constant(.reference)
-    } operation: {
-      super.invokeTest()
-    }
-  }
-}
-
-extension UUIDGenerator {
-  static func mock(_ uuids: MockUUIDs) -> Self {
-    Self { uuids() }
-  }
-}
-
-final class MockUUIDs: @unchecked Sendable {
-  private let lock = NSLock()
-  private var stack: [UUID]
-  private var copy: [UUID]
-
-  var first: UUID { self.copy[0] }
-  var second: UUID { self.copy[1] }
-  var third: UUID { self.copy[2] }
-  var all: [UUID] { self.copy }
-
-  init() {
-    self.stack = [UUID(), UUID(), UUID(), UUID(), UUID(), UUID()]
-    self.copy = self.stack
-  }
-
-  func callAsFunction() -> UUID {
-    self.lock.lock()
-    let uuid = self.stack.removeFirst()
-    self.lock.unlock()
-    return uuid
-  }
-
-  subscript(index: Int) -> UUID {
-    self.copy[index]
-  }
-
-  func printDebug() {
-    for (i, uuid) in self.copy.enumerated() {
-      print("MockUUIDs[\(i)]: \(uuid)")
-    }
-  }
-}
-
 class ApiTestCase: XCTestCase {
-  static var app: Application!
-  static var migrated = false
-
   @Dependency(\.db) var db
   @Dependency(\.env) var env
 
-  struct Sent: Sendable {
-    struct AdminNotification: Equatable {
-      let adminId: Admin.Id
-      let event: AdminEvent
-    }
-
-    struct Slack: Equatable, Sendable {
-      let message: XSlack.Slack.Message
-      let token: String
-    }
-
-    var sendgridEmails: [SendGrid.Email] = []
-    var postmarkEmails: [XPostmark.Email] = []
-    var slacks: [Slack] = []
-    var texts: [Text] = []
-    var adminNotifications: [AdminNotification] = []
-    var websocketMessages: [AppEvent] = []
-  }
+  static var app: Application!
+  static var migrated = false
 
   var sent = Sent()
-
-  var app: Application {
-    Self.app
-  }
+  var app: Application { Self.app }
 
   override open func invokeTest() {
     withDependencies {
@@ -111,6 +39,7 @@ class ApiTestCase: XCTestCase {
       $0.sendgrid.send = {
         self.sent.sendgridEmails.append($0)
       }
+      $0.logger = .null
     } operation: {
       super.invokeTest()
     }
@@ -187,6 +116,77 @@ class ApiTestCase: XCTestCase {
       key: .domain(domain: "foo.com", scope: .webBrowsers)
     ))
     return (keychain, key)
+  }
+}
+
+extension ApiTestCase {
+  struct Sent: Sendable {
+    struct AdminNotification: Equatable {
+      let adminId: Admin.Id
+      let event: AdminEvent
+    }
+
+    struct Slack: Equatable, Sendable {
+      let message: XSlack.Slack.Message
+      let token: String
+    }
+
+    var sendgridEmails: [SendGrid.Email] = []
+    var postmarkEmails: [XPostmark.Email] = []
+    var slacks: [Slack] = []
+    var texts: [Text] = []
+    var adminNotifications: [AdminNotification] = []
+    var websocketMessages: [AppEvent] = []
+  }
+}
+
+class DependencyTestCase: XCTestCase {
+  override open func invokeTest() {
+    withDependencies {
+      $0.uuid = UUIDGenerator { UUID() }
+      $0.date = .constant(.reference)
+    } operation: {
+      super.invokeTest()
+    }
+  }
+}
+
+extension UUIDGenerator {
+  static func mock(_ uuids: MockUUIDs) -> Self {
+    Self { uuids() }
+  }
+}
+
+final class MockUUIDs: @unchecked Sendable {
+  private let lock = NSLock()
+  private var stack: [UUID]
+  private var copy: [UUID]
+
+  var first: UUID { self.copy[0] }
+  var second: UUID { self.copy[1] }
+  var third: UUID { self.copy[2] }
+  var all: [UUID] { self.copy }
+
+  init() {
+    self.stack = [UUID(), UUID(), UUID(), UUID(), UUID(), UUID()]
+    self.copy = self.stack
+  }
+
+  func callAsFunction() -> UUID {
+    self.lock.lock()
+    let uuid = self.stack.removeFirst()
+    self.lock.unlock()
+    return uuid
+  }
+
+  subscript(index: Int) -> UUID {
+    self.copy[index]
+  }
+
+  func printDebug() {
+    for (i, uuid) in self.copy.enumerated() {
+      print("MockUUIDs[\(i)]: \(uuid)")
+    }
   }
 }
 
