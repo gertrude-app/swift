@@ -69,7 +69,7 @@ extension Signup: Resolver {
 // helpers
 
 func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
-  let token = await Current.ephemeral.createAdminIdToken(
+  let token = await Ephemeral.shared.createAdminIdToken(
     admin.id,
     expiration: get(dependency: \.date.now) + .hours(24)
   )

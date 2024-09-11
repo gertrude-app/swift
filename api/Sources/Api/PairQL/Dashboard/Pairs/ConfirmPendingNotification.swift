@@ -15,7 +15,7 @@ struct ConfirmPendingNotificationMethod: Pair {
 
 extension ConfirmPendingNotificationMethod: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    let method = await Current.ephemeral.confirmPendingNotificationMethod(input.id, input.code)
+    let method = await Ephemeral.shared.confirmPendingNotificationMethod(input.id, input.code)
     guard let method = method else {
       throw Abort(.unauthorized, reason: "[@client:incorrectConfirmationCode]")
     }

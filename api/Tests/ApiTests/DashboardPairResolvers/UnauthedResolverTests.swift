@@ -67,8 +67,9 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     let output = try await withDependencies {
       $0.uuid = .mock(uuids)
+      $0.date = .init { Date() }
     } operation: {
-      let token = await Current.ephemeral.createAdminIdToken(admin.id)
+      let token = await Ephemeral.shared.createAdminIdToken(admin.id)
       return try await LoginMagicLink.resolve(with: .init(token: token), in: self.context)
     }
 

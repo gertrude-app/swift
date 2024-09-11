@@ -7,7 +7,9 @@ struct ConnectedApps: Sendable {
   var filterState: @Sendable (UserDevice.Id) async -> UserFilterState?
   var isUserDeviceOnline: @Sendable (UserDevice.Id) async -> Bool
   var sendEvent: @Sendable (AppEvent) async throws -> Void
+}
 
+extension ConnectedApps {
   func send(
     _ message: WebSocketMessage.FromApiToApp,
     to matcher: AppEvent.Matcher

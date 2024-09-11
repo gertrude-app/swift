@@ -3,13 +3,16 @@ import Foundation
 
 // @SCOPE: when the API restarts, we'll lose all magic links, eventually
 // this should be backed by the DB or some sort of persistent storage
-actor Ephemeral {
+
+@globalActor actor Ephemeral {
   @Dependency(\.uuid) private var uuid
   @Dependency(\.date.now) private var now
   @Dependency(\.verificationCode) private var verificationCode
 
   private var adminIds: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
   private var retrievedAdminIds: [UUID: Admin.Id] = [:]
+
+  static let shared = Ephemeral()
 
   enum AdminId: Equatable {
     case notFound

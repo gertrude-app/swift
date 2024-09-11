@@ -15,7 +15,7 @@ struct ResetPassword: Pair {
 
 extension ResetPassword: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    if let adminId = await Current.ephemeral.unexpiredAdminIdFromToken(input.token) {
+    if let adminId = await Ephemeral.shared.unexpiredAdminIdFromToken(input.token) {
       var admin = try await context.db.find(adminId)
       admin.password = try Bcrypt.hash(input.password)
       try await context.db.update(admin)

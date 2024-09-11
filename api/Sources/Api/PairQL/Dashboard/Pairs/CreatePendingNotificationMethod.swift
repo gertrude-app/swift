@@ -20,7 +20,7 @@ extension AdminVerifiedNotificationMethod.Config: PairInput {}
 extension CreatePendingNotificationMethod: Resolver {
   static func resolve(with config: Input, in context: AdminContext) async throws -> Output {
     let model = AdminVerifiedNotificationMethod(adminId: context.admin.id, config: config)
-    let code = await Current.ephemeral.createPendingNotificationMethod(model)
+    let code = await Ephemeral.shared.createPendingNotificationMethod(model)
     Current.logger.notice("pending notif method code `\(code)` for admin `\(context.admin.email)`")
     try await sendVerification(code, for: config, in: context)
     return .init(methodId: model.id)

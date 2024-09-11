@@ -6,7 +6,7 @@ import Vapor
 
 extension ConnectUser: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    guard let userId = await Current.ephemeral.getPendingAppConnection(input.verificationCode)
+    guard let userId = await Ephemeral.shared.getPendingAppConnection(input.verificationCode)
     else { throw context.error(
       id: "6e7fc234",
       type: .unauthorized,

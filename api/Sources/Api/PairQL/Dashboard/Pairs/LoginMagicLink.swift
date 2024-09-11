@@ -15,7 +15,7 @@ struct LoginMagicLink: Pair {
 
 extension LoginMagicLink: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    guard let adminId = await Current.ephemeral.unexpiredAdminIdFromToken(input.token) else {
+    guard let adminId = await Ephemeral.shared.unexpiredAdminIdFromToken(input.token) else {
       throw context.error(
         "9a314d21",
         .unauthorized,

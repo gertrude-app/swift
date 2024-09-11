@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import XCTest
 import XExpect
@@ -10,7 +11,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
 
   func testVerifySignupEmailSetsSubscriptionStatusAndCreatesNotificationMethod() async throws {
     let admin = try await self.admin(with: \.subscriptionStatus, of: .pendingEmailVerification)
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
+    let token = await Ephemeral.shared.createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
@@ -27,7 +28,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
 
   func testVerifyingWithExpiredTokenErrorsButSendsNewVerification() async throws {
     let admin = try await self.admin(with: \.subscriptionStatus, of: .pendingEmailVerification)
-    let token = await Current.ephemeral.createAdminIdToken(
+    let token = await Ephemeral.shared.createAdminIdToken(
       admin.id,
       expiration: Date.reference - .days(1)
     )
@@ -41,22 +42,25 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
   }
 
   func testReVerifyingExpiredTokenErrorsWithHelpfulMessage() async throws {
-    let admin = try await self
-      .admin(with: \.subscriptionStatus, of: .trialing) // <- already verified
-    let token = await Current.ephemeral.createAdminIdToken(
-      admin.id,
-      expiration: Date.reference - .days(1)
-    )
+    try await withDependencies {
+      $0.date = .init { Date() }
+    } operation: {
+      let admin = try await self
+        .admin(with: \.subscriptionStatus, of: .trialing) // <- already verified
+      let token = await Ephemeral.shared.createAdminIdToken(
+        admin.id,
+        expiration: Date() - .days(1)
+      )
 
-    let result = await VerifySignupEmail.result(with: .init(token: token), in: self.context)
-
-    expect(result).toBeError(containing: "already verified")
+      let result = await VerifySignupEmail.result(with: .init(token: token), in: self.context)
+      expect(result).toBeError(containing: "already verified")
+    }
   }
 
   func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
     let admin = try await self
       .admin(with: \.subscriptionStatus, of: .trialing) // <- not pending
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
+    let token = await Ephemeral.shared.createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
