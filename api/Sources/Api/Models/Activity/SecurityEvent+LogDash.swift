@@ -40,6 +40,9 @@ private func dashSecurityEvent(
 ) {
   Task {
     try? await db.create(Api.SecurityEvent(
+      // opt out of using the controlled uuid dependency
+      // as the unstructured task causes test flakiness
+      id: .init(UUID()),
       adminId: adminId,
       event: event.rawValue,
       detail: detail,

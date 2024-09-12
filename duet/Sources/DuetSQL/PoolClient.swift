@@ -25,7 +25,6 @@ public struct ConnectionPoolClient: Client {
         return try await self.db.raw(statement.sql).all()
       } catch {
         print(String(reflecting: error))
-        fflush(stdout)
         throw error
       }
     #endif
@@ -41,7 +40,6 @@ public struct ConnectionPoolClient: Client {
         return try rows.compactMap { row in try row.decode(M.self) }
       } catch {
         print(String(reflecting: error))
-        fflush(stdout)
         throw error
       }
     #endif

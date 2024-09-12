@@ -73,8 +73,8 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
       let token = await with(dependency: \.ephemeral).createAdminIdToken(admin.id)
       let output = try await LoginMagicLink.resolve(with: .init(token: token), in: self.context)
       let adminToken = try await self.db.find(AdminToken.Id(uuids[1]))
-      expect(output).toEqual(.init(token: .init(uuids[3]), adminId: admin.id))
-      expect(adminToken.value).toEqual(.init(uuids[3]))
+      expect(output).toEqual(.init(token: .init(uuids[2]), adminId: admin.id))
+      expect(adminToken.value).toEqual(.init(uuids[2]))
       expect(adminToken.adminId).toEqual(admin.id)
     }
   }

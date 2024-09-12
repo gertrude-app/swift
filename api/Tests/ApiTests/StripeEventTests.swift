@@ -31,7 +31,7 @@ final class StripeEventTests: ApiTestCase {
   func testUpdateAdminSubscriptionStatusExpirationFromStripeEvent() async throws {
     let periodEnd = 1_704_050_627
     let admin = try await self.db.create(
-      Admin.random(with: { $0.subscriptionStatusExpiration = .distantPast })
+      Admin.random(with: { $0.subscriptionStatusExpiration = .reference - .days(1000) })
     )
 
     let json = """

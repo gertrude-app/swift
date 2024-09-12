@@ -4,8 +4,6 @@ import FluentSQL
 import Gertie
 
 struct SecurityEvents: GertieMigration {
-  @Dependency(\.db) var db
-
   let securityEventFk = Constraint.foreignKey(
     from: SecurityEvent.M21.self,
     to: UserDevice.M11.self,

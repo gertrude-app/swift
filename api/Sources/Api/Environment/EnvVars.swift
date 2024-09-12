@@ -138,7 +138,9 @@ func processEnv(_ key: String) -> String {
   guard let envVar = ProcessInfo.processInfo.environment[key] else {
     let stackTrace = Thread.callStackSymbols
     print(stackTrace.joined(separator: "\n"))
-    fflush(stdout)
+    #if !os(Linux)
+      fflush(stdout)
+    #endif
     fatalError("Missing required environment variable: `\(key)`")
   }
   return envVar

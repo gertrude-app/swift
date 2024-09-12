@@ -15,10 +15,13 @@ struct HandleCheckoutCancel: Pair {
 
 extension HandleCheckoutCancel: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    @Dependency(\.stripe) var stripe
-    let session = try await stripe.getCheckoutSession(input.stripeCheckoutSessionId)
+    let session = try await with(dependency: \.stripe)
+      .getCheckoutSession(input.stripeCheckoutSessionId)
+
     let detail = "admin: \(context.admin.id), session: \(try JSON.encode(session)))"
-    with(dependency: \.sendgrid).fireAndForget(.toJared("Checkout canceled", detail))
+    with(dependency: \.sendgrid)
+      .fireAndForget(.toJared("Checkout canceled", detail))
+
     return .success
   }
 }

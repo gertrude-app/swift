@@ -3,8 +3,9 @@ import Vapor
 
 enum ResetRoute {
   @Sendable static func handler(_ request: Request) async throws -> Response {
-    @Dependency(\.env) var env
-    guard env.mode != .prod else { throw Abort(.notFound) }
+    guard request.env.mode != .prod else {
+      throw Abort(.notFound)
+    }
 
     try await Reset.run()
     let betsy = try await request.context.db.find(AdminBetsy.Ids.betsy)

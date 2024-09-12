@@ -41,7 +41,6 @@ func feedXml(for releases: [Release], force: Bool = false) -> String {
 
 extension Release {
   func sparkleItemXml(forceUpdate: Bool = false) -> String {
-    @Dependency(\.env) var env
     let description = notes.map { "\n  <description><![CDATA[\($0)]]></description>" } ?? ""
     let formatter = DateFormatter()
     formatter.timeZone = .init(abbreviation: "UTC")
@@ -54,7 +53,7 @@ extension Release {
       <sparkle:shortVersionString>\(forceUpdate ? "99.99.99" : semver)</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
       <enclosure
-        url="\(env.s3.bucketUrl)/releases/Gertrude.\(semver).zip"
+        url="\(get(dependency: \.env).s3.bucketUrl)/releases/Gertrude.\(semver).zip"
         length="\(length)"
         type="application/octet-stream"
         sparkle:edSignature="\(signature)"
