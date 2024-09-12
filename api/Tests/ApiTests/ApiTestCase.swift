@@ -83,10 +83,6 @@ class ApiTestCase: XCTestCase {
     .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model, ipAddress: nil)
   }
 
-  func context(_ user: UserEntities) async throws -> UserContext {
-    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
-  }
-
   func context(_ user: UserWithDeviceEntities) async throws -> UserContext {
     .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
   }
