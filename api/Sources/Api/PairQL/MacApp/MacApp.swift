@@ -23,9 +23,9 @@ extension MacAppRoute: RouteResponder {
       }
 
     case .userAuthed(let uuid, let userRoute):
-      let token = try await Current.db.query(UserToken.self)
+      let token = try await UserToken.query()
         .where(.value == uuid)
-        .first(orThrow: context.error(
+        .first(in: context.db, orThrow: context.error(
           id: "6e88d0de",
           type: .unauthorized,
           debugMessage: "user token not found",
@@ -35,7 +35,7 @@ extension MacAppRoute: RouteResponder {
       let userContext = UserContext(
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,
-        user: try await token.user(),
+        user: try await token.user(in: context.db),
         token: token
       )
       return try await AuthedUserRoute.respond(to: userRoute, in: userContext)

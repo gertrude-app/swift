@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Foundation
 import Gertie
@@ -25,16 +26,23 @@ struct SubscriptionUpdate: Equatable {
 }
 
 struct SubscriptionManager: AsyncScheduledJob {
+  @Dependency(\.stripe) var stripe
+  @Dependency(\.env) var env
+  @Dependency(\.db) var db
+  @Dependency(\.date.now) var now
+  @Dependency(\.postmark) var postmark
+  @Dependency(\.sendgrid) var sendgrid
+
   func run(context: QueueContext) async throws {
-    guard Env.mode == .prod else { return }
+    guard self.env.mode == .prod else { return }
     try await self.advanceExpired()
   }
 
   func advanceExpired() async throws {
     var logs: [String] = []
-    let admins = try await Admin.query().all()
+    let admins = try await Admin.query().all(in: self.db)
     for var admin in admins {
-      guard let update = try await subscriptionUpdate(for: admin) else {
+      guard let update = try await self.subscriptionUpdate(for: admin) else {
         continue
       }
 
@@ -43,94 +51,114 @@ struct SubscriptionManager: AsyncScheduledJob {
       case .update(let status, let expiration):
         admin.subscriptionStatus = status
         admin.subscriptionStatusExpiration = expiration
-        try await admin.save()
+        try await self.db.update(admin)
         logs.append("Updated admin \(admin.email) to `.\(status)` until \(expiration)")
 
       case .delete(let reason):
-        try await Current.db.create(DeletedEntity(
+        try await self.db.create(DeletedEntity(
           type: "Admin",
           reason: reason,
           data: try JSON.encode(admin, [.isoDates])
         ))
-        try await admin.delete()
+        try await self.db.delete(admin)
         logs.append("Deleted admin \(admin.email) reason: \(reason)")
       }
 
       if let event = update.email {
-        try await Current.postmark.send(SubscriptionEmails.email(event, to: admin.email))
+        try await self.postmark.send(SubscriptionEmails.email(event, to: admin.email))
         logs.append("Sent `.\(event)` email to admin \(admin.email)")
       }
     }
 
-    if Env.mode == .prod, !logs.isEmpty {
-      Current.sendGrid.fireAndForget(.toJared(
+    if self.env.mode == .prod, !logs.isEmpty {
+      self.sendgrid.fireAndForget(.toJared(
         "Gertrude subscription manager events",
         "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>"
       ))
     }
   }
-}
 
-func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
-  if admin.subscriptionStatusExpiration > Current.date() {
-    return nil
+  func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
+    if admin.subscriptionStatusExpiration > self.now {
+      return nil
+    }
+
+    let completedOnboarding = try await admin.completedOnboarding(self.db)
+    switch admin.subscriptionStatus {
+
+    case .pendingEmailVerification:
+      return .init(
+        action: .delete(reason: "email never verified"),
+        email: .deleteEmailUnverified
+      )
+
+    case .trialing:
+      return .init(
+        action: .update(
+          status: .trialExpiringSoon,
+          expiration: self.now + .days(7)
+        ),
+        // NB: trial ending soon email is ALWAYS sent, regardless of onboarding status
+        // but if they have never onboarded, it will be the only email they receive
+        email: .trialEndingSoon
+      )
+
+    case .trialExpiringSoon:
+      return .init(
+        action: .update(status: .overdue, expiration: self.now + .days(14)),
+        email: completedOnboarding ? .trialEndedToOverdue : nil
+      )
+
+    case .overdue:
+      return try await self.updateIfPaid(admin.subscriptionId) ?? .init(
+        action: .update(status: .unpaid, expiration: self.now + .days(365)),
+        email: completedOnboarding ? .overdueToUnpaid : nil
+      )
+
+    case .pendingAccountDeletion:
+      return .init(
+        action: .delete(reason: "account unpaid > 1yr"),
+        email: nil
+      )
+
+    case .unpaid:
+      return .init(
+        action: .update(
+          status: .pendingAccountDeletion,
+          expiration: self.now + .days(30)
+        ),
+        email: completedOnboarding ? .unpaidToPendingDelete : nil
+      )
+
+    case .paid:
+      return try await self.updateIfPaid(admin.subscriptionId) ?? .init(
+        action: .update(status: .overdue, expiration: self.now + .days(14)),
+        email: .paidToOverdue
+      )
+
+    case .complimentary:
+      unexpected("2d1710c2", admin.id)
+      return nil
+    }
   }
 
-  let completedOnboarding = try await admin.completedOnboarding()
-  switch admin.subscriptionStatus {
-
-  case .pendingEmailVerification:
-    return .init(
-      action: .delete(reason: "email never verified"),
-      email: .deleteEmailUnverified
-    )
-
-  case .trialing:
-    return .init(
-      action: .update(
-        status: .trialExpiringSoon,
-        expiration: Current.date().advanced(by: .days(7))
-      ),
-      // NB: trial ending soon email is ALWAYS sent, regardless of onboarding status
-      // but if they have never onboarded, it will be the only email they receive
-      email: .trialEndingSoon
-    )
-
-  case .trialExpiringSoon:
-    return .init(
-      action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
-      email: completedOnboarding ? .trialEndedToOverdue : nil
-    )
-
-  case .overdue:
-    return try await updateIfPaid(admin.subscriptionId) ?? .init(
-      action: .update(status: .unpaid, expiration: Current.date().advanced(by: .days(365))),
-      email: completedOnboarding ? .overdueToUnpaid : nil
-    )
-
-  case .pendingAccountDeletion:
-    return .init(
-      action: .delete(reason: "account unpaid > 1yr"),
-      email: nil
-    )
-
-  case .unpaid:
-    return .init(
-      action: .update(
-        status: .pendingAccountDeletion,
-        expiration: Current.date().advanced(by: .days(30))
-      ),
-      email: completedOnboarding ? .unpaidToPendingDelete : nil
-    )
-
-  case .paid:
-    return try await updateIfPaid(admin.subscriptionId) ?? .init(
-      action: .update(status: .overdue, expiration: Current.date().advanced(by: .days(14))),
-      email: .paidToOverdue
-    )
-
-  case .complimentary:
-    unexpected("2d1710c2", admin.id)
+  // failsafe in case webhook missed the `invoice.paid` event
+  // theoretically, we should never find a subscription active
+  private func updateIfPaid(
+    _ subscriptionId: Admin.SubscriptionId?
+  ) async throws -> SubscriptionUpdate? {
+    if let subsId = subscriptionId?.rawValue,
+       let subscription = try? await self.stripe.getSubscription(subsId),
+       subscription.status == .active {
+      return .init(
+        action: .update(
+          status: .paid,
+          expiration: Date(timeIntervalSince1970: TimeInterval(subscription.currentPeriodEnd))
+            .advanced(by: .days(2)) // +2 days is for a little leeway, recommended by stripe docs
+        ),
+        email: nil
+      )
+    }
     return nil
   }
 }
@@ -138,31 +166,11 @@ func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
 // helpers
 
 private extension Admin {
-  func completedOnboarding() async throws -> Bool {
-    let children = try await users()
+  func completedOnboarding(_ db: any DuetSQL.Client) async throws -> Bool {
+    let children = try await users(in: db)
     let childDevices = try await children.concurrentMap {
-      try await $0.devices()
+      try await $0.devices(in: db)
     }.flatMap { $0 }
     return !childDevices.isEmpty
   }
-}
-
-// failsafe in case webhook missed the `invoice.paid` event
-// theoretically, we should never find a subscription active
-private func updateIfPaid(
-  _ subscriptionId: Admin.SubscriptionId?
-) async throws -> SubscriptionUpdate? {
-  if let subsId = subscriptionId?.rawValue,
-     let subscription = try? await Current.stripe.getSubscription(subsId),
-     subscription.status == .active {
-    return .init(
-      action: .update(
-        status: .paid,
-        expiration: Date(timeIntervalSince1970: TimeInterval(subscription.currentPeriodEnd))
-          .advanced(by: .days(2)) // +2 days is for a little leeway, recommended by stripe docs
-      ),
-      email: nil
-    )
-  }
-  return nil
 }

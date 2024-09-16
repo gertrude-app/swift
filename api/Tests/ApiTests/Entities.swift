@@ -1,3 +1,5 @@
+import Dependencies
+
 @testable import Api
 
 @dynamicMemberLookup
@@ -85,26 +87,60 @@ struct AdminWithOnboardedChildEntities {
   }
 }
 
-enum Entities {
-  static func admin(
-    config: (inout Admin) -> Void = { _ in }
+extension ApiTestCase {
+  func admin(
+    with config: (inout Admin) -> Void = { _ in }
   ) async throws -> AdminEntities {
-    let admin = try await Current.db.create(Admin.random(with: config))
-    let token = try await Current.db.create(AdminToken(adminId: admin.id))
+    let admin = try await self.db.create(Admin.random(with: config))
+    let token = try await self.db.create(AdminToken(adminId: admin.id))
     return AdminEntities(model: admin, token: token)
   }
 
-  static func user(
-    config: (inout User) -> Void = { _ in },
-    admin: (inout Admin) -> Void = { _ in }
+  func admin<T>(
+    with kp: WritableKeyPath<Admin, T>,
+    of value: T
+  ) async throws -> AdminEntities {
+    try await self.admin(with: { $0[keyPath: kp] = value })
+  }
+
+  func user<T>(
+    with kp: WritableKeyPath<User, T>,
+    of value: T
   ) async throws -> UserEntities {
-    let admin = try await Self.admin(config: admin)
-    let user = try await Current.db.create(User.random {
-      config(&$0)
+    try await self.user(with: { $0[keyPath: kp] = value })
+  }
+
+  func user(
+    with userConfig: (inout User) -> Void = { _ in },
+    withAdmin adminConfig: (inout Admin) -> Void = { _ in }
+  ) async throws -> UserEntities {
+    let admin = try await self.admin(with: adminConfig)
+    let user = try await self.db.create(User.random {
+      userConfig(&$0)
       $0.adminId = admin.id
     })
-    let token = try await Current.db.create(UserToken(userId: user.id))
+    let token = try await self.db.create(UserToken(userId: user.id))
     return UserEntities(model: user, token: token, admin: admin)
+  }
+
+  func userWithDevice() async throws -> UserWithDeviceEntities {
+    let user = try await self.user()
+    let device = try await self.db.create(Device.random {
+      $0.adminId = user.admin.model.id
+    })
+    let userDevice = try await self.db.create(UserDevice.random {
+      $0.userId = user.model.id
+      $0.deviceId = device.id
+    })
+    user.token.userDeviceId = userDevice.id
+    try await self.db.update(user.token)
+    return .init(
+      model: user.model,
+      adminDevice: device,
+      device: userDevice,
+      token: user.token,
+      admin: user.admin
+    )
   }
 }
 
@@ -112,36 +148,15 @@ extension AdminEntities {
   func withKeychain(
     config: (inout Keychain, inout Key) -> Void = { _, _ in }
   ) async throws -> AdminWithKeychainEntities {
+    @Dependency(\.db) var db
     var keychain = Keychain.random
     keychain.authorId = self.model.id
     var key = Key.random
     key.keychainId = keychain.id
     config(&keychain, &key)
-    try await Current.db.create(keychain)
-    try await Current.db.create(key)
+    try await db.create(keychain)
+    try await db.create(key)
     return .init(model: self.model, token: self.token, keychain: keychain, key: key)
-  }
-
-  func withOnboardedChild(
-    config: (inout User, inout UserDevice, inout Device) -> Void = { _, _, _ in }
-  ) async throws -> AdminWithOnboardedChildEntities {
-    var child = User.random { $0.adminId = model.id }
-    var adminDevice = Device.random { $0.adminId = model.id }
-    var userDevice = UserDevice.random {
-      $0.userId = child.id
-      $0.deviceId = adminDevice.id
-    }
-    config(&child, &userDevice, &adminDevice)
-    try await Current.db.create(child)
-    try await Current.db.create(adminDevice)
-    try await Current.db.create(userDevice)
-    return .init(
-      model: self.model,
-      token: self.token,
-      child: child,
-      userDevice: userDevice,
-      adminDevice: adminDevice
-    )
   }
 }
 
@@ -150,17 +165,18 @@ extension UserEntities {
     config: (inout UserDevice) -> Void = { _ in },
     adminDevice: (inout Device) -> Void = { _ in }
   ) async throws -> UserWithDeviceEntities {
-    let device = try await Current.db.create(Device.random {
+    @Dependency(\.db) var db
+    let device = try await db.create(Device.random {
       adminDevice(&$0)
       $0.adminId = admin.id
     })
-    let userDevice = try await Current.db.create(UserDevice.random {
+    let userDevice = try await db.create(UserDevice.random {
       config(&$0)
       $0.userId = model.id
       $0.deviceId = device.id
     })
     self.token.userDeviceId = userDevice.id
-    try await Current.db.update(self.token)
+    try await db.update(self.token)
     return .init(
       model: self.model,
       adminDevice: device,

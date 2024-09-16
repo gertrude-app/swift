@@ -22,9 +22,9 @@ struct Login: Pair {
 
 extension Login: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    let admin = try await Current.db.query(Admin.self)
+    let admin = try await Admin.query()
       .where(.email == .string(input.email.lowercased()))
-      .first(orThrow: context |> loginError)
+      .first(in: context.db, orThrow: context |> loginError)
 
     if admin.subscriptionStatus == .pendingEmailVerification {
       try await sendVerificationEmail(to: admin, in: context)
@@ -36,7 +36,7 @@ extension Login: Resolver {
     }
 
     let match: Bool
-    switch Env.mode {
+    switch context.env.mode {
     case .test:
       // for test speed, bcrypt verification is slow, by design
       match = input.password == admin.password
@@ -51,13 +51,13 @@ extension Login: Resolver {
     }
 
     if match {
-      dashSecurityEvent(.login, admin.id, context.ipAddress, "using email/password")
+      dashSecurityEvent(.login, "using email/password", admin: admin.id, in: context)
     } else {
-      dashSecurityEvent(.loginFailed, admin.id, context.ipAddress, "incorrect password")
+      dashSecurityEvent(.loginFailed, "incorrect password", admin: admin.id, in: context)
       throw context |> loginError
     }
 
-    let token = try await Current.db.create(AdminToken(adminId: admin.id))
+    let token = try await context.db.create(AdminToken(adminId: admin.id))
     return .init(adminId: admin.id, token: token.value)
   }
 }

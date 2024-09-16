@@ -1,24 +1,24 @@
+import Dependencies
 import XCTest
 import XExpect
 
 @testable import Api
 
 final class DeviceResolversTests: ApiTestCase {
-  // TODO: fix racy flaky test
   func testGetDevices() async throws {
-    try await Device.deleteAll()
-    let user = try await Entities.user().withDevice { $0.appVersion = "2.2.2" }
+    try await self.db.delete(all: Device.self)
+    let user = try await self.user().withDevice { $0.appVersion = "2.2.2" }
     var device = user.adminDevice
     device.appReleaseChannel = .canary
     device.customName = "Pinky"
     device.serialNumber = "1234567890"
     device.modelIdentifier = "MacBookPro16,1"
-    try await device.save()
+    try await self.db.update(device)
 
-    let user2 = try await User.create(.init(adminId: user.adminId, name: "Bob"))
+    let user2 = try await self.db.create(User(adminId: user.adminId, name: "Bob"))
 
     // proves that we take the highest app version
-    try await UserDevice.create(.init(
+    try await self.db.create(UserDevice(
       userId: user2.id,
       deviceId: device.id,
       isAdmin: false,
@@ -28,38 +28,45 @@ final class DeviceResolversTests: ApiTestCase {
       numericId: 504
     ))
 
-    let singleOutput = try await GetDevice.resolve(
-      with: device.id.rawValue,
-      in: context(user.admin)
-    )
+    try await withDependencies {
+      $0.websockets.isUserDeviceOnline = { _ in false }
+    } operation: {
+      var singleOutput = try await GetDevice.resolve(
+        with: device.id.rawValue,
+        in: context(user.admin)
+      )
 
-    let expectedDeviceOutput = GetDevice.Output(
-      id: device.id,
-      name: "Pinky",
-      releaseChannel: .canary,
-      users: [
-        .init(id: user.id, name: user.name, isOnline: false),
-        .init(id: user2.id, name: user2.name, isOnline: false),
-      ],
-      appVersion: "2.2.2",
-      serialNumber: "1234567890",
-      modelIdentifier: "MacBookPro16,1",
-      modelFamily: .macBookPro,
-      modelTitle: "16\" MacBook Pro (2019)"
-    )
+      var expectedDeviceOutput = GetDevice.Output(
+        id: device.id,
+        name: "Pinky",
+        releaseChannel: .canary,
+        users: [
+          .init(id: user.id, name: user.name, isOnline: false),
+          .init(id: user2.id, name: user2.name, isOnline: false),
+        ],
+        appVersion: "2.2.2",
+        serialNumber: "1234567890",
+        modelIdentifier: "MacBookPro16,1",
+        modelFamily: .macBookPro,
+        modelTitle: "16\" MacBook Pro (2019)"
+      )
 
-    expect(singleOutput).toEqual(expectedDeviceOutput)
+      sortUsers(in: &singleOutput, atPath: \.users)
+      sortUsers(in: &expectedDeviceOutput, atPath: \.users)
+      expect(singleOutput).toEqual(expectedDeviceOutput)
 
-    let allDevicesOutput = try await GetDevices.resolve(in: context(user.admin))
-    expect(allDevicesOutput).toEqual([expectedDeviceOutput])
+      var allDevicesOutput = try await GetDevices.resolve(in: context(user.admin))
+      sortUsers(in: &allDevicesOutput, atPath: \.[0].users)
+      expect(allDevicesOutput).toEqual([expectedDeviceOutput])
+    }
   }
 
   func testSaveDevice() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     var device = user.adminDevice
     device.appReleaseChannel = .stable
     device.customName = nil
-    try await device.save()
+    try await self.db.update(device)
 
     var output = try await SaveDevice.resolve(
       with: .init(id: device.id, name: "Pinky", releaseChannel: .beta),
@@ -68,7 +75,7 @@ final class DeviceResolversTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let retrieved = try await Device.find(device.id)
+    let retrieved = try await self.db.find(device.id)
     expect(retrieved.customName).toEqual("Pinky")
     expect(retrieved.appReleaseChannel).toEqual(.beta)
 
@@ -81,7 +88,16 @@ final class DeviceResolversTests: ApiTestCase {
       in: context(user.admin)
     )
 
-    let retrievedAgain = try await Device.find(device.id)
+    let retrievedAgain = try await self.db.find(device.id)
     expect(retrievedAgain.customName).toBeNil()
   }
+}
+
+// helpers
+
+func sortUsers<Root>(
+  in root: inout Root,
+  atPath keyPath: WritableKeyPath<Root, [GetDevice.Output.User]>
+) {
+  root[keyPath: keyPath].sort(by: { $0.name < $1.name })
 }

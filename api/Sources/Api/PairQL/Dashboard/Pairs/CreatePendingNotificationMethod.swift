@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import PairQL
 import Vapor
@@ -19,8 +20,8 @@ extension AdminVerifiedNotificationMethod.Config: PairInput {}
 extension CreatePendingNotificationMethod: Resolver {
   static func resolve(with config: Input, in context: AdminContext) async throws -> Output {
     let model = AdminVerifiedNotificationMethod(adminId: context.admin.id, config: config)
-    let code = await Current.ephemeral.createPendingNotificationMethod(model)
-    Current.logger.notice("pending notif method code `\(code)` for admin `\(context.admin.email)`")
+    let code = await with(dependency: \.ephemeral)
+      .createPendingNotificationMethod(model)
     try await sendVerification(code, for: config, in: context)
     return .init(methodId: model.id)
   }
@@ -36,11 +37,12 @@ private func sendVerification(
   switch method {
   case .slack(channelId: let channel, channelName: _, token: let token):
     do {
-      try await Current.slack.send(.init(
-        text: "Your verification code is `\(code)`",
-        channel: channel,
-        token: token
-      ))
+      try await with(dependency: \.slack)
+        .send(Slack(
+          text: "Your verification code is `\(code)`",
+          channel: channel,
+          token: token
+        ))
     } catch {
       throw context.error(
         id: "df619205",
@@ -51,7 +53,7 @@ private func sendVerification(
     }
 
   case .email(email: let email):
-    _ = try await Current.sendGrid.send(.fromApp(
+    _ = try await with(dependency: \.sendgrid).send(.fromApp(
       to: email,
       subject: "Gertrude App verification code",
       html: """
@@ -65,9 +67,10 @@ private func sendVerification(
     ))
 
   case .text(phoneNumber: let phoneNumber):
-    Current.twilio.send(.init(
-      to: .init(rawValue: phoneNumber),
-      message: "Your verification code is \(code)"
-    ))
+    try await with(dependency: \.twilio)
+      .send(Text(
+        to: .init(rawValue: phoneNumber),
+        message: "Your verification code is \(code)"
+      ))
   }
 }

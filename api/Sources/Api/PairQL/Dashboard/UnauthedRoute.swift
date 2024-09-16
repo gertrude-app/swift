@@ -13,35 +13,35 @@ enum UnauthedRoute: PairRoute {
   case verifySignupEmail(VerifySignupEmail.Input)
 
   nonisolated(unsafe) static let router = OneOf {
-    Route(/Self.login) {
+    Route(.case(Self.login)) {
       Operation(Login.self)
       Body(.dashboardInput(Login.self))
     }
-    Route(/Self.loginMagicLink) {
+    Route(.case(Self.loginMagicLink)) {
       Operation(LoginMagicLink.self)
       Body(.dashboardInput(LoginMagicLink.self))
     }
-    Route(/Self.requestMagicLink) {
+    Route(.case(Self.requestMagicLink)) {
       Operation(RequestMagicLink.self)
       Body(.dashboardInput(RequestMagicLink.self))
     }
-    Route(/Self.resetPassword) {
+    Route(.case(Self.resetPassword)) {
       Operation(ResetPassword.self)
       Body(.dashboardInput(ResetPassword.self))
     }
-    Route(/Self.saveConferenceEmail) {
+    Route(.case(Self.saveConferenceEmail)) {
       Operation(SaveConferenceEmail.self)
       Body(.dashboardInput(SaveConferenceEmail.self))
     }
-    Route(/Self.sendPasswordResetEmail) {
+    Route(.case(Self.sendPasswordResetEmail)) {
       Operation(SendPasswordResetEmail.self)
       Body(.dashboardInput(SendPasswordResetEmail.self))
     }
-    Route(/Self.signup) {
+    Route(.case(Self.signup)) {
       Operation(Signup.self)
       Body(.dashboardInput(Signup.self))
     }
-    Route(/Self.verifySignupEmail) {
+    Route(.case(Self.verifySignupEmail)) {
       Operation(VerifySignupEmail.self)
       Body(.dashboardInput(VerifySignupEmail.self))
     }

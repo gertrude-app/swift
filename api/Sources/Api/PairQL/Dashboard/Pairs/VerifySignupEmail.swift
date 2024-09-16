@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import PairQL
 import Vapor
@@ -21,28 +22,30 @@ struct VerifySignupEmail: Pair {
 
 extension VerifySignupEmail: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    switch await Current.ephemeral.adminIdFromToken(input.token) {
+    switch await with(dependency: \.ephemeral).adminIdFromToken(input.token) {
 
     // happy path: verification is successful
     case .notExpired(let adminId):
-      var admin = try await Admin.find(adminId)
-      let token = try await AdminToken.create(.init(adminId: admin.id))
+      var admin = try await context.db.find(adminId)
+      let token = try await context.db.create(AdminToken(adminId: admin.id))
       if admin.subscriptionStatus != .pendingEmailVerification {
         return .init(token: token.value, adminId: admin.id)
       }
 
+      admin.subscriptionStatusExpiration = get(dependency: \.date.now) + .days(60 - 7)
       admin.subscriptionStatus = .trialing
-      admin.subscriptionStatusExpiration = Current.date().advanced(by: .days(60 - 7))
-      try await admin.save()
+
+      try await context.db.update(admin)
 
       // they get a default "verified" notification method, since they verified their email
-      try await Current.db.create(AdminVerifiedNotificationMethod(
+      try await context.db.create(AdminVerifiedNotificationMethod(
         adminId: admin.id,
         config: .email(email: admin.email.rawValue)
       ))
 
-      if Env.mode == .prod, !isTestAddress(admin.email.rawValue) {
-        Current.sendGrid.fireAndForget(.toJared("email verified", admin.email.rawValue))
+      if context.env.mode == .prod, !isTestAddress(admin.email.rawValue) {
+        with(dependency: \.sendgrid)
+          .fireAndForget(.toJared("email verified", admin.email.rawValue))
       }
 
       return Output(token: token.value, adminId: admin.id)
@@ -51,7 +54,7 @@ extension VerifySignupEmail: Resolver {
       throw Abort(.notFound)
 
     case .expired(let adminId):
-      let admin = try await Admin.find(adminId)
+      let admin = try await context.db.find(adminId)
       if admin.subscriptionStatus == .pendingEmailVerification {
         try await sendVerificationEmail(to: admin, in: context)
         throw context.error("84a6c609", .badRequest, user: EXPIRED_TOKEN_MSG)
@@ -65,7 +68,7 @@ extension VerifySignupEmail: Resolver {
       }
 
     case .previouslyRetrieved(let adminId):
-      let admin = try await Admin.find(adminId)
+      let admin = try await context.db.find(adminId)
       if admin.subscriptionStatus == .pendingEmailVerification {
         try await sendVerificationEmail(to: admin, in: context)
         throw context.error("6257bfb9", .badRequest, user: UNEXPECTED_RESEND_MSG)

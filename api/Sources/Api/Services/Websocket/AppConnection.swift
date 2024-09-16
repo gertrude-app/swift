@@ -25,10 +25,9 @@ actor AppConnection {
       await self.onText(ws, string)
     }
     self.ws.onClose.whenComplete { result in
-      Current.logger.debug("WS: closed with result \(result)")
       switch result {
       case .success:
-        Task { await Current.websockets.remove(self) }
+        Task { await with(dependency: \.websockets).remove(self) }
       case .failure:
         break
       }
@@ -37,15 +36,17 @@ actor AppConnection {
 
   func onText(_ ws: WebsocketProtocol, _ json: String) {
     guard let message = try? JSON.decode(json, as: IncomingMessage.self) else {
-      Current.logger.error("WS: failed to decode WebSocket message: `\(json)`")
+      with(dependency: \.logger)
+        .error("WS: failed to decode WebSocket message: `\(json)`")
       return
     }
-    Current.logger.notice("WS: WebSocket \(self.id.lowercased) got message: \(message)")
+    with(dependency: \.logger)
+      .notice("WS: WebSocket \(self.id.lowercased) got message: \(message)")
     switch message {
     case .currentFilterState(let filterState):
       self.filterState = filterState
     case .goingOffline:
-      Task { await Current.websockets.remove(self) }
+      Task { await with(dependency: \.websockets).remove(self) }
     }
   }
 }

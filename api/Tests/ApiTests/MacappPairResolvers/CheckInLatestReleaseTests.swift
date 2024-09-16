@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import MacAppRoute
@@ -9,7 +10,7 @@ import XExpect
 final class CheckInLatestReleaseTests: ApiTestCase {
   func test(releaseChannel: ReleaseChannel, currentVersion: String) async throws -> CheckIn
     .LatestRelease {
-    let user = try await Entities.user().withDevice(adminDevice: {
+    let user = try await self.user().withDevice(adminDevice: {
       $0.appReleaseChannel = releaseChannel
     })
     let output = try await CheckIn.resolve(
@@ -20,7 +21,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testAppOnLatestVersionHappyPath() async throws {
-    try await replaceAllReleases(with: [
+    try await self.replaceAllReleases(with: [
       Release("1.0.0", pace: 10),
       Release("1.1.0", pace: 10),
     ])
@@ -31,7 +32,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testAppBehindOne() async throws {
-    try await replaceAllReleases(with: [
+    try await self.replaceAllReleases(with: [
       Release("1.0.0", pace: 10, createdAt: .epoch),
       Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),
       Release("1.2.0", pace: 10, createdAt: .epoch.advanced(by: .days(20))),
@@ -49,7 +50,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testAppBehindTwoUsesFirstPace() async throws {
-    try await replaceAllReleases(with: [
+    try await self.replaceAllReleases(with: [
       Release("1.0.0", pace: 10, createdAt: .epoch),
       Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),
       Release("1.2.0", pace: 10, createdAt: .epoch.advanced(by: .days(20))),
@@ -68,13 +69,13 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testOnBetaAheadOfStable() async throws {
-    try await replaceAllReleases(with: [
+    try await self.replaceAllReleases(with: [
       Release("1.0.0", pace: 10, createdAt: .epoch),
       Release("1.1.0", pace: 10, createdAt: .epoch.advanced(by: .days(10))),
       Release("2.0.0", channel: .beta, pace: 10, createdAt: .epoch.advanced(by: .days(20))),
     ])
 
-    let user = try await Entities.user().withDevice(adminDevice: {
+    let user = try await self.user().withDevice(adminDevice: {
       $0.appReleaseChannel = .stable // set to stable, but they're on beta
     })
 
@@ -88,13 +89,13 @@ final class CheckInLatestReleaseTests: ApiTestCase {
   }
 
   func testOnCanaryBehindStable() async throws {
-    try await replaceAllReleases(with: [
+    try await self.replaceAllReleases(with: [
       Release("2.0.0", channel: .stable, pace: nil, createdAt: .epoch),
       Release("2.1.0", channel: .canary, pace: nil, createdAt: .epoch.advanced(by: .days(10))),
       Release("2.1.1", channel: .stable, pace: nil, createdAt: .epoch.advanced(by: .days(20))),
     ])
 
-    let user = try await Entities.user().withDevice(adminDevice: {
+    let user = try await self.user().withDevice(adminDevice: {
       $0.appReleaseChannel = .canary
     })
 
@@ -110,11 +111,13 @@ final class CheckInLatestReleaseTests: ApiTestCase {
 
 // extensions, helpers
 
-func replaceAllReleases(with releases: [Release]) async throws {
-  try await Current.db.deleteAll(Release.self)
-  try await Current.db.create(releases)
-  for var release in releases {
-    try await release.modifyCreatedAt(.exact(release.createdAt))
+extension ApiTestCase {
+  func replaceAllReleases(with releases: [Release]) async throws {
+    try await self.db.delete(all: Release.self)
+    try await self.db.create(releases)
+    for var release in releases {
+      try await release.modifyCreatedAt(.exact(release.createdAt))
+    }
   }
 }
 

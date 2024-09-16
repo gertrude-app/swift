@@ -30,9 +30,9 @@ extension CreateRelease: Resolver {
     }
 
     // allow overwriting existing release, identified by semver string
-    let existing = try? await Current.db.query(Release.self)
+    let existing = try? await Release.query()
       .where(.semver == .string(input.semver))
-      .first()
+      .first(in: context.db)
 
     if var existing {
       existing.channel = input.channel
@@ -41,11 +41,11 @@ extension CreateRelease: Resolver {
       existing.revision = .init(rawValue: input.revision)
       existing.requirementPace = input.requirementPace
       existing.notes = input.notes
-      try await Current.db.update(existing)
+      try await context.db.update(existing)
       return .init(id: existing.id)
     }
 
-    let release = try await Current.db.create(Release(
+    let release = try await context.db.create(Release(
       semver: input.semver,
       channel: input.channel,
       signature: input.signature,

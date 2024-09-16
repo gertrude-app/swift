@@ -4,9 +4,9 @@ import MacAppRoute
 extension RefreshRules: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
     let user = context.user
-    let keychains = try await user.keychains()
+    let keychains = try await user.keychains(in: context.db)
     var keys = try await keychains.concurrentMap { keychain in
-      try await keychain.keys()
+      try await keychain.keys(in: context.db)
     }.flatMap { $0 }
 
     // update the app version if it changed
@@ -14,16 +14,16 @@ extension RefreshRules: Resolver {
        !input.appVersion.isEmpty,
        input.appVersion != userDevice.appVersion {
       userDevice.appVersion = input.appVersion
-      try await Current.db.update(userDevice)
+      try await context.db.update(userDevice)
     }
 
     // ...merging in AUTO-INCLUDED Keychain
     if !keys.isEmpty {
-      let autoId = Env.get("AUTO_INCLUDED_KEYCHAIN_ID")
-        .flatMap(UUID.init(uuidString:)) ?? Current.uuid()
-      let autoKeychain = try? await Keychain.find(.init(autoId))
+      let autoId = context.env.get("AUTO_INCLUDED_KEYCHAIN_ID")
+        .flatMap(UUID.init(uuidString:)) ?? context.uuid()
+      let autoKeychain = try? await context.db.find(Keychain.Id(autoId))
       if let autoKeychain = autoKeychain {
-        let autoKeys = try await autoKeychain.keys()
+        let autoKeys = try await autoKeychain.keys(in: context.db)
         keys.append(contentsOf: autoKeys)
       }
     }

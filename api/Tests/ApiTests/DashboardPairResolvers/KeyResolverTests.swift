@@ -6,7 +6,7 @@ import XExpect
 
 final class KeyResolverTests: ApiTestCase {
   func prepare() async throws -> (SaveKey.Input, AdminWithKeychainEntities) {
-    let admin = try await Entities.admin().withKeychain()
+    let admin = try await self.admin().withKeychain()
     let input = SaveKey.Input(
       isNew: true,
       id: .init(),
@@ -24,7 +24,7 @@ final class KeyResolverTests: ApiTestCase {
     let output = try await SaveKey.resolve(with: input, in: admin.context)
     expect(output).toEqual(.success)
 
-    let key = try await Current.db.find(input.id)
+    let key = try await self.db.find(input.id)
     expect(key.comment).toEqual(input.comment)
     expect(key.key).toEqual(input.key)
     expect(sent.websocketMessages)
@@ -38,7 +38,7 @@ final class KeyResolverTests: ApiTestCase {
     let output = try await SaveKey.resolve(with: input, in: admin.context)
     expect(output).toEqual(.success)
 
-    let key = try await Current.db.find(input.id)
+    let key = try await self.db.find(input.id)
     expect(key.deletedAt).not.toBeNil()
   }
 
@@ -52,7 +52,7 @@ final class KeyResolverTests: ApiTestCase {
 
   func testUpdateKeyRecord() async throws {
     var (input, admin) = try await prepare()
-    let key = try await Current.db.create(Key(keychainId: admin.keychain.id, key: .mock))
+    let key = try await self.db.create(Key(keychainId: admin.keychain.id, key: .mock))
 
     input.isNew = false
     input.id = key.id
@@ -62,7 +62,7 @@ final class KeyResolverTests: ApiTestCase {
     let output = try await SaveKey.resolve(with: input, in: admin.context)
     expect(output).toEqual(.success)
 
-    let updatedKey = try await Current.db.find(key.id)
+    let updatedKey = try await self.db.find(key.id)
     expect(updatedKey.comment).toEqual(input.comment)
     expect(updatedKey.key).toEqual(input.key)
     expect(sent.websocketMessages)
@@ -71,7 +71,7 @@ final class KeyResolverTests: ApiTestCase {
 
   func testUpdateKeyRecordWithExpiration() async throws {
     var (input, admin) = try await prepare()
-    let key = try await Current.db.create(Key(keychainId: admin.keychain.id, key: .mock))
+    let key = try await self.db.create(Key(keychainId: admin.keychain.id, key: .mock))
 
     input.isNew = false
     input.id = key.id
@@ -82,7 +82,7 @@ final class KeyResolverTests: ApiTestCase {
     let output = try await SaveKey.resolve(with: input, in: admin.context)
     expect(output).toEqual(.success)
 
-    let updatedKey = try await Current.db.find(key.id)
+    let updatedKey = try await self.db.find(key.id)
     expect(updatedKey.comment).toEqual(input.comment)
     expect(updatedKey.key).toEqual(input.key)
     expect(updatedKey.deletedAt).not.toBeNil()

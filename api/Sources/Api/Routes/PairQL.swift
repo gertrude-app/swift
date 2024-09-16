@@ -1,3 +1,4 @@
+import Dependencies
 import MacAppRoute
 import URLRouting
 import Vapor
@@ -7,6 +8,9 @@ struct Context: ResolverContext {
   let requestId: String
   let dashboardUrl: String
   let ipAddress: String?
+
+  @Dependency(\.db) var db
+  @Dependency(\.env) var env
 }
 
 enum PairQLRoute: Equatable, RouteResponder {
@@ -60,7 +64,7 @@ enum PairQLRoute: Equatable, RouteResponder {
       return try await PairQLRoute.respond(to: route, in: context)
     } catch {
       if "\(type(of: error))" == "ParsingError" {
-        switch Env.mode {
+        switch request.context.env.mode {
         case .prod:
           await slackPairQLRouteNotFound(request, error)
         case .dev:
@@ -72,7 +76,9 @@ enum PairQLRoute: Equatable, RouteResponder {
           id: "0f5a25c9",
           requestId: context.requestId,
           type: .notFound,
-          debugMessage: Env.mode == .dev ? "PairQL routing \(error)" : "PairQL route not found",
+          debugMessage: request.context.env.mode == .dev
+            ? "PairQL routing \(error)"
+            : "PairQL route not found",
           showContactSupport: true
         ))
       } else if let pqlError = error as? PqlError {
@@ -93,13 +99,13 @@ private func logOperation(_ route: PairQLRoute, _ request: Request) {
   let operation = request.parameters.get("operation") ?? ""
   switch route {
   case .macApp:
-    Current.logger
+    request.logger
       .notice("PairQL request: \("MacApp".magenta) \(operation.yellow)")
   case .dashboard:
-    Current.logger
+    request.logger
       .notice("PairQL request: \("Dashboard".green) \(operation.yellow)")
   case .superAdmin:
-    Current.logger
+    request.logger
       .notice("PairQL request: \("SuperAdmin".cyan) \(operation.yellow)")
   }
 }
@@ -107,7 +113,7 @@ private func logOperation(_ route: PairQLRoute, _ request: Request) {
 private func slackPairQLRouteNotFound(_ request: Request, _ error: Error) async {
   let domain = request.parameters.get("domain") ?? ""
   let operation = request.parameters.get("operation") ?? ""
-  try? await Current.slack.sysLog(to: "errors", """
+  try? await with(dependency: \.slack).sysLog(to: "errors", """
   *PairQL parsing error:*
   domain: `\(domain)`
   operation: `\(operation)`

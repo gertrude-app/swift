@@ -5,8 +5,10 @@ public enum Key: Hashable, Codable, Sendable {
   case domainRegex(pattern: DomainRegexPattern, scope: AppScope)
   case path(path: Path, scope: AppScope)
   case ipAddress(ipAddress: Ip, scope: AppScope)
+}
 
-  public static var typescriptAlias: String {
+public extension Key {
+  static var typescriptAlias: String {
     """
       | { type: 'anySubdomain'; domain: string; scope: AppScope }
       | { type: 'domain'; domain: string; scope: AppScope }

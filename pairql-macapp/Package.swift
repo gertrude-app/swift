@@ -8,7 +8,8 @@ let package = Package(
     .library(name: "MacAppRoute", targets: ["MacAppRoute"]),
   ],
   dependencies: [
-    .package("pointfreeco/swift-url-routing@0.5.0"),
+    // fork avoids swift-syntax transitive dep via case-paths
+    .package(url: "https://github.com/gertrude-app/swift-url-routing", revision: "1cf1ca6"),
     .package(path: "../pairql"),
     .package(path: "../gertie"),
     .package(path: "../x-expect"),
@@ -33,15 +34,3 @@ let package = Package(
     ]),
   ]
 )
-
-// helpers
-
-extension PackageDescription.Package.Dependency {
-  static func package(_ commitish: String) -> Package.Dependency {
-    let parts = commitish.split(separator: "@")
-    return .package(
-      url: "https://github.com/\(parts[0]).git",
-      from: .init(stringLiteral: "\(parts[1])")
-    )
-  }
-}

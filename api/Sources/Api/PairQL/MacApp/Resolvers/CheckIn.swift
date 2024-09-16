@@ -5,10 +5,10 @@ import MacAppRoute
 extension CheckIn: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
     async let v1 = RefreshRules.resolve(with: .init(appVersion: input.appVersion), in: context)
-    async let admin = context.user.admin()
-    async let browsers = Browser.query().all()
+    async let admin = context.user.admin(in: context.db)
+    async let browsers = Browser.query().all(in: context.db)
     var userDevice = try await context.userDevice()
-    var adminDevice = try await userDevice.adminDevice()
+    var adminDevice = try await userDevice.adminDevice(in: context.db)
     let channel = adminDevice.appReleaseChannel
 
     async let latestRelease = LatestAppVersion.resolve(
@@ -24,20 +24,20 @@ extension CheckIn: Resolver {
        let filterVersion = Semver(filterVersionSemver),
        filterVersion != adminDevice.filterVersion {
       adminDevice.filterVersion = filterVersion
-      try await adminDevice.save()
+      try await context.db.update(adminDevice)
     }
 
     if let osVersionSemver = input.osVersion,
        let osVersion = Semver(osVersionSemver),
        osVersion != adminDevice.osVersion {
       adminDevice.osVersion = osVersion
-      try await adminDevice.save()
+      try await context.db.update(adminDevice)
     }
 
     if let userIsAdmin = input.userIsAdmin,
        userDevice.isAdmin != userIsAdmin {
       userDevice.isAdmin = userIsAdmin
-      try await userDevice.save()
+      try await context.db.update(userDevice)
     }
 
     var resolvedFilterSuspension: ResolvedFilterSuspension?
@@ -46,7 +46,7 @@ extension CheckIn: Resolver {
        .where(.id == suspensionReqId)
        .where(.userDeviceId == userDevice.id)
        .where(.status != .enum(RequestStatus.pending))
-       .first() {
+       .first(in: context.db) {
       resolvedFilterSuspension = .init(
         id: resolved.id.rawValue,
         decision: resolved.decision ?? .rejected,
@@ -61,7 +61,7 @@ extension CheckIn: Resolver {
         .where(.id |=| unlockIds)
         .where(.userDeviceId == userDevice.id)
         .where(.status != .enum(RequestStatus.pending))
-        .all()
+        .all(in: context.db)
       if !resolved.isEmpty {
         resolvedUnlockRequests = resolved.map { .init(
           id: $0.id.rawValue,

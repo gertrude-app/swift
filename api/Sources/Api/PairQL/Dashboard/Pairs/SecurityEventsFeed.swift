@@ -42,17 +42,17 @@ extension SecurityEventsFeed: NoInputResolver {
       .where(.adminId == context.admin.id)
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
-      .all()
+      .all(in: context.db)
 
-    let children = try await context.admin.users()
+    let children = try await context.admin.users(in: context.db)
       .reduce(into: [User.Id: User]()) { result, user in
         result[user.id] = user
       }
 
-    let devices = try await context.admin.devices()
+    let devices = try await context.admin.devices(in: context.db)
     let userDevices = try await UserDevice.query()
       .where(.deviceId |=| devices.map(\.id))
-      .all()
+      .all(in: context.db)
       .reduce(into: [UserDevice.Id: UserDevice]()) { result, userDevice in
         result[userDevice.id] = userDevice
       }

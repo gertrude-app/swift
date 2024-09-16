@@ -28,7 +28,8 @@ extension GertieMigration {
   }
 
   func debugPause(seconds: Int = 20, _ message: String) async throws {
-    Current.logger.warning("PAUSING FOR \(seconds)s: \(message)")
+    with(dependency: \.logger)
+      .warning("PAUSING FOR \(seconds)s: \(message)")
     try await Task.sleep(seconds: seconds)
   }
 }
@@ -36,7 +37,8 @@ extension GertieMigration {
 extension Migration {
   func log(_ direction: MigrationDirection) {
     let dir = direction == .up ? "UP".green : "DOWN".yellow
-    Current.logger.info("Running migration: \(String(describing: Self.self).magenta) \(dir)")
+    with(dependency: \.logger)
+      .info("Running migration: \(String(describing: Self.self).magenta) \(dir)")
   }
 
   func convertStringJsonColumnToJsonb(

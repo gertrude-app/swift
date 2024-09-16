@@ -37,15 +37,15 @@ struct Device: Codable, Sendable {
 // loaders
 
 extension Device {
-  func admin() async throws -> Admin {
-    try await Current.db.query(Admin.self)
+  func admin(in db: any DuetSQL.Client) async throws -> Admin {
+    try await Admin.query()
       .where(.id == self.adminId)
-      .first()
+      .first(in: db)
   }
 
-  func userDevices() async throws -> [UserDevice] {
-    try await Current.db.query(UserDevice.self)
+  func userDevices(in db: any DuetSQL.Client) async throws -> [UserDevice] {
+    try await UserDevice.query()
       .where(.deviceId == self.id)
-      .all()
+      .all(in: db)
   }
 }

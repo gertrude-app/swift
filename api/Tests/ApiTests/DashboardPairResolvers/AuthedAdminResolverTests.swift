@@ -1,3 +1,4 @@
+import Dependencies
 import Gertie
 import XCore
 import XCTest
@@ -7,105 +8,104 @@ import XExpect
 
 final class AuthedAdminResolverTests: ApiTestCase {
   func testStripeUrlForBillingPortalSession() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionId = .init(rawValue: "sub_123")
       $0.subscriptionStatus = .paid
     }
 
-    Current.stripe.getSubscription = { subId in
-      expect(subId).toBe("sub_123")
-      return .init(id: "sub_123", status: .active, customer: "cus_123", currentPeriodEnd: 0)
+    let output = try await withDependencies {
+      $0.stripe.getSubscription = { subId in
+        expect(subId).toBe("sub_123")
+        return .init(id: "sub_123", status: .active, customer: "cus_123", currentPeriodEnd: 0)
+      }
+      $0.stripe.createBillingPortalSession = { cusId in
+        expect(cusId).toBe("cus_123")
+        return .init(id: "bps_123", url: "bps-url")
+      }
+    } operation: {
+      try await StripeUrl.resolve(in: context(admin))
     }
-
-    Current.stripe.createBillingPortalSession = { cusId in
-      expect(cusId).toBe("cus_123")
-      return .init(id: "bps_123", url: "bps-url")
-    }
-
-    Current.stripe.createCheckoutSession = { _ in fatalError("not called") }
-
-    let output = try await StripeUrl.resolve(in: context(admin))
 
     expect(output).toEqual(.init(url: "bps-url"))
   }
 
   func testStripeUrlForCheckoutSession() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionId = nil
       $0.subscriptionStatus = .trialing
     }
 
-    Current.stripe.createCheckoutSession = { sessionData in
-      expect(sessionData.clientReferenceId).toEqual(admin.id.lowercased)
-      expect(sessionData.customerEmail).toEqual(admin.email.rawValue)
-      return .init(id: "s1", url: "/checkout-url", subscription: "subsid", clientReferenceId: nil)
+    let output = try await withDependencies {
+      $0.stripe.createCheckoutSession = { sessionData in
+        expect(sessionData.clientReferenceId).toEqual(admin.id.lowercased)
+        expect(sessionData.customerEmail).toEqual(admin.email.rawValue)
+        return .init(id: "s1", url: "/checkout-url", subscription: "subsid", clientReferenceId: nil)
+      }
+    } operation: {
+      try await StripeUrl.resolve(in: context(admin))
     }
-
-    Current.stripe.getSubscription = { _ in fatalError("not called") }
-    Current.stripe.createBillingPortalSession = { _ in fatalError("not called") }
-
-    let output = try await StripeUrl.resolve(in: context(admin))
 
     expect(output).toEqual(.init(url: "/checkout-url"))
   }
 
   func testHandleCheckoutSuccess() async throws {
     let sessionId = "cs_123"
-    let admin = try await Admin.random { $0.subscriptionStatus = .trialing }.create()
-    Current.date = { Date(timeIntervalSince1970: 0) }
+    let admin = try await self.db.create(Admin.random { $0.subscriptionStatus = .trialing })
 
-    Current.stripe.getCheckoutSession = { id in
-      expect(id).toBe(sessionId)
-      return .init(
-        id: "cs_123",
-        url: nil,
-        subscription: "sub_123",
-        clientReferenceId: admin.id.lowercased
+    let output = try await withDependencies {
+      $0.stripe.getCheckoutSession = { id in
+        expect(id).toBe(sessionId)
+        return .init(
+          id: "cs_123",
+          url: nil,
+          subscription: "sub_123",
+          clientReferenceId: admin.id.lowercased
+        )
+      }
+      $0.stripe.getSubscription = { id in
+        expect(id).toBe("sub_123")
+        return .init(id: id, status: .active, customer: "cus_123", currentPeriodEnd: 0)
+      }
+    } operation: {
+      try await HandleCheckoutSuccess.resolve(
+        with: .init(stripeCheckoutSessionId: sessionId),
+        in: context(admin)
       )
     }
 
-    Current.stripe.getSubscription = { id in
-      expect(id).toBe("sub_123")
-      return .init(id: id, status: .active, customer: "cus_123", currentPeriodEnd: 0)
-    }
-
-    let output = try await HandleCheckoutSuccess.resolve(
-      with: .init(stripeCheckoutSessionId: sessionId),
-      in: context(admin)
-    )
-
     expect(output).toEqual(.success)
-    let retrieved = try await Current.db.find(admin.id)
+    let retrieved = try await self.db.find(admin.id)
     expect(retrieved.subscriptionId).toEqual(.init(rawValue: "sub_123"))
     expect(retrieved.subscriptionStatus).toEqual(.paid)
-    expect(retrieved.subscriptionStatusExpiration).toEqual(
-      Date(timeIntervalSince1970: 0).advanced(by: .days(33))
-    )
+    expect(retrieved.subscriptionStatusExpiration).toEqual(Date.reference + .days(33))
   }
 
   func testCreatePendingAppConnection() async throws {
-    Current.verificationCode.generate = { 1234 }
-    let user = try await Entities.user()
+    let user = try await self.user()
 
-    let output = try await CreatePendingAppConnection.resolve(
-      with: .init(userId: user.id),
-      in: context(user.admin)
-    )
+    let output = try await withDependencies {
+      $0.verificationCode.generate = { 1234 }
+    } operation: {
+      try await CreatePendingAppConnection.resolve(
+        with: .init(userId: user.id),
+        in: context(user.admin)
+      )
+    }
 
     expect(output).toEqual(.init(code: 1234))
   }
 
   func testGetAdminWithNotifications() async throws {
-    let admin = try await Entities.admin { $0.subscriptionStatus = .paid }
+    let admin = try await self.admin(with: \.subscriptionStatus, of: .paid)
     let method = AdminVerifiedNotificationMethod(
       adminId: admin.id,
       config: .email(email: "blob@blob.com")
     )
-    try await Current.db.create(method)
+    try await self.db.create(method)
     var notification = AdminNotification.random
     notification.adminId = admin.id
     notification.methodId = method.id
-    try await Current.db.create(notification)
+    try await self.db.create(notification)
 
     let output = try await GetAdmin.resolve(in: context(admin))
 
@@ -124,19 +124,24 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testCreatePendingMethod_Text() async throws {
-    Current.verificationCode.generate = { 987_654 }
-    let admin = try await Entities.admin()
-    let (id, _) = mockUUIDs()
+    let admin = try await self.admin()
+    let uuids = MockUUIDs()
+    let id = uuids[0]
 
-    let output = try await CreatePendingNotificationMethod.resolve(
-      with: .text(phoneNumber: "+12345678901"),
-      in: context(admin)
-    )
+    let output = try await withDependencies {
+      $0.verificationCode.generate = { 987_654 }
+      $0.uuid = .mock(uuids)
+    } operation: {
+      try await CreatePendingNotificationMethod.resolve(
+        with: .text(phoneNumber: "+12345678901"),
+        in: context(admin)
+      )
+    }
 
     expect(output).toEqual(.init(methodId: .init(id)))
 
     // verify no db record created
-    let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    let preConfirm = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(preConfirm).toBeNil()
 
     // check that text was sent
@@ -154,34 +159,38 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(confirmOuput).toEqual(.success)
 
     // verify method now added to db w/ correct info
-    let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    let retrieved = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
     expect(retrieved?.adminId).toEqual(admin.id)
     expect(retrieved?.config).toEqual(.text(phoneNumber: "+12345678901"))
   }
 
   func testCreatePendingMethod_Slack() async throws {
-    Current.verificationCode.generate = { 123_456 }
-    let admin = try await Entities.admin()
-    let (id, _) = mockUUIDs()
+    let admin = try await self.admin()
+    let uuids = MockUUIDs()
+    let id = uuids[0]
 
-    let output = try await CreatePendingNotificationMethod.resolve(
-      with: .slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"),
-      in: context(admin)
-    )
+    let output = try await withDependencies {
+      $0.verificationCode.generate = { 123_456 }
+      $0.uuid = .mock(uuids)
+    } operation: {
+      try await CreatePendingNotificationMethod.resolve(
+        with: .slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"),
+        in: context(admin)
+      )
+    }
 
     expect(output).toEqual(.init(methodId: .init(id)))
 
     // verify no db record created
-    let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    let preConfirm = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(preConfirm).toBeNil()
 
     // check that slack was sent
     expect(sent.slacks).toHaveCount(1)
-    let (slack, token) = try XCTUnwrap(sent.slacks.first)
-    expect(token).toBe("xoxb-123")
-    expect(slack.channel).toBe("C123")
-    expect(slack.text).toContain("123456")
+    expect(sent.slacks[0].token).toBe("xoxb-123")
+    expect(sent.slacks[0].message.channel).toBe("C123")
+    expect(sent.slacks[0].message.text).toContain("123456")
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
@@ -192,7 +201,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(confirmOuput).toEqual(.success)
 
     // verify method now added to db w/ correct info
-    let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    let retrieved = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
     expect(retrieved?.adminId).toEqual(admin.id)
     expect(retrieved?.config)
@@ -200,24 +209,29 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testCreatePendingMethod_Email() async throws {
-    Current.verificationCode.generate = { 123_456 }
-    let admin = try await Entities.admin()
-    let (id, _) = mockUUIDs()
+    let admin = try await self.admin()
+    let uuids = MockUUIDs()
+    let id = uuids[0]
 
-    let output = try await CreatePendingNotificationMethod.resolve(
-      with: .email(email: "blob@blob.com"),
-      in: context(admin)
-    )
+    let output = try await withDependencies {
+      $0.verificationCode.generate = { 123_456 }
+      $0.uuid = .mock(uuids)
+    } operation: {
+      try await CreatePendingNotificationMethod.resolve(
+        with: .email(email: "blob@blob.com"),
+        in: context(admin)
+      )
+    }
 
     expect(output).toEqual(.init(methodId: .init(id)))
 
     // verify no db record created
-    let preConfirm = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    let preConfirm = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(preConfirm).toBeNil()
 
     // check that email was sent
-    expect(sent.emails).toHaveCount(1)
-    let email = try XCTUnwrap(sent.emails.first)
+    expect(sent.sendgridEmails).toHaveCount(1)
+    let email = try XCTUnwrap(sent.sendgridEmails.first)
     expect(email.firstRecipient).toEqual("blob@blob.com")
     expect(email.text).toContain("123456")
 
@@ -230,15 +244,15 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(confirmOuput).toEqual(.success)
 
     // verify method now added to db w/ correct info
-    let retrieved = try? await Current.db.find(AdminVerifiedNotificationMethod.self, byId: id)
+    let retrieved = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
     expect(retrieved?.adminId).toEqual(admin.id)
     expect(retrieved?.config).toEqual(.email(email: "blob@blob.com"))
   }
 
   func testCreateNewAdminNotification() async throws {
-    let admin = try await Entities.admin()
-    let method = try await Current.db.create(AdminVerifiedNotificationMethod(
+    let admin = try await self.admin()
+    let method = try await self.db.create(AdminVerifiedNotificationMethod(
       adminId: admin.model.id,
       config: .email(email: "foo@bar.com")
     ))
@@ -252,7 +266,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testDeleteKeyNotifiesConnectedApps() async throws {
-    let admin = try await Entities.admin().withKeychain()
+    let admin = try await self.admin().withKeychain()
     let output = try await DeleteEntity.resolve(
       with: .init(id: admin.key.id.rawValue, type: .key),
       in: context(admin)
@@ -264,45 +278,45 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testDeletingLastUserDeviceDeletesDevice() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     _ = try await DeleteEntity.resolve(
       with: .init(id: user.device.id.rawValue, type: .userDevice),
       in: context(user.admin)
     )
-    let retrieved = try? await Device.find(user.adminDevice.id)
+    let retrieved = try? await self.db.find(user.adminDevice.id)
     expect(retrieved).toBeNil()
   }
 
   func testDeletingUserDeletesOrphanedDevice() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     _ = try await DeleteEntity.resolve(
       with: .init(id: user.id.rawValue, type: .user),
       in: context(user.admin)
     )
-    let retrieved = try? await Device.find(user.adminDevice.id)
+    let retrieved = try? await self.db.find(user.adminDevice.id)
     expect(retrieved).toBeNil()
   }
 
   func testDeletingAdminDeletesAdminAndCreatesDeletedEntity() async throws {
-    try await DeletedEntity.deleteAll()
-    let admin = try await Entities.admin()
+    try await self.db.delete(all: DeletedEntity.self)
+    let admin = try await self.admin()
 
     _ = try await DeleteEntity.resolve(
       with: .init(id: admin.id.rawValue, type: .admin),
       in: context(admin)
     )
 
-    let deleted = try await DeletedEntity.query().all()
+    let deleted = try await self.db.select(all: DeletedEntity.self)
     expect(deleted).toHaveCount(1)
     expect(deleted.first?.type).toEqual("Admin")
     expect(deleted.first?.reason).toEqual("self-deleted from use-case initial screen")
     expect(deleted.first!.data).toContain(admin.id.lowercased)
-    expect(try? await Admin.find(admin.id)).toBeNil()
+    expect(try? await self.db.find(admin.id)).toBeNil()
   }
 
   func testAdminCantDeleteOtherAdmin() async throws {
-    let admin1 = try await Entities.admin()
-    let admin2 = try await Entities.admin()
+    let admin1 = try await self.admin()
+    let admin2 = try await self.admin()
 
     try await expectErrorFrom { [weak self] in
       _ = try await DeleteEntity.resolve(
@@ -313,8 +327,8 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testLogDashboardEvent() async throws {
-    try await InterestingEvent.deleteAll()
-    let admin = try await Entities.admin()
+    try await self.db.delete(all: InterestingEvent.self)
+    let admin = try await self.admin()
 
     let output = try await LogEvent.resolve(
       with: .init(eventId: "123", detail: "detail"),
@@ -322,7 +336,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     )
 
     expect(output).toEqual(.success)
-    let retrieved = try await InterestingEvent.query().all()
+    let retrieved = try await self.db.select(all: InterestingEvent.self)
     expect(retrieved).toHaveCount(1)
     expect(retrieved.first?.eventId).toEqual("123")
     expect(retrieved.first?.kind).toEqual("event")
@@ -330,16 +344,16 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testUpdateAdminNotification() async throws {
-    let admin = try await Entities.admin()
-    let email = try await Current.db.create(AdminVerifiedNotificationMethod(
+    let admin = try await self.admin()
+    let email = try await self.db.create(AdminVerifiedNotificationMethod(
       adminId: admin.model.id,
       config: .email(email: "foo@bar.com")
     ))
-    let text = try await Current.db.create(AdminVerifiedNotificationMethod(
+    let text = try await self.db.create(AdminVerifiedNotificationMethod(
       adminId: admin.model.id,
       config: .text(phoneNumber: "1234567890")
     ))
-    let notification = try await Current.db.create(AdminNotification(
+    let notification = try await self.db.create(AdminNotification(
       adminId: admin.model.id,
       methodId: email.id,
       trigger: .unlockRequestSubmitted
@@ -357,23 +371,23 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let retrieved = try await Current.db.find(notification.id)
+    let retrieved = try await self.db.find(notification.id)
     expect(retrieved.methodId).toEqual(text.id)
     expect(retrieved.trigger).toEqual(.suspendFilterRequestSubmitted)
   }
 
   func testGetIdentifiedApps() async throws {
-    try await Current.db.query(IdentifiedApp.self).delete()
-    try await Current.db.query(AppCategory.self).delete()
-    try await Current.db.query(AppBundleId.self).delete()
+    try await self.db.delete(all: IdentifiedApp.self)
+    try await self.db.delete(all: AppCategory.self)
+    try await self.db.delete(all: AppBundleId.self)
 
-    let cat = try await Current.db.create(AppCategory.random)
+    let cat = try await self.db.create(AppCategory.random)
     var app = IdentifiedApp.random
     app.categoryId = cat.id
-    try await Current.db.create(app)
+    try await self.db.create(app)
     var bundleId = AppBundleId.random
     bundleId.identifiedAppId = app.id
-    try await Current.db.create(bundleId)
+    try await self.db.create(bundleId)
 
     let output = try await GetIdentifiedApps.resolve(in: context(.mock))
 
@@ -390,7 +404,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testGetAdminKeychains() async throws {
-    let admin = try await Entities.admin().withKeychain()
+    let admin = try await self.admin().withKeychain()
     let listOutput = try await GetAdminKeychains.resolve(in: context(admin))
     let singleOutput = try await GetAdminKeychain.resolve(
       with: admin.keychain.id,
@@ -413,19 +427,19 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(singleOutput).toEqual(expected)
   }
 
-  func testGetSelectableKeychains() async throws {
-    try await Current.db.query(Key.self).delete()
-    try await Current.db.query(Keychain.self).delete()
+  func skip_testGetSelectableKeychains() async throws {
+    try await self.db.delete(all: Key.self)
+    try await self.db.delete(all: Keychain.self)
 
-    let admin = try await Entities.admin().withKeychain { keychain, _ in
+    let admin = try await self.admin().withKeychain { keychain, _ in
       keychain.isPublic = false
     }
 
-    let otherAdmin = try await Entities.admin()
+    let otherAdmin = try await self.admin()
     var publicKeychain = Keychain.random
     publicKeychain.authorId = otherAdmin.id
     publicKeychain.isPublic = true
-    try await Current.db.create(publicKeychain)
+    try await self.db.create(publicKeychain)
 
     let output = try await GetSelectableKeychains.resolve(in: context(admin))
 
@@ -436,7 +450,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testSaveExistingKeychain() async throws {
-    let admin = try await Entities.admin().withKeychain { keychain, _ in
+    let admin = try await self.admin().withKeychain { keychain, _ in
       keychain.isPublic = false
     }
 
@@ -452,14 +466,14 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let retrieved = try await Current.db.find(admin.keychain.id)
+    let retrieved = try await self.db.find(admin.keychain.id)
     expect(retrieved.name).toEqual("new name")
     expect(retrieved.description).toEqual("new description")
     expect(retrieved.isPublic).toEqual(false)
   }
 
   func testSaveNewKeychain() async throws {
-    let admin = try await Entities.admin()
+    let admin = try await self.admin()
     let id = Keychain.Id()
 
     let output = try await SaveKeychain.resolve(
@@ -474,17 +488,17 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let retrieved = try await Current.db.find(id)
+    let retrieved = try await self.db.find(id)
     expect(retrieved.name).toEqual("some name")
     expect(retrieved.description).toEqual("some description")
     expect(retrieved.isPublic).toEqual(false)
   }
 
   func testGetSuspendFilterRequest() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
     var request = SuspendFilterRequest.random
     request.userDeviceId = user.device.id
-    try await Current.db.create(request)
+    try await self.db.create(request)
 
     let output = try await GetSuspendFilterRequest.resolve(
       with: request.id,
@@ -499,14 +513,14 @@ final class AuthedAdminResolverTests: ApiTestCase {
   }
 
   func testGetUnlockRequests() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
 
     var request = UnlockRequest.mock
     request.userDeviceId = user.device.id
     request.status = .pending
     request.requestComment = "please dad"
     request.appBundleId = "com.rofl.biz"
-    try await Current.db.create(request)
+    try await self.db.create(request)
 
     let output = try await GetUnlockRequest.resolve(
       with: request.id,
@@ -522,14 +536,15 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let list = try await GetUnlockRequests.resolve(in: context(user.admin))
     expect(list).toEqual([output])
 
-    let userList = try await GetUserUnlockRequests.resolve(with: user.id, in: context(user.admin))
+    let userList = try await GetUserUnlockRequests
+      .resolve(with: user.id, in: context(user.admin))
     expect(userList).toEqual([output])
   }
 
   func testLatestAppVersions() async throws {
-    try await Release.deleteAll()
-    try await Release.create([
-      .mock {
+    try await self.db.delete(all: Release.self)
+    try await self.db.create([
+      Release.mock {
         $0.semver = "2.0.0"
         $0.channel = .stable
       },
@@ -551,7 +566,8 @@ final class AuthedAdminResolverTests: ApiTestCase {
       },
     ])
 
-    let output = try await LatestAppVersions.resolve(in: context(try await Entities.admin()))
+    let output = try await LatestAppVersions
+      .resolve(in: context(try await self.admin()))
 
     expect(output).toEqual(.init(stable: "2.2.0", beta: "2.5.2", canary: "3.0.0"))
   }

@@ -14,10 +14,10 @@ extension GetAdminKeychain: Resolver {
     with id: Keychain.Id,
     in context: AdminContext
   ) async throws -> Output {
-    let model = try await Current.db.query(Keychain.self)
+    let model = try await Keychain.query()
       .where(.id == id)
       .where(.authorId == context.admin.id)
-      .first()
+      .first(in: context.db)
 
     return try await Output(from: model, in: context)
   }

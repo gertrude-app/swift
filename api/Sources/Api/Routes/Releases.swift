@@ -1,3 +1,4 @@
+import Dependencies
 import Gertie
 import Vapor
 import XCore
@@ -9,9 +10,9 @@ enum ReleasesRoute {
       var channel: ReleaseChannel
     }
 
-    let releases = try await Current.db.query(Release.self)
+    let releases = try await request.context.db.query(Release.self)
       .orderBy(.createdAt, .desc)
-      .all()
+      .all(in: request.context.db)
 
     let items = releases.map {
       Item(version: $0.semver, channel: $0.channel)

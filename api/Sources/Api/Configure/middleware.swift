@@ -3,7 +3,7 @@ import FluentPostgresDriver
 import Vapor
 
 extension Configure {
-  static func middleware(_ app: Application) {
+  static func middleware(_ app: Application) throws {
     app.middleware = .init()
     app.middleware.use(corsMiddleware(app), at: .beginning)
     app.middleware.use(ErrorMiddleware.default(environment: app.environment))

@@ -34,9 +34,9 @@ extension AdminNotification {
 // loaders
 
 extension AdminNotification {
-  func method() async throws -> AdminVerifiedNotificationMethod {
-    try await Current.db.query(AdminVerifiedNotificationMethod.self)
+  func method(in db: any DuetSQL.Client) async throws -> AdminVerifiedNotificationMethod {
+    try await AdminVerifiedNotificationMethod.query()
       .where(.id == self.methodId)
-      .first()
+      .first(in: db)
   }
 }

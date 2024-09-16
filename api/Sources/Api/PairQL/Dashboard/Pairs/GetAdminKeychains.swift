@@ -25,7 +25,7 @@ struct GetAdminKeychains: Pair {
 
 extension GetAdminKeychains: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let models = try await context.admin.keychains()
+    let models = try await context.admin.keychains(in: context.db)
     var keychains: [AdminKeychain] = []
     for model in models {
       keychains.append(try await .init(from: model, in: context))
@@ -38,7 +38,7 @@ extension GetAdminKeychains: NoInputResolver {
 
 extension GetAdminKeychains.AdminKeychain {
   init(from model: Api.Keychain, in context: AdminContext) async throws {
-    let keys = try await model.keys()
+    let keys = try await model.keys(in: context.db)
     self.init(
       summary: try await .init(from: model),
       keys: keys.map { .init(from: $0, keychainId: model.id) }

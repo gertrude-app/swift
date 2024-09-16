@@ -1,3 +1,4 @@
+import Dependencies
 import MacAppRoute
 import Vapor
 
@@ -11,11 +12,11 @@ extension CreateSignedScreenshotUpload: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
     let userDevice = try await context.userDevice()
     let unixTime = Int(Date().timeIntervalSince1970)
-    let filename = "\(unixTime)--\(Current.uuid().lowercased).jpg"
+    let filename = "\(unixTime)--\(context.uuid().lowercased).jpg"
     let filepath = "\(userDevice.id.lowercased)/\(filename)"
-    let dir = "\(Env.mode == .prod ? "" : "\(Env.mode)-")screenshots"
+    let dir = "\(context.env.mode == .prod ? "" : "\(context.env.mode)-")screenshots"
     let objectName = "\(dir)/\(filepath)"
-    let webUrlString = "\(Env.CLOUD_STORAGE_BUCKET_URL)/\(objectName)"
+    let webUrlString = "\(context.env.s3.bucketUrl)/\(objectName)"
 
     guard let webUrl = URL(string: webUrlString) else {
       throw Abort(
@@ -24,15 +25,16 @@ extension CreateSignedScreenshotUpload: Resolver {
       )
     }
 
-    let signedUrl = try Current.aws.signedS3UploadUrl(objectName)
+    @Dependency(\.aws) var aws
+    let signedUrl = try aws.signedS3UploadUrl(objectName)
 
-    try await Current.db.create(Screenshot(
+    try await context.db.create(Screenshot(
       userDeviceId: userDevice.id,
       url: webUrlString,
       width: input.width,
       height: input.height,
       filterSuspended: input.filterSuspended ?? false,
-      createdAt: input.createdAt ?? Date()
+      createdAt: input.createdAt ?? get(dependency: \.date.now)
     ))
 
     return .init(uploadUrl: signedUrl, webUrl: webUrl)

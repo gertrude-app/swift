@@ -163,6 +163,7 @@ env:
   TWILIO_AUTH_TOKEN: not-real
   TWILIO_FROM_PHONE: not-real
   DASHBOARD_URL: /dashboard
+  ANALYTICS_SITE_URL: /analytics
   SENDGRID_API_KEY: not-real
   POSTMARK_API_KEY: not-real
   STRIPE_SUBSCRIPTION_PRICE_ID: not-real

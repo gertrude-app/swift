@@ -41,21 +41,21 @@ extension UserDevice {
     Semver(self.appVersion)!
   }
 
-  func user() async throws -> User {
-    try await Current.db.query(User.self)
+  func user(in db: any DuetSQL.Client) async throws -> User {
+    try await User.query()
       .where(.id == self.userId)
-      .first()
+      .first(in: db)
   }
 
-  func adminDevice() async throws -> Device {
-    try await Current.db.query(Device.self)
+  func adminDevice(in db: any DuetSQL.Client) async throws -> Device {
+    try await Device.query()
       .where(.id == self.deviceId)
-      .first()
+      .first(in: db)
   }
 }
 
 extension UserDevice {
   func isOnline() async -> Bool {
-    await Current.websockets.isUserDeviceOnline(self.id)
+    await with(dependency: \.websockets).isUserDeviceOnline(self.id)
   }
 }

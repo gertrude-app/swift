@@ -4,7 +4,7 @@ import Vapor
 extension CreateSuspendFilterRequest_v2: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
     let userDevice = try await context.userDevice()
-    let request = try await Current.db.create(SuspendFilterRequest(
+    let request = try await context.db.create(SuspendFilterRequest(
       userDeviceId: userDevice.id,
       status: .pending,
       scope: .unrestricted,
@@ -12,7 +12,7 @@ extension CreateSuspendFilterRequest_v2: Resolver {
       requestComment: input.comment
     ))
 
-    await Current.adminNotifier.notify(
+    await with(dependency: \.adminNotifier).notify(
       context.user.adminId,
       .suspendFilterRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,

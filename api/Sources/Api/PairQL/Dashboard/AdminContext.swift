@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 
 struct AdminContext: ResolverContext {
@@ -6,24 +7,27 @@ struct AdminContext: ResolverContext {
   let admin: Admin
   let ipAddress: String?
 
+  @Dependency(\.db) var db
+  @Dependency(\.env) var env
+
   @discardableResult
   func verifiedUser(from id: User.Id) async throws -> User {
-    try await Current.db.query(User.self)
+    try await User.query()
       .where(.id == id)
       .where(.adminId == self.admin.id)
-      .first()
+      .first(in: self.db)
   }
 
   func users() async throws -> [User] {
-    try await Current.db.query(User.self)
+    try await User.query()
       .where(.adminId == self.admin.id)
-      .all()
+      .all(in: self.db)
   }
 
   func userDevices() async throws -> [UserDevice] {
     let users = try await users()
     return try await users
-      .concurrentMap { try await $0.devices() }
+      .concurrentMap { try await $0.devices(in: self.db) }
       .flatMap { $0 }
   }
 }

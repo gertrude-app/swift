@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import PairQL
 
@@ -38,10 +39,10 @@ struct GetAdmin: Pair {
 extension GetAdmin: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let admin = context.admin
-    async let notifications = admin.notifications()
-    async let methods = admin.verifiedNotificationMethods()
-    async let hasAdminChild = try await admin.users()
-      .concurrentMap { try await $0.devices() }
+    async let notifications = admin.notifications(in: context.db)
+    async let methods = admin.verifiedNotificationMethods(in: context.db)
+    async let hasAdminChild = try await admin.users(in: context.db)
+      .concurrentMap { try await $0.devices(in: context.db) }
       .flatMap { $0 }
       .contains { $0.isAdmin == true }
 
@@ -62,14 +63,15 @@ extension GetAdmin: NoInputResolver {
 
 extension GetAdmin.SubscriptionStatus {
   init(_ admin: Admin) throws {
+    @Dependency(\.date.now) var now
     switch admin.subscriptionStatus {
     case .complimentary:
       self = .complimentary
     case .trialing:
-      let delta = Current.date().distance(to: admin.subscriptionStatusExpiration)
+      let delta = now.distance(to: admin.subscriptionStatusExpiration)
       self = .trialing(daysLeft: Int(delta / 86400) + 7) // 7 days in "expiring soon"
     case .trialExpiringSoon:
-      let delta = Current.date().distance(to: admin.subscriptionStatusExpiration)
+      let delta = now.distance(to: admin.subscriptionStatusExpiration)
       self = .trialing(daysLeft: Int(delta / 86400))
     case .paid:
       self = .paid

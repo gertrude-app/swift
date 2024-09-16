@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import Vapor
@@ -5,9 +6,9 @@ import Vapor
 enum AppcastRoute {
   @Sendable static func handler(_ request: Request) async throws -> Response {
     let query = try request.query.decode(AppcastQuery.self)
-    let releases = try await Current.db.query(Release.self)
+    let releases = try await request.context.db.query(Release.self)
       .orderBy(.createdAt, .desc)
-      .all()
+      .all(in: request.context.db)
       .filter { $0.channel.isAtLeastAsStable(as: query.channel ?? .stable) }
 
     return Response(
@@ -52,7 +53,7 @@ extension Release {
       <sparkle:shortVersionString>\(forceUpdate ? "99.99.99" : semver)</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
       <enclosure
-        url="\(Env.CLOUD_STORAGE_BUCKET_URL)/releases/Gertrude.\(semver).zip"
+        url="\(get(dependency: \.env).s3.bucketUrl)/releases/Gertrude.\(semver).zip"
         length="\(length)"
         type="application/octet-stream"
         sparkle:edSignature="\(signature)"

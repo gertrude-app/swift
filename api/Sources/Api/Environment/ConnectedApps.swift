@@ -1,3 +1,4 @@
+import Dependencies
 import Gertie
 
 struct ConnectedApps: Sendable {
@@ -7,7 +8,9 @@ struct ConnectedApps: Sendable {
   var filterState: @Sendable (UserDevice.Id) async -> UserFilterState?
   var isUserDeviceOnline: @Sendable (UserDevice.Id) async -> Bool
   var sendEvent: @Sendable (AppEvent) async throws -> Void
+}
 
+extension ConnectedApps {
   func send(
     _ message: WebSocketMessage.FromApiToApp,
     to matcher: AppEvent.Matcher
@@ -16,8 +19,17 @@ struct ConnectedApps: Sendable {
   }
 }
 
-extension ConnectedApps {
-  static var live: Self {
+// dependency
+
+extension DependencyValues {
+  var websockets: ConnectedApps {
+    get { self[ConnectedApps.self] }
+    set { self[ConnectedApps.self] = newValue }
+  }
+}
+
+extension ConnectedApps: DependencyKey {
+  public static var liveValue: ConnectedApps {
     Task { await AppConnections.shared.start() }
     return ConnectedApps(
       add: { await AppConnections.shared.add($0) },
@@ -28,15 +40,19 @@ extension ConnectedApps {
       sendEvent: { try await AppConnections.shared.send($0) }
     )
   }
-
-  static var mock: Self {
-    ConnectedApps(
-      add: { _ in },
-      disconnectAll: {},
-      remove: { _ in },
-      filterState: { _ in nil },
-      isUserDeviceOnline: { _ in false },
-      sendEvent: { _ in }
-    )
-  }
 }
+
+#if DEBUG
+  extension ConnectedApps: TestDependencyKey {
+    public static var testValue: ConnectedApps {
+      ConnectedApps(
+        add: unimplemented("ConnectedApps.add()"),
+        disconnectAll: unimplemented("ConnectedApps.disconnectAll()"),
+        remove: unimplemented("ConnectedApps.remove()"),
+        filterState: unimplemented("ConnectedApps.filterState()", placeholder: nil),
+        isUserDeviceOnline: unimplemented("ConnectedApps.isUserDeviceOnline()", placeholder: false),
+        sendEvent: unimplemented("ConnectedApps.sendEvent()")
+      )
+    }
+  }
+#endif

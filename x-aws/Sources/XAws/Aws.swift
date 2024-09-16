@@ -3,6 +3,10 @@ import Foundation
 public enum AWS {
   public struct Client: Sendable {
     public var signedS3UploadUrl: @Sendable (String) throws -> URL
+
+    public init(signedS3UploadUrl: @Sendable @escaping (String) throws -> URL) {
+      self.signedS3UploadUrl = signedS3UploadUrl
+    }
   }
 
   public struct Error: Swift.Error, Sendable {

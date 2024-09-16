@@ -48,8 +48,8 @@ public extension Stripe {
 }
 
 public extension Stripe.Client {
-  static func live(secretKey: String) -> Self {
-    Self(
+  static func live(secretKey: String) -> Stripe.Client {
+    Stripe.Client(
       createPaymentIntent: { amount, currency, metadata in
         try await _createPaymentIntent(
           amountInCents: amount,

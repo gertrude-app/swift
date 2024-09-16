@@ -1,6 +1,7 @@
 import DuetSQL
 import Gertie
 import PairQL
+import PostgresKit
 
 struct QueryAdmins: Pair {
   static let auth: ClientAuth = .superAdmin
@@ -45,7 +46,6 @@ struct QueryAdmins: Pair {
 
 extension QueryAdmins: NoInputResolver {
   static func resolve(in context: Context) async throws -> Output {
-
     func expect<T>(_ value: T?, file: StaticString = #file, line: UInt = #line) throws -> T {
       guard let value else {
         throw context.error(
@@ -57,7 +57,7 @@ extension QueryAdmins: NoInputResolver {
       return value
     }
 
-    let rows = try await Current.db.customQuery(AdminQuery.self)
+    let rows = try await context.db.customQuery(AdminQuery.self)
 
     var installations: [UserDevice.Id: (AdminData.Child.Installation, User.Id)] = [:]
     for row in rows where row.userDeviceId != nil {
@@ -126,8 +126,8 @@ extension QueryAdmins: NoInputResolver {
 // query
 
 struct AdminQuery: CustomQueryable {
-  static func query(numBindings: Int) -> String {
-    """
+  static func query(bindings: [Postgres.Data]) -> SQLQueryString {
+    .init("""
     SELECT
         admins.id AS admin_id,
         admins.email,
@@ -207,7 +207,7 @@ struct AdminQuery: CustomQueryable {
       devices.app_release_channel,
       devices.id
     ORDER BY admins.id;
-    """
+    """)
   }
 
   // admin

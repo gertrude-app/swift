@@ -1,4 +1,6 @@
+import Dependencies
 import DuetSQL
+import FluentPostgresDriver
 import Gertie
 import Vapor
 import XCTest
@@ -9,69 +11,64 @@ import XSlack
 @testable import Api
 
 class ApiTestCase: XCTestCase {
+  @Dependency(\.db) var db
+  @Dependency(\.env) var env
+
   static var app: Application!
   static var migrated = false
 
-  struct Sent {
-    struct AdminNotification: Equatable {
-      let adminId: Admin.Id
-      let event: AdminEvent
-    }
-
-    var emails: [SendGrid.Email] = []
-    var postmarkEmails: [XPostmark.Email] = []
-    var slacks: [(XSlack.Slack.Message, String)] = []
-    var texts: [Text] = []
-    var adminNotifications: [AdminNotification] = []
-    var websocketMessages: [AppEvent] = []
-  }
-
   var sent = Sent()
+  var app: Application { Self.app }
 
-  var app: Application {
-    Self.app
+  override open func invokeTest() {
+    withDependencies {
+      $0.uuid = UUIDGenerator { UUID() }
+      $0.env = .fromProcess(mode: .testing)
+      $0.stripe = .failing
+      $0.date = .constant(.reference)
+      $0.ephemeral = Ephemeral()
+      $0.twilio.send = {
+        self.sent.texts.append($0)
+      }
+      $0.slack.send = { @Sendable msg, tok in
+        self.sent.slacks.append(.init(message: msg, token: tok))
+        return nil
+      }
+      $0.postmark.send = {
+        self.sent.postmarkEmails.append($0)
+      }
+      $0.sendgrid.send = {
+        self.sent.sendgridEmails.append($0)
+      }
+      $0.websockets.sendEvent = {
+        self.sent.websocketMessages.append($0)
+      }
+      $0.adminNotifier.notify = {
+        self.sent.adminNotifications.append(.init(adminId: $0, event: $1))
+      }
+      $0.logger = .null
+    } operation: {
+      super.invokeTest()
+    }
   }
 
   override static func setUp() {
-    Current = .mock
-    UUID.new = UUID.init
-    Current.uuid = { UUID.new() }
     self.app = Application(.testing)
-    try! Configure.app(self.app)
     self.app.logger = .null
+    try! Configure.app(self.app)
+
     // doing this once per test run gives about a 10x speedup when running all tests
     if !self.migrated {
+      // app needs a db for migrations
+      Self.app.databases.use(.testDb, as: .psql, isDefault: true)
       try! self.app.autoRevert().wait()
       try! self.app.autoMigrate().wait()
       self.migrated = true
     }
   }
 
-  override func setUp() {
-    Current.sendGrid.send = { [self] email in
-      self.sent.emails.append(email)
-    }
-    Current.postmark.send = { [self] email in
-      self.sent.postmarkEmails.append(email)
-    }
-    Current.slack.send = { @Sendable [self] message, token in
-      sent.slacks.append((message, token))
-      return nil
-    }
-    Current.twilio.send = { [self] text in
-      sent.texts.append(text)
-    }
-    Current.adminNotifier.notify = { [self] adminId, event in
-      sent.adminNotifications.append(.init(adminId: adminId, event: event))
-    }
-    Current.websockets.sendEvent = { [self] event in
-      sent.websocketMessages.append(event)
-    }
-  }
-
   override static func tearDown() {
     self.app.shutdown()
-    sync { await SQL.resetPreparedStatements() }
   }
 
   func context(_ admin: Admin) -> AdminContext {
@@ -93,43 +90,110 @@ class ApiTestCase: XCTestCase {
   func context(_ user: UserWithDeviceEntities) async throws -> UserContext {
     .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
   }
+
+  @discardableResult
+  func createAutoIncludeKeychain() async throws -> (Keychain, Api.Key) {
+    guard let autoIdStr = self.env.get("AUTO_INCLUDED_KEYCHAIN_ID"),
+          let autoId = UUID(uuidString: autoIdStr) else {
+      fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")
+    }
+    let admin = try await self.admin()
+    try await Keychain.query()
+      .where(.id == autoId)
+      .delete(in: self.db)
+
+    let keychain = try await self.db.create(Keychain(
+      id: .init(autoId),
+      authorId: admin.model.id,
+      name: "Auto Included (test)"
+    ))
+
+    let key = try await self.db.create(Key(
+      keychainId: keychain.id,
+      key: .domain(domain: "foo.com", scope: .webBrowsers)
+    ))
+    return (keychain, key)
+  }
 }
 
-func sync(
-  function: StaticString = #function,
-  line: UInt = #line,
-  column: UInt = #column,
-  _ f: @escaping () async throws -> Void
-) {
-  let exp = XCTestExpectation(description: "sync:\(function):\(line):\(column)")
-  Task {
-    do {
-      try await f()
-      exp.fulfill()
-    } catch {
-      fatalError("Error awaiting \(exp.description) -- \(error)")
+extension ApiTestCase {
+  struct Sent: Sendable {
+    struct AdminNotification: Equatable {
+      let adminId: Admin.Id
+      let event: AdminEvent
+    }
+
+    struct Slack: Equatable, Sendable {
+      let message: XSlack.Slack.Message
+      let token: String
+    }
+
+    var sendgridEmails: [SendGrid.Email] = []
+    var postmarkEmails: [XPostmark.Email] = []
+    var slacks: [Slack] = []
+    var texts: [Text] = []
+    var adminNotifications: [AdminNotification] = []
+    var websocketMessages: [AppEvent] = []
+  }
+}
+
+class DependencyTestCase: XCTestCase {
+  override open func invokeTest() {
+    withDependencies {
+      $0.uuid = UUIDGenerator { UUID() }
+      $0.date = .constant(.reference)
+    } operation: {
+      super.invokeTest()
     }
   }
-  switch XCTWaiter.wait(for: [exp], timeout: 10) {
-  case .completed:
-    return
-  case .timedOut:
-    fatalError("Timed out waiting for \(exp.description)")
-  default:
-    fatalError("Unexpected result waiting for \(exp.description)")
+}
+
+extension UUIDGenerator {
+  static func mock(_ uuids: MockUUIDs) -> Self {
+    Self { uuids() }
   }
 }
 
-func mockUUIDs() -> (UUID, UUID) {
-  let uuids = (UUID(), UUID())
-  var array = [uuids.0, uuids.1]
+struct MockUUIDs: Sendable {
+  private var stack: LockIsolated<[UUID]>
+  private var copy: LockIsolated<[UUID]>
 
-  UUID.new = {
-    guard !array.isEmpty else { return UUID() }
-    return array.removeFirst()
+  var first: UUID { self.copy[0] }
+  var second: UUID { self.copy[1] }
+  var third: UUID { self.copy[2] }
+  var all: [UUID] { self.copy.withValue { $0 } }
+
+  init() {
+    let uuids = [UUID(), UUID(), UUID(), UUID(), UUID(), UUID()]
+    self.stack = .init(uuids)
+    self.copy = .init(uuids)
   }
 
-  return uuids
+  func callAsFunction() -> UUID {
+    self.stack.withValue { $0.removeFirst() }
+  }
+
+  subscript(index: Int) -> UUID {
+    self.copy[index]
+  }
+
+  func printDebug() {
+    self.copy.withValue {
+      print("MockUUIDs[0]: \($0[0])")
+      print("MockUUIDs[1]: \($0[1])")
+      print("MockUUIDs[2]: \($0[2]) [...]")
+    }
+  }
+}
+
+func withUUID<R>(operation: () async throws -> R) async rethrows -> (UUID, R) {
+  let uuid = UUID()
+  let result = try await withDependencies {
+    $0.uuid = UUIDGenerator { uuid }
+  } operation: {
+    try await operation()
+  }
+  return (uuid, result)
 }
 
 public extension Date {

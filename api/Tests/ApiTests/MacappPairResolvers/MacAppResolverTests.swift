@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import MacAppRoute
 import XCore
@@ -8,7 +9,7 @@ import XExpect
 
 final class MacAppResolverTests: ApiTestCase {
   func testCreateSuspendFilterRequest() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
 
     let output = try await CreateSuspendFilterRequest.resolve(
       with: .init(duration: 1111, comment: "test"),
@@ -19,7 +20,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     let suspendRequests = try await SuspendFilterRequest.query()
       .where(.userDeviceId == user.device.id)
-      .all()
+      .all(in: self.db)
 
     expect(suspendRequests).toHaveCount(1)
     expect(suspendRequests.first?.duration.rawValue).toEqual(1111)
@@ -42,10 +43,10 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testOneFailedNotificationDoesntBlockRest() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
 
     // admin gets two notifications on suspend filter request
-    let slack = try await AdminVerifiedNotificationMethod.create(.init(
+    let slack = try await self.db.create(AdminVerifiedNotificationMethod(
       adminId: user.adminId,
       config: .slack(
         channelId: "#gertie",
@@ -53,105 +54,113 @@ final class MacAppResolverTests: ApiTestCase {
         token: "definitely-not-a-real-token"
       )
     ))
-    let text = try await AdminVerifiedNotificationMethod.create(.init(
+    let text = try await self.db.create(AdminVerifiedNotificationMethod(
       adminId: user.adminId,
       config: .text(phoneNumber: "1234567890")
     ))
-    try await AdminNotification.create(.init(
+    try await self.db.create(AdminNotification(
       adminId: user.adminId,
       methodId: slack.id,
       trigger: .suspendFilterRequestSubmitted
     ))
-    try await AdminNotification.create(.init(
+    try await self.db.create(AdminNotification(
       adminId: user.adminId,
       methodId: text.id,
       trigger: .suspendFilterRequestSubmitted
     ))
 
-    // we want to test the LIVE admin notifier implementation
-    Current.adminNotifier = .live
-    Current.slack.send = { @Sendable _, _ in "oh noes!" } // slack fails
-
-    _ = try await CreateSuspendFilterRequest.resolve(
-      with: .init(duration: 1111, comment: "test"),
-      in: self.context(user)
-    )
+    try await withDependencies {
+      $0.slack.send = { @Sendable _, _ in "oh noes!" } // <-- slack fails
+      // we want to test the LIVE admin notifier implementation
+      $0.adminNotifier = .liveValue
+    } operation: {
+      try await CreateSuspendFilterRequest.resolve(
+        with: .init(duration: 1111, comment: "test"),
+        in: self.context(user)
+      )
+    }
 
     expect(sent.slacks).toHaveCount(0)
     expect(sent.texts).toHaveCount(1)
   }
 
   func testCreateKeystrokeLines() async throws {
-    let user = try await Entities.user().withDevice()
-    let (uuid, _) = mockUUIDs()
+    let user = try await self.userWithDevice()
 
-    let output = try await CreateKeystrokeLines.resolve(
-      with: [.init(
-        appName: "Xcode",
-        line: "import Foundation",
-        filterSuspended: false,
-        time: .epoch
-      )],
-      in: self.context(user)
-    )
+    let (uuid, output) = try await withUUID {
+      try await CreateKeystrokeLines.resolve(
+        with: [.init(
+          appName: "Xcode",
+          line: "import Foundation",
+          filterSuspended: false,
+          time: .epoch
+        )],
+        in: self.context(user)
+      )
+    }
 
     expect(output).toEqual(.success)
-    let inserted = try await Current.db.find(KeystrokeLine.Id(uuid))
+    let inserted = try await self.db.find(KeystrokeLine.Id(uuid))
     expect(inserted.appName).toEqual("Xcode")
     expect(inserted.line).toEqual("import Foundation")
     expect(inserted.createdAt).toEqual(.epoch)
   }
 
   func testInsertKeystrokeLineWithNullByte() async throws {
-    let user = try await Entities.user().withDevice()
-    let (uuid, _) = mockUUIDs()
+    let user = try await self.userWithDevice()
 
-    let output = try await CreateKeystrokeLines.resolve(
-      with: [.init(
-        appName: "Xcode",
-        line: "Hello\0World", // <-- causes postgres to choke
-        filterSuspended: false,
-        time: .epoch
-      )],
-      in: self.context(user)
-    )
+    let (uuid, output) = try await withUUID {
+      try await CreateKeystrokeLines.resolve(
+        with: [.init(
+          appName: "Xcode",
+          line: "Hello\0World", // <-- causes postgres to choke
+          filterSuspended: false,
+          time: .epoch
+        )],
+        in: self.context(user)
+      )
+    }
 
     expect(output).toEqual(.success)
-    let inserted = try await Current.db.find(KeystrokeLine.Id(uuid))
+    let inserted = try await self.db.find(KeystrokeLine.Id(uuid))
     expect(inserted.line).toEqual("Hello�World")
   }
 
   func testCreateSignedScreenshotUpload() async throws {
-    let beforeCount = try await Current.db.query(Screenshot.self).all().count
-    let user = try await Entities.user().withDevice()
+    let beforeCount = try await self.db.count(Screenshot.self)
+    let user = try await self.userWithDevice()
 
-    Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
-
-    let output = try await CreateSignedScreenshotUpload.resolve(
-      with: .init(width: 111, height: 222),
-      in: self.context(user)
-    )
+    let output = try await withDependencies {
+      $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
+    } operation: {
+      try await CreateSignedScreenshotUpload.resolve(
+        with: .init(width: 111, height: 222),
+        in: self.context(user)
+      )
+    }
 
     expect(output.uploadUrl.absoluteString).toEqual("from-aws.com")
 
-    let afterCount = try await Current.db.query(Screenshot.self).all().count
+    let afterCount = try await self.db.count(Screenshot.self)
     expect(afterCount).toEqual(beforeCount + 1)
   }
 
   func testCreateSignedScreenshotUploadWithDate() async throws {
-    let user = try await Entities.user().withDevice()
+    let user = try await self.userWithDevice()
+    let uuids = MockUUIDs()
 
-    let (_, uuid) = mockUUIDs()
-    Current.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
-
-    _ = try await CreateSignedScreenshotUpload.resolve(
-      with: .init(width: 1116, height: 222, createdAt: .epoch),
-      in: self.context(user)
-    )
-
-    let screenshot = try await Current.db.find(Screenshot.Id(uuid))
-    expect(screenshot.width).toEqual(1116)
-    expect(screenshot.createdAt).toEqual(.epoch)
+    try await withDependencies {
+      $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
+      $0.uuid = .mock(uuids)
+    } operation: {
+      _ = try await CreateSignedScreenshotUpload.resolve(
+        with: .init(width: 1116, height: 222, createdAt: .epoch),
+        in: self.context(user)
+      )
+      let screenshot = try await self.db.find(Screenshot.Id(uuids[1]))
+      expect(screenshot.width).toEqual(1116)
+      expect(screenshot.createdAt).toEqual(.epoch)
+    }
   }
 
   func testPre_2_1_0_AppSendingMonitoringItemsWithoutFilterSuspendedBool() {
@@ -177,7 +186,7 @@ final class MacAppResolverTests: ApiTestCase {
   }
 
   func testLogsAndNotifiesSecurityEvent() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.isAdmin = true
     }
 
@@ -188,7 +197,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     let retrieved = try await SecurityEvent.query()
       .where(.userDeviceId == user.device.id)
-      .first()
+      .first(in: self.db)
 
     expect(output).toEqual(.success)
     expect(retrieved.event).toEqual("appQuit")

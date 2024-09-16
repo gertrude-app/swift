@@ -1,5 +1,34 @@
+import Dependencies
 import DuetSQL
 import Vapor
+
+struct AppContext {
+  var db: any DuetSQL.Client
+  var env: Env
+}
+
+extension AppContext {
+  static var shared: AppContext {
+    @Dependency(\.db) var db
+    @Dependency(\.env) var env
+    return .init(db: db, env: env)
+  }
+}
+
+extension AppContext: StorageKey {
+  typealias Value = AppContext
+}
+
+extension Vapor.Application {
+  var context: AppContext {
+    get { self.storage[AppContext.self] ?? .shared }
+    set { self.storage[AppContext.self] = newValue }
+  }
+
+  var env: Env {
+    self.context.env
+  }
+}
 
 extension Request {
   var id: String {
@@ -9,6 +38,14 @@ extension Request {
     } else {
       return UUID().uuidString.lowercased()
     }
+  }
+
+  var context: AppContext {
+    self.application.context
+  }
+
+  var env: Env {
+    self.application.context.env
   }
 
   // get the entire request body as a string, collecting if necessary
@@ -31,9 +68,9 @@ extension Request {
       throw Abort(.badRequest, reason: "invalid user auth token")
     }
 
-    let userToken = try? await Current.db.query(UserToken.self)
+    let userToken = try? await UserToken.query()
       .where(.value == uuid)
-      .first()
+      .first(in: self.context.db)
 
     guard let userToken = userToken else {
       // the mac app looks for this specific error message (for now, at least)

@@ -23,7 +23,7 @@ extension SaveUser: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
     var user: User
     if input.isNew {
-      user = try await Current.db.create(User(
+      user = try await context.db.create(User(
         id: input.id,
         adminId: context.admin.id,
         name: input.name,
@@ -35,7 +35,7 @@ extension SaveUser: Resolver {
       ))
       dashSecurityEvent(.childAdded, "name: \(user.name)", in: context)
     } else {
-      user = try await User.find(input.id)
+      user = try await context.db.find(input.id)
       if let details = monitoringDecreased(user: user, input: input) {
         let detail = "for child: \(user.name), \(details)"
         dashSecurityEvent(.monitoringDecreased, detail, in: context)
@@ -46,24 +46,25 @@ extension SaveUser: Resolver {
       user.screenshotsResolution = input.screenshotsResolution
       user.screenshotsFrequency = input.screenshotsFrequency
       user.showSuspensionActivity = input.showSuspensionActivity
-      try await user.save()
+      try await context.db.update(user)
     }
 
-    let existing = try await user.keychains().map(\.id)
+    let existing = try await user.keychains(in: context.db).map(\.id)
     if !existing.elementsEqual(input.keychainIds) {
       dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
 
       try await UserKeychain.query()
         .where(.userId == user.id)
-        .delete()
+        .delete(in: context.db)
 
       let pivots = input.keychainIds
         .map { UserKeychain(userId: user.id, keychainId: $0) }
 
-      try await Current.db.create(pivots)
+      try await context.db.create(pivots)
     }
 
-    try await Current.websockets.send(.userUpdated, to: .user(user.id))
+    try await with(dependency: \.websockets)
+      .send(.userUpdated, to: .user(user.id))
     return .success
   }
 }

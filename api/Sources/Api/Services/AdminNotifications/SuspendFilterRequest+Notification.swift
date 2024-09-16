@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 
 extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
@@ -7,7 +8,8 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
     User \(userName) submitted a new <b>suspend filter request</b>.
      \(Email.link(url: self.url, text: "Click here")) to view the details and approve or deny.
     """
-    try await Current.sendGrid.send(Email.fromApp(to: address, subject: subject, html: html))
+    try await with(dependency: \.sendgrid)
+      .send(Email.fromApp(to: address, subject: subject, html: html))
   }
 
   func sendSlack(channel: String, token: String) async throws {
@@ -15,7 +17,8 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
     New *suspend filter request* from user `\(userName)`.\
      \(Slack.link(to: self.url, withText: "Click here")) to view the details and approve or deny.
     """
-    try await Current.slack.send(Slack(text: text, channel: channel, token: token))
+    try await with(dependency: \.slack)
+      .send(Slack(text: text, channel: channel, token: token))
   }
 
   func sendText(to phoneNumber: String) async throws {
@@ -23,7 +26,8 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
     [Gertrude App] New suspend filter request from user "\(userName)".\
      View the details and approve or deny at \(url)
     """
-    Current.twilio.send(Text(to: .init(rawValue: phoneNumber), message: message))
+    try await with(dependency: \.twilio)
+      .send(Text(to: .init(rawValue: phoneNumber), message: message))
   }
 
   var url: String {

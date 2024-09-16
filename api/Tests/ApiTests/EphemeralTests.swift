@@ -3,7 +3,7 @@ import XExpect
 
 @testable import Api
 
-class EphemeralTests: XCTestCase {
+class EphemeralTests: DependencyTestCase {
   func testAddingAndRetrievingAdminToken() async {
     let ephemeral = Ephemeral()
     let admin = Admin.mock
@@ -15,10 +15,9 @@ class EphemeralTests: XCTestCase {
   }
 
   func testExpiredAdminTokenReturnsNil() async {
-    Current.date = { Date() }
     let ephemeral = Ephemeral()
     let admin = Admin.mock
-    let token = await ephemeral.createAdminIdToken(admin.id, expiration: Date(subtractingDays: 5))
+    let token = await ephemeral.createAdminIdToken(admin.id, expiration: Date.reference - .days(5))
     var retrieved = await ephemeral.adminIdFromToken(token)
     expect(retrieved).toEqual(.expired(admin.id))
     // can retrieve expired multiple times

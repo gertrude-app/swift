@@ -15,13 +15,13 @@ struct UpdateUnlockRequest: Pair {
 
 extension UpdateUnlockRequest: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    var unlockRequest = try await UnlockRequest.find(input.id)
-    let userDevice = try await unlockRequest.userDevice()
+    var unlockRequest = try await context.db.find(input.id)
+    let userDevice = try await unlockRequest.userDevice(in: context.db)
     try await context.verifiedUser(from: userDevice.userId)
     unlockRequest.responseComment = input.responseComment
     unlockRequest.status = input.status
-    try await unlockRequest.save()
-    try await Current.websockets.send(
+    try await context.db.update(unlockRequest)
+    try await with(dependency: \.websockets).send(
       unlockRequest.updated(for: userDevice.appSemver),
       to: .userDevice(userDevice.id)
     )

@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 
 extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
@@ -11,7 +12,9 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
 
     \(event.explanation)
     """
-    Current.twilio.send(Text(to: .init(phoneNumber), message: message))
+
+    try await with(dependency: \.twilio)
+      .send(Text(to: .init(phoneNumber), message: message))
   }
 
   func sendEmail(to address: String) async throws {
@@ -25,7 +28,7 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
     """
 
     let email = Email.fromApp(to: address, subject: subject, html: html)
-    try await Current.sendGrid.send(email)
+    try await with(dependency: \.sendgrid).send(email)
   }
 
   func sendSlack(channel: String, token: String) async throws {
@@ -34,6 +37,7 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
 
     \(event.explanation)
     """
-    try await Current.slack.send(Slack(text: text, channel: channel, token: token))
+    try await with(dependency: \.slack)
+      .send(Slack(text: text, channel: channel, token: token))
   }
 }

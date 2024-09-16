@@ -4,9 +4,9 @@ import MacAppRoute
 
 extension LatestAppVersion: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    let releases = try await Current.db.query(Release.self)
+    let releases = try await Release.query()
       .orderBy(.semver, .asc)
-      .all()
+      .all(in: context.db)
 
     let currentSemver = Semver(input.currentVersion)!
     var output = Output(semver: currentSemver.string)

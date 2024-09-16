@@ -20,9 +20,9 @@ extension RequestMagicLink: Resolver {
       throw Abort(.badRequest)
     }
 
-    let admin = try? await Current.db.query(Admin.self)
+    let admin = try? await Admin.query()
       .where(.email == .string(email))
-      .first()
+      .first(in: context.db)
 
     guard let admin else {
       let noAccountEmail = Email.fromApp(
@@ -35,11 +35,12 @@ extension RequestMagicLink: Resolver {
         Or, if you did not request a magic link, you can safely ignore this email.
         """
       )
-      try await Current.sendGrid.send(noAccountEmail)
+      try await with(dependency: \.sendgrid).send(noAccountEmail)
       return .success
     }
 
-    let token = await Current.ephemeral.createAdminIdToken(admin.id)
+    let token = await with(dependency: \.ephemeral)
+      .createAdminIdToken(admin.id)
     let subject = "Gertrude App Magic Link"
     var url = "\(context.dashboardUrl)/otp/\(token.lowercased)"
     if let redirect = input.redirect,
@@ -48,7 +49,7 @@ extension RequestMagicLink: Resolver {
     }
     let html = "<a href='\(url)'>Click here</a> to log in to the Gertrude dashboard."
     let magicLinkEmail = Email.fromApp(to: admin.email.rawValue, subject: subject, html: html)
-    try await Current.sendGrid.send(magicLinkEmail)
+    try await with(dependency: \.sendgrid).send(magicLinkEmail)
 
     return .success
   }

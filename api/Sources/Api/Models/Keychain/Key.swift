@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 import Gertie
 
 struct Key: Codable, Sendable {
@@ -28,7 +28,7 @@ struct Key: Codable, Sendable {
 // loaders
 
 extension Key {
-  func keychain() async throws -> Keychain {
-    try await Current.db.find(self.keychainId)
+  func keychain(in db: any DuetSQL.Client) async throws -> Keychain {
+    try await db.find(self.keychainId)
   }
 }

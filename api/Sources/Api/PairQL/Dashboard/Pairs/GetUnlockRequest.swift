@@ -28,14 +28,14 @@ struct GetUnlockRequest: Pair {
 
 extension GetUnlockRequest: Resolver {
   static func resolve(with id: Input, in context: AdminContext) async throws -> Output {
-    let request = try await Current.db.find(id)
+    let request = try await context.db.find(id)
     return try await Output(from: request, in: context)
   }
 }
 
 extension GetUnlockRequest.Output {
   init(from request: UnlockRequest, in context: AdminContext) async throws {
-    let userDevice = try await request.userDevice()
+    let userDevice = try await request.userDevice(in: context.db)
     let user = try await context.verifiedUser(from: userDevice.userId)
 
     let idManifest = try await getCachedAppIdManifest()

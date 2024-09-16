@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import Vapor
@@ -5,13 +6,15 @@ import XCore
 
 enum Reset {
   static func run() async throws {
-    try await Current.db.deleteAll(Admin.self, force: true)
+    @Dependency(\.db) var db
+    try await db.delete(all: Admin.self)
     try await self.createHtcPublicKeychain()
     try await AdminBetsy.create()
   }
 
   static func createHtcPublicKeychain() async throws {
-    let jared = try await Current.db.create(Admin(
+    @Dependency(\.db) var db
+    let jared = try await db.create(Admin(
       email: "jared-htc-author" |> self.testEmail,
       password: try Bcrypt.hash("jared123")
     ))
@@ -48,7 +51,8 @@ enum Reset {
     _ admin: Admin,
     _ config: AdminVerifiedNotificationMethod.Config
   ) async throws -> AdminVerifiedNotificationMethod {
-    try await Current.db.create(AdminVerifiedNotificationMethod(adminId: admin.id, config: config))
+    @Dependency(\.db) var db
+    return try await db.create(AdminVerifiedNotificationMethod(adminId: admin.id, config: config))
   }
 
   static func testEmail(_ tag: String) -> EmailAddress {
@@ -64,7 +68,8 @@ enum Reset {
     description: String? = nil,
     keys: [Gertie.Key] = []
   ) async throws -> Keychain {
-    let keychain = try await Current.db.create(Keychain(
+    @Dependency(\.db) var db
+    let keychain = try await db.create(Keychain(
       id: id,
       authorId: adminId,
       name: name,
@@ -80,7 +85,7 @@ enum Reset {
         comment: index & 3 == 0 ? "here is a lovely comment" : nil
       ))
     }
-    try await Current.db.create(keyRecords)
+    try await db.create(keyRecords)
     return keychain
   }
 
@@ -90,10 +95,11 @@ enum Reset {
     subtractingDays: Int = 0,
     percentDeleted: Int = 0
   ) async throws {
+    @Dependency(\.db) var db
     let items = Array(repeating: (), count: num)
       .map { createActivityItem(deviceId, subtractingDays: subtractingDays) }
-    let keystrokeLines = try await Current.db.create(items.compactMap(\.right))
-    let screenshots = try await Current.db.create(items.compactMap(\.left))
+    let keystrokeLines = try await db.create(items.compactMap(\.right))
+    let screenshots = try await db.create(items.compactMap(\.left))
 
     var deleteBeforeIndex = percentDeleted == 0
       ? -1 : Int(Double(screenshots.count) * (Double(percentDeleted) / 100))
@@ -105,7 +111,7 @@ enum Reset {
         try await screenshot.modifyCreatedAt(.subtracting(.jitter))
       }
       if index < deleteBeforeIndex {
-        try await Current.db.delete(screenshot.id)
+        try await db.delete(screenshot)
       }
     }
 
@@ -119,7 +125,7 @@ enum Reset {
         try await keystroke.modifyCreatedAt(.subtracting(.jitter))
       }
       if index < deleteBeforeIndex {
-        try await Current.db.delete(keystroke.id)
+        try await db.delete(keystroke)
       }
     }
   }
@@ -176,11 +182,13 @@ extension DuetSQL.Model where Self: HasCreatedAt {
     case .exact(let date):
       createdAt = date
     }
-    guard let client = Current.db as? LiveClient else {
-      throw Abort(.badRequest, reason: "Could not downcast Current.db to LiveClient")
+
+    @Dependency(\.db) var db
+    guard let client = db as? PgClient else {
+      throw Abort(.internalServerError, reason: "af72eb37")
     }
 
-    try await client.sql.execute(
+    try await client.db.execute(
       """
       UPDATE \(unsafeRaw: Self.tableName)
       SET \(col: .createdAt) = '\(unsafeRaw: createdAt.isoString)'

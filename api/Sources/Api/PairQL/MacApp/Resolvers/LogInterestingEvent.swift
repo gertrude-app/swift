@@ -7,13 +7,13 @@ extension LogInterestingEvent: Resolver {
       // prevent FK error if device id deleted, or invalid
       let userDevice: UserDevice?
       if let deviceIdInput = input.deviceId,
-         let device = try? await UserDevice.find(.init(deviceIdInput)) {
+         let device = try? await context.db.find(UserDevice.Id(deviceIdInput)) {
         userDevice = device
       } else {
         userDevice = nil
       }
 
-      try await InterestingEvent.create(.init(
+      try await context.db.create(InterestingEvent(
         eventId: input.eventId,
         kind: input.kind,
         context: "macapp",
@@ -31,22 +31,24 @@ extension LogInterestingEvent: Resolver {
 
       var adminLink = ""
       if let userDevice,
-         let user = try? await userDevice.user(),
-         let admin = try? await user.admin() {
+         let user = try? await userDevice.user(in: context.db),
+         let admin = try? await user.admin(in: context.db) {
         adminLink = "\n  -> " + Slack.link(
-          to: "\(Env.ANALYTICS_SITE_URL)/admins/\(admin.id.lowercased)",
+          to: "\(context.env.analyticsSiteUrl)/admins/\(admin.id.lowercased)",
           withText: "\(admin.email), \(user.name)"
         )
       }
 
       if input.kind == "unexpected error" {
-        await Current.slack.sysLog("Unexpected *macapp* error: \(searchLink)\(detail)\(adminLink)")
+        await with(dependency: \.slack)
+          .sysLog("Unexpected *macapp* error: \(searchLink)\(detail)\(adminLink)")
       } else {
-        await Current.slack.sysLog("Macapp interesting event: \(searchLink)\(detail)\(adminLink)")
+        await with(dependency: \.slack)
+          .sysLog("Macapp interesting event: \(searchLink)\(detail)\(adminLink)")
       }
     }
 
-    if Env.mode == .test {
+    if context.env.mode == .test {
       try await task.value
     }
 

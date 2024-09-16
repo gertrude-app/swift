@@ -8,11 +8,11 @@ enum AppWebsocket {
     do {
       try await self.establish(request, ws)
     } catch is UserTokenNotFound {
-      Current.logger.debug("WebSocket conn err: user token not found (ws)")
+      request.logger.debug("WebSocket conn err: user token not found (ws)")
       let code = Int(WebSocketMessage.ErrorCode.userTokenNotFound.rawValue)
       try? await ws.close(code: .init(codeNumber: code))
     } catch {
-      Current.logger.error("WebSocket unexpected conn err (ws): \(error)")
+      request.logger.error("WebSocket unexpected conn err (ws): \(error)")
       try? await ws.close()
     }
   }
@@ -22,12 +22,12 @@ enum AppWebsocket {
     _ ws: WebSocket
   ) async throws {
     guard let token = try? await request.userToken(),
-          let userDevice = try? await token.userDevice() else {
+          let userDevice = try? await token.userDevice(in: request.context.db) else {
       throw UserTokenNotFound()
     }
 
-    let user = try await token.user()
-    let keychains = try await user.keychains()
+    let user = try await token.user(in: request.context.db)
+    let keychains = try await user.keychains(in: request.context.db)
 
     let entityIds = AppConnection.Ids(
       userDevice: userDevice.id,
@@ -36,7 +36,7 @@ enum AppWebsocket {
     )
 
     let connection = AppConnection(ws: ws, ids: entityIds)
-    await Current.websockets.add(connection)
+    await with(dependency: \.websockets).add(connection)
   }
 }
 

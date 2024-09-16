@@ -7,14 +7,14 @@ import XExpect
 
 final class UpdateUnlockRequestTests: ApiTestCase {
   func testUpdateUnlockRequest_legacyVersion() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.appVersion = "2.1.7" // <-- older version...
     }
 
     var request = UnlockRequest.mock
     request.userDeviceId = user.device.id
     request.status = .pending
-    try await request.create()
+    try await self.db.create(request)
 
     let output = try await UpdateUnlockRequest.resolve(
       with: UpdateUnlockRequest.Input(
@@ -27,7 +27,7 @@ final class UpdateUnlockRequestTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let retrieved = try await UnlockRequest.find(request.id)
+    let retrieved = try await self.db.find(request.id)
     expect(retrieved.responseComment).toEqual("no way")
     expect(retrieved.status).toEqual(.rejected)
 
@@ -44,14 +44,14 @@ final class UpdateUnlockRequestTests: ApiTestCase {
   }
 
   func testUpdateUnlockRequest() async throws {
-    let user = try await Entities.user().withDevice {
+    let user = try await self.user().withDevice {
       $0.appVersion = "2.4.0" // <-- current version...
     }
 
     var request = UnlockRequest.mock
     request.userDeviceId = user.device.id
     request.status = .pending
-    try await request.create()
+    try await self.db.create(request)
 
     let output = try await UpdateUnlockRequest.resolve(
       with: UpdateUnlockRequest.Input(
@@ -64,7 +64,7 @@ final class UpdateUnlockRequestTests: ApiTestCase {
 
     expect(output).toEqual(.success)
 
-    let retrieved = try await UnlockRequest.find(request.id)
+    let retrieved = try await self.db.find(request.id)
     expect(retrieved.responseComment).toEqual("looks good")
     expect(retrieved.status).toEqual(.accepted)
 

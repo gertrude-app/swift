@@ -2,31 +2,21 @@ import DuetSQL
 import Gertie
 
 extension Admin: Model {
-  public static let tableName = M1.tableName
   public typealias ColumnName = CodingKeys
+  public static let tableName = M1.tableName
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .email:
-      return .string(email.rawValue)
-    case .password:
-      return .string(password)
-    case .subscriptionId:
-      return .string(subscriptionId?.rawValue)
-    case .subscriptionStatus:
-      return .enum(subscriptionStatus)
-    case .subscriptionStatusExpiration:
-      return .date(subscriptionStatusExpiration)
-    case .gclid:
-      return .string(gclid)
-    case .abTestVariant:
-      return .string(abTestVariant)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
+    case .id: .id(self.self)
+    case .email: .string(self.email.rawValue)
+    case .password: .string(self.password)
+    case .subscriptionId: .string(self.subscriptionId?.rawValue)
+    case .subscriptionStatus: .enum(self.subscriptionStatus)
+    case .subscriptionStatusExpiration: .date(self.subscriptionStatusExpiration)
+    case .gclid: .string(self.gclid)
+    case .abTestVariant: .string(self.abTestVariant)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
@@ -52,25 +42,20 @@ extension AdminNotification: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .adminId:
-      return .uuid(adminId)
-    case .methodId:
-      return .uuid(methodId)
-    case .trigger:
-      return .enum(trigger)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .adminId: .uuid(self.adminId)
+    case .methodId: .uuid(self.methodId)
+    case .trigger: .enum(self.trigger)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(adminId),
-      .methodId: .uuid(methodId),
-      .trigger: .enum(trigger),
+      .adminId: .uuid(self.adminId),
+      .methodId: .uuid(self.methodId),
+      .trigger: .enum(self.trigger),
       .createdAt: .currentTimestamp,
     ]
   }
@@ -82,26 +67,21 @@ extension AdminToken: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .adminId:
-      return .uuid(adminId)
-    case .value:
-      return .uuid(value)
-    case .createdAt:
-      return .date(createdAt)
-    case .deletedAt:
-      return .date(deletedAt)
+    case .id: .id(self)
+    case .adminId: .uuid(self.adminId)
+    case .value: .uuid(self.value)
+    case .createdAt: .date(self.createdAt)
+    case .deletedAt: .date(self.deletedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(adminId),
-      .value: .uuid(value),
+      .adminId: .uuid(self.adminId),
+      .value: .uuid(self.value),
       .createdAt: .currentTimestamp,
-      .deletedAt: .date(deletedAt),
+      .deletedAt: .date(self.deletedAt),
     ]
   }
 }
@@ -114,22 +94,18 @@ extension AdminVerifiedNotificationMethod: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .adminId:
-      return .uuid(adminId)
-    case .config:
-      return .json(config.toPostgresJson)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .adminId: .uuid(self.adminId)
+    case .config: .json(self.config.toPostgresJson)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(adminId),
-      .config: .json(config.toPostgresJson),
+      .adminId: .uuid(self.adminId),
+      .config: .json(self.config.toPostgresJson),
       .createdAt: .currentTimestamp,
     ]
   }
@@ -141,27 +117,21 @@ extension AppCategory: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .name:
-      return .string(name)
-    case .slug:
-      return .string(slug)
-    case .description:
-      return .string(description)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
+    case .id: .id(self)
+    case .name: .string(self.name)
+    case .slug: .string(self.slug)
+    case .description: .string(self.description)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .name: .string(name),
-      .slug: .string(slug),
-      .description: .string(description),
+      .name: .string(self.name),
+      .slug: .string(self.slug),
+      .description: .string(self.description),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -174,24 +144,19 @@ extension AppBundleId: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .bundleId:
-      return .string(bundleId)
-    case .identifiedAppId:
-      return .uuid(identifiedAppId)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
+    case .id: .id(self)
+    case .bundleId: .string(self.bundleId)
+    case .identifiedAppId: .uuid(self.identifiedAppId)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .bundleId: .string(bundleId),
-      .identifiedAppId: .uuid(identifiedAppId),
+      .bundleId: .string(self.bundleId),
+      .identifiedAppId: .uuid(self.identifiedAppId),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -204,39 +169,29 @@ extension UserDevice: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .deviceId:
-      return .uuid(deviceId)
-    case .userId:
-      return .uuid(userId)
-    case .isAdmin:
-      return .bool(isAdmin)
-    case .appVersion:
-      return .string(appVersion)
-    case .fullUsername:
-      return .string(fullUsername)
-    case .numericId:
-      return .int(numericId)
-    case .username:
-      return .string(username)
-    case .updatedAt:
-      return .date(updatedAt)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
+    case .userId: .uuid(self.userId)
+    case .isAdmin: .bool(self.isAdmin)
+    case .appVersion: .string(self.appVersion)
+    case .fullUsername: .string(self.fullUsername)
+    case .numericId: .int(self.numericId)
+    case .username: .string(self.username)
+    case .updatedAt: .date(self.updatedAt)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userId: .uuid(userId),
-      .deviceId: .uuid(deviceId),
-      .appVersion: .string(appVersion),
-      .username: .string(username),
-      .fullUsername: .string(fullUsername),
-      .isAdmin: .bool(isAdmin),
-      .numericId: .int(numericId),
+      .userId: .uuid(self.userId),
+      .deviceId: .uuid(self.deviceId),
+      .appVersion: .string(self.appVersion),
+      .username: .string(self.username),
+      .fullUsername: .string(self.fullUsername),
+      .isAdmin: .bool(self.isAdmin),
+      .numericId: .int(self.numericId),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -249,39 +204,29 @@ extension Device: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .adminId:
-      return .uuid(adminId)
-    case .customName:
-      return .string(customName)
-    case .modelIdentifier:
-      return .string(modelIdentifier)
-    case .serialNumber:
-      return .string(serialNumber)
-    case .appReleaseChannel:
-      return .enum(appReleaseChannel)
-    case .filterVersion:
-      return .varchar(filterVersion?.string)
-    case .osVersion:
-      return .varchar(osVersion?.string)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
+    case .id: .id(self)
+    case .adminId: .uuid(self.adminId)
+    case .customName: .string(self.customName)
+    case .modelIdentifier: .string(self.modelIdentifier)
+    case .serialNumber: .string(self.serialNumber)
+    case .appReleaseChannel: .enum(self.appReleaseChannel)
+    case .filterVersion: .varchar(self.filterVersion?.string)
+    case .osVersion: .varchar(self.osVersion?.string)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(adminId),
-      .customName: .string(customName),
-      .modelIdentifier: .string(modelIdentifier),
-      .serialNumber: .string(serialNumber),
-      .appReleaseChannel: .enum(appReleaseChannel),
-      .filterVersion: .varchar(filterVersion?.string),
-      .osVersion: .varchar(osVersion?.string),
+      .adminId: .uuid(self.adminId),
+      .customName: .string(self.customName),
+      .modelIdentifier: .string(self.modelIdentifier),
+      .serialNumber: .string(self.serialNumber),
+      .appReleaseChannel: .enum(self.appReleaseChannel),
+      .filterVersion: .varchar(self.filterVersion?.string),
+      .osVersion: .varchar(self.osVersion?.string),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -294,33 +239,25 @@ extension IdentifiedApp: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .categoryId:
-      return .uuid(categoryId)
-    case .name:
-      return .string(name)
-    case .slug:
-      return .string(slug)
-    case .selectable:
-      return .bool(selectable)
-    case .description:
-      return .string(description)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
+    case .id: .id(self)
+    case .categoryId: .uuid(self.categoryId)
+    case .name: .string(self.name)
+    case .slug: .string(self.slug)
+    case .selectable: .bool(self.selectable)
+    case .description: .string(self.description)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .categoryId: .uuid(categoryId),
-      .name: .string(name),
-      .slug: .string(slug),
-      .selectable: .bool(selectable),
-      .description: .string(description),
+      .categoryId: .uuid(self.categoryId),
+      .name: .string(self.name),
+      .slug: .string(self.slug),
+      .selectable: .bool(self.selectable),
+      .description: .string(self.description),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -333,32 +270,23 @@ extension Keychain: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .authorId:
-      return .uuid(authorId)
-    case .name:
-      return .string(name)
-    case .description:
-      return .string(description)
-    case .isPublic:
-      return .bool(isPublic)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
-    case .deletedAt:
-      return .date(deletedAt)
+    case .id: .id(self)
+    case .authorId: .uuid(self.authorId)
+    case .name: .string(self.name)
+    case .description: .string(self.description)
+    case .isPublic: .bool(self.isPublic)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .authorId: .uuid(authorId),
-      .name: .string(name),
-      .description: .string(description),
-      .isPublic: .bool(isPublic),
+      .authorId: .uuid(self.authorId),
+      .name: .string(self.name),
+      .description: .string(self.description),
+      .isPublic: .bool(self.isPublic),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -373,31 +301,25 @@ extension Key: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .keychainId:
-      return .uuid(keychainId)
-    case .key:
-      return .json(key.toPostgresJson)
-    case .comment:
-      return .string(comment)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
-    case .deletedAt:
-      return .date(deletedAt)
+    case .id: .id(self)
+    case .keychainId: .uuid(self.keychainId)
+    case .key: .json(self.key.toPostgresJson)
+    case .comment: .string(self.comment)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    case .deletedAt: .date(self.deletedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .keychainId: .uuid(keychainId),
-      .key: .json(key.toPostgresJson),
-      .comment: .string(comment),
+      .keychainId: .uuid(self.keychainId),
+      .key: .json(self.key.toPostgresJson),
+      .comment: .string(self.comment),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
+      .deletedAt: .date(self.deletedAt),
     ]
   }
 }
@@ -408,31 +330,25 @@ extension KeystrokeLine: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .userDeviceId:
-      return .uuid(userDeviceId)
-    case .appName:
-      return .string(appName)
-    case .line:
-      return .string(line)
-    case .filterSuspended:
-      return .bool(filterSuspended)
-    case .createdAt:
-      return .date(createdAt)
-    case .deletedAt:
-      return .date(deletedAt)
+    case .id: .id(self)
+    case .userDeviceId: .uuid(self.userDeviceId)
+    case .appName: .string(self.appName)
+    case .line: .string(self.line)
+    case .filterSuspended: .bool(self.filterSuspended)
+    case .createdAt: .date(self.createdAt)
+    case .deletedAt: .date(self.deletedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userDeviceId: .uuid(userDeviceId),
-      .appName: .string(appName),
-      .line: .string(line),
-      .filterSuspended: .bool(filterSuspended),
-      .createdAt: .date(createdAt),
+      .userDeviceId: .uuid(self.userDeviceId),
+      .appName: .string(self.appName),
+      .line: .string(self.line),
+      .filterSuspended: .bool(self.filterSuspended),
+      .createdAt: .date(self.createdAt),
+      .deletedAt: .date(self.deletedAt),
     ]
   }
 }
@@ -443,39 +359,29 @@ extension Release: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .semver:
-      return .string(semver)
-    case .channel:
-      return .enum(channel)
-    case .signature:
-      return .string(signature)
-    case .length:
-      return .int(length)
-    case .revision:
-      return .string(revision.rawValue)
-    case .requirementPace:
-      return .int(requirementPace)
-    case .notes:
-      return .string(notes)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
+    case .id: .id(self)
+    case .semver: .string(self.semver)
+    case .channel: .enum(self.channel)
+    case .signature: .string(self.signature)
+    case .length: .int(self.length)
+    case .revision: .string(self.revision.rawValue)
+    case .requirementPace: .int(self.requirementPace)
+    case .notes: .string(self.notes)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .semver: .string(semver),
-      .channel: .enum(channel),
-      .signature: .string(signature),
-      .length: .int(length),
-      .revision: .string(revision.rawValue),
-      .requirementPace: .int(requirementPace),
-      .notes: .string(notes),
+      .semver: .string(self.semver),
+      .channel: .enum(self.channel),
+      .signature: .string(self.signature),
+      .length: .int(self.length),
+      .revision: .string(self.revision.rawValue),
+      .requirementPace: .int(self.requirementPace),
+      .notes: .string(self.notes),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -488,34 +394,27 @@ extension Screenshot: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .userDeviceId:
-      return .uuid(userDeviceId)
-    case .url:
-      return .string(url)
-    case .width:
-      return .int(width)
-    case .height:
-      return .int(height)
-    case .filterSuspended:
-      return .bool(filterSuspended)
-    case .createdAt:
-      return .date(createdAt)
-    case .deletedAt:
-      return .date(deletedAt)
+    case .id: .id(self)
+    case .userDeviceId: .uuid(self.userDeviceId)
+    case .url: .string(self.url)
+    case .width: .int(self.width)
+    case .height: .int(self.height)
+    case .filterSuspended: .bool(self.filterSuspended)
+    case .createdAt: .date(self.createdAt)
+    case .deletedAt: .date(self.deletedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userDeviceId: .uuid(userDeviceId),
-      .url: .string(url),
-      .width: .int(width),
-      .height: .int(height),
-      .filterSuspended: .bool(filterSuspended),
-      .createdAt: .date(createdAt),
+      .userDeviceId: .uuid(self.userDeviceId),
+      .url: .string(self.url),
+      .width: .int(self.width),
+      .height: .int(self.height),
+      .filterSuspended: .bool(self.filterSuspended),
+      .createdAt: .date(self.createdAt),
+      .deletedAt: .date(self.deletedAt),
     ]
   }
 }
@@ -528,39 +427,29 @@ extension SuspendFilterRequest: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .userDeviceId:
-      return .uuid(userDeviceId)
-    case .status:
-      return .enum(status)
-    case .scope:
-      return .json(scope.toPostgresJson)
-    case .duration:
-      return .int(duration.rawValue)
-    case .requestComment:
-      return .string(requestComment)
-    case .responseComment:
-      return .string(responseComment)
-    case .extraMonitoring:
-      return .string(extraMonitoring)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
+    case .id: .id(self)
+    case .userDeviceId: .uuid(self.userDeviceId)
+    case .status: .enum(self.status)
+    case .scope: .json(self.scope.toPostgresJson)
+    case .duration: .int(self.duration.rawValue)
+    case .requestComment: .string(self.requestComment)
+    case .responseComment: .string(self.responseComment)
+    case .extraMonitoring: .string(self.extraMonitoring)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userDeviceId: .uuid(userDeviceId),
-      .status: .enum(status),
-      .scope: .json(scope.toPostgresJson),
-      .duration: .int(duration.rawValue),
-      .requestComment: .string(requestComment),
-      .responseComment: .string(responseComment),
-      .extraMonitoring: .string(extraMonitoring),
+      .userDeviceId: .uuid(self.userDeviceId),
+      .status: .enum(self.status),
+      .scope: .json(self.scope.toPostgresJson),
+      .duration: .int(self.duration.rawValue),
+      .requestComment: .string(self.requestComment),
+      .responseComment: .string(self.responseComment),
+      .extraMonitoring: .string(self.extraMonitoring),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -573,42 +462,31 @@ extension UnlockRequest: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .userDeviceId:
-      return .uuid(userDeviceId)
-    case .status:
-      return .enum(status)
-    case .requestComment:
-      return .string(requestComment)
-    case .responseComment:
-      return .string(responseComment)
-    case .appBundleId:
-      return .string(appBundleId)
-    case .url:
-      return .string(url)
-    case .hostname:
-      return .string(hostname)
-    case .ipAddress:
-      return .string(ipAddress)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
+    case .id: .id(self)
+    case .userDeviceId: .uuid(self.userDeviceId)
+    case .status: .enum(self.status)
+    case .requestComment: .string(self.requestComment)
+    case .responseComment: .string(self.responseComment)
+    case .appBundleId: .string(self.appBundleId)
+    case .url: .string(self.url)
+    case .hostname: .string(self.hostname)
+    case .ipAddress: .string(self.ipAddress)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userDeviceId: .uuid(userDeviceId),
-      .status: .enum(status),
-      .requestComment: .string(requestComment),
-      .responseComment: .string(responseComment),
-      .appBundleId: .string(appBundleId),
-      .url: .string(url),
-      .hostname: .string(hostname),
-      .ipAddress: .string(ipAddress),
+      .userDeviceId: .uuid(self.userDeviceId),
+      .status: .enum(self.status),
+      .requestComment: .string(self.requestComment),
+      .responseComment: .string(self.responseComment),
+      .appBundleId: .string(self.appBundleId),
+      .url: .string(self.url),
+      .hostname: .string(self.hostname),
+      .ipAddress: .string(self.ipAddress),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -621,41 +499,29 @@ extension User: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .adminId:
-      return .uuid(adminId)
-    case .name:
-      return .string(name)
-    case .keyloggingEnabled:
-      return .bool(keyloggingEnabled)
-    case .screenshotsEnabled:
-      return .bool(screenshotsEnabled)
-    case .screenshotsResolution:
-      return .int(screenshotsResolution)
-    case .screenshotsFrequency:
-      return .int(screenshotsFrequency)
-    case .showSuspensionActivity:
-      return .bool(showSuspensionActivity)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
-    case .deletedAt:
-      return .date(deletedAt)
+    case .id: .id(self)
+    case .adminId: .uuid(self.adminId)
+    case .name: .string(self.name)
+    case .keyloggingEnabled: .bool(self.keyloggingEnabled)
+    case .screenshotsEnabled: .bool(self.screenshotsEnabled)
+    case .screenshotsResolution: .int(self.screenshotsResolution)
+    case .screenshotsFrequency: .int(self.screenshotsFrequency)
+    case .showSuspensionActivity: .bool(self.showSuspensionActivity)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(adminId),
-      .name: .string(name),
-      .keyloggingEnabled: .bool(keyloggingEnabled),
-      .screenshotsEnabled: .bool(screenshotsEnabled),
-      .screenshotsResolution: .int(screenshotsResolution),
-      .screenshotsFrequency: .int(screenshotsFrequency),
-      .showSuspensionActivity: .bool(showSuspensionActivity),
+      .adminId: .uuid(self.adminId),
+      .name: .string(self.name),
+      .keyloggingEnabled: .bool(self.keyloggingEnabled),
+      .screenshotsEnabled: .bool(self.screenshotsEnabled),
+      .screenshotsResolution: .int(self.screenshotsResolution),
+      .screenshotsFrequency: .int(self.screenshotsFrequency),
+      .showSuspensionActivity: .bool(self.showSuspensionActivity),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -668,22 +534,18 @@ extension UserKeychain: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .userId:
-      return .uuid(userId)
-    case .keychainId:
-      return .uuid(keychainId)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .userId: .uuid(self.userId)
+    case .keychainId: .uuid(self.keychainId)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userId: .uuid(userId),
-      .keychainId: .uuid(keychainId),
+      .userId: .uuid(self.userId),
+      .keychainId: .uuid(self.keychainId),
       .createdAt: .currentTimestamp,
     ]
   }
@@ -695,31 +557,25 @@ extension UserToken: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .userId:
-      return .uuid(userId)
-    case .userDeviceId:
-      return .uuid(userDeviceId)
-    case .value:
-      return .uuid(value)
-    case .createdAt:
-      return .date(createdAt)
-    case .updatedAt:
-      return .date(updatedAt)
-    case .deletedAt:
-      return .date(deletedAt)
+    case .id: .id(self)
+    case .userId: .uuid(self.userId)
+    case .userDeviceId: .uuid(self.userDeviceId)
+    case .value: .uuid(self.value)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    case .deletedAt: .date(self.deletedAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userId: .uuid(userId),
-      .userDeviceId: .uuid(userDeviceId),
-      .value: .uuid(value),
+      .userId: .uuid(self.userId),
+      .userDeviceId: .uuid(self.userDeviceId),
+      .value: .uuid(self.value),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
+      .deletedAt: .date(self.deletedAt),
     ]
   }
 }
@@ -730,34 +586,26 @@ extension InterestingEvent: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .eventId:
-      return .string(eventId)
-    case .kind:
-      return .string(kind)
-    case .context:
-      return .string(context)
-    case .userDeviceId:
-      return .uuid(userDeviceId)
-    case .adminId:
-      return .uuid(adminId)
-    case .detail:
-      return .string(detail)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .eventId: .string(self.eventId)
+    case .kind: .string(self.kind)
+    case .context: .string(self.context)
+    case .userDeviceId: .uuid(self.userDeviceId)
+    case .adminId: .uuid(self.adminId)
+    case .detail: .string(self.detail)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .eventId: .string(eventId),
-      .kind: .string(kind),
-      .context: .string(context),
-      .userDeviceId: .uuid(userDeviceId),
-      .adminId: .uuid(adminId),
-      .detail: .string(detail),
+      .eventId: .string(self.eventId),
+      .kind: .string(self.kind),
+      .context: .string(self.context),
+      .userDeviceId: .uuid(self.userDeviceId),
+      .adminId: .uuid(self.adminId),
+      .detail: .string(self.detail),
       .createdAt: .currentTimestamp,
     ]
   }
@@ -769,19 +617,16 @@ extension StripeEvent: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .json:
-      return .string(json)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .json: .string(self.json)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .json: .string(json),
+      .json: .string(self.json),
       .createdAt: .currentTimestamp,
     ]
   }
@@ -793,25 +638,20 @@ extension DeletedEntity: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .type:
-      return .string(type)
-    case .reason:
-      return .string(reason)
-    case .data:
-      return .string(data)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .type: .string(self.type)
+    case .reason: .string(self.reason)
+    case .data: .string(self.data)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .type: .string(type),
-      .reason: .string(reason),
-      .data: .string(data),
+      .type: .string(self.type),
+      .reason: .string(self.reason),
+      .data: .string(self.data),
       .createdAt: .currentTimestamp,
     ]
   }
@@ -823,19 +663,16 @@ extension Browser: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .match:
-      return .json(match.toPostgresJson)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .match: .json(self.match.toPostgresJson)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .match: .json(match.toPostgresJson),
+      .match: .json(self.match.toPostgresJson),
       .createdAt: .currentTimestamp,
     ]
   }
@@ -849,31 +686,24 @@ extension SecurityEvent: Model {
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
-    case .id:
-      return .id(self)
-    case .adminId:
-      return .uuid(adminId)
-    case .userDeviceId:
-      return .uuid(userDeviceId)
-    case .event:
-      return .string(event)
-    case .detail:
-      return .string(detail)
-    case .ipAddress:
-      return .string(ipAddress)
-    case .createdAt:
-      return .date(createdAt)
+    case .id: .id(self)
+    case .adminId: .uuid(self.adminId)
+    case .userDeviceId: .uuid(self.userDeviceId)
+    case .event: .string(self.event)
+    case .detail: .string(self.detail)
+    case .ipAddress: .string(self.ipAddress)
+    case .createdAt: .date(self.createdAt)
     }
   }
 
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(adminId),
-      .userDeviceId: .uuid(userDeviceId),
-      .event: .string(event),
-      .detail: .string(detail),
-      .ipAddress: .string(ipAddress),
+      .adminId: .uuid(self.adminId),
+      .userDeviceId: .uuid(self.userDeviceId),
+      .event: .string(self.event),
+      .detail: .string(self.detail),
+      .ipAddress: .string(self.ipAddress),
       .createdAt: .currentTimestamp,
     ]
   }

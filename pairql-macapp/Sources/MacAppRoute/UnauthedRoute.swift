@@ -9,19 +9,19 @@ public enum UnauthedRoute: PairRoute {
 
 public extension UnauthedRoute {
   nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, UnauthedRoute> = OneOf {
-    Route(/Self.connectUser) {
+    Route(.case(Self.connectUser)) {
       Operation(ConnectUser.self)
       Body(.json(ConnectUser.Input.self))
     }
-    Route(/Self.latestAppVersion) {
+    Route(.case(Self.latestAppVersion)) {
       Operation(LatestAppVersion.self)
       Body(.json(LatestAppVersion.Input.self))
     }
-    Route(/Self.logInterestingEvent) {
+    Route(.case(Self.logInterestingEvent)) {
       Operation(LogInterestingEvent.self)
       Body(.json(LogInterestingEvent.Input.self))
     }
-    Route(/Self.recentAppVersions) {
+    Route(.case(Self.recentAppVersions)) {
       Operation(RecentAppVersions.self)
     }
   }

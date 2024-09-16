@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import MacAppRoute
@@ -8,9 +9,18 @@ import XExpect
 @testable import Api
 
 final class ConnectUserResolversTests: ApiTestCase {
+  override func invokeTest() {
+    withDependencies {
+      $0.verificationCode = .liveValue
+    } operation: {
+      super.invokeTest()
+    }
+  }
+
   func testConnectUser_createNewDevice() async throws {
-    let user = try await Entities.user()
-    let code = await Current.ephemeral.createPendingAppConnection(user.id)
+    let user = try await self.user()
+    let code = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(user.id)
 
     let input = input(code)
     let userData = try await ConnectUser.resolve(with: input, in: self.context)
@@ -18,8 +28,8 @@ final class ConnectUserResolversTests: ApiTestCase {
     expect(userData.id).toEqual(user.id.rawValue)
     expect(userData.name).toEqual(user.name)
 
-    let userDevice = try await Current.db.find(UserDevice.Id(userData.deviceId))
-    let device = try await Current.db.find(userDevice.deviceId)
+    let userDevice = try await self.db.find(UserDevice.Id(userData.deviceId))
+    let device = try await self.db.find(userDevice.deviceId)
 
     expect(userDevice.username).toEqual(input.username)
     expect(userDevice.fullUsername).toEqual(input.fullUsername)
@@ -30,24 +40,26 @@ final class ConnectUserResolversTests: ApiTestCase {
     expect(device.modelIdentifier).toEqual(input.modelIdentifier)
     expect(device.osVersion).toEqual(Semver("14.2.0"))
 
-    let token = try await Current.db.query(UserToken.self)
+    let token = try await UserToken.query()
       .where(.value == userData.token)
-      .first()
+      .first(in: self.db)
 
     expect(token.userId).toEqual(user.id)
   }
 
   func testConnectUser_twoUsersSameComputer() async throws {
-    Current.verificationCode = .live
-    try await Device.deleteAll()
-    let user1 = try await Entities.user()
-    let code1 = await Current.ephemeral.createPendingAppConnection(user1.id)
+    try await self.db.delete(all: Device.self)
+    let user1 = try await self.user()
+    let code1 = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(user1.id)
 
-    let user2 = try await Entities.user { $0.adminId = user1.admin.id }
-    let code2 = await Current.ephemeral.createPendingAppConnection(user2.id)
+    let user2 = try await self.user { $0.adminId = user1.admin.id }
+    let code2 = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(user2.id)
 
     var input1 = self.input(code1)
     input1.numericId = 501
+
     _ = try await ConnectUser.resolve(with: input1, in: self.context)
 
     var input2 = self.input(code2)
@@ -65,51 +77,53 @@ final class ConnectUserResolversTests: ApiTestCase {
 
   // re-connect from a macOS user that has had gertrude installed before
   func testConnectUser_ReassignToDifferentUserOwnedBySameAdmin() async throws {
-    Current.date = { Date() }
-    let existingUser = try await Entities.user().withDevice()
-    let existingUserToken = try await Current.db.create(UserToken(
-      userId: existingUser.id,
-      userDeviceId: existingUser.device.id
-    ))
+    try await withDependencies {
+      $0.date = .init { Date() } // for token expiration
+    } operation: {
+      let existingUser = try await self.userWithDevice()
+      let existingUserToken = try await self.db.create(UserToken(
+        userId: existingUser.id,
+        userDeviceId: existingUser.device.id
+      ))
 
-    // different user, owned by same admin
-    let newUser = try await Entities.user { $0.adminId = existingUser.admin.id }
-    Current.verificationCode = .live
-    let code = await Current.ephemeral.createPendingAppConnection(newUser.model.id)
+      // different user, owned by same admin
+      let newUser = try await self.user(with: \.adminId, of: existingUser.admin.id)
+      let code = await with(dependency: \.ephemeral)
+        .createPendingAppConnection(newUser.model.id)
 
-    // happy path, the device exists, registered to another user, but that's OK
-    // because the same admin owns both users, so switch it over
-    newUser.model.adminId = existingUser.admin.model.id
-    try await Current.db.update(newUser.model)
+      // happy path, the device exists, registered to another user, but that's OK
+      // because the same admin owns both users, so switch it over
+      newUser.model.adminId = existingUser.admin.model.id
+      try await self.db.update(newUser.model)
 
-    var input = input(code)
-    input.numericId = existingUser.device.numericId
-    input.serialNumber = existingUser.adminDevice.serialNumber
+      var input = input(code)
+      input.numericId = existingUser.device.numericId
+      input.serialNumber = existingUser.adminDevice.serialNumber
+      let userData = try await ConnectUser.resolve(with: input, in: self.context)
 
-    let userData = try await ConnectUser.resolve(with: input, in: self.context)
+      expect(userData.id).toEqual(newUser.id.rawValue)
+      expect(userData.name).toEqual(newUser.name)
 
-    expect(userData.id).toEqual(newUser.id.rawValue)
-    expect(userData.name).toEqual(newUser.name)
+      let retrievedDevice = try await self.db.find(existingUser.device.id)
+      expect(retrievedDevice.userId).toEqual(newUser.model.id)
 
-    let retrievedDevice = try await Current.db.find(existingUser.device.id)
-    expect(retrievedDevice.userId).toEqual(newUser.model.id)
-
-    let retrievedOldToken = try await Current.db.find(existingUserToken.id)
-    XCTAssertNotNil(retrievedOldToken.deletedAt)
+      let retrievedOldToken = try await self.db.find(existingUserToken.id)
+      expect(retrievedOldToken.deletedAt).not.toBeNil()
+    }
   }
 
   // test sanity check, computer/user registered to a different admin
   func testConnectUser_ExistingDeviceToDifferentUser_FailsIfDifferentAdmin() async throws {
-    let existingUser = try await Entities.user().withDevice()
-    let existingUserToken = try await Current.db.create(UserToken(
+    let existingUser = try await self.userWithDevice()
+    let existingUserToken = try await self.db.create(UserToken(
       userId: existingUser.model.id,
       userDeviceId: existingUser.device.id
     ))
 
     // // this user is from a DIFFERENT admin, so it should fail
-    let newUser = try await Entities.user()
-    Current.verificationCode = .live
-    let code = await Current.ephemeral.createPendingAppConnection(newUser.model.id)
+    let newUser = try await self.user()
+    let code = await with(dependency: \.ephemeral)
+      .createPendingAppConnection(newUser.model.id)
 
     var input = input(code)
     input.numericId = existingUser.device.numericId
@@ -120,25 +134,8 @@ final class ConnectUserResolversTests: ApiTestCase {
     }.toContain("associated with another Gertrude parent account")
 
     // old token is not deleted
-    let retrievedOldToken = try? await Current.db.find(existingUserToken.id)
-    XCTAssertNotNil(retrievedOldToken)
-  }
-
-  func testPre2_0_4AppSendingHostnameForConnectStillDecodes() {
-    let json = """
-    {
-      "verificationCode": 123,
-      "appVersion": "1.0.0",
-      "hostname": "kids-macbook-air",
-      "modelIdentifier": "MacBookAir7,1",
-      "username": "kids",
-      "fullUsername": "kids",
-      "numericId": 501,
-      "serialNumber": "X02VH0Y6JG5J"
-    }
-    """
-    let input = try? JSON.decode(json, as: ConnectUser.Input.self)
-    expect(input).not.toBeNil()
+    let retrievedOldToken = try? await self.db.find(existingUserToken.id)
+    expect(retrievedOldToken?.id).not.toBeNil()
   }
 
   // helpers

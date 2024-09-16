@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 
 extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
@@ -12,7 +13,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
      View the details and approve or deny at \(url)
     """
 
-    Current.twilio.send(Text(to: .init(phoneNumber), message: message))
+    try await with(dependency: \.twilio)
+      .send(Text(to: .init(phoneNumber), message: message))
   }
 
   func sendSlack(channel: String, token: String) async throws {
@@ -26,7 +28,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
      \(Slack.link(to: url, withText: "Click here")) to view the details and approve or deny.
     """
 
-    try await Current.slack.send(Slack(text: text, channel: channel, token: token))
+    try await with(dependency: \.slack)
+      .send(Slack(text: text, channel: channel, token: token))
   }
 
   func sendEmail(to address: String) async throws {
@@ -47,8 +50,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
      \(Email.link(url: url, text: "Click here")) to view the details and approve or deny.
     """
 
-    let email = Email.fromApp(to: address, subject: subject, html: html)
-    try await Current.sendGrid.send(email)
+    try await with(dependency: \.sendgrid)
+      .send(Email.fromApp(to: address, subject: subject, html: html))
   }
 }
 

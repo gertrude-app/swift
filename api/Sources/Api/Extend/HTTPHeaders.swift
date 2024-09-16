@@ -1,8 +1,10 @@
+import Dependencies
 import Vapor
 
 extension HTTPHeaders {
   var dashboardUrl: String {
-    first(name: .xDashboardUrl) ?? Env.DASHBOARD_URL
+    @Dependency(\.env) var env
+    return first(name: .xDashboardUrl) ?? env.dashboardUrl
   }
 }
 

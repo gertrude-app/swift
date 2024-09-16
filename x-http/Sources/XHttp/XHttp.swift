@@ -212,14 +212,14 @@ private func decode<T: Decodable>(
 // corelibsfoundation on Linux doesn't support URLSession.data(for:) async method,
 // so recreating it here -- once this is no longer a limitation, remove and switch
 // back just calling URLSession.shared.data(for:)
-private func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+public func data(for request: URLRequest) async throws -> (Data, URLResponse) {
   try await withCheckedThrowingContinuation { continuation in
     URLSession.shared.dataTask(with: request) { data, response, err in
-      if let err = err {
+      if let err {
         continuation.resume(throwing: err)
         return
       }
-      guard let data = data, let response = response else {
+      guard let data, let response else {
         continuation.resume(throwing: HttpError.missingDataOrResponse)
         return
       }

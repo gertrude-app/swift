@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import Vapor
@@ -9,7 +10,7 @@ enum StripeEventsRoute {
       return Response(status: .badRequest)
     }
 
-    let stripeEvent = try await Current.db.create(StripeEvent(json: json))
+    let stripeEvent = try await request.context.db.create(StripeEvent(json: json))
     let event = try? JSON.decode(json, as: EventInfo.self)
 
     if event?.type == "invoice.paid",
@@ -17,18 +18,18 @@ enum StripeEventsRoute {
 
       let admin = try? await Admin.query()
         .where(.email == email.lowercased())
-        .first()
+        .first(in: request.context.db)
 
       if var admin {
         admin.subscriptionStatus = .paid
         admin.subscriptionStatusExpiration = event?.data?.object?.lines?.data?.first?.period?.end
           .map { Date(timeIntervalSince1970: TimeInterval($0)).advanced(by: .days(2)) }
-          ?? Current.date().advanced(by: .days(33))
+          ?? get(dependency: \.date.now) + .days(33)
 
         switch (admin.subscriptionId, event?.data?.object?.subscription) {
         case (.none, .some(let subscriptionId)):
           admin.subscriptionId = .init(rawValue: subscriptionId)
-          Task { await Current.slack.sysLog("*FIRST Payment* from `\(email)`") }
+          Task { await with(dependency: \.slack).sysLog("*FIRST Payment* from `\(email)`") }
         case (.some(let existing), .some(let subscriptionId))
           where existing.rawValue != subscriptionId:
           admin.subscriptionId = .init(rawValue: subscriptionId)
@@ -36,14 +37,14 @@ enum StripeEventsRoute {
         default:
           break
         }
-        try await admin.save()
+        try await request.context.db.update(admin)
       } else {
         unexpected("b3aaf12c", detail: "email: \(email), event: \(stripeEvent.id)")
       }
     }
 
     Task {
-      await Current.slack.sysLog("""
+      await with(dependency: \.slack).sysLog("""
         *Received Gertrude Stripe Event:*
         - type: `\(event?.type ?? "(nil)")`
         - customer email: `\(event?.data?.object?.customer_email ?? "(nil)")`

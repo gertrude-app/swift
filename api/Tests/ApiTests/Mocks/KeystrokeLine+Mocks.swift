@@ -9,12 +9,17 @@ extension KeystrokeLine: RandomMocked {
       userDeviceId: .init(),
       appName: "@mock appName",
       line: "@mock line",
-      createdAt: Current.date()
+      createdAt: .reference
     )
   }
 
   public static var empty: KeystrokeLine {
-    KeystrokeLine(userDeviceId: .init(), appName: "", line: "", createdAt: Date())
+    KeystrokeLine(
+      userDeviceId: .init(),
+      appName: "",
+      line: "",
+      createdAt: .epoch
+    )
   }
 
   public static var random: KeystrokeLine {
@@ -22,7 +27,7 @@ extension KeystrokeLine: RandomMocked {
       userDeviceId: .init(),
       appName: "@random".random,
       line: "@random".random,
-      createdAt: Current.date()
+      createdAt: Date()
     )
   }
 }

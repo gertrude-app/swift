@@ -1,3 +1,4 @@
+import DuetSQL
 import Gertie
 import MacAppRoute
 import Vapor
@@ -15,7 +16,7 @@ final class ApiTests: ApiTestCase {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
   func testDashboardRoute() async throws {
-    let admin = try await Entities.admin()
+    let admin = try await self.admin()
     let token = admin.token.value
     var request = URLRequest(url: URL(string: "dashboard/GetIdentifiedApps")!)
     request.httpMethod = "POST"
@@ -23,6 +24,21 @@ final class ApiTests: ApiTestCase {
     let route = PairQLRoute.dashboard(.adminAuthed(token.rawValue, .getIdentifiedApps))
     let matched = try PairQLRoute.router.match(request: request)
     expect(matched).toEqual(route)
+  }
+
+  func testDuetDeleteReturnsRealNumDeleted() async throws {
+    let m1 = Browser(match: .bundleId("m".random))
+    let m2 = Browser(match: .bundleId("m".random))
+    try await self.db.create([m1, m2])
+    let numDeleted = try await self.db.delete(Browser.self, where: .id |=| [m1.id, m2.id])
+    expect(numDeleted).toEqual(2)
+  }
+
+  func testDuetEscapesStringsProperly() async throws {
+    let admin = try await self.db.create(Admin.random)
+    let m = try await self.db.create(Api.SecurityEvent(adminId: admin.id, event: "foo'bar"))
+    let retrieved = try await self.db.find(m.id)
+    expect(retrieved.event).toEqual("foo'bar")
   }
 
   func testDateDecodingInPairQL() async throws {
@@ -34,7 +50,7 @@ final class ApiTests: ApiTestCase {
       comment: nil,
       expiration: Date(timeIntervalSince1970: 0)
     )
-    let admin = try await Entities.admin()
+    let admin = try await self.admin()
     let token = admin.token.value
     var request = URLRequest(url: URL(string: "dashboard/SaveKey")!)
     request.httpMethod = "POST"
@@ -98,7 +114,8 @@ final class ApiTests: ApiTestCase {
   }
 
   func testUserContextCreated() async throws {
-    let user = try await Entities.user(admin: { $0.subscriptionStatus = .paid }).withDevice()
+    let user = try await self.user(withAdmin: { $0.subscriptionStatus = .paid })
+      .withDevice()
 
     let response = try await PairQLRoute.respond(
       to: .macApp(.userAuthed(user.token.value.rawValue, .getAccountStatus)),
@@ -109,7 +126,7 @@ final class ApiTests: ApiTestCase {
   }
 
   func testResolveUsersAdminAccountStatus() async throws {
-    let user = try await Entities.user(admin: { $0.subscriptionStatus = .paid })
+    let user = try await self.user(withAdmin: { $0.subscriptionStatus = .paid })
     let context = UserContext(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
     let output = try await GetAccountStatus.resolve(in: context)
     expect(output.status).toEqual(.active)

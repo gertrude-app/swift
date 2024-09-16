@@ -1,3 +1,4 @@
+import Dependencies
 import Foundation
 import PairQL
 import Vapor
@@ -25,13 +26,13 @@ extension StripeUrl: NoInputResolver {
     case (.paid, .some(let subscription)),
          (.overdue, .some(let subscription)),
          (.unpaid, .some(let subscription)):
-      return .init(url: try await billingPortalSessionUrl(for: subscription))
+      return .init(url: try await billingPortalSessionUrl(for: subscription, in: context))
 
     // should never happen...
     case (let status, let subscription):
       unexpected("65554aa1", context, ".\(status), \(subscription ?? "nil")")
       if let subscription {
-        return .init(url: try await billingPortalSessionUrl(for: subscription))
+        return .init(url: try await billingPortalSessionUrl(for: subscription, in: context))
       } else {
         return .init(url: try await checkoutSessionUrl(for: context))
       }
@@ -45,7 +46,7 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
   let sessionData = Stripe.CheckoutSessionData(
     successUrl: "\(context.dashboardUrl)/checkout-success?session_id={CHECKOUT_SESSION_ID}",
     cancelUrl: "\(context.dashboardUrl)/checkout-cancel?session_id={CHECKOUT_SESSION_ID}",
-    lineItems: [.init(quantity: 1, priceId: Env.STRIPE_SUBSCRIPTION_PRICE_ID)],
+    lineItems: [.init(quantity: 1, priceId: context.env.stripe.subscriptionPriceId)],
     mode: .subscription,
     clientReferenceId: context.admin.id.lowercased,
     customerEmail: context.admin.email.rawValue,
@@ -56,18 +57,23 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
     paymentMethodCollection: nil
   )
 
-  let session = try await Current.stripe.createCheckoutSession(sessionData)
+  let session = try await with(dependency: \.stripe)
+    .createCheckoutSession(sessionData)
+
   guard let url = session.url else {
-    Current.sendGrid.fireAndForget(.unexpected("b66e1eaf", "admin: \(context.admin.id)"))
+    with(dependency: \.sendgrid)
+      .fireAndForget(.unexpected("b66e1eaf", "admin: \(context.admin.id)"))
     throw Abort(.internalServerError)
   }
   return url
 }
 
 private func billingPortalSessionUrl(
-  for subscriptionId: Admin.SubscriptionId
+  for subscriptionId: Admin.SubscriptionId,
+  in context: AdminContext
 ) async throws -> String {
-  let subscription = try await Current.stripe.getSubscription(subscriptionId.rawValue)
-  let portal = try await Current.stripe.createBillingPortalSession(subscription.customer)
+  @Dependency(\.stripe) var stripe
+  let subscription = try await stripe.getSubscription(subscriptionId.rawValue)
+  let portal = try await stripe.createBillingPortalSession(subscription.customer)
   return portal.url
 }

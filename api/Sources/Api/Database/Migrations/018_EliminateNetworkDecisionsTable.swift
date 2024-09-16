@@ -1,12 +1,17 @@
+import Dependencies
 import DuetSQL
 import FluentSQL
 import Gertie
 
 struct EliminateNetworkDecisionsTable: GertieMigration {
   func up(sql: SQLDatabase) async throws {
-    // query legacy data for migration
-    let decisions = try await Current.db.customQuery(LegacyDecisions.self)
-    let unlockRequestIds = try await Current.db.customQuery(UnlockRequestIds.self)
+
+    #if !DEBUG
+      // query legacy data for migration
+      @Dependency(\.db) var db
+      let decisions = try await db.customQuery(LegacyDecisions.self)
+      let unlockRequestIds = try await db.customQuery(UnlockRequestIds.self)
+    #endif
 
     // alter unlock_requests table
     try await sql.drop(constraint: RequestTables().unlockRequestNetworkDecisionFk)
@@ -39,21 +44,23 @@ struct EliminateNetworkDecisionsTable: GertieMigration {
       nullable: true
     )
 
-    // transfer data from network_decisions to unlock_requests
-    for unlock in unlockRequestIds {
-      guard let decision = decisions.first(where: { $0.id == unlock.networkDecisionId }) else {
-        fatalError("Decision not found for unlock request `\(unlock.id)`")
+    #if !DEBUG
+      // transfer data from network_decisions to unlock_requests
+      for unlock in unlockRequestIds {
+        guard let decision = decisions.first(where: { $0.id == unlock.networkDecisionId }) else {
+          fatalError("Decision not found for unlock request `\(unlock.id)`")
+        }
+        try await sql.execute("""
+          UPDATE \(table: UnlockRequest.M5.self)
+          SET
+            \(col: UnlockRequest.M18.appBundleId) = '\(unsafeRaw: decision.appBundleId)',
+            \(col: UnlockRequest.M18.url) = \(nullable: decision.url),
+            \(col: UnlockRequest.M18.hostname) = \(nullable: decision.hostname),
+            \(col: UnlockRequest.M18.ipAddress) = \(nullable: decision.ipAddress)
+          WHERE \(col: .id) = '\(uuid: unlock.id)'
+        """)
       }
-      try await sql.execute("""
-        UPDATE \(table: UnlockRequest.M5.self)
-        SET
-          \(col: UnlockRequest.M18.appBundleId) = '\(unsafeRaw: decision.appBundleId)',
-          \(col: UnlockRequest.M18.url) = \(nullable: decision.url),
-          \(col: UnlockRequest.M18.hostname) = \(nullable: decision.hostname),
-          \(col: UnlockRequest.M18.ipAddress) = \(nullable: decision.ipAddress)
-        WHERE \(col: .id) = '\(uuid: unlock.id)'
-      """)
-    }
+    #endif
 
     // remove temporary default, all rows should have a real value now
     // and all new rows will have a value
@@ -126,8 +133,8 @@ private struct LegacyDecisions: CustomQueryable {
   var hostname: String?
   var ipAddress: String?
 
-  static func query(numBindings: Int) -> String {
-    """
+  static func query(bindings: [Postgres.Data]) -> SQLQueryString {
+    .init("""
     SELECT
       id,
       \(Deleted.NetworkDecisionTable.M5.appBundleId),
@@ -135,7 +142,7 @@ private struct LegacyDecisions: CustomQueryable {
       \(Deleted.NetworkDecisionTable.M5.hostname),
       \(Deleted.NetworkDecisionTable.M5.ipAddress)
     FROM \(Deleted.NetworkDecisionTable.M5.tableName)
-    """
+    """)
   }
 }
 
@@ -143,10 +150,10 @@ private struct UnlockRequestIds: CustomQueryable {
   var id: UUID
   var networkDecisionId: UUID
 
-  static func query(numBindings: Int) -> String {
-    """
+  static func query(bindings: [Postgres.Data]) -> SQLQueryString {
+    .init("""
     SELECT id, \(UnlockRequest.M5.networkDecisionId)
     FROM \(UnlockRequest.M5.tableName)
-    """
+    """)
   }
 }

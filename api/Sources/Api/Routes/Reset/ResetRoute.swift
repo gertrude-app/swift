@@ -1,10 +1,14 @@
+import Dependencies
 import Vapor
 
 enum ResetRoute {
   @Sendable static func handler(_ request: Request) async throws -> Response {
-    guard Env.mode != .prod else { throw Abort(.notFound) }
+    guard request.env.mode != .prod else {
+      throw Abort(.notFound)
+    }
+
     try await Reset.run()
-    let betsy = try await Current.db.find(AdminBetsy.Ids.betsy)
+    let betsy = try await request.context.db.find(AdminBetsy.Ids.betsy)
     return .init(
       status: .ok,
       headers: ["Content-Type": "text/html"],
@@ -28,7 +32,7 @@ enum ResetRoute {
         </p>
         <p>
           To test a filter suspension, use
-          <a href ="\(Env.DASHBOARD_URL)/children/\(AdminBetsy.Ids
+          <a href ="\(request.env.dashboardUrl)/children/\(AdminBetsy.Ids
         .jimmysId)/suspend-filter-requests/\(AdminBetsy.Ids.suspendFilter.lowercased)">
           this route</a> in the dashboard web app:<br />
         </p>

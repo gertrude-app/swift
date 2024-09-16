@@ -1,48 +1,45 @@
+import Dependencies
 import XCTest
 import XExpect
 
 @testable import Api
 
 final class SubscriptionManagerTests: ApiTestCase {
-  override func setUp() async throws {
-    Current.date = { .reference }
-  }
-
   func testAdvanceExpiredFn() async throws {
-    try await Admin.deleteAll()
-    try await DeletedEntity.deleteAll()
+    try await self.db.delete(all: Admin.self)
+    try await self.db.delete(all: DeletedEntity.self)
 
     let nonExpired = Admin.random {
       $0.subscriptionStatus = .trialing
-      $0.subscriptionStatusExpiration = .reference.advanced(by: .days(40))
+      $0.subscriptionStatusExpiration = .reference + .days(40)
     }
 
     let trialEndingSoon = Admin.random {
       $0.subscriptionStatus = .trialing
-      $0.subscriptionStatusExpiration = .reference.advanced(by: .days(-1))
+      $0.subscriptionStatusExpiration = .reference - .days(1)
     }
 
     let shouldDelete = Admin.random {
       $0.subscriptionStatus = .pendingAccountDeletion
-      $0.subscriptionStatusExpiration = .reference.advanced(by: .days(-1))
+      $0.subscriptionStatusExpiration = .reference - .days(1)
     }
 
-    try await Admin.create([nonExpired, trialEndingSoon, shouldDelete])
+    try await self.db.create([nonExpired, trialEndingSoon, shouldDelete])
     try await SubscriptionManager().advanceExpired()
 
-    let retrievedNonExpired = try await Admin.find(nonExpired.id)
+    let retrievedNonExpired = try await self.db.find(nonExpired.id)
     expect(retrievedNonExpired.subscriptionStatus).toEqual(.trialing)
     expect(retrievedNonExpired.subscriptionStatusExpiration)
-      .toEqual(.reference.advanced(by: .days(40)))
+      .toEqual(.reference + .days(40))
 
-    let retrievedTrialEndingSoon = try await Admin.find(trialEndingSoon.id)
+    let retrievedTrialEndingSoon = try await self.db.find(trialEndingSoon.id)
     expect(retrievedTrialEndingSoon.subscriptionStatus).toEqual(.trialExpiringSoon)
     expect(retrievedTrialEndingSoon.subscriptionStatusExpiration)
-      .toEqual(.reference.advanced(by: .days(7)))
+      .toEqual(.reference + .days(7))
 
-    let retrievedShouldDelete = try? await Admin.find(shouldDelete.id)
+    let retrievedShouldDelete = try? await self.db.find(shouldDelete.id)
     expect(retrievedShouldDelete).toBeNil()
-    let retrievedDeleted = try await DeletedEntity.query().all()
+    let retrievedDeleted = try await self.db.select(all: DeletedEntity.self)
     expect(retrievedDeleted.count).toEqual(1)
     XCTAssert(retrievedDeleted[0].data.contains(shouldDelete.id.lowercased))
 
@@ -56,7 +53,7 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .overdue
       $0.subscriptionStatusExpiration = .distantFuture
     }
-    expect(try await subscriptionUpdate(for: admin)).toBeNil()
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toBeNil()
   }
 
   func testTrialExpiringSoon() async throws {
@@ -64,8 +61,8 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .trialing
       $0.subscriptionStatusExpiration = .epoch
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .trialExpiringSoon, expiration: .reference.advanced(by: .days(7))),
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .trialExpiringSoon, expiration: .reference + .days(7)),
       email: .trialEndingSoon
     ))
   }
@@ -75,19 +72,19 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .trialExpiringSoon
       $0.subscriptionStatusExpiration = .epoch
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .overdue, expiration: .reference.advanced(by: .days(14))),
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .overdue, expiration: .reference + .days(14)),
       email: nil // <-- no email, they never onboarded
     ))
   }
 
   func testTrialEnded_Onboarded() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionStatus = .trialExpiringSoon
       $0.subscriptionStatusExpiration = .epoch
     }.withOnboardedChild().model
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .overdue, expiration: .reference.advanced(by: .days(14))),
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .overdue, expiration: .reference + .days(14)),
       email: .trialEndedToOverdue
     ))
   }
@@ -97,19 +94,19 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .overdue
       $0.subscriptionStatusExpiration = .epoch
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .unpaid, expiration: .reference.advanced(by: .days(365))),
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .unpaid, expiration: .reference + .days(365)),
       email: nil // <-- no email, they never onboarded
     ))
   }
 
   func testOverdueToUnpaid_Onboarded() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionStatus = .overdue
       $0.subscriptionStatusExpiration = .epoch
     }.withOnboardedChild().model
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .unpaid, expiration: .reference.advanced(by: .days(365))),
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .unpaid, expiration: .reference + .days(365)),
       email: .overdueToUnpaid
     ))
   }
@@ -119,24 +116,24 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .unpaid
       $0.subscriptionStatusExpiration = .epoch
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
       action: .update(
         status: .pendingAccountDeletion,
-        expiration: .reference.advanced(by: .days(30))
+        expiration: .reference + .days(30)
       ),
       email: nil // <-- no email, they never onboarded
     ))
   }
 
   func testUnpaidToPendingDeletion_Onboarded() async throws {
-    let admin = try await Entities.admin {
+    let admin = try await self.admin {
       $0.subscriptionStatus = .unpaid
       $0.subscriptionStatusExpiration = .epoch
     }.withOnboardedChild().model
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
       action: .update(
         status: .pendingAccountDeletion,
-        expiration: .reference.advanced(by: .days(30))
+        expiration: .reference + .days(30)
       ),
       email: .unpaidToPendingDelete
     ))
@@ -147,7 +144,7 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .pendingAccountDeletion
       $0.subscriptionStatusExpiration = .epoch
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
       action: .delete(reason: "account unpaid > 1yr"),
       email: nil
     ))
@@ -158,7 +155,7 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .pendingEmailVerification
       $0.subscriptionStatusExpiration = .epoch
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
       action: .delete(reason: "email never verified"),
       email: .deleteEmailUnverified
     ))
@@ -169,8 +166,8 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .paid
       $0.subscriptionStatusExpiration = .epoch
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .overdue, expiration: .reference.advanced(by: .days(14))),
+    expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .overdue, expiration: .reference + .days(14)),
       email: .paidToOverdue
     ))
   }
@@ -182,20 +179,24 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatusExpiration = .epoch
     }
 
-    let nextExpiration = Date.reference.advanced(by: .days(27))
-    Current.stripe.getSubscription = { subsId in
-      expect(subsId).toEqual("sub-123")
-      return .init(
-        id: subsId,
-        status: .active,
-        customer: "cs-123",
-        currentPeriodEnd: Int(Date.epoch.distance(to: nextExpiration))
-      )
+    let nextExpiration = Date.reference + .days(27)
+
+    try await withDependencies {
+      $0.stripe.getSubscription = { subsId in
+        expect(subsId).toEqual("sub-123")
+        return .init(
+          id: subsId,
+          status: .active,
+          customer: "cs-123",
+          currentPeriodEnd: Int(Date.epoch.distance(to: nextExpiration))
+        )
+      }
+    } operation: {
+      expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+        action: .update(status: .paid, expiration: nextExpiration + .days(2)),
+        email: nil
+      ))
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .paid, expiration: nextExpiration.advanced(by: .days(2))),
-      email: nil
-    ))
   }
 
   func testOverdueToPaid() async throws {
@@ -204,19 +205,47 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatus = .overdue
       $0.subscriptionStatusExpiration = .epoch
     }
-    let nextExpiration = Date.reference.advanced(by: .days(27))
-    Current.stripe.getSubscription = { subsId in
-      expect(subsId).toEqual("sub-123")
-      return .init(
-        id: subsId,
-        status: .active,
-        customer: "cs-123",
-        currentPeriodEnd: Int(Date.epoch.distance(to: nextExpiration))
-      )
+    let nextExpiration = Date.reference + .days(27)
+    try await withDependencies {
+      $0.stripe.getSubscription = { subsId in
+        expect(subsId).toEqual("sub-123")
+        return .init(
+          id: subsId,
+          status: .active,
+          customer: "cs-123",
+          currentPeriodEnd: Int(Date.epoch.distance(to: nextExpiration))
+        )
+      }
+    } operation: {
+      expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+        action: .update(status: .paid, expiration: nextExpiration + .days(2)),
+        email: nil
+      ))
     }
-    expect(try await subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .paid, expiration: nextExpiration.advanced(by: .days(2))),
-      email: nil
-    ))
+  }
+}
+
+private extension AdminEntities {
+  func withOnboardedChild(
+    config: (inout User, inout UserDevice, inout Device) -> Void = { _, _, _ in }
+  ) async throws -> AdminWithOnboardedChildEntities {
+    @Dependency(\.db) var db
+    var child = User.random { $0.adminId = model.id }
+    var adminDevice = Device.random { $0.adminId = model.id }
+    var userDevice = UserDevice.random {
+      $0.userId = child.id
+      $0.deviceId = adminDevice.id
+    }
+    config(&child, &userDevice, &adminDevice)
+    try await db.create(child)
+    try await db.create(adminDevice)
+    try await db.create(userDevice)
+    return .init(
+      model: self.model,
+      token: self.token,
+      child: child,
+      userDevice: userDevice,
+      adminDevice: adminDevice
+    )
   }
 }

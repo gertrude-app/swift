@@ -44,136 +44,136 @@ enum AuthedAdminRoute: PairRoute {
 extension AuthedAdminRoute {
   nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, AuthedAdminRoute> =
     OneOf {
-      Route(/Self.confirmPendingNotificationMethod) {
+      Route(.case(Self.confirmPendingNotificationMethod)) {
         Operation(ConfirmPendingNotificationMethod.self)
         Body(.dashboardInput(ConfirmPendingNotificationMethod.self))
       }
-      Route(/Self.createPendingAppConnection) {
+      Route(.case(Self.createPendingAppConnection)) {
         Operation(CreatePendingAppConnection.self)
         Body(.dashboardInput(CreatePendingAppConnection.self))
       }
-      Route(/Self.createPendingNotificationMethod) {
+      Route(.case(Self.createPendingNotificationMethod)) {
         Operation(CreatePendingNotificationMethod.self)
         Body(.dashboardInput(CreatePendingNotificationMethod.self))
       }
-      Route(/Self.decideFilterSuspensionRequest) {
+      Route(.case(Self.decideFilterSuspensionRequest)) {
         Operation(DecideFilterSuspensionRequest.self)
         Body(.dashboardInput(DecideFilterSuspensionRequest.self))
       }
-      Route(/Self.deleteActivityItems_v2) {
+      Route(.case(Self.deleteActivityItems_v2)) {
         Operation(DeleteActivityItems_v2.self)
         Body(.dashboardInput(DeleteActivityItems_v2.self))
       }
-      Route(/Self.deleteEntity) {
+      Route(.case(Self.deleteEntity)) {
         Operation(DeleteEntity.self)
         Body(.dashboardInput(DeleteEntity.self))
       }
-      Route(/Self.getAdmin) {
+      Route(.case(Self.getAdmin)) {
         Operation(GetAdmin.self)
       }
-      Route(/Self.getAdminKeychain) {
+      Route(.case(Self.getAdminKeychain)) {
         Operation(GetAdminKeychain.self)
         Body(.dashboardInput(GetAdminKeychain.self))
       }
-      Route(/Self.getAdminKeychains) {
+      Route(.case(Self.getAdminKeychains)) {
         Operation(GetAdminKeychains.self)
       }
-      Route(/Self.getDashboardWidgets) {
+      Route(.case(Self.getDashboardWidgets)) {
         Operation(GetDashboardWidgets.self)
       }
-      Route(/Self.getDevice) {
+      Route(.case(Self.getDevice)) {
         Operation(GetDevice.self)
         Body(.dashboardInput(GetDevice.self))
       }
-      Route(/Self.getDevices) {
+      Route(.case(Self.getDevices)) {
         Operation(GetDevices.self)
       }
-      Route(/Self.getIdentifiedApps) {
+      Route(.case(Self.getIdentifiedApps)) {
         Operation(GetIdentifiedApps.self)
       }
-      Route(/Self.getSelectableKeychains) {
+      Route(.case(Self.getSelectableKeychains)) {
         Operation(GetSelectableKeychains.self)
       }
-      Route(/Self.getSuspendFilterRequest) {
+      Route(.case(Self.getSuspendFilterRequest)) {
         Operation(GetSuspendFilterRequest.self)
         Body(.dashboardInput(GetSuspendFilterRequest.self))
       }
-      Route(/Self.getUnlockRequest) {
+      Route(.case(Self.getUnlockRequest)) {
         Operation(GetUnlockRequest.self)
         Body(.dashboardInput(GetUnlockRequest.self))
       }
-      Route(/Self.getUnlockRequests) {
+      Route(.case(Self.getUnlockRequests)) {
         Operation(GetUnlockRequests.self)
       }
-      Route(/Self.getUser) {
+      Route(.case(Self.getUser)) {
         Operation(GetUser.self)
         Body(.dashboardInput(GetUser.self))
       }
-      Route(/Self.handleCheckoutCancel) {
+      Route(.case(Self.handleCheckoutCancel)) {
         Operation(HandleCheckoutCancel.self)
         Body(.dashboardInput(HandleCheckoutCancel.self))
       }
-      Route(/Self.handleCheckoutSuccess) {
+      Route(.case(Self.handleCheckoutSuccess)) {
         Operation(HandleCheckoutSuccess.self)
         Body(.dashboardInput(HandleCheckoutSuccess.self))
       }
-      Route(/Self.logEvent) {
+      Route(.case(Self.logEvent)) {
         Operation(LogEvent.self)
         Body(.dashboardInput(LogEvent.self))
       }
-      Route(/Self.userActivitySummaries) {
+      Route(.case(Self.userActivitySummaries)) {
         Operation(UserActivitySummaries.self)
         Body(.dashboardInput(UserActivitySummaries.self))
       }
-      Route(/Self.userActivityFeed) {
+      Route(.case(Self.userActivityFeed)) {
         Operation(UserActivityFeed.self)
         Body(.dashboardInput(UserActivityFeed.self))
       }
-      Route(/Self.combinedUsersActivityFeed) {
+      Route(.case(Self.combinedUsersActivityFeed)) {
         Operation(CombinedUsersActivityFeed.self)
         Body(.dashboardInput(CombinedUsersActivityFeed.self))
       }
-      Route(/Self.getUsers) {
+      Route(.case(Self.getUsers)) {
         Operation(GetUsers.self)
       }
-      Route(/Self.getUserUnlockRequests) {
+      Route(.case(Self.getUserUnlockRequests)) {
         Operation(GetUserUnlockRequests.self)
         Body(.dashboardInput(GetUserUnlockRequests.self))
       }
-      Route(/Self.latestAppVersions) {
+      Route(.case(Self.latestAppVersions)) {
         Operation(LatestAppVersions.self)
       }
-      Route(/Self.saveDevice) {
+      Route(.case(Self.saveDevice)) {
         Operation(SaveDevice.self)
         Body(.dashboardInput(SaveDevice.self))
       }
-      Route(/Self.saveKey) {
+      Route(.case(Self.saveKey)) {
         Operation(SaveKey.self)
         Body(.dashboardInput(SaveKey.self))
       }
-      Route(/Self.saveKeychain) {
+      Route(.case(Self.saveKeychain)) {
         Operation(SaveKeychain.self)
         Body(.dashboardInput(SaveKeychain.self))
       }
-      Route(/Self.saveNotification) {
+      Route(.case(Self.saveNotification)) {
         Operation(SaveNotification.self)
         Body(.dashboardInput(SaveNotification.self))
       }
-      Route(/Self.saveUser) {
+      Route(.case(Self.saveUser)) {
         Operation(SaveUser.self)
         Body(.dashboardInput(SaveUser.self))
       }
-      Route(/Self.stripeUrl) {
+      Route(.case(Self.stripeUrl)) {
         Operation(StripeUrl.self)
       }
-      Route(/Self.securityEventsFeed) {
+      Route(.case(Self.securityEventsFeed)) {
         Operation(SecurityEventsFeed.self)
       }
-      Route(/Self.updateUnlockRequest) {
+      Route(.case(Self.updateUnlockRequest)) {
         Operation(UpdateUnlockRequest.self)
         Body(.dashboardInput(UpdateUnlockRequest.self))
       }
-      Route(/Self.combinedUsersActivitySummaries) {
+      Route(.case(Self.combinedUsersActivitySummaries)) {
         Operation(CombinedUsersActivitySummaries.self)
         Body(.dashboardInput(CombinedUsersActivitySummaries.self))
       }

@@ -1,3 +1,4 @@
+import Dependencies
 import XSlack
 
 extension XSlack.Slack.Client {
@@ -17,7 +18,9 @@ extension XSlack.Slack.Client {
   }
 
   func sysLog(to channel: String = "info", _ message: String) async {
-    guard let token = Env.get("SLACK_API_TOKEN"), Env.mode != .staging else {
+    @Dependency(\.env) var env
+    guard let token = env.get("SLACK_API_TOKEN"),
+          env.mode != .staging else {
       return
     }
 
@@ -28,7 +31,8 @@ extension XSlack.Slack.Client {
     )
 
     if let error = await send(slack, token) {
-      Current.logger.error("Error sending slack: \(error)")
+      with(dependency: \.logger)
+        .error("Error sending slack: \(error)")
     }
   }
 }

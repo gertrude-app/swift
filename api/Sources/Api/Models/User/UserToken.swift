@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Tagged
 
@@ -14,10 +15,11 @@ struct UserToken: Codable, Sendable {
     id: Id = .init(),
     userId: User.Id,
     userDeviceId: UserDevice.Id? = nil,
-    value: Value = .init(Current.uuid())
+    value: Value? = nil
   ) {
+    @Dependency(\.uuid) var uuid
     self.id = id
-    self.value = value
+    self.value = value ?? .init(uuid())
     self.userId = userId
     self.userDeviceId = userDeviceId
   }
@@ -32,16 +34,16 @@ extension UserToken {
 // loaders
 
 extension UserToken {
-  func user() async throws -> User {
-    try await Current.db.query(User.self)
+  func user(in db: any DuetSQL.Client) async throws -> User {
+    try await User.query()
       .where(.id == self.userId)
-      .first()
+      .first(in: db)
   }
 
-  func userDevice() async throws -> UserDevice? {
+  func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice? {
     guard let userDeviceId else { return nil }
-    return try await Current.db.query(UserDevice.self)
+    return try await UserDevice.query()
       .where(.id == userDeviceId)
-      .first()
+      .first(in: db)
   }
 }
