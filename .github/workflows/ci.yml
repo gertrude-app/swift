@@ -83,8 +83,51 @@ jobs:
           path: api/.build
           key: api-${{ hashFiles('api/Package.resolved') }}
           restore-keys: api-
+      - name: meta
+        id: meta
+        uses: friends-library/dev/actions/ts-pack/actions/meta@master
+        with:
+          github_token: ${{ github.token }}
+      - name: set-env-vars
+        run: |
+          DATESTR=$(TZ=America/New_York date +'%Y.%m.%d_%I.%M%p')
+          SHORTSHA=${{ steps.meta.outputs.latest_commit_sha_short }}
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            API_ENV=production
+            echo "SRCDIR=api/.build/release" >> $GITHUB_ENV
+            echo "DESTDIR=builds/production" >> $GITHUB_ENV
+            echo "CONFIGURATION=release"     >> $GITHUB_ENV
+          else
+            API_ENV=staging
+            echo "SRCDIR=api/.build/debug"   >> $GITHUB_ENV
+            echo "DESTDIR=builds/staging"    >> $GITHUB_ENV
+            echo "CONFIGURATION=debug"       >> $GITHUB_ENV
+          fi
+          echo "FILENAME=api_${API_ENV}_${DATESTR}_${SHORTSHA}" >> $GITHUB_ENV
       - name: build-api
-        run: cd api && swift build
+        run: |
+          cd api && swift build --static-swift-stdlib -c $CONFIGURATION
+          cd ../ && cp ${SRCDIR}/Run ${FILENAME}
+      - name: scp-bin
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: api.gertrude.app
+          username: ${{ secrets.API_SERVER_SSH_USER }}
+          key: ${{ secrets.API_SERVER_SSH_KEY }}
+          source: '${{ env.FILENAME }}'
+          target: '${{ env.DESTDIR }}'
+      - name: ssh-tasks
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: api.gertrude.app
+          username: ${{ secrets.API_SERVER_SSH_USER }}
+          key: ${{ secrets.API_SERVER_SSH_KEY }}
+          envs: DESTDIR,FILENAME
+          script: |
+            ln -sf "./${FILENAME}" "${DESTDIR}/latest"
+            chmod +x "${DESTDIR}/${FILENAME}"
+            chmod +x "${DESTDIR}/latest"
+            pm2 restart staging
 
   linux-api-test:
     runs-on: ubuntu-latest
