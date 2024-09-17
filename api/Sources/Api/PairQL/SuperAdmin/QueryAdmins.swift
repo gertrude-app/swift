@@ -136,7 +136,7 @@ struct AdminQuery: CustomQueryable {
         admins.subscription_status,
         admins.ab_test_variant,
         admins.created_at AS admin_created_at,
-        COUNT(DISTINCT CASE WHEN keychains.deleted_at IS NULL THEN keychains.id END) AS num_keychains,
+        COUNT(DISTINCT keychains.id) AS num_keychains,
         COALESCE(an.num_notifications, 0) AS num_notifications,
         users.id AS user_id,
         users.name as user_name,
@@ -156,7 +156,7 @@ struct AdminQuery: CustomQueryable {
         devices.app_release_channel,
         devices.id AS device_id
     FROM admins
-    LEFT JOIN keychains ON admins.id = keychains.author_id AND keychains.deleted_at IS NULL
+    LEFT JOIN keychains ON admins.id = keychains.author_id
     LEFT JOIN (
         SELECT admin_id, COUNT(DISTINCT id) AS num_notifications
         FROM admin_notifications
@@ -182,7 +182,6 @@ struct AdminQuery: CustomQueryable {
     LEFT JOIN user_keychain ON users.id = user_keychain.user_id
     LEFT JOIN keys ON user_keychain.keychain_id = keys.keychain_id
     WHERE
-      users.deleted_at IS NULL AND
       admins.email NOT LIKE '%.smoke-test-%'
     GROUP BY
       admins.id,
