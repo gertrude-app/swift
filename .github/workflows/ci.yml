@@ -1,6 +1,9 @@
 name: basic-ci
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
 
 jobs:
@@ -90,9 +93,10 @@ jobs:
           github_token: ${{ github.token }}
       - name: set-env-vars
         run: |
+          echo ${{ github.ref }}
           DATESTR=$(TZ=America/New_York date +'%Y.%m.%d_%I.%M%p')
           SHORTSHA=${{ steps.meta.outputs.latest_commit_sha_short }}
-          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             API_ENV=production
             echo "SRCDIR=api/.build/release" >> $GITHUB_ENV
             echo "DESTDIR=builds/production" >> $GITHUB_ENV
