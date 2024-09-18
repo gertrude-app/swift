@@ -20,7 +20,7 @@ extension HandleCheckoutCancel: Resolver {
 
     let detail = "admin: \(context.admin.id), session: \(try JSON.encode(session)))"
     with(dependency: \.sendgrid)
-      .fireAndForget(.toJared("Checkout canceled", detail))
+      .fireAndForget(.toSuperAdmin("Checkout canceled", detail))
 
     return .success
   }

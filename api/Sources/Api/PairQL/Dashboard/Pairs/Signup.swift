@@ -35,14 +35,14 @@ extension Signup: Resolver {
 
     if existing != nil {
       if context.env.mode == .prod, !isTestAddress(email) {
-        sendgrid.fireAndForget(.toJared("signup [exists]", email))
+        sendgrid.fireAndForget(.toSuperAdmin("signup [exists]", email))
       }
       try await postmark.send(accountExists(with: email))
       return .success
     }
 
     if context.env.mode == .prod, !isTestAddress(email) {
-      sendgrid.fireAndForget(.toJared(
+      sendgrid.fireAndForget(.toSuperAdmin(
         "signup",
         [
           "email: \(email)",

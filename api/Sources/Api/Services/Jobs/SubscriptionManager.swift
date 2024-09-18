@@ -71,7 +71,7 @@ struct SubscriptionManager: AsyncScheduledJob {
     }
 
     if self.env.mode == .prod, !logs.isEmpty {
-      self.sendgrid.fireAndForget(.toJared(
+      self.sendgrid.fireAndForget(.toSuperAdmin(
         "Gertrude subscription manager events",
         "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>"
       ))

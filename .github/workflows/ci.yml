@@ -93,7 +93,6 @@ jobs:
           github_token: ${{ github.token }}
       - name: set-env-vars
         run: |
-          echo ${{ github.ref }}
           DATESTR=$(TZ=America/New_York date +'%Y.%m.%d_%I.%M%p')
           SHORTSHA=${{ steps.meta.outputs.latest_commit_sha_short }}
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
@@ -213,6 +212,8 @@ env:
   ANALYTICS_SITE_URL: /analytics
   SENDGRID_API_KEY: not-real
   POSTMARK_API_KEY: not-real
+  PRIMARY_SUPPORT_EMAIL: not-real
+  SUPER_ADMIN_EMAIL: not-real
   STRIPE_SUBSCRIPTION_PRICE_ID: not-real
   STRIPE_SECRET_KEY: not-real
   SWIFT_DETERMINISTIC_HASHING: 1
