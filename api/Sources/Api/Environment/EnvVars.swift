@@ -11,6 +11,8 @@ public struct Env: Sendable {
   public var dashboardUrl: String
   public var twilio: Twilio
   public var stripe: Stripe
+  public var primarySupportEmail: String
+  public var superAdminEmail: String
   public var analyticsSiteUrl: String
   public var get: @Sendable (String) -> String?
 
@@ -113,6 +115,8 @@ extension Env: DependencyKey {
         secretKey: processEnv("STRIPE_SECRET_KEY"),
         subscriptionPriceId: processEnv("STRIPE_SUBSCRIPTION_PRICE_ID")
       ),
+      primarySupportEmail: processEnv("PRIMARY_SUPPORT_EMAIL"),
+      superAdminEmail: processEnv("SUPER_ADMIN_EMAIL"),
       analyticsSiteUrl: processEnv("ANALYTICS_SITE_URL"),
       get: { ProcessInfo.processInfo.environment[$0] }
     )

@@ -5,7 +5,7 @@ import Tagged
 struct UserToken: Codable, Sendable {
   var id: Id
   var userId: User.Id
-  var userDeviceId: UserDevice.Id? // TODO: why is this nullable?
+  var userDeviceId: UserDevice.Id
   var value: Value
   var createdAt = Date()
   var updatedAt = Date()
@@ -14,7 +14,7 @@ struct UserToken: Codable, Sendable {
   init(
     id: Id = .init(),
     userId: User.Id,
-    userDeviceId: UserDevice.Id? = nil,
+    userDeviceId: UserDevice.Id,
     value: Value? = nil
   ) {
     @Dependency(\.uuid) var uuid
@@ -40,10 +40,9 @@ extension UserToken {
       .first(in: db)
   }
 
-  func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice? {
-    guard let userDeviceId else { return nil }
-    return try await UserDevice.query()
-      .where(.id == userDeviceId)
+  func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice {
+    try await UserDevice.query()
+      .where(.id == self.userDeviceId)
       .first(in: db)
   }
 }

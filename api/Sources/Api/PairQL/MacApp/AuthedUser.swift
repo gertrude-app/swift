@@ -13,10 +13,7 @@ struct UserContext: ResolverContext {
   @Dependency(\.db) var db
 
   func userDevice() async throws -> UserDevice {
-    guard let userDevice = try await token.userDevice(in: self.db) else {
-      throw Abort(.notFound, reason: "missing user device")
-    }
-    return userDevice
+    try await self.token.userDevice(in: self.db)
   }
 }
 

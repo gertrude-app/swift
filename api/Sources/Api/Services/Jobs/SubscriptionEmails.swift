@@ -22,7 +22,7 @@ enum SubscriptionEmails {
     .init(
       to: address,
       from: "Gertrude App <noreply@gertrude.app>",
-      replyTo: "jared@netrivet.com",
+      replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude trial ending soon".withEmailSubjectDisambiguator,
       html: """
       <p>Hi there! 👋</p>
@@ -49,7 +49,7 @@ enum SubscriptionEmails {
     .init(
       to: address,
       from: "Gertrude App <noreply@gertrude.app>",
-      replyTo: "jared@netrivet.com",
+      replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude trial ended".withEmailSubjectDisambiguator,
       html: """
       <p>Gertrude parent account holder,</p>
@@ -86,7 +86,7 @@ enum SubscriptionEmails {
     .init(
       to: address,
       from: "Gertrude App <noreply@gertrude.app>",
-      replyTo: "jared@netrivet.com",
+      replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude account disabled".withEmailSubjectDisambiguator,
       html: """
       <p>Gertrude parent account holder,</p>
@@ -122,7 +122,7 @@ enum SubscriptionEmails {
     .init(
       to: address,
       from: "Gertrude App <noreply@gertrude.app>",
-      replyTo: "jared@netrivet.com",
+      replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude payment failed".withEmailSubjectDisambiguator,
       html: """
       <p>Gertrude parent account holder,</p>
@@ -162,7 +162,7 @@ enum SubscriptionEmails {
     .init(
       to: address,
       from: "Gertrude App <noreply@gertrude.app>",
-      replyTo: "jared@netrivet.com",
+      replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude account will be deleted".withEmailSubjectDisambiguator,
       html: """
       <p>Gertrude parent account holder,</p>
@@ -190,7 +190,7 @@ enum SubscriptionEmails {
     .init(
       to: address,
       from: "Gertrude App <noreply@gertrude.app>",
-      replyTo: "jared@netrivet.com",
+      replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "Gertrude unverified account deleted".withEmailSubjectDisambiguator,
       html: """
       <p>Hi there! 👋</p>

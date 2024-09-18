@@ -3,8 +3,6 @@ import DuetSQL
 import FluentKit
 import PostgresKit
 import XAws
-import XPostmark
-import XSendGrid
 import XSlack
 import XStripe
 
@@ -44,35 +42,9 @@ public extension DependencyValues {
   }
 }
 
-public extension DependencyValues {
-  var postmark: XPostmark.Client {
-    get { self[XPostmark.Client.self] }
-    set { self[XPostmark.Client.self] = newValue }
-  }
-}
-
 extension XSlack.Slack.Client: DependencyKey {
   public static var liveValue: XSlack.Slack.Client {
     .live
-  }
-}
-
-extension XPostmark.Client: DependencyKey {
-  public static var liveValue: XPostmark.Client {
-    .live(apiKey: get(dependency: \.env.postmarkApiKey))
-  }
-}
-
-public extension DependencyValues {
-  var sendgrid: SendGrid.Client {
-    get { self[SendGrid.Client.self] }
-    set { self[SendGrid.Client.self] = newValue }
-  }
-}
-
-extension SendGrid.Client: DependencyKey {
-  public static var liveValue: SendGrid.Client {
-    .live(apiKey: get(dependency: \.env.sendgridApiKey))
   }
 }
 
@@ -185,14 +157,6 @@ private enum LoggerKey: DependencyKey {
     public static var testValue: XSlack.Slack.Client {
       .init(send: { _, _ in
         unimplemented("XSlack.Client.send()", placeholder: "")
-      })
-    }
-  }
-
-  extension SendGrid.Client: TestDependencyKey {
-    public static var testValue: SendGrid.Client {
-      .init(send: { _ in
-        unimplemented("SendGrid.Client.send()", placeholder: ())
       })
     }
   }

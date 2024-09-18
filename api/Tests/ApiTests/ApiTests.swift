@@ -127,6 +127,7 @@ final class ApiTests: ApiTestCase {
 
   func testResolveUsersAdminAccountStatus() async throws {
     let user = try await self.user(withAdmin: { $0.subscriptionStatus = .paid })
+      .withDevice()
     let context = UserContext(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
     let output = try await GetAccountStatus.resolve(in: context)
     expect(output.status).toEqual(.active)

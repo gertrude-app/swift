@@ -32,7 +32,8 @@ extension SuperAdminRoute {
 extension SuperAdminRoute: RouteResponder {
   static func respond(to route: Self, in context: Context) async throws -> Response {
     guard case .authed(let token, let authedRoute) = route,
-          token.uuidString.lowercased() == context.env.get("SUPER_ADMIN_TOKEN") else {
+          let superAdminToken = context.env.get("SUPER_ADMIN_TOKEN"),
+          token.uuidString.lowercased() == superAdminToken else {
       throw Abort(.notFound)
     }
 

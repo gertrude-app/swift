@@ -29,5 +29,6 @@ extension Configure {
     app.migrations.add(ModifySecurityEventsTable())
     app.migrations.add(AddExtraMonitoring())
     app.migrations.add(RemoveSoftDeletes())
+    app.migrations.add(RemoveUserTokenNullable())
   }
 }

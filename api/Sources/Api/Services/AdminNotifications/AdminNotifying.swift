@@ -46,9 +46,9 @@ extension Email {
     )
   }
 
-  static func toJared(_ subject: String, _ html: String) -> Email {
+  static func toSuperAdmin(_ subject: String, _ html: String) -> Email {
     .init(
-      to: .init(email: "jared@netrivet.com"),
+      to: .init(email: get(dependency: \.env).superAdminEmail),
       from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
       subject: "Gertrude " + subject.withEmailSubjectDisambiguator,
       html: html
@@ -58,7 +58,7 @@ extension Email {
   static func unexpected(_ id: String, _ detail: String = "") -> Email {
     let search = "https://github.com/search?q=repo%3Agertrude-app%2Fswift%20\(id)&type=code"
     return .init(
-      to: .init(email: "jared@netrivet.com"),
+      to: .init(email: get(dependency: \.env).superAdminEmail),
       from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
       subject: "Gertrude API unexpected event".withEmailSubjectDisambiguator,
       html: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)"

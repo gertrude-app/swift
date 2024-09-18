@@ -27,12 +27,21 @@ enum SiteFormsRoute {
     Task {
       await with(dependency: \.slack).sysLog(data.slackText)
       try await with(dependency: \.sendgrid).send(.init(
-        to: "jared@netrivet.com",
+        to: .init(email: req.env.primarySupportEmail),
         from: "Gertrude App <noreply@gertrude.app>",
         replyTo: .init(email: data.email),
         subject: data.form.name + " Submission".withEmailSubjectDisambiguator,
         text: data.emailBody
       ))
+      if let backupEmail = req.env.get("BACKUP_SUPPORT_EMAIL") {
+        try await with(dependency: \.sendgrid).send(.init(
+          to: .init(email: backupEmail),
+          from: "Gertrude App <noreply@gertrude.app>",
+          replyTo: .init(email: data.email),
+          subject: data.form.name + " Submission".withEmailSubjectDisambiguator,
+          text: data.emailBody
+        ))
+      }
     }
 
     return Response(

@@ -5,20 +5,14 @@ import Dependencies
 @dynamicMemberLookup
 class UserEntities {
   var model: User
-  var token: UserToken
   var admin: AdminEntities
-
-  var context: UserContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
-  }
 
   subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
     self.model[keyPath: keyPath]
   }
 
-  init(model: User, token: UserToken, admin: AdminEntities) {
+  init(model: User, admin: AdminEntities) {
     self.model = model
-    self.token = token
     self.admin = admin
   }
 }
@@ -119,8 +113,7 @@ extension ApiTestCase {
       userConfig(&$0)
       $0.adminId = admin.id
     })
-    let token = try await self.db.create(UserToken(userId: user.id))
-    return UserEntities(model: user, token: token, admin: admin)
+    return UserEntities(model: user, admin: admin)
   }
 
   func userWithDevice() async throws -> UserWithDeviceEntities {
@@ -132,13 +125,15 @@ extension ApiTestCase {
       $0.userId = user.model.id
       $0.deviceId = device.id
     })
-    user.token.userDeviceId = userDevice.id
-    try await self.db.update(user.token)
+    let token = try await self.db.create(UserToken(
+      userId: user.id,
+      userDeviceId: userDevice.id
+    ))
     return .init(
       model: user.model,
       adminDevice: device,
       device: userDevice,
-      token: user.token,
+      token: token,
       admin: user.admin
     )
   }
@@ -175,13 +170,15 @@ extension UserEntities {
       $0.userId = model.id
       $0.deviceId = device.id
     })
-    self.token.userDeviceId = userDevice.id
-    try await db.update(self.token)
+    let token = try await db.create(UserToken(
+      userId: self.model.id,
+      userDeviceId: userDevice.id
+    ))
     return .init(
       model: self.model,
       adminDevice: device,
       device: userDevice,
-      token: self.token,
+      token: token,
       admin: self.admin
     )
   }

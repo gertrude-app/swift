@@ -13,7 +13,7 @@ final class RefreshResolverTests: ApiTestCase {
       $0.screenshotsEnabled = true
       $0.screenshotsFrequency = 376
       $0.screenshotsResolution = 1081
-    })
+    }).withDevice()
 
     let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
     expect(output.keyloggingEnabled).toBeFalse()
@@ -33,13 +33,13 @@ final class RefreshResolverTests: ApiTestCase {
     id.identifiedAppId = app.id
     try await self.db.create(id)
 
-    let user = try await self.user()
+    let user = try await self.userWithDevice()
     let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
     expect(output.appManifest.apps).toEqual([app.slug: [id.bundleId]])
   }
 
   func testUserWithNoKeychainsDoesNotGetAutoIncluded() async throws {
-    let user = try await self.user()
+    let user = try await self.userWithDevice()
     try await createAutoIncludeKeychain()
 
     let output = try await RefreshRules.resolve(with: .init(appVersion: "1"), in: user.context)
@@ -47,7 +47,7 @@ final class RefreshResolverTests: ApiTestCase {
   }
 
   func testUserWithAtLeastOneKeyGetsAutoIncluded() async throws {
-    let user = try await self.user()
+    let user = try await self.userWithDevice()
     let admin = try await self.admin().withKeychain()
     try await self.db.create(UserKeychain(userId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
