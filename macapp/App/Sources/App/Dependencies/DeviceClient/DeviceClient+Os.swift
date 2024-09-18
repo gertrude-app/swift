@@ -1,13 +1,13 @@
 import Foundation
 
 struct MacOSVersion: Sendable {
-  enum Name: String {
+  enum Name: String, Codable {
     case catalina
     case bigSur
     case monterey
     case ventura
     case sonoma
-    case next
+    case sequoia
   }
 
   let major: Int
@@ -25,7 +25,8 @@ struct MacOSVersion: Sendable {
     case (12, _): return .monterey
     case (13, _): return .ventura
     case (14, _): return .sonoma
-    default: return .next
+    case (15, _): return .sequoia
+    default: return .sequoia
     }
   }
 
@@ -43,27 +44,9 @@ struct MacOSVersion: Sendable {
   )
 }
 
-extension MacOSVersion {
-  enum DocumentationGroup: String, Encodable {
-    case catalina
-    case bigSurOrMonterey
-    case venturaOrLater
-  }
-
-  var documentationGroup: DocumentationGroup {
-    switch self.name {
-    case .catalina:
-      return .catalina
-    case .bigSur, .monterey:
-      return .bigSurOrMonterey
-    case .ventura, .sonoma, .next:
-      return .venturaOrLater
-    }
-  }
-}
-
 #if DEBUG
   extension MacOSVersion {
     static let sonoma = Self(major: 14, minor: 0, patch: 0)
+    static let sequoia = Self(major: 15, minor: 0, patch: 0)
   }
 #endif

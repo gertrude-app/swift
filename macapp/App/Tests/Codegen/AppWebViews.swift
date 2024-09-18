@@ -81,7 +81,7 @@ struct AppWebViews: AggregateCodeGenerator {
       at: "Onboarding/onboarding-store.ts",
       namedTypes: [
         .init(OnboardingFeature.State.Step.self, as: "OnboardingStep"),
-        .init(MacOSVersion.DocumentationGroup.self, as: "OSGroup"),
+        .init(OnboardingFeature.State.View.OsVersion.self, as: "MacOSVersion"),
         .init(OnboardingFeature.State.MacUser.RemediationStep.self, as: "UserRemediationStep"),
         .init(OnboardingFeature.State.MacUser.self, as: "MacOSUser"),
       ],
@@ -91,7 +91,6 @@ struct AppWebViews: AggregateCodeGenerator {
       ],
       localAliases: [
         (OnboardingFeature.State.Step.self, "OnboardingStep"),
-        (MacOSVersion.DocumentationGroup.self, "OSGroup"),
         (OnboardingFeature.State.MacUser.RemediationStep.self, "UserRemediationStep"),
         (OnboardingFeature.State.MacUser.self, "MacOSUser"),
         (PayloadRequestState<String, String>.self, "RequestState<string>"),
