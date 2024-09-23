@@ -119,10 +119,10 @@ struct FilterXPC: Sendable {
     }
   }
 
-  func requestExemptUserIds() async throws -> [uid_t] {
+  func requestUserTypes() async throws -> FilterUserTypes {
     try await self.establishConnection()
     return try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
-      filterProxy.receiveListExemptUserIdsRequest(reply: continuation.dataHandler)
+      filterProxy.receiveListUserTypesRequest(reply: continuation.dataHandler)
     }
   }
 

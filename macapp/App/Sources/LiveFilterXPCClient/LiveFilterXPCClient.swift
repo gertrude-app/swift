@@ -24,8 +24,8 @@ extension FilterXPCClient: DependencyKey {
       requestAck: { await .init {
         try await xpc.requestAck()
       }},
-      requestExemptUserIds: { await .init {
-        try await xpc.requestExemptUserIds()
+      requestUserTypes: { await .init {
+        try await xpc.requestUserTypes()
       }},
       sendDeleteAllStoredState: { await .init {
         try await xpc.sendDeleteAllStoredState()
@@ -90,8 +90,8 @@ actor ThreadSafeFilterXPC {
     try await self.filterXpc.setUserExemption(userId: userId, enabled: enabled)
   }
 
-  func requestExemptUserIds() async throws -> [uid_t] {
-    try await self.filterXpc.requestExemptUserIds()
+  func requestUserTypes() async throws -> FilterUserTypes {
+    try await self.filterXpc.requestUserTypes()
   }
 
   func sendDeleteAllStoredState() async throws {
