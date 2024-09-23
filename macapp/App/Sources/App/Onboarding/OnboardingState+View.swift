@@ -4,7 +4,12 @@ import Foundation
 
 extension OnboardingFeature.State {
   struct View: Equatable, Encodable, Sendable {
-    var os: MacOSVersion.DocumentationGroup
+    struct OsVersion: Equatable, Encodable, Sendable {
+      var name: MacOSVersion.Name
+      var major: Int
+    }
+
+    var osVersion: OsVersion
     var windowOpen: Bool
     var step: Step
     var userRemediationStep: MacUser.RemediationStep?
@@ -16,7 +21,8 @@ extension OnboardingFeature.State {
 
     init(state: AppReducer.State) {
       @Dependency(\.device) var device
-      self.os = device.osVersion().documentationGroup
+      let osVersion = device.osVersion()
+      self.osVersion = .init(name: osVersion.name, major: osVersion.major)
       self.windowOpen = state.onboarding.windowOpen
       self.step = state.onboarding.step
       self.userRemediationStep = state.onboarding.userRemediationStep
