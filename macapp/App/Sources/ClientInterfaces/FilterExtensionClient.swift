@@ -44,17 +44,23 @@ public struct FilterExtensionClient: Sendable {
 
 extension FilterExtensionClient: TestDependencyKey {
   public static let testValue = Self(
-    setup: unimplemented("FilterExtensionClient.setup"),
-    start: unimplemented("FilterExtensionClient.start"),
-    stop: unimplemented("FilterExtensionClient.stop"),
-    reinstall: unimplemented("FilterExtensionClient.reinstall"),
-    restart: unimplemented("FilterExtensionClient.restart"),
-    replace: unimplemented("FilterExtensionClient.replace"),
-    state: unimplemented("FilterExtensionClient.state"),
-    install: unimplemented("FilterExtensionClient.install"),
-    installOverridingTimeout: unimplemented("FilterExtensionClient.installOverridingTimeout"),
-    stateChanges: unimplemented("FilterExtensionClient.stateChanges"),
-    uninstall: unimplemented("FilterExtensionClient.uninstall")
+    setup: unimplemented("FilterExtensionClient.setup", placeholder: .unknown),
+    start: unimplemented("FilterExtensionClient.start", placeholder: .unknown),
+    stop: unimplemented("FilterExtensionClient.stop", placeholder: .unknown),
+    reinstall: unimplemented("FilterExtensionClient.reinstall", placeholder: .alreadyInstalled),
+    restart: unimplemented("FilterExtensionClient.restart", placeholder: .unknown),
+    replace: unimplemented("FilterExtensionClient.replace", placeholder: .alreadyInstalled),
+    state: unimplemented("FilterExtensionClient.state", placeholder: .unknown),
+    install: unimplemented("FilterExtensionClient.install", placeholder: .alreadyInstalled),
+    installOverridingTimeout: unimplemented(
+      "FilterExtensionClient.installOverridingTimeout",
+      placeholder: .alreadyInstalled
+    ),
+    stateChanges: unimplemented(
+      "FilterExtensionClient.stateChanges",
+      placeholder: AnyPublisher(Empty())
+    ),
+    uninstall: unimplemented("FilterExtensionClient.uninstall", placeholder: true)
   )
 
   public static let mock = Self(

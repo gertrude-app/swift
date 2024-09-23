@@ -68,13 +68,16 @@ public extension AppClient {
 
 extension AppClient: TestDependencyKey {
   public static let testValue = Self(
-    colorScheme: unimplemented("AppClient.colorScheme"),
-    colorSchemeChanges: unimplemented("AppClient.colorSchemeChanges"),
+    colorScheme: unimplemented("AppClient.colorScheme", placeholder: .light),
+    colorSchemeChanges: unimplemented(
+      "AppClient.colorSchemeChanges",
+      placeholder: AnyPublisher(Empty())
+    ),
     disableLaunchAtLogin: unimplemented("AppClient.disableLaunchAtLogin"),
     enableLaunchAtLogin: unimplemented("AppClient.enableLaunchAtLogin"),
-    isLaunchAtLoginEnabled: unimplemented("AppClient.isLaunchAtLoginEnabled"),
-    installLocation: unimplemented("AppClient.installLocation"),
-    installedVersion: unimplemented("AppClient.installedVersion"),
+    isLaunchAtLoginEnabled: unimplemented("AppClient.isLaunchAtLoginEnabled", placeholder: true),
+    installLocation: unimplemented("AppClient.installLocation", placeholder: URL(string: "/")!),
+    installedVersion: unimplemented("AppClient.installedVersion", placeholder: "2.5.0"),
     quit: unimplemented("AppClient.quit"),
     relaunch: unimplemented("AppClient.relaunch"),
     startRelaunchWatcher: unimplemented("AppClient.startRelaunchWatcher"),
