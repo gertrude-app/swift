@@ -8,7 +8,7 @@ public typealias XPCErrorData = Data
     userId: uid_t,
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )
-  func receiveListExemptUserIdsRequest(
+  func receiveListUserTypesRequest(
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )
   func receiveUserRules(

@@ -120,19 +120,16 @@ import os.log
     }
   }
 
-  func receiveListExemptUserIdsRequest(
-    reply: @escaping (Data?, XPCErrorData?) -> Void
-  ) {
+  func receiveListUserTypesRequest(reply: @escaping (Data?, XPCErrorData?) -> Void) {
     do {
-      os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest()")
+      os_log("[G•] FILTER xpc.receiveListUserTypesRequest()")
       let savedState = try storage.loadPersistentStateSync()
       let exemptUsers = Array(savedState?.exemptUsers ?? [])
       let protectedUsers = savedState.map { Array($0.userKeys.keys) } ?? []
-      let types = FilterUserTypes(exempt: exemptUsers, protected: protectedUsers)
-      let data = try XPC.encode(types.transport)
+      let data = try XPC.encode(FilterUserTypes(exempt: exemptUsers, protected: protectedUsers))
       reply(data, nil)
     } catch {
-      os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")
+      os_log("[G•] FILTER xpc.receiveListUserTypesRequest() error: %{public}@", "\(error)")
       reply(nil, XPC.errorData(error))
     }
   }
