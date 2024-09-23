@@ -12,7 +12,7 @@ extension SecurityClient: DependencyKey {
       didAuthenticateAsAdmin: { true }
     )
   #else
-    public static var liveValue = Self(didAuthenticateAsAdmin: {
+    public static let liveValue = Self(didAuthenticateAsAdmin: {
       guard let authorization = SFAuthorization.authorization() as? SFAuthorization,
             let right = NSString(string: kAuthorizationRuleAuthenticateAsAdmin).utf8String else {
         unexpectedError(id: "43f78286")
@@ -37,7 +37,10 @@ extension SecurityClient: DependencyKey {
 
 extension SecurityClient: TestDependencyKey {
   public static let testValue = Self(
-    didAuthenticateAsAdmin: unimplemented("SecurityClient.didAuthenticateAsAdmin")
+    didAuthenticateAsAdmin: unimplemented(
+      "SecurityClient.didAuthenticateAsAdmin",
+      placeholder: false
+    )
   )
   public static let mock = Self(
     didAuthenticateAsAdmin: { false }
