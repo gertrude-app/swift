@@ -48,7 +48,7 @@ extension WebSocketClient: TestDependencyKey {
   public static let testValue = Self(
     connect: unimplemented("WebSocketClient.connect"),
     disconnect: unimplemented("WebSocketClient.disconnect"),
-    receive: unimplemented("WebSocketClient.receive"),
+    receive: unimplemented("WebSocketClient.receive", placeholder: AnyPublisher(Empty())),
     send: unimplemented("WebSocketClient.send"),
     state: unimplemented("WebSocketClient.state")
   )
