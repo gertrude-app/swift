@@ -44,22 +44,25 @@ extension DeviceClient: DependencyKey {
 extension DeviceClient: TestDependencyKey {
   static let testValue = Self(
     currentMacOsUserType: unimplemented("DeviceClient.currentMacOsUserType"),
-    currentUserId: unimplemented("DeviceClient.currentUserId"),
-    fullUsername: unimplemented("DeviceClient.fullUsername"),
+    currentUserId: unimplemented("DeviceClient.currentUserId", placeholder: 502),
+    fullUsername: unimplemented("DeviceClient.fullUsername", placeholder: ""),
     listMacOSUsers: unimplemented("DeviceClient.listMacOSUsers"),
-    modelIdentifier: unimplemented("DeviceClient.modelIdentifier"),
-    notificationsSetting: unimplemented("DeviceClient.notificationsSetting"),
-    numericUserId: unimplemented("DeviceClient.numericUserId"),
+    modelIdentifier: unimplemented("DeviceClient.modelIdentifier", placeholder: nil),
+    notificationsSetting: unimplemented("DeviceClient.notificationsSetting", placeholder: .none),
+    numericUserId: unimplemented("DeviceClient.numericUserId", placeholder: 502),
     openSystemPrefs: unimplemented("DeviceClient.openSystemPrefs"),
     openWebUrl: unimplemented("DeviceClient.openWebUrl"),
-    osVersion: unimplemented("DeviceClient.osVersion"),
+    osVersion: unimplemented(
+      "DeviceClient.osVersion",
+      placeholder: .init(major: 15, minor: 0, patch: 0)
+    ),
     quitBrowsers: unimplemented("DeviceClient.quitBrowsers"),
     requestNotificationAuthorization: unimplemented(
       "DeviceClient.requestNotificationAuthorization"
     ),
     showNotification: unimplemented("DeviceClient.showNotification"),
-    serialNumber: unimplemented("DeviceClient.serialNumber"),
-    username: unimplemented("DeviceClient.username")
+    serialNumber: unimplemented("DeviceClient.serialNumber", placeholder: ""),
+    username: unimplemented("DeviceClient.username", placeholder: "")
   )
 
   static let mock = Self(

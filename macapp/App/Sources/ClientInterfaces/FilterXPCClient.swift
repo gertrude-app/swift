@@ -77,18 +77,54 @@ public struct FilterXPCClient: Sendable {
 extension FilterXPCClient: TestDependencyKey {
   public static var testValue: Self {
     .init(
-      establishConnection: unimplemented("FilterXPCClient.establishConnection"),
-      checkConnectionHealth: unimplemented("FilterXPCClient.checkConnectionHealth"),
-      disconnectUser: unimplemented("FilterXPCClient.disconnectUser"),
-      endFilterSuspension: unimplemented("FilterXPCClient.endFilterSuspension"),
-      requestAck: unimplemented("FilterXPCClient.requestAck"),
-      requestExemptUserIds: unimplemented("FilterXPCClient.requestExemptUserIds"),
-      sendDeleteAllStoredState: unimplemented("FilterXPCClient.sendDeleteAllStoredState"),
-      sendUserRules: unimplemented("FilterXPCClient.sendUserRules"),
-      setBlockStreaming: unimplemented("FilterXPCClient.setBlockStreaming"),
-      setUserExemption: unimplemented("FilterXPCClient.setUserExemption"),
-      suspendFilter: unimplemented("FilterXPCClient.suspendFilter"),
-      events: unimplemented("FilterXPCClient.events")
+      establishConnection: unimplemented(
+        "FilterXPCClient.establishConnection",
+        placeholder: .success(())
+      ),
+      checkConnectionHealth: unimplemented(
+        "FilterXPCClient.checkConnectionHealth",
+        placeholder: .success(())
+      ),
+      disconnectUser: unimplemented(
+        "FilterXPCClient.disconnectUser",
+        placeholder: .success(())
+      ),
+      endFilterSuspension: unimplemented(
+        "FilterXPCClient.endFilterSuspension",
+        placeholder: .success(())
+      ),
+      requestAck: unimplemented(
+        "FilterXPCClient.requestAck",
+        placeholder: .success(.init(randomInt: 0, version: "", userId: 0, numUserKeys: 0))
+      ),
+      requestExemptUserIds: unimplemented(
+        "FilterXPCClient.requestExemptUserIds",
+        placeholder: .success([])
+      ),
+      sendDeleteAllStoredState: unimplemented(
+        "FilterXPCClient.sendDeleteAllStoredState",
+        placeholder: .success(())
+      ),
+      sendUserRules: unimplemented(
+        "FilterXPCClient.sendUserRules",
+        placeholder: .success(())
+      ),
+      setBlockStreaming: unimplemented(
+        "FilterXPCClient.setBlockStreaming",
+        placeholder: .success(())
+      ),
+      setUserExemption: unimplemented(
+        "FilterXPCClient.setUserExemption",
+        placeholder: .success(())
+      ),
+      suspendFilter: unimplemented(
+        "FilterXPCClient.suspendFilter",
+        placeholder: .success(())
+      ),
+      events: unimplemented(
+        "FilterXPCClient.events",
+        placeholder: AnyPublisher(Empty())
+      )
     )
   }
 
