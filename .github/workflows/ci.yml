@@ -130,7 +130,7 @@ jobs:
             ln -sf "./${FILENAME}" "${DESTDIR}/latest"
             chmod +x "${DESTDIR}/${FILENAME}"
             chmod +x "${DESTDIR}/latest"
-            pm2 restart staging
+            pm2 restart staging > /dev/null
 
   linux-api-test:
     runs-on: ubuntu-latest
