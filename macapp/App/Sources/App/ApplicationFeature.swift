@@ -7,6 +7,7 @@ public enum ApplicationAction: Equatable, Sendable {
   case willSleep
   case didWake
   case willTerminate
+  case systemClockOrTimeZoneChanged
 }
 
 enum ApplicationFeature {
@@ -40,15 +41,15 @@ extension ApplicationFeature.RootReducer: RootReducing {
             //   await storage.deleteAll()
             // }
           #endif
-          let state = try await storage.loadPersistentState()
+          let state = try await self.storage.loadPersistentState()
           await send(.loadedPersistentState(state))
           if let deviceId = state?.user?.deviceId {
-            await api.securityEvent(deviceId: deviceId, event: .appLaunched)
+            await self.api.securityEvent(deviceId: deviceId, event: .appLaunched)
           }
         },
 
         .exec { send in
-          let setupState = await filterExtension.setup()
+          let setupState = await self.filterExtension.setup()
           await send(.filter(.receivedState(setupState)))
           if setupState.installed {
             _ = await filterXpc.establishConnection()
@@ -56,30 +57,30 @@ extension ApplicationFeature.RootReducer: RootReducing {
         },
 
         .publisher {
-          filterExtension.stateChanges()
+          self.filterExtension.stateChanges()
             .map { .filter(.receivedState($0)) }
-            .receive(on: mainQueue)
+            .receive(on: self.mainQueue)
         },
 
         .publisher {
-          filterXpc.events()
+          self.filterXpc.events()
             .map { .xpc($0) }
-            .receive(on: mainQueue)
+            .receive(on: self.mainQueue)
         }
       )
 
     case .heartbeat(.everyFiveMinutes):
-      guard network.isConnected() else {
+      guard self.network.isConnected() else {
         return .none
       }
       return .exec { _ in
-        guard let bufferedSecurityEvents = try? userDefaults.loadJson(
+        guard let bufferedSecurityEvents = try? self.userDefaults.loadJson(
           at: .bufferedSecurityEventsKey,
           decoding: [BufferedSecurityEvent].self
         ) else { return }
-        userDefaults.remove(.bufferedSecurityEventsKey)
+        self.userDefaults.remove(.bufferedSecurityEventsKey)
         for buffered in bufferedSecurityEvents {
-          await api.logSecurityEvent(
+          await self.api.logSecurityEvent(
             .init(
               deviceId: buffered.deviceId,
               event: buffered.event.rawValue,
@@ -90,11 +91,16 @@ extension ApplicationFeature.RootReducer: RootReducing {
         }
       }
 
+    case .application(.systemClockOrTimeZoneChanged):
+      return .exec { _ in
+        await self.api.securityEvent(.systemClockOrTimeZoneChanged)
+      }
+
     case .application(.willTerminate):
       return .merge(
         .cancel(id: AppReducer.CancelId.heartbeatInterval),
         .cancel(id: AppReducer.CancelId.websocketMessages),
-        .exec { _ in await app.stopRelaunchWatcher() }
+        .exec { _ in await self.app.stopRelaunchWatcher() }
       )
 
     default:

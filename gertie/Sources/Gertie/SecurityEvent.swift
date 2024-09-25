@@ -14,6 +14,7 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case appUpdateSucceeded
     case appUpdateFailedToReplaceSystemExtension
     case advancedSettingsOpened
+    case systemClockOrTimeZoneChanged
   }
 
   public enum Dashboard: String, Codable, Equatable, Sendable {
@@ -117,6 +118,8 @@ public extension SecurityEvent.MacApp {
       return "macOS user exempted"
     case .newMacOsUserCreated:
       return "New macOS user created"
+    case .systemClockOrTimeZoneChanged:
+      return "System clock or time zone changed"
     case .systemExtensionChangeRequested:
       return "System extension change requested"
     case .systemExtensionStateChanged:
@@ -150,6 +153,8 @@ public extension SecurityEvent.MacApp {
       return "This event occurs when a admin-privileged user exempts another macOS user from being filtered by Gertrude. Unless the parent is responsible for this action, it should be investigated."
     case .newMacOsUserCreated:
       return "This event occurs when a new macOS user is created on the computer. It could represent an attempt to bypass Gertrude, but could also be normal."
+    case .systemClockOrTimeZoneChanged:
+      return "This event occurs when the system clock or time zone is changed. If there is not a legitimate reason for the clock or time zone to have changed, it could represent an attempt to circumvent time-based restrictions in Gertrude and should be investigated."
     case .systemExtensionChangeRequested:
       return "This event occurs whenever some action or process within Gertrude happens that requests a change to the state of the system extension (filter). It should be investigated if the request is to stop or uninstall the extension without it immediately being restarted or replaced."
     case .systemExtensionStateChanged:
