@@ -399,6 +399,7 @@ extension Screenshot: Model {
     case .url: .string(self.url)
     case .width: .int(self.width)
     case .height: .int(self.height)
+    case .displayId: .int(self.displayId)
     case .filterSuspended: .bool(self.filterSuspended)
     case .createdAt: .date(self.createdAt)
     case .deletedAt: .date(self.deletedAt)
@@ -412,6 +413,7 @@ extension Screenshot: Model {
       .url: .string(self.url),
       .width: .int(self.width),
       .height: .int(self.height),
+      .displayId: .int(self.displayId),
       .filterSuspended: .bool(self.filterSuspended),
       .createdAt: .date(self.createdAt),
       .deletedAt: .date(self.deletedAt),
