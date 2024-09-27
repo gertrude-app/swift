@@ -5,9 +5,101 @@ import Dependencies
 import Foundation
 import SystemConfiguration
 
-typealias ScreenshotData = (data: Data, width: Int, height: Int, createdAt: Date)
+#if canImport(ScreenCaptureKit)
+  import ScreenCaptureKit
+#endif
 
+struct ScreenshotData {
+  var data: Data
+  var width: Int
+  var height: Int
+  var displayId: UInt32?
+  var createdAt: Date
+}
+
+enum ScreenshotError: Error {
+  case permissionNotGranted
+  case createImageFailed
+  case writeToDiskFailed
+  case downsampleFailed
+  case captureError(Error)
+}
+
+@available(macOS 14, *)
 @Sendable func takeScreenshot(width: Int) async throws {
+  guard currentUserProbablyHasScreen(), screensaverRunning() == false else {
+    return
+  }
+
+  guard let shareable = try? await SCShareableContent.excludingDesktopWindows(
+    false,
+    onScreenWindowsOnly: false
+  ) else {
+    throw ScreenshotError.permissionNotGranted
+  }
+
+  let configuration = SCStreamConfiguration()
+  var images: [(displayId: UInt32?, image: CGImage)] = []
+  images.reserveCapacity(shareable.displays.count)
+
+  @Dependency(\.date.now) var now
+  let captureTime = now
+
+  for display in shareable.displays {
+    do {
+      let image = try await SCScreenshotManager.captureImage(
+        contentFilter: SCContentFilter(
+          display: display,
+          excludingApplications: [],
+          exceptingWindows: []
+        ),
+        configuration: configuration
+      )
+      guard !image.isBlank else {
+        continue
+      }
+      images.append((display.displayID, image))
+    } catch {
+      throw ScreenshotError.captureError(error)
+    }
+  }
+
+  defer { lastImage.replace(with: images) }
+
+  let changedImages = lastImage.withValue { lastBatch in
+    images.filter { id, image in
+      if let prev = lastBatch.first(where: { $0.displayId == id }),
+         prev.image.isNearlyIdenticalTo(image) {
+        return false
+      } else {
+        return true
+      }
+    }
+  }
+
+  for (displayId, image) in changedImages {
+    let pngUrl = diskUrl(filename: ".\(now.timeIntervalSince1970)-d\(displayId ?? 0).png")
+    defer { try? FileManager.default.removeItem(at: pngUrl) }
+
+    guard writeCGImage(image, to: pngUrl) else {
+      throw ScreenshotError.writeToDiskFailed
+    }
+
+    guard let jpegData = downsampleToJpeg(imageAt: pngUrl, to: CGFloat(width)) else {
+      throw ScreenshotError.downsampleFailed
+    }
+
+    await screenshotBuffer.append(ScreenshotData(
+      data: jpegData,
+      width: width,
+      height: Int(Double(image.height) * (Double(width) / Double(image.width))),
+      displayId: displayId,
+      createdAt: captureTime
+    ))
+  }
+}
+
+@Sendable func takeScreenshotLegacy(width: Int) async throws {
   guard currentUserProbablyHasScreen(), screensaverRunning() == false else {
     return
   }
@@ -25,44 +117,39 @@ typealias ScreenshotData = (data: Data, width: Int, height: Int, createdAt: Date
     return
   }
 
-  defer {
-    lastImage.replace(with: fullsize)
+  defer { lastImage.replace(with: [(nil, fullsize)]) }
+
+  let isNearlyIdentical = lastImage.withValue { displayImages in
+    // in the legacy case, we only will ever have a single image with a nil displayId
+    guard let lastImage = displayImages.first?.image else {
+      return false
+    }
+    return lastImage.isNearlyIdenticalTo(fullsize)
   }
 
-  let isNearlyIdentical = lastImage.withValue { lastImage in
-    lastImage?.isNearlyIdenticalTo(fullsize) == true
-  }
-
-  guard !isNearlyIdentical else {
+  guard isNearlyIdentical == false else {
     return
   }
 
-  let tmpFilename = ".\(Date().timeIntervalSince1970).png"
-  let tmpFullsizePngUrl = diskUrl(filename: tmpFilename)
+  @Dependency(\.date.now) var now
+  let pngUrl = diskUrl(filename: ".\(now.timeIntervalSince1970).png")
+  defer { try? FileManager.default.removeItem(at: pngUrl) }
 
-  guard writeCGImage(fullsize, to: tmpFullsizePngUrl) else {
+  guard writeCGImage(fullsize, to: pngUrl) else {
     throw ScreenshotError.writeToDiskFailed
   }
 
-  defer {
-    try? FileManager.default.removeItem(at: tmpFullsizePngUrl)
-  }
-
-  guard let jpegData = downsampleToJpeg(imageAt: tmpFullsizePngUrl, to: CGFloat(width)) else {
+  guard let jpegData = downsampleToJpeg(imageAt: pngUrl, to: CGFloat(width)) else {
     throw ScreenshotError.downsampleFailed
   }
 
-  let height = Int(Double(fullsize.height) * (Double(width) / Double(fullsize.width)))
-
-  @Dependency(\.date.now) var now
-  let screenshot = (data: jpegData, width: width, height: height, createdAt: now)
-  await screenshotBuffer.append(screenshot)
-}
-
-enum ScreenshotError: Error {
-  case createImageFailed
-  case writeToDiskFailed
-  case downsampleFailed
+  await screenshotBuffer.append(ScreenshotData(
+    data: jpegData,
+    width: width,
+    height: Int(Double(fullsize.height) * (Double(width) / Double(fullsize.width))),
+    displayId: nil,
+    createdAt: now
+  ))
 }
 
 // this technique should be reliable for all supported os's, (including catalina)
@@ -143,7 +230,7 @@ func currentUserProbablyHasScreen() -> Bool {
   return uid == getuid() || uid == 0
 }
 
-private let lastImage = Mutex<CGImage?>(nil)
+private let lastImage = Mutex<[(displayId: UInt32?, image: CGImage)]>([])
 
 internal actor ScreenshotBuffer {
   private var buffer: [ScreenshotData] = []

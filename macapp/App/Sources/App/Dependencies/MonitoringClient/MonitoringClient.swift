@@ -16,30 +16,37 @@ struct MonitoringClient: Sendable {
 }
 
 extension MonitoringClient: DependencyKey {
-  static let liveValue = Self(
-    commitPendingKeystrokes: commitKestrokes(filterSuspended:),
-    keystrokeRecordingPermissionGranted: {
-      #if DEBUG
-        // prevent warning while developing
-        return true
-      #else
-        // no way to make this NOT a concurrency warning (that i can figure out)
-        // as it's a global mutable CFString variable, but this thread is interesting:
-        // https://developer.apple.com/forums/thread/707680 - maybe i could use that
-        // api, and possibly restore sandboxing
-        let options: NSDictionary =
-          [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
-        return AXIsProcessTrustedWithOptions(options)
-      #endif
-    },
-    restorePendingKeystrokes: restoreKeystrokes(_:),
-    screenRecordingPermissionGranted: isScreenRecordingPermissionGranted,
-    startLoggingKeystrokes: startKeylogging,
-    stopLoggingKeystrokes: stopKeylogging,
-    takePendingKeystrokes: takeKeystrokes,
-    takePendingScreenshots: { await screenshotBuffer.removeAll() },
-    takeScreenshot: takeScreenshot(width:)
-  )
+  static var liveValue: Self {
+    var takeScreenshotImpl = takeScreenshotLegacy(width:)
+    // NB: we only want to use ScreenCaptureKit on macOS 15 (Sequoia) and later
+    if #available(macOS 15, *) {
+      takeScreenshotImpl = takeScreenshot(width:)
+    }
+    return Self(
+      commitPendingKeystrokes: commitKestrokes(filterSuspended:),
+      keystrokeRecordingPermissionGranted: {
+        #if DEBUG
+          // prevent warning while developing
+          return true
+        #else
+          // no way to make this NOT a concurrency warning (that i can figure out)
+          // as it's a global mutable CFString variable, but this thread is interesting:
+          // https://developer.apple.com/forums/thread/707680 - maybe i could use that
+          // api, and possibly restore sandboxing
+          let options: NSDictionary =
+            [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
+          return AXIsProcessTrustedWithOptions(options)
+        #endif
+      },
+      restorePendingKeystrokes: restoreKeystrokes(_:),
+      screenRecordingPermissionGranted: isScreenRecordingPermissionGranted,
+      startLoggingKeystrokes: startKeylogging,
+      stopLoggingKeystrokes: stopKeylogging,
+      takePendingKeystrokes: takeKeystrokes,
+      takePendingScreenshots: { await screenshotBuffer.removeAll() },
+      takeScreenshot: takeScreenshotImpl
+    )
+  }
 }
 
 extension MonitoringClient: TestDependencyKey {

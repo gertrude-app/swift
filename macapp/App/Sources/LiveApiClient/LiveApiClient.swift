@@ -92,6 +92,7 @@ extension ApiClient: DependencyKey {
         with: .createSignedScreenshotUpload(.init(
           width: data.width,
           height: data.height,
+          displayId: data.displayId,
           filterSuspended: data.filterSuspended,
           createdAt: data.createdAt
         ))
