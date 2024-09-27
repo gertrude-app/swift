@@ -25,8 +25,7 @@ extension CreateSignedScreenshotUpload: Resolver {
       )
     }
 
-    @Dependency(\.aws) var aws
-    let signedUrl = try aws.signedS3UploadUrl(objectName)
+    let signedUrl = try with(dependency: \.aws).signedS3UploadUrl(objectName)
 
     try await context.db.create(Screenshot(
       userDeviceId: userDevice.id,
