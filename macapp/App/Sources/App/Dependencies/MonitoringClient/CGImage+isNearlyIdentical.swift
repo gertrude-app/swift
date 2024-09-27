@@ -107,6 +107,6 @@ extension CGImage {
 
 private let MENU_BAR_MAX_HEIGHT = 36
 private let CLOCK_MAX_EDGE_OFFSET = 150
-private let MAX_DIFFERENT_PIXELS_NON_CLOCK_AREA = 80
+private let MAX_DIFFERENT_PIXELS_NON_CLOCK_AREA = 120
 // should allow up to `11:50 AM` -> `12:00 PM`
-private let MAX_DIFFERENT_PIXELS_IN_CLOCK_AREA = 370
+private let MAX_DIFFERENT_PIXELS_IN_CLOCK_AREA = 400
