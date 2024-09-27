@@ -295,6 +295,7 @@ extension Screenshot {
     case url
     case width
     case height
+    case displayId
     case filterSuspended
     case createdAt
     case deletedAt
