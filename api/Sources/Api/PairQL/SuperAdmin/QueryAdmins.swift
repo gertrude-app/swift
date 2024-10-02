@@ -14,6 +14,8 @@ struct QueryAdmins: Pair {
         var filterVersion: String
         var modelIdentifier: String
         var appReleaseChannel: ReleaseChannel
+        var osVersionNumber: String?
+        var osVersionName: String?
         var createdAt: Date
       }
 
@@ -69,6 +71,8 @@ extension QueryAdmins: NoInputResolver {
         filterVersion: row.filterVersion ?? "unknown",
         modelIdentifier: try expect(row.modelIdentifier),
         appReleaseChannel: try expect(row.appReleaseChannel),
+        osVersionNumber: row.osVersion?.description,
+        osVersionName: osVersionName(row.osVersion),
         createdAt: try expect(row.userDeviceCreatedAt)
       )
       installations[userDeviceId] = (installation, try expect(row.userId))
@@ -123,6 +127,27 @@ extension QueryAdmins: NoInputResolver {
   }
 }
 
+func osVersionName(_ osVersion: Semver?) -> String? {
+  switch osVersion?.major {
+  case 10:
+    return "Catalina"
+  case 11:
+    return "Big Sur"
+  case 12:
+    return "Monterey"
+  case 13:
+    return "Ventura"
+  case 14:
+    return "Sonoma"
+  case 15:
+    return "Sequoia"
+  case nil:
+    return nil
+  default:
+    return "(Unknown \(osVersion?.major ?? 0))"
+  }
+}
+
 // query
 
 struct AdminQuery: CustomQueryable {
@@ -154,6 +179,7 @@ struct AdminQuery: CustomQueryable {
         devices.filter_version,
         devices.model_identifier,
         devices.app_release_channel,
+        devices.os_version,
         devices.id AS device_id
     FROM admins
     LEFT JOIN keychains ON admins.id = keychains.author_id
@@ -204,6 +230,7 @@ struct AdminQuery: CustomQueryable {
       devices.filter_version,
       devices.model_identifier,
       devices.app_release_channel,
+      devices.os_version,
       devices.id
     ORDER BY admins.id;
     """)
@@ -238,5 +265,6 @@ struct AdminQuery: CustomQueryable {
   let filterVersion: String?
   let modelIdentifier: String?
   let appReleaseChannel: ReleaseChannel?
+  let osVersion: Semver?
   let userDeviceCreatedAt: Date?
 }
