@@ -70,18 +70,10 @@ public extension ApiClient {
     public var image: Data
     public var width: Int
     public var height: Int
-    public var displayId: Int?
     public var filterSuspended: Bool
     public var createdAt: Date
 
-    public init(
-      image: Data,
-      width: Int,
-      height: Int,
-      displayId: Int?,
-      filterSuspended: Bool,
-      createdAt: Date
-    ) {
+    public init(image: Data, width: Int, height: Int, filterSuspended: Bool, createdAt: Date) {
       self.image = image
       self.width = width
       self.height = height

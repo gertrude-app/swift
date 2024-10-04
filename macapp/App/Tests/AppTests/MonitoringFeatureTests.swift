@@ -706,9 +706,9 @@ final class MonitoringFeatureTests: XCTestCase {
     store.deps.network.isConnected = { false } // <-- no internet connection
     let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
     let takePendingScreenshots = mock(returning: [[
-      ScreenshotData(data: Data(), width: 999, height: 600, createdAt: Date.epoch),
-      ScreenshotData(data: Data(), width: 999, height: 600, createdAt: Date.epoch),
-      ScreenshotData(data: Data(), width: 999, height: 600, createdAt: Date.epoch),
+      (Data(), 999, 600, Date.epoch),
+      (Data(), 999, 600, Date.epoch),
+      (Data(), 999, 600, Date.epoch),
     ]])
     store.deps.monitoring.takePendingScreenshots = takePendingScreenshots.fn
 
@@ -807,12 +807,11 @@ final class MonitoringFeatureTests: XCTestCase {
   func spyScreenshots(_ store: TestStoreOf<AppReducer>) -> (
     takeScreenshot: Spy<Void, Int>,
     uploadScreenshot: Spy<URL, ApiClient.UploadScreenshotData>,
-    takePendingScreenshots: Mock<[ScreenshotData]>
+    takePendingScreenshots: Mock<[(Data, Int, Int, Date)]>
   ) {
     let takeScreenshot = spy(on: Int.self, returning: ())
     store.deps.monitoring.takeScreenshot = takeScreenshot.fn
-    let takePendingScreenshots =
-      mock(always: [ScreenshotData(data: Data(), width: 999, height: 600, createdAt: Date.epoch)])
+    let takePendingScreenshots = mock(always: [(Data(), 999, 600, Date.epoch)])
     store.deps.monitoring.takePendingScreenshots = takePendingScreenshots.fn
 
     let uploadScreenshot = spy(
@@ -860,7 +859,6 @@ extension ApiClient.UploadScreenshotData {
       image: image,
       width: width,
       height: height,
-      displayId: nil,
       filterSuspended: filterSuspended,
       createdAt: createdAt
     )
