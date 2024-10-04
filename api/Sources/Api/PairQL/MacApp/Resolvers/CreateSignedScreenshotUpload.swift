@@ -33,7 +33,6 @@ extension CreateSignedScreenshotUpload: Resolver {
       url: webUrlString,
       width: input.width,
       height: input.height,
-      displayId: input.displayId,
       filterSuspended: input.filterSuspended ?? false,
       createdAt: input.createdAt ?? get(dependency: \.date.now)
     ))

@@ -13,21 +13,18 @@ public struct CreateSignedScreenshotUpload: Pair {
   public struct Input: PairInput {
     public let width: Int
     public let height: Int
-    public let displayId: Int? // added v2.5.0, backwards compatible
     public var filterSuspended: Bool?
     public let createdAt: Date?
 
     public init(
       width: Int,
       height: Int,
-      displayId: Int? = nil,
       filterSuspended: Bool? = false,
       createdAt: Date? = nil
     ) {
       self.width = width
       self.height = height
       self.filterSuspended = filterSuspended
-      self.displayId = displayId
       self.createdAt = createdAt
     }
   }
