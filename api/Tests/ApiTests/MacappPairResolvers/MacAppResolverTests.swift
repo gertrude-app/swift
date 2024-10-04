@@ -145,7 +145,7 @@ final class MacAppResolverTests: ApiTestCase {
     expect(afterCount).toEqual(beforeCount + 1)
   }
 
-  func testCreateSignedScreenshotUploadWithAllData() async throws {
+  func testCreateSignedScreenshotUploadWithDate() async throws {
     let user = try await self.userWithDevice()
     let uuids = MockUUIDs()
 
@@ -154,20 +154,12 @@ final class MacAppResolverTests: ApiTestCase {
       $0.uuid = .mock(uuids)
     } operation: {
       _ = try await CreateSignedScreenshotUpload.resolve(
-        with: .init(
-          width: 1116,
-          height: 222,
-          displayId: 2,
-          filterSuspended: true,
-          createdAt: .epoch
-        ),
+        with: .init(width: 1116, height: 222, createdAt: .epoch),
         in: self.context(user)
       )
       let screenshot = try await self.db.find(Screenshot.Id(uuids[1]))
       expect(screenshot.width).toEqual(1116)
       expect(screenshot.createdAt).toEqual(.epoch)
-      expect(screenshot.displayId).toEqual(2)
-      expect(screenshot.filterSuspended).toEqual(true)
     }
   }
 

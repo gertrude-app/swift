@@ -20,6 +20,16 @@ struct ScreenshotDisplayId: GertieMigration {
   }
 }
 
+struct RevertScreenshotDisplayId: GertieMigration {
+  func up(sql: SQLDatabase) async throws {
+    try await ScreenshotDisplayId().down(sql: sql)
+  }
+
+  func down(sql: SQLDatabase) async throws {
+    try await ScreenshotDisplayId().up(sql: sql)
+  }
+}
+
 extension Screenshot {
   enum M27 {
     static let displayId = FieldKey("display_id")
