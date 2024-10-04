@@ -64,7 +64,6 @@ extension MonitoringFeature.RootReducer {
             image: image.data,
             width: image.width,
             height: image.height,
-            displayId: image.displayId.map(Int.init),
             filterSuspended: filterSuspended,
             createdAt: image.createdAt
           ))
