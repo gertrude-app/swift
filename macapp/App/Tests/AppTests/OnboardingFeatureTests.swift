@@ -241,8 +241,11 @@ final class OnboardingFeatureTests: XCTestCase {
     )
     store.deps.filterXpc.setUserExemption = setUserExemption.fn
 
-    let getExemptIds = mock(always: Result<[uid_t], XPCErr>.success([]))
-    store.deps.filterXpc.requestExemptUserIds = getExemptIds.fn
+    let getUserTypes = mock(
+      always: Result<FilterUserTypes, XPCErr>
+        .success(.init(exempt: [], protected: []))
+    )
+    store.deps.filterXpc.requestUserTypes = getUserTypes.fn
 
     // they click "Got it" on the install sys ext trick screen...
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -260,7 +263,7 @@ final class OnboardingFeatureTests: XCTestCase {
     // we clear the exempted state for the current user proactively as safeguard
     await expect(setUserExemption.calls).toEqual([.init(502, false)])
 
-    await expect(getExemptIds.calls.count).toEqual(1)
+    await expect(getUserTypes.calls.count).toEqual(1)
     await store.receive(.onboarding(.receivedFilterUsers(.init(exempt: [], protected: [])))) {
       $0.onboarding.filterUsers = .init(exempt: [], protected: [])
     }
