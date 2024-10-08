@@ -1,0 +1,6 @@
+lib-ios/.build
+/Packages
+xcuserdata/
+DerivedData/
+**/.swiftpm
+*.pbxuser
