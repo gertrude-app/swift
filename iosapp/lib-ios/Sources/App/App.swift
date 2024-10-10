@@ -90,8 +90,10 @@ public struct AppReducer {
           switch await self.system.requestAuthorization() {
           case .success:
             await send(.authorizationSucceeded)
+            await self.api.logEvent("d317c73c", "authorization succeeded")
           case .failure(let reason):
             await send(.authorizationFailed(reason))
+            await self.api.logEvent("d9dfd021", "authorization failed: \(reason)")
           }
         }
 
@@ -112,8 +114,10 @@ public struct AppReducer {
           switch await self.system.installFilter() {
           case .success:
             await send(.installSucceeded)
+            await self.api.logEvent("101c91ea", "filter install success")
           case .failure(let error):
             await send(.installFailed(error))
+            await self.api.logEvent("739c08c6", "filter install failed: \(error)")
           }
         }
 
