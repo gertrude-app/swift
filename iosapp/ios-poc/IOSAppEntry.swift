@@ -3,7 +3,7 @@ import ComposableArchitecture
 import SwiftUI
 
 @main
-struct ios_pocApp: App {
+struct IOSAppEntry: App {
   let store: StoreOf<AppReducer>
 
   init() {

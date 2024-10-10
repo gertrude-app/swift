@@ -1,4 +1,5 @@
 import Dependencies
+import IOSRoute
 import MacAppRoute
 import URLRouting
 import Vapor
@@ -17,12 +18,18 @@ enum PairQLRoute: Equatable, RouteResponder {
   case dashboard(DashboardRoute)
   case macApp(MacAppRoute)
   case superAdmin(SuperAdminRoute)
+  case iOS(IOSRoute)
 
   nonisolated(unsafe) static let router = OneOf {
     Route(.case(PairQLRoute.macApp)) {
       Method("POST")
       Path { "macos-app" }
       MacAppRoute.router
+    }
+    Route(.case(PairQLRoute.iOS)) {
+      Method("POST")
+      Path { "ios-app" }
+      IOSRoute.router
     }
     Route(.case(PairQLRoute.dashboard)) {
       Method("POST")
@@ -44,6 +51,8 @@ enum PairQLRoute: Equatable, RouteResponder {
       return try await DashboardRoute.respond(to: dashboardRoute, in: context)
     case .superAdmin(let superAdminRoute):
       return try await SuperAdminRoute.respond(to: superAdminRoute, in: context)
+    case .iOS(let iosAppRoute):
+      return try await IOSRoute.respond(to: iosAppRoute, in: context)
     }
   }
 
@@ -107,6 +116,9 @@ private func logOperation(_ route: PairQLRoute, _ request: Request) {
   case .superAdmin:
     request.logger
       .notice("PairQL request: \("SuperAdmin".cyan) \(operation.yellow)")
+  case .iOS:
+    request.logger
+      .notice("PairQL request: \("iOS".blue) \(operation.yellow)")
   }
 }
 

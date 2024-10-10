@@ -1,5 +1,4 @@
 // swift-tools-version: 5.10
-
 import PackageDescription
 
 let package = Package(
@@ -14,12 +13,14 @@ let package = Package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
       from: "1.0.0"
     ),
+    .package(path: "../../pairql-iosapp"),
   ],
   targets: [
     .target(
       name: "App",
       dependencies: [
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "IOSRoute", package: "pairql-iosapp"),
       ]
     ),
     .target(

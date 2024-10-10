@@ -59,11 +59,7 @@ public struct ContentView: View {
 
 public extension View {
   var deviceType: String {
-    #if os(iOS)
-      UIDevice.current.userInterfaceIdiom == .pad ? "iPad" : "iPhone"
-    #else
-      "iPhone"
-    #endif
+    Device.current.type
   }
 }
 
