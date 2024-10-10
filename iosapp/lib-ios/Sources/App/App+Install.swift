@@ -1,6 +1,67 @@
 import FamilyControls
+import IOSRoute
 import NetworkExtension
 import os.log
+
+#if os(iOS)
+  import UIKit
+#endif
+
+func logEvent(id: String, detail: String?) async {
+  let payload = LogIOSEvent.Input(
+    eventId: id,
+    kind: "ios",
+    deviceType: Device.current.type,
+    iOSVersion: Device.current.iOSVersion,
+    vendorId: Device.current.vendorId,
+    detail: detail
+  )
+  do {
+    let router = IOSRoute.router.baseURL(.gertrudeApi)
+    var request = try router.request(for: .logIOSEvent(payload))
+    request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+    request.httpMethod = "POST"
+    _ = try await URLSession.shared.data(for: request)
+  } catch {
+    os_log("[G•] error logging event: %{public}s", String(reflecting: error))
+  }
+}
+
+func foo() {
+  let date = Date()
+  UserDefaults.standard.set(date, forKey: "savedDate")
+}
+
+extension String {
+  static var gertrudeApi: String {
+    #if DEBUG
+      // just run-api-ip
+      return "http://192.168.10.227:8080/pairql/ios-app"
+    #else
+      return "https://api.gertrude.app/pairql/ios-app"
+    #endif
+  }
+}
+
+struct Device {
+  var type: String
+  var iOSVersion: String
+  var vendorId: UUID?
+}
+
+extension Device {
+  static var current: Device {
+    #if os(iOS)
+      Device(
+        type: UIDevice.current.userInterfaceIdiom == .pad ? "iPad" : "iPhone",
+        iOSVersion: UIDevice.current.systemVersion,
+        vendorId: UIDevice.current.identifierForVendor
+      )
+    #else
+      Device(type: "iPhone", iOSVersion: "18.0.1", vendorId: nil)
+    #endif
+  }
+}
 
 // @see https://developer.apple.com/documentation/familycontrols/familycontrolserror
 public enum AuthFailureReason: Error, Equatable {

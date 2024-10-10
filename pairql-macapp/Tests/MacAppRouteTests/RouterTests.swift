@@ -22,7 +22,7 @@ final class RouterTests: XCTestCase {
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpBody = try JSONEncoder().encode(input)
 
-    let matched = try router.match(request: request)
+    let matched = try self.router.match(request: request)
     let expected = MacAppRoute.userAuthed(self.token, .createSignedScreenshotUpload(input))
     expect(matched).toEqual(expected)
   }
@@ -35,7 +35,7 @@ final class RouterTests: XCTestCase {
     expect(missingHeader).toEqual(nil)
 
     request.addValue(self.token.uuidString, forHTTPHeaderField: "X-UserToken")
-    let matched = try router.match(request: request)
+    let matched = try self.router.match(request: request)
     expect(matched).toEqual(route)
   }
 }
