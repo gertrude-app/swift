@@ -48,7 +48,7 @@ private func request<T: Pair>(
 private func data(for request: URLRequest) async throws -> (Data, URLResponse) {
   return try await withCheckedThrowingContinuation { continuation in
     URLSession.shared.dataTask(with: request) { data, response, err in
-      if let err = err {
+      if let err {
         continuation.resume(throwing: err)
         return
       }

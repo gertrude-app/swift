@@ -84,7 +84,7 @@ private func errorLoc(_ detail: String) -> String {
   }
 }
 
-private func githubSearch(_ eventId: String) -> String {
+func githubSearch(_ eventId: String) -> String {
   Slack.link(
     to: "https://github.com/search?q=repo%3Agertrude-app%2Fswift%20\(eventId)&type=code",
     withText: eventId
