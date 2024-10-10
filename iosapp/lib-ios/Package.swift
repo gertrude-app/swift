@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
   name: "App",
-  platforms: [.macOS(.v13), .iOS(.v17)],
+  platforms: [.macOS(.v14), .iOS(.v17)],
   products: [
     .library(name: "App", targets: ["App"]),
     .library(name: "Filter", targets: ["Filter"]),
