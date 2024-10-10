@@ -7,6 +7,7 @@ struct SystemClient: Sendable {
   var requestAuthorization: @Sendable () async -> Result<Void, AuthFailureReason>
   var installFilter: @Sendable () async -> Result<Void, FilterInstallError>
   var filterRunning: @Sendable () async -> Bool
+  var cleanupForRetry: @Sendable () async -> Void
 }
 
 extension SystemClient: DependencyKey {
@@ -96,6 +97,13 @@ extension SystemClient: DependencyKey {
         )
         return false
       }
+    },
+    cleanupForRetry: {
+      NEFilterManager.shared().providerConfiguration = nil
+      try? await NEFilterManager.shared().removeFromPreferences()
+      #if os(iOS)
+        AuthorizationCenter.shared.revokeAuthorization { _ in }
+      #endif
     }
   )
 }
@@ -104,7 +112,8 @@ extension SystemClient: TestDependencyKey {
   public static let testValue = SystemClient(
     requestAuthorization: { .success(()) },
     installFilter: { .success(()) },
-    filterRunning: { false }
+    filterRunning: { false },
+    cleanupForRetry: {}
   )
 }
 
