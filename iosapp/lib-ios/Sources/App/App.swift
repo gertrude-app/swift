@@ -1,15 +1,26 @@
 import ComposableArchitecture
+import Foundation
 
 @Reducer
 public struct AppReducer {
   @ObservableState
   public struct State: Equatable {
     public var appState: AppState
+    public var firstLaunch: Date?
 
     public init(appState: AppState = .launching) {
       self.appState = appState
     }
   }
+
+  @ObservationIgnored
+  @Dependency(\.api) var api
+  @ObservationIgnored
+  @Dependency(\.system) var system
+  @ObservationIgnored
+  @Dependency(\.storage) var storage
+  @ObservationIgnored
+  @Dependency(\.date.now) var now
 
   // TODO: figure out why i can't use a root store enum
   public enum AppState: Equatable {
@@ -37,6 +48,7 @@ public struct AppReducer {
     case installFilterTapped
     case postInstallOkTapped
     case setRunning(Bool)
+    case setFirstLaunch(Date)
   }
 
   public var body: some Reducer<State, Action> {
@@ -45,11 +57,23 @@ public struct AppReducer {
 
       case .appLaunched:
         return .run { send in
-          await send(.setRunning(await isRunning()))
+          await send(.setRunning(await self.system.filterRunning()))
+          if let firstLaunch = self.storage.object(forKey: .launchDateStorageKey) as? Date {
+            await send(.setFirstLaunch(firstLaunch))
+          } else {
+            let now = self.now
+            self.storage.set(now, forKey: .launchDateStorageKey)
+            await send(.setFirstLaunch(now))
+            await self.api.logEvent("dcd721aa", "first launch")
+          }
         }
 
       case .setRunning(true):
         state.appState = .running
+        return .none
+
+      case .setFirstLaunch(let date):
+        state.firstLaunch = date
         return .none
 
       case .setRunning(false):
@@ -63,7 +87,7 @@ public struct AppReducer {
       case .startAuthorizationTapped:
         state.appState = .authorizing
         return .run { send in
-          switch await requestAuthorization() {
+          switch await self.system.requestAuthorization() {
           case .success:
             await send(.authorizationSucceeded)
           case .failure(let reason):
@@ -85,7 +109,7 @@ public struct AppReducer {
 
       case .installFilterTapped:
         return .run { send in
-          switch await saveConfiguration() {
+          switch await self.system.installFilter() {
           case .success:
             await send(.installSucceeded)
           case .failure(let error):
