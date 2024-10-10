@@ -93,6 +93,7 @@ public struct AppReducer {
             await self.api.logEvent("d317c73c", "authorization succeeded")
           case .failure(let reason):
             await send(.authorizationFailed(reason))
+            await self.system.cleanupForRetry()
             await self.api.logEvent("d9dfd021", "authorization failed: \(reason)")
           }
         }
@@ -117,6 +118,7 @@ public struct AppReducer {
             await self.api.logEvent("101c91ea", "filter install success")
           case .failure(let error):
             await send(.installFailed(error))
+            await self.system.cleanupForRetry()
             await self.api.logEvent("739c08c6", "filter install failed: \(error)")
           }
         }
@@ -126,7 +128,7 @@ public struct AppReducer {
         return .none
 
       case .installFailedTryAgainTapped:
-        // TODO: clean up for retry
+        state.appState = .welcome
         return .none
 
       case .installSucceeded:
