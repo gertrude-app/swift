@@ -271,7 +271,10 @@ final class OnboardingFeatureTests: XCTestCase {
     // we kick off protection when they move past sys ext stage, lots happens...
     let setAccountActive = spy(on: Bool.self, returning: ())
     store.deps.api.setAccountActive = setAccountActive.fn
-    let checkInResult = CheckIn.Output.empty { $0.userData = user }
+    let checkInResult = CheckIn.Output.empty {
+      $0.userData = user
+      $0.trustedTime = (Date.reference - 1).timeIntervalSince1970
+    }
     let checkIn = spy(on: CheckIn.Input.self, returning: checkInResult)
     store.deps.api.checkIn = checkIn.fn
     store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
@@ -284,6 +287,8 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.monitoring.stopLoggingKeystrokes = stopLoggingKeystrokes.fn
     let startRelaunchWatcher = mock(always: ())
     store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
+    store.deps.date = .constant(.reference)
+    store.deps.device.boottime = { .reference - 60 }
 
     // they click "Next" on the install sys ext success screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -300,6 +305,16 @@ final class OnboardingFeatureTests: XCTestCase {
     await store.receive(.checkIn(result: .success(checkInResult), reason: .startProtecting)) {
       $0.appUpdates.latestVersion = checkInResult.latestRelease
     }
+
+    let timestamp = TrustedTimestamp(
+      network: .reference - 1,
+      system: .reference,
+      boottime: .reference - 60
+    )
+    await store.receive(.setTrustedTimestamp(timestamp)) {
+      $0.timestamp = timestamp
+    }
+
     await store.receive(.user(.updated(previous: user)))
 
     // we need to ensure the websocket connection is setup, so they can do the tutorial vid

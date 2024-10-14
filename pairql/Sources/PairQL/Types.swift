@@ -86,6 +86,10 @@ public struct Infallible: PairOutput {
   public static var success: Self { .init() }
 }
 
+extension Double: PairOutput {}
+extension Double: PairInput {}
+extension Int: PairOutput {}
+extension Int: PairInput {}
 extension String: PairOutput {}
 extension String: PairInput {}
 extension UUID: PairInput {}

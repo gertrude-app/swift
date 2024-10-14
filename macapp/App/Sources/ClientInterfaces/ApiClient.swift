@@ -18,6 +18,7 @@ public struct ApiClient: Sendable {
   public var reportBrowsers: @Sendable (ReportBrowsers.Input) async throws -> Void
   public var setAccountActive: @Sendable (Bool) async -> Void
   public var setUserToken: @Sendable (UUID) async -> Void
+  public var trustedNetworkTimestamp: @Sendable () async throws -> Double
   public var uploadScreenshot: @Sendable (UploadScreenshotData) async throws -> URL
 
   public init(
@@ -36,6 +37,7 @@ public struct ApiClient: Sendable {
     reportBrowsers: @escaping @Sendable (ReportBrowsers.Input) async throws -> Void,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setUserToken: @escaping @Sendable (UUID) async -> Void,
+    trustedNetworkTimestamp: @escaping @Sendable () async throws -> Double,
     uploadScreenshot: @escaping @Sendable (UploadScreenshotData) async throws -> URL
   ) {
     self.checkIn = checkIn
@@ -51,6 +53,7 @@ public struct ApiClient: Sendable {
     self.reportBrowsers = reportBrowsers
     self.setAccountActive = setAccountActive
     self.setUserToken = setUserToken
+    self.trustedNetworkTimestamp = trustedNetworkTimestamp
     self.uploadScreenshot = uploadScreenshot
   }
 }
@@ -107,6 +110,7 @@ extension ApiClient: TestDependencyKey {
     reportBrowsers: unimplemented("ApiClient.reportBrowsers"),
     setAccountActive: unimplemented("ApiClient.setAccountActive"),
     setUserToken: unimplemented("ApiClient.setUserToken"),
+    trustedNetworkTimestamp: unimplemented("ApiClient.trustedNetworkTimestamp"),
     uploadScreenshot: unimplemented("ApiClient.uploadScreenshot")
   )
 
@@ -124,6 +128,7 @@ extension ApiClient: TestDependencyKey {
     reportBrowsers: { _ in },
     setAccountActive: { _ in },
     setUserToken: { _ in },
+    trustedNetworkTimestamp: { 0.0 },
     uploadScreenshot: { _ in .init(string: "https://s3.buck.et/img.png")! }
   )
 }

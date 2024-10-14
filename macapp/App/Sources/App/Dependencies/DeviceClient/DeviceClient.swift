@@ -19,6 +19,7 @@ struct DeviceClient: Sendable {
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
   var username: @Sendable () -> String
+  var boottime: @Sendable () -> Date?
 }
 
 extension DeviceClient: DependencyKey {
@@ -37,7 +38,17 @@ extension DeviceClient: DependencyKey {
     requestNotificationAuthorization: requestNotificationAuth,
     showNotification: showNotification(title:body:),
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
-    username: { NSUserName() }
+    username: { NSUserName() },
+    boottime: {
+      // https://forums.developer.apple.com/forums/thread/101874?answerId=309633022#309633022
+      var tv = timeval()
+      var tvSize = MemoryLayout<timeval>.size
+      let err = sysctlbyname("kern.boottime", &tv, &tvSize, nil, 0)
+      guard err == 0, tvSize == MemoryLayout<timeval>.size else {
+        return nil
+      }
+      return Date(timeIntervalSince1970: Double(tv.tv_sec) + (Double(tv.tv_usec) / 1_000_000.0))
+    }
   )
 }
 
@@ -62,7 +73,8 @@ extension DeviceClient: TestDependencyKey {
     ),
     showNotification: unimplemented("DeviceClient.showNotification"),
     serialNumber: unimplemented("DeviceClient.serialNumber", placeholder: ""),
-    username: unimplemented("DeviceClient.username", placeholder: "")
+    username: unimplemented("DeviceClient.username", placeholder: ""),
+    boottime: unimplemented("DeviceClient.boottime", placeholder: nil)
   )
 
   static let mock = Self(
@@ -83,7 +95,8 @@ extension DeviceClient: TestDependencyKey {
     requestNotificationAuthorization: {},
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },
-    username: { "test-username" }
+    username: { "test-username" },
+    boottime: { nil }
   )
 }
 

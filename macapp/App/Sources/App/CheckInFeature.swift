@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import MacAppRoute
 
 struct CheckInFeature {
@@ -6,6 +7,7 @@ struct CheckInFeature {
     typealias Action = AppReducer.Action
     typealias State = AppReducer.State
     @Dependency(\.api) var api
+    @Dependency(\.date.now) var now
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var filterXpc
     @Dependency(\.network) var network
@@ -58,6 +60,16 @@ extension CheckInFeature.RootReducer {
         },
         .exec { [persist = state.persistent] _ in
           try await storage.savePersistentState(persist)
+        },
+        .exec { send in
+          let system = self.now
+          if let boottime = self.device.boottime() {
+            await send(.setTrustedTimestamp(.init(
+              network: Date(timeIntervalSince1970: output.trustedTime),
+              system: system,
+              boottime: boottime
+            )))
+          }
         },
         .exec { [filterInstalled = state.filter.extension.installed] _ in
           guard filterInstalled else {

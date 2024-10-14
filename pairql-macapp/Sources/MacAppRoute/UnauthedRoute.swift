@@ -5,6 +5,7 @@ public enum UnauthedRoute: PairRoute {
   case latestAppVersion(LatestAppVersion.Input)
   case logInterestingEvent(LogInterestingEvent.Input)
   case recentAppVersions
+  case trustedTime
 }
 
 public extension UnauthedRoute {
@@ -23,6 +24,9 @@ public extension UnauthedRoute {
     }
     Route(.case(Self.recentAppVersions)) {
       Operation(RecentAppVersions.self)
+    }
+    Route(.case(Self.trustedTime)) {
+      Operation(TrustedTime.self)
     }
   }
   .eraseToAnyParserPrinter()

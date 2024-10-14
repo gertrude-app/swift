@@ -91,7 +91,8 @@ extension CheckIn: Resolver {
       ),
       browsers: try await browsers.map(\.match),
       resolvedFilterSuspension: resolvedFilterSuspension,
-      resolvedUnlockRequests: resolvedUnlockRequests
+      resolvedUnlockRequests: resolvedUnlockRequests,
+      trustedTime: get(dependency: \.date.now).timeIntervalSince1970
     )
   }
 }

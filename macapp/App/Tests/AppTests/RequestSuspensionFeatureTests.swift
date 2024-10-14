@@ -110,7 +110,8 @@ final class RequestSuspensionFeatureTests: XCTestCase {
         id: reqId,
         decision: .accepted(duration: 33, extraMonitoring: .setScreenshotFreq(10)),
         comment: "ok"
-      )
+      ),
+      trustedTime: 0
     )), reason: .pendingRequest)) {
       $0.requestSuspension.pending = nil
       $0.monitoring.suspensionMonitoring!.screenshotFrequency = 10

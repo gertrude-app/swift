@@ -79,6 +79,8 @@ typealias UserData = GetUserData.Output
       self.store.send(.application(.didWake))
     case .willTerminate:
       self.store.send(.application(.willTerminate))
+    case .systemClockOrTimeZoneChanged:
+      self.store.send(.application(.systemClockOrTimeZoneChanged))
     }
   }
 }
