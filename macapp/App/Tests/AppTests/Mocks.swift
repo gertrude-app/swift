@@ -69,3 +69,8 @@ extension MacOSUser {
   static let dad = MacOSUser(id: 501, name: "Dad", type: .admin)
   static let franny = MacOSUser(id: 502, name: "Franny", type: .standard)
 }
+
+public extension Date {
+  static let epoch = Date(timeIntervalSince1970: 0)
+  static let reference = Date(timeIntervalSinceReferenceDate: 0)
+}
