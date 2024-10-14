@@ -1,11 +1,11 @@
 import App
-import SwiftUI
 import ComposableArchitecture
+import SwiftUI
 
 @main
 struct ios_pocApp: App {
   let store: StoreOf<AppReducer>
-  
+
   init() {
     self.store = Store(initialState: .init()) {
       AppReducer()
