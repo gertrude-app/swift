@@ -81,6 +81,10 @@ public struct SuccessOutput: PairOutput {
   public static var failure: Self { .init(false) }
 }
 
+extension Double: PairOutput {}
+extension Double: PairInput {}
+extension Int: PairOutput {}
+extension Int: PairInput {}
 extension String: PairOutput {}
 extension String: PairInput {}
 extension UUID: PairInput {}

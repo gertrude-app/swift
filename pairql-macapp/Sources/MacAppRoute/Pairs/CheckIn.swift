@@ -97,6 +97,7 @@ public struct CheckIn: Pair {
     public var browsers: [BrowserMatch]
     public var resolvedFilterSuspension: ResolvedFilterSuspension?
     public var resolvedUnlockRequests: [ResolvedUnlockRequest]?
+    public var trustedTime: Double
 
     public init(
       adminAccountStatus: AdminAccountStatus,
@@ -107,7 +108,8 @@ public struct CheckIn: Pair {
       userData: UserData,
       browsers: [BrowserMatch],
       resolvedFilterSuspension: ResolvedFilterSuspension? = nil,
-      resolvedUnlockRequests: [ResolvedUnlockRequest]? = nil
+      resolvedUnlockRequests: [ResolvedUnlockRequest]? = nil,
+      trustedTime: Double
     ) {
       self.adminAccountStatus = adminAccountStatus
       self.appManifest = appManifest
@@ -118,6 +120,7 @@ public struct CheckIn: Pair {
       self.browsers = browsers
       self.resolvedFilterSuspension = resolvedFilterSuspension
       self.resolvedUnlockRequests = resolvedUnlockRequests
+      self.trustedTime = trustedTime
     }
   }
 }
@@ -138,7 +141,8 @@ public struct CheckIn: Pair {
         $0.screenshotFrequency = 333
         $0.screenshotSize = 555
       },
-      browsers: [.name("Safari"), .bundleId("com.apple.Safari")]
+      browsers: [.name("Safari"), .bundleId("com.apple.Safari")],
+      trustedTime: 0.0
     )
 
     public static let empty = Self(
@@ -148,7 +152,8 @@ public struct CheckIn: Pair {
       latestRelease: .init(semver: "2.0.4"),
       updateReleaseChannel: .stable,
       userData: .empty,
-      browsers: []
+      browsers: [],
+      trustedTime: 0.0
     )
   }
 #endif

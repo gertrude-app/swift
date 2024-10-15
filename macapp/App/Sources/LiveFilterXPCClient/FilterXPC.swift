@@ -60,13 +60,13 @@ struct FilterXPC: Sendable {
     try await self.establishConnection()
 
     let manifestData = try XPC.encode(manifest)
-    let keysData = try keys.map { try XPC.encode($0) }
+    let filterData = try XPC.encode(UserFilterData(keys: keys, downtime: nil))
 
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.receiveUserRules(
         userId: getuid(),
         manifestData: manifestData,
-        keysData: keysData,
+        filterData: filterData,
         reply: continuation.dataHandler
       )
     }
@@ -119,10 +119,10 @@ struct FilterXPC: Sendable {
     }
   }
 
-  func requestExemptUserIds() async throws -> [uid_t] {
+  func requestUserTypes() async throws -> FilterUserTypes {
     try await self.establishConnection()
     return try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
-      filterProxy.receiveListExemptUserIdsRequest(reply: continuation.dataHandler)
+      filterProxy.receiveListUserTypesRequest(reply: continuation.dataHandler)
     }
   }
 

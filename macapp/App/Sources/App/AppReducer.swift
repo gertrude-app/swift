@@ -7,6 +7,16 @@ import Gertie
 import MacAppRoute
 import os.log
 
+struct TrustedTimestamp: Equatable {
+  var network: Date
+  var system: Date
+  var boottime: Date
+
+  var networkSystemDelta: TimeInterval {
+    self.network.timeIntervalSince(self.system)
+  }
+}
+
 struct AppReducer: Reducer, Sendable {
   struct State: Equatable, Sendable {
     var admin = AdminFeature.State()
@@ -21,6 +31,7 @@ struct AppReducer: Reducer, Sendable {
     var monitoring = MonitoringFeature.State()
     var requestSuspension = RequestSuspensionFeature.State()
     var user = UserFeature.State()
+    var timestamp: TrustedTimestamp?
 
     init(appVersion: String?) {
       self.appUpdates = .init(installedVersion: appVersion)
@@ -63,6 +74,7 @@ struct AppReducer: Reducer, Sendable {
     case requestSuspension(RequestSuspensionFeature.Action)
     case startProtecting(user: UserData)
     case websocket(WebSocketFeature.Action)
+    case setTrustedTimestamp(TrustedTimestamp)
 
     indirect case adminAuthed(Action)
   }
@@ -182,6 +194,10 @@ struct AppReducer: Reducer, Sendable {
         } else {
           return .none
         }
+
+      case .setTrustedTimestamp(let timestamp):
+        state.timestamp = timestamp
+        return .none
 
       default:
         return .none

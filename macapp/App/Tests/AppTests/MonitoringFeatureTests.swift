@@ -804,12 +804,11 @@ final class MonitoringFeatureTests: XCTestCase {
 
   // helpers
 
-  func spyScreenshots(_ store: TestStoreOf<AppReducer>)
-    -> (
-      takeScreenshot: Spy<Void, Int>,
-      uploadScreenshot: Spy<URL, ApiClient.UploadScreenshotData>,
-      takePendingScreenshots: Mock<[(Data, Int, Int, Date)]>
-    ) {
+  func spyScreenshots(_ store: TestStoreOf<AppReducer>) -> (
+    takeScreenshot: Spy<Void, Int>,
+    uploadScreenshot: Spy<URL, ApiClient.UploadScreenshotData>,
+    takePendingScreenshots: Mock<[(Data, Int, Int, Date)]>
+  ) {
     let takeScreenshot = spy(on: Int.self, returning: ())
     store.deps.monitoring.takeScreenshot = takeScreenshot.fn
     let takePendingScreenshots = mock(always: [(Data(), 999, 600, Date.epoch)])

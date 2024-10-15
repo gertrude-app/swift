@@ -388,10 +388,10 @@ struct OnboardingFeature: Feature {
             // safeguard, make sure onboarding user not exempted
             _ = await systemExtensionXpc.setUserExemption(device.currentUserId(), false)
             switch await systemExtensionXpc.requestUserTypes() {
-            case .success(let data):
-              await send(.receivedFilterUsers(data))
+            case .success(let userTypes):
+              await send(.receivedFilterUsers(userTypes))
             case .failure(let err):
-              log("failed to get exempt user ids: \(err)", "3b8fd6b8")
+              log("failed to get user types: \(err)", "576f0178")
             }
           case .timedOutWaiting:
             await send(.sysExtInstallTimedOut)

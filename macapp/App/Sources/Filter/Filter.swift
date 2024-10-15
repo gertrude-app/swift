@@ -7,6 +7,7 @@ import os.log
 public struct Filter: Reducer, Sendable {
   public struct State: Equatable, DecisionState {
     public var userKeys: [uid_t: [FilterKey]] = [:]
+    public var userDowntime: [uid_t: PlainTimeWindow] = [:]
     public var appIdManifest = AppIdManifest()
     public var exemptUsers: Set<uid_t> = []
     public var suspensions: [uid_t: FilterSuspension] = [:]
@@ -177,13 +178,14 @@ public struct Filter: Reducer, Sendable {
         await send(.suspensionTimerEnded(userId))
       }.cancellable(id: CancelId.suspensionTimer(for: userId), cancelInFlight: true)
 
-    case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
+    case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let downtime, let manifest))):
       if !keys.isEmpty {
         state.userKeys[userId] = keys
         state.exemptUsers.remove(userId)
       }
       state.appIdManifest = manifest
       state.appCache = [:]
+      state.userDowntime[userId] = downtime
       return self.saving(state.persistent)
 
     case .xpc(.receivedAppMessage(.setUserExemption(let userId, let enabled))):

@@ -8,13 +8,13 @@ public typealias XPCErrorData = Data
     userId: uid_t,
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )
-  func receiveListExemptUserIdsRequest(
+  func receiveListUserTypesRequest(
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )
   func receiveUserRules(
     userId: uid_t,
     manifestData: Data,
-    keysData: [Data],
+    filterData: Data,
     reply: @escaping (XPCErrorData?) -> Void
   )
   func setBlockStreaming(

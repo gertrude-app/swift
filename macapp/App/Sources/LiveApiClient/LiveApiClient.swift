@@ -85,6 +85,12 @@ extension ApiClient: DependencyKey {
     },
     setAccountActive: { await accountActive.setValue($0) },
     setUserToken: { await userToken.setValue($0) },
+    trustedNetworkTimestamp: {
+      try await output(
+        from: TrustedTime.self,
+        withUnauthed: .trustedTime
+      )
+    },
     uploadScreenshot: { data in
       guard await accountActive.value else { throw Error.accountInactive }
       let signed = try await output(

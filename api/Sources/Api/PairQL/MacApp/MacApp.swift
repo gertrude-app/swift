@@ -20,6 +20,8 @@ extension MacAppRoute: RouteResponder {
       case .recentAppVersions:
         let output = try await RecentAppVersions.resolve(in: context)
         return try await self.respond(with: output)
+      case .trustedTime:
+        return try await self.respond(with: get(dependency: \.date.now).timeIntervalSince1970)
       }
 
     case .userAuthed(let uuid, let userRoute):

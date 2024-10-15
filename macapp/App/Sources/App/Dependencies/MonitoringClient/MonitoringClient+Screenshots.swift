@@ -12,6 +12,8 @@ typealias ScreenshotData = (data: Data, width: Int, height: Int, createdAt: Date
     return
   }
 
+  // see reverted commit 05fa044 for ScreenCaptureKit alt implementation
+  // removed because it didn't fix sequoia's misleading bypass warning
   guard let fullsize = CGWindowListCreateImage(
     CGRect.infinite,
     .optionAll,

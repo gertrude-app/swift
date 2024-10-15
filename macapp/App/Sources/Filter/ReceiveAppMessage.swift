@@ -95,23 +95,22 @@ import os.log
   func receiveUserRules(
     userId: uid_t,
     manifestData: Data,
-    keysData: [Data],
+    filterData: Data,
     reply: @escaping (XPCErrorData?) -> Void
   ) {
     do {
       let manifest = try XPC.decode(AppIdManifest.self, from: manifestData)
-      let keys = try keysData.map { try XPC.decode(FilterKey.self, from: $0) }
-      self.subject.withValue {
-        $0.send(.receivedAppMessage(.userRules(
-          userId: userId,
-          keys: keys,
-          manifest: manifest
-        )))
-      }
+      let userData = try XPC.decode(UserFilterData.self, from: filterData)
+      self.subject.withValue { $0.send(.receivedAppMessage(.userRules(
+        userId: userId,
+        keys: userData.keys,
+        downtime: userData.downtime,
+        manifest: manifest
+      ))) }
       os_log(
         "[G•] FILTER xpc.receiveUserRules(userId: %{public}d,...) num keys: %{public}d",
         userId,
-        keys.count
+        userData.keys.count
       )
       reply(nil)
     } catch {
@@ -120,19 +119,16 @@ import os.log
     }
   }
 
-  func receiveListExemptUserIdsRequest(
-    reply: @escaping (Data?, XPCErrorData?) -> Void
-  ) {
+  func receiveListUserTypesRequest(reply: @escaping (Data?, XPCErrorData?) -> Void) {
     do {
-      os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest()")
+      os_log("[G•] FILTER xpc.receiveListUserTypesRequest()")
       let savedState = try storage.loadPersistentStateSync()
       let exemptUsers = Array(savedState?.exemptUsers ?? [])
       let protectedUsers = savedState.map { Array($0.userKeys.keys) } ?? []
-      let types = FilterUserTypes(exempt: exemptUsers, protected: protectedUsers)
-      let data = try XPC.encode(types.transport)
+      let data = try XPC.encode(FilterUserTypes(exempt: exemptUsers, protected: protectedUsers))
       reply(data, nil)
     } catch {
-      os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")
+      os_log("[G•] FILTER xpc.receiveListUserTypesRequest() error: %{public}@", "\(error)")
       reply(nil, XPC.errorData(error))
     }
   }
