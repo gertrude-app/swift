@@ -8,8 +8,10 @@ struct PrimaryButton: View {
 
   var body: some View {
     Button {
-      let impact = UIImpactFeedbackGenerator(style: .medium)
-      impact.impactOccurred()
+      #if os(iOS)
+        let impact = UIImpactFeedbackGenerator(style: .medium)
+        impact.impactOccurred()
+      #endif
     } label: {
       ZStack {
         VStack {

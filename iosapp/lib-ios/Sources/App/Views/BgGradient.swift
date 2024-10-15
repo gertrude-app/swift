@@ -5,7 +5,8 @@ struct BgGradient: View {
   @State var timer: Timer?
 
   var body: some View {
-    if #available(iOS 18.0, *) {
+    // if #available(iOS 18.0, *) {
+    #if false
       MeshGradient(
         width: 3,
         height: 4,
@@ -27,9 +28,9 @@ struct BgGradient: View {
       }.onDisappear {
         self.stopAnimation()
       }
-    } else {
+    #else
       Rectangle().fill(Gradient(colors: [.white, violet300]))
-    }
+    #endif
   }
 
   private func startAnimation() {
