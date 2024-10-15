@@ -32,7 +32,7 @@ class TestFilter: NetworkFilter {
   static func scenario(
     userIdFromAuditToken userId: uid_t? = 502,
     userKeys: [uid_t: [FilterKey]] = [502: [.mock]],
-    userDownTime: [uid_t: PlainTimeWindow] = [:],
+    userDowntime: [uid_t: PlainTimeWindow] = [:],
     date: Dependencies.DateGenerator = .init { Date() },
     appIdManifest: AppIdManifest = .init(
       apps: ["chrome": ["com.chrome"]],
@@ -52,7 +52,7 @@ class TestFilter: NetworkFilter {
       let filter = TestFilter()
       filter.state = State(
         userKeys: userKeys,
-        userDowntime: userDownTime,
+        userDowntime: userDowntime,
         appIdManifest: appIdManifest,
         exemptUsers: exemptUsers,
         suspensions: suspensions

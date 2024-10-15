@@ -44,7 +44,7 @@ final class EarlyDecisionTests: XCTestCase {
       let date = Calendar.current.date(from: DateComponents(hour: hour, minute: minute))!
       let filter = TestFilter.scenario(
         userIdFromAuditToken: 502,
-        userDownTime: [502: downtime],
+        userDowntime: [502: downtime],
         date: .constant(date)
       )
       expect(filter.earlyUserDecision(auditToken: .init())).toEqual(decision)
@@ -59,7 +59,7 @@ final class EarlyDecisionTests: XCTestCase {
     let withinDowntime = Calendar.current.date(from: DateComponents(hour: 23, minute: 33))!
     let filter = TestFilter.scenario(
       userIdFromAuditToken: 502,
-      userDownTime: [502: downtime], // has downtime...
+      userDowntime: [502: downtime], // has downtime...
       date: .constant(withinDowntime),
       exemptUsers: [502] // <-- ... AND is EXEMPT, but downtime wins
     )
@@ -74,7 +74,7 @@ final class EarlyDecisionTests: XCTestCase {
     let withinDowntime = Calendar.current.date(from: DateComponents(hour: 23, minute: 33))!
     let filter = TestFilter.scenario(
       userIdFromAuditToken: 502,
-      userDownTime: [502: downtime], // has downtime...
+      userDowntime: [502: downtime], // has downtime...
       date: .constant(withinDowntime),
       suspensions: [502: .init( // <-- AND is SUSPENDED, but downtime wins
         scope: .unrestricted,
@@ -92,7 +92,7 @@ final class EarlyDecisionTests: XCTestCase {
     let withinDowntime = Calendar.current.date(from: DateComponents(hour: 23, minute: 33))!
     let filter = TestFilter.scenario(
       userIdFromAuditToken: 502,
-      userDownTime: [503: downtime], // <-- downtime exists, but for another user
+      userDowntime: [503: downtime], // <-- downtime exists, but for another user
       date: .constant(withinDowntime)
     )
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.none(502))

@@ -117,6 +117,8 @@ final class FilterReducerTests: XCTestCase {
     let (store, _) = Filter.testStore()
     store.deps.filterExtension = .mock
     store.deps.storage = .mock
+    let save = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = save.fn
 
     let downtime = PlainTimeWindow(
       start: .init(hour: 22, minute: 0),
@@ -131,6 +133,13 @@ final class FilterReducerTests: XCTestCase {
     )))) {
       $0.userDowntime[502] = downtime
     }
+
+    await expect(save.calls).toEqual([.init(
+      userKeys: [502: [.mock]],
+      userDowntime: [502: downtime], // <-- new downtime info saved
+      appIdManifest: .mock,
+      exemptUsers: []
+    )])
   }
 
   @MainActor
