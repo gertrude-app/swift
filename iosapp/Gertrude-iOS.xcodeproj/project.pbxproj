@@ -21,7 +21,7 @@
 		7FE743D62C8F431500607876 /* FilterControlProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FE743D52C8F431500607876 /* FilterControlProvider.swift */; };
 		7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FE743D22C8F431500607876 /* controller.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7FE743DF2C8F4ED700607876 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
-		7FFB54912CB477C200EBFA3B /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 7FFB54902CB477C200EBFA3B /* App */; };
+		7FEC01B72CBF0DCA00B152B8 /* LibIOS in Frameworks */ = {isa = PBXBuildFile; productRef = 7FEC01B62CBF0DCA00B152B8 /* LibIOS */; };
 		CECCA8D914450391BB017E01 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF145756F19546462ADE7D9 /* PrimaryButton.swift */; };
 		F7AEF6187A4EA032CA3A38F7 /* PreReqs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D8E4736A2DBCF7F38363B3 /* PreReqs.swift */; };
 /* End PBXBuildFile section */
@@ -62,7 +62,7 @@
 		3943E5533FFA53791343F445 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		5FF145756F19546462ADE7D9 /* PrimaryButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		7F4A14502CB5843500FD6ABE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		7FA7B8432AEB238700363B53 /* app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7FA7B8432AEB238700363B53 /* app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = app.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSAppEntry.swift; sourceTree = "<group>"; };
 		7FA7B84A2AEB238800363B53 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7FA7B84D2AEB238800363B53 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -71,7 +71,7 @@
 		7FA7B85D2AEB243400363B53 /* FilterDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterDataProvider.swift; sourceTree = "<group>"; };
 		7FA7B85F2AEB243400363B53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7FA7B8602AEB243400363B53 /* filter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = filter.entitlements; sourceTree = "<group>"; };
-		7FA7B8682AEB271800363B53 /* app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "app.entitlements"; sourceTree = "<group>"; };
+		7FA7B8682AEB271800363B53 /* app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = app.entitlements; sourceTree = "<group>"; };
 		7FE743D22C8F431500607876 /* controller.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = controller.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FE743D52C8F431500607876 /* FilterControlProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterControlProvider.swift; sourceTree = "<group>"; };
 		7FE743D72C8F431500607876 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -87,7 +87,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7FFB54912CB477C200EBFA3B /* App in Frameworks */,
+				7FEC01B72CBF0DCA00B152B8 /* LibIOS in Frameworks */,
 				7FE743DF2C8F4ED700607876 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -120,19 +120,19 @@
 			path = Lib;
 			sourceTree = "<group>";
 		};
-		5C9A54EF758AD899FB94954C /* App */ = {
+		5C9A54EF758AD899FB94954C /* LibIOS */ = {
 			isa = PBXGroup;
 			children = (
 				9DAD2F4ECC8A0B77558A95F5 /* Views */,
 				545C6415C3C80BA9198F9BF5 /* Lib */,
 			);
-			path = App;
+			path = LibIOS;
 			sourceTree = "<group>";
 		};
 		6F6AFDF4611779783100CDFA /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				5C9A54EF758AD899FB94954C /* App */,
+				5C9A54EF758AD899FB94954C /* LibIOS */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -168,7 +168,7 @@
 				7FA7B84A2AEB238800363B53 /* Assets.xcassets */,
 				7FA7B84C2AEB238800363B53 /* Preview Content */,
 			);
-			path = "app";
+			path = app;
 			sourceTree = "<group>";
 		};
 		7FA7B84C2AEB238800363B53 /* Preview Content */ = {
@@ -245,11 +245,11 @@
 				7FA7B8622AEB243400363B53 /* PBXTargetDependency */,
 				7FE743DA2C8F431500607876 /* PBXTargetDependency */,
 			);
-			name = "app";
+			name = app;
 			packageProductDependencies = (
-				7FFB54902CB477C200EBFA3B /* App */,
+				7FEC01B62CBF0DCA00B152B8 /* LibIOS */,
 			);
-			productName = "app";
+			productName = app;
 			productReference = 7FA7B8432AEB238700363B53 /* app.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -311,7 +311,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "app" */;
+			buildConfigurationList = 7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "Gertrude-iOS" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -527,14 +527,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = "app/app.entitlements";
+				CODE_SIGN_ENTITLEMENTS = app/app.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "app/Info.plist";
+				INFOPLIST_FILE = app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Gertrude;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -566,14 +566,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = "app/app.entitlements";
+				CODE_SIGN_ENTITLEMENTS = app/app.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "app/Info.plist";
+				INFOPLIST_FILE = app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Gertrude;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -732,7 +732,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "app" */ = {
+		7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "Gertrude-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7FA7B84F2AEB238800363B53 /* Debug */,
@@ -782,9 +782,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Filter;
 		};
-		7FFB54902CB477C200EBFA3B /* App */ = {
+		7FEC01B62CBF0DCA00B152B8 /* LibIOS */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = App;
+			productName = LibIOS;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

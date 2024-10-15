@@ -1,5 +1,5 @@
-import App
 import ComposableArchitecture
+import LibIOS
 import SwiftUI
 
 @main

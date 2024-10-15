@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import XCTest
 
-@testable import App
+@testable import LibIOS
 
 final class AppTests: XCTestCase {
   func testAppSendsFirstLaunchEventWhenNoLaunchDatePresent() async throws {
