@@ -11,6 +11,8 @@ public struct FilterStore: NetworkFilter {
   public var state: Filter.State { self.viewStore.state }
 
   @Dependency(\.security) public var security
+  @Dependency(\.date.now) public var now
+  @Dependency(\.calendar) public var calendar
 
   public init() {
     self.store = Store(initialState: Filter.State(), reducer: { Filter() })

@@ -14,7 +14,7 @@ public typealias XPCErrorData = Data
   func receiveUserRules(
     userId: uid_t,
     manifestData: Data,
-    keysData: [Data],
+    filterData: Data,
     reply: @escaping (XPCErrorData?) -> Void
   )
   func setBlockStreaming(
