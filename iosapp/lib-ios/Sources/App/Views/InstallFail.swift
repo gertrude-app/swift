@@ -26,7 +26,6 @@ struct InstallFail: View {
           Text("Unexpected error: \(underlying)")
         }
       }
-      .font(.footnote)
       .foregroundColor(.red)
       .padding(.bottom, 20)
       .multilineTextAlignment(.center)

@@ -42,7 +42,6 @@ struct AuthFailed: View {
         }
       }
       .multilineTextAlignment(.center)
-      .font(.footnote)
 
       Button {
         self.onTryAgain()

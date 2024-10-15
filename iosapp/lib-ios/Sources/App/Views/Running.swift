@@ -4,11 +4,10 @@ struct Running: View {
   var body: some View {
     VStack(spacing: 20) {
       Text("Gertrude is blocking GIFs and image searches.")
-        .font(.system(size: 20, weight: .semibold))
+        .font(.system(size: 24, weight: .semibold))
         .multilineTextAlignment(.center)
 
       Text("You can quit this app now—it will keep blocking even when not running.")
-        .font(.footnote)
         .multilineTextAlignment(.center)
 
       Spacer()
