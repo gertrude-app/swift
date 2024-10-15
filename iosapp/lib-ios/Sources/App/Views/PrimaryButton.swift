@@ -34,8 +34,7 @@ struct PrimaryButton: View {
             Text(self.text)
               .font(.system(size: 20, weight: .bold))
             Image(systemName: "arrow.right")
-              .resizable()
-              .frame(width: 16, height: 16)
+              .font(.system(size: 20, weight: .bold))
             Spacer()
           }
           Spacer()
@@ -48,7 +47,7 @@ struct PrimaryButton: View {
       }
       .frame(height: 64)
       .padding(.horizontal, 40)
-      .scaleEffect(self.tapping ? 0.95 : 1)
+      .scaleEffect(self.tapping ? 0.98 : 1)
     }
     .onLongPressGesture(minimumDuration: 0) {} onPressingChanged: { inProgress in
       withAnimation(.bouncy(duration: 0.3, extraBounce: 0.4)) {
@@ -60,8 +59,12 @@ struct PrimaryButton: View {
     }
   }
 
-  init(text: String, onClick: @escaping () -> Void) {
+  init(_ text: String, onClick: @escaping () -> Void) {
     self.text = text
     self.onClick = onClick
   }
+}
+
+#Preview {
+  PrimaryButton("Do something") {}
 }

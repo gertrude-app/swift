@@ -12,7 +12,6 @@
 		580A5B546430D0B85CDE67A4 /* FeatureLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFBB6E5EDFE1B2D7B40D17A6 /* FeatureLI.swift */; };
 		7F7E54B62CB576B20012844E /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7F7E54B52CB576B20012844E /* Filter */; };
 		7FA7B8472AEB238700363B53 /* ios_pocApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B8462AEB238700363B53 /* ios_pocApp.swift */; };
-		7FA7B8492AEB238700363B53 /* Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B8482AEB238700363B53 /* Previews.swift */; };
 		7FA7B84B2AEB238800363B53 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84A2AEB238800363B53 /* Assets.xcassets */; };
 		7FA7B84E2AEB238800363B53 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84D2AEB238800363B53 /* Preview Assets.xcassets */; };
 		7FA7B85B2AEB243400363B53 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
@@ -65,7 +64,6 @@
 		7F4A14502CB5843500FD6ABE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7FA7B8432AEB238700363B53 /* ios-poc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ios-poc.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FA7B8462AEB238700363B53 /* ios_pocApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ios_pocApp.swift; sourceTree = "<group>"; };
-		7FA7B8482AEB238700363B53 /* Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Previews.swift; sourceTree = "<group>"; };
 		7FA7B84A2AEB238800363B53 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7FA7B84D2AEB238800363B53 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		7FA7B8582AEB243400363B53 /* filter.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = filter.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -167,7 +165,6 @@
 				7F4A14502CB5843500FD6ABE /* Info.plist */,
 				7FA7B8682AEB271800363B53 /* ios-poc.entitlements */,
 				7FA7B8462AEB238700363B53 /* ios_pocApp.swift */,
-				7FA7B8482AEB238700363B53 /* Previews.swift */,
 				7FA7B84A2AEB238800363B53 /* Assets.xcassets */,
 				7FA7B84C2AEB238800363B53 /* Preview Content */,
 			);
@@ -368,7 +365,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7FA7B8492AEB238700363B53 /* Previews.swift in Sources */,
 				7FA7B8472AEB238700363B53 /* ios_pocApp.swift in Sources */,
 				1FE271D2FDBE4C6122B68A8A /* BgGradient.swift in Sources */,
 				580A5B546430D0B85CDE67A4 /* FeatureLI.swift in Sources */,

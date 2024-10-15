@@ -1,26 +1,49 @@
 import ComposableArchitecture
-import Foundation
 import SwiftUI
 
 struct PreReqs: View {
-  var store: StoreOf<AppReducer>
+  var onTap: () -> Void
+
+  var requirements: [String] {
+    [
+      "the \(self.deviceType) use must be logged into iCloud",
+      "the \(self.deviceType) user must be under 18",
+      "the \(self.deviceType) user must be part of an Apple Family",
+      "the \(self.deviceType) user must be restricted from deleting apps",
+    ]
+  }
 
   var body: some View {
     VStack(spacing: 20) {
-      Text("In order to safely use Gertrude")
+      Text("In order to safely use Gertrude:")
+        .font(.system(size: 20, weight: .semibold))
+      
       VStack(alignment: .leading) {
-        Text("- the \(self.deviceType) user must be logged into iCloud")
-        Text("- the \(self.deviceType) user must be under 18")
-        Text("- the \(self.deviceType) user must be part of an Apple Family")
-        Text("- the \(self.deviceType) user must be restricted from deleting apps")
-      }.font(.footnote)
-      Button("Start authorization") {
-        self.store.send(.startAuthorizationTapped)
+        ForEach(self.requirements, id: \.self) { requirement in
+          HStack {
+            Image(systemName: "checkmark.circle")
+              .font(.system(size: 12, weight: .semibold))
+              .foregroundColor(violet500)
+            Text(requirement)
+              .font(.footnote)
+          }
+        }
+      }
+        
+      Spacer()
+
+      PrimaryButton("Start authorization") {
+        self.onTap()
       }
     }
+    .padding(.top, 120)
+    .padding(.bottom, 60)
   }
 }
 
 #Preview {
-  PreReqs(store: Store(initialState: .init(), reducer: {}))
+  ZStack {
+    BgGradient()
+    PreReqs {}
+  }.ignoresSafeArea()
 }

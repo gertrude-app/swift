@@ -1,9 +1,8 @@
-import ComposableArchitecture
 import Foundation
 import SwiftUI
 
 struct Welcome: View {
-  var store: StoreOf<AppReducer>
+  var onPrimaryButtonTap: () -> Void
 
   var body: some View {
     VStack(spacing: 15) {
@@ -22,8 +21,8 @@ struct Welcome: View {
 
       Spacer()
 
-      PrimaryButton(text: "Getting started") {
-        self.store.send(.welcomeNextTapped)
+      PrimaryButton("Getting started") {
+        self.onPrimaryButtonTap()
       }
     }
     .padding(.top, 120)
@@ -32,5 +31,8 @@ struct Welcome: View {
 }
 
 #Preview {
-  Welcome(store: Store(initialState: .init(), reducer: {}))
+  ZStack {
+    BgGradient()
+    Welcome {}
+  }.ignoresSafeArea()
 }
