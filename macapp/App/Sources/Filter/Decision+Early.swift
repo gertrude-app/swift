@@ -15,11 +15,16 @@ public extension NetworkFilter {
       return self.logged(.allow(.systemUser(userId)))
     }
 
-    if state.exemptUsers.contains(userId) {
+    if let userDowntime = self.state.userDowntime[userId],
+       userDowntime.contains(self.now, in: self.calendar) {
+      return self.logged(.block(.duringDowntime(userId)))
+    }
+
+    if self.state.exemptUsers.contains(userId) {
       return self.logged(.allow(.exemptUser(userId)))
     }
 
-    if let suspension = state.suspensions[userId],
+    if let suspension = self.state.suspensions[userId],
        suspension.isActive,
        suspension.scope == .unrestricted {
       return self.logged(.allow(.filterSuspended(userId)))

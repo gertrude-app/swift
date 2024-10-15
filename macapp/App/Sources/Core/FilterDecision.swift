@@ -26,6 +26,7 @@ public enum FilterDecision: Equatable, Sendable {
       case systemUser(uid_t)
       case exemptUser(uid_t)
       case filterSuspended(uid_t)
+      case duringDowntime(uid_t)
     }
 
     case block(Reason)
