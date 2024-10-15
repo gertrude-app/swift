@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03E917BFA4D8CBC845611955 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3943E5533FFA53791343F445 /* Colors.swift */; };
+		1FE271D2FDBE4C6122B68A8A /* BgGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A47408B05AA4E9E2C4042A /* BgGradient.swift */; };
+		580A5B546430D0B85CDE67A4 /* FeatureLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFBB6E5EDFE1B2D7B40D17A6 /* FeatureLI.swift */; };
 		7F7E54B62CB576B20012844E /* Filter in Frameworks */ = {isa = PBXBuildFile; productRef = 7F7E54B52CB576B20012844E /* Filter */; };
 		7FA7B8472AEB238700363B53 /* ios_pocApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B8462AEB238700363B53 /* ios_pocApp.swift */; };
-		7FA7B8492AEB238700363B53 /* Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B8482AEB238700363B53 /* Previews.swift */; };
 		7FA7B84B2AEB238800363B53 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84A2AEB238800363B53 /* Assets.xcassets */; };
 		7FA7B84E2AEB238800363B53 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84D2AEB238800363B53 /* Preview Assets.xcassets */; };
 		7FA7B85B2AEB243400363B53 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
@@ -20,6 +22,8 @@
 		7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FE743D22C8F431500607876 /* controller.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7FE743DF2C8F4ED700607876 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
 		7FFB54912CB477C200EBFA3B /* App in Frameworks */ = {isa = PBXBuildFile; productRef = 7FFB54902CB477C200EBFA3B /* App */; };
+		CECCA8D914450391BB017E01 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF145756F19546462ADE7D9 /* PrimaryButton.swift */; };
+		F7AEF6187A4EA032CA3A38F7 /* PreReqs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D8E4736A2DBCF7F38363B3 /* PreReqs.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,10 +59,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3943E5533FFA53791343F445 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		5FF145756F19546462ADE7D9 /* PrimaryButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		7F4A14502CB5843500FD6ABE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7FA7B8432AEB238700363B53 /* ios-poc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ios-poc.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FA7B8462AEB238700363B53 /* ios_pocApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ios_pocApp.swift; sourceTree = "<group>"; };
-		7FA7B8482AEB238700363B53 /* Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Previews.swift; sourceTree = "<group>"; };
 		7FA7B84A2AEB238800363B53 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7FA7B84D2AEB238800363B53 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		7FA7B8582AEB243400363B53 /* filter.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = filter.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -72,6 +77,9 @@
 		7FE743D72C8F431500607876 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7FE743D82C8F431500607876 /* controller.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = controller.entitlements; sourceTree = "<group>"; };
 		7FFB548E2CB4768600EBFA3B /* lib-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "lib-ios"; sourceTree = "<group>"; };
+		C7D8E4736A2DBCF7F38363B3 /* PreReqs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PreReqs.swift; sourceTree = "<group>"; };
+		E7A47408B05AA4E9E2C4042A /* BgGradient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BgGradient.swift; sourceTree = "<group>"; };
+		EFBB6E5EDFE1B2D7B40D17A6 /* FeatureLI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FeatureLI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +112,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		545C6415C3C80BA9198F9BF5 /* Lib */ = {
+			isa = PBXGroup;
+			children = (
+				3943E5533FFA53791343F445 /* Colors.swift */,
+			);
+			path = Lib;
+			sourceTree = "<group>";
+		};
+		5C9A54EF758AD899FB94954C /* App */ = {
+			isa = PBXGroup;
+			children = (
+				9DAD2F4ECC8A0B77558A95F5 /* Views */,
+				545C6415C3C80BA9198F9BF5 /* Lib */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		6F6AFDF4611779783100CDFA /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				5C9A54EF758AD899FB94954C /* App */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
 		7FA7B83A2AEB238700363B53 = {
 			isa = PBXGroup;
 			children = (
@@ -132,7 +165,6 @@
 				7F4A14502CB5843500FD6ABE /* Info.plist */,
 				7FA7B8682AEB271800363B53 /* ios-poc.entitlements */,
 				7FA7B8462AEB238700363B53 /* ios_pocApp.swift */,
-				7FA7B8482AEB238700363B53 /* Previews.swift */,
 				7FA7B84A2AEB238800363B53 /* Assets.xcassets */,
 				7FA7B84C2AEB238800363B53 /* Preview Content */,
 			);
@@ -151,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */,
+				B8850CC928B12132F799FC2C /* lib-ios */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -173,6 +206,25 @@
 				7FE743D82C8F431500607876 /* controller.entitlements */,
 			);
 			path = controller;
+			sourceTree = "<group>";
+		};
+		9DAD2F4ECC8A0B77558A95F5 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				E7A47408B05AA4E9E2C4042A /* BgGradient.swift */,
+				EFBB6E5EDFE1B2D7B40D17A6 /* FeatureLI.swift */,
+				5FF145756F19546462ADE7D9 /* PrimaryButton.swift */,
+				C7D8E4736A2DBCF7F38363B3 /* PreReqs.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B8850CC928B12132F799FC2C /* lib-ios */ = {
+			isa = PBXGroup;
+			children = (
+				6F6AFDF4611779783100CDFA /* Sources */,
+			);
+			path = "lib-ios";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -313,8 +365,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7FA7B8492AEB238700363B53 /* Previews.swift in Sources */,
 				7FA7B8472AEB238700363B53 /* ios_pocApp.swift in Sources */,
+				1FE271D2FDBE4C6122B68A8A /* BgGradient.swift in Sources */,
+				580A5B546430D0B85CDE67A4 /* FeatureLI.swift in Sources */,
+				03E917BFA4D8CBC845611955 /* Colors.swift in Sources */,
+				CECCA8D914450391BB017E01 /* PrimaryButton.swift in Sources */,
+				F7AEF6187A4EA032CA3A38F7 /* PreReqs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -475,7 +531,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"ios-poc/Preview Content\"";
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "ios-poc/Info.plist";
@@ -513,7 +569,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"ios-poc/Preview Content\"";
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "ios-poc/Info.plist";

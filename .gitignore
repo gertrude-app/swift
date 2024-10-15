@@ -3,6 +3,9 @@
 api/.env*
 node_modules/
 .vscode/*
+.nvim/*
+
+buildServer.json
 
 **/.build/
 **/.swiftpm/
