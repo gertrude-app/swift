@@ -62,7 +62,7 @@
 		3943E5533FFA53791343F445 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		5FF145756F19546462ADE7D9 /* PrimaryButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		7F4A14502CB5843500FD6ABE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		7FA7B8432AEB238700363B53 /* ios-poc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ios-poc.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7FA7B8432AEB238700363B53 /* app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSAppEntry.swift; sourceTree = "<group>"; };
 		7FA7B84A2AEB238800363B53 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7FA7B84D2AEB238800363B53 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -71,7 +71,7 @@
 		7FA7B85D2AEB243400363B53 /* FilterDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterDataProvider.swift; sourceTree = "<group>"; };
 		7FA7B85F2AEB243400363B53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7FA7B8602AEB243400363B53 /* filter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = filter.entitlements; sourceTree = "<group>"; };
-		7FA7B8682AEB271800363B53 /* ios-poc.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "ios-poc.entitlements"; sourceTree = "<group>"; };
+		7FA7B8682AEB271800363B53 /* app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "app.entitlements"; sourceTree = "<group>"; };
 		7FE743D22C8F431500607876 /* controller.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = controller.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FE743D52C8F431500607876 /* FilterControlProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterControlProvider.swift; sourceTree = "<group>"; };
 		7FE743D72C8F431500607876 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -141,7 +141,7 @@
 			isa = PBXGroup;
 			children = (
 				7FFB548E2CB4768600EBFA3B /* lib-ios */,
-				7FA7B8452AEB238700363B53 /* ios-poc */,
+				7FA7B8452AEB238700363B53 /* app */,
 				7FA7B85C2AEB243400363B53 /* filter */,
 				7FE743D42C8F431500607876 /* controller */,
 				7FA7B8592AEB243400363B53 /* Frameworks */,
@@ -152,23 +152,23 @@
 		7FA7B8442AEB238700363B53 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7FA7B8432AEB238700363B53 /* ios-poc.app */,
+				7FA7B8432AEB238700363B53 /* app.app */,
 				7FA7B8582AEB243400363B53 /* filter.appex */,
 				7FE743D22C8F431500607876 /* controller.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		7FA7B8452AEB238700363B53 /* ios-poc */ = {
+		7FA7B8452AEB238700363B53 /* app */ = {
 			isa = PBXGroup;
 			children = (
 				7F4A14502CB5843500FD6ABE /* Info.plist */,
-				7FA7B8682AEB271800363B53 /* ios-poc.entitlements */,
+				7FA7B8682AEB271800363B53 /* app.entitlements */,
 				7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */,
 				7FA7B84A2AEB238800363B53 /* Assets.xcassets */,
 				7FA7B84C2AEB238800363B53 /* Preview Content */,
 			);
-			path = "ios-poc";
+			path = "app";
 			sourceTree = "<group>";
 		};
 		7FA7B84C2AEB238800363B53 /* Preview Content */ = {
@@ -230,9 +230,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7FA7B8422AEB238700363B53 /* ios-poc */ = {
+		7FA7B8422AEB238700363B53 /* app */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7FA7B8512AEB238800363B53 /* Build configuration list for PBXNativeTarget "ios-poc" */;
+			buildConfigurationList = 7FA7B8512AEB238800363B53 /* Build configuration list for PBXNativeTarget "app" */;
 			buildPhases = (
 				7FA7B83F2AEB238700363B53 /* Sources */,
 				7FA7B8402AEB238700363B53 /* Frameworks */,
@@ -245,12 +245,12 @@
 				7FA7B8622AEB243400363B53 /* PBXTargetDependency */,
 				7FE743DA2C8F431500607876 /* PBXTargetDependency */,
 			);
-			name = "ios-poc";
+			name = "app";
 			packageProductDependencies = (
 				7FFB54902CB477C200EBFA3B /* App */,
 			);
-			productName = "ios-poc";
-			productReference = 7FA7B8432AEB238700363B53 /* ios-poc.app */;
+			productName = "app";
+			productReference = 7FA7B8432AEB238700363B53 /* app.app */;
 			productType = "com.apple.product-type.application";
 		};
 		7FA7B8572AEB243400363B53 /* filter */ = {
@@ -311,7 +311,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "ios-poc" */;
+			buildConfigurationList = 7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "app" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -327,7 +327,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7FA7B8422AEB238700363B53 /* ios-poc */,
+				7FA7B8422AEB238700363B53 /* app */,
 				7FA7B8572AEB243400363B53 /* filter */,
 				7FE743D12C8F431500607876 /* controller */,
 			);
@@ -527,14 +527,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = "ios-poc/ios-poc.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "app/app.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"ios-poc/Preview Content\"";
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "ios-poc/Info.plist";
+				INFOPLIST_FILE = "app/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Gertrude;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -546,7 +546,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -566,14 +566,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = "ios-poc/ios-poc.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "app/app.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"ios-poc/Preview Content\"";
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "ios-poc/Info.plist";
+				INFOPLIST_FILE = "app/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Gertrude;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -585,7 +585,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -732,7 +732,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "ios-poc" */ = {
+		7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "app" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7FA7B84F2AEB238800363B53 /* Debug */,
@@ -741,7 +741,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7FA7B8512AEB238800363B53 /* Build configuration list for PBXNativeTarget "ios-poc" */ = {
+		7FA7B8512AEB238800363B53 /* Build configuration list for PBXNativeTarget "app" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7FA7B8522AEB238800363B53 /* Debug */,
