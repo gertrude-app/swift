@@ -95,23 +95,22 @@ import os.log
   func receiveUserRules(
     userId: uid_t,
     manifestData: Data,
-    keysData: [Data],
+    filterData: Data,
     reply: @escaping (XPCErrorData?) -> Void
   ) {
     do {
       let manifest = try XPC.decode(AppIdManifest.self, from: manifestData)
-      let keys = try keysData.map { try XPC.decode(FilterKey.self, from: $0) }
-      self.subject.withValue {
-        $0.send(.receivedAppMessage(.userRules(
-          userId: userId,
-          keys: keys,
-          manifest: manifest
-        )))
-      }
+      let userData = try XPC.decode(UserFilterData.self, from: filterData)
+      self.subject.withValue { $0.send(.receivedAppMessage(.userRules(
+        userId: userId,
+        keys: userData.keys,
+        downtime: userData.downtime,
+        manifest: manifest
+      ))) }
       os_log(
         "[G•] FILTER xpc.receiveUserRules(userId: %{public}d,...) num keys: %{public}d",
         userId,
-        keys.count
+        userData.keys.count
       )
       reply(nil)
     } catch {

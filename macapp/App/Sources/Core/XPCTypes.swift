@@ -1,4 +1,15 @@
 import Foundation
+import Gertie
+
+public struct UserFilterData: Sendable, Codable {
+  public var keys: [FilterKey]
+  public var downtime: PlainTimeWindow?
+
+  public init(keys: [FilterKey], downtime: PlainTimeWindow? = nil) {
+    self.keys = keys
+    self.downtime = downtime
+  }
+}
 
 public enum XPCErr: Error, Sendable, Codable {
   public enum AppErr: Error, Sendable, Codable {

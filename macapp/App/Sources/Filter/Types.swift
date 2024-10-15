@@ -6,7 +6,12 @@ import TaggedTime
 public extension XPCEvent {
   enum Filter: Equatable, Sendable {
     public enum MessageFromApp: Sendable, Equatable {
-      case userRules(userId: uid_t, keys: [FilterKey], manifest: AppIdManifest)
+      case userRules(
+        userId: uid_t,
+        keys: [FilterKey],
+        downtime: PlainTimeWindow?,
+        manifest: AppIdManifest
+      )
       case setBlockStreaming(enabled: Bool, userId: uid_t)
       case disconnectUser(userId: uid_t)
       case endFilterSuspension(userId: uid_t)

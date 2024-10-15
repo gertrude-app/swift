@@ -8,6 +8,7 @@ import Gertie
 class TestFilter: NetworkFilter {
   struct State: DecisionState {
     var userKeys: [uid_t: [FilterKey]] = [:]
+    var userDowntime: [uid_t: PlainTimeWindow] = [:]
     var appIdManifest = AppIdManifest()
     var exemptUsers: Set<uid_t> = []
     var suspensions: [uid_t: FilterSuspension] = [:]
@@ -17,6 +18,8 @@ class TestFilter: NetworkFilter {
   var state = State()
 
   @Dependency(\.security) var security
+  @Dependency(\.date.now) var now
+  @Dependency(\.calendar) var calendar
 
   func appCache(get bundleId: String) -> AppDescriptor? {
     self.state.appCache[bundleId]
@@ -29,6 +32,8 @@ class TestFilter: NetworkFilter {
   static func scenario(
     userIdFromAuditToken userId: uid_t? = 502,
     userKeys: [uid_t: [FilterKey]] = [502: [.mock]],
+    userDownTime: [uid_t: PlainTimeWindow] = [:],
+    date: Dependencies.DateGenerator = .init { Date() },
     appIdManifest: AppIdManifest = .init(
       apps: ["chrome": ["com.chrome"]],
       displayNames: ["chrome": "Chrome"],
@@ -39,13 +44,15 @@ class TestFilter: NetworkFilter {
   ) -> TestFilter {
     withDependencies {
       $0.security.userIdFromAuditToken = {
-        token in token.flatMap { _ in userId
-        }
+        token in token.flatMap { _ in userId }
       }
+      $0.date = date
+      $0.calendar = Calendar(identifier: .gregorian)
     } operation: {
       let filter = TestFilter()
       filter.state = State(
         userKeys: userKeys,
+        userDowntime: userDownTime,
         appIdManifest: appIdManifest,
         exemptUsers: exemptUsers,
         suspensions: suspensions

@@ -47,7 +47,7 @@ final class FilterReducerTests: XCTestCase {
     let key = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
     let manifest = AppIdManifest(apps: ["Lol": ["com.lol"]])
     let message = XPCEvent.Filter
-      .receivedAppMessage(.userRules(userId: 502, keys: [key], manifest: manifest))
+      .receivedAppMessage(.userRules(userId: 502, keys: [key], downtime: nil, manifest: manifest))
 
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
@@ -85,6 +85,7 @@ final class FilterReducerTests: XCTestCase {
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 501, // we get rules about user 501
       keys: [.mock],
+      downtime: nil,
       manifest: .mock
     )))) {
       $0.exemptUsers = [504] // ... so they are removed from the exempt list
@@ -104,9 +105,53 @@ final class FilterReducerTests: XCTestCase {
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 501, // we get rules about user 501
       keys: [], // <-- but there are ZERO keys
+      downtime: nil,
       manifest: .mock
     )))) {
       $0.exemptUsers = [501, 504] // ... so they are NOT removed from the exempt list
+    }
+  }
+
+  @MainActor
+  func testReceivingDowntimeSetsUserDowntime() async {
+    let (store, _) = Filter.testStore()
+    store.deps.filterExtension = .mock
+    store.deps.storage = .mock
+
+    let downtime = PlainTimeWindow(
+      start: .init(hour: 22, minute: 0),
+      end: .init(hour: 5, minute: 0)
+    )
+
+    await store.send(.xpc(.receivedAppMessage(.userRules(
+      userId: 502,
+      keys: [.mock],
+      downtime: downtime,
+      manifest: .mock
+    )))) {
+      $0.userDowntime[502] = downtime
+    }
+  }
+
+  @MainActor
+  func testReceivingNilDowntimeClearsUserDowntime() async {
+    let downtime = PlainTimeWindow(
+      start: .init(hour: 22, minute: 0),
+      end: .init(hour: 5, minute: 0)
+    )
+    let (store, _) = Filter.testStore {
+      $0.userDowntime[502] = downtime
+    }
+    store.deps.filterExtension = .mock
+    store.deps.storage = .mock
+
+    await store.send(.xpc(.receivedAppMessage(.userRules(
+      userId: 502,
+      keys: [.mock],
+      downtime: nil,
+      manifest: .mock
+    )))) {
+      $0.userDowntime = [:]
     }
   }
 
