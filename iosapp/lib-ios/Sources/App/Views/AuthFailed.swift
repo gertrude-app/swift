@@ -43,8 +43,8 @@ struct AuthFailed: View {
       }
       .multilineTextAlignment(.center)
       .font(.footnote)
-      
-      Button{
+
+      Button {
         self.onTryAgain()
       } label: {
         Spacer()
@@ -63,17 +63,18 @@ struct AuthFailed: View {
     .cornerRadius(12)
     .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
     .padding(.horizontal, 32)
+    .frame(maxWidth: 600)
   }
 }
 
 struct AuthFailedPreview: View {
   var reason: AuthFailureReason
-  
+
   var body: some View {
     ZStack {
-      BgGradient()
-      AuthFailed(reason: reason) {}
-    }.ignoresSafeArea()
+      BgGradient().ignoresSafeArea()
+      AuthFailed(reason: self.reason) {}
+    }
   }
 }
 

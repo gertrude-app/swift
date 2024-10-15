@@ -21,9 +21,19 @@ struct FeatureLI: View {
     .background(.white)
     .cornerRadius(16)
     .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+    .frame(maxWidth: 600)
   }
 
   init(_ title: String) {
     self.title = title
+  }
+}
+
+#Preview {
+  VStack {
+    FeatureLI("Feature 1")
+    FeatureLI("Feature 2")
+    FeatureLI("Feature 3")
+    FeatureLI("Feature 4")
   }
 }

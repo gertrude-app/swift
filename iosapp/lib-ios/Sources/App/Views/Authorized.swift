@@ -2,14 +2,14 @@ import SwiftUI
 
 struct Authorized: View {
   var onInstallFilterTapped: () -> Void
-  
+
   var body: some View {
     VStack(spacing: 20) {
       Text("Authorization granted! One more step: install the content filter.")
         .multilineTextAlignment(.center)
         .font(.system(size: 16, weight: .medium))
-      
-      Button{
+
+      Button {
         self.onInstallFilterTapped()
       } label: {
         Spacer()
@@ -28,13 +28,14 @@ struct Authorized: View {
     .cornerRadius(12)
     .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
     .padding(.horizontal, 32)
+    .frame(maxWidth: 600)
   }
 }
 
 #Preview {
   ZStack {
     BgGradient()
+      .ignoresSafeArea()
     Authorized {}
   }
-  .ignoresSafeArea()
 }

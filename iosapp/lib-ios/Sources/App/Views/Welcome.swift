@@ -25,14 +25,14 @@ struct Welcome: View {
         self.onPrimaryButtonTap()
       }
     }
-    .padding(.top, 120)
-    .padding(.bottom, 60)
+    .padding(.top, 60)
+    .padding(.bottom, 36)
   }
 }
 
 #Preview {
   ZStack {
-    BgGradient()
+    BgGradient().ignoresSafeArea()
     Welcome {}
-  }.ignoresSafeArea()
+  }
 }

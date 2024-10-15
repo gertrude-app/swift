@@ -3,13 +3,13 @@ import SwiftUI
 struct InstallFail: View {
   var error: FilterInstallError
   var onTap: () -> Void
-  
+
   var body: some View {
     VStack(spacing: 20) {
       Text("Filter setup failed with an error:").font(.system(size: 16, weight: .medium))
-      
+
       Group {
-        switch error {
+        switch self.error {
         case .configurationInvalid:
           Text("Configuration is invalid.")
         case .configurationDisabled:
@@ -30,8 +30,8 @@ struct InstallFail: View {
       .foregroundColor(.red)
       .padding(.bottom, 20)
       .multilineTextAlignment(.center)
-      
-      Button{
+
+      Button {
         self.onTap()
       } label: {
         Spacer()
@@ -50,17 +50,18 @@ struct InstallFail: View {
     .cornerRadius(12)
     .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
     .padding(.horizontal, 32)
+    .frame(maxWidth: 600)
   }
 }
 
 struct InstallFailPreview: View {
   var error: FilterInstallError
-  
+
   var body: some View {
     ZStack {
-      BgGradient()
-      InstallFail(error: error) {}
-    }.ignoresSafeArea()
+      BgGradient().ignoresSafeArea()
+      InstallFail(error: self.error) {}
+    }
   }
 }
 
@@ -89,5 +90,9 @@ struct InstallFailPreview: View {
 }
 
 #Preview("Unexpected error") {
-  InstallFailPreview(error: .unexpected("A kangaroo from kilimanjaro overheard a conversation between a lion and a tiger, which led to a data leak and a global pandemic."))
+  InstallFailPreview(
+    error: .unexpected(
+      "A kangaroo from kilimanjaro overheard a conversation between a lion and a tiger, which led to a data leak and a global pandemic."
+    )
+  )
 }

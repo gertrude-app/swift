@@ -2,7 +2,7 @@ import SwiftUI
 
 struct PostInstall: View {
   var onOkClicked: () -> Void
-  
+
   var body: some View {
     VStack(spacing: 15) {
       Text("Filter installed successfully!")
@@ -14,11 +14,15 @@ struct PostInstall: View {
         .opacity(0.7)
 
       VStack(alignment: .leading) {
-        FeatureLI("Previously loaded GIFs will still be visible, so if you want to test that the filter is working, try searching for a new GIF.")
+        FeatureLI(
+          "Previously loaded GIFs will still be visible, so if you want to test that the filter is working, try searching for a new GIF."
+        )
         FeatureLI("You can quit this app now—it will keep blocking even when not running.")
-        FeatureLI("Use Screen Time restrictions to make sure this \(self.deviceType) user can’t delete apps. Deleting the app removes the content filter.")
+        FeatureLI(
+          "Use Screen Time restrictions to make sure this \(self.deviceType) user can’t delete apps. Deleting the app removes the content filter."
+        )
       }.padding(.horizontal, 16)
-      
+
       Text("Questions? Drop us a line at\nhttps://gertrude.app/contact")
         .multilineTextAlignment(.center)
         .opacity(0.7)
@@ -29,14 +33,14 @@ struct PostInstall: View {
         self.onOkClicked()
       }
     }
-    .padding(.top, 120)
-    .padding(.bottom, 60)
+    .padding(.top, 60)
+    .padding(.bottom, 36)
   }
 }
 
 #Preview {
   ZStack {
-    BgGradient()
+    BgGradient().ignoresSafeArea()
     PostInstall {}
-  }.ignoresSafeArea()
+  }
 }

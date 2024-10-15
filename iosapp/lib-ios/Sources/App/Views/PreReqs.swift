@@ -6,10 +6,10 @@ struct PreReqs: View {
 
   var requirements: [String] {
     [
-      "the \(self.deviceType) use must be logged into iCloud",
-      "the \(self.deviceType) user must be under 18",
-      "the \(self.deviceType) user must be part of an Apple Family",
-      "the \(self.deviceType) user must be restricted from deleting apps",
+      "The \(self.deviceType) user must be logged into iCloud",
+      "The \(self.deviceType) user must be under 18",
+      "The \(self.deviceType) user must be part of an Apple Family",
+      "The \(self.deviceType) user must be restricted from deleting apps",
     ]
   }
 
@@ -17,7 +17,7 @@ struct PreReqs: View {
     VStack(spacing: 20) {
       Text("In order to safely use Gertrude:")
         .font(.system(size: 20, weight: .semibold))
-      
+
       VStack(alignment: .leading) {
         ForEach(self.requirements, id: \.self) { requirement in
           HStack {
@@ -29,21 +29,21 @@ struct PreReqs: View {
           }
         }
       }
-        
+
       Spacer()
 
       PrimaryButton("Start authorization") {
         self.onTap()
       }
     }
-    .padding(.top, 120)
-    .padding(.bottom, 60)
+    .padding(.top, 60)
+    .padding(.bottom, 36)
   }
 }
 
 #Preview {
   ZStack {
-    BgGradient()
+    BgGradient().ignoresSafeArea()
     PreReqs {}
-  }.ignoresSafeArea()
+  }
 }

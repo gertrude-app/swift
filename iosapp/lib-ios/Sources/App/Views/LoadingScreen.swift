@@ -1,26 +1,26 @@
-import SwiftUI
 import Foundation
+import SwiftUI
 
 public struct LoadingScreen: View {
   @State private var t = 0.0
   @State var timer: Timer?
 
   public var body: some View {
-    HStack(spacing: sin(self.t)*20) {
+    HStack(spacing: sin(self.t) * 20) {
       Rectangle()
-        .frame(width: -sin(self.t)*5+15, height: sin(self.t)*40+60)
+        .frame(width: -sin(self.t) * 5 + 15, height: sin(self.t) * 40 + 60)
         .cornerRadius(20)
         .foregroundColor(violet500.opacity(0.8))
       Rectangle()
-        .frame(width: -sin(self.t+0.4)*5+15, height: sin(self.t+0.4)*40+60)
+        .frame(width: -sin(self.t + 0.4) * 5 + 15, height: sin(self.t + 0.4) * 40 + 60)
         .cornerRadius(20)
         .foregroundColor(violet500.opacity(0.8))
       Rectangle()
-        .frame(width: -sin(self.t+0.8)*5+15, height: sin(self.t+0.8)*40+60)
+        .frame(width: -sin(self.t + 0.8) * 5 + 15, height: sin(self.t + 0.8) * 40 + 60)
         .cornerRadius(20)
         .foregroundColor(violet500.opacity(0.8))
     }
-    .onAppear{
+    .onAppear {
       self.startAnimation()
     }
     .onDisappear {
@@ -48,7 +48,7 @@ public struct LoadingScreen: View {
 #Preview {
   ZStack {
     BgGradient()
+      .ignoresSafeArea()
     LoadingScreen()
   }
-  .ignoresSafeArea()
 }

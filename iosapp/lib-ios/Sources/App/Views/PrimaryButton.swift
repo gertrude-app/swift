@@ -49,6 +49,7 @@ struct PrimaryButton: View {
       .padding(.horizontal, 40)
       .scaleEffect(self.tapping ? 0.98 : 1)
     }
+    .frame(maxWidth: 500)
     .onLongPressGesture(minimumDuration: 0) {} onPressingChanged: { inProgress in
       withAnimation(.bouncy(duration: 0.3, extraBounce: 0.4)) {
         self.tapping = inProgress
