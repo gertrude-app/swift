@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-  name: "App",
+  name: "LibIOS",
   platforms: [.macOS(.v14), .iOS(.v17)],
   products: [
-    .library(name: "App", targets: ["App"]),
-    .library(name: "Filter", targets: ["Filter"]),
+    .library(name: "LibIOS", targets: ["LibIOS"]),
+    .library(name: "LibFilter", targets: ["LibFilter"]),
   ],
   dependencies: [
     .package(
@@ -17,23 +17,23 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "App",
+      name: "LibIOS",
       dependencies: [
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
         .product(name: "IOSRoute", package: "pairql-iosapp"),
       ]
     ),
     .target(
-      name: "Filter",
+      name: "LibFilter",
       dependencies: []
     ),
     .testTarget(
-      name: "AppTests",
-      dependencies: ["App"]
+      name: "LibIOSTests",
+      dependencies: ["LibIOS"]
     ),
     .testTarget(
-      name: "FilterTests",
-      dependencies: ["Filter"]
+      name: "LibFilterTests",
+      dependencies: ["LibFilter"]
     ),
   ]
 )

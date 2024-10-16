@@ -2,7 +2,11 @@ import SwiftUI
 
 struct Running: View {
   var body: some View {
-    VStack(spacing: 20) {
+    VStack(spacing: 24) {
+      Image("GertrudeIcon")
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(radius: 5)
+      
       Text("Gertrude is blocking GIFs and image searches.")
         .font(.system(size: 24, weight: .semibold))
         .multilineTextAlignment(.center)
