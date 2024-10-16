@@ -6,7 +6,7 @@ struct Running: View {
       Image("GertrudeIcon")
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(radius: 5)
-      
+
       Text("Gertrude is blocking GIFs and image searches.")
         .font(.system(size: 24, weight: .semibold))
         .multilineTextAlignment(.center)

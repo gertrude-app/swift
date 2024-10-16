@@ -10,15 +10,15 @@ public struct LoadingScreen: View {
       Rectangle()
         .frame(width: -sin(self.t) * 5 + 15, height: sin(self.t) * 40 + 60)
         .cornerRadius(20)
-        .foregroundColor(violet500.opacity(0.8))
+        .foregroundColor(.violet500.opacity(0.8))
       Rectangle()
         .frame(width: -sin(self.t + 0.4) * 5 + 15, height: sin(self.t + 0.4) * 40 + 60)
         .cornerRadius(20)
-        .foregroundColor(violet500.opacity(0.8))
+        .foregroundColor(.violet500.opacity(0.8))
       Rectangle()
         .frame(width: -sin(self.t + 0.8) * 5 + 15, height: sin(self.t + 0.8) * 40 + 60)
         .cornerRadius(20)
-        .foregroundColor(violet500.opacity(0.8))
+        .foregroundColor(.violet500.opacity(0.8))
     }
     .onAppear {
       self.startAnimation()

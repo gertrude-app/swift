@@ -1,26 +1,26 @@
 import SwiftUI
 
-let violet100 = Color(hex: "#ede9fe")!
-let violet200 = Color(hex: "#ddd6fe")!
-let violet300 = Color(hex: "#c4b5fd")!
-let violet400 = Color(hex: "#a78bfa")!
-let violet500 = Color(hex: "#8b5cf6")!
-let violet600 = Color(hex: "#7c3aed")!
-let violet700 = Color(hex: "#6d28d9")!
-let violet800 = Color(hex: "#5b21b6")!
-let violet900 = Color(hex: "#4c1d95")!
-
-let fuschia100 = Color(hex: "#fae8ff")!
-let fuchsia200 = Color(hex: "#f5d0fe")!
-let fuchsia300 = Color(hex: "#f0abfc")!
-let fuchsia400 = Color(hex: "#e879f9")!
-let fuchsia500 = Color(hex: "#d946ef")!
-let fuchsia600 = Color(hex: "#c026d3")!
-let fuchsia700 = Color(hex: "#a21caf")!
-let fuchsia800 = Color(hex: "#86198f")!
-let fuchsia900 = Color(hex: "#701a75")!
-
 public extension Color {
+  static let violet100 = Color(hex: "#ede9fe")!
+  static let violet200 = Color(hex: "#ddd6fe")!
+  static let violet300 = Color(hex: "#c4b5fd")!
+  static let violet400 = Color(hex: "#a78bfa")!
+  static let violet500 = Color(hex: "#8b5cf6")!
+  static let violet600 = Color(hex: "#7c3aed")!
+  static let violet700 = Color(hex: "#6d28d9")!
+  static let violet800 = Color(hex: "#5b21b6")!
+  static let violet900 = Color(hex: "#4c1d95")!
+
+  static let fuschia100 = Color(hex: "#fae8ff")!
+  static let fuchsia200 = Color(hex: "#f5d0fe")!
+  static let fuchsia300 = Color(hex: "#f0abfc")!
+  static let fuchsia400 = Color(hex: "#e879f9")!
+  static let fuchsia500 = Color(hex: "#d946ef")!
+  static let fuchsia600 = Color(hex: "#c026d3")!
+  static let fuchsia700 = Color(hex: "#a21caf")!
+  static let fuchsia800 = Color(hex: "#86198f")!
+  static let fuchsia900 = Color(hex: "#701a75")!
+
   init?(hex: String) {
     let r, g, b: Double
 

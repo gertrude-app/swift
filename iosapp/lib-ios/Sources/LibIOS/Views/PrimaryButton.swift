@@ -16,7 +16,7 @@ struct PrimaryButton: View {
       ZStack {
         VStack {
           Rectangle()
-            .fill(Gradient(colors: [violet400, violet500]))
+            .fill(Gradient(colors: [.violet400, .violet500]))
           Spacer()
           Spacer()
           HStack {
@@ -25,9 +25,9 @@ struct PrimaryButton: View {
           Spacer()
           Spacer()
           Rectangle()
-            .fill(Gradient(colors: [violet500, violet700]))
+            .fill(Gradient(colors: [.violet500, .violet700]))
         }
-        .background(violet500)
+        .background(Color.violet500)
         .cornerRadius(20)
         VStack {
           Spacer()
@@ -41,7 +41,7 @@ struct PrimaryButton: View {
           }
           Spacer()
         }
-        .background(Gradient(colors: [violet500, violet600]))
+        .background(Gradient(colors: [.violet500, .violet600]))
         .foregroundColor(.white)
         .cornerRadius(20)
         .padding(.vertical, 2.5)

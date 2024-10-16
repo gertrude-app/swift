@@ -23,7 +23,7 @@ struct PreReqs: View {
           HStack {
             Image(systemName: "checkmark.circle")
               .font(.system(size: 12, weight: .semibold))
-              .foregroundColor(violet500)
+              .foregroundColor(.violet500)
             Text(requirement)
               .font(.footnote)
           }

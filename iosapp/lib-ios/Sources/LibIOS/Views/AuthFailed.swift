@@ -51,9 +51,9 @@ struct AuthFailed: View {
         Spacer()
       }
       .padding(.vertical, 12)
-      .background(violet100)
+      .background(Color.violet100)
       .cornerRadius(8)
-      .foregroundColor(violet700)
+      .foregroundColor(.violet700)
       .font(.system(size: 16, weight: .semibold))
     }
     .padding(20)
