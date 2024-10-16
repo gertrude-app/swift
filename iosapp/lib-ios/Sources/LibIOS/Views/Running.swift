@@ -5,7 +5,8 @@ struct Running: View {
     VStack(spacing: 24) {
       Image("GertrudeIcon")
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(radius: 5)
+        .shadow(color: Color(.sRGBLinear, white: 0, opacity: 0.12), radius: 4)
+        .padding(.bottom, 12)
 
       Text("Gertrude is blocking GIFs and image searches.")
         .font(.system(size: 24, weight: .semibold))
