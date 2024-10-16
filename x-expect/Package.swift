@@ -1,9 +1,9 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.10
 import PackageDescription
 
 let package = Package(
   name: "XExpect",
-  platforms: [.macOS(.v10_15)],
+  platforms: [.macOS(.v10_15), .iOS(.v17)],
   products: [
     .library(name: "XExpect", targets: ["XExpect"]),
   ],

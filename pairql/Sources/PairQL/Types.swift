@@ -81,6 +81,11 @@ public struct SuccessOutput: PairOutput {
   public static var failure: Self { .init(false) }
 }
 
+public struct Infallible: PairOutput {
+  private init() {}
+  public static var success: Self { .init() }
+}
+
 extension String: PairOutput {}
 extension String: PairInput {}
 extension UUID: PairInput {}

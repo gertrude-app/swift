@@ -1,0 +1,10 @@
+{
+  "root": "pairql-iosapp",
+  "projectType": "library",
+  "implicitDependencies": ["pairql"],
+  "targets": {
+    "build": {
+      "command": "cd pairql-iosapp && swift build"
+    }
+  }
+}
