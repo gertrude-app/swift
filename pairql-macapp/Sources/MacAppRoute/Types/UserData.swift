@@ -1,6 +1,7 @@
 import Foundation
+import Gertie
 
-public struct UserData: Equatable, Codable, Sendable, PairOutput {
+public struct UserData {
   public var id: UUID
   public var token: UUID
   public var deviceId: UUID
@@ -9,6 +10,8 @@ public struct UserData: Equatable, Codable, Sendable, PairOutput {
   public var screenshotsEnabled: Bool
   public var screenshotFrequency: Int
   public var screenshotSize: Int
+  // `downtime` added in 2.5.0, but backwards compatible
+  public var downtime: PlainTimeWindow?
   public var connectedAt: Date
 
   public init(
@@ -20,6 +23,7 @@ public struct UserData: Equatable, Codable, Sendable, PairOutput {
     screenshotsEnabled: Bool,
     screenshotFrequency: Int,
     screenshotSize: Int,
+    downtime: PlainTimeWindow? = nil,
     connectedAt: Date = .init()
   ) {
     self.id = id
@@ -30,13 +34,14 @@ public struct UserData: Equatable, Codable, Sendable, PairOutput {
     self.screenshotsEnabled = screenshotsEnabled
     self.screenshotFrequency = screenshotFrequency
     self.screenshotSize = screenshotSize
+    self.downtime = downtime
     self.connectedAt = connectedAt
   }
 }
 
-#if DEBUG
-  import Gertie
+extension UserData: Equatable, Codable, Sendable, PairOutput {}
 
+#if DEBUG
   extension UserData: Mocked {
     public static let mock = Self(
       id: UUID(),

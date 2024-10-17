@@ -179,6 +179,7 @@ extension AppReducer {
       store.deps.filterXpc = .mock
       store.deps.websocket = .mock
       store.deps.userDefaults.getString = { _ in nil }
+      store.deps.calendar = .init(identifier: .gregorian)
     }
     return (store, scheduler)
   }

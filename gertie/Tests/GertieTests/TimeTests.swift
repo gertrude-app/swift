@@ -3,6 +3,29 @@ import XCTest
 import XExpect
 
 final class TimeTests: XCTestCase {
+  func testPlainTimeMinutesUntil() {
+    let cases: [(test: String, reference: String, expected: Int)] = [
+      (test: "12:00", reference: "12:00", expected: 0),
+      (test: "12:00", reference: "12:01", expected: 1),
+      (test: "12:01", reference: "12:00", expected: 1439),
+      (test: "00:00", reference: "00:00", expected: 0),
+      (test: "00:00", reference: "00:01", expected: 1),
+      (test: "00:01", reference: "00:00", expected: 1439),
+      (test: "23:59", reference: "00:01", expected: 2),
+      (test: "00:00", reference: "00:05", expected: 5),
+      (test: "05:00", reference: "05:05", expected: 5),
+      (test: "05:00", reference: "05:05", expected: 5),
+    ]
+    for (test, reference, expected) in cases {
+      let testTime = PlainTime(hour: Int(test.prefix(2))!, minute: Int(test.suffix(2))!)
+      let referenceTime = PlainTime(
+        hour: Int(reference.prefix(2))!,
+        minute: Int(reference.suffix(2))!
+      )
+      expect(testTime.minutesUntil(referenceTime)).toEqual(expected)
+    }
+  }
+
   func testPlainTimeWindowContains_NotCrossingMidnight() {
     let downtime = PlainTimeWindow( // 5pm to 6pm
       start: .init(hour: 17, minute: 0),
