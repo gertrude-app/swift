@@ -16,6 +16,9 @@ struct UserFeature: Feature {
     typealias Action = AppReducer.Action
     typealias State = AppReducer.State
     @Dependency(\.api) var api
+    @Dependency(\.date.now) var now
+    @Dependency(\.device) var device
+    @Dependency(\.calendar) var calendar
   }
 }
 
@@ -31,6 +34,20 @@ extension UserFeature.RootReducer: RootReducing {
           result: TaskResult { try await api.appCheckIn(filterVersion) },
           reason: .receivedWebsocketMessage
         ))
+      }
+
+    case .heartbeat(.everyMinute):
+      guard let downtime = state.user.data?.downtime,
+            PlainTime.from(self.now, in: self.calendar).minutesUntil(downtime.start) == 5 else {
+        return .none
+      }
+      return .exec { _ in
+        if self.device.currentUserHasScreen(), !self.device.screensaverRunning() {
+          await self.device.showNotification(
+            "😴 Downtime starting in 5 minutes",
+            "Save any important work now!"
+          )
+        }
       }
 
     case .heartbeat(.everySixHours):

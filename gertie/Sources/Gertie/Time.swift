@@ -2,8 +2,8 @@ import Foundation
 
 /// A wall-clock time not associated with a particular date or time zone
 public struct PlainTime {
-  var hour: Int
-  var minute: Int
+  public var hour: Int
+  public var minute: Int
 
   public init(hour: Int, minute: Int) {
     self.hour = hour
@@ -14,12 +14,25 @@ public struct PlainTime {
 /// A time "window" with a start and end not associated
 /// with a particular date or time zone
 public struct PlainTimeWindow {
-  var start: PlainTime
-  var end: PlainTime
+  public var start: PlainTime
+  public var end: PlainTime
 
   public init(start: PlainTime, end: PlainTime) {
     self.start = start
     self.end = end
+  }
+}
+
+public extension PlainTime {
+  static func from(_ date: Date, in calendar: Calendar) -> PlainTime {
+    let hour = calendar.component(.hour, from: date)
+    let minute = calendar.component(.minute, from: date)
+    return PlainTime(hour: hour, minute: minute)
+  }
+
+  func minutesUntil(_ other: PlainTime) -> Int {
+    let rel = other.minutesFromMidnight - self.minutesFromMidnight
+    return rel < 0 ? rel + (24 * 60) : rel
   }
 }
 

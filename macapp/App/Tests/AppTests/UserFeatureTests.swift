@@ -68,4 +68,50 @@ final class UserFeatureTests: XCTestCase {
 
     expect(store.state.user).not.toBeNil() // still not disconnected
   }
+
+  @MainActor
+  func testNotifies5MinutestBeforeDowntime() async {
+    // the time is: 2024-10-16 21:53, i.e. 9:53PM, 7 minutes before downtime
+    let now = Calendar.current
+      .date(from: DateComponents(year: 2024, month: 10, day: 16, hour: 21, minute: 53))!
+
+    let (store, scheduler) = AppReducer.testStore(mockDeps: true) {
+      $0.user.data = .mock {
+        $0.downtime = .init(
+          start: .init(hour: 22, minute: 0), // <-- downtime starts at 10PM
+          end: .init(hour: 5, minute: 0)
+        )
+      }
+    }
+
+    store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
+    store.deps.device.currentUserHasScreen = { true }
+    store.deps.device.screensaverRunning = { false }
+    store.deps.device.showNotification = { _, _ in fatalError() }
+    store.deps.storage.loadPersistentState = { nil }
+    let time = ControllingNow(starting: now, with: scheduler)
+    store.deps.date = time.generator
+
+    // start the heartbeat
+    await store.send(.startProtecting(user: store.state.user.data!))
+
+    await time.advance(seconds: 60)
+    expect(store.state.user.data?.downtime?.start).toEqual(.init(hour: 22, minute: 0))
+    await store.receive(.heartbeat(.everyMinute)) // 9:54 PM
+
+    let notification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = notification.fn
+
+    await time.advance(seconds: 60)
+    await store.receive(.heartbeat(.everyMinute)) // <-- 9:55 PM, notify!
+
+    await expect(notification.calls)
+      .toEqual([.init("😴 Downtime starting in 5 minutes", "Save any important work now!")])
+
+    store.deps.device.showNotification = { _, _ in fatalError() }
+    for _ in 1 ... 6 {
+      await time.advance(seconds: 60)
+      await store.receive(.heartbeat(.everyMinute))
+    }
+  }
 }

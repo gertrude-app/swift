@@ -81,6 +81,7 @@ struct AppMigrator: Migrator {
         screenshotsEnabled: screenshotsEnabled ?? true,
         screenshotFrequency: screenshotsFrequency ?? 60,
         screenshotSize: screenshotsSize ?? 1000,
+        downtime: nil,
         connectedAt: Date(timeIntervalSince1970: 0)
       )
     )
