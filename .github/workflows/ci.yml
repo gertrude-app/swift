@@ -128,8 +128,9 @@ jobs:
           envs: DESTDIR,FILENAME
           script: |
             ln -sf "./${FILENAME}" "${DESTDIR}/latest"
-            chmod +x "${DESTDIR}/${FILENAME}"
-            chmod +x "${DESTDIR}/latest"
+            chmod +x "${DESTDIR}/${FILENAME}" "${DESTDIR}/latest"
+            cd ~/builds/production && ls -r api_* | grep -v $(basename $(readlink -f current)) | tail -n +11 | xargs rm
+            cd ~/builds/staging && ls -r api_* | tail -n  +6 | xargs rm
             pm2 restart staging
 
   linux-api-test:
