@@ -31,7 +31,12 @@ public struct ContentView: View {
 
         case .authorizationFailed(let reason):
           AuthFailed(reason: reason) {
-            self.store.send(.authorizationFailedTryAgainTapped)
+            switch reason {
+            case .invalidAccountType, .restricted:
+              self.store.send(.authorizationFailedReviewRequirementsTapped)
+            default:
+              self.store.send(.authorizationFailedTryAgainTapped)
+            }
           }
 
         case .prereqs:

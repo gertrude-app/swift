@@ -33,7 +33,7 @@ extension SystemClient: DependencyKey {
           case .authenticationMethodUnavailable:
             return .failure(.passcodeRequired)
           case .restricted:
-            return .failure(.unexpected(.restricted))
+            return .failure(.restricted)
           case .unavailable:
             return .failure(.unexpected(.unavailable))
           case .invalidArgument:

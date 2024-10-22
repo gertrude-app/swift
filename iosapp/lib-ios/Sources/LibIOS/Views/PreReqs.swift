@@ -6,26 +6,29 @@ struct PreReqs: View {
 
   var requirements: [String] {
     [
-      "The \(self.deviceType) user must be logged into iCloud",
-      "The \(self.deviceType) user must be under 18",
-      "The \(self.deviceType) user must be part of an Apple Family",
-      "The \(self.deviceType) user must be restricted from deleting apps",
+      "The \(self.deviceType) user must be **signed in to iCloud.**",
+      "The \(self.deviceType) user must be **under 18.**",
+      "The \(self.deviceType) user must be **part of an Apple Family.**",
+      "The \(self.deviceType) user must be **restricted from deleting apps.**",
+      "The \(self.deviceType) must **not be controlled** by a school or organization with **MDM.**",
     ]
   }
 
   var body: some View {
-    VStack(spacing: 20) {
+    VStack(spacing: 32) {
       Text("In order to safely use Gertrude:")
-        .font(.system(size: 20, weight: .semibold))
+        .font(.system(size: 26, weight: .semibold))
+        .multilineTextAlignment(.center)
 
-      VStack(alignment: .leading) {
+      VStack(alignment: .leading, spacing: 12) {
         ForEach(self.requirements, id: \.self) { requirement in
-          HStack {
+          HStack(alignment: .top) {
             Image(systemName: "checkmark.circle")
-              .font(.system(size: 12, weight: .semibold))
+              .font(.system(size: 13, weight: .semibold))
               .foregroundColor(.violet500)
-            Text(requirement)
-              .font(.footnote)
+              .padding(.top, 1)
+            Text(LocalizedStringKey(requirement))
+              .font(.system(size: 16))
           }
         }
       }
@@ -38,6 +41,7 @@ struct PreReqs: View {
     }
     .padding(.top, 60)
     .padding(.bottom, 36)
+    .padding(.horizontal, 24)
   }
 }
 
