@@ -212,7 +212,7 @@ struct AppReducer: Reducer, Sendable {
     AppUpdatesFeature.RootReducer()
     AdminFeature.RootReducer()
     AdminWindowFeature.RootReducer()
-    FilterFeature.RootReducer().onChange(of: \.filter.isSuspended) { old, new in
+    FilterFeature.RootReducer().onChange(of: \.isFilterSuspended) { old, new in
       Reduce { _, _ in .run { send in
         // NB: changing this to the (synchronous?) `.send()` (without .run + async)
         // caused this action not to be seen by other reducers (when running app)

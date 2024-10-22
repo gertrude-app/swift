@@ -86,6 +86,24 @@ struct FilterXPC: Sendable {
     }
   }
 
+  func pauseDowntime(until expiration: Date) async throws {
+    try await self.establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.pauseDowntime(
+        for: getuid(),
+        until: expiration.timeIntervalSinceReferenceDate,
+        reply: continuation.dataHandler
+      )
+    }
+  }
+
+  func endDowntimePause() async throws {
+    try await self.establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.endDowntimePause(for: getuid(), reply: continuation.dataHandler)
+    }
+  }
+
   func suspendFilter(for duration: Seconds<Int>) async throws {
     try await self.establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in

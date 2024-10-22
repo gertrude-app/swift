@@ -44,7 +44,7 @@ import Gertie
     }
   }
 
-  func filterState(for userDeviceId: UserDevice.Id) async -> UserFilterState? {
+  func filterState(for userDeviceId: UserDevice.Id) async -> FilterState.WithoutTimes? {
     for connection in self.connections.values {
       if connection.ids.userDevice == userDeviceId {
         return await connection.filterState

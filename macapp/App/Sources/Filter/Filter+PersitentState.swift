@@ -27,7 +27,7 @@ extension Filter.State {
   var persistent: Persistent.State {
     .init(
       userKeys: userKeys,
-      userDowntime: userDowntime,
+      userDowntime: userDowntime.mapValues { $0.window },
       appIdManifest: appIdManifest,
       exemptUsers: exemptUsers
     )

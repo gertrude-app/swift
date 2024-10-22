@@ -17,6 +17,15 @@ public typealias XPCErrorData = Data
     filterData: Data,
     reply: @escaping (XPCErrorData?) -> Void
   )
+  func pauseDowntime(
+    for userId: uid_t,
+    until secondsSinceReference: Double,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
+  func endDowntimePause(
+    for userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
   func setBlockStreaming(
     _ enabled: Bool,
     userId: uid_t,

@@ -17,20 +17,14 @@ final class TimeTests: XCTestCase {
       (test: "05:00", reference: "05:05", expected: 5),
     ]
     for (test, reference, expected) in cases {
-      let testTime = PlainTime(hour: Int(test.prefix(2))!, minute: Int(test.suffix(2))!)
-      let referenceTime = PlainTime(
-        hour: Int(reference.prefix(2))!,
-        minute: Int(reference.suffix(2))!
-      )
+      let testTime = PlainTime(stringLiteral: test)
+      let referenceTime = PlainTime(stringLiteral: reference)
       expect(testTime.minutesUntil(referenceTime)).toEqual(expected)
     }
   }
 
   func testPlainTimeWindowContains_NotCrossingMidnight() {
-    let downtime = PlainTimeWindow( // 5pm to 6pm
-      start: .init(hour: 17, minute: 0),
-      end: .init(hour: 18, minute: 0)
-    )
+    let window: PlainTimeWindow = "17:00-18:00" // 5pm to 6pm
     let cases: [(hour: Int, minute: Int, expected: Bool)] = [
       (hour: 12, minute: 10, expected: false),
       (hour: 16, minute: 59, expected: false),
@@ -44,15 +38,12 @@ final class TimeTests: XCTestCase {
     ]
     for (hour, minute, expected) in cases {
       let date = Calendar.current.date(from: DateComponents(hour: hour, minute: minute))!
-      expect(downtime.contains(date, in: .current)).toEqual(expected)
+      expect(window.contains(date, in: .current)).toEqual(expected)
     }
   }
 
   func testPlainTimeWindowContains_CrossingMidnight() {
-    let downtime = PlainTimeWindow( // 10pm to 2am
-      start: .init(hour: 22, minute: 00),
-      end: .init(hour: 02, minute: 00)
-    )
+    let window: PlainTimeWindow = "22:00-02:00" // 10pm to 2am
     let cases: [(hour: Int, minute: Int, expected: Bool)] = [
       (hour: 11, minute: 38, expected: false),
       (hour: 21, minute: 59, expected: false),
@@ -69,15 +60,12 @@ final class TimeTests: XCTestCase {
     ]
     for (hour, minute, expected) in cases {
       let date = Calendar.current.date(from: DateComponents(hour: hour, minute: minute))!
-      expect(downtime.contains(date, in: .current)).toEqual(expected)
+      expect(window.contains(date, in: .current)).toEqual(expected)
     }
   }
 
   func testPlainTimeWindowContains_NonHourBoundaries() {
-    let downtime = PlainTimeWindow( // 5:30pm to 6:20pm
-      start: .init(hour: 17, minute: 30),
-      end: .init(hour: 18, minute: 20)
-    )
+    let window: PlainTimeWindow = "17:30-18:20" // 5:30pm to 6:20pm
     let cases: [(hour: Int, minute: Int, expected: Bool)] = [
       (hour: 13, minute: 11, expected: false),
       (hour: 16, minute: 59, expected: false),
@@ -92,15 +80,12 @@ final class TimeTests: XCTestCase {
     ]
     for (hour, minute, expected) in cases {
       let date = Calendar.current.date(from: DateComponents(hour: hour, minute: minute))!
-      expect(downtime.contains(date, in: .current)).toEqual(expected)
+      expect(window.contains(date, in: .current)).toEqual(expected)
     }
   }
 
   func testPlainTimeWindowContains_NonHourBoundaries_CrossingMidnight() {
-    let downtime = PlainTimeWindow( // 10:30pm to 2:20am
-      start: .init(hour: 22, minute: 30),
-      end: .init(hour: 02, minute: 20)
-    )
+    let window: PlainTimeWindow = "22:30-02:20" // 10:30pm to 2:20am
     let cases: [(hour: Int, minute: Int, expected: Bool)] = [
       (hour: 21, minute: 59, expected: false),
       (hour: 22, minute: 00, expected: false),
@@ -120,7 +105,7 @@ final class TimeTests: XCTestCase {
     ]
     for (hour, minute, expected) in cases {
       let date = Calendar.current.date(from: DateComponents(hour: hour, minute: minute))!
-      expect(downtime.contains(date, in: .current)).toEqual(expected)
+      expect(window.contains(date, in: .current)).toEqual(expected)
     }
   }
 }

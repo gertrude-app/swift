@@ -47,6 +47,34 @@ import os.log
     reply(nil)
   }
 
+  func pauseDowntime(
+    for userId: uid_t,
+    until secondsSinceReference: Double,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    let expiration = Date(timeIntervalSinceReferenceDate: secondsSinceReference)
+    os_log(
+      "[G•] FILTER xpc.pauseDowntime(for: %{public}d, until: %{public}s)",
+      userId,
+      expiration.description
+    )
+    self.subject.withValue {
+      $0.send(.receivedAppMessage(.pauseDowntime(userId: userId, until: expiration)))
+    }
+    reply(nil)
+  }
+
+  func endDowntimePause(
+    for userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    os_log("[G•] FILTER xpc.endDowntimePause(for: %{public}d)", userId)
+    self.subject.withValue {
+      $0.send(.receivedAppMessage(.endDowntimePause(userId: userId)))
+    }
+    reply(nil)
+  }
+
   func suspendFilter(
     for userId: uid_t,
     durationInSeconds: Int,

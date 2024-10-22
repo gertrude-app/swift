@@ -3,14 +3,13 @@ import Gertie
 import TypeScriptInterop
 
 @testable import App
-@testable import enum App.FilterState
 
 struct AppWebViews: AggregateCodeGenerator {
   var generators: [CodeGenerator] = [
     AppviewStore(
       at: "lib/shared-types.ts",
       namedTypes: [
-        .init(FilterState.self),
+        .init(FilterState.WithRelativeTimes.self),
         .init(AdminAccountStatus.self),
       ]
     ),
@@ -20,7 +19,7 @@ struct AppWebViews: AggregateCodeGenerator {
         .init(MenuBarFeature.State.View.self, as: "AppState"),
         .init(MenuBarFeature.Action.self, as: "AppEvent"),
       ],
-      localAliases: [(FilterState.self, "FilterState")]
+      localAliases: [(FilterState.WithRelativeTimes.self, "FilterState")]
     ),
     AppviewStore(
       at: "BlockedRequests/blockedrequests-store.ts",
@@ -56,7 +55,7 @@ struct AppWebViews: AggregateCodeGenerator {
         (AdminWindowFeature.Action.View.HealthCheckAction.self, "HealthCheckAction"),
         (AdminWindowFeature.Action.View.AdvancedAction.self, "AdvancedAction"),
         (AdminWindowFeature.Screen.self, "Screen"),
-        (FilterState.self, "FilterState"),
+        (FilterState.WithRelativeTimes.self, "FilterState"),
         (
           Failable<[AdminWindowFeature.State.View.ExemptableUser]>.self,
           "Failable<ExemptableUser[]>"

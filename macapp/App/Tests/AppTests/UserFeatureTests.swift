@@ -70,18 +70,31 @@ final class UserFeatureTests: XCTestCase {
   }
 
   @MainActor
+  func testHeartbeatCleansUpExpiredDowntimePause() async {
+    let now = Calendar.current.date(from: DateComponents(hour: 23, minute: 00))!
+    let (store, _) = AppReducer.testStore(mockDeps: true) {
+      $0.user.downtimePausedUntil = now - .seconds(30) // expired pause
+      $0.user.data = .mock {
+        $0.downtime = "22:00-05:00"
+      }
+    }
+    store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
+    store.deps.date = .constant(now)
+
+    expect(store.state.user.downtimePausedUntil).not.toBeNil()
+
+    await store.send(.heartbeat(.everyMinute)) {
+      $0.user.downtimePausedUntil = nil
+    }
+  }
+
+  @MainActor
   func testNotifies5MinutestBeforeDowntime() async {
-    // the time is: 2024-10-16 21:53, i.e. 9:53PM, 7 minutes before downtime
-    let now = Calendar.current
-      .date(from: DateComponents(year: 2024, month: 10, day: 16, hour: 21, minute: 53))!
+    // the time is: 21:53, i.e. 9:53 PM, 7 minutes before downtime
+    let now = Calendar.current.date(from: DateComponents(hour: 21, minute: 53))!
 
     let (store, scheduler) = AppReducer.testStore(mockDeps: true) {
-      $0.user.data = .mock {
-        $0.downtime = .init(
-          start: .init(hour: 22, minute: 0), // <-- downtime starts at 10PM
-          end: .init(hour: 5, minute: 0)
-        )
-      }
+      $0.user.data = .mock { $0.downtime = "22:00-05:00" }
     }
 
     store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }

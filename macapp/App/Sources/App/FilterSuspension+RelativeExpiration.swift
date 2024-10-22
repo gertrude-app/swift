@@ -2,11 +2,11 @@ import Foundation
 import Gertie
 
 extension Date {
-  func timeRemaining(until future: Date = Date()) -> String? {
+  func timeRemaining(until future: Date = Date()) -> String {
     let secondsRemaining = Int(future.timeIntervalSince1970 - timeIntervalSince1970)
     switch secondsRemaining {
     case ...0:
-      return nil
+      return "now"
     case 1 ..< 45:
       return "less than a minute from now"
     case 45 ..< 85:
@@ -53,6 +53,6 @@ extension Date {
 
 extension FilterSuspension {
   func relativeExpiration(from now: Date = Date()) -> String {
-    now.timeRemaining(until: expiresAt) ?? "now"
+    now.timeRemaining(until: expiresAt)
   }
 }

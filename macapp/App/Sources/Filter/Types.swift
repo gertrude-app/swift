@@ -9,12 +9,14 @@ public extension XPCEvent {
       case userRules(
         userId: uid_t,
         keys: [FilterKey],
-        downtime: PlainTimeWindow?,
+        downtime: Downtime?,
         manifest: AppIdManifest
       )
       case setBlockStreaming(enabled: Bool, userId: uid_t)
       case disconnectUser(userId: uid_t)
       case endFilterSuspension(userId: uid_t)
+      case pauseDowntime(userId: uid_t, until: Date)
+      case endDowntimePause(userId: uid_t)
       case suspendFilter(userId: uid_t, duration: Seconds<Int>)
       case setUserExemption(userId: uid_t, enabled: Bool)
       case deleteAllStoredState

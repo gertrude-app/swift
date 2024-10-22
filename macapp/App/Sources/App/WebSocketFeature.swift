@@ -38,7 +38,7 @@ extension WebSocketFeature.RootReducer {
         }
         // try to repair any broken/disconnected websocket connection status
         if try await websocket.connect(user.token) == .connected {
-          try await websocket.sendFilterState(state.filter)
+          try await websocket.sendFilterState(state)
         }
       }
 
@@ -49,7 +49,7 @@ extension WebSocketFeature.RootReducer {
     case .filter(.receivedState(let filterState)):
       return .exec { [state] _ in
         guard try await websocket.state() == .connected else { return }
-        try await websocket.sendFilterState(state.filter, extensionState: filterState)
+        try await websocket.sendFilterState(state, overrideFilterState: filterState)
       }
 
     case .history(.userConnection(.connect(.success(let user)))):
@@ -90,12 +90,12 @@ extension WebSocketFeature.RootReducer {
 
       case .connectedSuccessfully:
         return .exec { [state] _ in
-          try await websocket.sendFilterState(state.filter)
+          try await websocket.sendFilterState(state)
         }
 
       case .receivedMessage(.currentFilterStateRequested):
         return .exec { [state] _ in
-          try await websocket.sendFilterState(state.filter)
+          try await websocket.sendFilterState(state)
         }
 
       case .receivedMessage(.suspendFilterRequestDenied(let comment)):
@@ -163,13 +163,15 @@ extension WebSocketFeature.RootReducer {
 
 extension WebSocketClient {
   func sendFilterState(
-    _ state: FilterFeature.State,
-    extensionState: FilterExtensionState? = nil
+    _ state: AppReducer.State,
+    overrideFilterState: FilterExtensionState? = nil
   ) async throws {
-    let userFilterState = UserFilterState(
-      extensionState: extensionState ?? state.extension,
-      currentSuspensionExpiration: state.currentSuspensionExpiration
-    )
-    try await send(.currentFilterState(userFilterState))
+    if let overrideFilterState {
+      var stateCopy = state
+      stateCopy.filter.extension = overrideFilterState
+      try await send(.currentFilterState(.init(from: stateCopy)))
+    } else {
+      try await send(.currentFilterState(.init(from: state)))
+    }
   }
 }

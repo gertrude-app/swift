@@ -1,70 +1,42 @@
-import Core
 import Dependencies
-import Foundation
 import Gertie
 
-enum FilterState: Equatable, Codable {
-  case off
-  case on
-  case suspended(resuming: String)
+extension FilterState.WithRelativeTimes: Codable {}
 
-  var isSuspended: Bool {
-    switch self {
-    case .suspended:
-      return true
-    case .off, .on:
-      return false
-    }
-  }
-}
-
-extension FilterState {
-  var userFilterState: UserFilterState {
-    switch self {
-    case .off:
-      return .off
-    case .on:
-      return .on
-    case .suspended:
-      return .suspended
-    }
-  }
-
-  init(_ rootState: AppReducer.State) {
-    self.init(
-      extensionState: rootState.filter.extension,
-      currentSuspensionExpiration: rootState.filter.currentSuspensionExpiration
-    )
-  }
-
-  init(extensionState: FilterExtensionState, currentSuspensionExpiration: Date?) {
-    switch extensionState {
-    case .unknown,
-         .errorLoadingConfig,
-         .notInstalled,
-         .installedButNotRunning:
+extension FilterState.WithRelativeTimes {
+  init(from state: AppReducer.State) {
+    guard case .installedAndRunning = state.filter.extension else {
       self = .off
-    case .installedAndRunning:
-      @Dependency(\.date.now) var now
-      guard let expiration = currentSuspensionExpiration,
-            expiration > now else {
-        self = .on
-        return
-      }
-      self = .suspended(resuming: now.timeRemaining(until: expiration) ?? "now")
+      return
     }
+
+    @Dependency(\.date) var date
+    @Dependency(\.calendar) var calendar
+
+    let now = date.now
+    if let downtime = state.user.data?.downtime, downtime.contains(now, in: calendar) {
+      if let pauseExpiration = state.user.downtimePausedUntil,
+         pauseExpiration > now {
+        self = .downtimePaused(resuming: now.timeRemaining(until: pauseExpiration))
+      } else {
+        let plainNow = PlainTime.from(now, in: calendar)
+        let downtimeEnd = now.advanced(by: .minutes(plainNow.minutesUntil(downtime.end)))
+        self = .downtime(ending: now.timeRemaining(until: downtimeEnd))
+      }
+      return
+    }
+
+    guard let suspensionExpiration = state.filter.currentSuspensionExpiration,
+          suspensionExpiration > now else {
+      self = .on
+      return
+    }
+    self = .suspended(resuming: now.timeRemaining(until: suspensionExpiration))
   }
 }
 
-extension UserFilterState {
-  init(_ rootState: AppReducer.State) {
-    self = FilterState(rootState).userFilterState
-  }
-
-  init(extensionState: FilterExtensionState, currentSuspensionExpiration: Date?) {
-    self = FilterState(
-      extensionState: extensionState,
-      currentSuspensionExpiration: currentSuspensionExpiration
-    ).userFilterState
+extension FilterState.WithoutTimes {
+  init(from state: AppReducer.State) {
+    self = FilterState.WithRelativeTimes(from: state).withoutTimes
   }
 }

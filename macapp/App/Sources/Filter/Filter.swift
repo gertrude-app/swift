@@ -7,7 +7,7 @@ import os.log
 public struct Filter: Reducer, Sendable {
   public struct State: Equatable, DecisionState {
     public var userKeys: [uid_t: [FilterKey]] = [:]
-    public var userDowntime: [uid_t: PlainTimeWindow] = [:]
+    public var userDowntime: [uid_t: Downtime] = [:]
     public var appIdManifest = AppIdManifest()
     public var exemptUsers: Set<uid_t> = []
     public var suspensions: [uid_t: FilterSuspension] = [:]
@@ -112,6 +112,12 @@ public struct Filter: Reducer, Sendable {
         }
       }
 
+      for userId in state.userDowntime.keys {
+        if let pauseExpiry = state.userDowntime[userId]?.pausedUntil, pauseExpiry < self.now {
+          state.userDowntime[userId]?.pausedUntil = nil
+        }
+      }
+
       // enable additional debug logging when we're streaming blocks
       // which is currently our simple proxy for additional filter logging
       // until we expose some sort of app -> extension message to log verbose
@@ -201,6 +207,14 @@ public struct Filter: Reducer, Sendable {
       return .run { _ in
         await storage.deleteAll()
       }
+
+    case .xpc(.receivedAppMessage(.pauseDowntime(let userId, let expiration))):
+      state.userDowntime[userId]?.pausedUntil = expiration
+      return .none
+
+    case .xpc(.receivedAppMessage(.endDowntimePause(let userId))):
+      state.userDowntime[userId]?.pausedUntil = nil
+      return .none
 
     case .xpc(.decodingAppMessageDataFailed):
       return .none

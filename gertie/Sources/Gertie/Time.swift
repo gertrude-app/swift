@@ -62,3 +62,23 @@ extension PlainTime {
 
 extension PlainTime: Sendable, Equatable, Hashable, Codable {}
 extension PlainTimeWindow: Sendable, Equatable, Hashable, Codable {}
+
+// test/debug helpers
+
+#if DEBUG
+  extension PlainTime: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+      let parts = value.split(separator: ":")
+      self.hour = Int(parts[0])!
+      self.minute = Int(parts[1])!
+    }
+  }
+
+  extension PlainTimeWindow: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+      let parts = value.split(separator: "-")
+      self.start = PlainTime(stringLiteral: String(parts[0]))
+      self.end = PlainTime(stringLiteral: String(parts[1]))
+    }
+  }
+#endif
