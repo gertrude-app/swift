@@ -55,10 +55,7 @@ final class CheckInFeatureTests: XCTestCase {
     let checkInResult = CheckIn.Output.mock {
       $0.userData.name = "updated name"
       $0.updateReleaseChannel = .canary
-      $0.userData.downtime = .init(
-        start: .init(hour: 22, minute: 0),
-        end: .init(hour: 5, minute: 0)
-      )
+      $0.userData.downtime = "22:00-05:00"
     }
 
     await store.send(.checkIn(result: .success(checkInResult), reason: .heartbeat))
@@ -69,10 +66,7 @@ final class CheckInFeatureTests: XCTestCase {
       filterVersion: "1.0.0",
       user: CheckIn.Output.mock {
         $0.userData.name = "updated name"
-        $0.userData.downtime = .init(
-          start: .init(hour: 22, minute: 0),
-          end: .init(hour: 5, minute: 0)
-        )
+        $0.userData.downtime = "22:00-05:00"
       }.userData,
       resumeOnboarding: nil
     )])

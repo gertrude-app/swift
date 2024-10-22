@@ -21,6 +21,12 @@ extension FilterXPCClient: DependencyKey {
       endFilterSuspension: { await .init {
         try await xpc.endFilterSuspension()
       }},
+      endDowntimePause: { await .init {
+        try await xpc.endDowntimePause()
+      }},
+      pauseDowntime: { expiration in await .init {
+        try await xpc.pauseDowntime(until: expiration)
+      }},
       requestAck: { await .init {
         try await xpc.requestAck()
       }},
@@ -64,6 +70,14 @@ actor ThreadSafeFilterXPC {
 
   func endFilterSuspension() async throws {
     try await self.filterXpc.endFilterSuspension()
+  }
+
+  func pauseDowntime(until expiration: Date) async throws {
+    try await self.filterXpc.pauseDowntime(until: expiration)
+  }
+
+  func endDowntimePause() async throws {
+    try await self.filterXpc.endDowntimePause()
   }
 
   func suspendFilter(for duration: Seconds<Int>) async throws {

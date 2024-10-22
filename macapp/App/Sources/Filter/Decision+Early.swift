@@ -16,7 +16,7 @@ public extension NetworkFilter {
     }
 
     if let userDowntime = self.state.userDowntime[userId],
-       userDowntime.contains(self.now, in: self.calendar) {
+       userDowntime.shouldBlock(at: self.now, in: self.calendar) {
       return self.logged(.block(.duringDowntime(userId)))
     }
 

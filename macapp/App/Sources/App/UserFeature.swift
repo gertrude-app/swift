@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import Gertie
 import MacAppRoute
 
@@ -6,10 +7,13 @@ struct UserFeature: Feature {
   struct State: Equatable, Sendable {
     var data: UserData?
     var numTimesUserTokenNotFound = 0
+    var downtimePausedUntil: Date?
   }
 
   enum Action: Sendable, Equatable {
     case updated(previous: UserData?)
+    case pauseDowntimeUntil(Date)
+    case endDowntimePause
   }
 
   struct RootReducer {
@@ -37,6 +41,9 @@ extension UserFeature.RootReducer: RootReducing {
       }
 
     case .heartbeat(.everyMinute):
+      if let expiry = state.user.downtimePausedUntil, self.now >= expiry {
+        state.user.downtimePausedUntil = nil
+      }
       guard let downtime = state.user.data?.downtime,
             PlainTime.from(self.now, in: self.calendar).minutesUntil(downtime.start) == 5 else {
         return .none

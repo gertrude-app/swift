@@ -46,7 +46,7 @@ struct AdminWindowFeature: Feature {
       var windowOpen = false
       var screen: AdminWindowFeature.Screen
       var healthCheck: HealthCheck
-      var filterState: FilterState
+      var filterState: FilterState.WithRelativeTimes
       var user: User?
       var availableAppUpdate: AvailableAppUpdate?
       var installedAppVersion: String
@@ -585,18 +585,18 @@ extension AdminWindowFeature.State.View {
     let featureState = rootState.adminWindow
     let installedVersion = app.installedVersion() ?? "0.0.0"
 
-    windowOpen = featureState.windowOpen
-    screen = featureState.screen
-    healthCheck = featureState.healthCheck
-    filterState = .init(rootState)
-    user = rootState.user.data.map { user in .init(
+    self.windowOpen = featureState.windowOpen
+    self.screen = featureState.screen
+    self.healthCheck = featureState.healthCheck
+    self.filterState = .init(from: rootState)
+    self.user = rootState.user.data.map { user in .init(
       name: user.name,
       screenshotMonitoringEnabled: user.screenshotsEnabled,
       keystrokeMonitoringEnabled: user.keyloggingEnabled
     ) }
-    installedAppVersion = installedVersion
-    releaseChannel = rootState.appUpdates.releaseChannel
-    quitting = featureState.quitting
+    self.installedAppVersion = installedVersion
+    self.releaseChannel = rootState.appUpdates.releaseChannel
+    self.quitting = featureState.quitting
 
     if let latest = rootState.appUpdates.latestVersion, latest.semver > installedVersion {
       availableAppUpdate = .init(

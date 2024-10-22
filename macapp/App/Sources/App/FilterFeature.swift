@@ -70,15 +70,14 @@ extension FilterFeature.State {
       version: appVersion ?? "unknown"
     )
   }
+}
 
-  var filterState: FilterState {
-    FilterState(
-      extensionState: self.extension,
-      currentSuspensionExpiration: currentSuspensionExpiration
-    )
+extension AppReducer.State {
+  var filterState: FilterState.WithRelativeTimes {
+    FilterState.WithRelativeTimes(from: self)
   }
 
-  var isSuspended: Bool {
+  var isFilterSuspended: Bool {
     self.filterState.isSuspended
   }
 }
@@ -117,7 +116,7 @@ extension FilterFeature.RootReducer {
     case .checkIn(result: .success(let output), reason: _):
       if let resolvedSuspension = output.resolvedFilterSuspension,
          resolvedSuspension.id == state.requestSuspension.pending?.id,
-         !state.filter.isSuspended {
+         !state.isFilterSuspended {
         interestingEvent(id: "f4f564a4", "fallback poll resolved filter suspension")
         state.requestSuspension.pending = nil
         switch resolvedSuspension.decision {

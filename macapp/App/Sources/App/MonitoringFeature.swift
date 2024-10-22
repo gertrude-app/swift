@@ -55,7 +55,7 @@ extension MonitoringFeature.RootReducer {
 
     case .monitoring(.timerTriggeredTakeScreenshot):
       let width = state.user.data?.screenshotSize ?? 800
-      let filterSuspended = state.filter.isSuspended
+      let filterSuspended = state.isFilterSuspended
       return .exec { _ in
         try await monitoring.takeScreenshot(width)
         guard network.isConnected() else { return }
@@ -121,7 +121,7 @@ extension MonitoringFeature.RootReducer {
       // for simplicity's sake, we ALWAYS try to upload any pending keystrokes
       // so we don't have to worry about edge cases when we stop/restart.
       // if we're not monitoring keystrokes, nothing will go to api
-      let flushPendingKeystrokes = self.flushKeystrokes(state.filter.isSuspended)
+      let flushPendingKeystrokes = self.flushKeystrokes(state.isFilterSuspended)
 
       // failsafe for cleaning up suspension monitoring if we missed the expiration
       if let suspensionMonitoring = state.monitoring.suspensionMonitoring,
@@ -149,7 +149,7 @@ extension MonitoringFeature.RootReducer {
 
     case .application(.willSleep),
          .adminAuthed(.adminWindow(.webview(.confirmQuitAppClicked))):
-      return self.flushKeystrokes(state.filter.isSuspended)
+      return self.flushKeystrokes(state.isFilterSuspended)
 
     case .delegate(.filterSuspendedChanged(let wasSuspended, _)):
       if wasSuspended, let suspensionMonitoring = state.monitoring.suspensionMonitoring {
@@ -164,7 +164,7 @@ extension MonitoringFeature.RootReducer {
     case .application(.willTerminate):
       return .merge(
         .cancel(id: CancelId.screenshots),
-        self.flushKeystrokes(state.filter.isSuspended)
+        self.flushKeystrokes(state.isFilterSuspended)
       )
 
     case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))),

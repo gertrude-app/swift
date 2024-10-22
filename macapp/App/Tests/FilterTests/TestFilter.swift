@@ -8,7 +8,7 @@ import Gertie
 class TestFilter: NetworkFilter {
   struct State: DecisionState {
     var userKeys: [uid_t: [FilterKey]] = [:]
-    var userDowntime: [uid_t: PlainTimeWindow] = [:]
+    var userDowntime: [uid_t: Downtime] = [:]
     var appIdManifest = AppIdManifest()
     var exemptUsers: Set<uid_t> = []
     var suspensions: [uid_t: FilterSuspension] = [:]
@@ -52,7 +52,7 @@ class TestFilter: NetworkFilter {
       let filter = TestFilter()
       filter.state = State(
         userKeys: userKeys,
-        userDowntime: userDowntime,
+        userDowntime: userDowntime.mapValues { Downtime(window: $0) },
         appIdManifest: appIdManifest,
         exemptUsers: exemptUsers,
         suspensions: suspensions

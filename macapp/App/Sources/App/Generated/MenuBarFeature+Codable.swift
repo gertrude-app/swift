@@ -1,7 +1,8 @@
 // auto-generated, do not edit
 import Foundation
+import Gertie
 
-extension FilterState {
+public extension FilterState.WithRelativeTimes {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {
@@ -19,10 +20,24 @@ extension FilterState {
     var resuming: String
   }
 
+  private struct _CaseDowntime: Codable {
+    var `case` = "downtime"
+    var ending: String
+  }
+
+  private struct _CaseDowntimePaused: Codable {
+    var `case` = "downtimePaused"
+    var resuming: String
+  }
+
   func encode(to encoder: Encoder) throws {
     switch self {
     case .suspended(let resuming):
       try _CaseSuspended(resuming: resuming).encode(to: encoder)
+    case .downtime(let ending):
+      try _CaseDowntime(ending: ending).encode(to: encoder)
+    case .downtimePaused(let resuming):
+      try _CaseDowntimePaused(resuming: resuming).encode(to: encoder)
     case .off:
       try _NamedCase(case: "off").encode(to: encoder)
     case .on:
@@ -37,6 +52,12 @@ extension FilterState {
     case "suspended":
       let value = try container.decode(_CaseSuspended.self)
       self = .suspended(resuming: value.resuming)
+    case "downtime":
+      let value = try container.decode(_CaseDowntime.self)
+      self = .downtime(ending: value.ending)
+    case "downtimePaused":
+      let value = try container.decode(_CaseDowntimePaused.self)
+      self = .downtimePaused(resuming: value.resuming)
     case "off":
       self = .off
     case "on":
@@ -65,10 +86,17 @@ extension MenuBarFeature.Action {
     var code: Int
   }
 
+  private struct _CasePauseDowntimeClicked: Codable {
+    var `case` = "pauseDowntimeClicked"
+    var duration: MenuBarFeature.Action.DowntimePauseDuration
+  }
+
   func encode(to encoder: Encoder) throws {
     switch self {
     case .connectSubmit(let code):
       try _CaseConnectSubmit(code: code).encode(to: encoder)
+    case .pauseDowntimeClicked(let duration):
+      try _CasePauseDowntimeClicked(duration: duration).encode(to: encoder)
     case .menuBarIconClicked:
       try _NamedCase(case: "menuBarIconClicked").encode(to: encoder)
     case .resumeFilterClicked:
@@ -103,6 +131,8 @@ extension MenuBarFeature.Action {
       try _NamedCase(case: "quitForNowClicked").encode(to: encoder)
     case .quitForUninstallClicked:
       try _NamedCase(case: "quitForUninstallClicked").encode(to: encoder)
+    case .resumeDowntimeClicked:
+      try _NamedCase(case: "resumeDowntimeClicked").encode(to: encoder)
     }
   }
 
@@ -113,6 +143,9 @@ extension MenuBarFeature.Action {
     case "connectSubmit":
       let value = try container.decode(_CaseConnectSubmit.self)
       self = .connectSubmit(code: value.code)
+    case "pauseDowntimeClicked":
+      let value = try container.decode(_CasePauseDowntimeClicked.self)
+      self = .pauseDowntimeClicked(duration: value.duration)
     case "menuBarIconClicked":
       self = .menuBarIconClicked
     case "resumeFilterClicked":
@@ -147,6 +180,8 @@ extension MenuBarFeature.Action {
       self = .quitForNowClicked
     case "quitForUninstallClicked":
       self = .quitForUninstallClicked
+    case "resumeDowntimeClicked":
+      self = .resumeDowntimeClicked
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
     }
@@ -183,7 +218,7 @@ extension MenuBarFeature.State.View {
 
   private struct _CaseConnected: Codable {
     var `case` = "connected"
-    var filterState: FilterState
+    var filterState: FilterState.WithRelativeTimes
     var recordingScreen: Bool
     var recordingKeystrokes: Bool
     var adminAttentionRequired: Bool

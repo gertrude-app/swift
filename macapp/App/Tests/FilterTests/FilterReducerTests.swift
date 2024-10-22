@@ -120,11 +120,7 @@ final class FilterReducerTests: XCTestCase {
     let save = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = save.fn
 
-    let downtime = PlainTimeWindow(
-      start: .init(hour: 22, minute: 0),
-      end: .init(hour: 5, minute: 0)
-    )
-
+    let downtime = Downtime(window: "22:00-05:00")
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 502,
       keys: [.mock],
@@ -136,7 +132,7 @@ final class FilterReducerTests: XCTestCase {
 
     await expect(save.calls).toEqual([.init(
       userKeys: [502: [.mock]],
-      userDowntime: [502: downtime], // <-- new downtime info saved
+      userDowntime: [502: downtime.window], // <-- new downtime info saved
       appIdManifest: .mock,
       exemptUsers: []
     )])
@@ -144,10 +140,10 @@ final class FilterReducerTests: XCTestCase {
 
   @MainActor
   func testReceivingNilDowntimeClearsUserDowntime() async {
-    let downtime = PlainTimeWindow(
+    let downtime = Downtime(window: .init(
       start: .init(hour: 22, minute: 0),
       end: .init(hour: 5, minute: 0)
-    )
+    ))
     let (store, _) = Filter.testStore {
       $0.userDowntime[502] = downtime
     }
@@ -157,7 +153,7 @@ final class FilterReducerTests: XCTestCase {
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 502,
       keys: [.mock],
-      downtime: nil,
+      downtime: nil, // <-- downtime removed
       manifest: .mock
     )))) {
       $0.userDowntime = [:]
@@ -514,6 +510,48 @@ final class FilterReducerTests: XCTestCase {
 
     // and assert that we haven't notified the app again
     await expect(notifyExpired.calls).toEqual([502])
+  }
+
+  @MainActor
+  func testHeartbeatCleansUpExpiredDowntimePause() async {
+    let now = Calendar.current.date(from: DateComponents(hour: 23, minute: 00))!
+    let thirtySecondsAgo = now - .seconds(30)
+    let fiveMinutesFromNow = now + .minutes(5)
+    let (store, _) = Filter.testStore {
+      $0.userDowntime = [
+        502: Downtime(window: "22:00-05:00", pausedUntil: thirtySecondsAgo), // <-- expired
+        503: Downtime(window: "22:00-05:00", pausedUntil: fiveMinutesFromNow), // <-- not expired
+        504: Downtime(window: "22:00-05:00", pausedUntil: nil), // <-- no pause
+      ]
+    }
+    store.deps.date = .constant(now)
+    store.deps.filterExtension.version = { "2.5.0" }
+    await store.send(.heartbeat) {
+      $0.userDowntime = [
+        502: Downtime(window: "22:00-05:00", pausedUntil: nil), // <- removed
+        503: Downtime(window: "22:00-05:00", pausedUntil: fiveMinutesFromNow), // <-- not touched
+        504: Downtime(window: "22:00-05:00", pausedUntil: nil), // <-- not touched
+      ]
+    }
+  }
+
+  @MainActor
+  func testPauseAndUnpauseDowntime() async {
+    let now = Calendar.current.date(from: DateComponents(hour: 23, minute: 00))!
+    let (store, _) = Filter.testStore {
+      $0.userDowntime = [502: Downtime(window: "22:00-05:00", pausedUntil: nil)]
+    }
+    store.deps.date = .constant(now)
+    store.deps.filterExtension.version = { "2.5.0" }
+
+    await store
+      .send(.xpc(.receivedAppMessage(.pauseDowntime(userId: 502, until: now + .minutes(5))))) {
+        $0.userDowntime[502] = Downtime(window: "22:00-05:00", pausedUntil: now + .minutes(5))
+      }
+
+    await store.send(.xpc(.receivedAppMessage(.endDowntimePause(userId: 502)))) {
+      $0.userDowntime[502] = Downtime(window: "22:00-05:00", pausedUntil: nil)
+    }
   }
 }
 

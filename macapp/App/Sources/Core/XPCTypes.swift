@@ -3,9 +3,9 @@ import Gertie
 
 public struct UserFilterData: Sendable, Codable {
   public var keys: [FilterKey]
-  public var downtime: PlainTimeWindow?
+  public var downtime: Downtime?
 
-  public init(keys: [FilterKey], downtime: PlainTimeWindow? = nil) {
+  public init(keys: [FilterKey], downtime: Downtime? = nil) {
     self.keys = keys
     self.downtime = downtime
   }

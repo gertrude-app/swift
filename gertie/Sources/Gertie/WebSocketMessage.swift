@@ -28,7 +28,7 @@ public enum WebSocketMessage {
   }
 
   public enum FromAppToApi: Codable, Equatable {
-    case currentFilterState(UserFilterState)
+    case currentFilterState(FilterState.WithoutTimes)
     case goingOffline
   }
 

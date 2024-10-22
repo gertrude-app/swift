@@ -28,7 +28,7 @@ public extension EnumCodableGen {
 
 extension EnumCodableGen.EnumsGenerator: CodeGenerator {
   public func write() throws {
-    let decls = try types.map { type, is_public in
+    let decls = try self.types.map { type, is_public in
       let enumType = try EnumCodableGen.EnumType(from: type)
       if ProcessInfo.processInfo.environment["CODEGEN_UNIMPLEMENTED"] != nil {
         return enumType.unimplementedConformance()

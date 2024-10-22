@@ -10,6 +10,8 @@ public struct FilterXPCClient: Sendable {
   public var checkConnectionHealth: @Sendable () async -> Result<Void, XPCErr>
   public var disconnectUser: @Sendable () async -> Result<Void, XPCErr>
   public var endFilterSuspension: @Sendable () async -> Result<Void, XPCErr>
+  public var endDowntimePause: @Sendable () async -> Result<Void, XPCErr>
+  public var pauseDowntime: @Sendable (Date) async -> Result<Void, XPCErr>
   public var requestAck: @Sendable () async -> Result<XPC.FilterAck, XPCErr>
   public var requestUserTypes: @Sendable () async -> Result<FilterUserTypes, XPCErr>
   public var sendDeleteAllStoredState: @Sendable () async -> Result<Void, XPCErr>
@@ -24,6 +26,8 @@ public struct FilterXPCClient: Sendable {
     checkConnectionHealth: @escaping @Sendable () async -> Result<Void, XPCErr>,
     disconnectUser: @escaping @Sendable () async -> Result<Void, XPCErr>,
     endFilterSuspension: @escaping @Sendable () async -> Result<Void, XPCErr>,
+    endDowntimePause: @escaping @Sendable () async -> Result<Void, XPCErr>,
+    pauseDowntime: @escaping @Sendable (Date) async -> Result<Void, XPCErr>,
     requestAck: @escaping @Sendable () async -> Result<XPC.FilterAck, XPCErr>,
     requestUserTypes: @escaping @Sendable () async -> Result<FilterUserTypes, XPCErr>,
     sendDeleteAllStoredState: @escaping @Sendable () async -> Result<Void, XPCErr>,
@@ -37,6 +41,8 @@ public struct FilterXPCClient: Sendable {
     self.checkConnectionHealth = checkConnectionHealth
     self.disconnectUser = disconnectUser
     self.endFilterSuspension = endFilterSuspension
+    self.endDowntimePause = endDowntimePause
+    self.pauseDowntime = pauseDowntime
     self.requestAck = requestAck
     self.requestUserTypes = requestUserTypes
     self.sendDeleteAllStoredState = sendDeleteAllStoredState
@@ -81,6 +87,14 @@ extension FilterXPCClient: TestDependencyKey {
         "FilterXPCClient.endFilterSuspension",
         placeholder: .success(())
       ),
+      endDowntimePause: unimplemented(
+        "FilterXPCClient.endDowntimePause",
+        placeholder: .success(())
+      ),
+      pauseDowntime: unimplemented(
+        "FilterXPCClient.pauseDowntime",
+        placeholder: .success(())
+      ),
       requestAck: unimplemented(
         "FilterXPCClient.requestAck",
         placeholder: .success(.init(randomInt: 0, version: "", userId: 0, numUserKeys: 0))
@@ -122,6 +136,8 @@ extension FilterXPCClient: TestDependencyKey {
       checkConnectionHealth: { .success(()) },
       disconnectUser: { .success(()) },
       endFilterSuspension: { .success(()) },
+      endDowntimePause: { .success(()) },
+      pauseDowntime: { _ in .success(()) },
       requestAck: { .success(.init(
         randomInt: 0,
         version: "",
