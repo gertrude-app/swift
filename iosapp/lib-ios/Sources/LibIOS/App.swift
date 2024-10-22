@@ -44,6 +44,7 @@ public struct AppReducer {
     case authorizationFailed(AuthFailureReason)
     case authorizationSucceeded
     case authorizationFailedTryAgainTapped
+    case authorizationFailedReviewRequirementsTapped
     case installFailed(FilterInstallError)
     case installFailedTryAgainTapped
     case installSucceeded
@@ -109,6 +110,10 @@ public struct AppReducer {
 
       case .authorizationFailed(let reason):
         state.appState = .authorizationFailed(reason)
+        return .none
+
+      case .authorizationFailedReviewRequirementsTapped:
+        state.appState = .prereqs
         return .none
 
       case .authorizationFailedTryAgainTapped:

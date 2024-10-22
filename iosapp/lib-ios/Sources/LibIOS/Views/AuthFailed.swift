@@ -10,19 +10,19 @@ struct AuthFailed: View {
         switch self.reason {
         case .networkError:
           Text(
-            "You must be connected to the internet in order to complete the parent/guardian authorization step."
+            "You must be connected to the internet in order to complete the authorization step."
           )
         case .authorizationConflict:
           Text(
             "Failed to authorize due to conflict. You might already have another app managing parental controls. Disable that app to continue using Gertrude."
           )
         case .invalidAccountType:
-          Text("Apple account error. Please confirm that:")
+          Text("Sorry, there was a problem with your **Apple Account.** Please ensure that:")
           HStack {
             VStack(alignment: .leading, spacing: 6) {
-              Text("The \(self.deviceType) user is logged into iCloud")
+              Text("The \(self.deviceType) user is signed in to iCloud")
               Text("The \(self.deviceType) user is under 18")
-              Text("The \(self.deviceType) user is enrolled in an Apple Family")
+              Text("The \(self.deviceType) user is in an Apple Family")
             }.font(.footnote)
             Spacer()
           }
@@ -30,15 +30,24 @@ struct AuthFailed: View {
           .background(.gray.opacity(0.1))
           .multilineTextAlignment(.leading)
           .cornerRadius(8)
-        case .unexpected, .other:
-          // TODO: log, contact support, etc.
-          Text("An unexpected error occurred, please try again.")
         case .passcodeRequired:
-          Text(
-            "Failed to authorize. A passcode is required in order to enable parental controls."
-          )
+          Text("Failed to authorize. A passcode is required in order to enable parental controls.")
         case .authorizationCanceled:
-          Text("Failed to authorize. The parent/guardian canceled the authorization.")
+          Text("Failed to authorize. The parent or guardian canceled the authorization.")
+        case .restricted:
+          VStack(spacing: 16) {
+            Text("A restriction is preventing Gertrude from using Family Controls.")
+            Text(
+              "Is this device is enrolled in **mobile device management (MDM)** by an organization or school? If so, try again on a device not managed by MDM."
+            )
+            .font(.footnote)
+          }
+        case .unexpected, .other:
+          VStack(spacing: 16) {
+            Text("An unexpected error occurred.")
+            Text("Please try again, or contact us for more help at https://gertrude.app/contact.")
+              .font(.footnote)
+          }
         }
       }
       .multilineTextAlignment(.center)
@@ -47,7 +56,17 @@ struct AuthFailed: View {
         self.onTryAgain()
       } label: {
         Spacer()
-        Text("Try again")
+        switch self.reason {
+        case .invalidAccountType, .restricted:
+          HStack {
+            Image(systemName: "arrow.left")
+            Text("Review requirements")
+              .padding(.trailing, 4)
+          }
+
+        default:
+          Text("Try again")
+        }
         Spacer()
       }
       .padding(.vertical, 12)
@@ -89,8 +108,8 @@ struct AuthFailedPreview: View {
   AuthFailedPreview(reason: .invalidAccountType)
 }
 
-#Preview("Unexpected/other") {
-  AuthFailedPreview(reason: .unexpected(.restricted))
+#Preview("Restricted/MDM") {
+  AuthFailedPreview(reason: .restricted)
 }
 
 #Preview("Canceled") {
@@ -99,4 +118,8 @@ struct AuthFailedPreview: View {
 
 #Preview("Need passcode") {
   AuthFailedPreview(reason: .passcodeRequired)
+}
+
+#Preview("Unexpected") {
+  AuthFailedPreview(reason: .unexpected(.invalidArgument))
 }
