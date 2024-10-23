@@ -11,6 +11,7 @@ public enum AuthedUserRoute: PairRoute {
   case createUnlockRequests_v3(CreateUnlockRequests_v3.Input)
   case getAccountStatus
   case getUserData
+  case logFilterEvents(LogFilterEvents.Input)
   case logSecurityEvent(LogSecurityEvent.Input)
   case refreshRules(RefreshRules.Input)
   case reportBrowsers(ReportBrowsers.Input)
@@ -51,6 +52,10 @@ public extension AuthedUserRoute {
     }
     Route(.case(Self.getUserData)) {
       Operation(GetUserData.self)
+    }
+    Route(.case(Self.logFilterEvents)) {
+      Operation(LogFilterEvents.self)
+      Body(.json(LogFilterEvents.Input.self))
     }
     Route(.case(Self.logSecurityEvent)) {
       Operation(LogSecurityEvent.self)

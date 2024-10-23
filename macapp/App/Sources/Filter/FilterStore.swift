@@ -37,6 +37,16 @@ public struct FilterStore: NetworkFilter {
     self.state.appCache[bundleId]
   }
 
+  public func logAppRequest(from bundleId: String?) {
+    if let bundleId {
+      self.viewStore.send(.logAppRequest(bundleId))
+    }
+  }
+
+  public func log(event: FilterLogs.Event) {
+    self.viewStore.send(.logEvent(event))
+  }
+
   public func sendExtensionStopping() {
     self.viewStore.send(.extensionStopping)
   }

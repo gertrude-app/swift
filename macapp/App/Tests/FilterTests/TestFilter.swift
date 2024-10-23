@@ -60,6 +60,8 @@ class TestFilter: NetworkFilter {
       return filter
     }
   }
+
+  func log(event: FilterLogs.Event) {}
 }
 
 extension FilterKey {

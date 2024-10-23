@@ -2,12 +2,14 @@ import Combine
 import Core
 import Dependencies
 import Foundation
+import Gertie
 
 struct XPCClient: Sendable {
   var notifyFilterSuspensionEnded: @Sendable (uid_t) async throws -> Void
   var startListener: @Sendable () async -> Void
   var stopListener: @Sendable () async -> Void
   var sendBlockedRequest: @Sendable (uid_t, BlockedRequest) async throws -> Void
+  var sendLogs: @Sendable (FilterLogs) async throws -> Void
   var events: @Sendable () -> AnyPublisher<XPCEvent.Filter, Never>
 }
 
@@ -27,6 +29,9 @@ extension XPCClient: DependencyKey {
       sendBlockedRequest: { userId, request in
         try await manager.sendBlockedRequest(request, userId: userId)
       },
+      sendLogs: { logs in
+        try await manager.sendLogs(logs)
+      },
       events: {
         xpcEventSubject.withValue { subject in
           Move(subject.eraseToAnyPublisher())
@@ -42,6 +47,7 @@ extension XPCClient: TestDependencyKey {
     startListener: unimplemented("XPCClient.startListener"),
     stopListener: unimplemented("XPCClient.stopListener"),
     sendBlockedRequest: unimplemented("XPCClient.sendBlockedRequest"),
+    sendLogs: unimplemented("XPCClient.sendLogs"),
     events: unimplemented("XPCClient.events", placeholder: AnyPublisher(Empty()))
   )
   static let mock = Self(
@@ -49,6 +55,7 @@ extension XPCClient: TestDependencyKey {
     startListener: {},
     stopListener: {},
     sendBlockedRequest: { _, _ in },
+    sendLogs: { _ in },
     events: { Empty().eraseToAnyPublisher() }
   )
 }
@@ -77,6 +84,10 @@ actor ThreadSafeXPCManager {
 
   func notifyFilterSuspensionEnded(for userId: uid_t) async throws {
     try await self.manager.notifyFilterSuspensionEnded(for: userId)
+  }
+
+  func sendLogs(_ logs: FilterLogs) async throws {
+    try await self.manager.sendLogs(logs)
   }
 }
 

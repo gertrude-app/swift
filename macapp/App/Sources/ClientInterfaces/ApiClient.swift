@@ -12,6 +12,7 @@ public struct ApiClient: Sendable {
     -> UUID
   public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> [UUID]
   public var getUserToken: @Sendable () async throws -> UUID?
+  public var logFilterEvents: @Sendable (LogFilterEvents.Input) async -> Void
   public var logInterestingEvent: @Sendable (LogInterestingEvent.Input) async -> Void
   public var logSecurityEvent: @Sendable (LogSecurityEvent.Input, UUID?) async -> Void
   public var recentAppVersions: @Sendable () async throws -> [String: String]
@@ -31,6 +32,7 @@ public struct ApiClient: Sendable {
     createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws
       -> [UUID],
     getUserToken: @escaping @Sendable () async throws -> UUID?,
+    logFilterEvents: @escaping @Sendable (LogFilterEvents.Input) async -> Void,
     logInterestingEvent: @escaping @Sendable (LogInterestingEvent.Input) async -> Void,
     logSecurityEvent: @escaping @Sendable (LogSecurityEvent.Input, UUID?) async -> Void,
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
@@ -47,6 +49,7 @@ public struct ApiClient: Sendable {
     self.createSuspendFilterRequest = createSuspendFilterRequest
     self.createUnlockRequests = createUnlockRequests
     self.getUserToken = getUserToken
+    self.logFilterEvents = logFilterEvents
     self.logInterestingEvent = logInterestingEvent
     self.logSecurityEvent = logSecurityEvent
     self.recentAppVersions = recentAppVersions
@@ -104,6 +107,7 @@ extension ApiClient: TestDependencyKey {
     createSuspendFilterRequest: unimplemented("ApiClient.createSuspendFilterRequest"),
     createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
     getUserToken: unimplemented("ApiClient.getUserToken"),
+    logFilterEvents: unimplemented("ApiClient.logFilterEvents"),
     logInterestingEvent: unimplemented("ApiClient.logInterestingEvent"),
     logSecurityEvent: unimplemented("ApiClient.logSecurityEvent"),
     recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
@@ -122,6 +126,7 @@ extension ApiClient: TestDependencyKey {
     createSuspendFilterRequest: { _ in .init() },
     createUnlockRequests: { _ in [] },
     getUserToken: { nil },
+    logFilterEvents: { _ in },
     logInterestingEvent: { _ in },
     logSecurityEvent: { _, _ in },
     recentAppVersions: { [:] },

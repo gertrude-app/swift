@@ -46,6 +46,13 @@ extension ApiClient: DependencyKey {
     getUserToken: {
       await userToken.value
     },
+    logFilterEvents: { input in
+      guard await accountActive.value else { return }
+      _ = try? await output(
+        from: LogFilterEvents.self,
+        with: .logFilterEvents(input)
+      )
+    },
     logInterestingEvent: { input in
       _ = try? await output(
         from: LogInterestingEvent.self,

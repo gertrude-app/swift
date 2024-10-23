@@ -365,6 +365,21 @@ final class FilterFeatureTests: XCTestCase {
     await scheduler.advance(by: .seconds(31))
     await expect(quitBrowsers.calls.count).toEqual(0) // browsers never quit
   }
+
+  @MainActor
+  func testReceivingFilterLogsSendsThemOnToApi() async {
+    let (store, _) = AppReducer.testStore()
+    let logFilterEvents = spy(on: LogFilterEvents.Input.self, returning: ())
+    store.deps.api.logFilterEvents = logFilterEvents.fn
+
+    let logs = FilterLogs(
+      bundleIds: ["com.widget": 1],
+      events: [.init(id: "foo", detail: nil): 1]
+    )
+
+    await store.send(.xpc(.receivedExtensionMessage(.logs(logs))))
+    expect(await logFilterEvents.calls).toEqual([logs])
+  }
 }
 
 extension LogSecurityEvent.Input {
