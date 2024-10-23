@@ -64,4 +64,8 @@ public typealias XPCErrorData = Data
     userId: uid_t,
     reply: @escaping (XPCErrorData?) -> Void
   )
+  func receiveFilterLogs(
+    _ logs: Data,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
 }

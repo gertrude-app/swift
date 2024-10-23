@@ -1,7 +1,7 @@
 import PostgresKit
 
 public protocol CustomQueryable: Decodable, Sendable {
-  static func query(bindings: [Postgres.Data]) -> SQLQueryString
+  static func query(bindings: [Postgres.Data]) -> SQL.Statement
   static func decode(from rows: [SQLRow]) throws -> [Self]
 }
 

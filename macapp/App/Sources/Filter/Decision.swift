@@ -8,6 +8,7 @@ public protocol NetworkFilter: AppDescribing {
   var security: SecurityClient { get }
   var now: Date { get }
   var calendar: Calendar { get }
+  func log(event: FilterLogs.Event)
 }
 
 public extension NetworkFilter {

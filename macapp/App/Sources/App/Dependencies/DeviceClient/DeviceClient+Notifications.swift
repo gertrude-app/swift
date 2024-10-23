@@ -86,7 +86,7 @@ extension DeviceClient {
     let title = extraMonitoring
       ? "👀 Temporarily disabling filter"
       : "🟠 Temporarily disabling filter"
-    let resuming = now.timeRemaining(until: now.advanced(by: .init(seconds.rawValue))) ?? "soon"
+    let resuming = now.timeRemaining(until: now.advanced(by: .init(seconds.rawValue)))
     var body = extraMonitoring ? "With INCREASED monitoring. " : ""
     if let comment, !comment.isEmpty {
       body += "Parent comment: \"\(comment)\" Filter suspended, resuming \(resuming)."

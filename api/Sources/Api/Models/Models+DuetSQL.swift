@@ -678,6 +678,29 @@ extension Browser: Model {
   }
 }
 
+extension UnidentifiedApp: Model {
+  public static let tableName = UnidentifiedApp.M28.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .bundleId: .string(self.bundleId)
+    case .count: .int(self.count)
+    case .createdAt: .date(self.createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .bundleId: .string(self.bundleId),
+      .count: .int(self.count),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
 extension BrowserMatch: PostgresJsonable {}
 
 extension SecurityEvent: Model {

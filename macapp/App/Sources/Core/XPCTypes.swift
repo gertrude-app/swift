@@ -64,6 +64,7 @@ public enum XPCEvent: Sendable, Equatable {
     public enum MessageFromExtension: Sendable, Equatable {
       case blockedRequest(BlockedRequest)
       case userFilterSuspensionEnded(uid_t)
+      case logs(FilterLogs)
     }
 
     case receivedExtensionMessage(MessageFromExtension)

@@ -66,6 +66,7 @@ class FilterDataProvider: NEFilterDataProvider {
       os_log("[D•] FILTER received new flow: %{public}s", "\(flow.description)")
       os_log("[D•] FILTER early user decision: %{public}@", "\(earlyUserDecision)")
     }
+
     switch earlyUserDecision {
     case .block:
       #if DEBUG
@@ -80,6 +81,8 @@ class FilterDataProvider: NEFilterDataProvider {
     }
 
     let filterFlow = FilterFlow(flow, userId: userId)
+    self.store.logAppRequest(from: filterFlow.bundleId)
+
     let decision = self.store.newFlowDecision(filterFlow, auditToken: flow.sourceAppAuditToken)
     if self.verboseLogging {
       switch decision {

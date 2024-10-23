@@ -2,6 +2,7 @@ import ClientInterfaces
 import Combine
 import Core
 import Foundation
+import Gertie
 
 @objc class ReceiveFilterMessage: NSObject, FilterMessageReceiving {
 
@@ -41,6 +42,28 @@ import Foundation
         $0.send(.decodingExtensionMessageDataFailed(
           fn: "\(#function)",
           type: "\(BlockedRequest.self)",
+          error: "\(error)"
+        ))
+      }
+      reply(XPC.errorData(error))
+    }
+  }
+
+  func receiveFilterLogs(
+    _ logs: Data,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    do {
+      let logs = try JSONDecoder().decode(FilterLogs.self, from: logs)
+      self.subject.withValue {
+        $0.send(.receivedExtensionMessage(.logs(logs)))
+      }
+      reply(nil)
+    } catch {
+      self.subject.withValue {
+        $0.send(.decodingExtensionMessageDataFailed(
+          fn: "\(#function)",
+          type: "\(FilterLogs.self)",
           error: "\(error)"
         ))
       }

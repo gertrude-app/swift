@@ -1,6 +1,7 @@
 import Core
 import Dependencies
 import Foundation
+import Gertie
 import os.log
 
 class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
@@ -34,6 +35,18 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
     let requestData = try XPC.encode(request)
     try await withTimeout(connection: connection) { appProxy, continuation in
       appProxy.receiveBlockedRequest(requestData, userId: userId, reply: continuation.dataHandler)
+    }
+  }
+
+  func sendLogs(_ logs: FilterLogs) async throws {
+    guard let connection else {
+      throw XPCErr.noConnection
+    }
+
+    os_log("[G•] FILTER XPCManager: sending filter logs")
+    let logsData = try XPC.encode(logs)
+    try await withTimeout(connection: connection) { appProxy, continuation in
+      appProxy.receiveFilterLogs(logsData, reply: continuation.dataHandler)
     }
   }
 

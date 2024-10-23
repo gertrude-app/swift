@@ -525,7 +525,6 @@ final class FilterReducerTests: XCTestCase {
       ]
     }
     store.deps.date = .constant(now)
-    store.deps.filterExtension.version = { "2.5.0" }
     await store.send(.heartbeat) {
       $0.userDowntime = [
         502: Downtime(window: "22:00-05:00", pausedUntil: nil), // <- removed
@@ -542,7 +541,6 @@ final class FilterReducerTests: XCTestCase {
       $0.userDowntime = [502: Downtime(window: "22:00-05:00", pausedUntil: nil)]
     }
     store.deps.date = .constant(now)
-    store.deps.filterExtension.version = { "2.5.0" }
 
     await store
       .send(.xpc(.receivedAppMessage(.pauseDowntime(userId: 502, until: now + .minutes(5))))) {
@@ -552,6 +550,63 @@ final class FilterReducerTests: XCTestCase {
     await store.send(.xpc(.receivedAppMessage(.endDowntimePause(userId: 502)))) {
       $0.userDowntime[502] = Downtime(window: "22:00-05:00", pausedUntil: nil)
     }
+  }
+
+  @MainActor
+  func testLogsAppRequests() async {
+    let (store, _) = Filter.testStore()
+    await store.send(.logAppRequest("com.widget")) {
+      $0.logs.bundleIds["com.widget"] = 1
+    }
+    await store.send(.logAppRequest("com.widget")) {
+      $0.logs.bundleIds["com.widget"] = 2
+    }
+  }
+
+  @MainActor
+  func testLogsEventsSendingInHeartbeatWhenThresholdReached() async {
+    let (store, _) = Filter.testStore {
+      $0.logs.bundleIds["com.widget"] = 498
+    }
+    store.deps.xpc.sendLogs = { _ in fatalError("not called") }
+
+    let event1 = FilterLogs.Event(id: "1", detail: "whoops")
+    await store.send(.logEvent(event1)) {
+      $0.logs.events[event1] = 1
+    }
+
+    await store.send(.heartbeat) // <-- 499 = not enough logs to send
+
+    let sendLogs = spy(on: FilterLogs.self, returning: ())
+    store.deps.xpc.sendLogs = sendLogs.fn
+
+    await store.send(.logEvent(event1)) {
+      $0.logs.events[event1] = 2
+    }
+
+    await store.send(.heartbeat) { // <-- 500, send logs, clear
+      $0.logs.events = [:]
+      $0.logs.bundleIds = [:]
+    }
+
+    expect(await sendLogs.calls)
+      .toEqual([.init(bundleIds: ["com.widget": 498], events: [event1: 2])])
+  }
+
+  func testAddFilterLogs() {
+    var logs = FilterLogs(bundleIds: [:], events: [:])
+    let event1 = FilterLogs.Event(id: "1", detail: "whoops")
+    logs.log(event: event1)
+    expect(logs.events).toEqual([event1: 1])
+    let dupeEvent = FilterLogs.Event(id: "1", detail: "whoops")
+    logs.log(event: dupeEvent)
+    expect(logs.events).toEqual([event1: 2])
+    let newEvent = FilterLogs.Event(id: "2", detail: "whoa")
+    logs.log(event: newEvent)
+    expect(logs.events).toEqual([event1: 2, newEvent: 1])
+    let event3 = FilterLogs.Event(id: "1", detail: nil) // <-- same id, different detail
+    logs.log(event: event3)
+    expect(logs.events).toEqual([event1: 2, newEvent: 1, event3: 1])
   }
 }
 
@@ -570,6 +625,7 @@ extension Filter {
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
     store.deps.date.now = TEST_NOW
     store.deps.uuid = .constant(TEST_ID)
+    store.deps.filterExtension.version = { "2.5.0" }
     return (store, scheduler)
   }
 }

@@ -13,6 +13,7 @@ public struct Filter: Reducer, Sendable {
     public var suspensions: [uid_t: FilterSuspension] = [:]
     public var appCache: [String: AppDescriptor] = [:]
     public var blockListeners: [uid_t: Date] = [:]
+    public var logs: FilterLogs = .init(bundleIds: [:], events: [:])
   }
 
   public enum Action: Equatable, Sendable {
@@ -24,6 +25,8 @@ public struct Filter: Reducer, Sendable {
     case loadedPersistentState(Persistent.State?)
     case suspensionTimerEnded(uid_t)
     case staleSuspensionFound(uid_t)
+    case logAppRequest(String)
+    case logEvent(FilterLogs.Event)
     case heartbeat
   }
 
@@ -54,8 +57,8 @@ public struct Filter: Reducer, Sendable {
     switch action {
     case .extensionStarted:
       return .merge(
-        .run { [startListener = xpc.startListener] _ in
-          await startListener()
+        .run { _ in
+          await self.xpc.startListener()
         },
 
         .run { [load = storage.loadPersistentState] send in
@@ -63,7 +66,7 @@ public struct Filter: Reducer, Sendable {
         },
 
         .run { send in
-          for await _ in mainQueue.timer(interval: .seconds(60)) {
+          for await _ in self.mainQueue.timer(interval: .seconds(60)) {
             await send(.heartbeat)
           }
         }.cancellable(id: CancelId.heartbeat, cancelInFlight: true),
@@ -71,14 +74,14 @@ public struct Filter: Reducer, Sendable {
         .publisher {
           xpc.events()
             .map { .xpc($0) }
-            .receive(on: mainQueue)
+            .receive(on: self.mainQueue)
         }
       )
 
     case .extensionStopping:
       return .merge(
         .cancel(id: CancelId.heartbeat),
-        .run { _ in await xpc.stopListener() }
+        .run { _ in await self.xpc.stopListener() }
       )
 
     case .loadedPersistentState(.some(let persisted)):
@@ -96,19 +99,22 @@ public struct Filter: Reducer, Sendable {
           state.blockListeners[userId] = nil
           return .none
         }
-        return .run { [send = xpc.sendBlockedRequest, uuid, now] _ in
-          try await send(userId, flow.blockedRequest(id: uuid(), time: now, app: app))
+        return .run { _ in
+          let blockedReq = flow.blockedRequest(id: self.uuid(), time: self.now, app: app)
+          try await self.xpc.sendBlockedRequest(userId, blockedReq)
         }
       }
       return .none
 
     case .heartbeat:
-      var expiredSuspensionUserIds: [uid_t] = []
+      var effect: Effect<Action> = .none
       for (userId, suspension) in state.suspensions {
         // 5 second cushion prevents race between heartbeat and expiration timer
         // we want the expiration timer to do the work, this is only a failsafe
         if suspension.expiresAt < self.now.advanced(by: .seconds(-5)) {
-          expiredSuspensionUserIds.append(userId)
+          effect = effect.merge(with: .run { send in
+            await send(.staleSuspensionFound(userId))
+          })
         }
       }
 
@@ -125,23 +131,25 @@ public struct Filter: Reducer, Sendable {
         os_log("[D•] FILTER state in heartbeat: %{public}@", "\(state.debug)")
       }
 
-      return expiredSuspensionUserIds.isEmpty
-        ? .none
-        : .run { [expiredSuspensionUserIds] send in
-          for userId in expiredSuspensionUserIds {
-            await send(.staleSuspensionFound(userId))
-          }
-        }
+      if state.logs.count() >= 500 {
+        let logs = state.logs
+        state.logs = .init(bundleIds: [:], events: [:])
+        effect = effect.merge(with: .run { _ in
+          try? await self.xpc.sendLogs(logs)
+        })
+      }
+
+      return effect
 
     case .suspensionTimerEnded(let userId):
       state.suspensions[userId] = nil
-      return .run { _ in try await xpc.notifyFilterSuspensionEnded(userId) }
+      return .run { _ in try await self.xpc.notifyFilterSuspensionEnded(userId) }
 
     case .staleSuspensionFound(let userId):
       state.suspensions[userId] = nil
       return .merge(
         .cancel(id: CancelId.suspensionTimer(for: userId)),
-        .run { _ in try await xpc.notifyFilterSuspensionEnded(userId) }
+        .run { _ in try await self.xpc.notifyFilterSuspensionEnded(userId) }
       )
 
     case .cacheAppDescriptor("", _):
@@ -151,8 +159,16 @@ public struct Filter: Reducer, Sendable {
       state.appCache[bundleId] = descriptor
       return .none
 
+    case .logAppRequest(let bundleId):
+      state.logs.bundleIds[bundleId, default: 0] += 1
+      return .none
+
+    case .logEvent(let event):
+      state.logs.log(event: event)
+      return .none
+
     case .xpc(.receivedAppMessage(.setBlockStreaming(true, let userId))):
-      state.blockListeners[userId] = self.now.advanced(by: FIVE_MINUTES_IN_SECONDS)
+      state.blockListeners[userId] = self.now + .minutes(5)
       os_log("[D•] FILTER state start streaming: %{public}@", "\(state.debug)")
       return .none
 
@@ -205,7 +221,7 @@ public struct Filter: Reducer, Sendable {
     case .xpc(.receivedAppMessage(.deleteAllStoredState)):
       state = .init()
       return .run { _ in
-        await storage.deleteAll()
+        await self.storage.deleteAll()
       }
 
     case .xpc(.receivedAppMessage(.pauseDowntime(let userId, let expiration))):
@@ -251,8 +267,6 @@ public extension Filter.State {
     )
   }
 }
-
-let FIVE_MINUTES_IN_SECONDS = 60.0 * 5.0
 
 #if DEBUG
   import Darwin

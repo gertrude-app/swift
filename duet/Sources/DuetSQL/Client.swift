@@ -217,8 +217,8 @@ public extension Client {
     _ Custom: T.Type,
     withBindings bindings: [Postgres.Data]? = nil
   ) async throws -> [T] {
-    let query = Custom.query(bindings: bindings ?? [])
-    let rows = try await self.execute(raw: query)
+    let statement = Custom.query(bindings: bindings ?? [])
+    let rows = try await self.execute(statement: statement)
     return try Custom.decode(from: rows)
   }
 }

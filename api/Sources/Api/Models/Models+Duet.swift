@@ -431,6 +431,19 @@ extension Browser {
   }
 }
 
+extension UnidentifiedApp: Duet.Identifiable {
+  typealias Id = Tagged<UnidentifiedApp, UUID>
+}
+
+extension UnidentifiedApp {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case bundleId
+    case count
+    case createdAt
+  }
+}
+
 extension SecurityEvent: Duet.Identifiable {
   typealias Id = Tagged<SecurityEvent, UUID>
 }
