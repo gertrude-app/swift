@@ -15,10 +15,11 @@ final class FilterTests: XCTestCase {
       (host: "media0.giphy.com", url: nil, src: "com.widget", allow: false),
       (host: "media.fosu2-1.fna.whatsapp.net", url: nil, src: "", allow: false),
       // block these only from Messages app, they allow searching/viewing app store content
-      (host: "amp-api-edge.apps.apple.com", url: nil, src: ".com.apple.MobileSMS", allow: false),
-      (host: "amp-api-edge.apps.apple.com", url: nil, src: "com.widget", allow: true),
       (host: "is1-ssl.mzstatic.com", url: nil, src: ".com.apple.MobileSMS", allow: false),
       (host: "is1-ssl.mzstatic.com", url: nil, src: "com.widget", allow: true),
+      // these totally kill iMessage App store app, which is not preferred for some parents
+      // (host: "amp-api-edge.apps.apple.com", url: nil, src: ".com.apple.MobileSMS", allow: false),
+      // (host: "amp-api-edge.apps.apple.com", url: nil, src: "com.widget", allow: true),
     ]
 
     for (host, url, src, expected) in cases {

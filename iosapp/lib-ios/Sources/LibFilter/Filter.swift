@@ -20,12 +20,9 @@ public func decideFlow(hostname: String?, url: String?, sourceId: String?) -> Bo
       return false
     } else if target.contains("media.fosu2-1.fna.whatsapp.net") {
       return false
-    } else if sourceId?.contains(".com.apple.MobileSMS") == true {
-      if target.contains("amp-api-edge.apps.apple.com") {
-        return false
-      } else if target.contains("is1-ssl.mzstatic.com") {
-        return false
-      }
+    } else if sourceId?.contains(".com.apple.MobileSMS") == true,
+              target.contains("is1-ssl.mzstatic.com") {
+      return false
     }
   }
   return true

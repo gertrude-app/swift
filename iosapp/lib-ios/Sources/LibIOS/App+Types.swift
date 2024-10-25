@@ -41,14 +41,15 @@ public enum AuthFailureReason: Error, Equatable {
   case passcodeRequired
   /// The parent or guardian cancelled a request for authorization
   case authorizationCanceled
+  /// A restriction prevents your app from using Family Controls on this device
+  /// likely an MDM supervised device, see https://developer.apple.com/forums/thread/746716
+  case restricted
 
   public enum Unexpected: Equatable {
     /// The method's arguments are invalid
     case invalidArgument
     /// The system failed to set up the Family Control famework
     case unavailable
-    /// A restriction prevents your app from using Family Controls on this device
-    case restricted
   }
 }
 

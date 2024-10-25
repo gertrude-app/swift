@@ -21,6 +21,8 @@ public struct AppReducer {
   @Dependency(\.storage) var storage
   @ObservationIgnored
   @Dependency(\.date.now) var now
+  @ObservationIgnored
+  @Dependency(\.locale) var locale
 
   // TODO: figure out why i can't use a root store enum
   public enum AppState: Equatable {
@@ -42,6 +44,7 @@ public struct AppReducer {
     case authorizationFailed(AuthFailureReason)
     case authorizationSucceeded
     case authorizationFailedTryAgainTapped
+    case authorizationFailedReviewRequirementsTapped
     case installFailed(FilterInstallError)
     case installFailedTryAgainTapped
     case installSucceeded
@@ -64,7 +67,10 @@ public struct AppReducer {
             let now = self.now
             self.storage.set(now, forKey: .launchDateStorageKey)
             await send(.setFirstLaunch(now))
-            await self.api.logEvent("dcd721aa", "first launch")
+            await self.api.logEvent(
+              "dcd721aa",
+              "first launch, region: `\(self.locale.region?.identifier ?? "(nil)")`"
+            )
           }
         }
 
@@ -104,6 +110,10 @@ public struct AppReducer {
 
       case .authorizationFailed(let reason):
         state.appState = .authorizationFailed(reason)
+        return .none
+
+      case .authorizationFailedReviewRequirementsTapped:
+        state.appState = .prereqs
         return .none
 
       case .authorizationFailedTryAgainTapped:
