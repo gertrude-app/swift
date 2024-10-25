@@ -368,6 +368,7 @@ extension UserKeychain {
     case id
     case userId
     case keychainId
+    case schedule
     case createdAt
   }
 }

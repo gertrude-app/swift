@@ -537,6 +537,7 @@ extension UserKeychain: Model {
     case .id: .id(self)
     case .userId: .uuid(self.userId)
     case .keychainId: .uuid(self.keychainId)
+    case .schedule: .json(self.schedule?.toPostgresJson)
     case .createdAt: .date(self.createdAt)
     }
   }
@@ -546,10 +547,13 @@ extension UserKeychain: Model {
       .id: .id(self),
       .userId: .uuid(self.userId),
       .keychainId: .uuid(self.keychainId),
+      .schedule: .json(self.schedule?.toPostgresJson),
       .createdAt: .currentTimestamp,
     ]
   }
 }
+
+extension KeychainSchedule: PostgresJsonable {}
 
 extension UserToken: Model {
   public static let tableName = M3.tableName
