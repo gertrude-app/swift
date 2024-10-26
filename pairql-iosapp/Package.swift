@@ -11,6 +11,7 @@ let package = Package(
     // fork avoids swift-syntax transitive dep via case-paths
     .package(url: "https://github.com/gertrude-app/swift-url-routing", revision: "1cf1ca6"),
     .package(path: "../pairql"),
+    .package(path: "../gertie"),
   ],
   targets: [
     .target(
@@ -18,6 +19,7 @@ let package = Package(
       dependencies: [
         .product(name: "URLRouting", package: "swift-url-routing"),
         .product(name: "PairQL", package: "pairql"),
+        .product(name: "GertieIOS", package: "gertie"),
       ],
       swiftSettings: [.unsafeFlags([
         "-Xfrontend", "-warn-concurrency",

@@ -1,29 +1,26 @@
-public func decideFlow(hostname: String?, url: String?, sourceId: String?) -> Bool {
-  if sourceId?.contains("HashtagImagesExtension") == true {
-    return false
-  } else if sourceId?.contains("com.apple.Spotlight") == true {
-    return false
-  } else if sourceId?.contains(".com.apple.photoanalysisd") == true {
-    return false
-  }
+import GertieIOS
 
-  if url?.contains("tenor.co") == true {
-    return false
-  }
-
-  if let target = url ?? hostname {
-    if target.contains("cdn2.smoot.apple.com") {
-      return false
-    } else if target.contains("tenor.co") {
-      return false
-    } else if target.contains("giphy.com") {
-      return false
-    } else if target.contains("media.fosu2-1.fna.whatsapp.net") {
-      return false
-    } else if sourceId?.contains(".com.apple.MobileSMS") == true,
-              target.contains("is1-ssl.mzstatic.com") {
-      return false
+extension BlockRule {
+  func blocksFlow(target: String?, url: String?, bundleId: String?) -> Bool {
+    switch self {
+    case .bundleIdContains(let fragment):
+      return bundleId?.contains(fragment) == true
+    case .targetContains(let fragment):
+      return target?.contains(fragment) == true
+    case .urlContains(let fragment):
+      return url?.contains(fragment) == true
+    case .both(let a, let b):
+      return a.blocksFlow(target: target, url: url, bundleId: bundleId)
+        && b.blocksFlow(target: target, url: url, bundleId: bundleId)
     }
   }
-  return true
+}
+
+public extension Array where Element == BlockRule {
+  func blocksFlow(hostname: String?, url: String?, bundleId: String?) -> Bool {
+    let target = url ?? hostname
+    return self.contains { rule in
+      rule.blocksFlow(target: target, url: url, bundleId: bundleId)
+    }
+  }
 }

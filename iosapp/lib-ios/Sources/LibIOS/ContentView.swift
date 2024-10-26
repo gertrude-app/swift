@@ -64,7 +64,8 @@ public struct ContentView: View {
 
 public extension View {
   var deviceType: String {
-    Device.current.type
+    @Dependency(\.device) var device
+    return device.type.rawValue
   }
 }
 

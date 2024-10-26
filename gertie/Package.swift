@@ -1,10 +1,13 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.10
 import PackageDescription
 
 let package = Package(
   name: "Gertie",
-  platforms: [.macOS(.v10_15)],
-  products: [.library(name: "Gertie", targets: ["Gertie"])],
+  platforms: [.macOS(.v10_15), .iOS(.v17)],
+  products: [
+    .library(name: "Gertie", targets: ["Gertie"]),
+    .library(name: "GertieIOS", targets: ["GertieIOS"]),
+  ],
   dependencies: [
     .package("jaredh159/swift-tagged@0.8.2"),
     .package(path: "../x-kit"),
@@ -29,6 +32,15 @@ let package = Package(
         "Gertie",
         .product(name: "XExpect", package: "x-expect"),
       ]
+    ),
+    .target(
+      name: "GertieIOS",
+      dependencies: [],
+      swiftSettings: [.unsafeFlags([
+        "-Xfrontend", "-warn-concurrency",
+        "-Xfrontend", "-enable-actor-data-race-checks",
+        "-Xfrontend", "-warnings-as-errors",
+      ])]
     ),
   ]
 )

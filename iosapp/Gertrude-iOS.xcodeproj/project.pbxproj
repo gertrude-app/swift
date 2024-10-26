@@ -16,6 +16,7 @@
 		7FA7B85B2AEB243400363B53 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
 		7FA7B85E2AEB243400363B53 /* FilterDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B85D2AEB243400363B53 /* FilterDataProvider.swift */; };
 		7FA7B8632AEB243400363B53 /* filter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FA7B8582AEB243400363B53 /* filter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7FA8FE602CCD75C600B97EFE /* LibCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7FA8FE5F2CCD75C600B97EFE /* LibCore */; };
 		7FE743D32C8F431500607876 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
 		7FE743D62C8F431500607876 /* FilterControlProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FE743D52C8F431500607876 /* FilterControlProvider.swift */; };
 		7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FE743D22C8F431500607876 /* controller.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -96,6 +97,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7FA8FE602CCD75C600B97EFE /* LibCore in Frameworks */,
 				7FEB782C2CC0058500A76A98 /* LibFilter in Frameworks */,
 				7FA7B85B2AEB243400363B53 /* NetworkExtension.framework in Frameworks */,
 			);
@@ -268,6 +270,7 @@
 			name = filter;
 			packageProductDependencies = (
 				7FEB782B2CC0058500A76A98 /* LibFilter */,
+				7FA8FE5F2CCD75C600B97EFE /* LibCore */,
 			);
 			productName = filter;
 			productReference = 7FA7B8582AEB243400363B53 /* filter.appex */;
@@ -539,8 +542,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchImage;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -578,8 +581,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchImage;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -778,6 +781,11 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7FA8FE5F2CCD75C600B97EFE /* LibCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7FFB548F2CB477C200EBFA3B /* XCLocalSwiftPackageReference "lib-ios" */;
+			productName = LibCore;
+		};
 		7FEB782B2CC0058500A76A98 /* LibFilter */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 7FFB548F2CB477C200EBFA3B /* XCLocalSwiftPackageReference "lib-ios" */;

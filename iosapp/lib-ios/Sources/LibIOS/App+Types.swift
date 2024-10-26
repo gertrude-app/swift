@@ -1,32 +1,3 @@
-import FamilyControls
-import IOSRoute
-import NetworkExtension
-import os.log
-
-#if os(iOS)
-  import UIKit
-#endif
-
-struct Device {
-  var type: String
-  var iOSVersion: String
-  var vendorId: UUID?
-}
-
-extension Device {
-  static var current: Device {
-    #if os(iOS)
-      Device(
-        type: UIDevice.current.userInterfaceIdiom == .pad ? "iPad" : "iPhone",
-        iOSVersion: UIDevice.current.systemVersion,
-        vendorId: UIDevice.current.identifierForVendor
-      )
-    #else
-      Device(type: "iPhone", iOSVersion: "18.0.1", vendorId: nil)
-    #endif
-  }
-}
-
 // @see https://developer.apple.com/documentation/familycontrols/familycontrolserror
 public enum AuthFailureReason: Error, Equatable {
   // The device isn't signed into a valid iCloud account (also? .individual?)
@@ -64,19 +35,4 @@ public enum FilterInstallError: Error, Equatable {
   case configurationPermissionDenied
   case configurationInternalError
   case unexpected(String)
-}
-
-extension String {
-  static var gertrudeApi: String {
-    #if DEBUG
-      // just run-api-ip
-      return "http://192.168.10.227:8080/pairql/ios-app"
-    #else
-      return "https://api.gertrude.app/pairql/ios-app"
-    #endif
-  }
-
-  static var launchDateStorageKey: String {
-    "firstLaunchDate"
-  }
 }

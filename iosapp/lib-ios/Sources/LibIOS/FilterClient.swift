@@ -3,15 +3,15 @@ import FamilyControls
 import NetworkExtension
 import os.log
 
-struct SystemClient: Sendable {
+struct FilterClient: Sendable {
   var requestAuthorization: @Sendable () async -> Result<Void, AuthFailureReason>
   var installFilter: @Sendable () async -> Result<Void, FilterInstallError>
   var filterRunning: @Sendable () async -> Bool
   var cleanupForRetry: @Sendable () async -> Void
 }
 
-extension SystemClient: DependencyKey {
-  public static let liveValue = SystemClient(
+extension FilterClient: DependencyKey {
+  public static let liveValue = FilterClient(
     requestAuthorization: {
       #if os(iOS)
         do {
@@ -108,8 +108,8 @@ extension SystemClient: DependencyKey {
   )
 }
 
-extension SystemClient: TestDependencyKey {
-  public static let testValue = SystemClient(
+extension FilterClient: TestDependencyKey {
+  public static let testValue = FilterClient(
     requestAuthorization: { .success(()) },
     installFilter: { .success(()) },
     filterRunning: { false },
@@ -118,8 +118,8 @@ extension SystemClient: TestDependencyKey {
 }
 
 extension DependencyValues {
-  var system: SystemClient {
-    get { self[SystemClient.self] }
-    set { self[SystemClient.self] = newValue }
+  var filter: FilterClient {
+    get { self[FilterClient.self] }
+    set { self[FilterClient.self] = newValue }
   }
 }
