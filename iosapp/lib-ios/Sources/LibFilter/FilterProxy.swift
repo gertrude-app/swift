@@ -1,14 +1,14 @@
 import GertieIOS
 import NetworkExtension
 
-public class FilterManager {
-  var loadRules: () -> Result<[BlockRule], FilterManagerError>
+public class FilterProxy {
+  var loadRules: () -> Result<[BlockRule], FilterError>
   var rules: [BlockRule] = BlockRule.defaults
-  var errors: Set<FilterManagerError> = []
+  var errors: Set<FilterError> = []
 
   public init(
     rules: [BlockRule] = BlockRule.defaults,
-    loadRules: @escaping () -> Result<[BlockRule], FilterManagerError>
+    loadRules: @escaping () -> Result<[BlockRule], FilterError>
   ) {
     self.rules = rules
     self.loadRules = loadRules
@@ -24,10 +24,10 @@ public class FilterManager {
       if hostname == "read-rules.gertrude.app" {
         self.readRules()
         return .drop
-      } else if url?.contains("/ios-filter-errors-v1/") == true {
-        if url?.contains("/no-rules-found/") == true {
+      } else if url?.contains("/\(FilterError.urlSlug)/") == true {
+        if url?.contains("/\(filterErr: .noRulesFound)/") == true {
           return self.errors.remove(.noRulesFound) != nil ? .allow : .drop
-        } else if url?.contains("/rules-decode-failed/") == true {
+        } else if url?.contains("/\(filterErr: .rulesDecodeFailed)/") == true {
           return self.errors.remove(.rulesDecodeFailed) != nil ? .allow : .drop
         } else {
           return .allow
@@ -62,12 +62,7 @@ public class FilterManager {
   public func stopFilter(reason: NEProviderStopReason) {}
 }
 
-public enum FilterManagerError: Error, Equatable, Hashable {
-  case noRulesFound
-  case rulesDecodeFailed
-}
-
-public extension FilterManager {
+public extension FilterProxy {
   enum FlowVerdict {
     case allow
     case drop
@@ -95,9 +90,10 @@ public extension String {
 
 // conformances
 
-extension FilterManager.FlowVerdict: Equatable, Sendable {}
-extension FilterManager.FlowType: Equatable, Sendable {}
+extension FilterProxy.FlowVerdict: Equatable, Sendable {}
+extension FilterProxy.FlowType: Equatable, Sendable {}
 
-// export for filter
+// "exports" for filter
 
 public typealias BlockRule = GertieIOS.BlockRule
+public typealias FilterError = GertieIOS.FilterError

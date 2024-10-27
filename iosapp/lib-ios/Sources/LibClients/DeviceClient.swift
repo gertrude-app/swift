@@ -7,10 +7,16 @@ import Foundation
 #endif
 
 @DependencyClient
-struct DeviceClient: Sendable {
-  var type: DeviceType
-  var iOSVersion: String
-  var vendorId: UUID?
+public struct DeviceClient: Sendable {
+  public var type: DeviceType
+  public var iOSVersion: String
+  public var vendorId: UUID?
+
+  public init(type: DeviceType, iOSVersion: String, vendorId: UUID?) {
+    self.type = type
+    self.iOSVersion = iOSVersion
+    self.vendorId = vendorId
+  }
 }
 
 extension DeviceClient: DependencyKey {
@@ -29,14 +35,20 @@ extension DeviceClient: DependencyKey {
   #endif
 }
 
-enum DeviceType: String {
+public enum DeviceType: String, Sendable {
   case iPhone
   case iPad
 }
 
-extension DependencyValues {
+public extension DependencyValues {
   var device: DeviceClient {
     get { self[DeviceClient.self] }
     set { self[DeviceClient.self] = newValue }
+  }
+}
+
+public extension Duration {
+  static func minutes(_ value: Int) -> Duration {
+    .seconds(Double(value) * 60.0)
   }
 }

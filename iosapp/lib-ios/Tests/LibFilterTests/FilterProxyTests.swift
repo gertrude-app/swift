@@ -4,10 +4,10 @@ import XExpect
 
 @testable import LibFilter
 
-final class FilterManagerTests: XCTestCase {
+final class FilterProxyTests: XCTestCase {
   func testReadsRulesInHeartbeat() {
     let invocations = LockIsolated(0)
-    let manager = FilterManager(rules: []) {
+    let manager = FilterProxy(rules: []) {
       invocations.withValue { $0 += 1 }
       return .success([.urlContains("lol")])
     }
@@ -25,7 +25,7 @@ final class FilterManagerTests: XCTestCase {
 
   func testReadsRulesOnStart() {
     let invocations = LockIsolated(0)
-    let manager = FilterManager(rules: []) {
+    let manager = FilterProxy(rules: []) {
       invocations.withValue { $0 += 1 }
       return .success([.urlContains("lol")])
     }
@@ -39,9 +39,9 @@ final class FilterManagerTests: XCTestCase {
     expect(manager.rules).toEqual([.urlContains("lol")])
   }
 
-  func testSpecialUrlTriggersReadRules() {
+  func testSentinalUrlTriggersReadRules() {
     let invocations = LockIsolated(0)
-    let manager = FilterManager(rules: []) {
+    let manager = FilterProxy(rules: []) {
       invocations.withValue { $0 += 1 }
       return .success([.urlContains("lol")])
     }
@@ -76,7 +76,7 @@ final class FilterManagerTests: XCTestCase {
   }
 
   func testReadRulesErrorRecordsErrAndKeepsOldRules() {
-    let manager = FilterManager(rules: [.urlContains("old")]) {
+    let manager = FilterProxy(rules: [.urlContains("old")]) {
       .failure(.rulesDecodeFailed)
     }
 
@@ -89,10 +89,10 @@ final class FilterManagerTests: XCTestCase {
   }
 
   func testAllowErrorFlows() {
-    let manager = FilterManager { .success([]) }
+    let manager = FilterProxy { .success([]) }
 
     var verdict = manager.decideFlow(
-      url: "https://api.gertrude.com/ios-filter-errors-v1/no-rules-found/vendor-id",
+      url: "https://api.gertrude.com/ios-filter-errors/no-rules-found/vendor-id",
       bundleId: .gertrudeBundleIdShort
     )
     expect(verdict).toEqual(.drop) // <-- filter had no such error
@@ -100,14 +100,14 @@ final class FilterManagerTests: XCTestCase {
     manager.errors.insert(.noRulesFound)
 
     verdict = manager.decideFlow(
-      url: "https://api.gertrude.com/ios-filter-errors-v1/no-rules-found/vendor-id",
+      url: "https://api.gertrude.com/ios-filter-errors/no-rules-found/vendor-id",
       bundleId: .gertrudeBundleIdShort
     )
     expect(verdict).toEqual(.allow) // <-- filter had error, so request allowed
     expect(manager.errors).toEqual([]) // <-- error should be cleared
 
     verdict = manager.decideFlow(
-      url: "https://api.gertrude.com/ios-filter-errors-v1/rules-decode-failed/vendor-id",
+      url: "https://api.gertrude.com/ios-filter-errors/rules-decode-failed/vendor-id",
       bundleId: .gertrudeBundleIdLong
     )
 
@@ -117,14 +117,14 @@ final class FilterManagerTests: XCTestCase {
 
     // assert that somebody can't manipulate our errors with a specially crafted url
     verdict = manager.decideFlow(
-      url: "https://badguy.com/ios-filter-errors-v1/rules-decode-failed/exploit",
+      url: "https://badguy.com/ios-filter-errors/rules-decode-failed/exploit",
       bundleId: "com.not-matching.bundle.id"
     )
     expect(verdict).toEqual(.allow)
     expect(manager.errors).toEqual([.rulesDecodeFailed]) // <-- error should still be there
 
     verdict = manager.decideFlow(
-      url: "https://api.gertrude.com/ios-filter-errors-v1/rules-decode-failed/vendor-id",
+      url: "https://api.gertrude.com/ios-filter-errors/rules-decode-failed/vendor-id",
       bundleId: .gertrudeBundleIdLong
     )
     expect(verdict).toEqual(.allow)

@@ -7,9 +7,9 @@ import LibCore
 import os.log
 
 @DependencyClient
-struct ApiClient: Sendable {
-  var fetchBlockRules: @Sendable () async throws -> [BlockRule]
-  var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
+public struct ApiClient: Sendable {
+  public var fetchBlockRules: @Sendable () async throws -> [BlockRule]
+  public var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
 }
 
 extension ApiClient: TestDependencyKey {
@@ -54,7 +54,7 @@ private func request(route: IOSRoute) async throws -> (Data, URLResponse) {
   return try await URLSession.shared.data(for: request)
 }
 
-extension DependencyValues {
+public extension DependencyValues {
   var api: ApiClient {
     get { self[ApiClient.self] }
     set { self[ApiClient.self] = newValue }

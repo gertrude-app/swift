@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Foundation
+import LibClients
 import LibCore
 
 @Reducer
@@ -17,7 +18,7 @@ public struct AppReducer {
   @ObservationIgnored
   @Dependency(\.api) var api
   @ObservationIgnored
-  @Dependency(\.filter) var filter
+  @Dependency(\.systemExtension) var systemExtension
   @ObservationIgnored
   @Dependency(\.storage) var storage
   @ObservationIgnored
@@ -26,6 +27,8 @@ public struct AppReducer {
   @Dependency(\.date.now) var now
   @ObservationIgnored
   @Dependency(\.locale) var locale
+  @ObservationIgnored
+  @Dependency(\.suspendingClock) var clock
 
   // TODO: figure out why i can't use a root store enum
   public enum AppState: Equatable {
@@ -64,7 +67,7 @@ public struct AppReducer {
       case .appLaunched:
         return .merge(
           .run { send in
-            await send(.setRunning(await self.filter.filterRunning()))
+            await send(.setRunning(await self.systemExtension.filterRunning()))
           },
           .run { _ in
             let blockRules = try await self.api.fetchBlockRules()
@@ -104,13 +107,13 @@ public struct AppReducer {
       case .startAuthorizationTapped:
         state.appState = .authorizing
         return .run { send in
-          switch await self.filter.requestAuthorization() {
+          switch await self.systemExtension.requestAuthorization() {
           case .success:
             await send(.authorizationSucceeded)
             await self.api.logEvent("d317c73c", "authorization succeeded")
           case .failure(let reason):
             await send(.authorizationFailed(reason))
-            await self.filter.cleanupForRetry()
+            await self.systemExtension.cleanupForRetry()
             await self.api.logEvent("d9dfd021", "authorization failed: \(reason)")
           }
         }
@@ -133,13 +136,13 @@ public struct AppReducer {
 
       case .installFilterTapped:
         return .run { send in
-          switch await self.filter.installFilter() {
+          switch await self.systemExtension.installFilter() {
           case .success:
             await send(.installSucceeded)
             await self.api.logEvent("101c91ea", "filter install success")
           case .failure(let error):
             await send(.installFailed(error))
-            await self.filter.cleanupForRetry()
+            await self.systemExtension.cleanupForRetry()
             await self.api.logEvent("739c08c6", "filter install failed: \(error)")
           }
         }
