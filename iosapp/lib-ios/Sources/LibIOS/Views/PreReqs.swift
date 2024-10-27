@@ -9,16 +9,16 @@ struct PreReqs: View {
       "The \(self.deviceType) user must be **signed in to iCloud.**",
       "The \(self.deviceType) user must be **under 18.**",
       "The \(self.deviceType) user must be **part of an Apple Family.**",
-      "The \(self.deviceType) user must be **restricted from deleting apps.**",
       "The \(self.deviceType) must **not be controlled** by a school or organization with **MDM.**",
     ]
   }
 
   var body: some View {
     VStack(spacing: 32) {
-      Text("In order to safely use Gertrude:")
+      Text("In order to use Gertrude:")
         .font(.system(size: 26, weight: .semibold))
         .multilineTextAlignment(.center)
+        .foregroundStyle(.black)
 
       VStack(alignment: .leading, spacing: 12) {
         ForEach(self.requirements, id: \.self) { requirement in
@@ -29,6 +29,7 @@ struct PreReqs: View {
               .padding(.top, 1)
             Text(LocalizedStringKey(requirement))
               .font(.system(size: 16))
+              .foregroundStyle(.black)
           }
         }
       }

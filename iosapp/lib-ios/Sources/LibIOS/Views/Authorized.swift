@@ -8,6 +8,7 @@ struct Authorized: View {
       Text("Authorization granted! One more step: install the content filter.")
         .multilineTextAlignment(.center)
         .font(.system(size: 16, weight: .medium))
+        .foregroundStyle(.black)
 
       Button {
         self.onInstallFilterTapped()

@@ -6,7 +6,9 @@ struct InstallFail: View {
 
   var body: some View {
     VStack(spacing: 20) {
-      Text("Filter setup failed with an error:").font(.system(size: 16, weight: .medium))
+      Text("Filter setup failed with an error:")
+        .font(.system(size: 16, weight: .medium))
+        .foregroundStyle(.black)
 
       Group {
         switch self.error {

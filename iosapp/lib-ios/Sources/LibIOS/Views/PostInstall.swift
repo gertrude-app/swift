@@ -8,10 +8,12 @@ struct PostInstall: View {
       Text("Filter installed successfully!")
         .font(.system(size: 40, weight: .bold))
         .multilineTextAlignment(.center)
+        .foregroundStyle(.black)
 
       Text("Good to know:")
         .multilineTextAlignment(.center)
         .opacity(0.7)
+        .foregroundStyle(.black)
 
       VStack(alignment: .leading) {
         FeatureLI(
@@ -25,6 +27,7 @@ struct PostInstall: View {
 
       Text("Questions? Drop us a line at\nhttps://gertrude.app/contact")
         .multilineTextAlignment(.center)
+        .foregroundStyle(.black)
         .opacity(0.7)
 
       Spacer()
