@@ -4,32 +4,29 @@ struct Authorized: View {
   var onInstallFilterTapped: () -> Void
 
   var body: some View {
-    VStack(spacing: 20) {
-      Text("Authorization granted! One more step: install the content filter.")
+    VStack(spacing: 32) {
+      Text("Half way there...")
+        .font(.system(size: 30, weight: .semibold))
         .multilineTextAlignment(.center)
-        .font(.system(size: 16, weight: .medium))
         .foregroundStyle(.black)
 
-      Button {
+      Text("We’ve got authorization from Screen Time. Next we need to install the filter.")
+        .font(.system(size: 18, weight: .regular))
+        .padding(.top, 8)
+        .padding(.horizontal, 16)
+        .lineSpacing(5)
+        .multilineTextAlignment(.center)
+        .foregroundStyle(.black)
+
+      Spacer()
+
+      PrimaryButton("Install filter") {
         self.onInstallFilterTapped()
-      } label: {
-        Spacer()
-        Text("Install filter")
-        Spacer()
       }
-      .padding(.vertical, 12)
-      .background(Color.violet100)
-      .cornerRadius(8)
-      .foregroundColor(.violet700)
-      .font(.system(size: 16, weight: .semibold))
     }
-    .padding(20)
-    .padding(.top, 8)
-    .background(.white)
-    .cornerRadius(12)
-    .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
-    .padding(.horizontal, 32)
-    .frame(maxWidth: 600)
+    .padding(.top, 60)
+    .padding(.bottom, 36)
+    .padding(.horizontal, 24)
   }
 }
 
