@@ -62,6 +62,30 @@ final class AppTests: XCTestCase {
       $0.appState = .welcome
     }
   }
+
+  @MainActor
+  func testRunningShake() async throws {
+    let storedRules = LockIsolated<[[BlockRule]]>([])
+    let fetchCalled = LockIsolated(0)
+    let store = TestStore(initialState: AppReducer.State(appState: .running(showVendorId: false))) {
+      AppReducer()
+    } withDependencies: {
+      $0.api.fetchBlockRules = {
+        fetchCalled.withValue { $0 += 1 }
+        return [.bundleIdContains("bad")]
+      }
+      $0.storage.saveCodable = { @Sendable value, key in
+        storedRules.withValue { $0.append(value as! [BlockRule]) }
+      }
+    }
+
+    await store.send(.runningShaked) {
+      $0.appState = .running(showVendorId: true)
+    }
+
+    expect(fetchCalled.value).toEqual(1)
+    expect(storedRules.value).toEqual([[.bundleIdContains("bad")]])
+  }
 }
 
 public extension Date {

@@ -1,6 +1,13 @@
+import Dependencies
+import LibClients
 import SwiftUI
 
 struct Running: View {
+  @Dependency(\.device) var device
+
+  var showVendorId: Bool
+  var onShake: () -> Void
+
   var body: some View {
     VStack(spacing: 24) {
       Image("GertrudeIcon")
@@ -20,6 +27,13 @@ struct Running: View {
 
       Spacer()
 
+      Text("ID: \(device.vendorId?.uuidString.lowercased() ?? "unknown")")
+        .font(.system(size: 11, design: .monospaced))
+        .foregroundStyle(.black)
+        .opacity(self.showVendorId ? 1 : 0)
+
+      Spacer()
+
       Text("Questions? Drop us a line at\nhttps://gertrude.app/contact")
         .font(.footnote)
         .foregroundStyle(.black)
@@ -27,12 +41,15 @@ struct Running: View {
     .padding(.top, 60)
     .padding(.bottom, 36)
     .padding(.horizontal, 32)
+    .onShake {
+      self.onShake()
+    }
   }
 }
 
 #Preview {
   ZStack {
     BgGradient().ignoresSafeArea()
-    Running()
+    Running(showVendorId: false, onShake: {})
   }
 }

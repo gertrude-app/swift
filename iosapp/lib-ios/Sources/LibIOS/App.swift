@@ -40,7 +40,7 @@ public struct AppReducer {
     case authorized
     case installFailed(FilterInstallError)
     case postInstall
-    case running
+    case running(showVendorId: Bool)
   }
 
   public enum Action: Equatable {
@@ -58,6 +58,7 @@ public struct AppReducer {
     case postInstallOkTapped
     case setRunning(Bool)
     case setFirstLaunch(Date)
+    case runningShaked
   }
 
   public var body: some Reducer<State, Action> {
@@ -89,7 +90,7 @@ public struct AppReducer {
         )
 
       case .setRunning(true):
-        state.appState = .running
+        state.appState = .running(showVendorId: false)
         return .none
 
       case .setFirstLaunch(let date):
@@ -160,8 +161,16 @@ public struct AppReducer {
         return .none
 
       case .postInstallOkTapped:
-        state.appState = .running
+        state.appState = .running(showVendorId: false)
         return .none
+
+      case .runningShaked:
+        guard case .running = state.appState else { return .none }
+        state.appState = .running(showVendorId: true)
+        return .run { _ in
+          let blockRules = try await self.api.fetchBlockRules()
+          self.storage.saveBlockRules(blockRules)
+        }
       }
     }
   }
