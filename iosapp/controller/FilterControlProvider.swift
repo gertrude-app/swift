@@ -1,10 +1,21 @@
+import LibController
 import NetworkExtension
 import os.log
 
 class FilterControlProvider: NEFilterControlProvider {
+  let proxy = ControllerProxy()
+
+  override init() {
+    super.init()
+    self.proxy.notifyRulesChanged = { [weak self] in
+      self?.notifyRulesChanged()
+    }
+    os_log("[G•] CONTROLLER init")
+  }
 
   override func startFilter(completionHandler: @escaping (Error?) -> Void) {
-    os_log("[G•] start filter (control)")
+    os_log("[G•] CONTROLLER start")
+    self.proxy.startFilter()
     completionHandler(nil)
   }
 
@@ -12,7 +23,8 @@ class FilterControlProvider: NEFilterControlProvider {
     with reason: NEProviderStopReason,
     completionHandler: @escaping () -> Void
   ) {
-    os_log("[G•] stop filter (control) reason: %{public}s", String(describing: reason))
+    self.proxy.stopFilter(reason: reason)
+    os_log("[G•] CONTROLLER stop reason: %{public}s", String(describing: reason))
     completionHandler()
   }
 
@@ -20,6 +32,7 @@ class FilterControlProvider: NEFilterControlProvider {
     _ flow: NEFilterFlow,
     completionHandler: @escaping (NEFilterControlVerdict) -> Void
   ) {
+    self.proxy.handleNewFlow(flow)
     completionHandler(.allow(withUpdateRules: false))
   }
 }

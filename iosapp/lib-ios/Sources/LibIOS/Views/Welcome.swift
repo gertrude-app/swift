@@ -8,9 +8,11 @@ struct Welcome: View {
     VStack(spacing: 15) {
       Text("Welcome!")
         .font(.system(size: 50, weight: .bold))
+        .foregroundStyle(.black)
 
       Text("Gertrude fills in the gaps in Apple’s parental controls, including:")
         .multilineTextAlignment(.center)
+        .foregroundStyle(.black)
         .opacity(0.7)
 
       VStack(alignment: .leading) {

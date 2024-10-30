@@ -10,12 +10,15 @@
 		03E917BFA4D8CBC845611955 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3943E5533FFA53791343F445 /* Colors.swift */; };
 		1FE271D2FDBE4C6122B68A8A /* BgGradient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7A47408B05AA4E9E2C4042A /* BgGradient.swift */; };
 		580A5B546430D0B85CDE67A4 /* FeatureLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFBB6E5EDFE1B2D7B40D17A6 /* FeatureLI.swift */; };
+		7F7C63362CCECED900EB3CD0 /* LibController in Frameworks */ = {isa = PBXBuildFile; productRef = 7F7C63352CCECED900EB3CD0 /* LibController */; };
+		7F8B15022CCED8D6002E3C14 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F8B15012CCED8D6002E3C14 /* Launch Screen.storyboard */; };
 		7FA7B8472AEB238700363B53 /* IOSAppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */; };
 		7FA7B84B2AEB238800363B53 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84A2AEB238800363B53 /* Assets.xcassets */; };
 		7FA7B84E2AEB238800363B53 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84D2AEB238800363B53 /* Preview Assets.xcassets */; };
 		7FA7B85B2AEB243400363B53 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
 		7FA7B85E2AEB243400363B53 /* FilterDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B85D2AEB243400363B53 /* FilterDataProvider.swift */; };
 		7FA7B8632AEB243400363B53 /* filter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FA7B8582AEB243400363B53 /* filter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7FA8FE602CCD75C600B97EFE /* LibCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7FA8FE5F2CCD75C600B97EFE /* LibCore */; };
 		7FE743D32C8F431500607876 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
 		7FE743D62C8F431500607876 /* FilterControlProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FE743D52C8F431500607876 /* FilterControlProvider.swift */; };
 		7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FE743D22C8F431500607876 /* controller.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -62,6 +65,7 @@
 		3943E5533FFA53791343F445 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		5FF145756F19546462ADE7D9 /* PrimaryButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		7F4A14502CB5843500FD6ABE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7F8B15012CCED8D6002E3C14 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		7FA7B8432AEB238700363B53 /* app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = app.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSAppEntry.swift; sourceTree = "<group>"; };
 		7FA7B84A2AEB238800363B53 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -96,6 +100,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7FA8FE602CCD75C600B97EFE /* LibCore in Frameworks */,
 				7FEB782C2CC0058500A76A98 /* LibFilter in Frameworks */,
 				7FA7B85B2AEB243400363B53 /* NetworkExtension.framework in Frameworks */,
 			);
@@ -105,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F7C63362CCECED900EB3CD0 /* LibController in Frameworks */,
 				7FE743D32C8F431500607876 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -167,6 +173,7 @@
 				7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */,
 				7FA7B84A2AEB238800363B53 /* Assets.xcassets */,
 				7FA7B84C2AEB238800363B53 /* Preview Content */,
+				7F8B15012CCED8D6002E3C14 /* Launch Screen.storyboard */,
 			);
 			path = app;
 			sourceTree = "<group>";
@@ -268,6 +275,7 @@
 			name = filter;
 			packageProductDependencies = (
 				7FEB782B2CC0058500A76A98 /* LibFilter */,
+				7FA8FE5F2CCD75C600B97EFE /* LibCore */,
 			);
 			productName = filter;
 			productReference = 7FA7B8582AEB243400363B53 /* filter.appex */;
@@ -339,6 +347,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F8B15022CCED8D6002E3C14 /* Launch Screen.storyboard in Resources */,
 				7FA7B84E2AEB238800363B53 /* Preview Assets.xcassets in Resources */,
 				7FA7B84B2AEB238800363B53 /* Assets.xcassets in Resources */,
 			);
@@ -529,7 +538,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = app/app.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_PREVIEWS = YES;
@@ -538,15 +547,15 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Gertrude;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchImage;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -568,7 +577,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = app/app.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_PREVIEWS = YES;
@@ -577,15 +586,15 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Gertrude;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchImage;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -603,7 +612,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = filter/filter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = WFN83LM943;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = filter/Info.plist;
@@ -615,7 +624,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.filter";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -633,7 +642,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = filter/filter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = WFN83LM943;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = filter/Info.plist;
@@ -645,7 +654,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.filter";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -664,7 +673,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -679,7 +688,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.controller";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -700,7 +709,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = WFN83LM943;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -715,7 +724,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.controller";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -778,6 +787,16 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7F7C63352CCECED900EB3CD0 /* LibController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7FFB548F2CB477C200EBFA3B /* XCLocalSwiftPackageReference "lib-ios" */;
+			productName = LibController;
+		};
+		7FA8FE5F2CCD75C600B97EFE /* LibCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7FFB548F2CB477C200EBFA3B /* XCLocalSwiftPackageReference "lib-ios" */;
+			productName = LibCore;
+		};
 		7FEB782B2CC0058500A76A98 /* LibFilter */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 7FFB548F2CB477C200EBFA3B /* XCLocalSwiftPackageReference "lib-ios" */;

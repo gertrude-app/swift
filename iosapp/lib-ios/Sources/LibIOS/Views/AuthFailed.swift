@@ -51,6 +51,7 @@ struct AuthFailed: View {
         }
       }
       .multilineTextAlignment(.center)
+      .foregroundStyle(.black)
 
       Button {
         self.onTryAgain()

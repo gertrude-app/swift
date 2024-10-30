@@ -54,8 +54,10 @@ public struct ContentView: View {
             self.store.send(.postInstallOkTapped)
           }
 
-        case .running:
-          Running()
+        case .running(let showVendorId):
+          Running(showVendorId: showVendorId) {
+            self.store.send(.runningShaked)
+          }
         }
       }
     }
@@ -64,7 +66,8 @@ public struct ContentView: View {
 
 public extension View {
   var deviceType: String {
-    Device.current.type
+    @Dependency(\.device) var device
+    return device.type.rawValue
   }
 }
 
@@ -95,7 +98,7 @@ public extension View {
 }
 
 #Preview("Running") {
-  app(state: .running)
+  app(state: .running(showVendorId: false))
 }
 
 private func app(state: AppReducer.AppState) -> some View {

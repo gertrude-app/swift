@@ -1,0 +1,13 @@
+{
+  "root": "iosapp/lib-ios",
+  "projectType": "library",
+  "implicitDependencies": ["gertie", "pairql-iosapp"],
+  "targets": {
+    "build": {
+      "command": "cd iosapp/lib-ios && swift build"
+    },
+    "test": {
+      "command": "cd iosapp/lib-ios && SWIFT_DETERMINISTIC_HASHING=1 swift test"
+    }
+  }
+}
