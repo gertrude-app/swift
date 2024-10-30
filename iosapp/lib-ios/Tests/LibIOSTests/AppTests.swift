@@ -67,6 +67,7 @@ final class AppTests: XCTestCase {
   func testRunningShake() async throws {
     let storedRules = LockIsolated<[[BlockRule]]>([])
     let fetchCalled = LockIsolated(0)
+    let notifyRulesCalled = LockIsolated(0)
     let store = TestStore(initialState: AppReducer.State(appState: .running(showVendorId: false))) {
       AppReducer()
     } withDependencies: {
@@ -77,6 +78,9 @@ final class AppTests: XCTestCase {
       $0.storage.saveCodable = { @Sendable value, key in
         storedRules.withValue { $0.append(value as! [BlockRule]) }
       }
+      $0.filter.notifyRulesChanged = {
+        notifyRulesCalled.withValue { $0 += 1 }
+      }
     }
 
     await store.send(.runningShaked) {
@@ -85,6 +89,7 @@ final class AppTests: XCTestCase {
 
     expect(fetchCalled.value).toEqual(1)
     expect(storedRules.value).toEqual([[.bundleIdContains("bad")]])
+    expect(notifyRulesCalled.value).toEqual(1)
   }
 }
 

@@ -6,23 +6,23 @@ import os.log
 
 class FilterDataProvider: NEFilterDataProvider {
   var heartbeatTask: Task<Void, Never>?
-  let proxy = FilterProxy(rules: [], loadRules: {
+  let proxy = FilterProxy(rules: BlockRule.defaults, loadRules: {
     guard let data = UserDefaults.gertrude.data(forKey: .blockRulesStorageKey) else {
-      os_log("[G•] ERROR: no rules found")
-      return .failure(.noRulesFound)
+      os_log("[G•] FIlTER: no rules found")
+      return nil
     }
     do {
       let rules = try JSONDecoder().decode([BlockRule].self, from: data)
-      os_log("[G•] read %{public}d rules", rules.count)
-      return .success(rules)
+      os_log("[G•] FILTER read %{public}d rules", rules.count)
+      return rules
     } catch {
-      os_log("[G•] ERROR decoding rules: %{public}s", String(reflecting: error))
-      return .failure(.rulesDecodeFailed)
+      os_log("[G•] FIlTER ERROR decoding rules: %{public}s", String(reflecting: error))
+      return nil
     }
   })
 
   override func startFilter(completionHandler: @escaping (Error?) -> Void) {
-    os_log("[G•] start filter (data)")
+    os_log("[G•] FILTER start")
     self.proxy.startFilter()
     self.heartbeatTask = Task { [weak self] in
       while true {
@@ -38,7 +38,7 @@ class FilterDataProvider: NEFilterDataProvider {
     with reason: NEProviderStopReason,
     completionHandler: @escaping () -> Void
   ) {
-    os_log("[G•] stop filter (data) reason: %{public}s", String(describing: reason))
+    os_log("[G•] FILTER stop reason: %{public}s", String(describing: reason))
     self.proxy.stopFilter(reason: reason)
     completionHandler()
   }
@@ -84,5 +84,9 @@ class FilterDataProvider: NEFilterDataProvider {
     case .allow: .allow()
     case .drop: .drop()
     }
+  }
+
+  override func handleRulesChanged() {
+    self.proxy.handleRulesChanged()
   }
 }

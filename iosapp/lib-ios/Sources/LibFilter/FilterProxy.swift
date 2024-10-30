@@ -1,14 +1,18 @@
 import GertieIOS
-import NetworkExtension
+
+#if canImport(NetworkExtension)
+  import NetworkExtension
+#else
+  public struct NEProviderStopReason {} // CI
+#endif
 
 public class FilterProxy {
-  var loadRules: () -> Result<[BlockRule], FilterError>
   var rules: [BlockRule] = BlockRule.defaults
-  var errors: Set<FilterError> = []
+  var loadRules: () -> [BlockRule]?
 
   public init(
     rules: [BlockRule] = BlockRule.defaults,
-    loadRules: @escaping () -> Result<[BlockRule], FilterError>
+    loadRules: @escaping () -> [BlockRule]?
   ) {
     self.rules = rules
     self.loadRules = loadRules
@@ -20,21 +24,9 @@ public class FilterProxy {
     bundleId: String? = nil,
     flowType: FlowType? = nil
   ) -> FlowVerdict {
-    if bundleId == .gertrudeBundleIdLong || bundleId == .gertrudeBundleIdShort {
-      if hostname == "read-rules.gertrude.app" {
-        self.readRules()
-        return .drop
-      } else if url?.contains("/\(FilterError.urlSlug)/") == true {
-        if url?.contains("/\(filterErr: .noRulesFound)/") == true {
-          return self.errors.remove(.noRulesFound) != nil ? .allow : .drop
-        } else if url?.contains("/\(filterErr: .rulesDecodeFailed)/") == true {
-          return self.errors.remove(.rulesDecodeFailed) != nil ? .allow : .drop
-        } else {
-          return .allow
-        }
-      } else {
-        return .allow
-      }
+    if hostname == "read-rules.gertrude.app" {
+      self.readRules()
+      return .drop
     } else if self.rules.blocksFlow(hostname: hostname, url: url, bundleId: bundleId) {
       return .drop
     } else {
@@ -42,16 +34,17 @@ public class FilterProxy {
     }
   }
 
+  public func handleRulesChanged() {
+    self.readRules()
+  }
+
   public func receiveHeartbeat() {
     self.readRules()
   }
 
   func readRules() {
-    switch self.loadRules() {
-    case .success(let newRules):
+    if let newRules = self.loadRules() {
       self.rules = newRules
-    case .failure(let error):
-      self.errors.insert(error)
     }
   }
 
@@ -96,4 +89,3 @@ extension FilterProxy.FlowType: Equatable, Sendable {}
 // "exports" for filter
 
 public typealias BlockRule = GertieIOS.BlockRule
-public typealias FilterError = GertieIOS.FilterError

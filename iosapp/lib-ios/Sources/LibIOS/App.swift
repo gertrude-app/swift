@@ -22,6 +22,8 @@ public struct AppReducer {
   @ObservationIgnored
   @Dependency(\.storage) var storage
   @ObservationIgnored
+  @Dependency(\.filter) var filter
+  @ObservationIgnored
   @Dependency(\.device) var device
   @ObservationIgnored
   @Dependency(\.date.now) var now
@@ -170,6 +172,7 @@ public struct AppReducer {
         return .run { _ in
           let blockRules = try await self.api.fetchBlockRules()
           self.storage.saveBlockRules(blockRules)
+          try await self.filter.notifyRulesChanged()
         }
       }
     }

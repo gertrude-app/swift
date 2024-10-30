@@ -12,7 +12,6 @@ final class ControllerProxyTests: XCTestCase {
     let testClock = TestClock()
     let savedRules = LockIsolated<[Both<String, [BlockRule]>]>([])
     let fetchRules = LockIsolated(0)
-    let sendFilterErrors = LockIsolated(0)
     let notifyRulesChanged = LockIsolated(0)
     await withDependencies {
       $0.suspendingClock = testClock
@@ -26,21 +25,18 @@ final class ControllerProxyTests: XCTestCase {
       $0.storage.saveCodable = { @Sendable value, key in
         savedRules.withValue { $0.append(.init(key, value as! [BlockRule])) }
       }
-      $0.filter.notifyRulesChanged = {
-        notifyRulesChanged.withValue { $0 += 1 }
-      }
-      $0.filter.sendFilterErrors = {
-        sendFilterErrors.withValue { $0 += 1 }
-      }
     } operation: {
       let controllerProxy = ControllerProxy()
       controllerProxy.startFilter()
+      controllerProxy.notifyRulesChanged = {
+        notifyRulesChanged.withValue { $0 += 1 }
+      }
 
       await testClock.advance(by: .minutes(59))
       expect(fetchRules.value).toEqual(0)
       await testClock.advance(by: .minutes(2))
 
-      expect(sendFilterErrors.value).toEqual(1)
+      // fetches rules and writes updated rules to disk
       expect(fetchRules.value).toEqual(1)
       expect(notifyRulesChanged.value).toEqual(1)
       expect(savedRules.value).toEqual([.init(
@@ -49,7 +45,6 @@ final class ControllerProxyTests: XCTestCase {
       )])
 
       await testClock.advance(by: .minutes(60))
-      expect(sendFilterErrors.value).toEqual(2)
       expect(fetchRules.value).toEqual(2)
     }
   }

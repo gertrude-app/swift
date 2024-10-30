@@ -5,10 +5,10 @@ import NetworkExtension
 public class ControllerProxy {
   @Dependency(\.api) var api
   @Dependency(\.storage) var storage
-  @Dependency(\.filter) var filter
   @Dependency(\.suspendingClock) var clock
 
   var heartbeatTask: Task<Void, Never>?
+  public var notifyRulesChanged: () -> Void = unimplemented("ControllerProxy.notifyRulesChanged")
 
   public func startFilter() {
     self.heartbeatTask = Task { [weak self] in
@@ -30,14 +30,13 @@ public class ControllerProxy {
   }
 
   func receiveHeartbeat() async {
-    try? await self.filter.sendFilterErrors()
     guard let apiRules = try? await self.api.fetchBlockRules() else {
       return
     }
     let savedRules = self.storage.loadBlockRules()
     if apiRules != savedRules {
       self.storage.saveBlockRules(apiRules)
-      try? await self.filter.notifyRulesChanged()
+      self.notifyRulesChanged()
     }
   }
 
