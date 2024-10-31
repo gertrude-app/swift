@@ -8,8 +8,10 @@ import XExpect
 @testable import Api
 
 final class CheckInLatestReleaseTests: ApiTestCase {
-  func test(releaseChannel: ReleaseChannel, currentVersion: String) async throws -> CheckIn
-    .LatestRelease {
+  func test(
+    releaseChannel: ReleaseChannel,
+    currentVersion: String
+  ) async throws -> CheckIn.LatestRelease {
     let user = try await self.user().withDevice(adminDevice: {
       $0.appReleaseChannel = releaseChannel
     })

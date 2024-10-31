@@ -29,32 +29,17 @@ extension AuthedUserRoute: RouteResponder {
     case .createSignedScreenshotUpload(let input):
       let output = try await CreateSignedScreenshotUpload.resolve(with: input, in: context)
       return try await self.respond(with: output)
-    case .getAccountStatus:
-      let output = try await GetAccountStatus.resolve(in: context)
-      return try await self.respond(with: output)
-    case .getUserData:
-      let output = try await GetUserData.resolve(in: context)
-      return try await self.respond(with: output)
     case .logFilterEvents(let input):
       let output = try await LogFilterEvents.resolve(with: input, in: context)
       return try await self.respond(with: output)
     case .logSecurityEvent(let input):
       let output = try await LogSecurityEvent.resolve(with: input, in: context)
       return try await self.respond(with: output)
-    case .refreshRules(let input):
-      let output = try await RefreshRules.resolve(with: input, in: context)
-      return try await self.respond(with: output)
     case .createKeystrokeLines(let input):
       let output = try await CreateKeystrokeLines.resolve(with: input, in: context)
       return try await self.respond(with: output)
-    case .createSuspendFilterRequest(let input):
-      let output = try await CreateSuspendFilterRequest.resolve(with: input, in: context)
-      return try await self.respond(with: output)
     case .createSuspendFilterRequest_v2(let input):
       let output = try await CreateSuspendFilterRequest_v2.resolve(with: input, in: context)
-      return try await self.respond(with: output)
-    case .createUnlockRequests_v2(let input):
-      let output = try await CreateUnlockRequests_v2.resolve(with: input, in: context)
       return try await self.respond(with: output)
     case .createUnlockRequests_v3(let input):
       let output = try await CreateUnlockRequests_v3.resolve(with: input, in: context)

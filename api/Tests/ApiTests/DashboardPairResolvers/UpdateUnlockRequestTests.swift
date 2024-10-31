@@ -6,46 +6,9 @@ import XExpect
 @testable import Api
 
 final class UpdateUnlockRequestTests: ApiTestCase {
-  func testUpdateUnlockRequest_legacyVersion() async throws {
-    let user = try await self.user().withDevice {
-      $0.appVersion = "2.1.7" // <-- older version...
-    }
-
-    var request = UnlockRequest.mock
-    request.userDeviceId = user.device.id
-    request.status = .pending
-    try await self.db.create(request)
-
-    let output = try await UpdateUnlockRequest.resolve(
-      with: UpdateUnlockRequest.Input(
-        id: request.id,
-        responseComment: "no way",
-        status: .rejected
-      ),
-      in: context(user.admin)
-    )
-
-    expect(output).toEqual(.success)
-
-    let retrieved = try await self.db.find(request.id)
-    expect(retrieved.responseComment).toEqual("no way")
-    expect(retrieved.status).toEqual(.rejected)
-
-    expect(sent.websocketMessages).toEqual([
-      .init(
-        .unlockRequestUpdated( // <-- ... produces older event
-          status: .rejected,
-          target: request.target ?? "",
-          parentComment: "no way"
-        ),
-        to: .userDevice(user.device.id)
-      ),
-    ])
-  }
-
   func testUpdateUnlockRequest() async throws {
     let user = try await self.user().withDevice {
-      $0.appVersion = "2.4.0" // <-- current version...
+      $0.appVersion = "2.4.0"
     }
 
     var request = UnlockRequest.mock
@@ -70,7 +33,7 @@ final class UpdateUnlockRequestTests: ApiTestCase {
 
     expect(sent.websocketMessages).toEqual([
       .init(
-        .unlockRequestUpdated_v2( // <-- ... produces current event
+        .unlockRequestUpdated_v2(
           id: request.id.rawValue,
           status: .accepted,
           target: request.target ?? "",

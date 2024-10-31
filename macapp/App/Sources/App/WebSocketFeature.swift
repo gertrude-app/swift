@@ -72,8 +72,7 @@ extension WebSocketFeature.RootReducer {
         try await websocket.disconnect()
       }
 
-    case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked))),
-         .websocket(.receivedMessage(.suspendFilter)):
+    case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked))):
       guard state.admin.accountStatus != .inactive else { return .none }
       return .exec { _ in
         try await websocket.send(.currentFilterState(.suspended))
@@ -98,17 +97,6 @@ extension WebSocketFeature.RootReducer {
           try await websocket.sendFilterState(state)
         }
 
-      case .receivedMessage(.suspendFilterRequestDenied(let comment)):
-        return .exec { _ in
-          await device.notifyFilterSuspensionDenied(with: comment)
-          unexpectedError(id: "2b1c3cf3") // api should not be sending this legacy event
-        }
-
-      case .receivedMessage(.unlockRequestUpdated):
-        return .exec { _ in
-          unexpectedError(id: "4dfcde92") // api should not be sending this legacy event
-        }
-
       case .receivedMessage(.unlockRequestUpdated_v2(_, let status, let target, let comment)):
         return .exec { _ in
           await device.notifyUnlockRequestUpdated(
@@ -123,14 +111,6 @@ extension WebSocketFeature.RootReducer {
 
       case .receivedMessage(.userUpdated):
         return .none // handled by user feature, which triggers a checkin
-
-      case .receivedMessage(.suspendFilter):
-        return .none // handled by filter feature
-
-      case .receivedMessage(.filterSuspensionRequestDecided):
-        return .exec { _ in
-          unexpectedError(id: "a307cfe7") // api should not be sending this legacy event
-        }
 
       case .receivedMessage(.filterSuspensionRequestDecided_v2):
         return .none // handled by filter feature AND monitoring feature

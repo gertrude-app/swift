@@ -1,5 +1,4 @@
 import Foundation
-import Gertie
 
 public struct UserData {
   public var id: UUID
@@ -39,7 +38,7 @@ public struct UserData {
   }
 }
 
-extension UserData: Equatable, Codable, Sendable, PairOutput {}
+extension UserData: Equatable, Codable, Sendable {}
 
 #if DEBUG
   extension UserData: Mocked {

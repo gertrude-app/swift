@@ -8,9 +8,9 @@ public struct ApiClient: Sendable {
   public var clearUserToken: @Sendable () async -> Void
   public var connectUser: @Sendable (ConnectUser.Input) async throws -> UserData
   public var createKeystrokeLines: @Sendable (CreateKeystrokeLines.Input) async throws -> Void
-  public var createSuspendFilterRequest: @Sendable (CreateSuspendFilterRequest.Input) async throws
-    -> UUID
-  public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> [UUID]
+  public var createSuspendFilterRequest: @Sendable (CreateSuspendFilterRequest_v2.Input)
+    async throws -> UUID
+  public var createUnlockRequests: @Sendable (CreateUnlockRequests_v3.Input) async throws -> [UUID]
   public var getUserToken: @Sendable () async throws -> UUID?
   public var logFilterEvents: @Sendable (LogFilterEvents.Input) async -> Void
   public var logInterestingEvent: @Sendable (LogInterestingEvent.Input) async -> Void
@@ -27,9 +27,10 @@ public struct ApiClient: Sendable {
     clearUserToken: @escaping @Sendable () async -> Void,
     connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> UserData,
     createKeystrokeLines: @escaping @Sendable (CreateKeystrokeLines.Input) async throws -> Void,
-    createSuspendFilterRequest: @escaping @Sendable (CreateSuspendFilterRequest.Input) async throws
-      -> UUID,
-    createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws
+    createSuspendFilterRequest: @escaping @Sendable (
+      CreateSuspendFilterRequest_v2.Input
+    ) async throws -> UUID,
+    createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v3.Input) async throws
       -> [UUID],
     getUserToken: @escaping @Sendable () async throws -> UUID?,
     logFilterEvents: @escaping @Sendable (LogFilterEvents.Input) async -> Void,

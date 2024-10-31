@@ -100,9 +100,12 @@ final class ApiTests: ApiTestCase {
   }
 
   func testHeaderAuthed() throws {
-    var request = URLRequest(url: URL(string: "macos-app/GetAccountStatus")!)
+    let input = FilterLogs(bundleIds: [:], events: [:])
+    var request = URLRequest(url: URL(string: "macos-app/LogFilterEvents")!)
     request.httpMethod = "POST"
-    let route = PairQLRoute.macApp(.userAuthed(self.token, .getAccountStatus))
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = try JSONEncoder().encode(input)
+    let route = PairQLRoute.macApp(.userAuthed(self.token, .logFilterEvents(input)))
 
     let missingHeader = try? PairQLRoute.router.match(request: request)
     expect(missingHeader).toEqual(nil)
@@ -114,23 +117,21 @@ final class ApiTests: ApiTestCase {
   }
 
   func testUserContextCreated() async throws {
-    let user = try await self.user(withAdmin: { $0.subscriptionStatus = .paid })
-      .withDevice()
+    let user = try await self.userWithDevice()
 
     let response = try await PairQLRoute.respond(
-      to: .macApp(.userAuthed(user.token.value.rawValue, .getAccountStatus)),
+      to: .macApp(.userAuthed(
+        user.token.value.rawValue,
+        .createSuspendFilterRequest_v2(.init(duration: 1, comment: nil))
+      )),
       in: .mock
     )
 
-    expect(response.body.string).toEqual(#"{"status":"active"}"#)
-  }
-
-  func testResolveUsersAdminAccountStatus() async throws {
-    let user = try await self.user(withAdmin: { $0.subscriptionStatus = .paid })
-      .withDevice()
-    let context = UserContext(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
-    let output = try await GetAccountStatus.resolve(in: context)
-    expect(output.status).toEqual(.active)
+    expect(response.status).toEqual(.ok)
+    let uuid = try JSONDecoder().decode(UUID.self, from: response.body.data!)
+    let req = try await self.db.find(SuspendFilterRequest.Id(uuid))
+    let userDevice = try await req.userDevice(in: self.db)
+    expect(userDevice.userId).toEqual(user.id)
   }
 }
 

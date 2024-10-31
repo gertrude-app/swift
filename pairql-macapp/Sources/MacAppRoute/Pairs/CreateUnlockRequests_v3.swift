@@ -28,10 +28,7 @@ public struct CreateUnlockRequests_v3: Pair {
     public let blockedRequests: [BlockedRequest]
     public let comment: String?
 
-    public init(
-      blockedRequests: [CreateUnlockRequests_v2.Input.BlockedRequest],
-      comment: String? = nil
-    ) {
+    public init(blockedRequests: [BlockedRequest], comment: String? = nil) {
       self.blockedRequests = blockedRequests
       self.comment = comment
     }

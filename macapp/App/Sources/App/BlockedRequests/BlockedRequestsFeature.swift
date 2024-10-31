@@ -101,7 +101,7 @@ struct BlockedRequestsFeature: Feature {
         state.createUnlockRequests = .ongoing
         let inputReqs = state.requests
           .filter { state.selectedRequestIds.contains($0.id) }
-          .map { CreateUnlockRequests_v2.Input.BlockedRequest(
+          .map { CreateUnlockRequests_v3.Input.BlockedRequest(
             bundleId: $0.app.bundleId,
             url: $0.url,
             hostname: $0.hostname,

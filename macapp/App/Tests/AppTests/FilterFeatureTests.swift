@@ -173,7 +173,8 @@ final class FilterFeatureTests: XCTestCase {
     let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
     store.deps.device.quitBrowsers = quitBrowsers.fn
 
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(duration: 120, extraMonitoring: nil),
       comment: "yup!"
     )))) {
@@ -184,7 +185,8 @@ final class FilterFeatureTests: XCTestCase {
     await time.advance(seconds: 100)
 
     // they get ANOTHER suspension before the first one has expired
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(duration: 120, extraMonitoring: nil),
       comment: "here's another one for ya!"
     )))) {
@@ -233,7 +235,8 @@ final class FilterFeatureTests: XCTestCase {
     let resumeFilter = mock(returning: [Result<Void, XPCErr>.success(())])
     store.deps.filterXpc.endFilterSuspension = resumeFilter.fn
 
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(duration: 120, extraMonitoring: nil),
       comment: "yup!"
     )))) {
@@ -262,7 +265,8 @@ final class FilterFeatureTests: XCTestCase {
     await scheduler.advance(by: .seconds(1))
     await expect(quitBrowsers.calls.count).toEqual(1)
 
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .rejected,
       comment: "nope!"
     ))))
@@ -272,13 +276,14 @@ final class FilterFeatureTests: XCTestCase {
     await expect(showNotification.calls[2].b).toContain("nope!")
     await expect(suspendFilter.calls).toEqual([120]) // <-- no new suspension sent
 
-    // still handles legacy event (though this should never be received)
-    await store.send(.websocket(.receivedMessage(.suspendFilter(for: 90, parentComment: "OK")))) {
+    // another filter suspension comes in
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
+      decision: .accepted(duration: 90, extraMonitoring: nil),
+      comment: "OK"
+    )))) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
     }
-    await expect(suspendFilter.calls).toEqual([120, 90])
-    await expect(showNotification.calls.count).toEqual(4)
-    await expect(showNotification.calls[3].a).toContain("disabling filter")
 
     await scheduler.advance(by: .seconds(30))
     await expect(resumeFilter.calls.count).toEqual(0)
@@ -320,7 +325,8 @@ final class FilterFeatureTests: XCTestCase {
 
     // 30 seconds from notification re: quitting browsers, dad sends another suspension!
     await scheduler.advance(by: .seconds(30))
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(duration: 120, extraMonitoring: nil),
       comment: nil
     )))) {

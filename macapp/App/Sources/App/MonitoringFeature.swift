@@ -82,13 +82,11 @@ extension MonitoringFeature.RootReducer {
 
     case .websocket(.receivedMessage(let message)):
       switch message {
-      case .filterSuspensionRequestDecided(.accepted(_, .none), _),
-           .filterSuspensionRequestDecided_v2(_, .accepted(_, .none), _):
+      case .filterSuspensionRequestDecided_v2(_, .accepted(_, .none), _):
         state.monitoring.lastSuspensionMonitoring = nil
         return .none
 
-      case .filterSuspensionRequestDecided(.accepted(_, .some(let extraMonitoring)), _),
-           .filterSuspensionRequestDecided_v2(_, .accepted(_, .some(let extraMonitoring)), _):
+      case .filterSuspensionRequestDecided_v2(_, .accepted(_, .some(let extraMonitoring)), _):
         guard let user = state.user.data else { return .none }
         let suspensionMonitoring = user.monitoring(merging: extraMonitoring)
         state.monitoring.suspensionMonitoring = suspensionMonitoring

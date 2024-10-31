@@ -1,9 +1,8 @@
 import ClientInterfaces
 import ComposableArchitecture
 import Dependencies
+import Gertie
 import MacAppRoute
-
-typealias UserData = GetUserData.Output
 
 @MainActor public struct App {
   var menuBarManager: MenuBarManager

@@ -1,3 +1,4 @@
+import Gertie
 import MacAppRoute
 import XCTest
 import XExpect
@@ -28,8 +29,11 @@ final class RouterTests: XCTestCase {
   }
 
   func testHeaderAuthed() throws {
-    var request = URLRequest(url: URL(string: "GetAccountStatus")!)
-    let route = MacAppRoute.userAuthed(self.token, .getAccountStatus)
+    let input = FilterLogs(bundleIds: [:], events: [:])
+    var request = URLRequest(url: URL(string: "LogFilterEvents")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpBody = try JSONEncoder().encode(input)
+    let route = MacAppRoute.userAuthed(self.token, .logFilterEvents(input))
 
     let missingHeader = try? self.router.match(request: request)
     expect(missingHeader).toEqual(nil)

@@ -49,12 +49,3 @@ public extension FilterState.WithRelativeTimes {
 
 extension FilterState.WithoutTimes: Codable, CaseIterable, Equatable, Sendable {}
 extension FilterState.WithRelativeTimes: Equatable, Sendable {}
-
-@available(*, deprecated, message: "Use `FilterState.WithoutTimes` instead.")
-public enum UserFilterState: String, Codable, CaseIterable, Equatable, Sendable {
-  case on
-  case off
-  case suspended
-  case downtime
-  case downtimePaused
-}
