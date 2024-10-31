@@ -3,6 +3,7 @@ import PairQL
 
 public enum AuthedUserRoute: PairRoute {
   case checkIn(CheckIn.Input)
+  case checkIn_v2(CheckIn_v2.Input)
   case createKeystrokeLines(CreateKeystrokeLines.Input)
   case createSignedScreenshotUpload(CreateSignedScreenshotUpload.Input)
   case createSuspendFilterRequest_v2(CreateSuspendFilterRequest_v2.Input)
@@ -17,6 +18,10 @@ public extension AuthedUserRoute {
     Route(.case(Self.checkIn)) {
       Operation(CheckIn.self)
       Body(.json(CheckIn.Input.self))
+    }
+    Route(.case(Self.checkIn_v2)) {
+      Operation(CheckIn_v2.self)
+      Body(.json(CheckIn_v2.Input.self))
     }
     Route(.case(Self.createKeystrokeLines)) {
       Operation(CreateKeystrokeLines.self)

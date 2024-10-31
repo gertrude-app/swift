@@ -26,6 +26,9 @@ extension AuthedUserRoute: RouteResponder {
     case .checkIn(let input):
       let output = try await CheckIn.resolve(with: input, in: context)
       return try await self.respond(with: output)
+    case .checkIn_v2(let input):
+      let output = try await CheckIn_v2.resolve(with: input, in: context)
+      return try await self.respond(with: output)
     case .createSignedScreenshotUpload(let input):
       let output = try await CreateSignedScreenshotUpload.resolve(with: input, in: context)
       return try await self.respond(with: output)
