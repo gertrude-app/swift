@@ -326,6 +326,12 @@ struct OnboardingFeature: Feature {
           await nextRequiredStage(from: step, send)
         }
 
+      case .webview(.primaryBtnClicked) where step == .screenshotsPrivacyWarning:
+        log(step, action, "acbc3e06")
+        return .exec { send in
+          await nextRequiredStage(from: step, send)
+        }
+
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_required:
         log(step, action, "6db8471f")
         return .exec { send in
@@ -568,6 +574,10 @@ struct OnboardingFeature: Feature {
       // if we're past the screenshot stage, we know we don't want to resume again
       // so, defensively always remove the onboarding resume state at this point
       await send(.delegate(.saveForResume(nil)))
+
+      if current == .allowScreenshots_success, self.device.osVersion().major >= 15 {
+        return await send(.setStep(.screenshotsPrivacyWarning))
+      }
 
       // checking keylogging pops up the system prompt, so we always
       // have to land them on this screen once, and test later.

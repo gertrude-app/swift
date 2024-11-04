@@ -381,6 +381,19 @@ final class OnboardingFeatureTests: XCTestCase {
   }
 
   @MainActor
+  func testSequoiaGetsExtraScreenAboutPrivacyWarning() async {
+    let store = self.featureStore {
+      $0.step = .allowScreenshots_success
+    }
+    store.deps.device.osVersion = { .init(major: 15, minor: 0, patch: 1) }
+
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.screenshotsPrivacyWarning))
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required))
+  }
+
+  @MainActor
   func testSingleUserOnlySkipsExemptUserScreen() async {
     let store = self.featureStore {
       $0.step = .installSysExt_success
@@ -740,6 +753,7 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkippingKeyloggingFromFinishScreenshots() async {
     let store = self.featureStore { $0.step = .allowScreenshots_success }
+    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.primaryBtnClicked))
@@ -752,6 +766,7 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testFromScreenshotsRequiredScreenshotsAndKeyloggingAlreadyAllowed() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
+    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
@@ -943,6 +958,7 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkipAllowingScreenshots() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
+    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     // they click "Skip" on the allow screenshots start screen
     await store.send(.webview(.secondaryBtnClicked))
@@ -952,6 +968,7 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkipsMostScreenshotStepsIfPermsPreviouslyGranted() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
+    store.deps.device.osVersion = { .sonoma }
 
     let screenshotsAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
