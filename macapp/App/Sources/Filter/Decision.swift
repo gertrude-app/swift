@@ -19,7 +19,7 @@ public extension NetworkFilter {
 }
 
 public protocol DecisionState {
-  var userKeys: [uid_t: [FilterKey]] { get }
+  var userKeychains: [uid_t: [RuleKeychain]] { get }
   var userDowntime: [uid_t: Downtime] { get }
   var appIdManifest: AppIdManifest { get }
   var exemptUsers: Set<uid_t> { get }

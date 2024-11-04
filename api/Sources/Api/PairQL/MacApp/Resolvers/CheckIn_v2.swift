@@ -122,7 +122,7 @@ extension CheckIn_v2: Resolver {
 func ruleKeychains(
   for userId: User.Id,
   in db: any DuetSQL.Client
-) async throws -> [CheckIn_v2.RuleKeychain] {
+) async throws -> [RuleKeychain] {
   let userKeychains = try await UserKeychain.query()
     .where(.userId == userId)
     .all(in: db)

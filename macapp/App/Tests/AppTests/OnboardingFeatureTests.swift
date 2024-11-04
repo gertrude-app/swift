@@ -271,7 +271,7 @@ final class OnboardingFeatureTests: XCTestCase {
     // we kick off protection when they move past sys ext stage, lots happens...
     let setAccountActive = spy(on: Bool.self, returning: ())
     store.deps.api.setAccountActive = setAccountActive.fn
-    let checkInResult = CheckIn.Output.empty {
+    let checkInResult = CheckIn_v2.Output.empty {
       $0.userData = user
       $0.trustedTime = (Date.reference - 1).timeIntervalSince1970
     }

@@ -110,7 +110,7 @@ import os.log
         randomInt: randomInt,
         version: self.filterExtension.version(),
         userId: userId,
-        numUserKeys: savedState?.userKeys[userId]?.count ?? 0
+        numUserKeys: savedState?.userKeychains[userId]?.numKeys ?? 0
       )
       let data = try XPC.encode(ack)
       reply(data, nil)
@@ -131,14 +131,14 @@ import os.log
       let userData = try XPC.decode(UserFilterData.self, from: filterData)
       self.subject.withValue { $0.send(.receivedAppMessage(.userRules(
         userId: userId,
-        keys: userData.keys,
+        keychains: userData.keychains,
         downtime: userData.downtime,
         manifest: manifest
       ))) }
       os_log(
         "[G•] FILTER xpc.receiveUserRules(userId: %{public}d,...) num keys: %{public}d",
         userId,
-        userData.keys.count
+        userData.keychains.numKeys
       )
       reply(nil)
     } catch {
@@ -152,7 +152,7 @@ import os.log
       os_log("[G•] FILTER xpc.receiveListUserTypesRequest()")
       let savedState = try storage.loadPersistentStateSync()
       let exemptUsers = Array(savedState?.exemptUsers ?? [])
-      let protectedUsers = savedState.map { Array($0.userKeys.keys) } ?? []
+      let protectedUsers = savedState.map { Array($0.userKeychains.keys) } ?? []
       let data = try XPC.encode(FilterUserTypes(exempt: exemptUsers, protected: protectedUsers))
       reply(data, nil)
     } catch {

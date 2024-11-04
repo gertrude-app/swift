@@ -16,7 +16,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
     }
     store.deps.date = .constant(.epoch)
 
-    let latestRelease = CheckIn.LatestRelease(
+    let latestRelease = CheckIn_v2.LatestRelease(
       semver: "1.1.0",
       pace: .init(
         nagOn: .epoch.advanced(by: .days(10)),
@@ -24,7 +24,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
       )
     )
 
-    let checkInRes = CheckIn.Output.mock {
+    let checkInRes = CheckIn_v2.Output.mock {
       $0.latestRelease = latestRelease
       $0.updateReleaseChannel = .beta
     }

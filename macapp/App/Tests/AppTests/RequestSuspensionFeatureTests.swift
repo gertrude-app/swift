@@ -21,7 +21,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
       $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
     }
 
-    let checkIn = spy(on: CheckIn.Input.self, returning: CheckIn.Output.mock)
+    let checkIn = spy(on: CheckIn_v2.Input.self, returning: CheckIn_v2.Output.mock)
     store.deps.api.checkIn = checkIn.fn
 
     // because we have a pending suspension, the .everyMinute heartbeat will check
@@ -60,10 +60,10 @@ final class RequestSuspensionFeatureTests: XCTestCase {
       $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
     }
 
-    let checkIn: Spy<CheckIn.Output, CheckIn.Input> = spy(returning: [
-      CheckIn.Output.mock,
-      CheckIn.Output.mock,
-      CheckIn.Output.empty {
+    let checkIn: Spy<CheckIn_v2.Output, CheckIn_v2.Input> = spy(returning: [
+      CheckIn_v2.Output.mock,
+      CheckIn_v2.Output.mock,
+      CheckIn_v2.Output.empty {
         $0.resolvedFilterSuspension = .init(
           id: reqId,
           decision: .accepted(duration: 33, extraMonitoring: .setScreenshotFreq(10)),
@@ -101,7 +101,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     await store.receive(.checkIn(result: .success(.init(
       adminAccountStatus: .active,
       appManifest: .empty,
-      keys: [],
+      keychains: [],
       latestRelease: .init(semver: "2.0.4"),
       updateReleaseChannel: .stable,
       userData: .empty,
@@ -140,7 +140,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
       $0.requestSuspension.pending = .init(id: reqId, createdAt: .epoch)
     }
 
-    let checkIn = spy(on: CheckIn.Input.self, returning: CheckIn.Output.mock)
+    let checkIn = spy(on: CheckIn_v2.Input.self, returning: CheckIn_v2.Output.mock)
     store.deps.api.checkIn = checkIn.fn
 
     for i in 1 ... 10 {

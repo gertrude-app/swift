@@ -36,8 +36,8 @@ extension FilterXPCClient: DependencyKey {
       sendDeleteAllStoredState: { await .init {
         try await xpc.sendDeleteAllStoredState()
       }},
-      sendUserRules: { manifest, keys in await .init {
-        try await xpc.sendUserRules(manifest: manifest, keys: keys)
+      sendUserRules: { manifest, keychains, downtime in await .init {
+        try await xpc.sendUserRules(manifest: manifest, keychains: keychains, downtime: downtime)
       }},
       setBlockStreaming: { enabled in await .init {
         try await xpc.setBlockStreaming(enabled: enabled)
@@ -92,8 +92,16 @@ actor ThreadSafeFilterXPC {
     try await self.filterXpc.requestAck()
   }
 
-  func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {
-    try await self.filterXpc.sendUserRules(manifest: manifest, keys: keys)
+  func sendUserRules(
+    manifest: AppIdManifest,
+    keychains: [RuleKeychain],
+    downtime: Downtime?
+  ) async throws {
+    try await self.filterXpc.sendUserRules(
+      manifest: manifest,
+      keychains: keychains,
+      downtime: downtime
+    )
   }
 
   func setBlockStreaming(enabled: Bool) async throws {

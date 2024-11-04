@@ -8,8 +8,8 @@ extension ApiClient: DependencyKey {
   public static let liveValue = Self(
     checkIn: { input in
       try await output(
-        from: CheckIn.self,
-        with: .checkIn(input)
+        from: CheckIn_v2.self,
+        with: .checkIn_v2(input)
       )
     },
     clearUserToken: {

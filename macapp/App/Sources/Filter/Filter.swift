@@ -6,7 +6,7 @@ import os.log
 
 public struct Filter: Reducer, Sendable {
   public struct State: Equatable, DecisionState {
-    public var userKeys: [uid_t: [FilterKey]] = [:]
+    public var userKeychains: [uid_t: [RuleKeychain]] = [:]
     public var userDowntime: [uid_t: Downtime] = [:]
     public var appIdManifest = AppIdManifest()
     public var exemptUsers: Set<uid_t> = []
@@ -85,7 +85,7 @@ public struct Filter: Reducer, Sendable {
       )
 
     case .loadedPersistentState(.some(let persisted)):
-      state.userKeys = persisted.userKeys
+      state.userKeychains = persisted.userKeychains
       state.appIdManifest = persisted.appIdManifest
       state.exemptUsers = persisted.exemptUsers
       return .none
@@ -177,7 +177,7 @@ public struct Filter: Reducer, Sendable {
       return .none
 
     case .xpc(.receivedAppMessage(.disconnectUser(let userId))):
-      state.userKeys[userId] = nil
+      state.userKeychains[userId] = nil
       state.suspensions[userId] = nil
       state.exemptUsers.remove(userId)
       return self.saving(state.persistent)
@@ -200,9 +200,14 @@ public struct Filter: Reducer, Sendable {
         await send(.suspensionTimerEnded(userId))
       }.cancellable(id: CancelId.suspensionTimer(for: userId), cancelInFlight: true)
 
-    case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let downtime, let manifest))):
-      if !keys.isEmpty {
-        state.userKeys[userId] = keys
+    case .xpc(.receivedAppMessage(.userRules(
+      let userId,
+      let keychains,
+      let downtime,
+      let manifest
+    ))):
+      if !keychains.isEmpty {
+        state.userKeychains[userId] = keychains
         state.exemptUsers.remove(userId)
       }
       state.appIdManifest = manifest
@@ -256,14 +261,15 @@ public extension Filter.State {
 
   var debug: Debug {
     .init(
-      userKeys: userKeys.reduce(into: [:]) { acc, item in
-        acc[item.key] = item.value.count
+      userKeys: self.userKeychains.reduce(into: [:]) { acc, item in
+        let (userId, keychains) = (item.key, item.value)
+        acc[userId] = keychains.numKeys
       },
-      numAppsInManifest: appIdManifest.apps.count,
-      exemptUsers: exemptUsers,
-      suspensions: suspensions,
-      numAppsInCache: appCache.count,
-      blockListeners: blockListeners
+      numAppsInManifest: self.appIdManifest.apps.count,
+      exemptUsers: self.exemptUsers,
+      suspensions: self.suspensions,
+      numAppsInCache: self.appCache.count,
+      blockListeners: self.blockListeners
     )
   }
 }

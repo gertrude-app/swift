@@ -11,7 +11,7 @@ public struct CheckIn: Pair {
   public struct Output: PairOutput {
     public var adminAccountStatus: AdminAccountStatus
     public var appManifest: AppIdManifest
-    public var keys: [CheckIn_v2.RuleKey]
+    public var keys: [RuleKey]
     public var latestRelease: CheckIn_v2.LatestRelease
     public var updateReleaseChannel: ReleaseChannel
     public var userData: UserData
@@ -22,7 +22,7 @@ public struct CheckIn: Pair {
     public init(
       adminAccountStatus: AdminAccountStatus,
       appManifest: AppIdManifest,
-      keys: [CheckIn_v2.RuleKey],
+      keys: [RuleKey],
       latestRelease: CheckIn_v2.LatestRelease,
       updateReleaseChannel: ReleaseChannel,
       userData: UserData,

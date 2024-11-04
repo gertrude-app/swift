@@ -242,7 +242,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase {
 }
 
 extension CheckIn_v2.Output {
-  var keys: [CheckIn_v2.RuleKey] {
+  var keys: [RuleKey] {
     self.keychains.flatMap(\.keys)
   }
 }

@@ -109,7 +109,7 @@ final class AdminWindowFeatureTests: XCTestCase {
     let triggerUpdate = spy(on: String.self, returning: ())
     store.deps.updater.triggerUpdate = triggerUpdate.fn
 
-    let checkInRes = CheckIn.Output.mock { $0.latestRelease = .init(semver: "2.0.0") }
+    let checkInRes = CheckIn_v2.Output.mock { $0.latestRelease = .init(semver: "2.0.0") }
 
     await store.send(.checkIn(result: .success(checkInRes), reason: .healthCheck))
     await expect(triggerUpdate.called).toEqual(false)

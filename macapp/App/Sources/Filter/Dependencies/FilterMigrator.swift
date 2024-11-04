@@ -20,7 +20,13 @@ struct FilterMigrator: Migrator {
     guard let v1 else { return nil }
     log("migrating v1 state to v2")
     return .init(
-      userKeys: v1.userKeys,
+      userKeychains: v1.userKeys.mapValues { keys in
+        [.init(
+          id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          schedule: nil,
+          keys: keys
+        )]
+      },
       userDowntime: [:],
       appIdManifest: v1.appIdManifest,
       exemptUsers: v1.exemptUsers

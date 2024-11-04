@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Core
 import Foundation
 import MacAppRoute
 
@@ -42,7 +43,7 @@ extension CheckInFeature.RootReducer {
     case .checkIn(.success(let output), let reason):
       guard output.adminAccountStatus != .inactive else {
         state.admin.accountStatus = output.adminAccountStatus
-        return .exec { _ in await api.setAccountActive(false) }
+        return .exec { _ in await self.api.setAccountActive(false) }
       }
       let previousUserData = state.user.data
       state.user.data = output.userData
@@ -59,7 +60,7 @@ extension CheckInFeature.RootReducer {
           await api.setAccountActive(output.adminAccountStatus == .active)
         },
         .exec { [persist = state.persistent] _ in
-          try await storage.savePersistentState(persist)
+          try await self.storage.savePersistentState(persist)
         },
         .exec { send in
           let system = self.now
@@ -76,14 +77,15 @@ extension CheckInFeature.RootReducer {
             if reason == .userRefreshedRules {
               // if filter was never installed, we don't want to show an error
               // message (or nothing), so consider this a success and notify
-              await device.notify("Refreshed rules successfully")
+              await self.device.notify("Refreshed rules successfully")
             }
             return
           }
 
-          let sendToFilterResult = await filterXpc.sendUserRules(
+          let sendToFilterResult = await self.filterXpc.sendUserRules(
             output.appManifest,
-            output.keys.map { .init(id: $0.id, key: $0.key) }
+            output.keychains,
+            output.userData.downtime.map { Downtime(window: $0) }
           )
 
           if case .some(let suspension) = output.resolvedFilterSuspension,
@@ -93,9 +95,9 @@ extension CheckInFeature.RootReducer {
 
           if reason == .userRefreshedRules {
             if sendToFilterResult.isSuccess {
-              await device.notify("Refreshed rules successfully")
+              await self.device.notify("Refreshed rules successfully")
             } else {
-              await device.notify(
+              await self.device.notify(
                 "Error refreshing rules",
                 "We got updated rules, but there was an error sending them to the filter."
               )
@@ -110,7 +112,7 @@ extension CheckInFeature.RootReducer {
       }
       return .exec { _ in
         if reason == .userRefreshedRules {
-          await device.notify(
+          await self.device.notify(
             "Error refreshing rules",
             "Please try again, or contact support if the problem persists."
           )
@@ -126,7 +128,7 @@ extension CheckInFeature.RootReducer {
     .exec { send in
       if !network.isConnected() {
         if reason == .userRefreshedRules {
-          await device.notifyNoInternet()
+          await self.device.notifyNoInternet()
         }
       } else {
         await send(.checkIn(

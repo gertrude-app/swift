@@ -7,7 +7,7 @@ import Gertie
 
 class TestFilter: NetworkFilter {
   struct State: DecisionState {
-    var userKeys: [uid_t: [FilterKey]] = [:]
+    var userKeychains: [uid_t: [RuleKeychain]] = [:]
     var userDowntime: [uid_t: Downtime] = [:]
     var appIdManifest = AppIdManifest()
     var exemptUsers: Set<uid_t> = []
@@ -31,7 +31,7 @@ class TestFilter: NetworkFilter {
 
   static func scenario(
     userIdFromAuditToken userId: uid_t? = 502,
-    userKeys: [uid_t: [FilterKey]] = [502: [.mock]],
+    userKeychains: [uid_t: [RuleKeychain]] = [502: [.mock]],
     userDowntime: [uid_t: PlainTimeWindow] = [:],
     date: Dependencies.DateGenerator = .init { Date() },
     appIdManifest: AppIdManifest = .init(
@@ -51,7 +51,7 @@ class TestFilter: NetworkFilter {
     } operation: {
       let filter = TestFilter()
       filter.state = State(
-        userKeys: userKeys,
+        userKeychains: userKeychains,
         userDowntime: userDowntime.mapValues { Downtime(window: $0) },
         appIdManifest: appIdManifest,
         exemptUsers: exemptUsers,
@@ -62,11 +62,4 @@ class TestFilter: NetworkFilter {
   }
 
   func log(event: FilterLogs.Event) {}
-}
-
-extension FilterKey {
-  static let mock = FilterKey(
-    id: .init(),
-    key: .skeleton(scope: .bundleId("com.whitelisted.widget"))
-  )
 }

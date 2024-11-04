@@ -31,28 +31,6 @@ public struct CheckIn_v2: Pair {
     }
   }
 
-  public struct RuleKeychain: PairNestable {
-    public let id: UUID
-    public let schedule: KeychainSchedule?
-    public let keys: [RuleKey]
-
-    public init(id: UUID, schedule: KeychainSchedule? = nil, keys: [RuleKey]) {
-      self.id = id
-      self.schedule = schedule
-      self.keys = keys
-    }
-  }
-
-  public struct RuleKey: PairNestable {
-    public let id: UUID
-    public let key: Key
-
-    public init(id: UUID, key: Key) {
-      self.id = id
-      self.key = key
-    }
-  }
-
   public struct LatestRelease: PairNestable {
     public struct Pace: PairNestable {
       public var nagOn: Date

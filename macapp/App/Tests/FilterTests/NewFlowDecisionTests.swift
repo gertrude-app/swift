@@ -40,8 +40,8 @@ final class NewFlowDecisionTests: XCTestCase {
 
   func testFlowAllowedForAppWithUnrestrictedScope() {
     let flow = FilterFlow.test(ipAddress: "4.4.4.4", hostname: "abc123.com", bundleId: "com.foo")
-    let key = FilterKey(key: .skeleton(scope: .bundleId("com.foo")))
-    let filter = TestFilter.scenario(userKeys: [502: [key]])
+    let key = RuleKey(key: .skeleton(scope: .bundleId("com.foo")))
+    let filter = TestFilter.scenario(userKeychains: [502: key.into()])
     expect(filter.newFlowDecision(flow)).toEqual(.allow(.permittedByKey(key.id)))
   }
 
@@ -53,22 +53,22 @@ final class NewFlowDecisionTests: XCTestCase {
       port: .other(333),
       ipProtocol: .udp(Int32(IPPROTO_UDP))
     )
-    let key = FilterKey(key: .skeleton(scope: .bundleId("com.foo")))
-    let filter = TestFilter.scenario(userKeys: [502: [key]])
+    let key = RuleKey(key: .skeleton(scope: .bundleId("com.foo")))
+    let filter = TestFilter.scenario(userKeychains: [502: key.into()])
     expect(filter.newFlowDecision(flow)).toEqual(.allow(.permittedByKey(key.id)))
   }
 
   func testAllKeysChecked() {
-    let key1 = FilterKey(key: .skeleton(scope: .bundleId("com.foo")))
-    let key2 = FilterKey(key: .domain(domain: "bar.com", scope: .webBrowsers))
-    let filter = TestFilter.scenario(userKeys: [502: [key1, key2]])
+    let key1 = RuleKey(key: .skeleton(scope: .bundleId("com.foo")))
+    let key2 = RuleKey(key: .domain(domain: "bar.com", scope: .webBrowsers))
+    let filter = TestFilter.scenario(userKeychains: [502: [key1, key2].into()])
     expect(filter.newFlowDecision(.test(hostname: "bar.com")))
       .toEqual(.allow(.permittedByKey(key2.id)))
   }
 
   func testFlowAllowedForAppWithUnrestrictedScopeNoHostname() {
-    let key = FilterKey(key: .skeleton(scope: .identifiedAppSlug("chrome")))
-    let filter = TestFilter.scenario(userKeys: [502: [key]])
+    let key = RuleKey(key: .skeleton(scope: .identifiedAppSlug("chrome")))
+    let filter = TestFilter.scenario(userKeychains: [502: key.into()])
     let flow = FilterFlow.test(ipAddress: "4.4.4.4", hostname: nil)
     expect(filter.newFlowDecision(flow)).toEqual(.allow(.permittedByKey(key.id)))
   }
@@ -80,7 +80,7 @@ final class NewFlowDecisionTests: XCTestCase {
   }
 
   func testFlowRejectedWhenNoKeys() {
-    let filter = TestFilter.scenario(userKeys: [:])
+    let filter = TestFilter.scenario(userKeychains: [:])
     expect(filter.newFlowDecision(.test())).toEqual(.block(.noUserKeys))
   }
 
@@ -130,13 +130,25 @@ final class NewFlowDecisionTests: XCTestCase {
   }
 
   func testOwnRequestStillAllowedWhenKeychainsMissing() {
-    let filter = TestFilter.scenario(userKeys: [:])
+    let filter = TestFilter.scenario(userKeychains: [:])
     expect(filter.newFlowDecision(.test(bundleId: "com.netrivet.gertrude.app")))
       .toEqual(.allow(.fromGertrudeApp))
   }
 }
 
 // helpers
+
+extension RuleKey {
+  func into() -> [RuleKeychain] {
+    [RuleKeychain(keys: [self])]
+  }
+}
+
+extension Array where Element == RuleKey {
+  func into() -> [RuleKeychain] {
+    [RuleKeychain(keys: self)]
+  }
+}
 
 extension FilterFlow {
   static func test(

@@ -2,11 +2,11 @@ import Foundation
 import Gertie
 
 public struct UserFilterData: Sendable, Codable {
-  public var keys: [FilterKey]
+  public var keychains: [RuleKeychain]
   public var downtime: Downtime?
 
-  public init(keys: [FilterKey], downtime: Downtime? = nil) {
-    self.keys = keys
+  public init(keychains: [RuleKeychain], downtime: Downtime? = nil) {
+    self.keychains = keychains
     self.downtime = downtime
   }
 }

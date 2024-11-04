@@ -8,7 +8,7 @@ public extension XPCEvent {
     public enum MessageFromApp: Sendable, Equatable {
       case userRules(
         userId: uid_t,
-        keys: [FilterKey],
+        keychains: [RuleKeychain],
         downtime: Downtime?,
         manifest: AppIdManifest
       )

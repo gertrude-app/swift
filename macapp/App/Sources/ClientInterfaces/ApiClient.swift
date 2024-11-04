@@ -4,7 +4,7 @@ import Gertie
 import MacAppRoute
 
 public struct ApiClient: Sendable {
-  public var checkIn: @Sendable (CheckIn.Input) async throws -> CheckIn.Output
+  public var checkIn: @Sendable (CheckIn_v2.Input) async throws -> CheckIn_v2.Output
   public var clearUserToken: @Sendable () async -> Void
   public var connectUser: @Sendable (ConnectUser.Input) async throws -> UserData
   public var createKeystrokeLines: @Sendable (CreateKeystrokeLines.Input) async throws -> Void
@@ -23,7 +23,7 @@ public struct ApiClient: Sendable {
   public var uploadScreenshot: @Sendable (UploadScreenshotData) async throws -> URL
 
   public init(
-    checkIn: @escaping @Sendable (CheckIn.Input) async throws -> CheckIn.Output,
+    checkIn: @escaping @Sendable (CheckIn_v2.Input) async throws -> CheckIn_v2.Output,
     clearUserToken: @escaping @Sendable () async -> Void,
     connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> UserData,
     createKeystrokeLines: @escaping @Sendable (CreateKeystrokeLines.Input) async throws -> Void,

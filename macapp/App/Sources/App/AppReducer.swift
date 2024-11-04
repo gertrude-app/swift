@@ -58,7 +58,7 @@ struct AppReducer: Reducer, Sendable {
     case adminWindow(AdminWindowFeature.Action)
     case application(ApplicationFeature.Action)
     case appUpdates(AppUpdatesFeature.Action)
-    case checkIn(result: TaskResult<CheckIn.Output>, reason: CheckIn.Reason)
+    case checkIn(result: TaskResult<CheckIn_v2.Output>, reason: CheckIn.Reason)
     case delegate(Delegate)
     case filter(FilterFeature.Action)
     case focusedNotification(FocusedNotification)

@@ -101,9 +101,9 @@ extension KeychainSchedule.Mode {
 
 // conformances
 
-extension KeychainSchedule: Sendable, Equatable, Codable {}
-extension KeychainSchedule.Mode: Sendable, Equatable, Codable {}
-extension KeychainSchedule.Days: Sendable, Equatable, Codable {}
+extension KeychainSchedule: Sendable, Equatable, Codable, Hashable {}
+extension KeychainSchedule.Mode: Sendable, Equatable, Codable, Hashable {}
+extension KeychainSchedule.Days: Sendable, Equatable, Codable, Hashable {}
 
 // test/debug helpers
 

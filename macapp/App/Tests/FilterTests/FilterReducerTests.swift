@@ -19,7 +19,7 @@ final class FilterReducerTests: XCTestCase {
     let startListener = mock(always: ())
     store.deps.xpc.startListener = startListener.fn
     store.deps.storage.loadPersistentState = { .init(
-      userKeys: [:],
+      userKeychains: [503: [.mock]],
       appIdManifest: .init(),
       exemptUsers: [501]
     ) }
@@ -28,10 +28,11 @@ final class FilterReducerTests: XCTestCase {
     await expect(startListener.called).toEqual(true)
 
     await store.receive(.loadedPersistentState(.init(
-      userKeys: [:],
+      userKeychains: [503: [.mock]],
       appIdManifest: .init(),
       exemptUsers: [501]
     ))) {
+      $0.userKeychains = [503: [.mock]]
       $0.exemptUsers = [501]
     }
 
@@ -44,10 +45,14 @@ final class FilterReducerTests: XCTestCase {
       $0.appCache["com.foo"] = descriptor
     }
 
-    let key = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
+    let keychain = RuleKeychain(keys: [.init(key: .skeleton(scope: .bundleId("com.foo")))])
     let manifest = AppIdManifest(apps: ["Lol": ["com.lol"]])
-    let message = XPCEvent.Filter
-      .receivedAppMessage(.userRules(userId: 502, keys: [key], downtime: nil, manifest: manifest))
+    let message = XPCEvent.Filter.receivedAppMessage(.userRules(
+      userId: 502,
+      keychains: [keychain],
+      downtime: nil,
+      manifest: manifest
+    ))
 
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
@@ -57,13 +62,13 @@ final class FilterReducerTests: XCTestCase {
     await mainQueue.advance(by: .seconds(1))
 
     await store.receive(.xpc(message)) {
-      $0.userKeys[502] = [key]
+      $0.userKeychains[502] = [keychain]
       $0.appIdManifest = manifest
       $0.appCache = [:] // clears out app cache when new manifest is received
     }
 
     await expect(saveState.calls).toEqual([.init(
-      userKeys: [502: [key]], //  <-- new info from user rules
+      userKeychains: [503: [.mock], 502: [keychain]], //  <-- new info from user rules
       appIdManifest: manifest, // <-- new info from user rules
       exemptUsers: [501] // <-- preserving existing unchanged data
     )])
@@ -84,7 +89,7 @@ final class FilterReducerTests: XCTestCase {
 
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 501, // we get rules about user 501
-      keys: [.mock],
+      keychains: [.mock],
       downtime: nil,
       manifest: .mock
     )))) {
@@ -104,7 +109,7 @@ final class FilterReducerTests: XCTestCase {
 
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 501, // we get rules about user 501
-      keys: [], // <-- but there are ZERO keys
+      keychains: [], // <-- but there are ZERO keys
       downtime: nil,
       manifest: .mock
     )))) {
@@ -123,7 +128,7 @@ final class FilterReducerTests: XCTestCase {
     let downtime = Downtime(window: "22:00-05:00")
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 502,
-      keys: [.mock],
+      keychains: [.mock],
       downtime: downtime,
       manifest: .mock
     )))) {
@@ -131,7 +136,7 @@ final class FilterReducerTests: XCTestCase {
     }
 
     await expect(save.calls).toEqual([.init(
-      userKeys: [502: [.mock]],
+      userKeychains: [502: [.mock]],
       userDowntime: [502: downtime.window], // <-- new downtime info saved
       appIdManifest: .mock,
       exemptUsers: []
@@ -152,7 +157,7 @@ final class FilterReducerTests: XCTestCase {
 
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 502,
-      keys: [.mock],
+      keychains: [.mock],
       downtime: nil, // <-- downtime removed
       manifest: .mock
     )))) {
@@ -234,13 +239,13 @@ final class FilterReducerTests: XCTestCase {
 
   @MainActor
   func testDisconnectUser() async {
-    let key1 = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
-    let key2 = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
+    let keychain1 = RuleKeychain(keys: [.init(key: .skeleton(scope: .bundleId("com.foo")))])
+    let keychain2 = RuleKeychain(keys: [.init(key: .skeleton(scope: .bundleId("com.bar")))])
     let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
     let (store, _) = Filter.testStore {
-      $0.userKeys = [
-        502: [key1],
-        503: [key2],
+      $0.userKeychains = [
+        502: [keychain1],
+        503: [keychain2],
       ]
       $0.suspensions = [
         502: .init(scope: .mock, duration: 600),
@@ -256,13 +261,13 @@ final class FilterReducerTests: XCTestCase {
     store.deps.filterExtension = .mock
 
     await store.send(.xpc(.receivedAppMessage(.disconnectUser(userId: 502)))) {
-      $0.userKeys = [503: [key2]]
+      $0.userKeychains = [503: [keychain2]]
       $0.suspensions = [503: otherUserSuspension]
       $0.exemptUsers = [501]
     }
 
     await expect(save.calls).toEqual([.init(
-      userKeys: [503: [key2]],
+      userKeychains: [503: [keychain2]],
       appIdManifest: .init(),
       exemptUsers: [501]
     )])
@@ -285,8 +290,8 @@ final class FilterReducerTests: XCTestCase {
     }
 
     await expect(save.calls).toEqual([
-      .init(userKeys: [:], appIdManifest: .init(), exemptUsers: [501, 502]),
-      .init(userKeys: [:], appIdManifest: .init(), exemptUsers: [502]),
+      .init(userKeychains: [:], appIdManifest: .init(), exemptUsers: [501, 502]),
+      .init(userKeychains: [:], appIdManifest: .init(), exemptUsers: [502]),
     ])
   }
 

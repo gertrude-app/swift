@@ -1,4 +1,5 @@
 import Core
+import Dependencies
 import Gertie
 import XCTest
 import XExpect
@@ -49,28 +50,65 @@ final class CompletedFlowDecisionTests: XCTestCase {
   }
 
   func testInteractionBetweenMultipleUserKeys() {
-    let key1 = FilterKey(key: .domain(domain: "one.com", scope: .unrestricted))
-    let key2 = FilterKey(key: .domain(domain: "two.com", scope: .unrestricted))
+    let key1 = RuleKey(key: .domain(domain: "one.com", scope: .unrestricted))
+    let key2 = RuleKey(key: .domain(domain: "two.com", scope: .unrestricted))
 
-    // // user 1
-    var filter = TestFilter.scenario(userKeys: [502: [key1], 503: [key2]])
+    // user 1
+    var filter = TestFilter.scenario(userKeychains: [502: key1.into(), 503: key2.into()])
     var flow1 = FilterFlow.test(hostname: "one.com", userId: 502)
     expect(filter.completedDecision(&flow1)).toEqual(.allow(.permittedByKey(key1.id)))
     var flow2 = FilterFlow.test(hostname: "two.com", userId: 502)
     expect(filter.completedDecision(&flow2)).toEqual(.block(.defaultNotAllowed))
 
     // user 2
-    filter = TestFilter.scenario(userKeys: [502: [key1], 503: [key2]])
+    filter = TestFilter.scenario(userKeychains: [502: key1.into(), 503: key2.into()])
     var flow3 = FilterFlow.test(hostname: "one.com", userId: 503)
     expect(filter.completedDecision(&flow3)).toEqual(.block(.defaultNotAllowed))
     var flow4 = FilterFlow.test(hostname: "two.com", userId: 503)
     expect(filter.completedDecision(&flow4)).toEqual(.allow(.permittedByKey(key2.id)))
   }
 
+  func testKeychainInactiveFromScheduleDoesNotAllow() {
+    let key1 = RuleKey(key: .domain(domain: "one.com", scope: .unrestricted))
+    let keychain = RuleKeychain(
+      schedule: .init(mode: .active, days: .all, window: "04:00-05:00"),
+      keys: [key1]
+    )
+
+    let times =
+      LockIsolated<[Date]>([
+        .day(.friday, at: "12:33"), // inactive
+        .day(.friday, at: "03:59"), // inactive
+        .day(.friday, at: "04:00"), // active
+        .day(.friday, at: "04:47"), // active
+        .day(.friday, at: "04:59"), // active
+        .day(.friday, at: "05:00"), // inactive
+        .day(.friday, at: "05:01"), // inactive
+        .day(.friday, at: "07:33"), // inactive
+      ])
+    withDependencies {
+      $0.date = .init {
+        times.withValue { $0.removeFirst() }
+      }
+    } operation: {
+      let filter = TestFilter.scenario(userKeychains: [502: [keychain]])
+      var flow = FilterFlow.test(hostname: "one.com", userId: 502)
+      expect(filter.completedDecision(&flow)).toEqual(.block(.defaultNotAllowed))
+      expect(filter.completedDecision(&flow)).toEqual(.block(.defaultNotAllowed))
+      expect(filter.completedDecision(&flow)).toEqual(.allow(.permittedByKey(key1.id)))
+      expect(filter.completedDecision(&flow)).toEqual(.allow(.permittedByKey(key1.id)))
+      expect(filter.completedDecision(&flow)).toEqual(.allow(.permittedByKey(key1.id)))
+      expect(filter.completedDecision(&flow)).toEqual(.block(.defaultNotAllowed))
+      expect(filter.completedDecision(&flow)).toEqual(.block(.defaultNotAllowed))
+      expect(filter.completedDecision(&flow)).toEqual(.block(.defaultNotAllowed))
+      expect(times.value).toEqual([])
+    }
+  }
+
   func testWeNolongerAllowIpAddressesAuthedByPriorHostnameAllowance() {
-    let key = FilterKey(key: .domain(domain: "safe.com", scope: .unrestricted))
+    let key = RuleKey(key: .domain(domain: "safe.com", scope: .unrestricted))
     var flow = FilterFlow.test(ipAddress: "1.2.3.4", hostname: "safe.com")
-    let filter = TestFilter.scenario(userKeys: [502: [key]])
+    let filter = TestFilter.scenario(userKeychains: [502: key.into()])
     let decision1 = filter.completedDecision(&flow)
     expect(decision1).toEqual(.allow(.permittedByKey(key.id)))
 
@@ -86,8 +124,8 @@ final class CompletedFlowDecisionTests: XCTestCase {
   }
 
   func testUdpRequestFromUnrestrictedAppAllowed() {
-    let key = FilterKey(key: .skeleton(scope: .bundleId("com.skype")))
-    let filter = TestFilter.scenario(userKeys: [502: [key]])
+    let key = RuleKey(key: .skeleton(scope: .bundleId("com.skype")))
+    let filter = TestFilter.scenario(userKeychains: [502: key.into()])
     var unrestrictedAppFlow = FilterFlow.test(
       hostname: "foo.com",
       bundleId: "com.skype",
@@ -192,14 +230,14 @@ final class CompletedFlowDecisionTests: XCTestCase {
     for (patternStr, hostname) in cases {
       let pattern = Key.DomainRegexPattern(patternStr)!
       // ALLOWS any matching hostname when scope = .unrestricted
-      var key = FilterKey(key: .domainRegex(pattern: pattern, scope: .unrestricted))
+      var key = RuleKey(key: .domainRegex(pattern: pattern, scope: .unrestricted))
       var flow = FilterFlow.test(hostname: hostname, bundleId: "com.\(UUID())")
-      var filter = TestFilter.scenario(userKeys: [502: [key]])
+      var filter = TestFilter.scenario(userKeychains: [502: key.into()])
       expect(filter.completedDecision(&flow)).toEqual(.allow(.permittedByKey(key.id)))
 
       // when scope = .webBrowsers, only allows web browsers
-      key = FilterKey(key: .domainRegex(pattern: pattern, scope: .webBrowsers))
-      filter = TestFilter.scenario(userKeys: [502: [key]])
+      key = RuleKey(key: .domainRegex(pattern: pattern, scope: .webBrowsers))
+      filter = TestFilter.scenario(userKeychains: [502: key.into()])
       var browserFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
       expect(filter.completedDecision(&browserFlow)).toEqual(.allow(.permittedByKey(key.id)))
       var xcodeFlow = FilterFlow.test(hostname: hostname, bundleId: "com.xcode")
@@ -207,7 +245,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
 
       // when scope = .single(.identifiedAppSlug), only allows matching app
       key = .init(key: .domainRegex(pattern: pattern, scope: .single(.identifiedAppSlug("chrome"))))
-      filter = TestFilter.scenario(userKeys: [502: [key]])
+      filter = TestFilter.scenario(userKeychains: [502: key.into()])
       var appSlugFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
       expect(filter.completedDecision(&appSlugFlow)).toEqual(.allow(.permittedByKey(key.id)))
       var slackFlow = FilterFlow.test(hostname: hostname, bundleId: "com.slack")
@@ -215,7 +253,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
 
       // when scope = .single(.bundleId), only allows matching app
       key = .init(key: .domainRegex(pattern: pattern, scope: .single(.bundleId("com.chrome"))))
-      filter = TestFilter.scenario(userKeys: [502: [key]])
+      filter = TestFilter.scenario(userKeychains: [502: key.into()])
       var bundleFlow = FilterFlow.test(hostname: hostname, bundleId: "com.chrome")
       expect(filter.completedDecision(&bundleFlow)).toEqual(.allow(.permittedByKey(key.id)))
       var skypeFlow = FilterFlow.test(hostname: hostname, bundleId: "com.skype")
@@ -235,8 +273,8 @@ final class CompletedFlowDecisionTests: XCTestCase {
       ("foo.lol.*", "bar.lol"),
     ]
     for (pattern, hostname) in cases {
-      let key = FilterKey(key: .domainRegex(pattern: .init(pattern)!, scope: .unrestricted))
-      let filter = TestFilter.scenario(userKeys: [502: [key]])
+      let key = RuleKey(key: .domainRegex(pattern: .init(pattern)!, scope: .unrestricted))
+      let filter = TestFilter.scenario(userKeychains: [502: key.into()])
       var flow = FilterFlow.test(hostname: hostname)
       let decision = filter.completedDecision(&flow)
       expect(decision).toEqual(.block(.defaultNotAllowed))
@@ -292,23 +330,23 @@ extension CompletedFlowDecisionTests {
 
   func assertDecisions(_ cases: [(TestCase.Input, TestCase.Decision)]) {
     for (input, decision) in cases {
-      let key: FilterKey
+      let key: RuleKey
       var flow: FilterFlow
       switch input {
       case .domain(let keyDomain, let flowHostname):
-        key = FilterKey(key: .domain(domain: .init(keyDomain)!, scope: .unrestricted))
+        key = RuleKey(key: .domain(domain: .init(keyDomain)!, scope: .unrestricted))
         flow = FilterFlow.test(hostname: flowHostname)
       case .subdomain(let keyDomain, let flowHostname):
-        key = FilterKey(key: .anySubdomain(domain: .init(keyDomain)!, scope: .unrestricted))
+        key = RuleKey(key: .anySubdomain(domain: .init(keyDomain)!, scope: .unrestricted))
         flow = FilterFlow.test(hostname: flowHostname)
       case .ip(let keyIp, let flowIp):
-        key = FilterKey(key: .ipAddress(ipAddress: .init(keyIp)!, scope: .unrestricted))
+        key = RuleKey(key: .ipAddress(ipAddress: .init(keyIp)!, scope: .unrestricted))
         flow = FilterFlow.test(ipAddress: flowIp)
       case .path(let keyPath, let flowUrl):
-        key = FilterKey(key: .path(path: .init(keyPath)!, scope: .unrestricted))
+        key = RuleKey(key: .path(path: .init(keyPath)!, scope: .unrestricted))
         flow = FilterFlow.test(url: flowUrl)
       }
-      let filter = TestFilter.scenario(userKeys: [502: [key]])
+      let filter = TestFilter.scenario(userKeychains: [502: key.into()])
       let flowDecision = decision == .allow ? FilterDecision.FromFlow
         .allow(.permittedByKey(key.id)) : .block(.defaultNotAllowed)
       expect(filter.completedFlowDecision(&flow, readBytes: .init())).toEqual(flowDecision)

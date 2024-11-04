@@ -1,3 +1,4 @@
+import Core
 import Dependencies
 import Gertie
 import TestSupport
@@ -37,8 +38,9 @@ class FilterMigratorTests: XCTestCase {
       setStringInvocations.append(.init(key, value))
     }
 
+    let v1FilterKey = RuleKey(id: 1, key: .skeleton(scope: .bundleId("com.whitelisted.widget")))
     let v1Stored = Persistent.V1(
-      userKeys: [502: [.mock]],
+      userKeys: [502: [v1FilterKey]],
       appIdManifest: .init(),
       exemptUsers: [503]
     )
@@ -58,7 +60,11 @@ class FilterMigratorTests: XCTestCase {
     }
 
     let expectedState = Persistent.State(
-      userKeys: v1Stored.userKeys,
+      userKeychains: [502: [.init(
+        id: 0, // <-- created by migrator
+        schedule: nil,
+        keys: [.init(id: v1FilterKey.id, key: v1FilterKey.key)]
+      )]],
       userDowntime: [:], // <-- created by migrator
       appIdManifest: v1Stored.appIdManifest,
       exemptUsers: v1Stored.exemptUsers
@@ -98,7 +104,7 @@ class FilterMigratorTests: XCTestCase {
     }
 
     let expectedState = Persistent.State(
-      userKeys: [:],
+      userKeychains: [:],
       userDowntime: [:],
       appIdManifest: .init(),
       exemptUsers: [509, 507]
@@ -118,13 +124,24 @@ class FilterMigratorTests: XCTestCase {
 extension Persistent.State: Mocked {
   public static var mock: Self {
     .init(
-      userKeys: [502: [.init(id: .deadbeef, key: .mock)]],
+      userKeychains: [502: [.init(id: .deadbeef, schedule: nil, keys: [.mock])]],
       appIdManifest: .empty,
       exemptUsers: [501]
     )
   }
 
   public static var empty: Self {
-    .init(userKeys: [:], appIdManifest: .empty, exemptUsers: [])
+    .init(userKeychains: [:], appIdManifest: .empty, exemptUsers: [])
   }
+}
+
+extension RuleKey {
+  static let mock = RuleKey(
+    id: .init(),
+    key: .skeleton(scope: .bundleId("com.whitelisted.widget"))
+  )
+}
+
+extension RuleKeychain {
+  static let mock = RuleKeychain(id: .init(), keys: [.mock])
 }

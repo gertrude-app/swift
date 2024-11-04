@@ -9,7 +9,7 @@ struct AppUpdatesFeature: Feature {
   struct State: Equatable {
     var installedVersion: String
     var releaseChannel: ReleaseChannel = .stable
-    var latestVersion: CheckIn.LatestRelease?
+    var latestVersion: CheckIn_v2.LatestRelease?
     var updateNagDismissedUntil: Date?
   }
 
