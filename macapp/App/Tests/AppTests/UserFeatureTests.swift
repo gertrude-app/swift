@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Gertie
 import MacAppRoute
 import PairQL
 import TestSupport
@@ -89,12 +90,13 @@ final class UserFeatureTests: XCTestCase {
   }
 
   @MainActor
-  func testNotifies5MinutestBeforeDowntime() async {
+  func testNotifies5MinutestBeforeDowntimeAndQuitsBrowsersAtDowntime() async {
     // the time is: 21:53, i.e. 9:53 PM, 7 minutes before downtime
     let now = Calendar.current.date(from: DateComponents(hour: 21, minute: 53))!
 
     let (store, scheduler) = AppReducer.testStore(mockDeps: true) {
       $0.user.data = .mock { $0.downtime = "22:00-05:00" }
+      $0.browsers = [.name("Arc")]
     }
 
     store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
@@ -102,6 +104,8 @@ final class UserFeatureTests: XCTestCase {
     store.deps.device.screensaverRunning = { false }
     store.deps.device.showNotification = { _, _ in fatalError() }
     store.deps.storage.loadPersistentState = { nil }
+    let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
+    store.deps.device.quitBrowsers = quitBrowsers.fn
     let time = ControllingNow(starting: now, with: scheduler)
     store.deps.date = time.generator
 
@@ -118,13 +122,19 @@ final class UserFeatureTests: XCTestCase {
     await time.advance(seconds: 60)
     await store.receive(.heartbeat(.everyMinute)) // <-- 9:55 PM, notify!
 
-    await expect(notification.calls)
-      .toEqual([.init("😴 Downtime starting in 5 minutes", "Save any important work now!")])
+    await expect(notification.calls).toEqual([.init(
+      "😴 Downtime starting in 5 minutes",
+      "Browsers will quit, save any important work now!"
+    )])
 
     store.deps.device.showNotification = { _, _ in fatalError() }
-    for _ in 1 ... 6 {
+    for _ in 1 ... 4 {
       await time.advance(seconds: 60)
       await store.receive(.heartbeat(.everyMinute))
     }
+    await expect(quitBrowsers.calls).toEqual([])
+    await time.advance(seconds: 60)
+    await store.receive(.heartbeat(.everyMinute))
+    await expect(quitBrowsers.calls).toEqual([[.name("Arc")]])
   }
 }

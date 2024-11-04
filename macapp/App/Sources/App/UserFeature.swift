@@ -44,17 +44,27 @@ extension UserFeature.RootReducer: RootReducing {
       if let expiry = state.user.downtimePausedUntil, self.now >= expiry {
         state.user.downtimePausedUntil = nil
       }
-      guard let downtime = state.user.data?.downtime,
-            PlainTime.from(self.now, in: self.calendar).minutesUntil(downtime.start) == 5 else {
+      guard let downtime = state.user.data?.downtime else {
         return .none
       }
-      return .exec { _ in
-        if self.device.currentUserHasScreen(), !self.device.screensaverRunning() {
-          await self.device.showNotification(
-            "😴 Downtime starting in 5 minutes",
-            "Save any important work now!"
-          )
+      let minutesTillDowntime = PlainTime.from(self.now, in: self.calendar)
+        .minutesUntil(downtime.start)
+      switch minutesTillDowntime {
+      case 5:
+        return .exec { _ in
+          if self.device.currentUserHasScreen(), !self.device.screensaverRunning() {
+            await self.device.showNotification(
+              "😴 Downtime starting in 5 minutes",
+              "Browsers will quit, save any important work now!"
+            )
+          }
         }
+      case 0:
+        return .exec { [browsers = state.browsers] _ in
+          await self.device.quitBrowsers(browsers)
+        }
+      default:
+        return .none
       }
 
     case .heartbeat(.everySixHours):
