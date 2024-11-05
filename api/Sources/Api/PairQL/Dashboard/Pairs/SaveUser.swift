@@ -1,4 +1,5 @@
 import DuetSQL
+import Gertie
 import PairQL
 
 struct SaveUser: Pair {
@@ -13,6 +14,7 @@ struct SaveUser: Pair {
     var screenshotsResolution: Int
     var screenshotsFrequency: Int
     var showSuspensionActivity: Bool
+    var downtime: PlainTimeWindow?
     var keychainIds: [Keychain.Id]
   }
 }
@@ -32,7 +34,8 @@ extension SaveUser: Resolver {
         screenshotsEnabled: true,
         screenshotsResolution: 1000,
         screenshotsFrequency: 180,
-        showSuspensionActivity: true
+        showSuspensionActivity: true,
+        downtime: input.downtime
       ))
       let keychain = try await context.db.create(Keychain(
         authorId: context.admin.id,
@@ -58,6 +61,7 @@ extension SaveUser: Resolver {
       user.screenshotsResolution = input.screenshotsResolution
       user.screenshotsFrequency = input.screenshotsFrequency
       user.showSuspensionActivity = input.showSuspensionActivity
+      user.downtime = input.downtime
       try await context.db.update(user)
 
       let existing = try await user.keychains(in: context.db).map(\.id)

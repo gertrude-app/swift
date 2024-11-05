@@ -507,6 +507,7 @@ extension User: Model {
     case .screenshotsResolution: .int(self.screenshotsResolution)
     case .screenshotsFrequency: .int(self.screenshotsFrequency)
     case .showSuspensionActivity: .bool(self.showSuspensionActivity)
+    case .downtime: .json(self.downtime?.toPostgresJson)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
     }
@@ -522,6 +523,7 @@ extension User: Model {
       .screenshotsResolution: .int(self.screenshotsResolution),
       .screenshotsFrequency: .int(self.screenshotsFrequency),
       .showSuspensionActivity: .bool(self.showSuspensionActivity),
+      .downtime: .json(self.downtime?.toPostgresJson),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -554,6 +556,7 @@ extension UserKeychain: Model {
 }
 
 extension KeychainSchedule: PostgresJsonable {}
+extension PlainTimeWindow: PostgresJsonable {}
 
 extension UserToken: Model {
   public static let tableName = M3.tableName

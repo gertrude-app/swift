@@ -354,6 +354,7 @@ extension User {
     case screenshotsResolution
     case screenshotsFrequency
     case showSuspensionActivity
+    case downtime
     case createdAt
     case updatedAt
   }

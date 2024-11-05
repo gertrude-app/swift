@@ -17,6 +17,7 @@ final class UsersResolversTests: ApiTestCase {
       screenshotsResolution: 999, // <-- ignored for new user, we set
       screenshotsFrequency: 888, // <-- ignored for new user, we set
       showSuspensionActivity: false, // <-- ignored for new user, we set
+      downtime: "22:00-06:00",
       keychainIds: []
     )
 
@@ -31,6 +32,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(user.screenshotsResolution).toEqual(1000)
     expect(user.screenshotsFrequency).toEqual(180)
     expect(user.showSuspensionActivity).toEqual(true)
+    expect(user.downtime).toEqual("22:00-06:00")
 
     let keychains = try await user.keychains(in: self.db)
     expect(keychains.count).toEqual(1)
@@ -74,6 +76,7 @@ final class UsersResolversTests: ApiTestCase {
         screenshotsResolution: 333,
         screenshotsFrequency: 444,
         showSuspensionActivity: true,
+        downtime: "22:00-06:00",
         keychainIds: []
       ),
       in: user.admin.context
@@ -87,6 +90,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(retrieved.screenshotsResolution).toEqual(333)
     expect(retrieved.screenshotsFrequency).toEqual(444)
     expect(retrieved.showSuspensionActivity).toEqual(true)
+    expect(retrieved.downtime).toEqual("22:00-06:00")
 
     expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(user.id))])
   }
