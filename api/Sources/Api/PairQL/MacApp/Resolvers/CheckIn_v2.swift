@@ -119,6 +119,7 @@ extension CheckIn_v2: Resolver {
 // helpers
 
 // TODO: this is major N+1 territory, write a custom query w/ join for perf
+// @see also userKeychainSummaries(for:in:)
 func ruleKeychains(
   for userId: User.Id,
   in db: any DuetSQL.Client

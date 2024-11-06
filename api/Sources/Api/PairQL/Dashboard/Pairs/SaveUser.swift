@@ -15,7 +15,12 @@ struct SaveUser: Pair {
     var screenshotsFrequency: Int
     var showSuspensionActivity: Bool
     var downtime: PlainTimeWindow?
-    var keychainIds: [Keychain.Id]
+    var keychains: [UserKeychain]
+
+    struct UserKeychain: PairNestable {
+      var id: Keychain.Id
+      var schedule: KeychainSchedule?
+    }
   }
 }
 
@@ -64,16 +69,22 @@ extension SaveUser: Resolver {
       user.downtime = input.downtime
       try await context.db.update(user)
 
-      let existing = try await user.keychains(in: context.db).map(\.id)
-      if !existing.elementsEqual(input.keychainIds) {
+      let existing = try await userKeychainSummaries(for: user.id, in: context.db)
+        .map(\.userKeychain)
+      if !existing.elementsEqual(input.keychains) {
         dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
 
         try await UserKeychain.query()
           .where(.userId == user.id)
           .delete(in: context.db)
 
-        let pivots = input.keychainIds
-          .map { UserKeychain(userId: user.id, keychainId: $0) }
+        let pivots = input.keychains.map { keychain in
+          UserKeychain(
+            userId: user.id,
+            keychainId: keychain.id,
+            schedule: keychain.schedule
+          )
+        }
 
         try await context.db.create(pivots)
       }
@@ -105,4 +116,10 @@ func monitoringDecreased(user: User, input: SaveUser.Input) -> String? {
     parts.append("suspension activity visibility disabled")
   }
   return parts.isEmpty ? nil : parts.joined(separator: ", ")
+}
+
+extension UserKeychainSummary {
+  var userKeychain: SaveUser.Input.UserKeychain {
+    .init(id: id, schedule: schedule)
+  }
 }

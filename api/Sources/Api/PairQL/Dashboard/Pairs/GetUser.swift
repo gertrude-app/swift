@@ -4,13 +4,14 @@ import Foundation
 import Gertie
 import PairQL
 
-struct KeychainSummary: PairNestable {
-  let id: Api.Keychain.Id
-  let authorId: Admin.Id
-  let name: String
-  let description: String?
-  let isPublic: Bool
-  let numKeys: Int
+struct UserKeychainSummary: PairNestable {
+  var id: Api.Keychain.Id
+  var authorId: Admin.Id
+  var name: String
+  var description: String?
+  var isPublic: Bool
+  var numKeys: Int
+  var schedule: KeychainSchedule?
 }
 
 struct GetUser: Pair {
@@ -24,19 +25,19 @@ struct GetUser: Pair {
     var screenshotsResolution: Int
     var screenshotsFrequency: Int
     var showSuspensionActivity: Bool
-    var keychains: [KeychainSummary]
+    var keychains: [UserKeychainSummary]
     var downtime: PlainTimeWindow?
     var devices: [Device]
     var createdAt: Date
   }
 
   struct Device: PairNestable {
-    let id: Api.Device.Id
-    let isOnline: Bool
-    let modelFamily: DeviceModelFamily
-    let modelTitle: String
-    let modelIdentifier: String
-    let customName: String?
+    var id: Api.Device.Id
+    var isOnline: Bool
+    var modelFamily: DeviceModelFamily
+    var modelTitle: String
+    var modelIdentifier: String
+    var customName: String?
   }
 
   typealias Input = Api.User.Id
@@ -54,30 +55,39 @@ extension GetUser: Resolver {
   }
 }
 
-extension KeychainSummary {
-  init(from keychain: Keychain) async throws {
-    @Dependency(\.db) var db
+// TODO: this is major N+1 territory, write a custom query w/ join for perf
+// @see also ruleKeychains(for:in:)
+func userKeychainSummaries(
+  for userId: User.Id,
+  in db: any DuetSQL.Client
+) async throws -> [UserKeychainSummary] {
+  let userKeychains = try await UserKeychain.query()
+    .where(.userId == userId)
+    .all(in: db)
+  let keychains = try await Keychain.query()
+    .where(.id |=| userKeychains.map(\.keychainId))
+    .all(in: db)
+  return try await keychains.concurrentMap { keychain in
     let numKeys = try await db.count(
       Key.self,
       where: .keychainId == keychain.id,
       withSoftDeleted: false
     )
-    self.init(
+    return .init(
       id: keychain.id,
       authorId: keychain.authorId,
       name: keychain.name,
       description: keychain.description,
       isPublic: keychain.isPublic,
-      numKeys: numKeys
+      numKeys: numKeys,
+      schedule: userKeychains.first { $0.keychainId == keychain.id }?.schedule
     )
   }
 }
 
 extension GetUser.User {
   init(from user: Api.User, in db: any DuetSQL.Client) async throws {
-    async let userKeychains = user.keychains(in: db)
-      .concurrentMap { try await KeychainSummary(from: $0) }
-
+    async let userKeychains = userKeychainSummaries(for: user.id, in: db)
     async let devices = UserDevice.query()
       .where(.userId == user.id)
       .all(in: db)
@@ -103,7 +113,7 @@ extension GetUser.User {
       showSuspensionActivity: user.showSuspensionActivity,
       keychains: try await userKeychains,
       downtime: user.downtime,
-      devices: try await devices,
+      devices: (try await devices).uniqued(on: \.id),
       createdAt: user.createdAt
     )
   }
