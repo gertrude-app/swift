@@ -1,5 +1,6 @@
 import Dependencies
 import Foundation
+import os.log
 import XCore
 
 public struct UserDefaultsClient: Sendable {
@@ -26,12 +27,16 @@ public struct UserDefaultsClient: Sendable {
     self.removeAll = removeAll
   }
 
+  public func setString(key: String, value: String) {
+    self.setString(key, value)
+  }
+
   public func loadJson<T: Decodable>(at key: String, decoding type: T.Type) throws -> T? {
     try self.getString(key).flatMap { try JSON.decode($0, as: T.self) }
   }
 
   public func saveJson<T: Encodable>(from value: T, at key: String) throws {
-    self.setString(try JSON.encode(value), key)
+    self.setString(key: key, value: try JSON.encode(value))
   }
 }
 
@@ -39,7 +44,15 @@ extension UserDefaultsClient: DependencyKey {
   public static let liveValue = Self(
     setInt: { UserDefaults.standard.set($1, forKey: $0) },
     getInt: { UserDefaults.standard.integer(forKey: $0) },
-    setString: { UserDefaults.standard.set($0, forKey: $1) },
+    setString: {
+      #if DEBUG
+        if $0.starts(with: "{") || $0.starts(with: "[") {
+          os_log("[G•] ERROR reversed key/value in UserDefaultsClient.setString")
+          fatalError("reversed key/value in UserDefaultsClient.setString")
+        }
+      #endif
+      return UserDefaults.standard.set($1, forKey: $0)
+    },
     getString: { UserDefaults.standard.string(forKey: $0) },
     remove: { UserDefaults.standard.removeObject(forKey: $0) },
     removeAll: {

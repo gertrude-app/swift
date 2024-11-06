@@ -29,7 +29,7 @@ extension StorageClient: DependencyKey {
         )
       },
       loadPersistentState: {
-        if let current = try loadSync() { return current }
+        if let current = try? loadSync() { return current }
         return await FilterMigrator(userDefaults: userDefaults).migrate()
       },
       loadPersistentStateSync: {

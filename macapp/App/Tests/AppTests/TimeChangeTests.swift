@@ -116,7 +116,7 @@ final class TimeChangeTests: XCTestCase {
     store.deps.api.getUserToken = { .deadbeef }
     store.deps.userDefaults.getString = { _ in nil }
     let setString = LockIsolated<[String]>([])
-    store.deps.userDefaults.setString = { _, key in
+    store.deps.userDefaults.setString = { @Sendable key, _ in
       setString.withValue { $0.append(key) }
     }
 
