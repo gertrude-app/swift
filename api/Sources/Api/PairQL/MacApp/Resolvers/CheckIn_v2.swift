@@ -106,6 +106,7 @@ extension CheckIn_v2: Resolver {
         screenshotsEnabled: context.user.screenshotsEnabled,
         screenshotFrequency: context.user.screenshotsFrequency,
         screenshotSize: context.user.screenshotsResolution,
+        downtime: context.user.downtime,
         connectedAt: userDevice.createdAt
       ),
       browsers: try await browsers.map(\.match),

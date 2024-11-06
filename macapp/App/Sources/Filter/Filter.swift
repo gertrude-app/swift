@@ -44,7 +44,7 @@ public struct Filter: Reducer, Sendable {
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-    case .cacheAppDescriptor:
+    case .cacheAppDescriptor, .logAppRequest:
       break
     default:
       os_log(

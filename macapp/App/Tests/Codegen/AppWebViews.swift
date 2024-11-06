@@ -9,7 +9,7 @@ struct AppWebViews: AggregateCodeGenerator {
     AppviewStore(
       at: "lib/shared-types.ts",
       namedTypes: [
-        .init(FilterState.WithRelativeTimes.self),
+        .init(FilterState.WithRelativeTimes.self, as: "FilterState"),
         .init(AdminAccountStatus.self),
       ]
     ),

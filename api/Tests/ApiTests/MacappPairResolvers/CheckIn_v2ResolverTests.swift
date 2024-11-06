@@ -13,6 +13,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase {
       $0.screenshotsEnabled = true
       $0.screenshotsFrequency = 376
       $0.screenshotsResolution = 1081
+      $0.downtime = "22:00-08:00"
     }).withDevice()
 
     let output = try await CheckIn_v2.resolve(
@@ -24,6 +25,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase {
     expect(output.userData.screenshotsEnabled).toBeTrue()
     expect(output.userData.screenshotFrequency).toEqual(376)
     expect(output.userData.screenshotSize).toEqual(1081)
+    expect(output.userData.downtime).toEqual("22:00-08:00")
 
     let device = try await self.db.find(user.adminDevice.id)
     expect(device.filterVersion).toEqual("3.3.3")
