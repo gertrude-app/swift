@@ -5,30 +5,18 @@ import XExpect
 @testable import Api
 
 final class UsersResolversTests: ApiTestCase {
-  func testDeleteUser() async throws {
-    let user = try await self.user()
-    let output = try await DeleteEntity.resolve(
-      with: .init(id: user.id.rawValue, type: .user),
-      in: user.admin.context
-    )
-    expect(output).toEqual(.success)
-    let retrieved = try? await self.db.find(user.id)
-    expect(retrieved).toBeNil()
-    expect(sent.websocketMessages).toEqual([.init(.userDeleted, to: .user(user.id))])
-  }
-
-  func testSaveNewUser() async throws {
+  func testSaveAndDeleteNewUser() async throws {
     let admin = try await self.admin()
 
     let input = SaveUser.Input(
       id: .init(),
       isNew: true,
-      name: "Test User",
-      keyloggingEnabled: true,
-      screenshotsEnabled: true,
-      screenshotsResolution: 111,
-      screenshotsFrequency: 588,
-      showSuspensionActivity: false,
+      name: "Franny",
+      keyloggingEnabled: false, // <-- ignored for new user, we set
+      screenshotsEnabled: false, // <-- ignored for new user, we set
+      screenshotsResolution: 999, // <-- ignored for new user, we set
+      screenshotsFrequency: 888, // <-- ignored for new user, we set
+      showSuspensionActivity: false, // <-- ignored for new user, we set
       keychainIds: []
     )
 
@@ -36,12 +24,41 @@ final class UsersResolversTests: ApiTestCase {
 
     let user = try await self.db.find(input.id)
     expect(output).toEqual(.success)
-    expect(user.name).toEqual("Test User")
+    expect(user.name).toEqual("Franny")
+    // vvv--- these are our recommended defaults
     expect(user.keyloggingEnabled).toEqual(true)
     expect(user.screenshotsEnabled).toEqual(true)
-    expect(user.screenshotsResolution).toEqual(111)
-    expect(user.screenshotsFrequency).toEqual(588)
-    expect(user.showSuspensionActivity).toEqual(false)
+    expect(user.screenshotsResolution).toEqual(1000)
+    expect(user.screenshotsFrequency).toEqual(180)
+    expect(user.showSuspensionActivity).toEqual(true)
+
+    let keychains = try await user.keychains(in: self.db)
+    expect(keychains.count).toEqual(1)
+    let keychainId = keychains[0].id
+    expect(keychains[0].name).toEqual("Franny’s Keychain")
+    expect(keychains[0].description!).toContain("created automatically")
+    expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(user.id))])
+
+    // now delete...
+    let deleteOutput = try await DeleteEntity.resolve(
+      with: .init(id: user.id.rawValue, type: .user),
+      in: admin.context
+    )
+    expect(deleteOutput).toEqual(.success)
+    let retrieved = try? await self.db.find(user.id)
+    expect(retrieved).toBeNil()
+    expect(sent.websocketMessages).toEqual([
+      .init(.userUpdated, to: .user(user.id)),
+      .init(.userDeleted, to: .user(user.id)),
+    ])
+
+    // and the empty keychain should be deleted
+    let userKeychains = try await UserKeychain.query()
+      .where(.userId == user.id)
+      .all(in: self.db)
+    expect(userKeychains.isEmpty).toBeTrue()
+    let retrievedKeychain = try? await self.db.find(keychainId)
+    expect(retrievedKeychain).toBeNil()
   }
 
   func testExistingUserUpdated() async throws {

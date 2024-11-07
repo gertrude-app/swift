@@ -88,7 +88,16 @@ extension DeleteEntity: Resolver {
         .where(.adminId == context.admin.id)
         .first(in: context.db)
       dashSecurityEvent(.childDeleted, "name: \(user.name)", in: context)
+
+      let userKeychainIds = try await UserKeychain.query()
+        .where(.userId == user.id)
+        .all(in: context.db)
+        .map(\.keychainId)
+
       try await context.db.delete(user)
+
+      await deleteUnusedEmptyAutogenKeychain(userKeychainIds, context.db)
+
       let devices = try await Device.query()
         .where(.id |=| deviceIds)
         .all(in: context.db)
@@ -102,6 +111,33 @@ extension DeleteEntity: Resolver {
     }
 
     return .success
+  }
+}
+
+func deleteUnusedEmptyAutogenKeychain(
+  _ userKeychainIds: [Keychain.Id],
+  _ db: any DuetSQL.Client
+) async {
+  do {
+    let keychains = try await Keychain.query()
+      .where(.id |=| userKeychainIds)
+      .where(.like(.description, "%created automatically%"))
+      .all(in: db)
+
+    for keychain in keychains {
+      let keys = try await keychain.keys(in: db)
+      if keys.isEmpty {
+        let otherUsers = try await UserKeychain.query()
+          .where(.keychainId == keychain.id)
+          .all(in: db)
+        if otherUsers.isEmpty {
+          try await db.delete(keychain)
+        }
+      }
+    }
+  } catch {
+    // we don't care about errors, we're just cleaning up
+    // after ourselves, there's no harm if this operation fails
   }
 }
 
