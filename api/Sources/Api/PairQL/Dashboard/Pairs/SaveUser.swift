@@ -27,12 +27,24 @@ extension SaveUser: Resolver {
         id: input.id,
         adminId: context.admin.id,
         name: input.name,
-        keyloggingEnabled: input.keyloggingEnabled,
-        screenshotsEnabled: input.screenshotsEnabled,
-        screenshotsResolution: input.screenshotsResolution,
-        screenshotsFrequency: input.screenshotsFrequency,
-        showSuspensionActivity: input.showSuspensionActivity
+        // vvv--- these are our recommended defaults
+        keyloggingEnabled: true,
+        screenshotsEnabled: true,
+        screenshotsResolution: 1000,
+        screenshotsFrequency: 180,
+        showSuspensionActivity: true
       ))
+      let keychain = try await context.db.create(Keychain(
+        authorId: context.admin.id,
+        name: "\(input.name)’s Keychain",
+        isPublic: false,
+        description: """
+        This keychain was created automatically as a default place for you to \
+        add keys for \(input.name). Feel free to use it as is, change it, \
+        delete it, or create as many other keychains as you like.
+        """
+      ))
+      try await context.db.create(UserKeychain(userId: user.id, keychainId: keychain.id))
       dashSecurityEvent(.childAdded, "name: \(user.name)", in: context)
     } else {
       user = try await context.db.find(input.id)
@@ -47,20 +59,20 @@ extension SaveUser: Resolver {
       user.screenshotsFrequency = input.screenshotsFrequency
       user.showSuspensionActivity = input.showSuspensionActivity
       try await context.db.update(user)
-    }
 
-    let existing = try await user.keychains(in: context.db).map(\.id)
-    if !existing.elementsEqual(input.keychainIds) {
-      dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
+      let existing = try await user.keychains(in: context.db).map(\.id)
+      if !existing.elementsEqual(input.keychainIds) {
+        dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
 
-      try await UserKeychain.query()
-        .where(.userId == user.id)
-        .delete(in: context.db)
+        try await UserKeychain.query()
+          .where(.userId == user.id)
+          .delete(in: context.db)
 
-      let pivots = input.keychainIds
-        .map { UserKeychain(userId: user.id, keychainId: $0) }
+        let pivots = input.keychainIds
+          .map { UserKeychain(userId: user.id, keychainId: $0) }
 
-      try await context.db.create(pivots)
+        try await context.db.create(pivots)
+      }
     }
 
     try await with(dependency: \.websockets)
