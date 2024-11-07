@@ -38,7 +38,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
     expect(result).toBeError(containing: "expired, but we sent a new verification email")
     expect(sent.postmarkEmails).toHaveCount(1)
     expect(sent.postmarkEmails[0].to).toEqual(admin.email.rawValue)
-    expect(sent.postmarkEmails[0].html).toContain("verify your email address")
+    expect(sent.postmarkEmails[0].body).toContain("verify your email address")
   }
 
   func testReVerifyingExpiredTokenErrorsWithHelpfulMessage() async throws {
@@ -85,6 +85,6 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
     expect(result).toBeError(containing: "until your email is verified")
     expect(sent.postmarkEmails).toHaveCount(1)
     expect(sent.postmarkEmails[0].to).toEqual(admin.email.rawValue)
-    expect(sent.postmarkEmails[0].html).toContain("verify your email address")
+    expect(sent.postmarkEmails[0].body).toContain("verify your email address")
   }
 }

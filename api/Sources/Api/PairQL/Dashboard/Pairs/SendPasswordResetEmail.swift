@@ -27,10 +27,10 @@ extension SendPasswordResetEmail: Resolver {
         .createAdminIdToken(admin.id)
       dashSecurityEvent(.passwordResetRequested, admin: admin.id, in: context)
       try await with(dependency: \.postmark)
-        .send(reset(email, context.dashboardUrl, token))
+        .sendEmail(reset(email, context.dashboardUrl, token)).get()
     } else {
       try await with(dependency: \.postmark)
-        .send(notFound(email))
+        .sendEmail(notFound(email)).get()
     }
     return .success
   }
@@ -43,7 +43,7 @@ private func reset(_ email: String, _ dashboardUrl: String, _ token: UUID) -> XP
     to: email,
     from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude password reset".withEmailSubjectDisambiguator,
-    html: """
+    htmlBody: """
     You can reset your Gertrude account password by clicking \
     <a href="\(dashboardUrl)/reset-password/\(token.lowercased)">here</a>.
     """
@@ -55,7 +55,7 @@ private func notFound(_ email: String) -> XPostmark.Email {
     to: email,
     from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude app password reset".withEmailSubjectDisambiguator,
-    html: """
+    htmlBody: """
     A password reset was requested for this email address, \
     but no Gertrude account exists with this email address. \
     Perhaps you signed up with a different email address? <br /><br /> \

@@ -34,29 +34,55 @@ public extension DependencyValues {
 
 extension XPostmark.Client: DependencyKey {
   public static var liveValue: XPostmark.Client {
+    @Dependency(\.logger) var logger
     let env = Env.fromProcess(mode: try? Vapor.Environment.detect())
     let liveSendGrid = SendGrid.Client.live(apiKey: env.sendgridApiKey)
+    let livePostmark = XPostmark.Client.live(apiKey: env.postmarkApiKey)
     if env.mode != .prod {
-      return .init(send: { email in
-        with(dependency: \.logger)
-          .info("non-prod XPostmark.Client.send, delegating to sendgrid")
-        try await liveSendGrid.send(.init(postmark: email))
-      })
-    } else {
-      let livePostmark = XPostmark.Client.live(apiKey: env.postmarkApiKey)
-      return .init(send: { email in
-        if isCypressTestAddress(email.to) {
-          with(dependency: \.logger)
-            .info("skipping XPostmark.Client.send for cypress test")
-          return
-        } else if isProdSmokeTestAddress(email.to) || isJaredTestAddress(email.to) {
-          with(dependency: \.logger)
-            .info("delegating XPostmark.Client.send to SendGrid.Client.send for test")
-          try await liveSendGrid.send(.init(postmark: email))
-        } else {
-          try await livePostmark.send(email)
+      return .init(
+        sendEmail: { email in
+          logger.info("non-prod XPostmark.Client.send, delegating to sendgrid")
+          do {
+            try await liveSendGrid.send(.init(postmark: email))
+            return .success(())
+          } catch {
+            logger.error("failed to send email: \(error)")
+            return .failure(.init(statusCode: -5, errorCode: -5, message: "\(error)"))
+          }
+        },
+        sendTemplateEmail: { email in
+          await livePostmark.sendTemplateEmail(email)
+        },
+        sendTemplateEmailBatch: { emails in
+          await livePostmark.sendTemplateEmailBatch(emails)
         }
-      })
+      )
+    } else {
+      return .init(
+        sendEmail: { email in
+          if isCypressTestAddress(email.to) {
+            logger.info("skipping XPostmark.Client.send for cypress test")
+            return .success(())
+          } else if isProdSmokeTestAddress(email.to) || isJaredTestAddress(email.to) {
+            logger.info("delegating XPostmark.Client.send to SendGrid.Client.send for test")
+            do {
+              try await liveSendGrid.send(.init(postmark: email))
+              return .success(())
+            } catch {
+              logger.error("failed to send test email: \(error)")
+              return .failure(.init(statusCode: -6, errorCode: -6, message: "\(error)"))
+            }
+          } else {
+            return await livePostmark.sendEmail(email)
+          }
+        },
+        sendTemplateEmail: { email in
+          await livePostmark.sendTemplateEmail(email)
+        },
+        sendTemplateEmailBatch: { emails in
+          await livePostmark.sendTemplateEmailBatch(emails)
+        }
+      )
     }
   }
 }
@@ -77,7 +103,7 @@ public extension SendGrid.Email {
       to: .init(email: postmark.to),
       from: .init(email: postmark.from),
       subject: postmark.subject,
-      html: postmark.html
+      html: postmark.body
     )
   }
 }

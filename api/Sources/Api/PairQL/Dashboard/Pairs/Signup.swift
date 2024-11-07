@@ -37,7 +37,7 @@ extension Signup: Resolver {
       if context.env.mode == .prod, !isTestAddress(email) {
         sendgrid.fireAndForget(.toSuperAdmin("signup [exists]", email))
       }
-      try await postmark.send(accountExists(with: email))
+      try await postmark.sendEmail(accountExists(with: email)).get()
       return .success
     }
 
@@ -76,7 +76,8 @@ func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
     )
 
   try await with(dependency: \.postmark)
-    .send(verify(admin.email.rawValue, context.dashboardUrl, token))
+    .sendEmail(verify(admin.email.rawValue, context.dashboardUrl, token))
+    .get()
 }
 
 private func accountExists(with email: String) -> XPostmark.Email {
@@ -84,7 +85,7 @@ private func accountExists(with email: String) -> XPostmark.Email {
     to: email,
     from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude Signup Request".withEmailSubjectDisambiguator,
-    html: """
+    htmlBody: """
     We received a request to initiate a signup for the Gertrude app, \
     but this email address already has an account! Try signing in instead.\
     <br /><br />
@@ -98,7 +99,7 @@ private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> X
     to: email,
     from: "Gertrude App <noreply@gertrude.app>",
     subject: "Action Required: Confirm your email".withEmailSubjectDisambiguator,
-    html: """
+    htmlBody: """
     Please verify your email address by clicking \
     <a href="\(dashboardUrl)/verify-signup-email/\(token.lowercased)">here</a>.\
     <br /><br />
