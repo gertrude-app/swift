@@ -6,8 +6,10 @@ import XExpect
 
 @testable import Api
 
+// NB: all these tests were ported to v2, when this type
+// is removed, you can just nuke this file without thinking
 final class CheckInResolverTests: ApiTestCase {
-  func testCheckIn_UserProps() async throws {
+  func testCheckIn_UserProps_v1() async throws {
     let user = try await self.user(with: {
       $0.keyloggingEnabled = false
       $0.screenshotsEnabled = true
@@ -29,7 +31,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(device.filterVersion).toEqual("3.3.3")
   }
 
-  func testCheckIn_OtherProps() async throws {
+  func testCheckIn_OtherProps_v1() async throws {
     try await replaceAllReleases(with: [
       Release("2.0.3", channel: .stable),
       Release("2.0.4", channel: .stable),
@@ -52,7 +54,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(output.latestRelease.semver).toEqual("3.0.0")
   }
 
-  func testCheckInUpdatesDeviceData() async throws {
+  func testCheckInUpdatesDeviceData_v1() async throws {
     let user = try await self.user().withDevice {
       $0.isAdmin = nil
     } adminDevice: {
@@ -75,7 +77,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(userDevice.isAdmin).toEqual(true)
   }
 
-  func testCheckInDoesntOverwriteDeviceDataWithNil() async throws {
+  func testCheckInDoesntOverwriteDeviceDataWithNil_v1() async throws {
     let user = try await self.user().withDevice {
       $0.isAdmin = false
     } adminDevice: {
@@ -98,7 +100,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(userDevice.isAdmin).toEqual(false)
   }
 
-  func testCheckIn_AppManifest() async throws {
+  func testCheckIn_AppManifest_v1() async throws {
     try await self.db.delete(all: IdentifiedApp.self)
     try await self.db.delete(all: AppBundleId.self)
     try await self.db.delete(all: AppCategory.self)
@@ -117,7 +119,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(output.appManifest.apps).toEqual([app.slug: [id.bundleId]])
   }
 
-  func testUserWithNoKeychainsDoesNotGetAutoIncluded() async throws {
+  func testUserWithNoKeychainsDoesNotGetAutoIncluded_v1() async throws {
     let user = try await self.userWithDevice()
     try await self.createAutoIncludeKeychain()
 
@@ -128,7 +130,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(output.keys).toHaveCount(0)
   }
 
-  func testUserWithAtLeastOneKeyGetsAutoIncluded() async throws {
+  func testUserWithAtLeastOneKeyGetsAutoIncluded_v1() async throws {
     let user = try await self.userWithDevice()
     let admin = try await self.admin().withKeychain()
     try await self.db.create(UserKeychain(userId: user.id, keychainId: admin.keychain.id))
@@ -141,7 +143,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(output.keys.contains(.init(id: autoKey.id.rawValue, key: autoKey.key))).toBeTrue()
   }
 
-  func testIncludesResolvedFilterSuspension() async throws {
+  func testIncludesResolvedFilterSuspension_v1() async throws {
     let user = try await self.userWithDevice()
     let susp = try await self.db.create(SuspendFilterRequest.mock {
       $0.userDeviceId = user.device.id
@@ -176,7 +178,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(notRequested.resolvedFilterSuspension).toBeNil()
   }
 
-  func testDoesNotIncludeUnresolvedSuspension() async throws {
+  func testDoesNotIncludeUnresolvedSuspension_v1() async throws {
     let user = try await self.userWithDevice()
     let susp = try await self.db.create(SuspendFilterRequest.mock {
       $0.userDeviceId = user.device.id
@@ -195,7 +197,7 @@ final class CheckInResolverTests: ApiTestCase {
     expect(output.resolvedFilterSuspension).toBeNil()
   }
 
-  func testIncludesResolvedUnlockRequests() async throws {
+  func testIncludesResolvedUnlockRequests_v1() async throws {
     let user = try await self.userWithDevice()
     let unlock1 = UnlockRequest.mock {
       $0.userDeviceId = user.device.id

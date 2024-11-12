@@ -2,112 +2,33 @@ import Foundation
 import Gertie
 import PairQL
 
-/// in use: v2.0.4 - present
+/// deprecated: v2.0.4 - v2.4.0
+/// remove when MSV is 2.5.0
 public struct CheckIn: Pair {
   public static let auth: ClientAuth = .user
-
-  public struct Input: PairInput {
-    public var appVersion: String
-    public var filterVersion: String?
-    public var userIsAdmin: Bool?
-    public var osVersion: String?
-    public var pendingFilterSuspension: UUID?
-    public var pendingUnlockRequests: [UUID]?
-
-    public init(
-      appVersion: String,
-      filterVersion: String?,
-      userIsAdmin: Bool? = nil,
-      osVersion: String? = nil,
-      pendingFilterSuspension: UUID? = nil,
-      pendingUnlockRequests: [UUID]? = nil
-    ) {
-      self.appVersion = appVersion
-      self.filterVersion = filterVersion
-      self.userIsAdmin = userIsAdmin
-      self.osVersion = osVersion
-      self.pendingFilterSuspension = pendingFilterSuspension
-      self.pendingUnlockRequests = pendingUnlockRequests
-    }
-  }
-
-  public struct Key: PairNestable {
-    public let id: UUID
-    public let key: Gertie.Key
-
-    public init(id: UUID, key: Gertie.Key) {
-      self.id = id
-      self.key = key
-    }
-  }
-
-  public struct LatestRelease: PairNestable {
-    public struct Pace: PairNestable {
-      public var nagOn: Date
-      public var requireOn: Date
-
-      public init(nagOn: Date, requireOn: Date) {
-        self.nagOn = nagOn
-        self.requireOn = requireOn
-      }
-    }
-
-    public var semver: String
-    public var pace: Pace?
-
-    public init(semver: String, pace: Pace? = nil) {
-      self.semver = semver
-      self.pace = pace
-    }
-  }
-
-  public struct ResolvedFilterSuspension: PairNestable {
-    public var id: UUID
-    public var decision: FilterSuspensionDecision
-    public var comment: String?
-
-    public init(id: UUID, decision: FilterSuspensionDecision, comment: String?) {
-      self.id = id
-      self.decision = decision
-      self.comment = comment
-    }
-  }
-
-  public struct ResolvedUnlockRequest: PairNestable {
-    public var id: UUID
-    public var status: RequestStatus
-    public var target: String
-    public var comment: String?
-
-    public init(id: UUID, status: RequestStatus, target: String, comment: String?) {
-      self.id = id
-      self.status = status
-      self.target = target
-      self.comment = comment
-    }
-  }
+  public typealias Input = CheckIn_v2.Input
 
   public struct Output: PairOutput {
     public var adminAccountStatus: AdminAccountStatus
     public var appManifest: AppIdManifest
-    public var keys: [Key]
-    public var latestRelease: LatestRelease
+    public var keys: [RuleKey]
+    public var latestRelease: CheckIn_v2.LatestRelease
     public var updateReleaseChannel: ReleaseChannel
     public var userData: UserData
     public var browsers: [BrowserMatch]
-    public var resolvedFilterSuspension: ResolvedFilterSuspension?
-    public var resolvedUnlockRequests: [ResolvedUnlockRequest]?
+    public var resolvedFilterSuspension: CheckIn_v2.ResolvedFilterSuspension?
+    public var resolvedUnlockRequests: [CheckIn_v2.ResolvedUnlockRequest]?
 
     public init(
       adminAccountStatus: AdminAccountStatus,
       appManifest: AppIdManifest,
-      keys: [Key],
-      latestRelease: LatestRelease,
+      keys: [RuleKey],
+      latestRelease: CheckIn_v2.LatestRelease,
       updateReleaseChannel: ReleaseChannel,
       userData: UserData,
       browsers: [BrowserMatch],
-      resolvedFilterSuspension: ResolvedFilterSuspension? = nil,
-      resolvedUnlockRequests: [ResolvedUnlockRequest]? = nil
+      resolvedFilterSuspension: CheckIn_v2.ResolvedFilterSuspension? = nil,
+      resolvedUnlockRequests: [CheckIn_v2.ResolvedUnlockRequest]? = nil
     ) {
       self.adminAccountStatus = adminAccountStatus
       self.appManifest = appManifest
@@ -123,8 +44,6 @@ public struct CheckIn: Pair {
 }
 
 #if DEBUG
-  import Gertie
-
   extension CheckIn.Output: Mocked {
     public static let mock = Self(
       adminAccountStatus: .active,

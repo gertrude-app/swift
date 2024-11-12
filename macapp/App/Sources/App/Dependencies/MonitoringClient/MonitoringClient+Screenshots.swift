@@ -3,15 +3,17 @@ import Core
 import CoreGraphics
 import Dependencies
 import Foundation
-import SystemConfiguration
 
 typealias ScreenshotData = (data: Data, width: Int, height: Int, createdAt: Date)
 
 @Sendable func takeScreenshot(width: Int) async throws {
-  guard currentUserProbablyHasScreen(), screensaverRunning() == false else {
+  @Dependency(\.device) var device
+  guard device.currentUserHasScreen(), !device.screensaverRunning() else {
     return
   }
 
+  // see reverted commit 05fa044 for ScreenCaptureKit alt implementation
+  // removed because it didn't fix sequoia's misleading bypass warning
   guard let fullsize = CGWindowListCreateImage(
     CGRect.infinite,
     .optionAll,
@@ -128,19 +130,6 @@ private func downsampleToJpeg(imageAt imageURL: URL, to maxDimension: CGFloat) -
   let bitmap = NSBitmapImageRep(cgImage: cgImg)
   let props: [NSBitmapImageRep.PropertyKey: Any] = [.compressionFactor: 0.7]
   return bitmap.representation(using: .jpeg, properties: props)
-}
-
-func screensaverRunning() -> Bool {
-  NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.ScreenSaver.Engine"
-}
-
-// @see https://developer.apple.com/forums/thread/707522
-func currentUserProbablyHasScreen() -> Bool {
-  var uid: uid_t = 0
-  SCDynamicStoreCopyConsoleUser(nil, &uid, nil)
-  // in my testing, sometimes the console user got stuck at 0 as the
-  // `loginwindow` user, so consider the loginwindow the current user as well
-  return uid == getuid() || uid == 0
 }
 
 private let lastImage = Mutex<CGImage?>(nil)

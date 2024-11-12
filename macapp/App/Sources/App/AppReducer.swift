@@ -7,6 +7,16 @@ import Gertie
 import MacAppRoute
 import os.log
 
+struct TrustedTimestamp: Equatable {
+  var network: Date
+  var system: Date
+  var boottime: Date
+
+  var networkSystemDelta: TimeInterval {
+    self.network.timeIntervalSince(self.system)
+  }
+}
+
 struct AppReducer: Reducer, Sendable {
   struct State: Equatable, Sendable {
     var admin = AdminFeature.State()
@@ -21,6 +31,7 @@ struct AppReducer: Reducer, Sendable {
     var monitoring = MonitoringFeature.State()
     var requestSuspension = RequestSuspensionFeature.State()
     var user = UserFeature.State()
+    var timestamp: TrustedTimestamp?
 
     init(appVersion: String?) {
       self.appUpdates = .init(installedVersion: appVersion)
@@ -47,7 +58,7 @@ struct AppReducer: Reducer, Sendable {
     case adminWindow(AdminWindowFeature.Action)
     case application(ApplicationFeature.Action)
     case appUpdates(AppUpdatesFeature.Action)
-    case checkIn(result: TaskResult<CheckIn.Output>, reason: CheckIn.Reason)
+    case checkIn(result: TaskResult<CheckIn_v2.Output>, reason: CheckIn.Reason)
     case delegate(Delegate)
     case filter(FilterFeature.Action)
     case focusedNotification(FocusedNotification)
@@ -63,6 +74,7 @@ struct AppReducer: Reducer, Sendable {
     case requestSuspension(RequestSuspensionFeature.Action)
     case startProtecting(user: UserData)
     case websocket(WebSocketFeature.Action)
+    case setTrustedTimestamp(TrustedTimestamp)
 
     indirect case adminAuthed(Action)
   }
@@ -183,6 +195,10 @@ struct AppReducer: Reducer, Sendable {
           return .none
         }
 
+      case .setTrustedTimestamp(let timestamp):
+        state.timestamp = timestamp
+        return .none
+
       default:
         return .none
       }
@@ -196,7 +212,7 @@ struct AppReducer: Reducer, Sendable {
     AppUpdatesFeature.RootReducer()
     AdminFeature.RootReducer()
     AdminWindowFeature.RootReducer()
-    FilterFeature.RootReducer().onChange(of: \.filter.isSuspended) { old, new in
+    FilterFeature.RootReducer().onChange(of: \.isFilterSuspended) { old, new in
       Reduce { _, _ in .run { send in
         // NB: changing this to the (synchronous?) `.send()` (without .run + async)
         // caused this action not to be seen by other reducers (when running app)

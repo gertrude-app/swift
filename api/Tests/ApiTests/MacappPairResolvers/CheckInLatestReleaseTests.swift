@@ -8,12 +8,14 @@ import XExpect
 @testable import Api
 
 final class CheckInLatestReleaseTests: ApiTestCase {
-  func test(releaseChannel: ReleaseChannel, currentVersion: String) async throws -> CheckIn
-    .LatestRelease {
+  func test(
+    releaseChannel: ReleaseChannel,
+    currentVersion: String
+  ) async throws -> CheckIn_v2.LatestRelease {
     let user = try await self.user().withDevice(adminDevice: {
       $0.appReleaseChannel = releaseChannel
     })
-    let output = try await CheckIn.resolve(
+    let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: currentVersion, filterVersion: currentVersion),
       in: user.context
     )
@@ -79,7 +81,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
       $0.appReleaseChannel = .stable // set to stable, but they're on beta
     })
 
-    let output = try await CheckIn.resolve(
+    let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "2.0.0", filterVersion: nil),
       in: user.context
     )
@@ -99,7 +101,7 @@ final class CheckInLatestReleaseTests: ApiTestCase {
       $0.appReleaseChannel = .canary
     })
 
-    let output = try await CheckIn.resolve(
+    let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "2.1.0", filterVersion: nil),
       in: user.context
     )

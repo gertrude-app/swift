@@ -10,15 +10,19 @@ public protocol Migrator {
 
 public extension Migrator {
   func migrate() async -> State? {
-    let current = try? userDefaults.getString(State.storageKey).flatMap { json in
+    let current = try? self.userDefaults.getString(State.storageKey).flatMap { json in
       try JSON.decode(json, as: State.self)
     }
     if let current {
       self.log("found current state, no migration necessary")
       return current
-    } else if let migrated = await migrateLastVersion() {
+    } else if let migrated = await self.migrateLastVersion() {
       self.log("migrated from prior state, \(String(describing: migrated))")
-      (try? JSON.encode(migrated)).map { userDefaults.setString(State.storageKey, $0) }
+      do {
+        try self.userDefaults.saveJson(from: migrated, at: State.storageKey)
+      } catch {
+        self.log("failed to save migrated state: \(error)")
+      }
       return migrated
     } else {
       self.log("no state found, or no migration succeeded")

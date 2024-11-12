@@ -241,8 +241,11 @@ final class OnboardingFeatureTests: XCTestCase {
     )
     store.deps.filterXpc.setUserExemption = setUserExemption.fn
 
-    let getExemptIds = mock(always: Result<[uid_t], XPCErr>.success([]))
-    store.deps.filterXpc.requestExemptUserIds = getExemptIds.fn
+    let getUserTypes = mock(
+      always: Result<FilterUserTypes, XPCErr>
+        .success(.init(exempt: [], protected: []))
+    )
+    store.deps.filterXpc.requestUserTypes = getUserTypes.fn
 
     // they click "Got it" on the install sys ext trick screen...
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -260,7 +263,7 @@ final class OnboardingFeatureTests: XCTestCase {
     // we clear the exempted state for the current user proactively as safeguard
     await expect(setUserExemption.calls).toEqual([.init(502, false)])
 
-    await expect(getExemptIds.calls.count).toEqual(1)
+    await expect(getUserTypes.calls.count).toEqual(1)
     await store.receive(.onboarding(.receivedFilterUsers(.init(exempt: [], protected: [])))) {
       $0.onboarding.filterUsers = .init(exempt: [], protected: [])
     }
@@ -268,7 +271,10 @@ final class OnboardingFeatureTests: XCTestCase {
     // we kick off protection when they move past sys ext stage, lots happens...
     let setAccountActive = spy(on: Bool.self, returning: ())
     store.deps.api.setAccountActive = setAccountActive.fn
-    let checkInResult = CheckIn.Output.empty { $0.userData = user }
+    let checkInResult = CheckIn_v2.Output.empty {
+      $0.userData = user
+      $0.trustedTime = (Date.reference - 1).timeIntervalSince1970
+    }
     let checkIn = spy(on: CheckIn.Input.self, returning: checkInResult)
     store.deps.api.checkIn = checkIn.fn
     store.deps.websocket.receive = { Empty().eraseToAnyPublisher() }
@@ -281,6 +287,8 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.monitoring.stopLoggingKeystrokes = stopLoggingKeystrokes.fn
     let startRelaunchWatcher = mock(always: ())
     store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
+    store.deps.date = .constant(.reference)
+    store.deps.device.boottime = { .reference - 60 }
 
     // they click "Next" on the install sys ext success screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -297,6 +305,16 @@ final class OnboardingFeatureTests: XCTestCase {
     await store.receive(.checkIn(result: .success(checkInResult), reason: .startProtecting)) {
       $0.appUpdates.latestVersion = checkInResult.latestRelease
     }
+
+    let timestamp = TrustedTimestamp(
+      network: .reference - 1,
+      system: .reference,
+      boottime: .reference - 60
+    )
+    await store.receive(.setTrustedTimestamp(timestamp)) {
+      $0.timestamp = timestamp
+    }
+
     await store.receive(.user(.updated(previous: user)))
 
     // we need to ensure the websocket connection is setup, so they can do the tutorial vid
@@ -360,6 +378,19 @@ final class OnboardingFeatureTests: XCTestCase {
     await store.send(.application(.willTerminate))
 
     await expect(stopRelaunchWatcher.calls.count).toEqual(1)
+  }
+
+  @MainActor
+  func testSequoiaGetsExtraScreenAboutPrivacyWarning() async {
+    let store = self.featureStore {
+      $0.step = .allowScreenshots_success
+    }
+    store.deps.device.osVersion = { .init(major: 15, minor: 0, patch: 1) }
+
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.screenshotsPrivacyWarning))
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowKeylogging_required))
   }
 
   @MainActor
@@ -722,6 +753,7 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkippingKeyloggingFromFinishScreenshots() async {
     let store = self.featureStore { $0.step = .allowScreenshots_success }
+    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.primaryBtnClicked))
@@ -734,6 +766,7 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testFromScreenshotsRequiredScreenshotsAndKeyloggingAlreadyAllowed() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
+    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
@@ -925,6 +958,7 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkipAllowingScreenshots() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
+    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     // they click "Skip" on the allow screenshots start screen
     await store.send(.webview(.secondaryBtnClicked))
@@ -934,6 +968,7 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkipsMostScreenshotStepsIfPermsPreviouslyGranted() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
+    store.deps.device.osVersion = { .sonoma }
 
     let screenshotsAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn

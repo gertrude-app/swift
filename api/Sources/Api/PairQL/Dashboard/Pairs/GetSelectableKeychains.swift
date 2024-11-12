@@ -1,12 +1,22 @@
+import Dependencies
 import DuetSQL
 import PairQL
+
+struct KeychainSummary: PairNestable {
+  var id: Api.Keychain.Id
+  var authorId: Admin.Id
+  var name: String
+  var description: String?
+  var isPublic: Bool
+  var numKeys: Int
+}
 
 struct GetSelectableKeychains: Pair {
   static let auth: ClientAuth = .admin
 
   struct Output: PairOutput {
-    let own: [KeychainSummary]
-    let `public`: [KeychainSummary]
+    var own: [KeychainSummary]
+    var `public`: [KeychainSummary]
   }
 }
 
@@ -22,6 +32,25 @@ extension GetSelectableKeychains: NoInputResolver {
     return try await .init(
       own: own.concurrentMap { try await .init(from: $0) },
       public: `public`.concurrentMap { try await .init(from: $0) }
+    )
+  }
+}
+
+extension KeychainSummary {
+  init(from keychain: Keychain) async throws {
+    @Dependency(\.db) var db
+    let numKeys = try await db.count(
+      Key.self,
+      where: .keychainId == keychain.id,
+      withSoftDeleted: false
+    )
+    self.init(
+      id: keychain.id,
+      authorId: keychain.authorId,
+      name: keychain.name,
+      description: keychain.description,
+      isPublic: keychain.isPublic,
+      numKeys: numKeys
     )
   }
 }

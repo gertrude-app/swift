@@ -5,7 +5,7 @@ struct ConnectedApps: Sendable {
   var add: @Sendable (AppConnection) async -> Void
   var disconnectAll: @Sendable () async -> Void
   var remove: @Sendable (AppConnection) async -> Void
-  var filterState: @Sendable (UserDevice.Id) async -> UserFilterState?
+  var filterState: @Sendable (UserDevice.Id) async -> FilterState.WithoutTimes?
   var isUserDeviceOnline: @Sendable (UserDevice.Id) async -> Bool
   var sendEvent: @Sendable (AppEvent) async throws -> Void
 }

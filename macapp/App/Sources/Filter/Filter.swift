@@ -6,12 +6,14 @@ import os.log
 
 public struct Filter: Reducer, Sendable {
   public struct State: Equatable, DecisionState {
-    public var userKeys: [uid_t: [FilterKey]] = [:]
+    public var userKeychains: [uid_t: [RuleKeychain]] = [:]
+    public var userDowntime: [uid_t: Downtime] = [:]
     public var appIdManifest = AppIdManifest()
     public var exemptUsers: Set<uid_t> = []
     public var suspensions: [uid_t: FilterSuspension] = [:]
     public var appCache: [String: AppDescriptor] = [:]
     public var blockListeners: [uid_t: Date] = [:]
+    public var logs: FilterLogs = .init(bundleIds: [:], events: [:])
   }
 
   public enum Action: Equatable, Sendable {
@@ -23,6 +25,8 @@ public struct Filter: Reducer, Sendable {
     case loadedPersistentState(Persistent.State?)
     case suspensionTimerEnded(uid_t)
     case staleSuspensionFound(uid_t)
+    case logAppRequest(String)
+    case logEvent(FilterLogs.Event)
     case heartbeat
   }
 
@@ -40,7 +44,7 @@ public struct Filter: Reducer, Sendable {
 
   public func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
-    case .cacheAppDescriptor:
+    case .cacheAppDescriptor, .logAppRequest:
       break
     default:
       os_log(
@@ -53,8 +57,8 @@ public struct Filter: Reducer, Sendable {
     switch action {
     case .extensionStarted:
       return .merge(
-        .run { [startListener = xpc.startListener] _ in
-          await startListener()
+        .run { _ in
+          await self.xpc.startListener()
         },
 
         .run { [load = storage.loadPersistentState] send in
@@ -62,7 +66,7 @@ public struct Filter: Reducer, Sendable {
         },
 
         .run { send in
-          for await _ in mainQueue.timer(interval: .seconds(60)) {
+          for await _ in self.mainQueue.timer(interval: .seconds(60)) {
             await send(.heartbeat)
           }
         }.cancellable(id: CancelId.heartbeat, cancelInFlight: true),
@@ -70,18 +74,18 @@ public struct Filter: Reducer, Sendable {
         .publisher {
           xpc.events()
             .map { .xpc($0) }
-            .receive(on: mainQueue)
+            .receive(on: self.mainQueue)
         }
       )
 
     case .extensionStopping:
       return .merge(
         .cancel(id: CancelId.heartbeat),
-        .run { _ in await xpc.stopListener() }
+        .run { _ in await self.xpc.stopListener() }
       )
 
     case .loadedPersistentState(.some(let persisted)):
-      state.userKeys = persisted.userKeys
+      state.userKeychains = persisted.userKeychains
       state.appIdManifest = persisted.appIdManifest
       state.exemptUsers = persisted.exemptUsers
       return .none
@@ -95,19 +99,28 @@ public struct Filter: Reducer, Sendable {
           state.blockListeners[userId] = nil
           return .none
         }
-        return .run { [send = xpc.sendBlockedRequest, uuid, now] _ in
-          try await send(userId, flow.blockedRequest(id: uuid(), time: now, app: app))
+        return .run { _ in
+          let blockedReq = flow.blockedRequest(id: self.uuid(), time: self.now, app: app)
+          try await self.xpc.sendBlockedRequest(userId, blockedReq)
         }
       }
       return .none
 
     case .heartbeat:
-      var expiredSuspensionUserIds: [uid_t] = []
+      var effect: Effect<Action> = .none
       for (userId, suspension) in state.suspensions {
         // 5 second cushion prevents race between heartbeat and expiration timer
         // we want the expiration timer to do the work, this is only a failsafe
         if suspension.expiresAt < self.now.advanced(by: .seconds(-5)) {
-          expiredSuspensionUserIds.append(userId)
+          effect = effect.merge(with: .run { send in
+            await send(.staleSuspensionFound(userId))
+          })
+        }
+      }
+
+      for userId in state.userDowntime.keys {
+        if let pauseExpiry = state.userDowntime[userId]?.pausedUntil, pauseExpiry < self.now {
+          state.userDowntime[userId]?.pausedUntil = nil
         }
       }
 
@@ -118,23 +131,25 @@ public struct Filter: Reducer, Sendable {
         os_log("[D•] FILTER state in heartbeat: %{public}@", "\(state.debug)")
       }
 
-      return expiredSuspensionUserIds.isEmpty
-        ? .none
-        : .run { [expiredSuspensionUserIds] send in
-          for userId in expiredSuspensionUserIds {
-            await send(.staleSuspensionFound(userId))
-          }
-        }
+      if state.logs.count() >= 500 {
+        let logs = state.logs
+        state.logs = .init(bundleIds: [:], events: [:])
+        effect = effect.merge(with: .run { _ in
+          try? await self.xpc.sendLogs(logs)
+        })
+      }
+
+      return effect
 
     case .suspensionTimerEnded(let userId):
       state.suspensions[userId] = nil
-      return .run { _ in try await xpc.notifyFilterSuspensionEnded(userId) }
+      return .run { _ in try await self.xpc.notifyFilterSuspensionEnded(userId) }
 
     case .staleSuspensionFound(let userId):
       state.suspensions[userId] = nil
       return .merge(
         .cancel(id: CancelId.suspensionTimer(for: userId)),
-        .run { _ in try await xpc.notifyFilterSuspensionEnded(userId) }
+        .run { _ in try await self.xpc.notifyFilterSuspensionEnded(userId) }
       )
 
     case .cacheAppDescriptor("", _):
@@ -144,8 +159,16 @@ public struct Filter: Reducer, Sendable {
       state.appCache[bundleId] = descriptor
       return .none
 
+    case .logAppRequest(let bundleId):
+      state.logs.bundleIds[bundleId, default: 0] += 1
+      return .none
+
+    case .logEvent(let event):
+      state.logs.log(event: event)
+      return .none
+
     case .xpc(.receivedAppMessage(.setBlockStreaming(true, let userId))):
-      state.blockListeners[userId] = self.now.advanced(by: FIVE_MINUTES_IN_SECONDS)
+      state.blockListeners[userId] = self.now + .minutes(5)
       os_log("[D•] FILTER state start streaming: %{public}@", "\(state.debug)")
       return .none
 
@@ -154,7 +177,7 @@ public struct Filter: Reducer, Sendable {
       return .none
 
     case .xpc(.receivedAppMessage(.disconnectUser(let userId))):
-      state.userKeys[userId] = nil
+      state.userKeychains[userId] = nil
       state.suspensions[userId] = nil
       state.exemptUsers.remove(userId)
       return self.saving(state.persistent)
@@ -177,13 +200,19 @@ public struct Filter: Reducer, Sendable {
         await send(.suspensionTimerEnded(userId))
       }.cancellable(id: CancelId.suspensionTimer(for: userId), cancelInFlight: true)
 
-    case .xpc(.receivedAppMessage(.userRules(let userId, let keys, let manifest))):
-      if !keys.isEmpty {
-        state.userKeys[userId] = keys
+    case .xpc(.receivedAppMessage(.userRules(
+      let userId,
+      let keychains,
+      let downtime,
+      let manifest
+    ))):
+      if !keychains.isEmpty {
+        state.userKeychains[userId] = keychains
         state.exemptUsers.remove(userId)
       }
       state.appIdManifest = manifest
       state.appCache = [:]
+      state.userDowntime[userId] = downtime
       return self.saving(state.persistent)
 
     case .xpc(.receivedAppMessage(.setUserExemption(let userId, let enabled))):
@@ -197,8 +226,16 @@ public struct Filter: Reducer, Sendable {
     case .xpc(.receivedAppMessage(.deleteAllStoredState)):
       state = .init()
       return .run { _ in
-        await storage.deleteAll()
+        await self.storage.deleteAll()
       }
+
+    case .xpc(.receivedAppMessage(.pauseDowntime(let userId, let expiration))):
+      state.userDowntime[userId]?.pausedUntil = expiration
+      return .none
+
+    case .xpc(.receivedAppMessage(.endDowntimePause(let userId))):
+      state.userDowntime[userId]?.pausedUntil = nil
+      return .none
 
     case .xpc(.decodingAppMessageDataFailed):
       return .none
@@ -224,19 +261,18 @@ public extension Filter.State {
 
   var debug: Debug {
     .init(
-      userKeys: userKeys.reduce(into: [:]) { acc, item in
-        acc[item.key] = item.value.count
+      userKeys: self.userKeychains.reduce(into: [:]) { acc, item in
+        let (userId, keychains) = (item.key, item.value)
+        acc[userId] = keychains.numKeys
       },
-      numAppsInManifest: appIdManifest.apps.count,
-      exemptUsers: exemptUsers,
-      suspensions: suspensions,
-      numAppsInCache: appCache.count,
-      blockListeners: blockListeners
+      numAppsInManifest: self.appIdManifest.apps.count,
+      exemptUsers: self.exemptUsers,
+      suspensions: self.suspensions,
+      numAppsInCache: self.appCache.count,
+      blockListeners: self.blockListeners
     )
   }
 }
-
-let FIVE_MINUTES_IN_SECONDS = 60.0 * 5.0
 
 #if DEBUG
   import Darwin

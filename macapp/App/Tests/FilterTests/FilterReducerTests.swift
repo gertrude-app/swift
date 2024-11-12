@@ -19,7 +19,7 @@ final class FilterReducerTests: XCTestCase {
     let startListener = mock(always: ())
     store.deps.xpc.startListener = startListener.fn
     store.deps.storage.loadPersistentState = { .init(
-      userKeys: [:],
+      userKeychains: [503: [.mock]],
       appIdManifest: .init(),
       exemptUsers: [501]
     ) }
@@ -28,10 +28,11 @@ final class FilterReducerTests: XCTestCase {
     await expect(startListener.called).toEqual(true)
 
     await store.receive(.loadedPersistentState(.init(
-      userKeys: [:],
+      userKeychains: [503: [.mock]],
       appIdManifest: .init(),
       exemptUsers: [501]
     ))) {
+      $0.userKeychains = [503: [.mock]]
       $0.exemptUsers = [501]
     }
 
@@ -44,10 +45,14 @@ final class FilterReducerTests: XCTestCase {
       $0.appCache["com.foo"] = descriptor
     }
 
-    let key = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
+    let keychain = RuleKeychain(keys: [.init(key: .skeleton(scope: .bundleId("com.foo")))])
     let manifest = AppIdManifest(apps: ["Lol": ["com.lol"]])
-    let message = XPCEvent.Filter
-      .receivedAppMessage(.userRules(userId: 502, keys: [key], manifest: manifest))
+    let message = XPCEvent.Filter.receivedAppMessage(.userRules(
+      userId: 502,
+      keychains: [keychain],
+      downtime: nil,
+      manifest: manifest
+    ))
 
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
@@ -57,13 +62,13 @@ final class FilterReducerTests: XCTestCase {
     await mainQueue.advance(by: .seconds(1))
 
     await store.receive(.xpc(message)) {
-      $0.userKeys[502] = [key]
+      $0.userKeychains[502] = [keychain]
       $0.appIdManifest = manifest
       $0.appCache = [:] // clears out app cache when new manifest is received
     }
 
     await expect(saveState.calls).toEqual([.init(
-      userKeys: [502: [key]], //  <-- new info from user rules
+      userKeychains: [503: [.mock], 502: [keychain]], //  <-- new info from user rules
       appIdManifest: manifest, // <-- new info from user rules
       exemptUsers: [501] // <-- preserving existing unchanged data
     )])
@@ -84,7 +89,8 @@ final class FilterReducerTests: XCTestCase {
 
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 501, // we get rules about user 501
-      keys: [.mock],
+      keychains: [.mock],
+      downtime: nil,
       manifest: .mock
     )))) {
       $0.exemptUsers = [504] // ... so they are removed from the exempt list
@@ -103,10 +109,59 @@ final class FilterReducerTests: XCTestCase {
 
     await store.send(.xpc(.receivedAppMessage(.userRules(
       userId: 501, // we get rules about user 501
-      keys: [], // <-- but there are ZERO keys
+      keychains: [], // <-- but there are ZERO keys
+      downtime: nil,
       manifest: .mock
     )))) {
       $0.exemptUsers = [501, 504] // ... so they are NOT removed from the exempt list
+    }
+  }
+
+  @MainActor
+  func testReceivingDowntimeSetsUserDowntime() async {
+    let (store, _) = Filter.testStore()
+    store.deps.filterExtension = .mock
+    store.deps.storage = .mock
+    let save = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = save.fn
+
+    let downtime = Downtime(window: "22:00-05:00")
+    await store.send(.xpc(.receivedAppMessage(.userRules(
+      userId: 502,
+      keychains: [.mock],
+      downtime: downtime,
+      manifest: .mock
+    )))) {
+      $0.userDowntime[502] = downtime
+    }
+
+    await expect(save.calls).toEqual([.init(
+      userKeychains: [502: [.mock]],
+      userDowntime: [502: downtime.window], // <-- new downtime info saved
+      appIdManifest: .mock,
+      exemptUsers: []
+    )])
+  }
+
+  @MainActor
+  func testReceivingNilDowntimeClearsUserDowntime() async {
+    let downtime = Downtime(window: .init(
+      start: .init(hour: 22, minute: 0),
+      end: .init(hour: 5, minute: 0)
+    ))
+    let (store, _) = Filter.testStore {
+      $0.userDowntime[502] = downtime
+    }
+    store.deps.filterExtension = .mock
+    store.deps.storage = .mock
+
+    await store.send(.xpc(.receivedAppMessage(.userRules(
+      userId: 502,
+      keychains: [.mock],
+      downtime: nil, // <-- downtime removed
+      manifest: .mock
+    )))) {
+      $0.userDowntime = [:]
     }
   }
 
@@ -184,13 +239,13 @@ final class FilterReducerTests: XCTestCase {
 
   @MainActor
   func testDisconnectUser() async {
-    let key1 = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
-    let key2 = FilterKey(id: .init(), key: .skeleton(scope: .bundleId("com.foo")))
+    let keychain1 = RuleKeychain(keys: [.init(key: .skeleton(scope: .bundleId("com.foo")))])
+    let keychain2 = RuleKeychain(keys: [.init(key: .skeleton(scope: .bundleId("com.bar")))])
     let otherUserSuspension = FilterSuspension(scope: .mock, duration: 600)
     let (store, _) = Filter.testStore {
-      $0.userKeys = [
-        502: [key1],
-        503: [key2],
+      $0.userKeychains = [
+        502: [keychain1],
+        503: [keychain2],
       ]
       $0.suspensions = [
         502: .init(scope: .mock, duration: 600),
@@ -206,13 +261,13 @@ final class FilterReducerTests: XCTestCase {
     store.deps.filterExtension = .mock
 
     await store.send(.xpc(.receivedAppMessage(.disconnectUser(userId: 502)))) {
-      $0.userKeys = [503: [key2]]
+      $0.userKeychains = [503: [keychain2]]
       $0.suspensions = [503: otherUserSuspension]
       $0.exemptUsers = [501]
     }
 
     await expect(save.calls).toEqual([.init(
-      userKeys: [503: [key2]],
+      userKeychains: [503: [keychain2]],
       appIdManifest: .init(),
       exemptUsers: [501]
     )])
@@ -235,8 +290,8 @@ final class FilterReducerTests: XCTestCase {
     }
 
     await expect(save.calls).toEqual([
-      .init(userKeys: [:], appIdManifest: .init(), exemptUsers: [501, 502]),
-      .init(userKeys: [:], appIdManifest: .init(), exemptUsers: [502]),
+      .init(userKeychains: [:], appIdManifest: .init(), exemptUsers: [501, 502]),
+      .init(userKeychains: [:], appIdManifest: .init(), exemptUsers: [502]),
     ])
   }
 
@@ -461,6 +516,103 @@ final class FilterReducerTests: XCTestCase {
     // and assert that we haven't notified the app again
     await expect(notifyExpired.calls).toEqual([502])
   }
+
+  @MainActor
+  func testHeartbeatCleansUpExpiredDowntimePause() async {
+    let now = Calendar.current.date(from: DateComponents(hour: 23, minute: 00))!
+    let thirtySecondsAgo = now - .seconds(30)
+    let fiveMinutesFromNow = now + .minutes(5)
+    let (store, _) = Filter.testStore {
+      $0.userDowntime = [
+        502: Downtime(window: "22:00-05:00", pausedUntil: thirtySecondsAgo), // <-- expired
+        503: Downtime(window: "22:00-05:00", pausedUntil: fiveMinutesFromNow), // <-- not expired
+        504: Downtime(window: "22:00-05:00", pausedUntil: nil), // <-- no pause
+      ]
+    }
+    store.deps.date = .constant(now)
+    await store.send(.heartbeat) {
+      $0.userDowntime = [
+        502: Downtime(window: "22:00-05:00", pausedUntil: nil), // <- removed
+        503: Downtime(window: "22:00-05:00", pausedUntil: fiveMinutesFromNow), // <-- not touched
+        504: Downtime(window: "22:00-05:00", pausedUntil: nil), // <-- not touched
+      ]
+    }
+  }
+
+  @MainActor
+  func testPauseAndUnpauseDowntime() async {
+    let now = Calendar.current.date(from: DateComponents(hour: 23, minute: 00))!
+    let (store, _) = Filter.testStore {
+      $0.userDowntime = [502: Downtime(window: "22:00-05:00", pausedUntil: nil)]
+    }
+    store.deps.date = .constant(now)
+
+    await store
+      .send(.xpc(.receivedAppMessage(.pauseDowntime(userId: 502, until: now + .minutes(5))))) {
+        $0.userDowntime[502] = Downtime(window: "22:00-05:00", pausedUntil: now + .minutes(5))
+      }
+
+    await store.send(.xpc(.receivedAppMessage(.endDowntimePause(userId: 502)))) {
+      $0.userDowntime[502] = Downtime(window: "22:00-05:00", pausedUntil: nil)
+    }
+  }
+
+  @MainActor
+  func testLogsAppRequests() async {
+    let (store, _) = Filter.testStore()
+    await store.send(.logAppRequest("com.widget")) {
+      $0.logs.bundleIds["com.widget"] = 1
+    }
+    await store.send(.logAppRequest("com.widget")) {
+      $0.logs.bundleIds["com.widget"] = 2
+    }
+  }
+
+  @MainActor
+  func testLogsEventsSendingInHeartbeatWhenThresholdReached() async {
+    let (store, _) = Filter.testStore {
+      $0.logs.bundleIds["com.widget"] = 498
+    }
+    store.deps.xpc.sendLogs = { _ in fatalError("not called") }
+
+    let event1 = FilterLogs.Event(id: "1", detail: "whoops")
+    await store.send(.logEvent(event1)) {
+      $0.logs.events[event1] = 1
+    }
+
+    await store.send(.heartbeat) // <-- 499 = not enough logs to send
+
+    let sendLogs = spy(on: FilterLogs.self, returning: ())
+    store.deps.xpc.sendLogs = sendLogs.fn
+
+    await store.send(.logEvent(event1)) {
+      $0.logs.events[event1] = 2
+    }
+
+    await store.send(.heartbeat) { // <-- 500, send logs, clear
+      $0.logs.events = [:]
+      $0.logs.bundleIds = [:]
+    }
+
+    expect(await sendLogs.calls)
+      .toEqual([.init(bundleIds: ["com.widget": 498], events: [event1: 2])])
+  }
+
+  func testAddFilterLogs() {
+    var logs = FilterLogs(bundleIds: [:], events: [:])
+    let event1 = FilterLogs.Event(id: "1", detail: "whoops")
+    logs.log(event: event1)
+    expect(logs.events).toEqual([event1: 1])
+    let dupeEvent = FilterLogs.Event(id: "1", detail: "whoops")
+    logs.log(event: dupeEvent)
+    expect(logs.events).toEqual([event1: 2])
+    let newEvent = FilterLogs.Event(id: "2", detail: "whoa")
+    logs.log(event: newEvent)
+    expect(logs.events).toEqual([event1: 2, newEvent: 1])
+    let event3 = FilterLogs.Event(id: "1", detail: nil) // <-- same id, different detail
+    logs.log(event: event3)
+    expect(logs.events).toEqual([event1: 2, newEvent: 1, event3: 1])
+  }
 }
 
 // helpers
@@ -478,6 +630,7 @@ extension Filter {
     store.deps.mainQueue = scheduler.eraseToAnyScheduler()
     store.deps.date.now = TEST_NOW
     store.deps.uuid = .constant(TEST_ID)
+    store.deps.filterExtension.version = { "2.5.0" }
     return (store, scheduler)
   }
 }

@@ -47,6 +47,34 @@ import os.log
     reply(nil)
   }
 
+  func pauseDowntime(
+    for userId: uid_t,
+    until secondsSinceReference: Double,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    let expiration = Date(timeIntervalSinceReferenceDate: secondsSinceReference)
+    os_log(
+      "[G•] FILTER xpc.pauseDowntime(for: %{public}d, until: %{public}s)",
+      userId,
+      expiration.description
+    )
+    self.subject.withValue {
+      $0.send(.receivedAppMessage(.pauseDowntime(userId: userId, until: expiration)))
+    }
+    reply(nil)
+  }
+
+  func endDowntimePause(
+    for userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  ) {
+    os_log("[G•] FILTER xpc.endDowntimePause(for: %{public}d)", userId)
+    self.subject.withValue {
+      $0.send(.receivedAppMessage(.endDowntimePause(userId: userId)))
+    }
+    reply(nil)
+  }
+
   func suspendFilter(
     for userId: uid_t,
     durationInSeconds: Int,
@@ -82,7 +110,7 @@ import os.log
         randomInt: randomInt,
         version: self.filterExtension.version(),
         userId: userId,
-        numUserKeys: savedState?.userKeys[userId]?.count ?? 0
+        numUserKeys: savedState?.userKeychains[userId]?.numKeys ?? 0
       )
       let data = try XPC.encode(ack)
       reply(data, nil)
@@ -95,23 +123,22 @@ import os.log
   func receiveUserRules(
     userId: uid_t,
     manifestData: Data,
-    keysData: [Data],
+    filterData: Data,
     reply: @escaping (XPCErrorData?) -> Void
   ) {
     do {
       let manifest = try XPC.decode(AppIdManifest.self, from: manifestData)
-      let keys = try keysData.map { try XPC.decode(FilterKey.self, from: $0) }
-      self.subject.withValue {
-        $0.send(.receivedAppMessage(.userRules(
-          userId: userId,
-          keys: keys,
-          manifest: manifest
-        )))
-      }
+      let userData = try XPC.decode(UserFilterData.self, from: filterData)
+      self.subject.withValue { $0.send(.receivedAppMessage(.userRules(
+        userId: userId,
+        keychains: userData.keychains,
+        downtime: userData.downtime,
+        manifest: manifest
+      ))) }
       os_log(
         "[G•] FILTER xpc.receiveUserRules(userId: %{public}d,...) num keys: %{public}d",
         userId,
-        keys.count
+        userData.keychains.numKeys
       )
       reply(nil)
     } catch {
@@ -120,19 +147,16 @@ import os.log
     }
   }
 
-  func receiveListExemptUserIdsRequest(
-    reply: @escaping (Data?, XPCErrorData?) -> Void
-  ) {
+  func receiveListUserTypesRequest(reply: @escaping (Data?, XPCErrorData?) -> Void) {
     do {
-      os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest()")
+      os_log("[G•] FILTER xpc.receiveListUserTypesRequest()")
       let savedState = try storage.loadPersistentStateSync()
       let exemptUsers = Array(savedState?.exemptUsers ?? [])
-      let protectedUsers = savedState.map { Array($0.userKeys.keys) } ?? []
-      let types = FilterUserTypes(exempt: exemptUsers, protected: protectedUsers)
-      let data = try XPC.encode(types.transport)
+      let protectedUsers = savedState.map { Array($0.userKeychains.keys) } ?? []
+      let data = try XPC.encode(FilterUserTypes(exempt: exemptUsers, protected: protectedUsers))
       reply(data, nil)
     } catch {
-      os_log("[G•] FILTER xpc.receiveListExemptUserIdsRequest() error: %{public}@", "\(error)")
+      os_log("[G•] FILTER xpc.receiveListUserTypesRequest() error: %{public}@", "\(error)")
       reply(nil, XPC.errorData(error))
     }
   }

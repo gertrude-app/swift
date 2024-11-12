@@ -8,8 +8,8 @@ extension ApiClient: DependencyKey {
   public static let liveValue = Self(
     checkIn: { input in
       try await output(
-        from: CheckIn.self,
-        with: .checkIn(input)
+        from: CheckIn_v2.self,
+        with: .checkIn_v2(input)
       )
     },
     clearUserToken: {
@@ -45,6 +45,13 @@ extension ApiClient: DependencyKey {
     },
     getUserToken: {
       await userToken.value
+    },
+    logFilterEvents: { input in
+      guard await accountActive.value else { return }
+      _ = try? await output(
+        from: LogFilterEvents.self,
+        with: .logFilterEvents(input)
+      )
     },
     logInterestingEvent: { input in
       _ = try? await output(
@@ -85,6 +92,12 @@ extension ApiClient: DependencyKey {
     },
     setAccountActive: { await accountActive.setValue($0) },
     setUserToken: { await userToken.setValue($0) },
+    trustedNetworkTimestamp: {
+      try await output(
+        from: TrustedTime.self,
+        withUnauthed: .trustedTime
+      )
+    },
     uploadScreenshot: { data in
       guard await accountActive.value else { throw Error.accountInactive }
       let signed = try await output(

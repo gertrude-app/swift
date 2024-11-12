@@ -6,7 +6,7 @@ import XExpect
 final class DecideFilterSuspensionRequestTests: ApiTestCase {
   func testDecideSuspendFilterRequest_Accepted() async throws {
     let user = try await self.user().withDevice {
-      $0.appVersion = "2.4.0" // current version...
+      $0.appVersion = "2.4.0"
     }
     let request = try await self.db.create(SuspendFilterRequest.random {
       $0.userDeviceId = user.device.id
@@ -33,40 +33,11 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase {
 
     expect(sent.websocketMessages).toEqual([
       .init(
-        .filterSuspensionRequestDecided_v2( // <-- ...most recent event
+        .filterSuspensionRequestDecided_v2(
           id: updated.id.rawValue,
           decision: updated.decision!,
           comment: "ok"
         ),
-        to: .userDevice(user.device.id)
-      ),
-    ])
-  }
-
-  func testDecideSuspendFilterRequest_Rejected() async throws {
-    let user = try await self.user().withDevice {
-      $0.appVersion = "2.1.7" // <-- older version...
-    }
-    let request = try await self.db.create(SuspendFilterRequest.random {
-      $0.duration = .init(100)
-      $0.userDeviceId = user.device.id
-      $0.status = .pending
-    })
-
-    let output = try await DecideFilterSuspensionRequest.resolve(
-      with: .init(id: request.id, decision: .rejected, responseComment: nil),
-      in: context(user.admin)
-    )
-
-    expect(output).toEqual(.success)
-
-    let updated = try await self.db.find(request.id)
-    expect(updated.responseComment).toBeNil()
-    expect(updated.status).toEqual(.rejected)
-
-    expect(sent.websocketMessages).toEqual([
-      .init( // vvv -- ...older event
-        .filterSuspensionRequestDecided(decision: updated.decision!, comment: nil),
         to: .userDevice(user.device.id)
       ),
     ])

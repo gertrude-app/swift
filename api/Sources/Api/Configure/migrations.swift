@@ -32,5 +32,7 @@ extension Configure {
     app.migrations.add(RemoveUserTokenNullable())
     app.migrations.add(ScreenshotDisplayId())
     app.migrations.add(RevertScreenshotDisplayId())
+    app.migrations.add(UnidentifiedApps())
+    app.migrations.add(ScheduleFeatures())
   }
 }

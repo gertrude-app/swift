@@ -62,7 +62,7 @@ public extension ApiClient {
     _ filterVersion: String?,
     pendingFilterSuspension: UUID? = nil,
     pendingUnlockRequests: [UUID]? = nil
-  ) async throws -> CheckIn.Output {
+  ) async throws -> CheckIn_v2.Output {
     @Dependency(\.app) var appClient
     @Dependency(\.device) var device
     return try await self.checkIn(

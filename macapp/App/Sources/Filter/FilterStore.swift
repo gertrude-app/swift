@@ -11,6 +11,8 @@ public struct FilterStore: NetworkFilter {
   public var state: Filter.State { self.viewStore.state }
 
   @Dependency(\.security) public var security
+  @Dependency(\.date.now) public var now
+  @Dependency(\.calendar) public var calendar
 
   public init() {
     self.store = Store(initialState: Filter.State(), reducer: { Filter() })
@@ -33,6 +35,16 @@ public struct FilterStore: NetworkFilter {
 
   public func appCache(get bundleId: String) -> AppDescriptor? {
     self.state.appCache[bundleId]
+  }
+
+  public func logAppRequest(from bundleId: String?) {
+    if let bundleId {
+      self.viewStore.send(.logAppRequest(bundleId))
+    }
+  }
+
+  public func log(event: FilterLogs.Event) {
+    self.viewStore.send(.logEvent(event))
   }
 
   public func sendExtensionStopping() {

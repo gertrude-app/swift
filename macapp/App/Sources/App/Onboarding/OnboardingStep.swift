@@ -32,6 +32,7 @@ extension OnboardingFeature.State {
     // onboarding after the grant -> quit & reopen flow
     case allowScreenshots_failed
     case allowScreenshots_success
+    case screenshotsPrivacyWarning
 
     // keylogging
     case allowKeylogging_required
@@ -86,6 +87,8 @@ extension OnboardingFeature.State.Step {
     case .allowScreenshots_failed:
       return .allowKeylogging_required
     case .allowScreenshots_success:
+      return .allowKeylogging_required
+    case .screenshotsPrivacyWarning:
       return .allowKeylogging_required
     case .allowKeylogging_required:
       return .allowKeylogging_grant
@@ -148,6 +151,8 @@ extension OnboardingFeature.State.Step {
       return .allowScreenshots_required
     case .allowScreenshots_success:
       return .allowScreenshots_grantAndRestart
+    case .screenshotsPrivacyWarning:
+      return .allowScreenshots_grantAndRestart
     case .allowKeylogging_required:
       return .allowScreenshots_required
     case .allowKeylogging_grant:
@@ -200,6 +205,7 @@ extension OnboardingFeature.State.Step: Comparable {
     case .allowScreenshots_grantAndRestart: return 55
     case .allowScreenshots_failed: return 60
     case .allowScreenshots_success: return 65
+    case .screenshotsPrivacyWarning: return 67
     case .allowKeylogging_required: return 70
     case .allowKeylogging_grant: return 80
     case .allowKeylogging_failed: return 85

@@ -11,12 +11,10 @@ final class MacAppResolverTests: ApiTestCase {
   func testCreateSuspendFilterRequest() async throws {
     let user = try await self.userWithDevice()
 
-    let output = try await CreateSuspendFilterRequest.resolve(
+    let id = try await CreateSuspendFilterRequest_v2.resolve(
       with: .init(duration: 1111, comment: "test"),
       in: self.context(user)
     )
-
-    expect(output).toEqual(.success)
 
     let suspendRequests = try await SuspendFilterRequest.query()
       .where(.userDeviceId == user.device.id)
@@ -25,6 +23,7 @@ final class MacAppResolverTests: ApiTestCase {
     expect(suspendRequests).toHaveCount(1)
     expect(suspendRequests.first?.duration.rawValue).toEqual(1111)
     expect(suspendRequests.first?.requestComment).toEqual("test")
+    expect(suspendRequests.first?.id.rawValue).toEqual(id)
 
     expect(sent.adminNotifications).toEqual([
       .init(
@@ -74,7 +73,7 @@ final class MacAppResolverTests: ApiTestCase {
       // we want to test the LIVE admin notifier implementation
       $0.adminNotifier = .liveValue
     } operation: {
-      try await CreateSuspendFilterRequest.resolve(
+      try await CreateSuspendFilterRequest_v2.resolve(
         with: .init(duration: 1111, comment: "test"),
         in: self.context(user)
       )

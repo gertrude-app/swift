@@ -1,4 +1,5 @@
 import DuetSQL
+import Gertie
 
 struct User: Codable, Sendable {
   var id: Id
@@ -9,6 +10,7 @@ struct User: Codable, Sendable {
   var screenshotsResolution: Int
   var screenshotsFrequency: Int
   var showSuspensionActivity: Bool
+  var downtime: PlainTimeWindow?
   var createdAt = Date()
   var updatedAt = Date()
 
@@ -20,7 +22,8 @@ struct User: Codable, Sendable {
     screenshotsEnabled: Bool = false,
     screenshotsResolution: Int = 1200,
     screenshotsFrequency: Int = 60,
-    showSuspensionActivity: Bool = true
+    showSuspensionActivity: Bool = true,
+    downtime: PlainTimeWindow? = nil
   ) {
     self.id = id
     self.adminId = adminId
@@ -30,6 +33,7 @@ struct User: Codable, Sendable {
     self.screenshotsResolution = screenshotsResolution
     self.screenshotsFrequency = screenshotsFrequency
     self.showSuspensionActivity = showSuspensionActivity
+    self.downtime = downtime
   }
 }
 

@@ -26,6 +26,8 @@ final class AppReducerTests: XCTestCase {
     store.deps.app.enableLaunchAtLogin = enableLaunchAtLogin.fn
     let startRelaunchWatcher = mock(always: ())
     store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
+    store.deps.device.boottime = { .reference - 60 }
+    store.deps.date = .constant(.reference)
 
     await store.send(.application(.didFinishLaunching))
 
@@ -58,6 +60,14 @@ final class AppReducerTests: XCTestCase {
       $0.browsers = CheckIn.Output.mock.browsers
     }
 
+    let timestamp = TrustedTimestamp(
+      network: .epoch,
+      system: .reference,
+      boottime: .reference - 60
+    )
+    await store.receive(.setTrustedTimestamp(timestamp)) {
+      $0.timestamp = timestamp
+    }
     await store.receive(.user(.updated(previous: prevUser)))
 
     filterStateSubject.send(.notInstalled)
@@ -169,6 +179,7 @@ extension AppReducer {
       store.deps.filterXpc = .mock
       store.deps.websocket = .mock
       store.deps.userDefaults.getString = { _ in nil }
+      store.deps.calendar = .init(identifier: .gregorian)
     }
     return (store, scheduler)
   }

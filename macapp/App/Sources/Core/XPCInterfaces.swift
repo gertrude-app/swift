@@ -8,13 +8,22 @@ public typealias XPCErrorData = Data
     userId: uid_t,
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )
-  func receiveListExemptUserIdsRequest(
+  func receiveListUserTypesRequest(
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )
   func receiveUserRules(
     userId: uid_t,
     manifestData: Data,
-    keysData: [Data],
+    filterData: Data,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
+  func pauseDowntime(
+    for userId: uid_t,
+    until secondsSinceReference: Double,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
+  func endDowntimePause(
+    for userId: uid_t,
     reply: @escaping (XPCErrorData?) -> Void
   )
   func setBlockStreaming(
@@ -53,6 +62,10 @@ public typealias XPCErrorData = Data
   )
   func receiveUserFilterSuspensionEnded(
     userId: uid_t,
+    reply: @escaping (XPCErrorData?) -> Void
+  )
+  func receiveFilterLogs(
+    _ logs: Data,
     reply: @escaping (XPCErrorData?) -> Void
   )
 }

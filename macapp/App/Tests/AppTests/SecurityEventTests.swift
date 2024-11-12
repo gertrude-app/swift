@@ -19,8 +19,8 @@ final class SecurityEventTests: XCTestCase {
     store.deps.userDefaults.getString = { _ in nil }
 
     let setStringCalls = LockIsolated<[Both<String, String>]>([])
-    store.deps.userDefaults.setString = { key, value in
-      setStringCalls.withValue { $0.append(.init(key, value)) }
+    store.deps.userDefaults.setString = { @Sendable key, value in
+      setStringCalls.withValue { $0.append(.init(value, key)) }
     }
 
     // we can't send this event because there's no internet connection

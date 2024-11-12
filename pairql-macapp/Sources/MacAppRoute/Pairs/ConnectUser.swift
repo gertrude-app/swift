@@ -42,3 +42,5 @@ public struct ConnectUser: Pair {
 
   public typealias Output = UserData
 }
+
+extension UserData: PairOutput {}

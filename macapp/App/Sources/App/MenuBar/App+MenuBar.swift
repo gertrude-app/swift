@@ -11,7 +11,7 @@ extension MenuBarFeature.State {
         case require
       }
 
-      var filterState: FilterState
+      var filterState: FilterState.WithRelativeTimes
       var recordingScreen: Bool
       var recordingKeystrokes: Bool
       var adminAttentionRequired: Bool
@@ -46,7 +46,7 @@ extension AppReducer.State {
           return .connectionSucceded(userName: user.name)
         }
         return .connected(.init(
-          filterState: .init(self),
+          filterState: .init(from: self),
           recordingScreen: monitoring.suspensionMonitoring?.screenshotsEnabled
             ?? user.screenshotsEnabled,
           recordingKeystrokes: monitoring.suspensionMonitoring?.keyloggingEnabled

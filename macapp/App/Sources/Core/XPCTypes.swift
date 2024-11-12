@@ -1,4 +1,15 @@
 import Foundation
+import Gertie
+
+public struct UserFilterData: Sendable, Codable {
+  public var keychains: [RuleKeychain]
+  public var downtime: Downtime?
+
+  public init(keychains: [RuleKeychain], downtime: Downtime? = nil) {
+    self.keychains = keychains
+    self.downtime = downtime
+  }
+}
 
 public enum XPCErr: Error, Sendable, Codable {
   public enum AppErr: Error, Sendable, Codable {
@@ -53,6 +64,7 @@ public enum XPCEvent: Sendable, Equatable {
     public enum MessageFromExtension: Sendable, Equatable {
       case blockedRequest(BlockedRequest)
       case userFilterSuspensionEnded(uid_t)
+      case logs(FilterLogs)
     }
 
     case receivedExtensionMessage(MessageFromExtension)

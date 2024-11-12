@@ -2,10 +2,13 @@ import AppKit
 import Dependencies
 import Foundation
 import Gertie
+import SystemConfiguration
 
 struct DeviceClient: Sendable {
   var currentMacOsUserType: @Sendable () async throws -> MacOSUserType
   var currentUserId: @Sendable () -> uid_t
+  // @see https://developer.apple.com/forums/thread/707522
+  var currentUserHasScreen: @Sendable () -> Bool
   var fullUsername: @Sendable () -> String
   var listMacOSUsers: @Sendable () async throws -> [MacOSUser]
   var modelIdentifier: @Sendable () -> String?
@@ -16,15 +19,24 @@ struct DeviceClient: Sendable {
   var osVersion: @Sendable () -> MacOSVersion
   var quitBrowsers: @Sendable ([BrowserMatch]) async -> Void
   var requestNotificationAuthorization: @Sendable () async -> Void
+  var screensaverRunning: @Sendable () -> Bool
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
   var username: @Sendable () -> String
+  var boottime: @Sendable () -> Date?
 }
 
 extension DeviceClient: DependencyKey {
   static let liveValue = Self(
     currentMacOsUserType: getCurrentMacOSUserType,
     currentUserId: { getuid() },
+    currentUserHasScreen: {
+      var uid: uid_t = 0
+      SCDynamicStoreCopyConsoleUser(nil, &uid, nil)
+      // in my testing, sometimes the console user got stuck at 0 as the
+      // `loginwindow` user, so consider the loginwindow the current user as well
+      return uid == getuid() || uid == 0
+    },
     fullUsername: { NSFullUserName() },
     listMacOSUsers: getAllMacOSUsers,
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
@@ -35,36 +47,56 @@ extension DeviceClient: DependencyKey {
     osVersion: { macOSVersion() },
     quitBrowsers: quitAllBrowsers,
     requestNotificationAuthorization: requestNotificationAuth,
+    screensaverRunning: {
+      NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.ScreenSaver.Engine"
+    },
     showNotification: showNotification(title:body:),
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
-    username: { NSUserName() }
+    username: { NSUserName() },
+    boottime: {
+      // https://forums.developer.apple.com/forums/thread/101874?answerId=309633022#309633022
+      var tv = timeval()
+      var tvSize = MemoryLayout<timeval>.size
+      let err = sysctlbyname("kern.boottime", &tv, &tvSize, nil, 0)
+      guard err == 0, tvSize == MemoryLayout<timeval>.size else {
+        return nil
+      }
+      return Date(timeIntervalSince1970: Double(tv.tv_sec) + (Double(tv.tv_usec) / 1_000_000.0))
+    }
   )
 }
 
 extension DeviceClient: TestDependencyKey {
   static let testValue = Self(
     currentMacOsUserType: unimplemented("DeviceClient.currentMacOsUserType"),
-    currentUserId: unimplemented("DeviceClient.currentUserId"),
-    fullUsername: unimplemented("DeviceClient.fullUsername"),
+    currentUserId: unimplemented("DeviceClient.currentUserId", placeholder: 502),
+    currentUserHasScreen: unimplemented("DeviceClient.currentUserHasScreen", placeholder: true),
+    fullUsername: unimplemented("DeviceClient.fullUsername", placeholder: ""),
     listMacOSUsers: unimplemented("DeviceClient.listMacOSUsers"),
-    modelIdentifier: unimplemented("DeviceClient.modelIdentifier"),
-    notificationsSetting: unimplemented("DeviceClient.notificationsSetting"),
-    numericUserId: unimplemented("DeviceClient.numericUserId"),
+    modelIdentifier: unimplemented("DeviceClient.modelIdentifier", placeholder: nil),
+    notificationsSetting: unimplemented("DeviceClient.notificationsSetting", placeholder: .none),
+    numericUserId: unimplemented("DeviceClient.numericUserId", placeholder: 502),
     openSystemPrefs: unimplemented("DeviceClient.openSystemPrefs"),
     openWebUrl: unimplemented("DeviceClient.openWebUrl"),
-    osVersion: unimplemented("DeviceClient.osVersion"),
+    osVersion: unimplemented(
+      "DeviceClient.osVersion",
+      placeholder: .init(major: 15, minor: 0, patch: 0)
+    ),
     quitBrowsers: unimplemented("DeviceClient.quitBrowsers"),
     requestNotificationAuthorization: unimplemented(
       "DeviceClient.requestNotificationAuthorization"
     ),
+    screensaverRunning: unimplemented("DeviceClient.screensaverRunning", placeholder: false),
     showNotification: unimplemented("DeviceClient.showNotification"),
-    serialNumber: unimplemented("DeviceClient.serialNumber"),
-    username: unimplemented("DeviceClient.username")
+    serialNumber: unimplemented("DeviceClient.serialNumber", placeholder: ""),
+    username: unimplemented("DeviceClient.username", placeholder: ""),
+    boottime: unimplemented("DeviceClient.boottime", placeholder: nil)
   )
 
   static let mock = Self(
     currentMacOsUserType: { .standard },
     currentUserId: { 502 },
+    currentUserHasScreen: { true },
     fullUsername: { "test-full-username" },
     listMacOSUsers: { [
       .init(id: 501, name: "Dad", type: .admin),
@@ -78,9 +110,11 @@ extension DeviceClient: TestDependencyKey {
     osVersion: { .init(major: 14, minor: 0, patch: 0) },
     quitBrowsers: { _ in },
     requestNotificationAuthorization: {},
+    screensaverRunning: { false },
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },
-    username: { "test-username" }
+    username: { "test-username" },
+    boottime: { nil }
   )
 }
 

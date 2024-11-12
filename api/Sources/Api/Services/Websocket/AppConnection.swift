@@ -15,7 +15,7 @@ actor AppConnection {
   let id: Id
   let ids: Ids
   let ws: WebSocket
-  var filterState: UserFilterState?
+  var filterState: FilterState.WithoutTimes?
 
   init(ws: WebSocket, ids: Ids) {
     self.id = .init(UUID())

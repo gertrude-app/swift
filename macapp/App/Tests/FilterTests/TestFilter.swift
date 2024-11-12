@@ -7,7 +7,8 @@ import Gertie
 
 class TestFilter: NetworkFilter {
   struct State: DecisionState {
-    var userKeys: [uid_t: [FilterKey]] = [:]
+    var userKeychains: [uid_t: [RuleKeychain]] = [:]
+    var userDowntime: [uid_t: Downtime] = [:]
     var appIdManifest = AppIdManifest()
     var exemptUsers: Set<uid_t> = []
     var suspensions: [uid_t: FilterSuspension] = [:]
@@ -17,6 +18,8 @@ class TestFilter: NetworkFilter {
   var state = State()
 
   @Dependency(\.security) var security
+  @Dependency(\.date.now) var now
+  @Dependency(\.calendar) var calendar
 
   func appCache(get bundleId: String) -> AppDescriptor? {
     self.state.appCache[bundleId]
@@ -28,7 +31,9 @@ class TestFilter: NetworkFilter {
 
   static func scenario(
     userIdFromAuditToken userId: uid_t? = 502,
-    userKeys: [uid_t: [FilterKey]] = [502: [.mock]],
+    userKeychains: [uid_t: [RuleKeychain]] = [502: [.mock]],
+    userDowntime: [uid_t: PlainTimeWindow] = [:],
+    date: Dependencies.DateGenerator = .init { Date() },
     appIdManifest: AppIdManifest = .init(
       apps: ["chrome": ["com.chrome"]],
       displayNames: ["chrome": "Chrome"],
@@ -39,13 +44,15 @@ class TestFilter: NetworkFilter {
   ) -> TestFilter {
     withDependencies {
       $0.security.userIdFromAuditToken = {
-        token in token.flatMap { _ in userId
-        }
+        token in token.flatMap { _ in userId }
       }
+      $0.date = date
+      $0.calendar = Calendar(identifier: .gregorian)
     } operation: {
       let filter = TestFilter()
       filter.state = State(
-        userKeys: userKeys,
+        userKeychains: userKeychains,
+        userDowntime: userDowntime.mapValues { Downtime(window: $0) },
         appIdManifest: appIdManifest,
         exemptUsers: exemptUsers,
         suspensions: suspensions
@@ -53,11 +60,6 @@ class TestFilter: NetworkFilter {
       return filter
     }
   }
-}
 
-extension FilterKey {
-  static let mock = FilterKey(
-    id: .init(),
-    key: .skeleton(scope: .bundleId("com.whitelisted.widget"))
-  )
+  func log(event: FilterLogs.Event) {}
 }

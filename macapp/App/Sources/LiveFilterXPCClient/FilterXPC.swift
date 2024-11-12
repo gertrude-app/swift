@@ -56,17 +56,21 @@ struct FilterXPC: Sendable {
     return ack
   }
 
-  func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {
+  func sendUserRules(
+    manifest: AppIdManifest,
+    keychains: [RuleKeychain],
+    downtime: Downtime?
+  ) async throws {
     try await self.establishConnection()
 
     let manifestData = try XPC.encode(manifest)
-    let keysData = try keys.map { try XPC.encode($0) }
+    let filterData = try XPC.encode(UserFilterData(keychains: keychains, downtime: downtime))
 
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.receiveUserRules(
         userId: getuid(),
         manifestData: manifestData,
-        keysData: keysData,
+        filterData: filterData,
         reply: continuation.dataHandler
       )
     }
@@ -83,6 +87,24 @@ struct FilterXPC: Sendable {
     try await self.establishConnection()
     try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
       filterProxy.endSuspension(for: getuid(), reply: continuation.dataHandler)
+    }
+  }
+
+  func pauseDowntime(until expiration: Date) async throws {
+    try await self.establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.pauseDowntime(
+        for: getuid(),
+        until: expiration.timeIntervalSinceReferenceDate,
+        reply: continuation.dataHandler
+      )
+    }
+  }
+
+  func endDowntimePause() async throws {
+    try await self.establishConnection()
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.endDowntimePause(for: getuid(), reply: continuation.dataHandler)
     }
   }
 
@@ -119,10 +141,10 @@ struct FilterXPC: Sendable {
     }
   }
 
-  func requestExemptUserIds() async throws -> [uid_t] {
+  func requestUserTypes() async throws -> FilterUserTypes {
     try await self.establishConnection()
     return try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
-      filterProxy.receiveListExemptUserIdsRequest(reply: continuation.dataHandler)
+      filterProxy.receiveListUserTypesRequest(reply: continuation.dataHandler)
     }
   }
 

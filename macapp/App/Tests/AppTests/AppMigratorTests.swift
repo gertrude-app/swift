@@ -1,4 +1,5 @@
 import Dependencies
+import Gertie
 import MacAppRoute
 import TestSupport
 import XCore
@@ -102,8 +103,8 @@ class AppMigratorTests: XCTestCase {
       )
 
       let checkIn = spy(
-        on: CheckIn.Input.self,
-        returning: CheckIn.Output.mock { $0.userData = apiUser }
+        on: CheckIn_v2.Input.self,
+        returning: CheckIn_v2.Output.mock { $0.userData = apiUser }
       )
       migrator.api.checkIn = checkIn.fn
 

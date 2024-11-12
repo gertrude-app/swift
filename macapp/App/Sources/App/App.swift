@@ -1,9 +1,8 @@
 import ClientInterfaces
 import ComposableArchitecture
 import Dependencies
+import Gertie
 import MacAppRoute
-
-typealias UserData = GetUserData.Output
 
 @MainActor public struct App {
   var menuBarManager: MenuBarManager
@@ -79,6 +78,8 @@ typealias UserData = GetUserData.Output
       self.store.send(.application(.didWake))
     case .willTerminate:
       self.store.send(.application(.willTerminate))
+    case .systemClockOrTimeZoneChanged:
+      self.store.send(.application(.systemClockOrTimeZoneChanged))
     }
   }
 }

@@ -8,8 +8,8 @@ public extension SQL {
       case binding(Postgres.Data)
     }
 
-    var first: String
-    var components: [Component] = []
+    public var first: String
+    public var components: [Component] = []
 
     public init(_ first: String) {
       self.first = first

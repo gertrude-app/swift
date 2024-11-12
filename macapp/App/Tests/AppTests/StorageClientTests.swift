@@ -11,7 +11,7 @@ final class StorageClientTests: XCTestCase {
     let observedKey = LockIsolated<String?>(nil)
     let state = Persistent.State.mock
     let client = withDependencies {
-      $0.userDefaults.setString = { _, _ in XCTFail("Should not be called") }
+      $0.userDefaults.setString = { @Sendable _, _ in XCTFail("Should not be called") }
       $0.userDefaults.getString = { key in
         observedKey.setValue(key)
         return try! JSON.encode(state)
@@ -28,7 +28,7 @@ final class StorageClientTests: XCTestCase {
   func testSavePersistentState() async throws {
     let observed = LockIsolated<(key: String?, json: String?)>((nil, nil))
     let client = withDependencies {
-      $0.userDefaults.setString = { observed.setValue(($1, $0)) }
+      $0.userDefaults.setString = { @Sendable in observed.setValue(($0, $1)) }
       $0.userDefaults.getString = { _ in
         XCTFail("Should not be called")
         return nil

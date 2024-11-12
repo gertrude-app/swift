@@ -22,30 +22,14 @@ extension UpdateUnlockRequest: Resolver {
     unlockRequest.status = input.status
     try await context.db.update(unlockRequest)
     try await with(dependency: \.websockets).send(
-      unlockRequest.updated(for: userDevice.appSemver),
+      .unlockRequestUpdated_v2(
+        id: unlockRequest.id.rawValue,
+        status: unlockRequest.status,
+        target: unlockRequest.target ?? "",
+        comment: unlockRequest.responseComment
+      ),
       to: .userDevice(userDevice.id)
     )
     return .success
-  }
-}
-
-// extensions
-
-extension UnlockRequest {
-  func updated(for version: Semver) -> WebSocketMessage.FromApiToApp {
-    if version >= .init("2.4.0")! {
-      return .unlockRequestUpdated_v2(
-        id: self.id.rawValue,
-        status: self.status,
-        target: self.target ?? "",
-        comment: self.responseComment
-      )
-    } else {
-      return .unlockRequestUpdated(
-        status: self.status,
-        target: self.target ?? "",
-        parentComment: self.responseComment
-      )
-    }
   }
 }

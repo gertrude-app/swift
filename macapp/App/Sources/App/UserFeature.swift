@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import Gertie
 import MacAppRoute
 
@@ -6,16 +7,22 @@ struct UserFeature: Feature {
   struct State: Equatable, Sendable {
     var data: UserData?
     var numTimesUserTokenNotFound = 0
+    var downtimePausedUntil: Date?
   }
 
   enum Action: Sendable, Equatable {
     case updated(previous: UserData?)
+    case pauseDowntimeUntil(Date)
+    case endDowntimePause
   }
 
   struct RootReducer {
     typealias Action = AppReducer.Action
     typealias State = AppReducer.State
     @Dependency(\.api) var api
+    @Dependency(\.date.now) var now
+    @Dependency(\.device) var device
+    @Dependency(\.calendar) var calendar
   }
 }
 
@@ -31,6 +38,33 @@ extension UserFeature.RootReducer: RootReducing {
           result: TaskResult { try await api.appCheckIn(filterVersion) },
           reason: .receivedWebsocketMessage
         ))
+      }
+
+    case .heartbeat(.everyMinute):
+      if let expiry = state.user.downtimePausedUntil, self.now >= expiry {
+        state.user.downtimePausedUntil = nil
+      }
+      guard let downtime = state.user.data?.downtime else {
+        return .none
+      }
+      let minutesTillDowntime = PlainTime.from(self.now, in: self.calendar)
+        .minutesUntil(downtime.start)
+      switch minutesTillDowntime {
+      case 5:
+        return .exec { _ in
+          if self.device.currentUserHasScreen(), !self.device.screensaverRunning() {
+            await self.device.showNotification(
+              "😴 Downtime starting in 5 minutes",
+              "Browsers will quit, save any important work now!"
+            )
+          }
+        }
+      case 0:
+        return .exec { [browsers = state.browsers] _ in
+          await self.device.quitBrowsers(browsers)
+        }
+      default:
+        return .none
       }
 
     case .heartbeat(.everySixHours):

@@ -4,38 +4,43 @@ import Gertie
 import MacAppRoute
 
 public struct ApiClient: Sendable {
-  public var checkIn: @Sendable (CheckIn.Input) async throws -> CheckIn.Output
+  public var checkIn: @Sendable (CheckIn_v2.Input) async throws -> CheckIn_v2.Output
   public var clearUserToken: @Sendable () async -> Void
   public var connectUser: @Sendable (ConnectUser.Input) async throws -> UserData
   public var createKeystrokeLines: @Sendable (CreateKeystrokeLines.Input) async throws -> Void
-  public var createSuspendFilterRequest: @Sendable (CreateSuspendFilterRequest.Input) async throws
-    -> UUID
-  public var createUnlockRequests: @Sendable (CreateUnlockRequests_v2.Input) async throws -> [UUID]
+  public var createSuspendFilterRequest: @Sendable (CreateSuspendFilterRequest_v2.Input)
+    async throws -> UUID
+  public var createUnlockRequests: @Sendable (CreateUnlockRequests_v3.Input) async throws -> [UUID]
   public var getUserToken: @Sendable () async throws -> UUID?
+  public var logFilterEvents: @Sendable (LogFilterEvents.Input) async -> Void
   public var logInterestingEvent: @Sendable (LogInterestingEvent.Input) async -> Void
   public var logSecurityEvent: @Sendable (LogSecurityEvent.Input, UUID?) async -> Void
   public var recentAppVersions: @Sendable () async throws -> [String: String]
   public var reportBrowsers: @Sendable (ReportBrowsers.Input) async throws -> Void
   public var setAccountActive: @Sendable (Bool) async -> Void
   public var setUserToken: @Sendable (UUID) async -> Void
+  public var trustedNetworkTimestamp: @Sendable () async throws -> Double
   public var uploadScreenshot: @Sendable (UploadScreenshotData) async throws -> URL
 
   public init(
-    checkIn: @escaping @Sendable (CheckIn.Input) async throws -> CheckIn.Output,
+    checkIn: @escaping @Sendable (CheckIn_v2.Input) async throws -> CheckIn_v2.Output,
     clearUserToken: @escaping @Sendable () async -> Void,
     connectUser: @escaping @Sendable (ConnectUser.Input) async throws -> UserData,
     createKeystrokeLines: @escaping @Sendable (CreateKeystrokeLines.Input) async throws -> Void,
-    createSuspendFilterRequest: @escaping @Sendable (CreateSuspendFilterRequest.Input) async throws
-      -> UUID,
-    createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v2.Input) async throws
+    createSuspendFilterRequest: @escaping @Sendable (
+      CreateSuspendFilterRequest_v2.Input
+    ) async throws -> UUID,
+    createUnlockRequests: @escaping @Sendable (CreateUnlockRequests_v3.Input) async throws
       -> [UUID],
     getUserToken: @escaping @Sendable () async throws -> UUID?,
+    logFilterEvents: @escaping @Sendable (LogFilterEvents.Input) async -> Void,
     logInterestingEvent: @escaping @Sendable (LogInterestingEvent.Input) async -> Void,
     logSecurityEvent: @escaping @Sendable (LogSecurityEvent.Input, UUID?) async -> Void,
     recentAppVersions: @escaping @Sendable () async throws -> [String: String],
     reportBrowsers: @escaping @Sendable (ReportBrowsers.Input) async throws -> Void,
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setUserToken: @escaping @Sendable (UUID) async -> Void,
+    trustedNetworkTimestamp: @escaping @Sendable () async throws -> Double,
     uploadScreenshot: @escaping @Sendable (UploadScreenshotData) async throws -> URL
   ) {
     self.checkIn = checkIn
@@ -45,12 +50,14 @@ public struct ApiClient: Sendable {
     self.createSuspendFilterRequest = createSuspendFilterRequest
     self.createUnlockRequests = createUnlockRequests
     self.getUserToken = getUserToken
+    self.logFilterEvents = logFilterEvents
     self.logInterestingEvent = logInterestingEvent
     self.logSecurityEvent = logSecurityEvent
     self.recentAppVersions = recentAppVersions
     self.reportBrowsers = reportBrowsers
     self.setAccountActive = setAccountActive
     self.setUserToken = setUserToken
+    self.trustedNetworkTimestamp = trustedNetworkTimestamp
     self.uploadScreenshot = uploadScreenshot
   }
 }
@@ -101,12 +108,14 @@ extension ApiClient: TestDependencyKey {
     createSuspendFilterRequest: unimplemented("ApiClient.createSuspendFilterRequest"),
     createUnlockRequests: unimplemented("ApiClient.createUnlockRequests"),
     getUserToken: unimplemented("ApiClient.getUserToken"),
+    logFilterEvents: unimplemented("ApiClient.logFilterEvents"),
     logInterestingEvent: unimplemented("ApiClient.logInterestingEvent"),
     logSecurityEvent: unimplemented("ApiClient.logSecurityEvent"),
     recentAppVersions: unimplemented("ApiClient.recentAppVersions"),
     reportBrowsers: unimplemented("ApiClient.reportBrowsers"),
     setAccountActive: unimplemented("ApiClient.setAccountActive"),
     setUserToken: unimplemented("ApiClient.setUserToken"),
+    trustedNetworkTimestamp: unimplemented("ApiClient.trustedNetworkTimestamp"),
     uploadScreenshot: unimplemented("ApiClient.uploadScreenshot")
   )
 
@@ -118,12 +127,14 @@ extension ApiClient: TestDependencyKey {
     createSuspendFilterRequest: { _ in .init() },
     createUnlockRequests: { _ in [] },
     getUserToken: { nil },
+    logFilterEvents: { _ in },
     logInterestingEvent: { _ in },
     logSecurityEvent: { _, _ in },
     recentAppVersions: { [:] },
     reportBrowsers: { _ in },
     setAccountActive: { _ in },
     setUserToken: { _ in },
+    trustedNetworkTimestamp: { 0.0 },
     uploadScreenshot: { _ in .init(string: "https://s3.buck.et/img.png")! }
   )
 }

@@ -39,7 +39,11 @@ extension DecideFilterSuspensionRequest: Resolver {
     try await context.db.update(suspendFilterRequest)
 
     try await with(dependency: \.websockets).send(
-      suspendFilterRequest.updated(for: userDevice.appSemver),
+      .filterSuspensionRequestDecided_v2(
+        id: suspendFilterRequest.id.rawValue,
+        decision: suspendFilterRequest.decision ?? .rejected,
+        comment: suspendFilterRequest.responseComment
+      ),
       to: .userDevice(userDevice.id)
     )
 
@@ -48,28 +52,6 @@ extension DecideFilterSuspensionRequest: Resolver {
 }
 
 // extensions
-
-extension SuspendFilterRequest {
-  func updated(for version: Semver) -> WebSocketMessage.FromApiToApp {
-    switch self.status {
-    case .accepted where version < .init("2.1.0")!:
-      .suspendFilter(for: self.duration, parentComment: self.responseComment)
-    case _ where version < .init("2.1.0")!:
-      .suspendFilterRequestDenied(parentComment: self.responseComment)
-    case _ where version < .init("2.4.0")!:
-      .filterSuspensionRequestDecided(
-        decision: self.decision ?? .rejected,
-        comment: self.responseComment
-      )
-    default:
-      .filterSuspensionRequestDecided_v2(
-        id: self.id.rawValue,
-        decision: self.decision ?? .rejected,
-        comment: self.responseComment
-      )
-    }
-  }
-}
 
 extension DecideFilterSuspensionRequest.Decision {
   var filterSuspensionDecision: FilterSuspensionDecision {

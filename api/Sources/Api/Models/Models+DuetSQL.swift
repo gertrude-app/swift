@@ -507,6 +507,7 @@ extension User: Model {
     case .screenshotsResolution: .int(self.screenshotsResolution)
     case .screenshotsFrequency: .int(self.screenshotsFrequency)
     case .showSuspensionActivity: .bool(self.showSuspensionActivity)
+    case .downtime: .json(self.downtime?.toPostgresJson)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
     }
@@ -522,6 +523,7 @@ extension User: Model {
       .screenshotsResolution: .int(self.screenshotsResolution),
       .screenshotsFrequency: .int(self.screenshotsFrequency),
       .showSuspensionActivity: .bool(self.showSuspensionActivity),
+      .downtime: .json(self.downtime?.toPostgresJson),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -537,6 +539,7 @@ extension UserKeychain: Model {
     case .id: .id(self)
     case .userId: .uuid(self.userId)
     case .keychainId: .uuid(self.keychainId)
+    case .schedule: .json(self.schedule?.toPostgresJson)
     case .createdAt: .date(self.createdAt)
     }
   }
@@ -546,10 +549,14 @@ extension UserKeychain: Model {
       .id: .id(self),
       .userId: .uuid(self.userId),
       .keychainId: .uuid(self.keychainId),
+      .schedule: .json(self.schedule?.toPostgresJson),
       .createdAt: .currentTimestamp,
     ]
   }
 }
+
+extension KeychainSchedule: PostgresJsonable {}
+extension PlainTimeWindow: PostgresJsonable {}
 
 extension UserToken: Model {
   public static let tableName = M3.tableName
@@ -673,6 +680,29 @@ extension Browser: Model {
     [
       .id: .id(self),
       .match: .json(self.match.toPostgresJson),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension UnidentifiedApp: Model {
+  public static let tableName = UnidentifiedApp.M28.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .bundleId: .string(self.bundleId)
+    case .count: .int(self.count)
+    case .createdAt: .date(self.createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .bundleId: .string(self.bundleId),
+      .count: .int(self.count),
       .createdAt: .currentTimestamp,
     ]
   }

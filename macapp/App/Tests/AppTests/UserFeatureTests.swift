@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Gertie
 import MacAppRoute
 import PairQL
 import TestSupport
@@ -67,5 +68,73 @@ final class UserFeatureTests: XCTestCase {
     await store.send(.heartbeat(.everySixHours))
 
     expect(store.state.user).not.toBeNil() // still not disconnected
+  }
+
+  @MainActor
+  func testHeartbeatCleansUpExpiredDowntimePause() async {
+    let now = Calendar.current.date(from: DateComponents(hour: 23, minute: 00))!
+    let (store, _) = AppReducer.testStore(mockDeps: true) {
+      $0.user.downtimePausedUntil = now - .seconds(30) // expired pause
+      $0.user.data = .mock {
+        $0.downtime = "22:00-05:00"
+      }
+    }
+    store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
+    store.deps.date = .constant(now)
+
+    expect(store.state.user.downtimePausedUntil).not.toBeNil()
+
+    await store.send(.heartbeat(.everyMinute)) {
+      $0.user.downtimePausedUntil = nil
+    }
+  }
+
+  @MainActor
+  func testNotifies5MinutestBeforeDowntimeAndQuitsBrowsersAtDowntime() async {
+    // the time is: 21:53, i.e. 9:53 PM, 7 minutes before downtime
+    let now = Calendar.current.date(from: DateComponents(hour: 21, minute: 53))!
+
+    let (store, scheduler) = AppReducer.testStore(mockDeps: true) {
+      $0.user.data = .mock { $0.downtime = "22:00-05:00" }
+      $0.browsers = [.name("Arc")]
+    }
+
+    store.deps.api.checkIn = { _ in throw TestErr("stop checkin") }
+    store.deps.device.currentUserHasScreen = { true }
+    store.deps.device.screensaverRunning = { false }
+    store.deps.device.showNotification = { _, _ in fatalError() }
+    store.deps.storage.loadPersistentState = { nil }
+    let quitBrowsers = spy(on: [BrowserMatch].self, returning: ())
+    store.deps.device.quitBrowsers = quitBrowsers.fn
+    let time = ControllingNow(starting: now, with: scheduler)
+    store.deps.date = time.generator
+
+    // start the heartbeat
+    await store.send(.startProtecting(user: store.state.user.data!))
+
+    await time.advance(seconds: 60)
+    expect(store.state.user.data?.downtime?.start).toEqual(.init(hour: 22, minute: 0))
+    await store.receive(.heartbeat(.everyMinute)) // 9:54 PM
+
+    let notification = spy2(on: (String.self, String.self), returning: ())
+    store.deps.device.showNotification = notification.fn
+
+    await time.advance(seconds: 60)
+    await store.receive(.heartbeat(.everyMinute)) // <-- 9:55 PM, notify!
+
+    await expect(notification.calls).toEqual([.init(
+      "😴 Downtime starting in 5 minutes",
+      "Browsers will quit, save any important work now!"
+    )])
+
+    store.deps.device.showNotification = { _, _ in fatalError() }
+    for _ in 1 ... 4 {
+      await time.advance(seconds: 60)
+      await store.receive(.heartbeat(.everyMinute))
+    }
+    await expect(quitBrowsers.calls).toEqual([])
+    await time.advance(seconds: 60)
+    await store.receive(.heartbeat(.everyMinute))
+    await expect(quitBrowsers.calls).toEqual([[.name("Arc")]])
   }
 }

@@ -17,7 +17,7 @@ public struct SecurityClient: Sendable {
 }
 
 extension SecurityClient: DependencyKey {
-  public static var liveValue = Self(
+  public static let liveValue = Self(
     userIdFromAuditToken: { auditToken in
       guard let auditToken, auditToken.count == MemoryLayout<audit_token_t>.size else {
         return nil
@@ -87,8 +87,11 @@ extension SecurityClient: DependencyKey {
 
 extension SecurityClient: TestDependencyKey {
   public static let testValue = Self(
-    userIdFromAuditToken: unimplemented("SecurityClient.userIdFromAuditToken"),
-    rootAppFromAuditToken: unimplemented("SecurityClient.rootAppFromAuditToken")
+    userIdFromAuditToken: unimplemented("SecurityClient.userIdFromAuditToken", placeholder: nil),
+    rootAppFromAuditToken: unimplemented(
+      "SecurityClient.rootAppFromAuditToken",
+      placeholder: (nil, nil)
+    )
   )
   public static let mock = Self(
     userIdFromAuditToken: { _ in nil },

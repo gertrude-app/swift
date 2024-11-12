@@ -1,4 +1,6 @@
+import ConcurrencyExtras
 import Core
+import Gertie
 import MacAppRoute
 import TaggedTime
 import TestSupport
@@ -14,16 +16,28 @@ final class CheckInFeatureTests: XCTestCase {
       $0.user.data = .mock
       $0.user.numTimesUserTokenNotFound = 1
       $0.admin.accountStatus = .active
+      $0.filter.extension = .installedAndRunning
     }
 
     let setAccountActive = spy(on: Bool.self, returning: ())
     store.deps.api.setAccountActive = setAccountActive.fn
 
+    let sentKeychains = LockIsolated<[[RuleKeychain]]>([])
+    let sentDowntimes = LockIsolated<[Downtime?]>([])
+    store.deps.filterXpc.sendUserRules = { _, keychains, downtime in
+      sentKeychains.withValue { $0.append(keychains) }
+      sentDowntimes.withValue { $0.append(downtime) }
+      return .success(())
+    }
+
     let previousUserData = store.state.user.data
 
-    let checkInResult = CheckIn.Output.mock {
+    let keychain = RuleKeychain(keys: [.init(key: .skeleton(scope: .bundleId("com.foo")))])
+    let checkInResult = CheckIn_v2.Output.mock {
+      $0.keychains = [keychain]
       $0.userData.name = "little sammy 2"
       $0.userData.screenshotSize = 9876
+      $0.userData.downtime = "22:00-05:00"
       $0.updateReleaseChannel = .canary
       $0.latestRelease = .init(semver: "8.7.5")
       $0.adminAccountStatus = .needsAttention
@@ -32,8 +46,9 @@ final class CheckInFeatureTests: XCTestCase {
 
     await store.send(.checkIn(result: .success(checkInResult), reason: .heartbeat)) {
       $0.user.data = checkInResult.userData
-      $0.user.data?.name = "little sammy 2"
-      $0.user.data?.screenshotSize = 9876
+      $0.user.data!.name = "little sammy 2"
+      $0.user.data!.screenshotSize = 9876
+      $0.user.data!.downtime = "22:00-05:00"
       $0.user.numTimesUserTokenNotFound = 0
       $0.admin.accountStatus = .needsAttention
       $0.appUpdates.latestVersion = .init(semver: "8.7.5")
@@ -43,6 +58,8 @@ final class CheckInFeatureTests: XCTestCase {
 
     await store.receive(.user(.updated(previous: previousUserData)))
     await expect(setAccountActive.calls).toEqual([false])
+    expect(sentKeychains.value).toEqual([[keychain]])
+    expect(sentDowntimes.value).toEqual([Downtime(window: "22:00-05:00")])
   }
 
   @MainActor
@@ -52,9 +69,10 @@ final class CheckInFeatureTests: XCTestCase {
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
 
-    let checkInResult = CheckIn.Output.mock {
+    let checkInResult = CheckIn_v2.Output.mock {
       $0.userData.name = "updated name"
       $0.updateReleaseChannel = .canary
+      $0.userData.downtime = "22:00-05:00"
     }
 
     await store.send(.checkIn(result: .success(checkInResult), reason: .heartbeat))
@@ -63,7 +81,10 @@ final class CheckInFeatureTests: XCTestCase {
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .canary,
       filterVersion: "1.0.0",
-      user: checkInResult.userData,
+      user: CheckIn_v2.Output.mock {
+        $0.userData.name = "updated name"
+        $0.userData.downtime = "22:00-05:00"
+      }.userData,
       resumeOnboarding: nil
     )])
   }
@@ -77,7 +98,7 @@ final class CheckInFeatureTests: XCTestCase {
 
     await store.send(.application(.didFinishLaunching)) // start heartbeat
 
-    let output = CheckIn.Output.mock { $0.userData.screenshotSize = 999 }
+    let output = CheckIn_v2.Output.mock { $0.userData.screenshotSize = 999 }
     store.deps.api.checkIn = { _ in output }
 
     await bgQueue.advance(by: 60 * 19)
@@ -120,7 +141,7 @@ final class CheckInFeatureTests: XCTestCase {
   func testClickingCheckIn_FilterError() async {
     let (store, bgQueue) = AppReducer.testStore()
     let notifications = spyOnNotifications(store)
-    store.deps.filterXpc.sendUserRules = { _, _ in .failure(.unknownError("printer on fire")) }
+    store.deps.filterXpc.sendUserRules = { _, _, _ in .failure(.unknownError("printer on fire")) }
     await store.send(.application(.didFinishLaunching))
 
     await bgQueue.advance(by: .milliseconds(5))
@@ -160,13 +181,13 @@ final class CheckInFeatureTests: XCTestCase {
 
     let setAccountActive = spy(on: Bool.self, returning: ())
     store.deps.api.setAccountActive = setAccountActive.fn
-    store.deps.filterXpc.sendUserRules = { _, _ in fatalError() }
+    store.deps.filterXpc.sendUserRules = { _, _, _ in fatalError() }
 
-    let output1 = CheckIn.Output.mock {
+    let output1 = CheckIn_v2.Output.mock {
       $0.adminAccountStatus = .inactive
       $0.userData.name = "new name"
     }
-    let checkIn1 = spy(on: CheckIn.Input.self, returning: output1)
+    let checkIn1 = spy(on: CheckIn_v2.Input.self, returning: output1)
     store.deps.api.checkIn = checkIn1.fn
 
     await store.send(.heartbeat(.everyTwentyMinutes))
@@ -182,13 +203,13 @@ final class CheckInFeatureTests: XCTestCase {
     await expect(setAccountActive.calls).toEqual([false])
 
     // now, simulate the account owner fixing the issue
-    let output2 = CheckIn.Output.mock {
+    let output2 = CheckIn_v2.Output.mock {
       $0.adminAccountStatus = .active // <-- account is now active
       $0.userData.name = "new name"
     }
-    let checkIn2 = spy(on: CheckIn.Input.self, returning: output2)
+    let checkIn2 = spy(on: CheckIn_v2.Input.self, returning: output2)
     store.deps.api.checkIn = checkIn2.fn
-    store.deps.filterXpc.sendUserRules = { _, _ in .success(()) }
+    store.deps.filterXpc.sendUserRules = { _, _, _ in .success(()) }
 
     await store.send(.heartbeat(.everySixHours))
     await expect(checkIn2.called).toEqual(true)
@@ -211,7 +232,7 @@ final class CheckInFeatureTests: XCTestCase {
     let notification = spy2(on: (String.self, String.self), returning: ())
     store.deps.device.showNotification = notification.fn
 
-    let checkInResult = CheckIn.Output.empty {
+    let checkInResult = CheckIn_v2.Output.empty {
       $0.resolvedFilterSuspension = .init(
         id: reqId,
         decision: .accepted(duration: 44, extraMonitoring: nil),
@@ -248,7 +269,7 @@ final class CheckInFeatureTests: XCTestCase {
       ]
     }
 
-    let checkInResult = CheckIn.Output.empty {
+    let checkInResult = CheckIn_v2.Output.empty {
       $0.resolvedUnlockRequests = [
         .init(id: id1, status: .rejected, target: "foo.com", comment: nil),
         .init(id: id2, status: .accepted, target: "bar.com", comment: "ok"),

@@ -354,6 +354,7 @@ extension User {
     case screenshotsResolution
     case screenshotsFrequency
     case showSuspensionActivity
+    case downtime
     case createdAt
     case updatedAt
   }
@@ -368,6 +369,7 @@ extension UserKeychain {
     case id
     case userId
     case keychainId
+    case schedule
     case createdAt
   }
 }
@@ -427,6 +429,19 @@ extension Browser {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case match
+    case createdAt
+  }
+}
+
+extension UnidentifiedApp: Duet.Identifiable {
+  typealias Id = Tagged<UnidentifiedApp, UUID>
+}
+
+extension UnidentifiedApp {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case bundleId
+    case count
     case createdAt
   }
 }

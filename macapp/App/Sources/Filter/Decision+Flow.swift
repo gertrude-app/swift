@@ -51,50 +51,55 @@ public extension NetworkFilter {
       return .allow(.filterSuspended)
     }
 
-    let keys = state.userKeys[userId] ?? []
-    guard !keys.isEmpty else {
+    let keychains = state.userKeychains[userId] ?? []
+    guard !keychains.isEmpty else {
       return .block(.noUserKeys)
     }
 
-    for filterKey in keys {
-      switch filterKey.key {
+    for keychain in keychains {
+      if keychain.schedule?.active(at: self.now, in: self.calendar) == false {
+        continue
+      }
+      for ruleKey in keychain.keys {
+        switch ruleKey.key {
 
-      case .domain(domain: let domain, scope: let scope):
-        if let hostname = flow.hostname, scope.permits(app),
-           domain.matches(hostname: hostname) {
-          return .allow(.permittedByKey(filterKey.id))
-        }
+        case .domain(domain: let domain, scope: let scope):
+          if let hostname = flow.hostname, scope.permits(app),
+             domain.matches(hostname: hostname) {
+            return .allow(.permittedByKey(ruleKey.id))
+          }
 
-      case .anySubdomain(domain: let domain, scope: let scope):
-        if let hostname = flow.hostname,
-           scope.permits(app),
-           domain.matchesAnySubdomain(of: hostname) {
-          return .allow(.permittedByKey(filterKey.id))
-        }
+        case .anySubdomain(domain: let domain, scope: let scope):
+          if let hostname = flow.hostname,
+             scope.permits(app),
+             domain.matchesAnySubdomain(of: hostname) {
+            return .allow(.permittedByKey(ruleKey.id))
+          }
 
-      case .skeleton(scope: let singleScope):
-        if AppScope.single(singleScope).permits(app) {
-          return .allow(.permittedByKey(filterKey.id))
-        }
+        case .skeleton(scope: let singleScope):
+          if AppScope.single(singleScope).permits(app) {
+            return .allow(.permittedByKey(ruleKey.id))
+          }
 
-      case .domainRegex(pattern: let pattern, scope: let scope):
-        if flow.hostname?.matchesRegex(pattern.regex) == true,
-           scope.permits(app) {
-          return .allow(.permittedByKey(filterKey.id))
-        }
+        case .domainRegex(pattern: let pattern, scope: let scope):
+          if flow.hostname?.matchesRegex(pattern.regex) == true,
+             scope.permits(app) {
+            return .allow(.permittedByKey(ruleKey.id))
+          }
 
-      case .ipAddress(ipAddress: let ip, scope: let scope):
-        if let ipAddress = flow.ipAddress,
-           ipAddress == ip.string,
-           scope.permits(app) {
-          return .allow(.permittedByKey(filterKey.id))
-        }
+        case .ipAddress(ipAddress: let ip, scope: let scope):
+          if let ipAddress = flow.ipAddress,
+             ipAddress == ip.string,
+             scope.permits(app) {
+            return .allow(.permittedByKey(ruleKey.id))
+          }
 
-      case .path(path: let path, scope: let scope):
-        if let url = flow.url,
-           path.matches(url: url),
-           scope.permits(app) {
-          return .allow(.permittedByKey(filterKey.id))
+        case .path(path: let path, scope: let scope):
+          if let url = flow.url,
+             path.matches(url: url),
+             scope.permits(app) {
+            return .allow(.permittedByKey(ruleKey.id))
+          }
         }
       }
     }

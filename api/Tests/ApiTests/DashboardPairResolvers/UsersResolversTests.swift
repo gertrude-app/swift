@@ -17,7 +17,8 @@ final class UsersResolversTests: ApiTestCase {
       screenshotsResolution: 999, // <-- ignored for new user, we set
       screenshotsFrequency: 888, // <-- ignored for new user, we set
       showSuspensionActivity: false, // <-- ignored for new user, we set
-      keychainIds: []
+      downtime: "22:00-06:00",
+      keychains: []
     )
 
     let output = try await SaveUser.resolve(with: input, in: admin.context)
@@ -31,6 +32,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(user.screenshotsResolution).toEqual(1000)
     expect(user.screenshotsFrequency).toEqual(180)
     expect(user.showSuspensionActivity).toEqual(true)
+    expect(user.downtime).toEqual("22:00-06:00")
 
     let keychains = try await user.keychains(in: self.db)
     expect(keychains.count).toEqual(1)
@@ -74,7 +76,8 @@ final class UsersResolversTests: ApiTestCase {
         screenshotsResolution: 333,
         screenshotsFrequency: 444,
         showSuspensionActivity: true,
-        keychainIds: []
+        downtime: "22:00-06:00",
+        keychains: []
       ),
       in: user.admin.context
     )
@@ -87,6 +90,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(retrieved.screenshotsResolution).toEqual(333)
     expect(retrieved.screenshotsFrequency).toEqual(444)
     expect(retrieved.showSuspensionActivity).toEqual(true)
+    expect(retrieved.downtime).toEqual("22:00-06:00")
 
     expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(user.id))])
   }
@@ -97,7 +101,7 @@ final class UsersResolversTests: ApiTestCase {
     keychain.authorId = user.admin.id
     try await self.db.create(keychain)
 
-    let input = SaveUser.Input(from: user, keychainIds: [keychain.id])
+    let input = SaveUser.Input(from: user, keychains: [.init(id: keychain.id, schedule: nil)])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychainIds = try await UserKeychain.query()
@@ -116,7 +120,7 @@ final class UsersResolversTests: ApiTestCase {
     try await self.db.create(keychain)
     let pivot = try await self.db.create(UserKeychain(userId: user.id, keychainId: keychain.id))
 
-    let input = SaveUser.Input(from: user, keychainIds: [])
+    let input = SaveUser.Input(from: user, keychains: [])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychains = try await UserKeychain.query()
@@ -124,8 +128,8 @@ final class UsersResolversTests: ApiTestCase {
       .all(in: self.db)
 
     expect(keychains.isEmpty).toBeTrue()
-    let retrievedPivot = try? await self.db.find(pivot.id)
-    expect(retrievedPivot).toBeNil()
+    let userKeychain = try? await self.db.find(pivot.id)
+    expect(userKeychain).toBeNil()
   }
 
   func testReplacesExistingKeychains() async throws {
@@ -139,7 +143,13 @@ final class UsersResolversTests: ApiTestCase {
 
     let pivot = try await self.db.create(UserKeychain(userId: user.id, keychainId: keychain1.id))
 
-    let input = SaveUser.Input(from: user, keychainIds: [keychain2.id])
+    let input = SaveUser.Input(
+      from: user,
+      keychains: [.init(
+        id: keychain2.id,
+        schedule: .init(mode: .active, days: .all, window: "04:00-08:00")
+      )]
+    )
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychainIds = try await UserKeychain.query()
@@ -148,13 +158,19 @@ final class UsersResolversTests: ApiTestCase {
       .map(\.keychainId)
 
     expect(keychainIds).toEqual([keychain2.id])
-    let retrievedPivot = try? await self.db.find(pivot.id)
-    expect(retrievedPivot).toBeNil()
+    let retrievedOldPivot = try? await self.db.find(pivot.id)
+    expect(retrievedOldPivot).toBeNil()
+
+    let newPivot = try? await UserKeychain.query()
+      .where(.userId == user.id)
+      .first(in: self.db)
+    expect(newPivot?.schedule)
+      .toEqual(.init(mode: .active, days: .all, window: "04:00-08:00"))
   }
 }
 
 extension SaveUser.Input {
-  init(from user: UserEntities, keychainIds: [Keychain.Id] = []) {
+  init(from user: UserEntities, keychains: [UserKeychain] = []) {
     self.init(
       id: user.id,
       isNew: false,
@@ -164,7 +180,7 @@ extension SaveUser.Input {
       screenshotsResolution: user.screenshotsResolution,
       screenshotsFrequency: user.screenshotsFrequency,
       showSuspensionActivity: user.showSuspensionActivity,
-      keychainIds: keychainIds
+      keychains: keychains
     )
   }
 }

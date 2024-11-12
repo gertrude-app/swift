@@ -70,15 +70,14 @@ extension FilterFeature.State {
       version: appVersion ?? "unknown"
     )
   }
+}
 
-  var filterState: FilterState {
-    FilterState(
-      extensionState: self.extension,
-      currentSuspensionExpiration: currentSuspensionExpiration
-    )
+extension AppReducer.State {
+  var filterState: FilterState.WithRelativeTimes {
+    FilterState.WithRelativeTimes(from: self)
   }
 
-  var isSuspended: Bool {
+  var isFilterSuspended: Bool {
     self.filterState.isSuspended
   }
 }
@@ -87,10 +86,7 @@ extension FilterFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .websocket(.receivedMessage(.filterSuspensionRequestDecided(
-      .accepted(let seconds, let extraMonitoring), let comment
-    ))),
-    .websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+    case .websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       _, .accepted(let seconds, let extraMonitoring), let comment
     ))):
       return self.suspendFilter(
@@ -100,14 +96,12 @@ extension FilterFeature.RootReducer {
         extraMonitoring: extraMonitoring != nil
       )
 
-    case .websocket(.receivedMessage(.filterSuspensionRequestDecided(.rejected, let comment))):
+    case .websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      _, .rejected, let comment
+    ))):
       return .exec { _ in
-        await device.notifyFilterSuspensionDenied(with: comment)
+        await self.device.notifyFilterSuspensionDenied(with: comment)
       }
-
-    case .websocket(.receivedMessage(.suspendFilter(let seconds, let comment))):
-      unexpectedError(id: "64635783") // api should not send this legacy event
-      return self.suspendFilter(for: seconds, with: &state, comment: comment)
 
     case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(let seconds)))):
       state.requestSuspension.windowOpen = false
@@ -117,7 +111,7 @@ extension FilterFeature.RootReducer {
     case .checkIn(result: .success(let output), reason: _):
       if let resolvedSuspension = output.resolvedFilterSuspension,
          resolvedSuspension.id == state.requestSuspension.pending?.id,
-         !state.filter.isSuspended {
+         !state.isFilterSuspended {
         interestingEvent(id: "f4f564a4", "fallback poll resolved filter suspension")
         state.requestSuspension.pending = nil
         switch resolvedSuspension.decision {
@@ -130,7 +124,7 @@ extension FilterFeature.RootReducer {
           )
         case .rejected:
           return .exec { _ in
-            await device.notifyFilterSuspensionDenied(with: resolvedSuspension.comment)
+            await self.device.notifyFilterSuspensionDenied(with: resolvedSuspension.comment)
           }
         }
       }
@@ -145,12 +139,12 @@ extension FilterFeature.RootReducer {
     case .heartbeat(.everyFiveMinutes):
       let appVersionString = state.appUpdates.installedVersion
       return .exec { [persist = state.persistent] send in
-        let filter = await filterExtension.state()
+        let filter = await self.filterExtension.state()
         guard filter.isXpcReachable else { return }
         // attempt to reconnect, if necessary
-        if await xpc.connected() == false {
-          _ = await xpc.establishConnection()
-        } else if case .success(let acc) = await xpc.requestAck() {
+        if await self.xpc.connected() == false {
+          _ = await self.xpc.establishConnection()
+        } else if case .success(let acc) = await self.xpc.requestAck() {
           await send(.filter(.receivedVersion(acc.version)))
 
           // if the filter is ahead, another user must have updated Gertrude
@@ -162,9 +156,9 @@ extension FilterFeature.RootReducer {
               "[G•] APP relaunch, filter ahead: `%{public}s` > `%{public}s`",
               acc.version, appVersionString
             )
-            try await storage.savePersistentState(persist)
-            await app.stopRelaunchWatcher()
-            try await app.relaunch()
+            try await self.storage.savePersistentState(persist)
+            await self.app.stopRelaunchWatcher()
+            try await self.app.relaunch()
           }
         }
       }
@@ -179,6 +173,9 @@ extension FilterFeature.RootReducer {
       state.filter.currentSuspensionExpiration = nil
       return self.handleFilterSuspensionEnded(browsers: state.browsers, early: false)
 
+    case .xpc(.receivedExtensionMessage(.logs(let events))):
+      return .exec { _ in await self.api.logFilterEvents(events) }
+
     case .adminWindow(.delegate(.healthCheckFilterExtensionState(let filterState))):
       state.filter.extension = filterState
       return .none
@@ -189,9 +186,9 @@ extension FilterFeature.RootReducer {
       state.filter.extension = .installedButNotRunning
       return .exec { send in
         await api.securityEvent(.systemExtensionChangeRequested, "stop")
-        _ = await filterExtension.stop()
-        try await mainQueue.sleep(for: .seconds(2))
-        await send(.filter(.receivedState(await filterExtension.state())))
+        _ = await self.filterExtension.stop()
+        try await self.mainQueue.sleep(for: .seconds(2))
+        await send(.filter(.receivedState(await self.filterExtension.state())))
       }
 
     case .menuBar(.turnOnFilterClicked):
@@ -199,8 +196,8 @@ extension FilterFeature.RootReducer {
       return .merge(
         .exec { send in
           if !extensionInstalled {
-            await api.securityEvent(.systemExtensionChangeRequested, "install")
-            let installResult = await filterExtension.install()
+            await self.api.securityEvent(.systemExtensionChangeRequested, "install")
+            let installResult = await self.filterExtension.install()
             switch installResult {
             case .installedSuccessfully:
               break
@@ -218,8 +215,8 @@ extension FilterFeature.RootReducer {
               unexpectedError(id: "8a8762e7", detail: "result: \(installResult)")
             }
           } else {
-            await api.securityEvent(.systemExtensionChangeRequested, "start")
-            let state = await filterExtension.start()
+            await self.api.securityEvent(.systemExtensionChangeRequested, "start")
+            let state = await self.filterExtension.start()
             switch state {
             case .installedAndRunning:
               break
@@ -235,17 +232,17 @@ extension FilterFeature.RootReducer {
           // especially for the case of an admin re-starting the stopped extension
           // on Big Sur, the extension state change doesn't get pushed through the publisher
           // so we also poll the state to make sure the admin/user is getting good feedback
-          try await mainQueue.sleep(for: .milliseconds(200))
-          await send(.filter(.receivedState(await filterExtension.state())))
+          try await self.mainQueue.sleep(for: .milliseconds(200))
+          await send(.filter(.receivedState(await self.filterExtension.state())))
           for _ in 1 ... 10 {
-            try await mainQueue.sleep(for: .seconds(1))
-            let state = await filterExtension.state()
+            try await self.mainQueue.sleep(for: .seconds(1))
+            let state = await self.filterExtension.state()
             await send(.filter(.receivedState(state)))
             if state == .installedAndRunning { return }
           }
           for _ in 1 ... 10 {
-            try await mainQueue.sleep(for: .seconds(5))
-            let state = await filterExtension.state()
+            try await self.mainQueue.sleep(for: .seconds(5))
+            let state = await self.filterExtension.state()
             await send(.filter(.receivedState(state)))
             if state == .installedAndRunning { return }
           }
@@ -268,10 +265,10 @@ extension FilterFeature.RootReducer {
     state.requestSuspension.pending = nil
     return .merge(
       .exec { _ in
-        _ = await xpc.suspendFilter(seconds)
+        _ = await self.xpc.suspendFilter(seconds)
       },
       .exec { _ in
-        await device.notifyFilterSuspension(
+        await self.device.notifyFilterSuspension(
           resuming: seconds,
           from: now,
           with: comment,
@@ -279,11 +276,11 @@ extension FilterFeature.RootReducer {
         )
       },
       .exec { _ in
-        await api.securityEvent(
+        await self.api.securityEvent(
           fromAdmin
             ? .filterSuspensionGrantedByAdmin
             : .filterSuspendedRemotely,
-          "for \(now.shortDuration(until: expiration))"
+          "for \(self.now.shortDuration(until: expiration))"
         )
       },
       .cancel(id: FilterFeature.CancelId.quitBrowsers)
@@ -295,12 +292,13 @@ extension FilterFeature.RootReducer {
     early endedEarly: Bool = false
   ) -> Effect<Action> {
     .exec { send in
-      if endedEarly { _ = await xpc.endFilterSuspension() }
-      await api.securityEvent(endedEarly ? .filterSuspensionEndedEarly : .filterSuspensionExpired)
-      try? await websocket.send(.currentFilterState(.on))
-      await device.notifyBrowsersQuitting()
-      try await mainQueue.sleep(for: .seconds(60))
-      await device.quitBrowsers(browsers)
+      if endedEarly { _ = await self.xpc.endFilterSuspension() }
+      await self.api
+        .securityEvent(endedEarly ? .filterSuspensionEndedEarly : .filterSuspensionExpired)
+      try? await self.websocket.send(.currentFilterState(.on))
+      await self.device.notifyBrowsersQuitting()
+      try await self.mainQueue.sleep(for: .seconds(60))
+      await self.device.quitBrowsers(browsers)
     }
     .cancellable(id: FilterFeature.CancelId.quitBrowsers, cancelInFlight: true)
   }

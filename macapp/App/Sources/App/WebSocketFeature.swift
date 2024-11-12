@@ -38,7 +38,7 @@ extension WebSocketFeature.RootReducer {
         }
         // try to repair any broken/disconnected websocket connection status
         if try await websocket.connect(user.token) == .connected {
-          try await websocket.sendFilterState(state.filter)
+          try await websocket.sendFilterState(state)
         }
       }
 
@@ -49,7 +49,7 @@ extension WebSocketFeature.RootReducer {
     case .filter(.receivedState(let filterState)):
       return .exec { [state] _ in
         guard try await websocket.state() == .connected else { return }
-        try await websocket.sendFilterState(state.filter, extensionState: filterState)
+        try await websocket.sendFilterState(state, overrideFilterState: filterState)
       }
 
     case .history(.userConnection(.connect(.success(let user)))):
@@ -72,8 +72,7 @@ extension WebSocketFeature.RootReducer {
         try await websocket.disconnect()
       }
 
-    case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked))),
-         .websocket(.receivedMessage(.suspendFilter)):
+    case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked))):
       guard state.admin.accountStatus != .inactive else { return .none }
       return .exec { _ in
         try await websocket.send(.currentFilterState(.suspended))
@@ -90,23 +89,12 @@ extension WebSocketFeature.RootReducer {
 
       case .connectedSuccessfully:
         return .exec { [state] _ in
-          try await websocket.sendFilterState(state.filter)
+          try await websocket.sendFilterState(state)
         }
 
       case .receivedMessage(.currentFilterStateRequested):
         return .exec { [state] _ in
-          try await websocket.sendFilterState(state.filter)
-        }
-
-      case .receivedMessage(.suspendFilterRequestDenied(let comment)):
-        return .exec { _ in
-          await device.notifyFilterSuspensionDenied(with: comment)
-          unexpectedError(id: "2b1c3cf3") // api should not be sending this legacy event
-        }
-
-      case .receivedMessage(.unlockRequestUpdated):
-        return .exec { _ in
-          unexpectedError(id: "4dfcde92") // api should not be sending this legacy event
+          try await websocket.sendFilterState(state)
         }
 
       case .receivedMessage(.unlockRequestUpdated_v2(_, let status, let target, let comment)):
@@ -123,14 +111,6 @@ extension WebSocketFeature.RootReducer {
 
       case .receivedMessage(.userUpdated):
         return .none // handled by user feature, which triggers a checkin
-
-      case .receivedMessage(.suspendFilter):
-        return .none // handled by filter feature
-
-      case .receivedMessage(.filterSuspensionRequestDecided):
-        return .exec { _ in
-          unexpectedError(id: "a307cfe7") // api should not be sending this legacy event
-        }
 
       case .receivedMessage(.filterSuspensionRequestDecided_v2):
         return .none // handled by filter feature AND monitoring feature
@@ -163,13 +143,15 @@ extension WebSocketFeature.RootReducer {
 
 extension WebSocketClient {
   func sendFilterState(
-    _ state: FilterFeature.State,
-    extensionState: FilterExtensionState? = nil
+    _ state: AppReducer.State,
+    overrideFilterState: FilterExtensionState? = nil
   ) async throws {
-    let userFilterState = UserFilterState(
-      extensionState: extensionState ?? state.extension,
-      currentSuspensionExpiration: state.currentSuspensionExpiration
-    )
-    try await send(.currentFilterState(userFilterState))
+    if let overrideFilterState {
+      var stateCopy = state
+      stateCopy.filter.extension = overrideFilterState
+      try await send(.currentFilterState(.init(from: stateCopy)))
+    } else {
+      try await send(.currentFilterState(.init(from: state)))
+    }
   }
 }

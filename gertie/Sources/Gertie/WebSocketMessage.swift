@@ -17,18 +17,10 @@ public enum WebSocketMessage {
       target: String,
       comment: String?
     )
-
-    // deprecated as of v2.4.0 - when that is MSV, remove these cases
-    case unlockRequestUpdated(status: RequestStatus, target: String, parentComment: String?)
-    case filterSuspensionRequestDecided(decision: FilterSuspensionDecision, comment: String?)
-
-    // deprecated as of v2.1.0 - when that is MSV, remove these cases
-    case suspendFilter(for: Seconds<Int>, parentComment: String?)
-    case suspendFilterRequestDenied(parentComment: String?)
   }
 
   public enum FromAppToApi: Codable, Equatable {
-    case currentFilterState(UserFilterState)
+    case currentFilterState(FilterState.WithoutTimes)
     case goingOffline
   }
 

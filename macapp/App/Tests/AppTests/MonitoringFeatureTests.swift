@@ -79,11 +79,11 @@ final class MonitoringFeatureTests: XCTestCase {
     await expect(keylogging.take.called).toEqual(false)
 
     // now, they get a filter suspension
-    await store
-      .send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(decision: .accepted(
-        duration: 300,
-        extraMonitoring: nil
-      ), comment: nil))))
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
+      decision: .accepted(duration: 300, extraMonitoring: nil),
+      comment: nil
+    ))))
 
     // suspending the filter triggers flushing of all pending screenshots as "not during suspension"
     await expect(keylogging.commit.calls).toEqual([false])
@@ -177,7 +177,8 @@ final class MonitoringFeatureTests: XCTestCase {
       }
 
       // now they receive a filter suspension with extra monitoring
-      await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+      await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+        id: .init(),
         decision: .accepted(
           duration: 60 * 4,
           extraMonitoring: .addKeyloggingAndSetScreenshotFreq(60)
@@ -242,7 +243,8 @@ final class MonitoringFeatureTests: XCTestCase {
     await expect(keylogging.stop.calls.count).toEqual(1) // called on initial configure
 
     // now they receive a filter suspension with extra monitoring, adding only keylogging
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(duration: 60 * 4, extraMonitoring: .addKeylogging),
       comment: nil
     )))) {
@@ -294,7 +296,8 @@ final class MonitoringFeatureTests: XCTestCase {
     await expect(takeScreenshot.calls.count).toEqual(5) // 1/minute
 
     // now they receive a filter suspension with increased screenshots
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(duration: 60 * 2, extraMonitoring: .setScreenshotFreq(30)),
       comment: nil
     )))) {
@@ -335,7 +338,8 @@ final class MonitoringFeatureTests: XCTestCase {
     await store.send(.application(.didFinishLaunching))
 
     // they receive a filter suspension with extra monitoring
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(
         duration: 60 * 3,
         extraMonitoring: .setScreenshotFreq(60)
@@ -382,7 +386,8 @@ final class MonitoringFeatureTests: XCTestCase {
     await store.send(.application(.didFinishLaunching))
 
     // now they receive a filter suspension with increased screenshots
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(duration: 60 * 2, extraMonitoring: .setScreenshotFreq(30)),
       comment: nil
     ))))
@@ -412,7 +417,8 @@ final class MonitoringFeatureTests: XCTestCase {
     await expect(takeScreenshot.calls.count).toEqual(8)
 
     // now they receive a filter suspension with NO extra monitoring
-    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided(
+    await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
+      id: .init(),
       decision: .accepted(duration: 60 * 2, extraMonitoring: nil),
       comment: nil
     ))))
@@ -804,12 +810,11 @@ final class MonitoringFeatureTests: XCTestCase {
 
   // helpers
 
-  func spyScreenshots(_ store: TestStoreOf<AppReducer>)
-    -> (
-      takeScreenshot: Spy<Void, Int>,
-      uploadScreenshot: Spy<URL, ApiClient.UploadScreenshotData>,
-      takePendingScreenshots: Mock<[(Data, Int, Int, Date)]>
-    ) {
+  func spyScreenshots(_ store: TestStoreOf<AppReducer>) -> (
+    takeScreenshot: Spy<Void, Int>,
+    uploadScreenshot: Spy<URL, ApiClient.UploadScreenshotData>,
+    takePendingScreenshots: Mock<[(Data, Int, Int, Date)]>
+  ) {
     let takeScreenshot = spy(on: Int.self, returning: ())
     store.deps.monitoring.takeScreenshot = takeScreenshot.fn
     let takePendingScreenshots = mock(always: [(Data(), 999, 600, Date.epoch)])

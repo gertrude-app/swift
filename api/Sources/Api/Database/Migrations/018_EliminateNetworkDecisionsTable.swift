@@ -133,7 +133,7 @@ private struct LegacyDecisions: CustomQueryable {
   var hostname: String?
   var ipAddress: String?
 
-  static func query(bindings: [Postgres.Data]) -> SQLQueryString {
+  static func query(bindings: [Postgres.Data]) -> SQL.Statement {
     .init("""
     SELECT
       id,
@@ -150,7 +150,7 @@ private struct UnlockRequestIds: CustomQueryable {
   var id: UUID
   var networkDecisionId: UUID
 
-  static func query(bindings: [Postgres.Data]) -> SQLQueryString {
+  static func query(bindings: [Postgres.Data]) -> SQL.Statement {
     .init("""
     SELECT id, \(UnlockRequest.M5.networkDecisionId)
     FROM \(UnlockRequest.M5.tableName)

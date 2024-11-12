@@ -14,6 +14,7 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
   public func applicationDidFinishLaunching(_ notification: Notification) {
     self.app.send(.didFinishLaunching)
 
+    // NB: wake/sleep notifications are NOT posted to NotificationCenter.default
     NSWorkspace.shared.notificationCenter.addObserver(
       self,
       selector: #selector(AppDelegate.receiveSleep(_:)),
@@ -27,6 +28,23 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
       name: NSWorkspace.didWakeNotification,
       object: nil
     )
+
+    // NB: clock/tz changes are NOT posted to NSWorkspace.shared.notificationCenter
+    NotificationCenter.default.addObserver(
+      forName: NSNotification.Name.NSSystemClockDidChange,
+      object: nil,
+      queue: nil
+    ) { [weak self] _ in
+      self?.app.send(.systemClockOrTimeZoneChanged)
+    }
+
+    NotificationCenter.default.addObserver(
+      forName: NSNotification.Name.NSSystemTimeZoneDidChange,
+      object: nil,
+      queue: nil
+    ) { [weak self] _ in
+      self?.app.send(.systemClockOrTimeZoneChanged)
+    }
   }
 
   public func applicationWillTerminate(_ notification: Notification) {

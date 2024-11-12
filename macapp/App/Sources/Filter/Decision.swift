@@ -6,6 +6,9 @@ public protocol NetworkFilter: AppDescribing {
   associatedtype State: DecisionState
   var state: State { get }
   var security: SecurityClient { get }
+  var now: Date { get }
+  var calendar: Calendar { get }
+  func log(event: FilterLogs.Event)
 }
 
 public extension NetworkFilter {
@@ -16,7 +19,8 @@ public extension NetworkFilter {
 }
 
 public protocol DecisionState {
-  var userKeys: [uid_t: [FilterKey]] { get }
+  var userKeychains: [uid_t: [RuleKeychain]] { get }
+  var userDowntime: [uid_t: Downtime] { get }
   var appIdManifest: AppIdManifest { get }
   var exemptUsers: Set<uid_t> { get }
   var suspensions: [uid_t: FilterSuspension] { get }

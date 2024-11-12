@@ -1,4 +1,5 @@
 import Foundation
+import Gertie
 import TypeScriptInterop
 
 @testable import App
@@ -8,7 +9,7 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
     EnumCodableGen.EnumsGenerator(
       name: "MenuBarFeature",
       types: [
-        FilterState.self,
+        FilterState.WithRelativeTimes.self,
         MenuBarFeature.Action.self,
         MenuBarFeature.State.View.self,
       ]
@@ -54,12 +55,12 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
 // extensions
 
 extension EnumCodableGen.EnumsGenerator {
-  init(name: String, types: [Any.Type]) {
+  init(name: String, imports: [String: String] = [:], types: [Any.Type]) {
     self.init(
       path:
       "/Users/jared/gertie/swift/macapp/App/Sources/App/Generated/\(name)+Codable.swift",
-      types: types.map { ($0, false) },
-      imports: ["ReleaseChannel": "Gertie"]
+      types: types.map { ($0, $0 == FilterState.WithRelativeTimes.self) },
+      imports: ["ReleaseChannel": "Gertie", "FilterState": "Gertie"]
     )
   }
 }

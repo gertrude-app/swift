@@ -2,7 +2,6 @@
 import Foundation
 
 public struct Semver {
-
   /// The major version.
   public let major: Int
 
@@ -62,6 +61,8 @@ public struct Semver {
       && self.prerelease.allSatisfy(validatePrereleaseIdentifier)
       && self.buildMetadata.allSatisfy(validateBuildMetadataIdentifier)
   }
+
+  public static let zero = Semver(major: 0, minor: 0, patch: 0)
 }
 
 extension Semver: Equatable {

@@ -21,17 +21,23 @@ extension FilterXPCClient: DependencyKey {
       endFilterSuspension: { await .init {
         try await xpc.endFilterSuspension()
       }},
+      endDowntimePause: { await .init {
+        try await xpc.endDowntimePause()
+      }},
+      pauseDowntime: { expiration in await .init {
+        try await xpc.pauseDowntime(until: expiration)
+      }},
       requestAck: { await .init {
         try await xpc.requestAck()
       }},
-      requestExemptUserIds: { await .init {
-        try await xpc.requestExemptUserIds()
+      requestUserTypes: { await .init {
+        try await xpc.requestUserTypes()
       }},
       sendDeleteAllStoredState: { await .init {
         try await xpc.sendDeleteAllStoredState()
       }},
-      sendUserRules: { manifest, keys in await .init {
-        try await xpc.sendUserRules(manifest: manifest, keys: keys)
+      sendUserRules: { manifest, keychains, downtime in await .init {
+        try await xpc.sendUserRules(manifest: manifest, keychains: keychains, downtime: downtime)
       }},
       setBlockStreaming: { enabled in await .init {
         try await xpc.setBlockStreaming(enabled: enabled)
@@ -66,6 +72,14 @@ actor ThreadSafeFilterXPC {
     try await self.filterXpc.endFilterSuspension()
   }
 
+  func pauseDowntime(until expiration: Date) async throws {
+    try await self.filterXpc.pauseDowntime(until: expiration)
+  }
+
+  func endDowntimePause() async throws {
+    try await self.filterXpc.endDowntimePause()
+  }
+
   func suspendFilter(for duration: Seconds<Int>) async throws {
     try await self.filterXpc.suspendFilter(for: duration)
   }
@@ -78,8 +92,16 @@ actor ThreadSafeFilterXPC {
     try await self.filterXpc.requestAck()
   }
 
-  func sendUserRules(manifest: AppIdManifest, keys: [FilterKey]) async throws {
-    try await self.filterXpc.sendUserRules(manifest: manifest, keys: keys)
+  func sendUserRules(
+    manifest: AppIdManifest,
+    keychains: [RuleKeychain],
+    downtime: Downtime?
+  ) async throws {
+    try await self.filterXpc.sendUserRules(
+      manifest: manifest,
+      keychains: keychains,
+      downtime: downtime
+    )
   }
 
   func setBlockStreaming(enabled: Bool) async throws {
@@ -90,8 +112,8 @@ actor ThreadSafeFilterXPC {
     try await self.filterXpc.setUserExemption(userId: userId, enabled: enabled)
   }
 
-  func requestExemptUserIds() async throws -> [uid_t] {
-    try await self.filterXpc.requestExemptUserIds()
+  func requestUserTypes() async throws -> FilterUserTypes {
+    try await self.filterXpc.requestUserTypes()
   }
 
   func sendDeleteAllStoredState() async throws {

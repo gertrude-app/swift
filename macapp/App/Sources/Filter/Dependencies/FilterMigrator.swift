@@ -7,12 +7,35 @@ struct FilterMigrator: Migrator {
   var context = "Filter"
 
   func migrateLastVersion() async -> Persistent.State? {
-    await self.migrateV1()
+    await self.migrateV2()
+  }
+
+  func migrateV2() async -> Persistent.V2? {
+    var v1 = try? self.userDefaults.getString(Persistent.V1.storageKey).flatMap { json in
+      try JSON.decode(json, as: Persistent.V1.self)
+    }
+    if v1 == nil {
+      v1 = await self.migrateV1()
+    }
+    guard let v1 else { return nil }
+    log("migrating v1 state to v2")
+    return .init(
+      userKeychains: v1.userKeys.mapValues { keys in
+        [.init(
+          id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
+          schedule: nil,
+          keys: keys
+        )]
+      },
+      userDowntime: [:],
+      appIdManifest: v1.appIdManifest,
+      exemptUsers: v1.exemptUsers
+    )
   }
 
   // v1 below refers to legacy 1.x version of the app
   // before ComposableArchitecture rewrite
-  func migrateV1() async -> Persistent.State? {
+  func migrateV1() async -> Persistent.V1? {
     guard let exemptUserIds = userDefaults.getString("exemptUsers") else {
       return nil
     }
