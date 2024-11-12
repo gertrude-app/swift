@@ -28,6 +28,7 @@ struct GetUser: Pair {
     var keychains: [UserKeychainSummary]
     var downtime: PlainTimeWindow?
     var devices: [Device]
+    var canUseTimeFeatures: Bool
     var createdAt: Date
   }
 
@@ -88,20 +89,22 @@ func userKeychainSummaries(
 extension GetUser.User {
   init(from user: Api.User, in db: any DuetSQL.Client) async throws {
     async let userKeychains = userKeychainSummaries(for: user.id, in: db)
-    async let devices = UserDevice.query()
+    let pairs = try await UserDevice.query()
       .where(.userId == user.id)
       .all(in: db)
-      .concurrentMap { userDevice in
+      .concurrentMap { (userDevice: UserDevice) -> (GetUser.Device, Semver) in
         let adminDevice = try await userDevice.adminDevice(in: db)
-        return GetUser.Device(
+        return (GetUser.Device(
           id: adminDevice.id,
           isOnline: await userDevice.isOnline(),
           modelFamily: adminDevice.model.family,
           modelTitle: adminDevice.model.shortDescription,
           modelIdentifier: adminDevice.model.identifier,
           customName: adminDevice.customName
-        )
+        ), adminDevice.filterVersion ?? .zero)
       }
+    let devices = pairs.map(\.0)
+    let versions = pairs.map(\.1)
 
     self.init(
       id: user.id,
@@ -113,7 +116,8 @@ extension GetUser.User {
       showSuspensionActivity: user.showSuspensionActivity,
       keychains: try await userKeychains,
       downtime: user.downtime,
-      devices: (try await devices).uniqued(on: \.id),
+      devices: devices.uniqued(on: \.id),
+      canUseTimeFeatures: versions.contains(where: { $0 >= .init("2.5.0")! }),
       createdAt: user.createdAt
     )
   }
