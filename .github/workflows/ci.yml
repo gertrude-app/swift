@@ -206,6 +206,7 @@ env:
   CLOUD_STORAGE_ENDPOINT: not-real
   CLOUD_STORAGE_BUCKET: not-real
   CLOUD_STORAGE_BUCKET_URL: /not-real
+  CLOUDFLARE_SECRET: not-real
   TWILIO_ACCOUNT_SID: not-real
   TWILIO_AUTH_TOKEN: not-real
   TWILIO_FROM_PHONE: not-real
