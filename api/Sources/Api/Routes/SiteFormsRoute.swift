@@ -1,7 +1,8 @@
 import Vapor
+import XCore
 
-private struct FormData: Decodable {
-  enum Form: String {
+private struct FormData: Codable {
+  enum Form: String, Codable {
     case contact
     case lockdownGuide
     case fiveThings
@@ -11,18 +12,19 @@ private struct FormData: Decodable {
   var name: String
   var email: String
   var message: String
+  var turnstileToken: String
   var subject: String?
 }
 
 enum SiteFormsRoute {
   @Sendable static func handler(_ req: Request) async throws -> Response {
     guard let data = try? req.content.decode(FormData.self) else {
-      await with(dependency: \.slack).sysLog(to: "errors", """
-      *Invalid site form data*
-      Body: `\((try? await req.collectedBody()).map { $0 } ?? "(nil)")`
-      """)
+      let body = ((try? await req.collectedBody()).map { $0 }) ?? "(nil)"
+      with(dependency: \.logger).error("Invalid form data: `\(body)`")
       throw Abort(.badRequest, reason: "Invalid form data")
     }
+
+    try await spamChallenge(data)
 
     Task {
       await with(dependency: \.slack).sysLog(data.slackText)
@@ -75,6 +77,29 @@ enum SiteFormsRoute {
   }
 }
 
+private func spamChallenge(_ data: FormData) async throws {
+  switch await get(dependency: \.cloudflare).verifyTurnstileToken(data.turnstileToken) {
+  case .success:
+    break
+  case .failure(let errorCodes, let messages):
+    // TEMP: log to slack for now, delete this when i trust it more
+    await with(dependency: \.slack).sysLog(to: "errors", """
+    *Site form spam rejected*
+    Data: `\(try JSON.encode(data))`
+    Error codes: \(errorCodes.joined(separator: ", "))
+    Messages: \(messages?.joined(separator: ", ") ?? "(nil)")
+    """)
+    throw Abort(.badRequest)
+  case .error(let error):
+    await with(dependency: \.slack).sysLog(to: "errors", """
+    *Error verifying turnstile token*
+    Data: `\(try JSON.encode(data))`
+    Error: \(String(reflecting: error))
+    """)
+    // allow it to pass thru, as it might be a valid submission
+  }
+}
+
 // extensions
 
 extension FormData {
@@ -98,7 +123,7 @@ extension FormData {
   }
 }
 
-extension FormData.Form: Decodable {
+extension FormData.Form {
   var name: String {
     switch self {
     case .contact: return "Contact Form"
