@@ -93,7 +93,7 @@ jobs:
           github_token: ${{ github.token }}
       - name: set-env-vars
         run: |
-          DATESTR=$(TZ=America/New_York date +'%Y.%m.%d_%I.%M%p')
+          DATESTR=$(TZ=America/New_York date +'%Y.%m.%d_%H.%M')
           SHORTSHA=${{ steps.meta.outputs.latest_commit_sha_short }}
           if [ "${{ github.ref }}" = "refs/heads/master" ]; then
             API_ENV=production
