@@ -1,4 +1,5 @@
 import Dependencies
+import Foundation
 import Gertie
 
 extension FilterState.WithRelativeTimes: Codable {}
@@ -17,7 +18,10 @@ extension FilterState.WithRelativeTimes {
     if let downtime = state.user.data?.downtime, downtime.contains(now, in: calendar) {
       if let pauseExpiration = state.user.downtimePausedUntil,
          pauseExpiration > now {
-        self = .downtimePaused(resuming: now.timeRemaining(until: pauseExpiration))
+        self = .init(
+          checkingFilterSuspensionIn: state,
+          orElse: .downtimePaused(resuming: now.timeRemaining(until: pauseExpiration))
+        )
       } else {
         let plainNow = PlainTime.from(now, in: calendar)
         let downtimeEnd = now.advanced(by: .minutes(plainNow.minutesUntil(downtime.end)))
@@ -26,9 +30,17 @@ extension FilterState.WithRelativeTimes {
       return
     }
 
+    self = .init(checkingFilterSuspensionIn: state, orElse: .on)
+  }
+
+  private init(
+    checkingFilterSuspensionIn state: AppReducer.State,
+    orElse fallback: FilterState.WithRelativeTimes = .on
+  ) {
+    @Dependency(\.date.now) var now
     guard let suspensionExpiration = state.filter.currentSuspensionExpiration,
           suspensionExpiration > now else {
-      self = .on
+      self = fallback
       return
     }
     self = .suspended(resuming: now.timeRemaining(until: suspensionExpiration))

@@ -83,4 +83,26 @@ final class MenuBarFeatureTests: XCTestCase {
       expect(FilterState.WithRelativeTimes(from: store.state)).toEqual(.on)
     }
   }
+
+  func testFilterStateIsFilterSuspendedWhenFilterSuspendedDuringPausedDowntime() {
+    let now = Calendar.current.date(from: DateComponents(hour: 23, minute: 30))!
+    withDependencies {
+      $0.calendar = .init(identifier: .gregorian)
+      $0.date = .constant(now)
+    } operation: {
+      var state = AppReducer.State(appVersion: "2.5.0")
+      state.filter.extension = .installedAndRunning
+      state.user.data = .mock { $0.downtime = "22:00-05:00" }
+      expect(FilterState.WithRelativeTimes(from: state))
+        .toEqual(.downtime(ending: "about 6 hours from now"))
+
+      state.user.downtimePausedUntil = now + .minutes(10)
+      expect(FilterState.WithRelativeTimes(from: state))
+        .toEqual(.downtimePaused(resuming: "10 minutes from now"))
+
+      state.filter.currentSuspensionExpiration = now + .minutes(5)
+      expect(FilterState.WithRelativeTimes(from: state))
+        .toEqual(.suspended(resuming: "5 minutes from now"))
+    }
+  }
 }
