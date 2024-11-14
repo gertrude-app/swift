@@ -134,6 +134,19 @@ private func logOperation(_ route: PairQLRoute, _ request: Request, _ duration: 
 private func slackPairQLRouteNotFound(_ request: Request, _ error: Error) async {
   let domain = request.parameters.get("domain") ?? ""
   let operation = request.parameters.get("operation") ?? ""
+
+  // legacy removed pairs, these should error for non-upgraded macapps
+  if [
+    "RefreshRules",
+    "CreateSuspendFilterRequest",
+    "GetAccountStatus",
+    "GetUserData",
+    "CreateUnlockRequests_v2",
+    "LatestAppVersion",
+  ].contains(operation) {
+    return
+  }
+
   try? await with(dependency: \.slack).sysLog(to: "errors", """
   *PairQL parsing error:*
   domain: `\(domain)`
