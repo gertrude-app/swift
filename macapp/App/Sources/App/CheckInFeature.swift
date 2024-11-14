@@ -72,7 +72,10 @@ extension CheckInFeature.RootReducer {
             )))
           }
         },
-        .exec { [filterInstalled = state.filter.extension.installed] _ in
+        .exec { [
+          filterInstalled = state.filter.extension.installed,
+          downtimePausedUntil = state.user.downtimePausedUntil
+        ] _ in
           guard filterInstalled else {
             if reason == .userRefreshedRules {
               // if filter was never installed, we don't want to show an error
@@ -85,7 +88,9 @@ extension CheckInFeature.RootReducer {
           let sendToFilterResult = await self.filterXpc.sendUserRules(
             output.appManifest,
             output.keychains,
-            output.userData.downtime.map { Downtime(window: $0) }
+            output.userData.downtime.map {
+              Downtime(window: $0, pausedUntil: downtimePausedUntil)
+            }
           )
 
           if case .some(let suspension) = output.resolvedFilterSuspension,

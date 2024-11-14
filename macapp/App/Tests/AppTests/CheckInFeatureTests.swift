@@ -17,6 +17,7 @@ final class CheckInFeatureTests: XCTestCase {
       $0.user.numTimesUserTokenNotFound = 1
       $0.admin.accountStatus = .active
       $0.filter.extension = .installedAndRunning
+      $0.user.downtimePausedUntil = .epoch + .minutes(20)
     }
 
     let setAccountActive = spy(on: Bool.self, returning: ())
@@ -59,7 +60,12 @@ final class CheckInFeatureTests: XCTestCase {
     await store.receive(.user(.updated(previous: previousUserData)))
     await expect(setAccountActive.calls).toEqual([false])
     expect(sentKeychains.value).toEqual([[keychain]])
-    expect(sentDowntimes.value).toEqual([Downtime(window: "22:00-05:00")])
+    expect(sentDowntimes.value).toEqual([
+      Downtime(
+        window: "22:00-05:00",
+        pausedUntil: .epoch + .minutes(20) // <-- we must pass along the pause
+      ),
+    ])
   }
 
   @MainActor

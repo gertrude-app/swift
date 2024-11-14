@@ -17,7 +17,7 @@ class RequestSuspensionWindow: AppWindow {
   var viewStore: ViewStore<State, Action>
   var window: NSWindow?
   var closeWindowAction = Action.closeWindow
-  var initialSize = NSRect(x: 0, y: 0, width: 680, height: 360)
+  var initialSize = NSRect(x: 0, y: 0, width: 680, height: 376)
   var minSize = NSSize(width: 600, height: 360)
   var showTitleBar = false
 

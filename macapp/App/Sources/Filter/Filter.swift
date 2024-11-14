@@ -257,6 +257,7 @@ public extension Filter.State {
     public var suspensions: [uid_t: FilterSuspension] = [:]
     public var numAppsInCache: Int
     public var blockListeners: [uid_t: Date] = [:]
+    public var userDowntime: [uid_t: Downtime] = [:]
   }
 
   var debug: Debug {
@@ -269,7 +270,8 @@ public extension Filter.State {
       exemptUsers: self.exemptUsers,
       suspensions: self.suspensions,
       numAppsInCache: self.appCache.count,
-      blockListeners: self.blockListeners
+      blockListeners: self.blockListeners,
+      userDowntime: self.userDowntime
     )
   }
 }
