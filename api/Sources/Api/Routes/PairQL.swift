@@ -69,8 +69,10 @@ enum PairQLRoute: Equatable, RouteResponder {
     )
     do {
       let route = try PairQLRoute.router.parse(requestData)
-      logOperation(route, request)
-      return try await PairQLRoute.respond(to: route, in: context)
+      let start = Date()
+      let output = try await PairQLRoute.respond(to: route, in: context)
+      logOperation(route, request, Date().timeIntervalSince(start))
+      return output
     } catch {
       if "\(type(of: error))" == "ParsingError" {
         switch request.context.env.mode {
@@ -104,21 +106,28 @@ enum PairQLRoute: Equatable, RouteResponder {
 
 // helpers
 
-private func logOperation(_ route: PairQLRoute, _ request: Request) {
-  let operation = request.parameters.get("operation") ?? ""
+private func logOperation(_ route: PairQLRoute, _ request: Request, _ duration: TimeInterval) {
+  let operation = "\(request.parameters.get("operation") ?? "")".yellow
+  var elapsed = ""
+  switch duration {
+  case 0.0 ..< 1.0:
+    elapsed = "(\(Int(duration * 1000)) ms)".dim
+  default:
+    elapsed = "(\(String(format: "%.2f", duration)) sec)".red
+  }
   switch route {
   case .macApp:
     request.logger
-      .notice("PairQL request: \("MacApp".magenta) \(operation.yellow)")
+      .notice("PairQL request: \("MacApp".magenta) \(operation) \(elapsed)")
   case .dashboard:
     request.logger
-      .notice("PairQL request: \("Dashboard".green) \(operation.yellow)")
+      .notice("PairQL request: \("Dashboard".green) \(operation) \(elapsed)")
   case .superAdmin:
     request.logger
-      .notice("PairQL request: \("SuperAdmin".cyan) \(operation.yellow)")
+      .notice("PairQL request: \("SuperAdmin".cyan) \(operation) \(elapsed)")
   case .iOS:
     request.logger
-      .notice("PairQL request: \("iOS".blue) \(operation.yellow)")
+      .notice("PairQL request: \("iOS".blue) \(operation) \(elapsed)")
   }
 }
 
