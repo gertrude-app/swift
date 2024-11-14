@@ -65,6 +65,13 @@
 - `2.4.0` (stable 9/17/24, beta as of 8/29/24)
   - websocket improvements, faster repair, fallback polling
   - send current app version when requesting appcast
+- `2.5.0` (beta as of 11/14/24, released for new users)
+  - downtime feature
+  - scheduled keychains
+  - new menu bar UI
+  - onboarding screen for sequioa bypass privacy warning
+  - log filter bundle ids and unusual events
+  - emit admin event for suspicious time change
 
 ## Sparkle Releases
 
