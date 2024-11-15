@@ -59,6 +59,15 @@ public struct FilterFlow: Equatable, Codable, Sendable {
     return false
   }
 
+  public var isFromGertrude: Bool {
+    self.bundleId == "com.netrivet.gertrude.app"
+      || self.bundleId == "WFN83LM943.com.netrivet.gertrude.app"
+  }
+
+  public var isSystemUiServerInternal: Bool {
+    self.bundleId == ".com.apple.systemuiserver" && self.isPrivateNetwork
+  }
+
   public mutating func parseOutboundData(byteString: String) {
     if let range = byteString.range(
       of: #"^(GET|POST|PUT|PATCH|DELETE)•[^•]+•HTTP/[^•]+••Host••[^•]+"#,
@@ -111,6 +120,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
     // it would definitely be better to reduce dependence on this debug description
     // and would likely be much faster if we could do less string matching/regex
     // that said, `hostname` and `bundleId` don't have easy workarounds
+    // UPDATE: 11/24 - bundleId can likely be obtained from audit token
 
     for untrimmedLine in descLines {
       let line = untrimmedLine.trimmingCharacters(in: .whitespaces)

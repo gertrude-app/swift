@@ -43,8 +43,8 @@ class TestFilter: NetworkFilter {
     suspensions: [uid_t: FilterSuspension] = [:]
   ) -> TestFilter {
     withDependencies {
-      $0.security.userIdFromAuditToken = {
-        token in token.flatMap { _ in userId }
+      $0.security.userIdFromAuditToken = { token in
+        token.flatMap { _ in userId }
       }
       $0.date = date
       $0.calendar = Calendar(identifier: .gregorian)

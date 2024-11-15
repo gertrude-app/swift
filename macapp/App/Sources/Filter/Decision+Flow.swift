@@ -33,12 +33,12 @@ public extension NetworkFilter {
       return .allow(.dnsRequest)
     }
 
-    if flow.bundleId == ".com.apple.systemuiserver", flow.isPrivateNetwork {
+    if flow.isSystemUiServerInternal {
       // special allowance for system app that causes menubar flakiness if blocked
       return .allow(.systemUiServerInternal)
     }
 
-    if flow.bundleId?.contains("com.netrivet.gertrude.app") == true {
+    if flow.isFromGertrude {
       return .allow(.fromGertrudeApp)
     }
 
