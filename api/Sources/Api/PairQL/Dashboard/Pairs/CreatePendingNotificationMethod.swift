@@ -22,6 +22,7 @@ extension CreatePendingNotificationMethod: Resolver {
     let model = AdminVerifiedNotificationMethod(adminId: context.admin.id, config: config)
     let code = await with(dependency: \.ephemeral)
       .createPendingNotificationMethod(model)
+    get(dependency: \.logger).notice("ephemeral code: \(code)")
     try await sendVerification(code, for: config, in: context)
     return .init(methodId: model.id)
   }
@@ -67,9 +68,12 @@ private func sendVerification(
     ))
 
   case .text(phoneNumber: let phoneNumber):
+    let useNumber = phoneNumber == "+15555555555"
+      ? get(dependency: \.env).get("JARED_PHONE") ?? ""
+      : phoneNumber
     try await with(dependency: \.twilio)
       .send(Text(
-        to: .init(rawValue: phoneNumber),
+        to: .init(rawValue: useNumber),
         message: "Your verification code is \(code)"
       ))
   }

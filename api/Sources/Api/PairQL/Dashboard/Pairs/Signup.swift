@@ -75,8 +75,11 @@ func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
       expiration: get(dependency: \.date.now) + .hours(24)
     )
 
+  let sendAddr = admin.email.rawValue == "jared@example.com"
+    ? "jared@netrivet.com" : admin.email.rawValue
+
   try await with(dependency: \.postmark)
-    .send(verify(admin.email.rawValue, context.dashboardUrl, token))
+    .send(verify(sendAddr, context.dashboardUrl, token))
 }
 
 private func accountExists(with email: String) -> XPostmark.Email {
