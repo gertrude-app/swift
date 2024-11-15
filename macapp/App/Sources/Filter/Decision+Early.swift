@@ -21,7 +21,7 @@ public extension NetworkFilter {
 
     if let userDowntime = self.state.userDowntime[userId],
        userDowntime.shouldBlock(at: self.now, in: self.calendar) {
-      return self.logDecision(.block(.duringDowntime(userId)))
+      return self.logDecision(.blockDuringDowntime(userId))
     }
 
     if self.state.exemptUsers.contains(userId) {
@@ -45,6 +45,8 @@ public extension NetworkFilter {
           os_log("[D•] FILTER early decision: BLOCK, reason: %{public}@", "\(reason)")
         case .allow(let reason):
           os_log("[D•] FILTER early decision: ALLOW, reason: %{public}@", "\(reason)")
+        case .blockDuringDowntime:
+          os_log("[D•] FILTER early decision: DOWNTIME, block unless Gertrude")
         case .none:
           break
         }

@@ -67,20 +67,38 @@ class FilterDataProvider: NEFilterDataProvider {
       os_log("[D•] FILTER early user decision: %{public}@", "\(earlyUserDecision)")
     }
 
+    let filterFlow: FilterFlow
+
     switch earlyUserDecision {
     case .block:
-      #if DEBUG
-        return .allow()
-      #else
-        return .drop()
-      #endif
+      return dropNewFlow()
     case .allow:
       return .allow()
+    case .blockDuringDowntime(let id):
+      userId = id
+      filterFlow = FilterFlow(flow, userId: userId)
+      if filterFlow.isFromGertrude || filterFlow.isSystemUiServerInternal {
+        if self.verboseLogging {
+          os_log(
+            "[D•] FILTER ALLOW during downtime, bundleId: %{public}s",
+            "\(filterFlow.bundleId ?? "(nil)")"
+          )
+        }
+        return .allow()
+      } else {
+        if self.verboseLogging {
+          os_log(
+            "[D•] FILTER DROP during downtime, bundleId: %{public}s",
+            "\(filterFlow.bundleId ?? "(nil)")"
+          )
+        }
+        return dropNewFlow()
+      }
     case .none(let id):
       userId = id
+      filterFlow = FilterFlow(flow, userId: userId)
     }
 
-    let filterFlow = FilterFlow(flow, userId: userId)
     self.store.logAppRequest(from: filterFlow.bundleId)
 
     let decision = self.store.newFlowDecision(filterFlow, auditToken: flow.sourceAppAuditToken)
@@ -98,11 +116,7 @@ class FilterDataProvider: NEFilterDataProvider {
       if self.sendingBlockDecisions {
         self.store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
-      #if DEBUG
-        return .allow()
-      #else
-        return .drop()
-      #endif
+      return dropNewFlow()
     case .allow:
       return .allow()
     case nil:
@@ -146,11 +160,7 @@ class FilterDataProvider: NEFilterDataProvider {
       if self.sendingBlockDecisions {
         self.store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
-      #if DEBUG
-        return .allow()
-      #else
-        return .drop()
-      #endif
+      return dropFlow()
     case .allow:
       return .allow()
     }
@@ -159,6 +169,22 @@ class FilterDataProvider: NEFilterDataProvider {
   deinit {
     store.sendExtensionStopping()
   }
+}
+
+private func dropFlow() -> NEFilterDataVerdict {
+  #if DEBUG
+    return .allow()
+  #else
+    return .drop()
+  #endif
+}
+
+private func dropNewFlow() -> NEFilterNewFlowVerdict {
+  #if DEBUG
+    return .allow()
+  #else
+    return .drop()
+  #endif
 }
 
 extension FilterFlow {

@@ -34,9 +34,9 @@ final class EarlyDecisionTests: XCTestCase {
 
     let cases: [(hour: Int, minute: Int, decision: FilterDecision.FromUserId)] = [
       (hour: 21, minute: 59, decision: .none(502)),
-      (hour: 22, minute: 0, decision: .block(.duringDowntime(502))),
-      (hour: 23, minute: 39, decision: .block(.duringDowntime(502))),
-      (hour: 2, minute: 44, decision: .block(.duringDowntime(502))),
+      (hour: 22, minute: 0, decision: .blockDuringDowntime(502)),
+      (hour: 23, minute: 39, decision: .blockDuringDowntime(502)),
+      (hour: 2, minute: 44, decision: .blockDuringDowntime(502)),
       (hour: 5, minute: 0, decision: .none(502)),
       (hour: 5, minute: 1, decision: .none(502)),
     ]
@@ -63,7 +63,7 @@ final class EarlyDecisionTests: XCTestCase {
       date: .constant(withinDowntime),
       exemptUsers: [502] // <-- ... AND is EXEMPT, but downtime wins
     )
-    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.block(.duringDowntime(502)))
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.blockDuringDowntime(502))
   }
 
   func testDowntimeTrumpsSuspension() {
@@ -81,7 +81,7 @@ final class EarlyDecisionTests: XCTestCase {
         duration: 1000
       )]
     )
-    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.block(.duringDowntime(502)))
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.blockDuringDowntime(502))
   }
 
   func testDowntimeNotAppliedToOtherUser() {
