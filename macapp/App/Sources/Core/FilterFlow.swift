@@ -60,8 +60,11 @@ public struct FilterFlow: Equatable, Codable, Sendable {
   }
 
   public var isFromGertrude: Bool {
-    self.bundleId == "com.netrivet.gertrude.app"
-      || self.bundleId == "WFN83LM943.com.netrivet.gertrude.app"
+    self.bundleId?.contains("com.netrivet.gertrude.app") == true
+    // in testing, i've seen our bundle id come through as:
+    // - `.com.netrivet.gertrude.app` (leading dot)
+    // - `WFN83LM943.com.netrivet.gertrude.app` (full)
+    // - not sure about `com.netrivet.gertrude.app`
   }
 
   public var isSystemUiServerInternal: Bool {
