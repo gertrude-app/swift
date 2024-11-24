@@ -24,7 +24,7 @@ enum SubscriptionEmails {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude trial ending soon".withEmailSubjectDisambiguator,
-      html: """
+      htmlBody: """
       <p>Hi there! 👋</p>
 
       <p>
@@ -51,7 +51,7 @@ enum SubscriptionEmails {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude trial ended".withEmailSubjectDisambiguator,
-      html: """
+      htmlBody: """
       <p>Gertrude parent account holder,</p>
 
       <p>
@@ -88,7 +88,7 @@ enum SubscriptionEmails {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude account disabled".withEmailSubjectDisambiguator,
-      html: """
+      htmlBody: """
       <p>Gertrude parent account holder,</p>
 
       <p>
@@ -124,7 +124,7 @@ enum SubscriptionEmails {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude payment failed".withEmailSubjectDisambiguator,
-      html: """
+      htmlBody: """
       <p>Gertrude parent account holder,</p>
 
       <p>
@@ -164,7 +164,7 @@ enum SubscriptionEmails {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "[action required] Gertrude account will be deleted".withEmailSubjectDisambiguator,
-      html: """
+      htmlBody: """
       <p>Gertrude parent account holder,</p>
 
       <p>
@@ -192,7 +192,7 @@ enum SubscriptionEmails {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: get(dependency: \.env).primarySupportEmail,
       subject: "Gertrude unverified account deleted".withEmailSubjectDisambiguator,
-      html: """
+      htmlBody: """
       <p>Hi there! 👋</p>
 
       <p>

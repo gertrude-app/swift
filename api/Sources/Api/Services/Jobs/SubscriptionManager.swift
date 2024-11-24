@@ -65,8 +65,12 @@ struct SubscriptionManager: AsyncScheduledJob {
       }
 
       if let event = update.email {
-        try await self.postmark.send(SubscriptionEmails.email(event, to: admin.email))
-        logs.append("Sent `.\(event)` email to admin \(admin.email)")
+        switch await self.postmark.sendEmail(SubscriptionEmails.email(event, to: admin.email)) {
+        case .success:
+          logs.append("Sent `.\(event)` email to admin \(admin.email)")
+        case .failure(let error):
+          logs.append("Failed to send `.\(event)` email to admin \(admin.email): \(error)")
+        }
       }
     }
 

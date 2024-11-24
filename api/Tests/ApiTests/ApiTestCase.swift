@@ -34,8 +34,9 @@ class ApiTestCase: XCTestCase {
         self.sent.slacks.append(.init(message: msg, token: tok))
         return nil
       }
-      $0.postmark.send = {
+      $0.postmark.sendEmail = {
         self.sent.postmarkEmails.append($0)
+        return .success(())
       }
       $0.sendgrid.send = {
         self.sent.sendgridEmails.append($0)

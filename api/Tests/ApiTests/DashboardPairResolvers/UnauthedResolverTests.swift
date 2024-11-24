@@ -22,7 +22,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
 
     expect(output).toEqual(.success)
     expect(sent.postmarkEmails.count).toEqual(1)
-    expect(sent.postmarkEmails[0].html).toContain("already has an account")
+    expect(sent.postmarkEmails[0].body).toContain("already has an account")
   }
 
   func testInitiateSignupHappyPath() async throws {
@@ -39,7 +39,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
     expect(admin.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(7)))
     expect(sent.postmarkEmails.count).toEqual(1)
     expect(sent.postmarkEmails[0].to).toEqual(email)
-    expect(sent.postmarkEmails[0].html).toContain("verify your email address")
+    expect(sent.postmarkEmails[0].body).toContain("verify your email address")
   }
 
   func testInitiateSignupWithGclidAndABVariant() async throws {
