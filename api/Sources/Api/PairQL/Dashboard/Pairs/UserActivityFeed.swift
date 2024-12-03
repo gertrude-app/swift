@@ -97,7 +97,10 @@ extension UserActivityFeed: Resolver {
 
 // helpers
 
-func coalesce(_ screenshots: [Screenshot], _ keystrokes: [KeystrokeLine]) -> [UserActivity.Item] {
+func coalesce(
+  _ screenshots: [Screenshot],
+  _ keystrokes: [KeystrokeLine]
+) -> [UserActivity.Item] {
   var sorted: [Either<Screenshot, KeystrokeLine>] =
     screenshots.map(Either.init(_:)) + keystrokes.map(Either.init(_:))
   sorted.sort { $0.createdAt > $1.createdAt }

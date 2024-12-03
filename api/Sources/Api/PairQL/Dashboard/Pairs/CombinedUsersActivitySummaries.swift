@@ -15,29 +15,37 @@ extension CombinedUsersActivitySummaries: Resolver {
     in context: AdminContext
   ) async throws -> Output {
     let dateRanges = input.compactMap(\.dates)
+    let earliestStart = dateRanges.map(\.0).min() ?? .distantFuture
+    let latestEnd = dateRanges.map(\.1).max() ?? .distantPast
     let userDeviceIds = try await context.userDevices().map(\.id)
-    return try await dateRanges.concurrentMap { start, end in
-      async let screenshots = Screenshot.query()
-        .where(.userDeviceId |=| userDeviceIds)
-        .where(.createdAt <= .date(end))
-        .where(.createdAt > .date(start))
-        .orderBy(.createdAt, .desc)
-        .withSoftDeleted()
-        .all(in: context.db)
-      async let keystrokeLines = KeystrokeLine.query()
-        .where(.userDeviceId |=| userDeviceIds)
-        .where(.createdAt <= .date(end))
-        .where(.createdAt > .date(start))
-        .orderBy(.createdAt, .desc)
-        .withSoftDeleted()
-        .all(in: context.db)
 
-      _ = try await (screenshots, keystrokeLines)
+    let screenshots = try await Screenshot.query()
+      .where(.userDeviceId |=| userDeviceIds)
+      .where(.createdAt <= .date(latestEnd))
+      .where(.createdAt > .date(earliestStart))
+      .orderBy(.createdAt, .desc)
+      .withSoftDeleted()
+      .all(in: context.db)
 
-      let coalesced = try await coalesce(screenshots, keystrokeLines)
+    let keystrokes = try await KeystrokeLine.query()
+      .where(.userDeviceId |=| userDeviceIds)
+      .where(.createdAt <= .date(latestEnd))
+      .where(.createdAt > .date(earliestStart))
+      .orderBy(.createdAt, .desc)
+      .withSoftDeleted()
+      .all(in: context.db)
+
+    return dateRanges.map {
+      let (start, end) = $0
+      let screenshots = screenshots.filter {
+        $0.createdAt > start && $0.createdAt <= end
+      }
+      let keystrokeLines = keystrokes.filter {
+        $0.createdAt > start && $0.createdAt <= end
+      }
+      let coalesced = coalesce(screenshots, keystrokeLines)
       let deletedCount = coalesced.lazy.filter(\.isDeleted).count
-
-      return UserActivitySummaries.Day(
+      return .init(
         date: start + .hours(12),
         numApproved: deletedCount,
         totalItems: coalesced.count

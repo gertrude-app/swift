@@ -25,9 +25,9 @@ struct AdminContext: ResolverContext {
   }
 
   func userDevices() async throws -> [UserDevice] {
-    let users = try await users()
-    return try await users
-      .concurrentMap { try await $0.devices(in: self.db) }
-      .flatMap { $0 }
+    let users = try await self.users()
+    return try await UserDevice.query()
+      .where(.userId |=| users.map(\.id))
+      .all(in: self.db)
   }
 }
