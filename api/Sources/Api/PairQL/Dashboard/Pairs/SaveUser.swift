@@ -64,7 +64,7 @@ extension SaveUser: Resolver {
       user.keyloggingEnabled = input.keyloggingEnabled
       user.screenshotsEnabled = input.screenshotsEnabled
       user.screenshotsResolution = input.screenshotsResolution
-      user.screenshotsFrequency = input.screenshotsFrequency
+      user.screenshotsFrequency = max(10, input.screenshotsFrequency)
       user.showSuspensionActivity = input.showSuspensionActivity
       user.downtime = input.downtime
       try await context.db.update(user)
