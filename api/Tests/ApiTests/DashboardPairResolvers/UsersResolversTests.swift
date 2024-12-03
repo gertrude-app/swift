@@ -95,6 +95,29 @@ final class UsersResolversTests: ApiTestCase {
     expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(user.id))])
   }
 
+  func testEnforcesMinimumScreenshotFrequency() async throws {
+    let user = try await self.user()
+
+    let output = try await SaveUser.resolve(
+      with: SaveUser.Input(
+        id: user.id,
+        isNew: false,
+        name: "New name",
+        keyloggingEnabled: false,
+        screenshotsEnabled: false,
+        screenshotsResolution: 333,
+        screenshotsFrequency: 1, // <-- below minimum of 10
+        showSuspensionActivity: true,
+        keychains: []
+      ),
+      in: user.admin.context
+    )
+
+    let retrieved = try await self.db.find(user.id)
+    expect(output).toEqual(.success)
+    expect(retrieved.screenshotsFrequency).toEqual(10)
+  }
+
   func testSetsNewKeychainsFromEmpty() async throws {
     let user = try await self.user()
     var keychain = Keychain.random
