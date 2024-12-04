@@ -34,52 +34,57 @@ extension UserActivitySummaries: Resolver {
     in context: AdminContext
   ) async throws -> Output {
     let user = try await context.verifiedUser(from: input.userId)
-    let dateRanges = input.dateRanges.compactMap(\.dates)
     let userDeviceIds = try await user.devices(in: context.db).map(\.id)
-
-    let days = try await withThrowingTaskGroup(
-      of: UserActivitySummaries.Day.self
-    ) { group -> [UserActivitySummaries.Day] in
-      for (start, end) in dateRanges {
-        group.addTask {
-          async let screenshots = Screenshot.query()
-            .where(.userDeviceId |=| userDeviceIds)
-            .where(.createdAt <= .date(end))
-            .where(.createdAt > .date(start))
-            .orderBy(.createdAt, .desc)
-            .withSoftDeleted()
-            .all(in: context.db)
-          async let keystrokeLines = KeystrokeLine.query()
-            .where(.userDeviceId |=| userDeviceIds)
-            .where(.createdAt <= .date(end))
-            .where(.createdAt > .date(start))
-            .orderBy(.createdAt, .desc)
-            .withSoftDeleted()
-            .all(in: context.db)
-
-          _ = try await (screenshots, keystrokeLines)
-
-          let coalesced = try await coalesce(screenshots, keystrokeLines)
-          let deletedCount = coalesced.lazy.filter(\.isDeleted).count
-
-          var day = start
-          day.addTimeInterval(.hours(12))
-
-          return .init(
-            date: day,
-            numApproved: deletedCount,
-            totalItems: coalesced.count
-          )
-        }
-      }
-      var days: [UserActivitySummaries.Day] = []
-      for try await rangeCount in group {
-        days.append(rangeCount)
-      }
-      return days
-    }
-
+    let days = try await UserActivitySummaries.days(
+      dateRanges: input.dateRanges,
+      userDeviceIds: userDeviceIds,
+      in: context.db
+    )
     return .init(userName: user.name, days: days)
+  }
+
+  static func days(
+    dateRanges: [DateRange],
+    userDeviceIds: [UserDevice.Id],
+    in db: any Client
+  ) async throws -> [Day] {
+    let dates = dateRanges.compactMap(\.dates)
+    let earliestStart = dates.map(\.0).min() ?? .distantFuture
+    let latestEnd = dates.map(\.1).max() ?? .distantPast
+
+    let screenshots = try await Screenshot.query()
+      .where(.userDeviceId |=| userDeviceIds)
+      .where(.createdAt <= .date(latestEnd))
+      .where(.createdAt > .date(earliestStart))
+      .orderBy(.createdAt, .desc)
+      .withSoftDeleted()
+      .all(in: db)
+
+    let keystrokes = try await KeystrokeLine.query()
+      .where(.userDeviceId |=| userDeviceIds)
+      .where(.createdAt <= .date(latestEnd))
+      .where(.createdAt > .date(earliestStart))
+      .orderBy(.createdAt, .desc)
+      .withSoftDeleted()
+      .all(in: db)
+
+    return dates.map {
+      let (start, end) = $0
+      let screenshots = screenshots.filter {
+        $0.createdAt > start && $0.createdAt <= end
+      }
+      let keystrokeLines = keystrokes.filter {
+        $0.createdAt > start && $0.createdAt <= end
+      }
+      let coalesced = coalesce(screenshots, keystrokeLines)
+      let deletedCount = coalesced.lazy.filter(\.isDeleted).count
+
+      return UserActivitySummaries.Day(
+        date: start + .hours(12),
+        numApproved: deletedCount,
+        totalItems: coalesced.count
+      )
+    }
   }
 }
 
