@@ -48,7 +48,8 @@ extension DeviceClient: DependencyKey {
     quitBrowsers: quitAllBrowsers,
     requestNotificationAuthorization: requestNotificationAuth,
     screensaverRunning: {
-      NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.ScreenSaver.Engine"
+      let currentApp = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+      return currentApp == "com.apple.ScreenSaver.Engine" || currentApp == "com.apple.loginwindow"
     },
     showNotification: showNotification(title:body:),
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
