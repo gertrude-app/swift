@@ -17,6 +17,10 @@ struct Admin: Codable, Sendable {
     self.subscriptionStatus.accountStatus
   }
 
+  var isPendingEmailVerification: Bool {
+    self.subscriptionStatus == .pendingEmailVerification
+  }
+
   init(
     id: Id = .init(),
     email: EmailAddress,

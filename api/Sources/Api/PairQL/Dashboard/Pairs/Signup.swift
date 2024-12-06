@@ -14,6 +14,10 @@ struct Signup: Pair {
     var gclid: String?
     var abTestVariant: String?
   }
+
+  struct Output: PairOutput {
+    var admin: Login.Output?
+  }
 }
 
 // resolver
@@ -33,12 +37,25 @@ extension Signup: Resolver {
       .where(.email == email)
       .first(in: context.db)
 
-    if existing != nil {
+    if let existing {
+      if !existing.isPendingEmailVerification, let creds = try? await Login.resolve(
+        with: .init(email: input.email, password: input.password),
+        in: context
+      ) {
+        return .init(admin: creds)
+      }
+
       if context.env.mode == .prod, !isTestAddress(email) {
         sendgrid.fireAndForget(.toSuperAdmin("signup [exists]", email))
       }
-      try await postmark.send(accountExists(with: email))
-      return .success
+
+      if existing.isPendingEmailVerification {
+        try await sendVerificationEmail(to: existing, in: context)
+      } else {
+        try await postmark.send(accountExists(with: email, context.dashboardUrl))
+      }
+
+      return .init(admin: nil)
     }
 
     if context.env.mode == .prod, !isTestAddress(email) {
@@ -62,7 +79,7 @@ extension Signup: Resolver {
     ))
 
     try await sendVerificationEmail(to: admin, in: context)
-    return .success
+    return .init(admin: nil)
   }
 }
 
@@ -79,16 +96,15 @@ func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
     .send(verify(admin.email.rawValue, context.dashboardUrl, token))
 }
 
-private func accountExists(with email: String) -> XPostmark.Email {
+private func accountExists(with email: String, _ dashboardUrl: String) -> XPostmark.Email {
   .init(
     to: email,
     from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude Signup Request".withEmailSubjectDisambiguator,
     html: """
     We received a request to initiate a signup for the Gertrude app, \
-    but this email address already has an account! Try signing in instead.\
-    <br /><br />
-    Or, if you just created your account, check your spam folder for the verification email.
+    but this email address already has an account! \
+    Try <a href="\(dashboardUrl)/login">logging in</a> instead.
     """
   )
 }
