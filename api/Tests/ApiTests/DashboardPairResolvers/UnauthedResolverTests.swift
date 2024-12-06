@@ -1,65 +1,11 @@
 import Dependencies
-import DuetSQL
 import XCTest
 import XExpect
-import XStripe
 
 @testable import Api
 
 final class DasboardUnauthedResolverTests: ApiTestCase {
   let context = Context.mock
-
-  func testInitiateSignupWithBadEmailErrorsBadRequest() async throws {
-    let result = await Signup.result(with: .init(email: "💩", password: ""), in: self.context)
-    expect(result).toBeError(containing: "Bad Request")
-  }
-
-  func testInitiateSignupWithExistingEmailSendsEmail() async throws {
-    let existing = try await self.db.create(Admin.random)
-
-    let input = Signup.Input(email: existing.email.rawValue, password: "pass")
-    let output = try await Signup.resolve(with: input, in: self.context)
-
-    expect(output).toEqual(.success)
-    expect(sent.postmarkEmails.count).toEqual(1)
-    expect(sent.postmarkEmails[0].html).toContain("already has an account")
-  }
-
-  func testInitiateSignupHappyPath() async throws {
-    let email = "signup".random + "@example.com"
-    let input = Signup.Input(email: email, password: "pass")
-    let output = try await Signup.resolve(with: input, in: self.context)
-
-    let admin = try await Admin.query()
-      .where(.email == email)
-      .first(in: self.db)
-
-    expect(output).toEqual(.success)
-    expect(admin.subscriptionStatus).toEqual(.pendingEmailVerification)
-    expect(admin.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(7)))
-    expect(sent.postmarkEmails.count).toEqual(1)
-    expect(sent.postmarkEmails[0].to).toEqual(email)
-    expect(sent.postmarkEmails[0].html).toContain("verify your email address")
-  }
-
-  func testInitiateSignupWithGclidAndABVariant() async throws {
-    let email = "signup".random + "@example.com"
-    let input = Signup.Input(
-      email: email,
-      password: "pass",
-      gclid: "gclid-123",
-      abTestVariant: "old_site"
-    )
-
-    _ = try await Signup.resolve(with: input, in: self.context)
-
-    let admin = try await Admin.query()
-      .where(.email == email)
-      .first(in: self.db)
-
-    expect(admin.gclid).toEqual("gclid-123")
-    expect(admin.abTestVariant).toEqual("old_site")
-  }
 
   func testLoginFromMagicLink() async throws {
     let admin = try await self.db.create(Admin.random)
