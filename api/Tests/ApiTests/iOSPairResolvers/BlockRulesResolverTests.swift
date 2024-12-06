@@ -22,13 +22,6 @@ final class BlockRulesResolverTests: ApiTestCase {
       in: .mock
     )
 
-    let expected = BlockRule.defaults + [
-      .both(
-        .bundleIdContains(".com.apple.MobileSMS"),
-        .targetContains("amp-api-edge.apps.apple.com")
-      ),
-    ]
-
     expect(rules.contains(
       .both(
         .bundleIdContains(".com.apple.MobileSMS"),

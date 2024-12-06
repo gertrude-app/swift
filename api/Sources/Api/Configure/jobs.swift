@@ -8,6 +8,7 @@ public extension Configure {
 
     app.queues.schedule(CleanupJob()).daily().at(2, 30, .am)
     app.queues.schedule(SubscriptionManager()).daily().at(6, 30, .am)
+    app.queues.schedule(DiskSpaceJob()).hourly().at(0)
 
     try app.queues.startScheduledJobs()
   }
