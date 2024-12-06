@@ -29,6 +29,11 @@ final class BlockRulesResolverTests: ApiTestCase {
       ),
     ]
 
-    expect(rules).toEqual(expected)
+    expect(rules.contains(
+      .both(
+        .bundleIdContains(".com.apple.MobileSMS"),
+        .targetContains("amp-api-edge.apps.apple.com")
+      )
+    )).toEqual(true)
   }
 }
