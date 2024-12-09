@@ -126,9 +126,12 @@ public extension Client {
   func count<M: Model>(
     _: M.Type,
     where constraint: SQL.WhereConstraint<M> = .always,
-    withSoftDeleted: Bool = false
+    withSoftDeleted included: Bool = false
   ) async throws -> Int {
-    let stmt = SQL.Statement.count(M.self, where: constraint)
+    let stmt = SQL.Statement.count(
+      M.self,
+      where: constraint + .withSoftDeleted(if: included)
+    )
     let rows = try await execute(statement: stmt)
     guard rows.count == 1 else {
       throw DuetSQLError.notFound("\(M.self)")
@@ -145,17 +148,18 @@ public extension Client {
     limit: Int? = nil,
     offset: Int? = nil
   ) async throws -> Int {
-    let stmt: SQL.Statement
     if M.isSoftDeletable {
-      stmt = SQL.Statement.softDelete(
+      let stmt = SQL.Statement.softDelete(
         M.self,
         where: constraint,
         orderBy: order,
         limit: limit,
         offset: offset
       )
+      let rows = try await execute(statement: stmt)
+      return rows.count
     } else {
-      stmt = SQL.Statement.delete(
+      return try await self.forceDelete(
         M.self,
         where: constraint,
         orderBy: order,
@@ -163,8 +167,6 @@ public extension Client {
         offset: offset
       )
     }
-    let rows = try await execute(statement: stmt)
-    return rows.count
   }
 
   @discardableResult
@@ -192,10 +194,22 @@ public extension Client {
     byId id: UUIDStringable,
     force: Bool = false
   ) async throws -> Int {
-    try await self.delete(
-      M.self,
-      where: .equals(M.column("id"), .uuid(id)) + .withSoftDeleted(if: force)
-    )
+    if M.isSoftDeletable, !force {
+      let stmt = SQL.Statement.softDelete(
+        M.self,
+        where: .equals(M.ColumnName.id, .uuid(id)),
+        orderBy: nil,
+        limit: nil,
+        offset: nil
+      )
+      let rows = try await execute(statement: stmt)
+      return rows.count
+    } else {
+      return try await self.forceDelete(
+        M.self,
+        where: .equals(M.ColumnName.id, .uuid(id))
+      )
+    }
   }
 
   @discardableResult
@@ -210,7 +224,18 @@ public extension Client {
   }
 
   func delete<M: Model>(all _: M.Type, force: Bool = false) async throws {
-    _ = try await self.delete(M.self, where: .always + .withSoftDeleted(if: force))
+    if M.isSoftDeletable, !force {
+      let stmt = SQL.Statement.softDelete(
+        M.self,
+        where: .always,
+        orderBy: nil,
+        limit: nil,
+        offset: nil
+      )
+      _ = try await self.execute(statement: stmt)
+    } else {
+      _ = try await self.forceDelete(M.self, where: .always)
+    }
   }
 
   func customQuery<T: CustomQueryable>(
