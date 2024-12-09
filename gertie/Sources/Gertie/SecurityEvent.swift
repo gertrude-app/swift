@@ -24,6 +24,7 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case passwordChanged
     case childDeleted
     case childAdded
+    case childComputerDeleted
     case monitoringDecreased
     case keyCreated
     case keychainCreated
@@ -42,6 +43,8 @@ public extension SecurityEvent.Dashboard {
       return "New child added"
     case .childDeleted:
       return "Child deleted"
+    case .childComputerDeleted:
+      return "Child computer deleted"
     case .keyCreated:
       return "Key created"
     case .keychainCreated:
@@ -69,6 +72,8 @@ public extension SecurityEvent.Dashboard {
       return "This event occurs when an parent creates a new child from the Gertrude parents admin site. It should occur very rarely, usually during account setup or when starting protection for a child. Should be investigated if it happened without your knowledge."
     case .childDeleted:
       return "This event occurs when a parent deletes a child from the Gertrude parents admin site. It should occur very rarely, when a child is no longer being protected. Should be investigated if it happened without your knowledge."
+    case .childComputerDeleted:
+      return "This event occurs when a parent deletes a child's computer from the Gertrude parents admin site. It should occur very rarely, usually when a child is no longer using a computer, or no longer being protected. Should be investigated if it happened without your knowledge."
     case .keyCreated:
       return "This event occurs when a new key is created and added to a keychain by a parent, either manually or by accepting an unlock request."
     case .keychainCreated:

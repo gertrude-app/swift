@@ -39,11 +39,7 @@ extension GetSelectableKeychains: NoInputResolver {
 extension KeychainSummary {
   init(from keychain: Keychain) async throws {
     @Dependency(\.db) var db
-    let numKeys = try await db.count(
-      Key.self,
-      where: .keychainId == keychain.id,
-      withSoftDeleted: false
-    )
+    let numKeys = try await db.count(Key.self, where: .keychainId == keychain.id)
     self.init(
       id: keychain.id,
       authorId: keychain.authorId,

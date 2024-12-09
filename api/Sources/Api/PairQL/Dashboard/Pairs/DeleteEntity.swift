@@ -56,7 +56,8 @@ extension DeleteEntity: Resolver {
 
     case .userDevice:
       let userDevice = try await context.db.find(UserDevice.Id(input.id))
-      try await context.verifiedUser(from: userDevice.userId)
+      let device = try await context.db.find(userDevice.deviceId)
+      let user = try await context.verifiedUser(from: userDevice.userId)
       try await context.db.delete(userDevice)
       let remainingUserDevices = try await UserDevice.query()
         .where(.deviceId == userDevice.deviceId)
@@ -64,6 +65,11 @@ extension DeleteEntity: Resolver {
       if remainingUserDevices.isEmpty {
         try await context.db.delete(userDevice.deviceId)
       }
+      dashSecurityEvent(
+        .childComputerDeleted,
+        "child: \(user.name), computer serial: \(device.serialNumber)",
+        in: context
+      )
 
     case .key:
       let key = try await context.db.find(Key.Id(input.id))
@@ -71,7 +77,7 @@ extension DeleteEntity: Resolver {
       guard keychain.authorId == context.admin.id else {
         throw Abort(.unauthorized)
       }
-      try await context.db.delete(key)
+      try await context.db.delete(key, force: true)
       try await with(dependency: \.websockets)
         .send(.userUpdated, to: .usersWith(keychain: keychain.id))
 

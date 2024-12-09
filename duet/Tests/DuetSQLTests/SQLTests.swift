@@ -164,15 +164,33 @@ final class SqlTests: XCTestCase {
 
     let expected = """
     SELECT COUNT(*) FROM "things"
+    WHERE ("deleted_at" IS NULL OR "deleted_at" > $1)
     """
 
     expect(client.stmt.prepared).toEqual(expected)
-    expect(client.stmt.params).toEqual([])
+    expect(client.stmt.params).toEqual([.currentTimestamp])
   }
 
   func testCountWhere() async throws {
     let client = TestClient()
     _ = try? await client.count(Thing.self, where: .string == "a")
+
+    let expected = """
+    SELECT COUNT(*) FROM "things"
+    WHERE ("string" = $1 AND ("deleted_at" IS NULL OR "deleted_at" > $2))
+    """
+
+    expect(client.stmt.prepared).toEqual(expected)
+    expect(client.stmt.params).toEqual(["a", .currentTimestamp])
+  }
+
+  func testCountWhereWithSoftDeleted() async throws {
+    let client = TestClient()
+    _ = try? await client.count(
+      Thing.self,
+      where: .string == "a",
+      withSoftDeleted: true
+    )
 
     let expected = """
     SELECT COUNT(*) FROM "things"
@@ -198,7 +216,7 @@ final class SqlTests: XCTestCase {
 
   func testSoftDelete() async throws {
     let client = TestClient()
-    _ = try await client.delete(Thing.self)
+    _ = try await client.delete(all: Thing.self)
 
     let expected = """
     UPDATE "things"
@@ -235,6 +253,21 @@ final class SqlTests: XCTestCase {
 
     expect(client.stmt.prepared).toEqual(expected)
     expect(client.stmt.params).toEqual([123])
+  }
+
+  func testSoftDeleteById() async throws {
+    let client = TestClient()
+    let id: UUID = .init()
+    _ = try await client.delete(Thing.self, byId: id)
+
+    let expected = """
+    UPDATE "things"
+    SET "deleted_at" = CURRENT_TIMESTAMP
+    WHERE "id" = $1
+    """
+
+    expect(client.stmt.prepared).toEqual(expected)
+    expect(client.stmt.params).toEqual([.uuid(id)])
   }
 
   func testForceDeleteWithOrderByAndLimit() async throws {

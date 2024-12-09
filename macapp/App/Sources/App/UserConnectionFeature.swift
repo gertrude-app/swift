@@ -68,8 +68,8 @@ extension UserConnectionFeature.RootReducer {
         self.disconnectUser(name, persisting: state.persistent),
         .exec { send in
           await send(.focusedNotification(.text(
-            "Child deleted",
-            "The child associated with this computer was deleted. You'll need to connect to a different child, or quit the app."
+            "Child connection deleted",
+            "The connection between this computer and Gertrude was broken. Reconnect, connect to a different child, or quit the app."
           )))
         }
       )
