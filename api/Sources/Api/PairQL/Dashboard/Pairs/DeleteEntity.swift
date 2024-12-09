@@ -71,7 +71,7 @@ extension DeleteEntity: Resolver {
       guard keychain.authorId == context.admin.id else {
         throw Abort(.unauthorized)
       }
-      try await context.db.delete(key)
+      try await context.db.delete(key, force: true)
       try await with(dependency: \.websockets)
         .send(.userUpdated, to: .usersWith(keychain: keychain.id))
 
