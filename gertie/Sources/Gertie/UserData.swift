@@ -9,8 +9,10 @@ public struct UserData {
   public var screenshotsEnabled: Bool
   public var screenshotFrequency: Int
   public var screenshotSize: Int
-  // `downtime` added in 2.5.0, but backwards compatible
+  // `downtime` added in v2.5.0, but backwards compatible
   public var downtime: PlainTimeWindow?
+  // `blockedApps` added in v2.6.0, but backwards compatible
+  public var blockedApps: [BlockedApp]?
   public var connectedAt: Date
 
   public init(
@@ -23,6 +25,7 @@ public struct UserData {
     screenshotFrequency: Int,
     screenshotSize: Int,
     downtime: PlainTimeWindow? = nil,
+    blockedApps: [BlockedApp]? = nil,
     connectedAt: Date = .init()
   ) {
     self.id = id
@@ -34,6 +37,7 @@ public struct UserData {
     self.screenshotFrequency = screenshotFrequency
     self.screenshotSize = screenshotSize
     self.downtime = downtime
+    self.blockedApps = blockedApps
     self.connectedAt = connectedAt
   }
 }

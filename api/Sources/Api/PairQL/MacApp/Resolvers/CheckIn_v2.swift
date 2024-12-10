@@ -107,12 +107,12 @@ extension CheckIn_v2: Resolver {
         screenshotFrequency: context.user.screenshotsFrequency,
         screenshotSize: context.user.screenshotsResolution,
         downtime: context.user.downtime,
+        blockedApps: getBlockedApps(for: try await admin.id),
         connectedAt: userDevice.createdAt
       ),
       browsers: try await browsers.map(\.match),
       resolvedFilterSuspension: resolvedFilterSuspension,
       resolvedUnlockRequests: resolvedUnlockRequests,
-      blockedApps: getBlockedApps(for: try await admin.id),
       trustedTime: get(dependency: \.date.now).timeIntervalSince1970
     )
   }
