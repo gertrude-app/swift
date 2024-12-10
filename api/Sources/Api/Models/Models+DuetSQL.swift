@@ -555,7 +555,7 @@ extension UserKeychain: Model {
   }
 }
 
-extension KeychainSchedule: PostgresJsonable {}
+extension RuleSchedule: PostgresJsonable {}
 extension PlainTimeWindow: PostgresJsonable {}
 
 extension UserToken: Model {

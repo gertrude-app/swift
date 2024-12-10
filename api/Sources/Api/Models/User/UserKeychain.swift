@@ -5,14 +5,14 @@ struct UserKeychain: Codable, Sendable {
   var id: Id
   var userId: User.Id
   var keychainId: Keychain.Id
-  var schedule: KeychainSchedule?
+  var schedule: RuleSchedule?
   var createdAt = Date()
 
   init(
     id: Id = .init(),
     userId: User.Id,
     keychainId: Keychain.Id,
-    schedule: KeychainSchedule? = nil
+    schedule: RuleSchedule? = nil
   ) {
     self.id = id
     self.userId = userId

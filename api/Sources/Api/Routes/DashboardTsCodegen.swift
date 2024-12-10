@@ -33,7 +33,7 @@ enum DashboardTsCodegenRoute {
       ("Device", GetDevice.Output.self),
       ("PlainTime", PlainTime.self),
       ("PlainTimeWindow", PlainTimeWindow.self),
-      ("KeychainSchedule", KeychainSchedule.self),
+      ("RuleSchedule", RuleSchedule.self),
       ("UserKeychainSummary", UserKeychainSummary.self),
       ("User", GetUser.User.self),
       ("SuspendFilterRequest", GetSuspendFilterRequest.Output.self),

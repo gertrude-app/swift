@@ -88,6 +88,8 @@ public struct CheckIn_v2: Pair {
     public var resolvedFilterSuspension: ResolvedFilterSuspension?
     public var resolvedUnlockRequests: [ResolvedUnlockRequest]?
     public var trustedTime: Double
+    /// introduced in v2.6.0, but backwards compatible
+    public var blockedApps: [BlockedApp]
 
     public init(
       adminAccountStatus: AdminAccountStatus,
@@ -99,6 +101,7 @@ public struct CheckIn_v2: Pair {
       browsers: [BrowserMatch],
       resolvedFilterSuspension: ResolvedFilterSuspension? = nil,
       resolvedUnlockRequests: [ResolvedUnlockRequest]? = nil,
+      blockedApps: [BlockedApp] = [],
       trustedTime: Double
     ) {
       self.adminAccountStatus = adminAccountStatus
@@ -110,6 +113,7 @@ public struct CheckIn_v2: Pair {
       self.browsers = browsers
       self.resolvedFilterSuspension = resolvedFilterSuspension
       self.resolvedUnlockRequests = resolvedUnlockRequests
+      self.blockedApps = blockedApps
       self.trustedTime = trustedTime
     }
   }
@@ -130,6 +134,7 @@ public struct CheckIn_v2: Pair {
         $0.screenshotSize = 555
       },
       browsers: [.name("Safari"), .bundleId("com.apple.Safari")],
+      blockedApps: [],
       trustedTime: 0.0
     )
 
@@ -141,6 +146,7 @@ public struct CheckIn_v2: Pair {
       updateReleaseChannel: .stable,
       userData: .empty,
       browsers: [],
+      blockedApps: [],
       trustedTime: 0.0
     )
   }
