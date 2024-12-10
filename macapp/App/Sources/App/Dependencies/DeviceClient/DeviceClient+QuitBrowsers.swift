@@ -12,14 +12,14 @@ import MacAppRoute
   for app in NSWorkspace.shared.runningApplications {
     if let bundleId = app.bundleIdentifier {
       if bundleIds.contains(bundleId) {
-        await terminate(app, on: mainQueue)
+        await terminate(app: app, on: mainQueue)
         continue
       }
     }
     if let appName = app.localizedName {
       if names.contains(appName) {
         app.bundleIdentifier.map { newBrowsers.append(.init(name: appName, bundleId: $0)) }
-        await terminate(app, on: mainQueue)
+        await terminate(app: app, on: mainQueue)
       }
     }
   }
@@ -30,19 +30,20 @@ import MacAppRoute
   }
 }
 
-private func terminate(
-  _ app: NSRunningApplication,
+internal func terminate(
+  app: NSRunningApplication,
+  retryDelay: DispatchQueue.SchedulerTimeType.Stride = .seconds(3),
   on scheduler: AnySchedulerOf<DispatchQueue>
 ) async {
   #if DEBUG
-    print("* (DEBUG) not terminating browser: `\(app.localizedName ?? "")`")
+    print("* (DEBUG) not terminating app: `\(app.localizedName ?? "")`")
   #else
     app.forceTerminate()
     // checking termination status and "re"-terminating works around
     // loophole where an "unsaved changes" browser alert prevents termination
-    try? await scheduler.sleep(for: .seconds(3))
+    try? await scheduler.sleep(for: retryDelay)
     if !app.isTerminated {
-      await terminate(app, on: scheduler)
+      await terminate(app: app, on: scheduler)
     }
   #endif
 }
