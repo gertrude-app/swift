@@ -11,6 +11,11 @@ import Gertie
   }
 }
 
+@Sendable func terminateRunningApp(_ app: NSRunningApplication) async {
+  @Dependency(\.mainQueue) var mainQueue
+  await terminate(app: app, retryDelay: .milliseconds(200), on: mainQueue)
+}
+
 extension BlockedApp {
   func blocks(app: NSRunningApplication) -> Bool {
     if let bundleId = app.bundleIdentifier,

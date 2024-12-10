@@ -80,6 +80,8 @@ import MacAppRoute
       self.store.send(.application(.willTerminate))
     case .systemClockOrTimeZoneChanged:
       self.store.send(.application(.systemClockOrTimeZoneChanged))
+    case .appLaunched(let pid):
+      self.store.send(.application(.appLaunched(pid: pid)))
     }
   }
 }

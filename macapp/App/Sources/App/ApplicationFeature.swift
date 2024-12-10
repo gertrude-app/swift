@@ -1,3 +1,4 @@
+import AppKit
 import ComposableArchitecture
 import Foundation
 
@@ -8,6 +9,7 @@ public enum ApplicationAction: Equatable, Sendable {
   case didWake
   case willTerminate
   case systemClockOrTimeZoneChanged
+  case appLaunched(pid: pid_t)
 }
 
 enum ApplicationFeature {
@@ -118,7 +120,21 @@ extension ApplicationFeature.RootReducer: RootReducing {
             await self.api.securityEvent(.systemClockOrTimeZoneChanged, "suspicious bootime change")
           }
         }
-        // await self.api.securityEvent(.systemClockOrTimeZoneChanged)
+      }
+
+    case .application(.appLaunched(let pid)):
+      guard let blockedApps = state.user.data?.blockedApps, !blockedApps.isEmpty else {
+        return .none
+      }
+      return .exec { _ in
+        if let app = NSRunningApplication(processIdentifier: pid),
+           blockedApps.blocks(app: app) {
+          await self.device.terminateApp(app)
+          await self.device.notify(
+            "Application blocked",
+            "The application “\(app.localizedName ?? "")” is not allowed"
+          )
+        }
       }
 
     case .application(.willTerminate):

@@ -23,6 +23,7 @@ struct DeviceClient: Sendable {
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
   var terminateBlockedApps: @Sendable ([BlockedApp]) async -> Void
+  var terminateApp: @Sendable (NSRunningApplication) async -> Void
   var username: @Sendable () -> String
   var boottime: @Sendable () -> Date?
 }
@@ -55,6 +56,7 @@ extension DeviceClient: DependencyKey {
     showNotification: showNotification(title:body:),
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
     terminateBlockedApps: terminateAllBlockedApps,
+    terminateApp: terminateRunningApp(_:),
     username: { NSUserName() },
     boottime: {
       // https://forums.developer.apple.com/forums/thread/101874?answerId=309633022#309633022
@@ -93,6 +95,7 @@ extension DeviceClient: TestDependencyKey {
     showNotification: unimplemented("DeviceClient.showNotification"),
     serialNumber: unimplemented("DeviceClient.serialNumber", placeholder: ""),
     terminateBlockedApps: unimplemented("DeviceClient.terminateBlockedApps"),
+    terminateApp: unimplemented("DeviceClient.terminateApp"),
     username: unimplemented("DeviceClient.username", placeholder: ""),
     boottime: unimplemented("DeviceClient.boottime", placeholder: nil)
   )
@@ -118,6 +121,7 @@ extension DeviceClient: TestDependencyKey {
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },
     terminateBlockedApps: { _ in },
+    terminateApp: { _ in },
     username: { "test-username" },
     boottime: { nil }
   )
