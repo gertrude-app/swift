@@ -112,12 +112,27 @@ extension CheckIn_v2: Resolver {
       browsers: try await browsers.map(\.match),
       resolvedFilterSuspension: resolvedFilterSuspension,
       resolvedUnlockRequests: resolvedUnlockRequests,
+      blockedApps: getBlockedApps(for: try await admin.id),
       trustedTime: get(dependency: \.date.now).timeIntervalSince1970
     )
   }
 }
 
 // helpers
+
+// temporary, while POC-testing app-blocking with customer
+func getBlockedApps(for adminId: Admin.Id) -> [BlockedApp] {
+  guard let testId = with(dependency: \.env).get("BLOCKED_APPS_POC_ADMIN_ID"),
+        let testUuid = UUID(uuidString: testId),
+        adminId == .init(testUuid) else {
+    return []
+  }
+  return [
+    .init(bundleId: "com.apple.PhotoBooth", displayName: "Photo Booth"),
+    .init(bundleId: "com.apple.FaceTime", displayName: "FaceTime"),
+    .init(bundleId: "com.apple.Image_Capture", displayName: "Image Capture"),
+  ]
+}
 
 // TODO: this is major N+1 territory, write a custom query w/ join for perf
 // @see also userKeychainSummaries(for:in:)

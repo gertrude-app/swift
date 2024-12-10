@@ -19,7 +19,7 @@ struct SaveUser: Pair {
 
     struct UserKeychain: PairNestable {
       var id: Keychain.Id
-      var schedule: KeychainSchedule?
+      var schedule: RuleSchedule?
     }
   }
 }

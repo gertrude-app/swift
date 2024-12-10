@@ -2,12 +2,12 @@ import Foundation
 
 public struct RuleKeychain {
   public let id: UUID
-  public let schedule: KeychainSchedule?
+  public let schedule: RuleSchedule?
   public let keys: [RuleKey]
 
   public init(
     id: UUID = .init(),
-    schedule: KeychainSchedule? = nil,
+    schedule: RuleSchedule? = nil,
     keys: [RuleKey]
   ) {
     self.id = id
