@@ -11,7 +11,7 @@ struct UserKeychainSummary: PairNestable {
   var description: String?
   var isPublic: Bool
   var numKeys: Int
-  var schedule: KeychainSchedule?
+  var schedule: RuleSchedule?
 }
 
 struct GetUser: Pair {
