@@ -16,7 +16,11 @@ public extension BlockRule {
       .targetContains("tenor.co"),
       .targetContains("giphy.com"),
       .targetContains("media.fosu2-1.fna.whatsapp.net"),
-      .both(.bundleIdContains(".com.apple.MobileSMS"), .targetContains("is1-ssl.mzstatic.com")),
+      .both(.bundleIdContains("com.apple.MobileSMS"), .targetContains("is1-ssl.mzstatic.com")),
+      .both(
+        .bundleIdContains("org.whispersystems.signal"),
+        .targetContains("contentproxy.signal.org")
+      ),
     ]
   }
 }
