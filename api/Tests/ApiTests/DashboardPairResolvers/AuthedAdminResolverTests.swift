@@ -396,7 +396,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
         id: app.id,
         name: app.name,
         slug: app.slug,
-        selectable: app.selectable,
+        launchable: app.launchable,
         bundleIds: [.init(from: bundleId)],
         category: .init(from: cat)
       ),

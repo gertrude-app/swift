@@ -4,6 +4,7 @@ api/.env*
 node_modules/
 .vscode/*
 .nvim/*
+*.sql
 
 buildServer.json
 

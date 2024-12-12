@@ -41,6 +41,35 @@ extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
   }
 }
 
+extension BlockedApp: Duet.Identifiable {
+  typealias Id = Tagged<BlockedApp, UUID>
+}
+
+extension BlockedApp {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case appId
+    case userId
+    case schedule
+    case createdAt
+    case updatedAt
+  }
+}
+
+extension DeviceApp: Duet.Identifiable {
+  typealias Id = Tagged<DeviceApp, UUID>
+}
+
+extension DeviceApp {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case deviceId
+    case appId
+    case createdAt
+    case updatedAt
+  }
+}
+
 extension Admin: Duet.Identifiable {
   typealias Id = Tagged<Admin, UUID>
 }
@@ -184,10 +213,11 @@ extension IdentifiedApp {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case categoryId
-    case name
+    case bundleName
+    case localizedName
+    case customName
     case slug
-    case selectable
-    case description
+    case launchable
     case createdAt
     case updatedAt
   }

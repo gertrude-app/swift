@@ -19,7 +19,7 @@ struct GetIdentifiedApps: Pair {
     let id: IdentifiedApp.Id
     let name: String
     let slug: String
-    let selectable: Bool
+    let launchable: Bool
     var bundleIds: [BundleId]
     let category: Category?
   }
@@ -45,7 +45,7 @@ extension GetIdentifiedApps: NoInputResolver {
           id: identifiedApp.id,
           name: identifiedApp.name,
           slug: identifiedApp.slug,
-          selectable: identifiedApp.selectable,
+          launchable: identifiedApp.launchable,
           bundleIds: [],
           category: categoryMap[identifiedApp.categoryId ?? .init()]
         )

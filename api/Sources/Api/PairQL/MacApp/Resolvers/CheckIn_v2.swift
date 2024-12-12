@@ -121,7 +121,7 @@ extension CheckIn_v2: Resolver {
 // helpers
 
 // temporary, while POC-testing app-blocking with customer
-func getBlockedApps(for adminId: Admin.Id) -> [BlockedApp] {
+func getBlockedApps(for adminId: Admin.Id) -> [Gertie.BlockedApp] {
   guard let testId = with(dependency: \.env).get("BLOCKED_APPS_POC_ADMIN_ID"),
         let testUuid = UUID(uuidString: testId),
         adminId == .init(testUuid) else {

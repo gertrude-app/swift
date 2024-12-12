@@ -163,6 +163,58 @@ extension AppBundleId: Model {
   }
 }
 
+extension BlockedApp: Model {
+  public static let tableName = M30.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .appId: .uuid(self.appId)
+    case .userId: .uuid(self.userId)
+    case .schedule: .json(self.schedule?.toPostgresJson)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .appId: .uuid(self.appId),
+      .userId: .uuid(self.userId),
+      .schedule: .json(self.schedule?.toPostgresJson),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension DeviceApp: Model {
+  public static let tableName = M30.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
+    case .appId: .uuid(self.appId)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(self.deviceId),
+      .appId: .uuid(self.appId),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
 extension UserDevice: Model {
   public static let tableName = M11.tableName
   public typealias ColumnName = CodingKeys
@@ -241,10 +293,11 @@ extension IdentifiedApp: Model {
     switch column {
     case .id: .id(self)
     case .categoryId: .uuid(self.categoryId)
-    case .name: .string(self.name)
+    case .bundleName: .string(self.bundleName)
+    case .localizedName: .string(self.localizedName)
+    case .customName: .string(self.customName)
     case .slug: .string(self.slug)
-    case .selectable: .bool(self.selectable)
-    case .description: .string(self.description)
+    case .launchable: .bool(self.launchable)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
     }
@@ -254,10 +307,11 @@ extension IdentifiedApp: Model {
     [
       .id: .id(self),
       .categoryId: .uuid(self.categoryId),
-      .name: .string(self.name),
+      .bundleName: .string(self.bundleName),
+      .localizedName: .string(self.localizedName),
+      .customName: .string(self.customName),
       .slug: .string(self.slug),
-      .selectable: .bool(self.selectable),
-      .description: .string(self.description),
+      .launchable: .bool(self.launchable),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
