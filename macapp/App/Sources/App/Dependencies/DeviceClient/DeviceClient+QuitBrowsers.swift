@@ -36,7 +36,7 @@ internal func terminate(
   on scheduler: AnySchedulerOf<DispatchQueue>
 ) async {
   #if DEBUG
-    print("* (DEBUG) not terminating app: `\(app.localizedName ?? "")`")
+    print("* (DEBUG) skipping terminating app: `\(app.localizedName ?? "")`")
   #else
     app.forceTerminate()
     // checking termination status and "re"-terminating works around

@@ -20,7 +20,7 @@ extension BlockedApp {
   func blocks(app: NSRunningApplication) -> Bool {
     if let bundleId = app.bundleIdentifier,
        let displayName = app.localizedName {
-      return self.blocks(bundleId: bundleId, displayName: displayName)
+      return self.blocks(bundleId: bundleId, name: displayName)
     }
     return false
   }

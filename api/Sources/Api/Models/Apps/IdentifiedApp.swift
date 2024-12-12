@@ -1,4 +1,4 @@
-import Duet
+import DuetSQL
 
 struct IdentifiedApp: Codable, Sendable {
   var id: Id
@@ -36,5 +36,15 @@ struct IdentifiedApp: Codable, Sendable {
     self.customName = customName
     self.slug = slug
     self.launchable = launchable
+  }
+}
+
+// loaders
+
+extension IdentifiedApp {
+  func bundleIds(in db: any DuetSQL.Client) async throws -> [AppBundleId] {
+    try await AppBundleId.query()
+      .where(.identifiedAppId == self.id)
+      .all(in: db)
   }
 }

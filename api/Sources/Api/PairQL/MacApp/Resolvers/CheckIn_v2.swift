@@ -7,6 +7,7 @@ extension CheckIn_v2: Resolver {
     async let appManifest = getCachedAppIdManifest()
     async let admin = context.user.admin(in: context.db)
     async let browsers = Browser.query().all(in: context.db)
+    let blockedApps = try await context.user.blockedApps(in: context.db)
     var keychains = try await ruleKeychains(for: context.user.id, in: context.db)
 
     // merge in the AUTO-INCLUDED Keychain
@@ -91,6 +92,15 @@ extension CheckIn_v2: Resolver {
       }
     }
 
+    var userBlockedApps: [Gertie.BlockedApp] = []
+    if !blockedApps.isEmpty {
+      userBlockedApps = try await blockedApps.concurrentMap { blockedApp in
+        let app = try await blockedApp.identifiedApp(in: context.db)
+        let bundleIdModels = try await app.bundleIds(in: context.db)
+        return .init(name: app.name, bundleIds: bundleIdModels.map(\.bundleId))
+      }
+    }
+
     return Output(
       adminAccountStatus: try await admin.accountStatus,
       appManifest: try await appManifest,
@@ -107,7 +117,7 @@ extension CheckIn_v2: Resolver {
         screenshotFrequency: context.user.screenshotsFrequency,
         screenshotSize: context.user.screenshotsResolution,
         downtime: context.user.downtime,
-        blockedApps: getBlockedApps(for: try await admin.id),
+        blockedApps: userBlockedApps,
         connectedAt: userDevice.createdAt
       ),
       browsers: try await browsers.map(\.match),
@@ -119,20 +129,6 @@ extension CheckIn_v2: Resolver {
 }
 
 // helpers
-
-// temporary, while POC-testing app-blocking with customer
-func getBlockedApps(for adminId: Admin.Id) -> [Gertie.BlockedApp] {
-  guard let testId = with(dependency: \.env).get("BLOCKED_APPS_POC_ADMIN_ID"),
-        let testUuid = UUID(uuidString: testId),
-        adminId == .init(testUuid) else {
-    return []
-  }
-  return [
-    .init(bundleId: "com.apple.PhotoBooth", displayName: "Photo Booth"),
-    .init(bundleId: "com.apple.FaceTime", displayName: "FaceTime"),
-    .init(bundleId: "com.apple.Image_Capture", displayName: "Image Capture"),
-  ]
-}
 
 // TODO: this is major N+1 territory, write a custom query w/ join for perf
 // @see also userKeychainSummaries(for:in:)
