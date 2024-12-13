@@ -36,7 +36,7 @@ class AppMigratorTests: XCTestCase {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
-    migrator.userDefaults.setString = { key, value in
+    migrator.userDefaults.setString = { @Sendable key, value in
       setStringInvocations.append(.init(key, value))
     }
 
@@ -112,7 +112,7 @@ class AppMigratorTests: XCTestCase {
       migrator.api.setUserToken = setApiToken.fn
 
       let setStringInvocations = LockIsolated<[Both<String, String>]>([])
-      migrator.userDefaults.setString = { key, value in
+      migrator.userDefaults.setString = { @Sendable key, value in
         setStringInvocations.append(.init(key, value))
       }
 
@@ -179,7 +179,7 @@ class AppMigratorTests: XCTestCase {
       migrator.api.setUserToken = setApiToken.fn
 
       let setStringInvocations = LockIsolated<[Both<String, String>]>([])
-      migrator.userDefaults.setString = { key, value in
+      migrator.userDefaults.setString = { @Sendable key, value in
         setStringInvocations.append(.init(key, value))
       }
 

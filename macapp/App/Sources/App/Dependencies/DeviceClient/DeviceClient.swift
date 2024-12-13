@@ -11,6 +11,7 @@ struct DeviceClient: Sendable {
   var currentUserHasScreen: @Sendable () -> Bool
   var fullUsername: @Sendable () -> String
   var listMacOSUsers: @Sendable () async throws -> [MacOSUser]
+  var listRunningApps: @Sendable () -> [RunningApp]
   var modelIdentifier: @Sendable () -> String?
   var notificationsSetting: @Sendable () async -> NotificationsSetting
   var numericUserId: @Sendable () -> uid_t
@@ -41,6 +42,7 @@ extension DeviceClient: DependencyKey {
     },
     fullUsername: { NSFullUserName() },
     listMacOSUsers: getAllMacOSUsers,
+    listRunningApps: { NSWorkspace.shared.runningApplications.compactMap(\.runningApp) },
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
     notificationsSetting: getNotificationsSetting,
     numericUserId: { getuid() },
@@ -78,6 +80,7 @@ extension DeviceClient: TestDependencyKey {
     currentUserHasScreen: unimplemented("DeviceClient.currentUserHasScreen", placeholder: true),
     fullUsername: unimplemented("DeviceClient.fullUsername", placeholder: ""),
     listMacOSUsers: unimplemented("DeviceClient.listMacOSUsers"),
+    listRunningApps: unimplemented("DeviceClient.listRunningApps", placeholder: []),
     modelIdentifier: unimplemented("DeviceClient.modelIdentifier", placeholder: nil),
     notificationsSetting: unimplemented("DeviceClient.notificationsSetting", placeholder: .none),
     numericUserId: unimplemented("DeviceClient.numericUserId", placeholder: 502),
@@ -108,6 +111,10 @@ extension DeviceClient: TestDependencyKey {
     listMacOSUsers: { [
       .init(id: 501, name: "Dad", type: .admin),
       .init(id: 502, name: "liljimmy", type: .standard),
+    ] },
+    listRunningApps: { [
+      .init(bundleId: "com.apple.Safari", bundleName: "Safari"),
+      .init(bundleId: "com.apple.Terminal", bundleName: "Terminal"),
     ] },
     modelIdentifier: { "test-model-identifier" },
     notificationsSetting: { .alert },
