@@ -13,7 +13,7 @@ final class LogFilterEventsResolverTests: ApiTestCase {
     try await self.db.create(UnidentifiedApp(bundleId: "com.widget", count: 3))
     let user = try await self.userWithDevice()
     let xcode = try await self.db
-      .create(IdentifiedApp(bundleName: "Xcode", slug: "", launchable: true))
+      .create(IdentifiedApp(name: "Xcode", slug: "", launchable: true))
     try await self.db.create(AppBundleId(identifiedAppId: xcode.id, bundleId: "com.xcode"))
 
     let eventId1 = UUID().lowercased

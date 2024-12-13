@@ -7,7 +7,7 @@ extension CheckIn_v2: Resolver {
     async let appManifest = getCachedAppIdManifest()
     async let admin = context.user.admin(in: context.db)
     async let browsers = Browser.query().all(in: context.db)
-    let blockedApps = try await context.user.blockedApps(in: context.db)
+    async let blockedApps = context.user.blockedApps(in: context.db)
     var keychains = try await ruleKeychains(for: context.user.id, in: context.db)
 
     // merge in the AUTO-INCLUDED Keychain
@@ -92,15 +92,6 @@ extension CheckIn_v2: Resolver {
       }
     }
 
-    var userBlockedApps: [Gertie.BlockedApp] = []
-    if !blockedApps.isEmpty {
-      userBlockedApps = try await blockedApps.concurrentMap { blockedApp in
-        let app = try await blockedApp.identifiedApp(in: context.db)
-        let bundleIdModels = try await app.bundleIds(in: context.db)
-        return .init(name: app.name, bundleIds: bundleIdModels.map(\.bundleId))
-      }
-    }
-
     return Output(
       adminAccountStatus: try await admin.accountStatus,
       appManifest: try await appManifest,
@@ -117,7 +108,7 @@ extension CheckIn_v2: Resolver {
         screenshotFrequency: context.user.screenshotsFrequency,
         screenshotSize: context.user.screenshotsResolution,
         downtime: context.user.downtime,
-        blockedApps: userBlockedApps,
+        blockedApps: try await blockedApps.map(\.blockedApp),
         connectedAt: userDevice.createdAt
       ),
       browsers: try await browsers.map(\.match),

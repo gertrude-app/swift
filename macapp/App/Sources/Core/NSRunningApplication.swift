@@ -1,4 +1,5 @@
 import AppKit
+import Gertie
 
 public extension NSRunningApplication {
   var name: String? {
@@ -12,5 +13,30 @@ public extension NSRunningApplication {
         .appendingPathComponent("Contents/Info.plist")
     ) else { return nil }
     return infoPlist["CFBundleName"] as? String
+  }
+
+  var runningApp: RunningApp? {
+    self.bundleIdentifier.map {
+      RunningApp(
+        pid: self.processIdentifier,
+        bundleId: $0,
+        bundleName: self.bundleName,
+        localizedName: self.localizedName,
+        launchable: self.activationPolicy != .prohibited
+      )
+    }
+  }
+}
+
+extension RunningApp {
+  init?(app: NSRunningApplication) {
+    guard let bundleId = app.bundleIdentifier else { return nil }
+    self.init(
+      pid: app.processIdentifier,
+      bundleId: bundleId,
+      bundleName: app.bundleName,
+      localizedName: app.localizedName,
+      launchable: app.activationPolicy != .prohibited
+    )
   }
 }

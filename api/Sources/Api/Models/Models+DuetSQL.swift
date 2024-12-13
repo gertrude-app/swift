@@ -163,14 +163,14 @@ extension AppBundleId: Model {
   }
 }
 
-extension BlockedApp: Model {
+extension UserBlockedApp: Model {
   public static let tableName = M30.tableName
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .appId: .uuid(self.appId)
+    case .identifier: .string(self.identifier)
     case .userId: .uuid(self.userId)
     case .schedule: .json(self.schedule?.toPostgresJson)
     case .createdAt: .date(self.createdAt)
@@ -181,34 +181,9 @@ extension BlockedApp: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .appId: .uuid(self.appId),
+      .identifier: .string(self.identifier),
       .userId: .uuid(self.userId),
       .schedule: .json(self.schedule?.toPostgresJson),
-      .createdAt: .currentTimestamp,
-      .updatedAt: .currentTimestamp,
-    ]
-  }
-}
-
-extension DeviceApp: Model {
-  public static let tableName = M30.tableName
-  public typealias ColumnName = CodingKeys
-
-  public func postgresData(for column: ColumnName) -> Postgres.Data {
-    switch column {
-    case .id: .id(self)
-    case .deviceId: .uuid(self.deviceId)
-    case .appId: .uuid(self.appId)
-    case .createdAt: .date(self.createdAt)
-    case .updatedAt: .date(self.updatedAt)
-    }
-  }
-
-  public var insertValues: [ColumnName: Postgres.Data] {
-    [
-      .id: .id(self),
-      .deviceId: .uuid(self.deviceId),
-      .appId: .uuid(self.appId),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -293,9 +268,7 @@ extension IdentifiedApp: Model {
     switch column {
     case .id: .id(self)
     case .categoryId: .uuid(self.categoryId)
-    case .bundleName: .string(self.bundleName)
-    case .localizedName: .string(self.localizedName)
-    case .customName: .string(self.customName)
+    case .name: .string(self.name)
     case .slug: .string(self.slug)
     case .launchable: .bool(self.launchable)
     case .createdAt: .date(self.createdAt)
@@ -307,9 +280,7 @@ extension IdentifiedApp: Model {
     [
       .id: .id(self),
       .categoryId: .uuid(self.categoryId),
-      .bundleName: .string(self.bundleName),
-      .localizedName: .string(self.localizedName),
-      .customName: .string(self.customName),
+      .name: .string(self.name),
       .slug: .string(self.slug),
       .launchable: .bool(self.launchable),
       .createdAt: .currentTimestamp,
@@ -747,6 +718,9 @@ extension UnidentifiedApp: Model {
     switch column {
     case .id: .id(self)
     case .bundleId: .string(self.bundleId)
+    case .bundleName: .string(self.bundleName)
+    case .localizedName: .string(self.localizedName)
+    case .launchable: .bool(self.launchable)
     case .count: .int(self.count)
     case .createdAt: .date(self.createdAt)
     }
@@ -756,6 +730,9 @@ extension UnidentifiedApp: Model {
     [
       .id: .id(self),
       .bundleId: .string(self.bundleId),
+      .bundleName: .string(self.bundleName),
+      .localizedName: .string(self.localizedName),
+      .launchable: .bool(self.launchable),
       .count: .int(self.count),
       .createdAt: .currentTimestamp,
     ]

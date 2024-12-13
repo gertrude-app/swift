@@ -41,30 +41,16 @@ extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
   }
 }
 
-extension BlockedApp: Duet.Identifiable {
-  typealias Id = Tagged<BlockedApp, UUID>
+extension UserBlockedApp: Duet.Identifiable {
+  typealias Id = Tagged<UserBlockedApp, UUID>
 }
 
-extension BlockedApp {
+extension UserBlockedApp {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case appId
+    case identifier
     case userId
     case schedule
-    case createdAt
-    case updatedAt
-  }
-}
-
-extension DeviceApp: Duet.Identifiable {
-  typealias Id = Tagged<DeviceApp, UUID>
-}
-
-extension DeviceApp {
-  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
-    case id
-    case deviceId
-    case appId
     case createdAt
     case updatedAt
   }
@@ -213,9 +199,7 @@ extension IdentifiedApp {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case categoryId
-    case bundleName
-    case localizedName
-    case customName
+    case name
     case slug
     case launchable
     case createdAt
@@ -471,6 +455,9 @@ extension UnidentifiedApp {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case bundleId
+    case bundleName
+    case localizedName
+    case launchable
     case count
     case createdAt
   }
