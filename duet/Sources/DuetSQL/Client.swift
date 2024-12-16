@@ -86,7 +86,8 @@ public extension Client {
 
   @discardableResult
   func update<M: Model>(_ models: [M]) async throws -> [M] {
-    try await withThrowingTaskGroup(of: M.self) { group in
+    guard !models.isEmpty else { return [] }
+    return try await withThrowingTaskGroup(of: M.self) { group in
       for model in models {
         group.addTask { try await update(model) }
       }
