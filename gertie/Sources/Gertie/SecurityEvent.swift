@@ -15,6 +15,7 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case appUpdateFailedToReplaceSystemExtension
     case advancedSettingsOpened
     case systemClockOrTimeZoneChanged
+    case blockedAppLaunchAttempted
   }
 
   public enum Dashboard: String, Codable, Equatable, Sendable {
@@ -129,6 +130,8 @@ public extension SecurityEvent.MacApp {
       return "System extension change requested"
     case .systemExtensionStateChanged:
       return "System extension state changed"
+    case .blockedAppLaunchAttempted:
+      return "Blocked app launch attempted"
     }
   }
 
@@ -164,6 +167,8 @@ public extension SecurityEvent.MacApp {
       return "This event occurs whenever some action or process within Gertrude happens that requests a change to the state of the system extension (filter). It should be investigated if the request is to stop or uninstall the extension without it immediately being restarted or replaced."
     case .systemExtensionStateChanged:
       return "This event occurs when the system extension (filter) state has changed. It should be investigated if the state remains uninstalled or stopped."
+    case .blockedAppLaunchAttempted:
+      return "This event occurs when a child tries to launch an app designated blocked by the parent. There is no security risk as Gertrude will not allow the app to open, but repeated events do represent an attempt by the child to launch forbidden apps."
     }
   }
 }

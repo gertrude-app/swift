@@ -132,7 +132,11 @@ extension ApplicationFeature.RootReducer: RootReducing {
           await self.device.terminateApp(app)
           await self.device.notify(
             "Application blocked",
-            "The application “\(app.name ?? "")” is not allowed"
+            "The app “\(app.name ?? "")” is not allowed"
+          )
+          await self.api.securityEvent(
+            .blockedAppLaunchAttempted,
+            "app: \(app.name ?? app.bundleIdentifier ?? "")"
           )
         }
       }
