@@ -21,6 +21,36 @@ extension BlockRules: Resolver {
         .bundleIdContains("com.apple.Preferences"),
         .targetContains("support.apple.com")
       ))
+    case "ac539f44-563c-485f-98cd-caf4fc323e69": // winfield
+      // apple maps, no images
+      rules.append(.both(.bundleIdContains(".com.apple.Maps"), .targetContains("ssl.mzstatic.com")))
+      rules.append(.both(.bundleIdContains(".com.apple.Maps"), .targetContains("yelpcdn.com")))
+      rules.append(.both(
+        .bundleIdContains(".com.apple.Maps"),
+        .targetContains("4sqi.net") // foursquare
+      ))
+      rules.append(.both(.bundleIdContains(".com.apple.Maps"), .targetContains("tripadvisor.com")))
+      rules.append(.both(.bundleIdContains(".com.apple.Maps"), .targetContains("itunes.apple.com")))
+      rules.append(.bundleIdContains("com.apple.mobileassetd.client.Maps"))
+      rules
+        .append(.both(
+          .bundleIdContains(".com.apple.Maps"),
+          .targetContains("amp-api.apps.apple.com")
+        ))
+      // totally kill app store from Messages
+      rules.append(.both(
+        .bundleIdContains(".com.apple.MobileSMS"),
+        .targetContains("amp-api-edge.apps.apple.com")
+      ))
+      // prevent apple.com website access from settings webviews
+      rules.append(.both(
+        .bundleIdContains("com.apple.Preferences"),
+        .targetContains("www.apple.com")
+      ))
+      rules.append(.both(
+        .bundleIdContains("com.apple.Preferences"),
+        .targetContains("support.apple.com")
+      ))
     default:
       break
     }
