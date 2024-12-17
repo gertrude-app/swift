@@ -74,6 +74,8 @@
   - emit admin event for suspicious time change
 - `2.5.1` (beta as of 12/6/24)
   - don't take screenshots when login window is frontmost application
+- `2.6.0` (canary as of 12/17/24)
+  - app blocking
 
 ## Sparkle Releases
 
