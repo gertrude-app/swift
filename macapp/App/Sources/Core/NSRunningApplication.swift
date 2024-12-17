@@ -28,7 +28,7 @@ public extension NSRunningApplication {
   }
 }
 
-extension RunningApp {
+public extension RunningApp {
   init?(app: NSRunningApplication) {
     guard let bundleId = app.bundleIdentifier else { return nil }
     self.init(
@@ -38,5 +38,14 @@ extension RunningApp {
       localizedName: app.localizedName,
       launchable: app.activationPolicy != .prohibited
     )
+  }
+
+  init?(pid: pid_t) {
+    guard let app = NSRunningApplication(processIdentifier: pid) else { return nil }
+    self.init(app: app)
+  }
+
+  var nsRunningApplication: NSRunningApplication? {
+    NSRunningApplication(processIdentifier: self.pid)
   }
 }

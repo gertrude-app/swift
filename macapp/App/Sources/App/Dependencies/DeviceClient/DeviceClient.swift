@@ -20,11 +20,12 @@ struct DeviceClient: Sendable {
   var osVersion: @Sendable () -> MacOSVersion
   var quitBrowsers: @Sendable ([BrowserMatch]) async -> Void
   var requestNotificationAuthorization: @Sendable () async -> Void
+  var runningAppFromPid: @Sendable (pid_t) -> RunningApp?
   var screensaverRunning: @Sendable () -> Bool
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
   var terminateBlockedApps: @Sendable ([BlockedApp]) async -> Void
-  var terminateApp: @Sendable (NSRunningApplication) async -> Void
+  var terminateApp: @Sendable (RunningApp) async -> Void
   var username: @Sendable () -> String
   var boottime: @Sendable () -> Date?
 }
@@ -51,6 +52,7 @@ extension DeviceClient: DependencyKey {
     osVersion: { macOSVersion() },
     quitBrowsers: quitAllBrowsers,
     requestNotificationAuthorization: requestNotificationAuth,
+    runningAppFromPid: { .init(pid: $0) },
     screensaverRunning: {
       let currentApp = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
       return currentApp == "com.apple.ScreenSaver.Engine" || currentApp == "com.apple.loginwindow"
@@ -94,6 +96,7 @@ extension DeviceClient: TestDependencyKey {
     requestNotificationAuthorization: unimplemented(
       "DeviceClient.requestNotificationAuthorization"
     ),
+    runningAppFromPid: unimplemented("DeviceClient.runningAppFromPid", placeholder: nil),
     screensaverRunning: unimplemented("DeviceClient.screensaverRunning", placeholder: false),
     showNotification: unimplemented("DeviceClient.showNotification"),
     serialNumber: unimplemented("DeviceClient.serialNumber", placeholder: ""),
@@ -124,6 +127,7 @@ extension DeviceClient: TestDependencyKey {
     osVersion: { .init(major: 14, minor: 0, patch: 0) },
     quitBrowsers: { _ in },
     requestNotificationAuthorization: {},
+    runningAppFromPid: { _ in nil },
     screensaverRunning: { false },
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },

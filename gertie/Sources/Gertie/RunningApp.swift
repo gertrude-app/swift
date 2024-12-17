@@ -5,6 +5,10 @@ public struct RunningApp {
   public var localizedName: String?
   public var launchable: Bool?
 
+  public var name: String? {
+    self.localizedName ?? self.bundleName
+  }
+
   public var hasName: Bool {
     self.bundleName != nil || self.localizedName != nil
   }

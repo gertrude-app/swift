@@ -127,16 +127,15 @@ extension ApplicationFeature.RootReducer: RootReducing {
         return .none
       }
       return .exec { _ in
-        if let app = NSRunningApplication(processIdentifier: pid),
-           blockedApps.blocks(app: app) {
+        if let app = self.device.runningAppFromPid(pid), blockedApps.blocks(app: app) {
           await self.device.terminateApp(app)
           await self.device.notify(
             "Application blocked",
-            "The app “\(app.name ?? "")” is not allowed"
+            "The app “\(app.name ?? app.bundleId)” is not allowed"
           )
           await self.api.securityEvent(
             .blockedAppLaunchAttempted,
-            "app: \(app.name ?? app.bundleIdentifier ?? "")"
+            "app: \(app.name ?? app.bundleId)"
           )
         }
       }
