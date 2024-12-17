@@ -31,6 +31,7 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case keychainCreated
     case keychainsChanged
     case notificationDeleted
+    case blockedAppsChanged
   }
 
   case macApp(MacApp)
@@ -64,6 +65,8 @@ public extension SecurityEvent.Dashboard {
       return "Password changed"
     case .passwordResetRequested:
       return "Password reset requested"
+    case .blockedAppsChanged:
+      return "Blocked apps changed"
     }
   }
 
@@ -93,6 +96,8 @@ public extension SecurityEvent.Dashboard {
       return "This event occurs when a parent changes their password for the parents admin site. Should be investigated if you did not change your password."
     case .passwordResetRequested:
       return "This event occurs when a parent requests a password reset for the parents admin site. Should be investigated if you did not request a password reset."
+    case .blockedAppsChanged:
+      return "This event occurs when a parent changes which apps are blocked for a child. Should be investigated if the change was not made by you."
     }
   }
 }

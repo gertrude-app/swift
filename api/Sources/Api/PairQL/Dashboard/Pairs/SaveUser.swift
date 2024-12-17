@@ -16,6 +16,7 @@ struct SaveUser: Pair {
     var showSuspensionActivity: Bool
     var downtime: PlainTimeWindow?
     var keychains: [UserKeychain]
+    var blockedApps: [UserBlockedApp.DTO]?
 
     struct UserKeychain: PairNestable {
       var id: Keychain.Id
@@ -68,6 +69,18 @@ extension SaveUser: Resolver {
       user.showSuspensionActivity = input.showSuspensionActivity
       user.downtime = input.downtime
       try await context.db.update(user)
+
+      if let blockedApps = input.blockedApps {
+        let existing = try await user.blockedApps(in: context.db).map(\.dto)
+        if !existing.elementsEqual(blockedApps) {
+          dashSecurityEvent(.blockedAppsChanged, "child: \(user.name)", in: context)
+          try await UserBlockedApp.query()
+            .where(.userId == user.id)
+            .delete(in: context.db)
+          let models = blockedApps.map { UserBlockedApp(dto: $0, userId: user.id) }
+          try await context.db.create(models)
+        }
+      }
 
       let existing = try await userKeychainSummaries(for: user.id, in: context.db)
         .map(\.userKeychain)
