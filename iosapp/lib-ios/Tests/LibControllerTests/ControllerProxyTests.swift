@@ -27,25 +27,38 @@ final class ControllerProxyTests: XCTestCase {
       }
     } operation: {
       let controllerProxy = ControllerProxy()
+      controllerProxy.notifyRulesChanged = { notifyRulesChanged.withValue { $0 += 1 } }
       controllerProxy.startFilter()
-      controllerProxy.notifyRulesChanged = {
-        notifyRulesChanged.withValue { $0 += 1 }
-      }
+      await Task.megaYield()
 
-      await testClock.advance(by: .minutes(59))
-      expect(fetchRules.value).toEqual(0)
-      await testClock.advance(by: .minutes(2))
-
-      // fetches rules and writes updated rules to disk
+      // fetches rules and writes updated rules to disk right away
       expect(fetchRules.value).toEqual(1)
       expect(notifyRulesChanged.value).toEqual(1)
-      expect(savedRules.value).toEqual([.init(
+      let saved = Both<String, [BlockRule]>.init(
         .blockRulesStorageKey,
         [.bundleIdContains("bad"), .bundleIdContains("bad2")]
-      )])
+      )
+      expect(savedRules.value).toEqual([saved])
 
-      await testClock.advance(by: .minutes(60))
+      // and fetches again after one minute...
+      await testClock.advance(by: .minutes(1))
       expect(fetchRules.value).toEqual(2)
+      expect(notifyRulesChanged.value).toEqual(2)
+      expect(savedRules.value).toEqual([saved, saved])
+
+      // ...before starting the looping heartbeat
+      await testClock.advance(by: .minutes(4))
+      expect(fetchRules.value).toEqual(2) // <-- still 2
+      await testClock.advance(by: .minutes(2))
+      expect(fetchRules.value).toEqual(3)
+      expect(notifyRulesChanged.value).toEqual(3)
+      expect(savedRules.value).toEqual([saved, saved, saved])
+
+      // once more after 5 minutes
+      await testClock.advance(by: .minutes(5))
+      expect(fetchRules.value).toEqual(4)
+      expect(notifyRulesChanged.value).toEqual(4)
+      expect(savedRules.value).toEqual([saved, saved, saved, saved])
     }
   }
 
