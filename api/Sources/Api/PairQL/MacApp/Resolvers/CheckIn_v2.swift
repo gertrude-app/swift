@@ -7,6 +7,7 @@ extension CheckIn_v2: Resolver {
     async let appManifest = getCachedAppIdManifest()
     async let admin = context.user.admin(in: context.db)
     async let browsers = Browser.query().all(in: context.db)
+    async let blockedApps = context.user.blockedApps(in: context.db)
     var keychains = try await ruleKeychains(for: context.user.id, in: context.db)
 
     // merge in the AUTO-INCLUDED Keychain
@@ -91,6 +92,21 @@ extension CheckIn_v2: Resolver {
       }
     }
 
+    if let namedApps = input.namedApps, !namedApps.isEmpty {
+      var bindings: [Postgres.Data] = []
+      for var namedApp in namedApps.uniqued(on: \.bundleId) {
+        namedApp.dbPrepare()
+        bindings.append(.string(namedApp.bundleId))
+        bindings.append(.string(namedApp.bundleName))
+        bindings.append(.string(namedApp.localizedName))
+        bindings.append(.bool(namedApp.launchable))
+      }
+      _ = try await context.db.customQuery(
+        UpsertNamedApps.self,
+        withBindings: bindings
+      )
+    }
+
     return Output(
       adminAccountStatus: try await admin.accountStatus,
       appManifest: try await appManifest,
@@ -107,6 +123,7 @@ extension CheckIn_v2: Resolver {
         screenshotFrequency: context.user.screenshotsFrequency,
         screenshotSize: context.user.screenshotsResolution,
         downtime: context.user.downtime,
+        blockedApps: try await blockedApps.map(\.blockedApp),
         connectedAt: userDevice.createdAt
       ),
       browsers: try await browsers.map(\.match),
@@ -167,4 +184,63 @@ func resolveLatestRelease(
   }
 
   return latest
+}
+
+struct UpsertNamedApps: CustomQueryable {
+  static func query(bindings: [Postgres.Data]) -> SQL.Statement {
+    typealias M28 = UnidentifiedApp.M28
+    typealias M30 = UnidentifiedApp.M30
+    var stmt = SQL.Statement("""
+      INSERT INTO \(M28.tableName) (
+        id,
+        \(M28.bundleId),
+        \(M30.bundleName),
+        \(M30.localizedName),
+        \(M30.launchable),
+        \(M28.count),
+        created_at
+      ) VALUES (
+    """)
+    for i in (0 ..< bindings.count).striding(by: 4) {
+      // id
+      stmt.components.append(.sql("'\(UUID().lowercased)', "))
+      // bundle id
+      stmt.components.append(.binding(bindings[i]))
+      // bundle name
+      stmt.components.append(.sql(", "))
+      stmt.components.append(.binding(bindings[i + 1]))
+      // localized name
+      stmt.components.append(.sql(", "))
+      stmt.components.append(.binding(bindings[i + 2]))
+      // launchable
+      stmt.components.append(.sql(", "))
+      stmt.components.append(.binding(bindings[i + 3]))
+      // count, created_at
+      stmt.components.append(.sql(", 1, CURRENT_TIMESTAMP), ("))
+    }
+    stmt.components.removeLast()
+    stmt.components.append(.sql(", 1, CURRENT_TIMESTAMP)\n"))
+    stmt.components.append(.sql("""
+      ON CONFLICT (\(M28.bundleId))
+      DO UPDATE SET
+        \(M30.bundleName) = EXCLUDED.\(M30.bundleName),
+        \(M30.localizedName) = EXCLUDED.\(M30.localizedName),
+        \(M30.launchable) = EXCLUDED.\(M30.launchable)
+    """))
+    return stmt
+  }
+}
+
+extension RunningApp {
+  mutating func dbPrepare() {
+    if self.bundleName == self.bundleId {
+      self.bundleName = nil
+    }
+    if self.localizedName == self.bundleId {
+      self.localizedName = nil
+    }
+    if self.localizedName != nil, self.localizedName == self.bundleName {
+      self.localizedName = nil
+    }
+  }
 }

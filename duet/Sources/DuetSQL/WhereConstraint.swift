@@ -236,6 +236,13 @@ public func |=| <M: Model>(
 
 public func |=| <M: Model>(
   lhs: M.ColumnName,
+  rhs: [String]
+) -> SQL.WhereConstraint<M> {
+  .in(lhs, rhs.map { .string($0) })
+}
+
+public func |=| <M: Model>(
+  lhs: M.ColumnName,
   rhs: [M.IdValue]
 ) -> SQL.WhereConstraint<M> {
   .in(lhs, rhs.map { .uuid($0) })

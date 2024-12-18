@@ -29,6 +29,17 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
       object: nil
     )
 
+    NSWorkspace.shared.notificationCenter.addObserver(
+      forName: NSWorkspace.didLaunchApplicationNotification,
+      object: nil,
+      queue: nil
+    ) { [weak self] notification in
+      if let app = notification
+        .userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
+        self?.app.send(.appLaunched(pid: app.processIdentifier))
+      }
+    }
+
     // NB: clock/tz changes are NOT posted to NSWorkspace.shared.notificationCenter
     NotificationCenter.default.addObserver(
       forName: NSNotification.Name.NSSystemClockDidChange,

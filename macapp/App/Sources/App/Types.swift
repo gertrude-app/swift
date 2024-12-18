@@ -61,7 +61,8 @@ public extension ApiClient {
   func appCheckIn(
     _ filterVersion: String?,
     pendingFilterSuspension: UUID? = nil,
-    pendingUnlockRequests: [UUID]? = nil
+    pendingUnlockRequests: [UUID]? = nil,
+    sendNamedApps: Bool = false
   ) async throws -> CheckIn_v2.Output {
     @Dependency(\.app) var appClient
     @Dependency(\.device) var device
@@ -72,7 +73,8 @@ public extension ApiClient {
         userIsAdmin: device.currentMacOsUserType() == .admin,
         osVersion: device.osVersion().semver,
         pendingFilterSuspension: pendingFilterSuspension,
-        pendingUnlockRequests: pendingUnlockRequests
+        pendingUnlockRequests: pendingUnlockRequests,
+        namedApps: sendNamedApps ? device.listRunningApps().filter(\.hasName) : nil
       )
     )
   }

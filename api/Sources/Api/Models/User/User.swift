@@ -60,4 +60,10 @@ extension User {
       .where(.id == self.adminId)
       .first(in: db)
   }
+
+  func blockedApps(in db: any DuetSQL.Client) async throws -> [UserBlockedApp] {
+    try await UserBlockedApp.query()
+      .where(.userId == self.id)
+      .all(in: db)
+  }
 }

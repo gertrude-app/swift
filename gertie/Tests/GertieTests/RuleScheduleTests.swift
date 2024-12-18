@@ -4,18 +4,18 @@ import XCTest
 import XExpect
 
 struct ContainsTest {
-  let mode: KeychainSchedule.Mode
-  let days: KeychainSchedule.Days
+  let mode: RuleSchedule.Mode
+  let days: RuleSchedule.Days
   let window: PlainTimeWindow
   let testDate: Date
   let contained: Bool
 }
 
-final class KeychainScheduleTests: XCTestCase {
+final class RuleScheduleTests: XCTestCase {
   func testScheduleActive() {
-    let cases: [(KeychainSchedule, [(test: Date, active: Bool)])] = [
+    let cases: [(RuleSchedule, [(test: Date, active: Bool)])] = [
       (
-        KeychainSchedule(mode: .active, days: .all, window: "09:00-11:00"),
+        RuleSchedule(mode: .active, days: .all, window: "09:00-11:00"),
         [
           (test: .day(.monday, at: "08:59"), active: false),
           (test: .day(.monday, at: "09:00"), active: true),
@@ -26,7 +26,7 @@ final class KeychainScheduleTests: XCTestCase {
         ]
       ),
       (
-        KeychainSchedule(mode: .inactive, days: .all, window: "09:00-11:00"),
+        RuleSchedule(mode: .inactive, days: .all, window: "09:00-11:00"),
         [
           (test: .day(.monday, at: "08:59"), active: true),
           (test: .day(.monday, at: "09:00"), active: false),
@@ -37,7 +37,7 @@ final class KeychainScheduleTests: XCTestCase {
         ]
       ),
       (
-        KeychainSchedule(mode: .active, days: .weekdays, window: "09:00-11:00"),
+        RuleSchedule(mode: .active, days: .weekdays, window: "09:00-11:00"),
         [
           (test: .day(.thursday, at: "08:59"), active: false),
           (test: .day(.tuesday, at: "09:00"), active: true),
@@ -60,7 +60,7 @@ final class KeychainScheduleTests: XCTestCase {
         ]
       ),
       (
-        KeychainSchedule(mode: .inactive, days: .only(.thursday), window: "22:31-22:34"),
+        RuleSchedule(mode: .inactive, days: .only(.thursday), window: "22:31-22:34"),
         [
           (test: .day(.thursday, at: "22:30"), active: true),
           (test: .day(.thursday, at: "22:32"), active: false),

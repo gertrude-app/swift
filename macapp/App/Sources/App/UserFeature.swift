@@ -41,31 +41,37 @@ extension UserFeature.RootReducer: RootReducing {
       }
 
     case .heartbeat(.everyMinute):
+      var effects: [Effect<Action>] = []
+      if let blockedApps = state.user.data?.blockedApps, !blockedApps.isEmpty {
+        effects.append(.exec { [blockedApps = blockedApps] _ in
+          await self.device.terminateBlockedApps(blockedApps)
+        })
+      }
       if let expiry = state.user.downtimePausedUntil, self.now >= expiry {
         state.user.downtimePausedUntil = nil
       }
-      guard let downtime = state.user.data?.downtime else {
-        return .none
-      }
-      let minutesTillDowntime = PlainTime.from(self.now, in: self.calendar)
-        .minutesUntil(downtime.start)
-      switch minutesTillDowntime {
-      case 5:
-        return .exec { _ in
-          if self.device.currentUserHasScreen(), !self.device.screensaverRunning() {
-            await self.device.showNotification(
-              "😴 Downtime starting in 5 minutes",
-              "Browsers will quit, save any important work now!"
-            )
-          }
+      if let downtime = state.user.data?.downtime {
+        let minutesTillDowntime = PlainTime.from(self.now, in: self.calendar)
+          .minutesUntil(downtime.start)
+        switch minutesTillDowntime {
+        case 5:
+          effects.append(.exec { _ in
+            if self.device.currentUserHasScreen(), !self.device.screensaverRunning() {
+              await self.device.showNotification(
+                "😴 Downtime starting in 5 minutes",
+                "Browsers will quit, save any important work now!"
+              )
+            }
+          })
+        case 0:
+          effects.append(.exec { [browsers = state.browsers] _ in
+            await self.device.quitBrowsers(browsers)
+          })
+        default:
+          break
         }
-      case 0:
-        return .exec { [browsers = state.browsers] _ in
-          await self.device.quitBrowsers(browsers)
-        }
-      default:
-        return .none
       }
+      return .merge(effects)
 
     case .heartbeat(.everySixHours):
       let timesTokenNotFound = state.user.numTimesUserTokenNotFound

@@ -190,6 +190,61 @@ final class UsersResolversTests: ApiTestCase {
     expect(newPivot?.schedule)
       .toEqual(.init(mode: .active, days: .all, window: "04:00-08:00"))
   }
+
+  func testUpdatedUserAddingNewBlockedApps() async throws {
+    let user = try await self.user()
+    var input = SaveUser.Input(from: user)
+    input.blockedApps = [.init(identifier: "FaceSkype")]
+    _ = try await SaveUser.resolve(with: input, in: user.admin.context)
+    let blocked = try await user.model.blockedApps(in: self.db)
+    expect(blocked.map(\.identifier)).toEqual(["FaceSkype"])
+  }
+
+  func testDeleteExistingBlockedApps() async throws {
+    let user = try await self.user()
+    try await self.db.create([UserBlockedApp(identifier: "FaceSkype", userId: user.id)])
+
+    var input = SaveUser.Input(from: user)
+    input.blockedApps = nil // <-- nil does not delete
+    _ = try await SaveUser.resolve(with: input, in: user.admin.context)
+
+    var retrieved = try await user.model.blockedApps(in: self.db)
+    expect(retrieved.count).toEqual(1)
+
+    input.blockedApps = []
+    _ = try await SaveUser.resolve(with: input, in: user.admin.context)
+
+    retrieved = try await user.model.blockedApps(in: self.db)
+    expect(retrieved.count).toEqual(0)
+  }
+
+  func testUpdateExistingBlockedApps() async throws {
+    let user = try await self.user()
+    let id1 = UserBlockedApp.Id()
+    let id2 = UserBlockedApp.Id()
+    let id3 = UserBlockedApp.Id()
+    try await self.db.create([UserBlockedApp(id: id1, identifier: "FaceSkype", userId: user.id)])
+
+    var input = SaveUser.Input(from: user)
+    input.blockedApps = [
+      .init(id: id1, identifier: "FaceSkype"),
+      .init(id: id2, identifier: "FaceApp"),
+    ]
+    _ = try await SaveUser.resolve(with: input, in: user.admin.context)
+
+    var retrieved = try await user.model.blockedApps(in: self.db)
+    expect(Set(retrieved.map(\.id))).toEqual([id1, id2])
+
+    input = SaveUser.Input(from: user)
+    input.blockedApps = [
+      .init(id: id2, identifier: "FaceApp"),
+      .init(id: id3, identifier: "WhatsZoom"),
+    ]
+    _ = try await SaveUser.resolve(with: input, in: user.admin.context)
+
+    retrieved = try await user.model.blockedApps(in: self.db)
+    expect(retrieved.map(\.id)).toEqual([id2, id3])
+  }
 }
 
 extension SaveUser.Input {
@@ -205,5 +260,26 @@ extension SaveUser.Input {
       showSuspensionActivity: user.showSuspensionActivity,
       keychains: keychains
     )
+  }
+
+  static var mock: Self {
+    SaveUser.Input(
+      id: .init(),
+      isNew: true,
+      name: "Franny",
+      keyloggingEnabled: true,
+      screenshotsEnabled: true,
+      screenshotsResolution: 100,
+      screenshotsFrequency: 180,
+      showSuspensionActivity: true,
+      downtime: nil,
+      keychains: []
+    )
+  }
+
+  static func mock(with config: (inout Self) -> Void) -> Self {
+    var input = Self.mock
+    config(&input)
+    return input
   }
 }

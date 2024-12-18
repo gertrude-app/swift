@@ -10,6 +10,15 @@ public extension String {
     self.snakeCased.uppercased()
   }
 
+  var slugified: String {
+    self
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+      .lowercased()
+      .replacingOccurrences(of: ".", with: "-")
+      .replacingOccurrences(of: " ", with: "-")
+      .replacingOccurrences(of: "[^a-z0-9-]", with: "", options: .regularExpression)
+  }
+
   func padLeft(toLength length: Int, withPad pad: Character) -> String {
     String(
       String(reversed())

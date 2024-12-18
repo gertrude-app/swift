@@ -1,12 +1,11 @@
-import Duet
+import DuetSQL
 
 struct IdentifiedApp: Codable, Sendable {
   var id: Id
   var categoryId: AppCategory.Id?
   var name: String
   var slug: String
-  var selectable: Bool
-  var description: String?
+  var launchable: Bool
   var createdAt = Date()
   var updatedAt = Date()
 
@@ -15,14 +14,22 @@ struct IdentifiedApp: Codable, Sendable {
     categoryId: AppCategory.Id? = nil,
     name: String,
     slug: String,
-    selectable: Bool,
-    description: String? = nil
+    launchable: Bool
   ) {
     self.id = id
     self.categoryId = categoryId
     self.name = name
     self.slug = slug
-    self.selectable = selectable
-    self.description = description
+    self.launchable = launchable
+  }
+}
+
+// loaders
+
+extension IdentifiedApp {
+  func bundleIds(in db: any DuetSQL.Client) async throws -> [AppBundleId] {
+    try await AppBundleId.query()
+      .where(.identifiedAppId == self.id)
+      .all(in: db)
   }
 }

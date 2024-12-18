@@ -15,6 +15,7 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case appUpdateFailedToReplaceSystemExtension
     case advancedSettingsOpened
     case systemClockOrTimeZoneChanged
+    case blockedAppLaunchAttempted
   }
 
   public enum Dashboard: String, Codable, Equatable, Sendable {
@@ -30,6 +31,7 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case keychainCreated
     case keychainsChanged
     case notificationDeleted
+    case blockedAppsChanged
   }
 
   case macApp(MacApp)
@@ -63,6 +65,8 @@ public extension SecurityEvent.Dashboard {
       return "Password changed"
     case .passwordResetRequested:
       return "Password reset requested"
+    case .blockedAppsChanged:
+      return "Blocked apps changed"
     }
   }
 
@@ -92,6 +96,8 @@ public extension SecurityEvent.Dashboard {
       return "This event occurs when a parent changes their password for the parents admin site. Should be investigated if you did not change your password."
     case .passwordResetRequested:
       return "This event occurs when a parent requests a password reset for the parents admin site. Should be investigated if you did not request a password reset."
+    case .blockedAppsChanged:
+      return "This event occurs when a parent changes which apps are blocked for a child. Should be investigated if the change was not made by you."
     }
   }
 }
@@ -129,6 +135,8 @@ public extension SecurityEvent.MacApp {
       return "System extension change requested"
     case .systemExtensionStateChanged:
       return "System extension state changed"
+    case .blockedAppLaunchAttempted:
+      return "Blocked app launch attempted"
     }
   }
 
@@ -164,6 +172,8 @@ public extension SecurityEvent.MacApp {
       return "This event occurs whenever some action or process within Gertrude happens that requests a change to the state of the system extension (filter). It should be investigated if the request is to stop or uninstall the extension without it immediately being restarted or replaced."
     case .systemExtensionStateChanged:
       return "This event occurs when the system extension (filter) state has changed. It should be investigated if the state remains uninstalled or stopped."
+    case .blockedAppLaunchAttempted:
+      return "This event occurs when a child tries to launch an app designated blocked by the parent. There is no security risk as Gertrude will not allow the app to open, but repeated events do represent an attempt by the child to launch forbidden apps."
     }
   }
 }

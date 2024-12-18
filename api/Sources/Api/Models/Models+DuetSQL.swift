@@ -163,6 +163,33 @@ extension AppBundleId: Model {
   }
 }
 
+extension UserBlockedApp: Model {
+  public static let tableName = M30.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .identifier: .string(self.identifier)
+    case .userId: .uuid(self.userId)
+    case .schedule: .json(self.schedule?.toPostgresJson)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .identifier: .string(self.identifier),
+      .userId: .uuid(self.userId),
+      .schedule: .json(self.schedule?.toPostgresJson),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
 extension UserDevice: Model {
   public static let tableName = M11.tableName
   public typealias ColumnName = CodingKeys
@@ -243,8 +270,7 @@ extension IdentifiedApp: Model {
     case .categoryId: .uuid(self.categoryId)
     case .name: .string(self.name)
     case .slug: .string(self.slug)
-    case .selectable: .bool(self.selectable)
-    case .description: .string(self.description)
+    case .launchable: .bool(self.launchable)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
     }
@@ -256,8 +282,7 @@ extension IdentifiedApp: Model {
       .categoryId: .uuid(self.categoryId),
       .name: .string(self.name),
       .slug: .string(self.slug),
-      .selectable: .bool(self.selectable),
-      .description: .string(self.description),
+      .launchable: .bool(self.launchable),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -555,7 +580,7 @@ extension UserKeychain: Model {
   }
 }
 
-extension KeychainSchedule: PostgresJsonable {}
+extension RuleSchedule: PostgresJsonable {}
 extension PlainTimeWindow: PostgresJsonable {}
 
 extension UserToken: Model {
@@ -693,6 +718,9 @@ extension UnidentifiedApp: Model {
     switch column {
     case .id: .id(self)
     case .bundleId: .string(self.bundleId)
+    case .bundleName: .string(self.bundleName)
+    case .localizedName: .string(self.localizedName)
+    case .launchable: .bool(self.launchable)
     case .count: .int(self.count)
     case .createdAt: .date(self.createdAt)
     }
@@ -702,6 +730,9 @@ extension UnidentifiedApp: Model {
     [
       .id: .id(self),
       .bundleId: .string(self.bundleId),
+      .bundleName: .string(self.bundleName),
+      .localizedName: .string(self.localizedName),
+      .launchable: .bool(self.launchable),
       .count: .int(self.count),
       .createdAt: .currentTimestamp,
     ]

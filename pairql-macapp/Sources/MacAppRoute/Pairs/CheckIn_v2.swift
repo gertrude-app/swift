@@ -13,6 +13,8 @@ public struct CheckIn_v2: Pair {
     public var osVersion: String?
     public var pendingFilterSuspension: UUID?
     public var pendingUnlockRequests: [UUID]?
+    /// added in v2.6.0
+    public var namedApps: [RunningApp]?
 
     public init(
       appVersion: String,
@@ -20,7 +22,8 @@ public struct CheckIn_v2: Pair {
       userIsAdmin: Bool? = nil,
       osVersion: String? = nil,
       pendingFilterSuspension: UUID? = nil,
-      pendingUnlockRequests: [UUID]? = nil
+      pendingUnlockRequests: [UUID]? = nil,
+      namedApps: [RunningApp]? = nil
     ) {
       self.appVersion = appVersion
       self.filterVersion = filterVersion
@@ -28,6 +31,7 @@ public struct CheckIn_v2: Pair {
       self.osVersion = osVersion
       self.pendingFilterSuspension = pendingFilterSuspension
       self.pendingUnlockRequests = pendingUnlockRequests
+      self.namedApps = namedApps
     }
   }
 

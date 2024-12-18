@@ -1,6 +1,6 @@
 import Foundation
 
-public struct KeychainSchedule {
+public struct RuleSchedule {
   public var mode: Mode
   public var days: Days
   public var window: PlainTimeWindow
@@ -12,7 +12,7 @@ public struct KeychainSchedule {
   }
 }
 
-public extension KeychainSchedule {
+public extension RuleSchedule {
   func active(at date: Date, in calendar: Calendar = .current) -> Bool {
     if self.days.contains(date, in: calendar) {
       return self.window.contains(date, in: calendar) ? self.mode.isActive : !self.mode.isActive
@@ -22,12 +22,14 @@ public extension KeychainSchedule {
   }
 }
 
-public extension KeychainSchedule {
+public extension RuleSchedule {
   enum Mode: String {
     case active
     case inactive
   }
+}
 
+public extension RuleSchedule {
   struct Days {
     public var sunday: Bool
     public var monday: Bool
@@ -57,8 +59,8 @@ public extension KeychainSchedule {
   }
 }
 
-public extension KeychainSchedule.Days {
-  static let all = KeychainSchedule.Days(
+public extension RuleSchedule.Days {
+  static let all = RuleSchedule.Days(
     sunday: true,
     monday: true,
     tuesday: true,
@@ -68,7 +70,7 @@ public extension KeychainSchedule.Days {
     saturday: true
   )
 
-  static let weekdays = KeychainSchedule.Days(
+  static let weekdays = RuleSchedule.Days(
     sunday: false,
     monday: true,
     tuesday: true,
@@ -81,19 +83,19 @@ public extension KeychainSchedule.Days {
   func contains(_ date: Date, in calendar: Calendar = .current) -> Bool {
     let day = calendar.component(.weekday, from: date)
     switch day {
-    case 1: return sunday
-    case 2: return monday
-    case 3: return tuesday
-    case 4: return wednesday
-    case 5: return thursday
-    case 6: return friday
-    case 7: return saturday
+    case 1: return self.sunday
+    case 2: return self.monday
+    case 3: return self.tuesday
+    case 4: return self.wednesday
+    case 5: return self.thursday
+    case 6: return self.friday
+    case 7: return self.saturday
     default: return false
     }
   }
 }
 
-extension KeychainSchedule.Mode {
+extension RuleSchedule.Mode {
   var isActive: Bool {
     self == .active
   }
@@ -101,9 +103,9 @@ extension KeychainSchedule.Mode {
 
 // conformances
 
-extension KeychainSchedule: Sendable, Equatable, Codable, Hashable {}
-extension KeychainSchedule.Mode: Sendable, Equatable, Codable, Hashable {}
-extension KeychainSchedule.Days: Sendable, Equatable, Codable, Hashable {}
+extension RuleSchedule: Sendable, Equatable, Codable, Hashable {}
+extension RuleSchedule.Mode: Sendable, Equatable, Codable, Hashable {}
+extension RuleSchedule.Days: Sendable, Equatable, Codable, Hashable {}
 
 // test/debug helpers
 
@@ -118,9 +120,9 @@ extension KeychainSchedule.Days: Sendable, Equatable, Codable, Hashable {}
     case saturday = 7
   }
 
-  public extension KeychainSchedule.Days {
-    static func only(_ days: Weekday...) -> KeychainSchedule.Days {
-      KeychainSchedule.Days(
+  public extension RuleSchedule.Days {
+    static func only(_ days: Weekday...) -> RuleSchedule.Days {
+      RuleSchedule.Days(
         sunday: days.contains(.sunday),
         monday: days.contains(.monday),
         tuesday: days.contains(.tuesday),

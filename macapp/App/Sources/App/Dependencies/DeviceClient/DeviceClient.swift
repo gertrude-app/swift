@@ -11,6 +11,7 @@ struct DeviceClient: Sendable {
   var currentUserHasScreen: @Sendable () -> Bool
   var fullUsername: @Sendable () -> String
   var listMacOSUsers: @Sendable () async throws -> [MacOSUser]
+  var listRunningApps: @Sendable () -> [RunningApp]
   var modelIdentifier: @Sendable () -> String?
   var notificationsSetting: @Sendable () async -> NotificationsSetting
   var numericUserId: @Sendable () -> uid_t
@@ -19,9 +20,12 @@ struct DeviceClient: Sendable {
   var osVersion: @Sendable () -> MacOSVersion
   var quitBrowsers: @Sendable ([BrowserMatch]) async -> Void
   var requestNotificationAuthorization: @Sendable () async -> Void
+  var runningAppFromPid: @Sendable (pid_t) -> RunningApp?
   var screensaverRunning: @Sendable () -> Bool
   var showNotification: @Sendable (String, String) async -> Void
   var serialNumber: @Sendable () -> String?
+  var terminateBlockedApps: @Sendable ([BlockedApp]) async -> Void
+  var terminateApp: @Sendable (RunningApp) async -> Void
   var username: @Sendable () -> String
   var boottime: @Sendable () -> Date?
 }
@@ -39,6 +43,7 @@ extension DeviceClient: DependencyKey {
     },
     fullUsername: { NSFullUserName() },
     listMacOSUsers: getAllMacOSUsers,
+    listRunningApps: { NSWorkspace.shared.runningApplications.compactMap(\.runningApp) },
     modelIdentifier: { platform("model", format: .data)?.filter { $0 != .init("\0") } },
     notificationsSetting: getNotificationsSetting,
     numericUserId: { getuid() },
@@ -47,12 +52,15 @@ extension DeviceClient: DependencyKey {
     osVersion: { macOSVersion() },
     quitBrowsers: quitAllBrowsers,
     requestNotificationAuthorization: requestNotificationAuth,
+    runningAppFromPid: { .init(pid: $0) },
     screensaverRunning: {
       let currentApp = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
       return currentApp == "com.apple.ScreenSaver.Engine" || currentApp == "com.apple.loginwindow"
     },
     showNotification: showNotification(title:body:),
     serialNumber: { platform(kIOPlatformSerialNumberKey, format: .string) },
+    terminateBlockedApps: terminateAllBlockedApps,
+    terminateApp: terminateRunningApp(_:),
     username: { NSUserName() },
     boottime: {
       // https://forums.developer.apple.com/forums/thread/101874?answerId=309633022#309633022
@@ -74,6 +82,7 @@ extension DeviceClient: TestDependencyKey {
     currentUserHasScreen: unimplemented("DeviceClient.currentUserHasScreen", placeholder: true),
     fullUsername: unimplemented("DeviceClient.fullUsername", placeholder: ""),
     listMacOSUsers: unimplemented("DeviceClient.listMacOSUsers"),
+    listRunningApps: unimplemented("DeviceClient.listRunningApps", placeholder: []),
     modelIdentifier: unimplemented("DeviceClient.modelIdentifier", placeholder: nil),
     notificationsSetting: unimplemented("DeviceClient.notificationsSetting", placeholder: .none),
     numericUserId: unimplemented("DeviceClient.numericUserId", placeholder: 502),
@@ -87,9 +96,12 @@ extension DeviceClient: TestDependencyKey {
     requestNotificationAuthorization: unimplemented(
       "DeviceClient.requestNotificationAuthorization"
     ),
+    runningAppFromPid: unimplemented("DeviceClient.runningAppFromPid", placeholder: nil),
     screensaverRunning: unimplemented("DeviceClient.screensaverRunning", placeholder: false),
     showNotification: unimplemented("DeviceClient.showNotification"),
     serialNumber: unimplemented("DeviceClient.serialNumber", placeholder: ""),
+    terminateBlockedApps: unimplemented("DeviceClient.terminateBlockedApps"),
+    terminateApp: unimplemented("DeviceClient.terminateApp"),
     username: unimplemented("DeviceClient.username", placeholder: ""),
     boottime: unimplemented("DeviceClient.boottime", placeholder: nil)
   )
@@ -103,6 +115,10 @@ extension DeviceClient: TestDependencyKey {
       .init(id: 501, name: "Dad", type: .admin),
       .init(id: 502, name: "liljimmy", type: .standard),
     ] },
+    listRunningApps: { [
+      .init(bundleId: "com.apple.Safari", bundleName: "Safari"),
+      .init(bundleId: "com.apple.Terminal", bundleName: "Terminal"),
+    ] },
     modelIdentifier: { "test-model-identifier" },
     notificationsSetting: { .alert },
     numericUserId: { 502 },
@@ -111,9 +127,12 @@ extension DeviceClient: TestDependencyKey {
     osVersion: { .init(major: 14, minor: 0, patch: 0) },
     quitBrowsers: { _ in },
     requestNotificationAuthorization: {},
+    runningAppFromPid: { _ in nil },
     screensaverRunning: { false },
     showNotification: { _, _ in },
     serialNumber: { "test-serial-number" },
+    terminateBlockedApps: { _ in },
+    terminateApp: { _ in },
     username: { "test-username" },
     boottime: { nil }
   )

@@ -141,7 +141,8 @@ extension CheckInFeature.RootReducer {
             try await api.appCheckIn(
               state.filter.version,
               pendingFilterSuspension: state.requestSuspension.pending?.id,
-              pendingUnlockRequests: state.blockedRequests.pendingUnlockRequests.map(\.id)
+              pendingUnlockRequests: state.blockedRequests.pendingUnlockRequests.map(\.id),
+              sendNamedApps: reason == .heartbeat
             )
           },
           reason: reason

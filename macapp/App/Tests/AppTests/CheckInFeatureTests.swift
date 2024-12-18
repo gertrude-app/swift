@@ -293,4 +293,23 @@ final class CheckInFeatureTests: XCTestCase {
 
     await expect(notification.calls.count).toEqual(2) // one for each unlock request
   }
+
+  @MainActor
+  func testSendsNamedAppsInHeartbeat() async throws {
+    let (store, _) = AppReducer.testStore()
+    let listRunningApps = mockSync(returning: [[
+      RunningApp(bundleId: "com.unnamed"), // <-- unnamed, won't be sent
+      RunningApp(bundleId: "com.foo", bundleName: "Foo widget"),
+    ]])
+    store.deps.userDefaults = .mock
+    store.deps.device.listRunningApps = listRunningApps.fn
+    let checkIn = spy(on: CheckIn_v2.Input.self, returning: CheckIn_v2.Output.mock)
+    store.deps.api.checkIn = checkIn.fn
+
+    await store.send(.heartbeat(.everyTwentyMinutes))
+    expect(listRunningApps.called).toEqual(true)
+    await expect(checkIn.calls.count).toEqual(1)
+    await expect(checkIn.calls[0].namedApps)
+      .toEqual([.init(bundleId: "com.foo", bundleName: "Foo widget")])
+  }
 }
