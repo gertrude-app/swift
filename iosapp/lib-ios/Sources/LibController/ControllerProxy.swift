@@ -12,8 +12,18 @@ public class ControllerProxy {
 
   public func startFilter() {
     self.heartbeatTask = Task { [weak self] in
+      // make sure we've fetched when the controller first starts
+      await self?.receiveHeartbeat()
+      try? await self?.clock.sleep(for: .minutes(1))
+      await self?.receiveHeartbeat()
+
+      // then check every hour
       while true {
-        try? await self?.clock.sleep(for: .minutes(60))
+        #if DEBUG
+          try? await self?.clock.sleep(for: .minutes(5))
+        #else
+          try? await self?.clock.sleep(for: .minutes(60))
+        #endif
         await self?.receiveHeartbeat()
       }
     }

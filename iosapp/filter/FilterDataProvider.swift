@@ -26,9 +26,13 @@ class FilterDataProvider: NEFilterDataProvider {
     self.proxy.startFilter()
     self.heartbeatTask = Task { [weak self] in
       while true {
-        try? await Task.sleep(for: .seconds(60 * 5))
-        self?.proxy.receiveHeartbeat()
+        #if DEBUG
+          try? await Task.sleep(for: .seconds(60 * 1))
+        #else
+          try? await Task.sleep(for: .seconds(60 * 5))
+        #endif
         os_log("[G•] send heartbeat")
+        self?.proxy.receiveHeartbeat()
       }
     }
     completionHandler(nil)
