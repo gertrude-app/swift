@@ -86,7 +86,7 @@ struct Column {
   var defaultValue: Default?
 
   var sql: String {
-    var sql = "\(name) \(type.sql)"
+    var sql = "\"\(name)\" \(type.sql)"
     // all columns are NOT NULL by default, unless explicitly set to nullable
     if !self.constraints.contains(.nullable) {
       sql += " NOT NULL"

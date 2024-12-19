@@ -21,7 +21,7 @@ extension ApiClient: DependencyKey {
     ApiClient(
       fetchBlockRules: {
         @Dependency(\.device) var device
-        let payload = BlockRules.Input(vendorId: device.vendorId)
+        let payload = BlockRules.Input(vendorId: device.vendorId, version: "1.2.0")
         let (data, _) = try await request(route: .blockRules(payload))
         return try JSONDecoder().decode([BlockRule].self, from: data)
       },

@@ -1,8 +1,12 @@
 public enum BlockRule {
-  case targetContains(String)
   case bundleIdContains(String)
   case urlContains(String)
+  case hostnameContains(String)
+  case hostnameEquals(String)
+  case hostnameEndsWith(String)
+  case targetContains(String) // "target" = url ?? hostname
   indirect case both(BlockRule, BlockRule)
+  indirect case unless(rule: BlockRule, negatedBy: [BlockRule])
 }
 
 public extension BlockRule {

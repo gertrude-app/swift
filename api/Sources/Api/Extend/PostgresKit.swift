@@ -16,11 +16,15 @@ public extension SQLQueryString {
   }
 
   mutating func appendInterpolation(col: String) {
+    self.appendInterpolation(unsafeRaw: "\"")
     self.appendInterpolation(unsafeRaw: col)
+    self.appendInterpolation(unsafeRaw: "\"")
   }
 
   mutating func appendInterpolation(col: FieldKey) {
+    self.appendInterpolation(unsafeRaw: "\"")
     self.appendInterpolation(unsafeRaw: col.description)
+    self.appendInterpolation(unsafeRaw: "\"")
   }
 
   mutating func appendInterpolation(timestamp date: Date) {

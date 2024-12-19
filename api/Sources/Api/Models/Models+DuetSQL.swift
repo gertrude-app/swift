@@ -1,5 +1,37 @@
 import DuetSQL
 import Gertie
+import GertieIOS
+
+extension IOSBlockRule: Model {
+  public static let tableName = M31.tableName
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .vendorId: .uuid(self.vendorId)
+    case .rule: .json(self.rule.toPostgresJson)
+    case .group: .string(self.group)
+    case .comment: .string(self.comment)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .vendorId: .uuid(self.vendorId),
+      .rule: .json(self.rule.toPostgresJson),
+      .group: .string(self.group),
+      .comment: .string(self.comment),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension BlockRule: PostgresJsonable {}
 
 extension Admin: Model {
   public typealias ColumnName = CodingKeys
