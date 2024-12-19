@@ -1,7 +1,8 @@
 import GertieIOS
 
-extension BlockRule {
-  func blocksFlow(target: String?, url: String?, bundleId: String?) -> Bool {
+public extension BlockRule {
+  func blocksFlow(hostname: String?, url: String?, bundleId: String?) -> Bool {
+    let target = url ?? hostname
     switch self {
     case .bundleIdContains(let fragment):
       return bundleId?.contains(fragment) == true
@@ -9,18 +10,29 @@ extension BlockRule {
       return target?.contains(fragment) == true
     case .urlContains(let fragment):
       return url?.contains(fragment) == true
+    case .hostnameContains(let fragment):
+      return hostname?.contains(fragment) == true
+    case .hostnameEquals(let fragment):
+      return hostname == fragment
+    case .hostnameEndsWith(let fragment):
+      return hostname?.hasSuffix(fragment) == true
     case .both(let a, let b):
-      return a.blocksFlow(target: target, url: url, bundleId: bundleId)
-        && b.blocksFlow(target: target, url: url, bundleId: bundleId)
+      return a.blocksFlow(hostname: hostname, url: url, bundleId: bundleId)
+        && b.blocksFlow(hostname: hostname, url: url, bundleId: bundleId)
+    case .unless(let rule, let negatedBy):
+      if rule.blocksFlow(hostname: hostname, url: url, bundleId: bundleId) {
+        return !negatedBy.blocksFlow(hostname: hostname, url: url, bundleId: bundleId)
+      } else {
+        return false
+      }
     }
   }
 }
 
 public extension Array where Element == BlockRule {
   func blocksFlow(hostname: String?, url: String?, bundleId: String?) -> Bool {
-    let target = url ?? hostname
-    return self.contains { rule in
-      rule.blocksFlow(target: target, url: url, bundleId: bundleId)
+    self.contains { rule in
+      rule.blocksFlow(hostname: hostname, url: url, bundleId: bundleId)
     }
   }
 }
