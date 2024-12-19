@@ -20,6 +20,20 @@ final class FilterTests: XCTestCase {
       (.hostnameEndsWith("a.com"), .init(host: "bla.com", block: true)),
       (.hostnameEndsWith("a.com"), .init(host: "www.a.com", block: true)),
       (.hostnameEndsWith("a.com"), .init(host: "bla.com.uk", block: false)),
+      // safely deriving hostname from url only
+      (.hostnameEndsWith("a.com"), .init(host: nil, url: "https://bla.com/", block: true)),
+      (.hostnameEndsWith("a.com"), .init(host: nil, url: "https://bla.com", block: true)),
+      (.hostnameEndsWith("a.com"), .init(host: nil, url: "http://bla.com", block: true)),
+      (.hostnameEndsWith("a.com"), .init(host: nil, url: "ftp://bla.com", block: false)),
+      (.hostnameEndsWith("a.com"), .init(host: nil, url: "bla.com", block: false)),
+      (
+        .hostnameEquals("www.safe.com"),
+        .init(host: nil, url: "https://www.safe.com/foo/bar", block: true)
+      ),
+      (
+        .hostnameEndsWith("safe.com"),
+        .init(host: nil, url: "https://foo.bar-sobaz.qux.safe.com/foo/bar", block: true)
+      ),
       // unless(rule:negatedBy)
       (
         .unless(

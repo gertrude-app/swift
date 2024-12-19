@@ -7,9 +7,11 @@ public struct BlockRules: Pair {
 
   public struct Input: PairInput {
     public var vendorId: UUID?
+    public var version: String?
 
-    public init(vendorId: UUID?) {
+    public init(vendorId: UUID? = nil, version: String? = nil) {
       self.vendorId = vendorId
+      self.version = version
     }
   }
 

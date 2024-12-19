@@ -87,9 +87,9 @@ struct DeviceRefactor: GertieMigration {
       try await sql.execute(
         """
         UPDATE \(table: UserDevice.M11.self) SET
-        "\(col: UserDevice.M11.deviceId)" = '\(id: device.id)',
-        "\(col: .createdAt)" = '\(timestamp: record.createdAt)',
-        "\(col: .updatedAt)" = '\(timestamp: record.updatedAt)'
+        \(col: UserDevice.M11.deviceId) = '\(id: device.id)',
+        \(col: .createdAt) = '\(timestamp: record.createdAt)',
+        \(col: .updatedAt) = '\(timestamp: record.updatedAt)'
         WHERE "\(col: .id)" = '\(uuid: record.id)';
         """
       )
@@ -98,14 +98,14 @@ struct DeviceRefactor: GertieMigration {
       try await sql.execute(
         """
         INSERT INTO \(table: Device.M3.self) (
-          "\(col: .id)",
-          "\(col: Device.M11.adminId)",
-          "\(col: Device.M11.customName)",
-          "\(col: Device.M11.modelIdentifier)",
-          "\(col: Device.M11.serialNumber)",
-          "\(col: Device.M11.appReleaseChannel)",
-          "\(col: .createdAt)",
-          "\(col: .updatedAt)"
+          \(col: .id),
+          \(col: Device.M11.adminId),
+          \(col: Device.M11.customName),
+          \(col: Device.M11.modelIdentifier),
+          \(col: Device.M11.serialNumber),
+          \(col: Device.M11.appReleaseChannel),
+          \(col: .createdAt),
+          \(col: .updatedAt)
         ) VALUES (
           '\(id: device.id)',
           '\(id: device.adminId)',
@@ -130,17 +130,17 @@ struct DeviceRefactor: GertieMigration {
       try await sql.execute(
         """
         INSERT INTO \(table: Device.M3.self) (
-          "\(col: .id)",
-          "\(col: Device.M3.userId)",
-          "\(col: Device.M3.appVersion)",
-          "\(col: Device.M3.customName)",
-          "\(col: Device.M3.modelIdentifier)",
-          "\(col: Device.M3.username)",
-          "\(col: Device.M3.fullUsername)",
-          "\(col: Device.M3.numericId)",
-          "\(col: Device.M3.serialNumber)",
-          "\(col: .createdAt)",
-          "\(col: .updatedAt)"
+          \(col: .id),
+          \(col: Device.M3.userId),
+          \(col: Device.M3.appVersion),
+          \(col: Device.M3.customName),
+          \(col: Device.M3.modelIdentifier),
+          \(col: Device.M3.username),
+          \(col: Device.M3.fullUsername),
+          \(col: Device.M3.numericId),
+          \(col: Device.M3.serialNumber),
+          \(col: .createdAt),
+          \(col: .updatedAt)
         ) VALUES (
           '\(uuid: record.id)',
           '\(uuid: record.userId)',

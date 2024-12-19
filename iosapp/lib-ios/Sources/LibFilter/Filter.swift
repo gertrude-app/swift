@@ -1,7 +1,12 @@
+import Foundation
 import GertieIOS
 
 public extension BlockRule {
-  func blocksFlow(hostname: String?, url: String?, bundleId: String?) -> Bool {
+  func blocksFlow(hostname rawHostname: String?, url: String?, bundleId: String?) -> Bool {
+    let hostname = rawHostname ?? url.flatMap {
+      guard $0.hasPrefix("http://") || $0.hasPrefix("https://") else { return nil }
+      return URL(string: $0)?.host
+    }
     let target = url ?? hostname
     switch self {
     case .bundleIdContains(let fragment):

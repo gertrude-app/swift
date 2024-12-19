@@ -35,5 +35,6 @@ extension Configure {
     app.migrations.add(UnidentifiedApps())
     app.migrations.add(ScheduleFeatures())
     app.migrations.add(AppBlockingFeature())
+    app.migrations.add(IOSBlockRules())
   }
 }

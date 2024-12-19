@@ -78,6 +78,24 @@ extension SQLDatabase {
     try await self.execute(constraint.addSql)
   }
 
+  func createIndex(on Migration: TableNamingMigration.Type, _ columns: FieldKey...) async throws {
+    let colList = columns.map(\.description).joined(separator: ", ")
+    try await self.execute("""
+      CREATE INDEX \(unsafeRaw: self.idx(Migration, columns))
+      ON \(table: Migration.self) (\(unsafeRaw: colList))
+    """)
+  }
+
+  func dropIndex(on Migration: TableNamingMigration.Type, _ columns: FieldKey...) async throws {
+    try await self.execute("""
+      DROP INDEX IF EXISTS \(unsafeRaw: self.idx(Migration, columns))
+    """)
+  }
+
+  private func idx(_ Migration: TableNamingMigration.Type, _ columns: [FieldKey]) -> String {
+    "idx_\(Migration.tableName)_\(columns.map(\.description).joined(separator: "_"))"
+  }
+
   func drop(constraint: Constraint) async throws {
     try await self.execute(constraint.dropSql)
   }

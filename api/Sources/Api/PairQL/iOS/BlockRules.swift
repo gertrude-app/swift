@@ -1,8 +1,16 @@
+import DuetSQL
 import GertieIOS
 import IOSRoute
 
 extension BlockRules: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
+    if input.version == "1.2.0" {
+      return try await IOSBlockRule.query()
+        .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
+        .all(in: context.db)
+        .map(\.rule)
+    }
+
     var rules = BlockRule.defaults
     switch input.vendorId?.lowercased {
     case "2cada392-9d09-4425-bec2-b0c4e3aeafec", // harriet
