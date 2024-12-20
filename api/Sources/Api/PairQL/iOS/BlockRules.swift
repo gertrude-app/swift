@@ -4,7 +4,11 @@ import IOSRoute
 
 extension BlockRules: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
+    if let vendorId = input.vendorId {
+      with(dependency: \.logger).info("Vendor ID: \(vendorId)")
+    }
     if input.version == "1.2.0" {
+      with(dependency: \.logger).info("1.2.0 app")
       return try await IOSBlockRule.query()
         .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
         .all(in: context.db)
