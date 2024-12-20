@@ -10,14 +10,18 @@ public struct FilterStore: NetworkFilter {
 
   public var state: Filter.State { self.viewStore.state }
 
+  #if DEBUG
+    public var __TEST_MOCK_EARLY_DECISION: FilterDecision.FromUserId?
+    public var __TEST_MOCK_FLOW_DECISION: FilterDecision.FromFlow??
+  #endif
+
   @Dependency(\.security) public var security
   @Dependency(\.date.now) public var now
   @Dependency(\.calendar) public var calendar
 
-  public init() {
-    self.store = Store(initialState: Filter.State(), reducer: { Filter() })
+  public init(initialState: Filter.State = .init()) {
+    self.store = Store(initialState: initialState, reducer: { Filter() })
     self.viewStore = ViewStore(self.store, observe: { $0 })
-    self.viewStore.send(.extensionStarted)
   }
 
   public func sendBlocked(_ flow: FilterFlow, auditToken: Data?) {
@@ -45,6 +49,10 @@ public struct FilterStore: NetworkFilter {
 
   public func log(event: FilterLogs.Event) {
     self.viewStore.send(.logEvent(event))
+  }
+
+  public func sendExtensionStarted() {
+    self.viewStore.send(.extensionStarted)
   }
 
   public func sendExtensionStopping() {

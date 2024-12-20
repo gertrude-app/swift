@@ -4,6 +4,10 @@ import os.log
 
 public extension NetworkFilter {
   func earlyUserDecision(auditToken: Data?) -> FilterDecision.FromUserId {
+    #if DEBUG
+      if let mock = self.__TEST_MOCK_EARLY_DECISION { return mock }
+    #endif
+
     guard let userId = self.security.userIdFromAuditToken(auditToken) else {
       return self.logDecision(.block(.missingUserId))
     }

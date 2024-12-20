@@ -8,7 +8,10 @@ public extension NetworkFilter {
     _ flow: FilterFlow,
     auditToken: Data? = nil
   ) -> FilterDecision.FromFlow? {
-    self.flowDecision(flow, auditToken: auditToken, canDefer: true)
+    #if DEBUG
+      if let mock = self.__TEST_MOCK_FLOW_DECISION { return mock }
+    #endif
+    return self.flowDecision(flow, auditToken: auditToken, canDefer: true)
   }
 
   func completedFlowDecision(
@@ -16,6 +19,9 @@ public extension NetworkFilter {
     readBytes: Data,
     auditToken: Data? = nil
   ) -> FilterDecision.FromFlow {
+    #if DEBUG
+      if case .some(.some(let mock)) = self.__TEST_MOCK_FLOW_DECISION { return mock }
+    #endif
     if flow.url == nil {
       flow.parseOutboundData(byteString: bytesToAscii(readBytes))
     }

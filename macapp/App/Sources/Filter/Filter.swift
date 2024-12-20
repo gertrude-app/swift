@@ -14,6 +14,8 @@ public struct Filter: Reducer, Sendable {
     public var appCache: [String: AppDescriptor] = [:]
     public var blockListeners: [uid_t: Date] = [:]
     public var logs: FilterLogs = .init(bundleIds: [:], events: [:])
+
+    public init() {}
   }
 
   public enum Action: Equatable, Sendable {
