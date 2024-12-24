@@ -12,15 +12,17 @@ final class FilterProxyTests: XCTestCase {
       return [.urlContains("lol")]
     }
 
-    expect(manager.rules).toEqual([])
-    XCTAssertEqual(invocations.value, 0)
-    manager.receiveHeartbeat()
+    // loadRules is called in the init
     expect(invocations.value).toEqual(1)
+    expect(manager.rules).toEqual([.urlContains("lol")])
+
+    manager.receiveHeartbeat()
+    expect(invocations.value).toEqual(2)
     expect(manager.rules).toEqual([.urlContains("lol")])
     manager.receiveHeartbeat()
     manager.receiveHeartbeat()
     manager.receiveHeartbeat()
-    expect(invocations.value).toEqual(4)
+    expect(invocations.value).toEqual(5)
   }
 
   func testReadsRulesOnStart() {
@@ -30,12 +32,13 @@ final class FilterProxyTests: XCTestCase {
       return [.urlContains("lol")]
     }
 
-    expect(loadRulesCalled.value).toEqual(0)
-    expect(manager.rules).toEqual([])
+    // loadRules is called in the init
+    expect(loadRulesCalled.value).toEqual(1)
+    expect(manager.rules).toEqual([.urlContains("lol")])
 
     manager.startFilter()
 
-    expect(loadRulesCalled.value).toEqual(1)
+    expect(loadRulesCalled.value).toEqual(2)
     expect(manager.rules).toEqual([.urlContains("lol")])
   }
 
@@ -46,11 +49,11 @@ final class FilterProxyTests: XCTestCase {
       return [.urlContains("lol")]
     }
 
-    expect(loadRulesCalled.value).toEqual(0)
-    expect(manager.rules).toEqual([])
+    expect(loadRulesCalled.value).toEqual(1)
+    expect(manager.rules).toEqual([.urlContains("lol")])
 
     manager.handleRulesChanged()
-    expect(loadRulesCalled.value).toEqual(1)
+    expect(loadRulesCalled.value).toEqual(2)
     expect(manager.rules).toEqual([.urlContains("lol")])
   }
 

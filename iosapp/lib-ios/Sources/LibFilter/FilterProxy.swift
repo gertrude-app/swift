@@ -16,6 +16,7 @@ public class FilterProxy {
   ) {
     self.rules = rules
     self.loadRules = loadRules
+    self.readRules()
   }
 
   public func decideFlow(
