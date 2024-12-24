@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Gertie
 import GertieIOS
@@ -5,15 +6,23 @@ import IOSRoute
 
 extension BlockRules: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
+    @Dependency(\.logger) var logger
+
     if let vendorId = input.vendorId {
-      with(dependency: \.logger).info("Vendor ID: \(vendorId)")
+      logger.info("Vendor ID: \(vendorId)")
     }
 
     if let version = input.version.flatMap({ Semver($0) }),
        version >= Semver(major: 1, minor: 2, patch: 0) {
-      with(dependency: \.logger).info("1.2.x app")
+      logger.info("1.2.x app")
+      await with(dependency: \.slack)
+        .sysLog("1.2.x app, vendorId: \(input.vendorId?.lowercased ?? "(nil)")")
       return try await IOSBlockRule.query()
-        .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
+        // .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
+        .where(
+          .isNull(.vendorId) .|| .vendorId ==
+            .uuid(UUID(uuidString: "d85bc297-2db6-4859-a073-00b5eddda8e1")!)
+        )
         .all(in: context.db)
         .map(\.rule)
     }
