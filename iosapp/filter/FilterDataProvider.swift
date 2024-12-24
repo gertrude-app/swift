@@ -51,7 +51,7 @@ class FilterDataProvider: NEFilterDataProvider {
     var hostname: String?
     var url: String?
     let bundleId: String? = flow.sourceAppIdentifier
-    let flowType: FilterProxy.FlowType?
+    let flowType: FlowType?
 
     if let browserFlow = flow as? NEFilterBrowserFlow {
       flowType = .browser

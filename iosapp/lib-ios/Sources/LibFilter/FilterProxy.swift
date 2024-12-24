@@ -28,7 +28,12 @@ public class FilterProxy {
     if hostname == "read-rules.gertrude.app" {
       self.readRules()
       return .drop
-    } else if self.rules.blocksFlow(hostname: hostname, url: url, bundleId: bundleId) {
+    } else if self.rules.blocksFlow(
+      hostname: hostname,
+      url: url,
+      bundleId: bundleId,
+      flowType: flowType
+    ) {
       return .drop
     } else {
       return .allow
@@ -68,11 +73,6 @@ public extension FilterProxy {
       }
     }
   }
-
-  enum FlowType {
-    case browser
-    case socket
-  }
 }
 
 // helpers
@@ -85,8 +85,8 @@ public extension String {
 // conformances
 
 extension FilterProxy.FlowVerdict: Equatable, Sendable {}
-extension FilterProxy.FlowType: Equatable, Sendable {}
 
 // "exports" for filter
 
 public typealias BlockRule = GertieIOS.BlockRule
+public typealias FlowType = GertieIOS.FlowType

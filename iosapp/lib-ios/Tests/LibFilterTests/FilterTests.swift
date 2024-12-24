@@ -56,11 +56,23 @@ final class FilterTests: XCTestCase {
         ),
         .init(host: "bad.com", src: "com.other.app", block: false)
       ),
+      // flowTypeIs()
+      (.flowTypeIs(.browser), .init(flowType: .browser, block: true)),
+      (.flowTypeIs(.browser), .init(flowType: .socket, block: false)),
+      (.flowTypeIs(.browser), .init(flowType: nil, block: false)),
+      (.flowTypeIs(.socket), .init(flowType: .browser, block: false)),
+      (.flowTypeIs(.socket), .init(flowType: .socket, block: true)),
+      (.flowTypeIs(.socket), .init(flowType: nil, block: false)),
     ]
 
     for (rule, t) in cases {
       XCTAssertEqual(
-        rule.blocksFlow(hostname: t.host, url: t.url, bundleId: t.src),
+        rule.blocksFlow(
+          hostname: t.host,
+          url: t.url,
+          bundleId: t.src,
+          flowType: t.flowType
+        ),
         t.block
       )
     }
@@ -84,7 +96,12 @@ final class FilterTests: XCTestCase {
 
     for t in cases {
       XCTAssertEqual(
-        BlockRule.defaults.blocksFlow(hostname: t.host, url: t.url, bundleId: t.src),
+        BlockRule.defaults.blocksFlow(
+          hostname: t.host,
+          url: t.url,
+          bundleId: t.src,
+          flowType: nil
+        ),
         t.block
       )
     }
@@ -95,12 +112,20 @@ private struct Test {
   let host: String?
   let url: String?
   let src: String
+  let flowType: FlowType?
   let block: Bool
 
-  init(host: String? = nil, url: String? = nil, src: String = "com.acme.app", block: Bool) {
+  init(
+    host: String? = nil,
+    url: String? = nil,
+    src: String = "com.acme.app",
+    flowType: FlowType? = nil,
+    block: Bool
+  ) {
     self.host = host
     self.url = url
     self.src = src
+    self.flowType = flowType
     self.block = block
   }
 }

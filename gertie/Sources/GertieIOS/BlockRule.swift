@@ -5,6 +5,7 @@ public enum BlockRule {
   case hostnameEquals(String)
   case hostnameEndsWith(String)
   case targetContains(String) // "target" = url ?? hostname
+  case flowTypeIs(FlowType)
   indirect case both(BlockRule, BlockRule)
   indirect case unless(rule: BlockRule, negatedBy: [BlockRule])
 }
