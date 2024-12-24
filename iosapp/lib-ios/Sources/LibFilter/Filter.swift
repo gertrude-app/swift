@@ -2,7 +2,12 @@ import Foundation
 import GertieIOS
 
 public extension BlockRule {
-  func blocksFlow(hostname rawHostname: String?, url: String?, bundleId: String?) -> Bool {
+  func blocksFlow(
+    hostname rawHostname: String?,
+    url: String?,
+    bundleId: String?,
+    flowType: FlowType?
+  ) -> Bool {
     let hostname = rawHostname ?? url.flatMap {
       guard $0.hasPrefix("http://") || $0.hasPrefix("https://") else { return nil }
       return URL(string: $0)?.host
@@ -21,12 +26,19 @@ public extension BlockRule {
       return hostname == fragment
     case .hostnameEndsWith(let fragment):
       return hostname?.hasSuffix(fragment) == true
+    case .flowTypeIs(let type):
+      return flowType == type
     case .both(let a, let b):
-      return a.blocksFlow(hostname: hostname, url: url, bundleId: bundleId)
-        && b.blocksFlow(hostname: hostname, url: url, bundleId: bundleId)
+      return a.blocksFlow(hostname: hostname, url: url, bundleId: bundleId, flowType: flowType)
+        && b.blocksFlow(hostname: hostname, url: url, bundleId: bundleId, flowType: flowType)
     case .unless(let rule, let negatedBy):
-      if rule.blocksFlow(hostname: hostname, url: url, bundleId: bundleId) {
-        return !negatedBy.blocksFlow(hostname: hostname, url: url, bundleId: bundleId)
+      if rule.blocksFlow(hostname: hostname, url: url, bundleId: bundleId, flowType: flowType) {
+        return !negatedBy.blocksFlow(
+          hostname: hostname,
+          url: url,
+          bundleId: bundleId,
+          flowType: flowType
+        )
       } else {
         return false
       }
@@ -35,9 +47,14 @@ public extension BlockRule {
 }
 
 public extension Array where Element == BlockRule {
-  func blocksFlow(hostname: String?, url: String?, bundleId: String?) -> Bool {
+  func blocksFlow(
+    hostname: String?,
+    url: String?,
+    bundleId: String?,
+    flowType: FlowType?
+  ) -> Bool {
     self.contains { rule in
-      rule.blocksFlow(hostname: hostname, url: url, bundleId: bundleId)
+      rule.blocksFlow(hostname: hostname, url: url, bundleId: bundleId, flowType: flowType)
     }
   }
 }

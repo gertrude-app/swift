@@ -1,4 +1,5 @@
 import DuetSQL
+import Gertie
 import GertieIOS
 import IOSRoute
 
@@ -7,8 +8,10 @@ extension BlockRules: Resolver {
     if let vendorId = input.vendorId {
       with(dependency: \.logger).info("Vendor ID: \(vendorId)")
     }
-    if input.version == "1.2.0" {
-      with(dependency: \.logger).info("1.2.0 app")
+
+    if let version = input.version.flatMap({ Semver($0) }),
+       version >= Semver(major: 1, minor: 2, patch: 0) {
+      with(dependency: \.logger).info("1.2.x app")
       return try await IOSBlockRule.query()
         .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
         .all(in: context.db)
