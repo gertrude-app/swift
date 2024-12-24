@@ -15,8 +15,8 @@ extension BlockRules: Resolver {
     if let version = input.version.flatMap({ Semver($0) }),
        version >= Semver(major: 1, minor: 2, patch: 0) {
       logger.info("1.2.x app")
-      await with(dependency: \.slack)
-        .sysLog("1.2.x app, vendorId: \(input.vendorId?.lowercased ?? "(nil)")")
+      // await with(dependency: \.slack)
+      //   .sysLog("1.2.x app, vendorId: \(input.vendorId?.lowercased ?? "(nil)")")
       return try await IOSBlockRule.query()
         // .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
         .where(
