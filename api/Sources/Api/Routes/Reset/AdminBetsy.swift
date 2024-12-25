@@ -82,6 +82,7 @@ enum AdminBetsy {
     let macAir = try await db.create(Device(
       adminId: betsy.id,
       customName: nil,
+      filterVersion: "2.6.0",
       modelIdentifier: "Mac14,2",
       serialNumber: "JIMMY-AIR-123456"
     ))
@@ -90,7 +91,7 @@ enum AdminBetsy {
       userId: jimmy.id,
       deviceId: macAir.id,
       isAdmin: false,
-      appVersion: "2.1.0",
+      appVersion: "2.6.0",
       username: "jimmy",
       fullUsername: "Jimmy McStandard",
       numericId: 502
@@ -101,6 +102,7 @@ enum AdminBetsy {
     let imac = try await db.create(Device(
       adminId: betsy.id,
       customName: nil,
+      filterVersion: "2.6.0",
       modelIdentifier: "iMac19,2",
       serialNumber: "JIMMY-IMAC-123456"
     ))
@@ -110,7 +112,7 @@ enum AdminBetsy {
       userId: jimmy.id,
       deviceId: imac.id,
       isAdmin: false,
-      appVersion: "2.1.0",
+      appVersion: "2.6.0",
       username: "jimmy",
       fullUsername: "Jimmy McStandard",
       numericId: 504
@@ -126,6 +128,7 @@ enum AdminBetsy {
     let macbookPro = try await db.create(Device(
       adminId: betsy.id,
       customName: "dads mbp",
+      filterVersion: "2.6.0",
       modelIdentifier: "MacBookPro18,1",
       serialNumber: "SALLY-MBP-123456"
     ))
@@ -135,7 +138,7 @@ enum AdminBetsy {
       userId: sally.id,
       deviceId: macbookPro.id,
       isAdmin: false,
-      appVersion: "2.1.0",
+      appVersion: "2.6.0",
       username: "sally",
       fullUsername: "Sally McStandard",
       numericId: 503
