@@ -8,7 +8,7 @@ on:
 
 jobs:
   linux-build-libs-1:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-default
     container: swift:5.10-focal
     steps:
       - name: checkout
@@ -21,7 +21,7 @@ jobs:
         run: cd pairql-macapp && swift build
 
   linux-build-libs-2:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-default
     container: swift:5.10-focal
     steps:
       - name: checkout
@@ -46,7 +46,7 @@ jobs:
         run: cd x-stripe && swift build
 
   linux-lib-test-libs-1:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-default
     container: swift:5.10-focal
     steps:
       - name: checkout
@@ -57,7 +57,7 @@ jobs:
         run: cd pairql && swift test
 
   linux-lib-test-libs-2:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-default
     container: swift:5.10-focal
     steps:
       - name: checkout
@@ -76,7 +76,7 @@ jobs:
         run: cd x-slack && swift test
 
   linux-api-build:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-default
     container: swift:5.10-focal
     steps:
       - name: checkout
@@ -134,7 +134,7 @@ jobs:
             pm2 restart staging > /dev/null
 
   linux-api-test:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-default
     container: swift:5.10-focal
     env:
       DATABASE_HOST: postgres
@@ -160,7 +160,7 @@ jobs:
         run: cd api && swift test
 
   files-changed:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-default
     outputs:
       macapplib: ${{ steps.changes.outputs.macapplib }}
     steps:
