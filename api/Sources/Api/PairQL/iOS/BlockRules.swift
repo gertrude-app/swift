@@ -15,20 +15,19 @@ extension BlockRules: Resolver {
     if let version = input.version.flatMap({ Semver($0) }),
        version >= Semver(major: 1, minor: 2, patch: 0) {
       logger.info("1.2.x app")
-      // await with(dependency: \.slack)
-      //   .sysLog("1.2.x app, vendorId: \(input.vendorId?.lowercased ?? "(nil)")")
       return try await IOSBlockRule.query()
-        // .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
-        .where(
-          .isNull(.vendorId) .|| .vendorId ==
-            .uuid(UUID(uuidString: "d85bc297-2db6-4859-a073-00b5eddda8e1")!)
-        )
+        .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
         .all(in: context.db)
         .map(\.rule)
     }
 
     var rules = BlockRule.defaults
     switch input.vendorId?.lowercased {
+    case "4412c950-03e3-4c54-8dc4-13ffe2b425e7": // Alia
+      rules.append(.both(
+        .bundleIdContains("notion.id"),
+        .targetContains("img.notionusercontent.com") // gifs in notion docs
+      ))
     case "2cada392-9d09-4425-bec2-b0c4e3aeafec", // harriet
          "164e41e3-3fe8-455f-9f8c-ab674e19dd93": // charlie
       // totally kill app store from Messages
