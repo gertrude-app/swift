@@ -43,9 +43,9 @@ final class SubscriptionManagerTests: ApiTestCase {
     expect(retrievedDeleted.count).toEqual(1)
     XCTAssert(retrievedDeleted[0].data.contains(shouldDelete.id.lowercased))
 
-    expect(sent.postmarkEmails.count).toEqual(1)
-    expect(sent.postmarkEmails[0].to).toEqual(trialEndingSoon.email.rawValue)
-    XCTAssert(sent.postmarkEmails[0].subject.contains("trial ending soon"))
+    expect(sent.emails.count).toEqual(1)
+    expect(sent.emails[0].to).toEqual(trialEndingSoon.email.rawValue)
+    XCTAssert(sent.emails[0].subject.contains("trial ending soon"))
   }
 
   func testNonExpiredStateDoesNotUpdate() async throws {

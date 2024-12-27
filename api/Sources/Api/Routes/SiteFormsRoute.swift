@@ -28,21 +28,19 @@ enum SiteFormsRoute {
 
     Task {
       await with(dependency: \.slack).sysLog(data.slackText)
-      try await with(dependency: \.sendgrid).send(.init(
-        to: .init(email: req.env.primarySupportEmail),
-        from: "Gertrude App <noreply@gertrude.app>",
-        replyTo: .init(email: data.email),
-        subject: data.form.name + " Submission".withEmailSubjectDisambiguator,
-        text: data.emailBody
-      ))
+      try await with(dependency: \.postmark).send(
+        to: req.env.primarySupportEmail,
+        replyTo: data.email,
+        subject: data.form.name + " Submission",
+        html: data.emailBody
+      )
       if let backupEmail = req.env.get("BACKUP_SUPPORT_EMAIL") {
-        try await with(dependency: \.sendgrid).send(.init(
-          to: .init(email: backupEmail),
-          from: "Gertrude App <noreply@gertrude.app>",
-          replyTo: .init(email: data.email),
-          subject: data.form.name + " Submission".withEmailSubjectDisambiguator,
-          text: data.emailBody
-        ))
+        try await with(dependency: \.postmark).send(
+          to: backupEmail,
+          replyTo: data.email,
+          subject: data.form.name + " Submission",
+          html: data.emailBody
+        )
       }
     }
 
@@ -106,9 +104,9 @@ extension FormData {
   var emailBody: String {
     """
     From: \(self.name), \(self.email)
-    \(self.subject.map { "Subject: \($0)\n" } ?? "")
+    \(self.subject.map { "Subject: \($0)<br />" } ?? "")
     Message:
-    \(self.message)
+    \(self.message.replacingOccurrences(of: "\n", with: "<br />"))
     """
   }
 

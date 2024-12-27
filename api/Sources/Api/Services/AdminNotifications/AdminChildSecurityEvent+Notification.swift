@@ -27,8 +27,8 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
     \(event.explanation)
     """
 
-    let email = Email.fromApp(to: address, subject: subject, html: html)
-    try await with(dependency: \.sendgrid).send(email)
+    try await with(dependency: \.postmark)
+      .send(to: address, subject: subject, html: html)
   }
 
   func sendSlack(channel: String, token: String) async throws {

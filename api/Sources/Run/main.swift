@@ -16,7 +16,6 @@ try withDependencies { deps in
   deps.db = PgClient(threadCount: System.coreCount, env: deps.env)
   deps.aws = .liveValue
   deps.postmark = .liveValue
-  deps.sendgrid = .liveValue
 } operation: {
   try Configure.app(app)
   try app.run()

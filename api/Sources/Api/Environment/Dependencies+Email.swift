@@ -1,29 +1,6 @@
 import Dependencies
 import Vapor
 import XPostmark
-import XSendGrid
-
-public extension DependencyValues {
-  var sendgrid: SendGrid.Client {
-    get { self[SendGrid.Client.self] }
-    set { self[SendGrid.Client.self] = newValue }
-  }
-}
-
-extension SendGrid.Client: DependencyKey {
-  public static var liveValue: SendGrid.Client {
-    let env = Env.fromProcess(mode: try? Vapor.Environment.detect())
-    let liveSendGrid = SendGrid.Client.live(apiKey: env.sendgridApiKey)
-    return .init(send: { message in
-      if !isCypressTestAddress(message.firstRecipient.email) {
-        try await liveSendGrid.send(message)
-      } else {
-        with(dependency: \.logger)
-          .info("skipping SendGrid.Client.send for cypress test")
-      }
-    })
-  }
-}
 
 public extension DependencyValues {
   var postmark: XPostmark.Client {
@@ -32,53 +9,65 @@ public extension DependencyValues {
   }
 }
 
-extension XPostmark.Client: DependencyKey {
-  public static var liveValue: XPostmark.Client {
-    let env = Env.fromProcess(mode: try? Vapor.Environment.detect())
-    let liveSendGrid = SendGrid.Client.live(apiKey: env.sendgridApiKey)
-    if env.mode != .prod {
-      return .init(send: { email in
-        with(dependency: \.logger)
-          .info("non-prod XPostmark.Client.send, delegating to sendgrid")
-        try await liveSendGrid.send(.init(postmark: email))
-      })
-    } else {
-      let livePostmark = XPostmark.Client.live(apiKey: env.postmarkApiKey)
-      return .init(send: { email in
-        if isCypressTestAddress(email.to) {
-          with(dependency: \.logger)
-            .info("skipping XPostmark.Client.send for cypress test")
-          return
-        } else if isProdSmokeTestAddress(email.to) || isJaredTestAddress(email.to) {
-          with(dependency: \.logger)
-            .info("delegating XPostmark.Client.send to SendGrid.Client.send for test")
-          try await liveSendGrid.send(.init(postmark: email))
-        } else {
-          try await livePostmark.send(email)
-        }
-      })
+public extension XPostmark.Client {
+  func send(to: String, replyTo: String? = nil, subject: String, html: String) async throws {
+    try await self.send(.init(
+      to: to,
+      from: "Gertrude App <noreply@gertrude.app>",
+      replyTo: replyTo,
+      subject: subject.withEmailSubjectDisambiguator,
+      html: html
+    ))
+  }
+
+  func toSuperAdmin(_ email: XPostmark.Email) {
+    Task {
+      do {
+        try await self.send(email)
+      } catch {}
     }
+  }
+
+  func toSuperAdmin(_ subject: String, _ html: String) {
+    self.toSuperAdmin(.init(
+      to: get(dependency: \.env).superAdminEmail,
+      from: "Gertrude App <noreply@gertrude.app>",
+      replyTo: nil,
+      subject: subject.withEmailSubjectDisambiguator,
+      html: html
+    ))
+  }
+
+  func unexpected(_ id: String, _ detail: String = "") {
+    self.toSuperAdmin(.unexpected(id, detail))
   }
 }
 
-#if DEBUG
-  extension SendGrid.Client: TestDependencyKey {
-    public static var testValue: SendGrid.Client {
-      .init(send: { _ in
-        unimplemented("SendGrid.Client.send()", placeholder: ())
-      })
-    }
-  }
-#endif
-
-public extension SendGrid.Email {
-  init(postmark: XPostmark.Email) {
+public extension XPostmark.Email {
+  init(to: String, subject: String, html: String) {
     self.init(
-      to: .init(email: postmark.to),
-      from: .init(email: postmark.from),
-      subject: postmark.subject,
-      html: postmark.html
+      to: to,
+      from: "Gertrude App <noreply@gertrude.app>",
+      subject: subject,
+      html: html
     )
+  }
+
+  static func unexpected(_ id: String, _ detail: String = "") -> Self {
+    let search = "https://github.com/search?q=repo%3Agertrude-app%2Fswift%20\(id)&type=code"
+    return .init(
+      to: get(dependency: \.env).superAdminEmail,
+      from: "Gertrude App <noreply@gertrude.app>",
+      subject: "Gertrude API unexpected event".withEmailSubjectDisambiguator,
+      html: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)"
+    )
+  }
+}
+
+extension XPostmark.Client: DependencyKey {
+  public static var liveValue: XPostmark.Client {
+    let env = Env.fromProcess(mode: try? Vapor.Environment.detect())
+    return XPostmark.Client.live(apiKey: env.postmarkApiKey)
   }
 }
 

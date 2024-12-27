@@ -1,14 +1,7 @@
 {
   "root": "api",
   "projectType": "app",
-  "implicitDependencies": [
-    "duet",
-    "gertie",
-    "pairql",
-    "pairql-macapp",
-    "ts-interop",
-    "x-sendgrid"
-  ],
+  "implicitDependencies": ["duet", "gertie", "pairql", "pairql-macapp", "ts-interop"],
   "targets": {
     "build": {
       "outputs": ["{projectRoot}/.build/debug/Run"],

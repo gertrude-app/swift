@@ -298,15 +298,6 @@
       }
     },
     {
-      "identity" : "swift-nonempty",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-nonempty.git",
-      "state" : {
-        "revision" : "1fd3f067ebc3900d200aa7e977fdb614cc5533bc",
-        "version" : "0.5.0"
-      }
-    },
-    {
       "identity" : "swift-numerics",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-numerics",

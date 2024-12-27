@@ -1,6 +1,5 @@
 import Duet
 import Tagged
-import XSendGrid
 import XSlack
 
 protocol AdminNotifying {
@@ -24,46 +23,14 @@ extension AdminNotifying {
 
 // helpers and domain types
 
-typealias Email = SendGrid.Email
-
 struct Slack: Equatable {
   let text: String
   let channel: String
   let token: String
 }
 
-extension Email {
-  static func link(url: String, text: String) -> String {
-    "<a href=\"\(url)\">\(text)</a>"
-  }
-
-  static func fromApp(to: String, subject: String, html: String) -> Email {
-    .init(
-      to: .init(email: to),
-      from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
-      subject: subject.withEmailSubjectDisambiguator,
-      html: html
-    )
-  }
-
-  static func toSuperAdmin(_ subject: String, _ html: String) -> Email {
-    .init(
-      to: .init(email: get(dependency: \.env).superAdminEmail),
-      from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
-      subject: "Gertrude " + subject.withEmailSubjectDisambiguator,
-      html: html
-    )
-  }
-
-  static func unexpected(_ id: String, _ detail: String = "") -> Email {
-    let search = "https://github.com/search?q=repo%3Agertrude-app%2Fswift%20\(id)&type=code"
-    return .init(
-      to: .init(email: get(dependency: \.env).superAdminEmail),
-      from: .init(email: "noreply@gertrude.app", name: "Gertrude App"),
-      subject: "Gertrude API unexpected event".withEmailSubjectDisambiguator,
-      html: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)"
-    )
-  }
+func emailLink(url: String, text: String) -> String {
+  "<a href=\"\(url)\">\(text)</a>"
 }
 
 struct Text: Equatable {

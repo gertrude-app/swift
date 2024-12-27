@@ -31,7 +31,6 @@ struct SubscriptionManager: AsyncScheduledJob {
   @Dependency(\.db) var db
   @Dependency(\.date.now) var now
   @Dependency(\.postmark) var postmark
-  @Dependency(\.sendgrid) var sendgrid
 
   func run(context: QueueContext) async throws {
     guard self.env.mode == .prod else { return }
@@ -71,10 +70,10 @@ struct SubscriptionManager: AsyncScheduledJob {
     }
 
     if self.env.mode == .prod, !logs.isEmpty {
-      self.sendgrid.fireAndForget(.toSuperAdmin(
+      self.postmark.toSuperAdmin(
         "Gertrude subscription manager events",
         "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>"
-      ))
+      )
     }
   }
 

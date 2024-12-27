@@ -47,11 +47,11 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
 
     let html = """
     User \(userName) submitted \(unlockRequests).
-     \(Email.link(url: url, text: "Click here")) to view the details and approve or deny.
+     \(emailLink(url: url, text: "Click here")) to view the details and approve or deny.
     """
 
-    try await with(dependency: \.sendgrid)
-      .send(Email.fromApp(to: address, subject: subject, html: html))
+    try await with(dependency: \.postmark)
+      .send(to: address, subject: subject, html: html)
   }
 }
 

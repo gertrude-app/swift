@@ -5,7 +5,6 @@ import Vapor
 public struct Env: Sendable {
   public var mode: AppMode
   public var s3: S3
-  public var sendgridApiKey: String
   public var postmarkApiKey: String
   public var database: Database
   public var dashboardUrl: String
@@ -97,7 +96,6 @@ extension Env: DependencyKey {
         bucketUrl: processEnv("CLOUD_STORAGE_BUCKET_URL"),
         bucket: processEnv("CLOUD_STORAGE_BUCKET")
       ),
-      sendgridApiKey: processEnv("SENDGRID_API_KEY"),
       postmarkApiKey: processEnv("POSTMARK_API_KEY"),
       database: Database(
         name: mode == .test

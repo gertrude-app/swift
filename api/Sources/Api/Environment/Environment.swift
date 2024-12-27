@@ -2,8 +2,6 @@ import Dependencies
 import DuetSQL
 import Vapor
 import XAws
-import XPostmark
-import XSendGrid
 
 struct VerificationCodeGenerator: Sendable {
   var generate: @Sendable () -> Int
@@ -24,7 +22,7 @@ func unexpected(_ id: String, detail: String = "") {
 func unexpected(_ id: String, _ adminId: Admin.Id? = nil, _ detail: String = "") {
   Task { [detail] in
     with(dependency: \.logger).error("Unexpected event `\(id)`, \(detail)")
-    with(dependency: \.sendgrid).fireAndForget(.unexpected(id, detail))
+    with(dependency: \.postmark).toSuperAdmin(.unexpected(id, detail))
     try await with(dependency: \.db).create(InterestingEvent(
       eventId: id,
       kind: "event",

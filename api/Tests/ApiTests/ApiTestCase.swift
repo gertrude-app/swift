@@ -5,7 +5,6 @@ import Gertie
 import Vapor
 import XCTest
 import XPostmark
-import XSendGrid
 import XSlack
 
 @testable import Api
@@ -34,11 +33,8 @@ class ApiTestCase: XCTestCase {
         self.sent.slacks.append(.init(message: msg, token: tok))
         return nil
       }
-      $0.postmark.send = {
-        self.sent.postmarkEmails.append($0)
-      }
-      $0.sendgrid.send = {
-        self.sent.sendgridEmails.append($0)
+      $0.postmark.send = { @Sendable email in
+        self.sent.emails.append(email)
       }
       $0.websockets.sendEvent = {
         self.sent.websocketMessages.append($0)
@@ -124,8 +120,7 @@ extension ApiTestCase {
       let token: String
     }
 
-    var sendgridEmails: [SendGrid.Email] = []
-    var postmarkEmails: [XPostmark.Email] = []
+    var emails: [XPostmark.Email] = []
     var slacks: [Slack] = []
     var texts: [Text] = []
     var adminNotifications: [AdminNotification] = []

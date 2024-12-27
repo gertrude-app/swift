@@ -1,6 +1,7 @@
 import DuetSQL
 import PairQL
 import Vapor
+import XPostmark
 
 struct RequestMagicLink: Pair {
   static let auth: ClientAuth = .none
@@ -24,8 +25,9 @@ extension RequestMagicLink: Resolver {
       .where(.email == .string(email))
       .first(in: context.db)
 
+    let postmark = get(dependency: \.postmark)
     guard let admin else {
-      let noAccountEmail = Email.fromApp(
+      let noAccountEmail = XPostmark.Email(
         to: email,
         subject: "Gertrude App Magic Link",
         html: """
@@ -35,7 +37,7 @@ extension RequestMagicLink: Resolver {
         Or, if you did not request a magic link, you can safely ignore this email.
         """
       )
-      try await with(dependency: \.sendgrid).send(noAccountEmail)
+      try await postmark.send(noAccountEmail)
       return .success
     }
 
@@ -48,8 +50,7 @@ extension RequestMagicLink: Resolver {
       url += "?redirect=\(encoded)"
     }
     let html = "<a href='\(url)'>Click here</a> to log in to the Gertrude dashboard."
-    let magicLinkEmail = Email.fromApp(to: admin.email.rawValue, subject: subject, html: html)
-    try await with(dependency: \.sendgrid).send(magicLinkEmail)
+    try await postmark.send(to: admin.email.rawValue, subject: subject, html: html)
 
     return .success
   }

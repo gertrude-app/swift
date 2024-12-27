@@ -5,8 +5,8 @@ import Vapor
 struct DiskSpaceJob: AsyncScheduledJob {
   @Dependency(\.env) var env
   @Dependency(\.slack) var slack
-  @Dependency(\.sendgrid) var sendgrid
   @Dependency(\.logger) var logger
+  @Dependency(\.postmark) var postmark
 
   func run(context: QueueContext) async throws {
     if self.env.mode == .prod {
@@ -44,10 +44,10 @@ struct DiskSpaceJob: AsyncScheduledJob {
       self.logger.notice("Disk space looks OK: \(percent)%")
     default:
       await self.slack.sysLog("Disk space is dangerously low: \(percent)%")
-      self.sendgrid.fireAndForget(.toSuperAdmin(
+      self.postmark.toSuperAdmin(
         "API Disk space dangerously low",
         "Disk space dangerously low: <code style='color: red;'>\(percent)%</code> used"
-      ))
+      )
     }
   }
 }

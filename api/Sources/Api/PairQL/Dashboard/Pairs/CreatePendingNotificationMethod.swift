@@ -37,12 +37,11 @@ private func sendVerification(
   switch method {
   case .slack(channelId: let channel, channelName: _, token: let token):
     do {
-      try await with(dependency: \.slack)
-        .send(Slack(
-          text: "Your verification code is `\(code)`",
-          channel: channel,
-          token: token
-        ))
+      try await with(dependency: \.slack).send(Slack(
+        text: "Your verification code is `\(code)`",
+        channel: channel,
+        token: token
+      ))
     } catch {
       throw context.error(
         id: "df619205",
@@ -53,7 +52,7 @@ private func sendVerification(
     }
 
   case .email(email: let email):
-    _ = try await with(dependency: \.sendgrid).send(.fromApp(
+    _ = try await with(dependency: \.postmark).send(
       to: email,
       subject: "Gertrude App verification code",
       html: """
@@ -64,13 +63,12 @@ private func sendVerification(
       <p>Your verification code is:</p>
       <p style="margin-top:2em"><code style="font-size:4em">\(code)</code></p>
       """
-    ))
+    )
 
   case .text(phoneNumber: let phoneNumber):
-    try await with(dependency: \.twilio)
-      .send(Text(
-        to: .init(rawValue: phoneNumber),
-        message: "Your verification code is \(code)"
-      ))
+    try await with(dependency: \.twilio).send(Text(
+      to: .init(rawValue: phoneNumber),
+      message: "Your verification code is \(code)"
+    ))
   }
 }

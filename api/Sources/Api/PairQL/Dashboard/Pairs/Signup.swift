@@ -25,7 +25,6 @@ struct Signup: Pair {
 extension Signup: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     @Dependency(\.date.now) var now
-    @Dependency(\.sendgrid) var sendgrid
     @Dependency(\.postmark) var postmark
 
     let email = input.email.lowercased()
@@ -46,7 +45,7 @@ extension Signup: Resolver {
       }
 
       if context.env.mode == .prod, !isTestAddress(email) {
-        sendgrid.fireAndForget(.toSuperAdmin("signup [exists]", email))
+        postmark.toSuperAdmin("signup [exists]", email)
       }
 
       if existing.isPendingEmailVerification {
@@ -59,14 +58,14 @@ extension Signup: Resolver {
     }
 
     if context.env.mode == .prod, !isTestAddress(email) {
-      sendgrid.fireAndForget(.toSuperAdmin(
+      postmark.toSuperAdmin(
         "signup",
         [
           "email: \(email)",
           "g-ad: \(input.gclid != nil)",
           "A/B: \(input.abTestVariant ?? "(nil)")",
         ].joined(separator: "<br />")
-      ))
+      )
     }
 
     let admin = try await context.db.create(Admin(
