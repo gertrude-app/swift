@@ -25,6 +25,20 @@ final class FilterProxyTests: XCTestCase {
     expect(proxy.store.state.logs.bundleIds).toEqual([:]) // current behavior
   }
 
+  func testUrlMessagePassedToStore() {
+    withDependencies {
+      $0.filterExtension.version = { "2.6.0" }
+      $0.date = .constant(.reference)
+    } operation: {
+      let proxy = FilterProxy(flowDecision: .block(.urlMessage(.alive(501))))
+      let verdict = proxy.handleNewFlow(.mock)
+      // 1) flow is dropped (it was just an xpc message)
+      expect(verdict.isDrop).toBeTrue()
+      // 2) the store received the message
+      expect(proxy.store.state.macappsAliveUntil).toEqual([501: .reference + .seconds(150)])
+    }
+  }
+
   func testEarlyDecisionAllowingGertrudeDuringDowntime() {
     let proxy = FilterProxy(earlyDecision: .blockDuringDowntime(501))
     let verdict = proxy.handleNewFlow(.gertrude)
@@ -92,6 +106,21 @@ final class FilterProxyTests: XCTestCase {
     let verdict = proxy.handleNewFlow(.mock)
     expect(verdict.isDrop).toBeFalse()
     expect(proxy.store.state.logs.bundleIds).toEqual(["com.acme.app": 1])
+  }
+
+  func testApiReqFromGertrudeAppAllowedAndSetsAlive() {
+    withDependencies {
+      $0.filterExtension.version = { "2.6.0" }
+      $0.date = .constant(.init(timeIntervalSinceReferenceDate: 0))
+    } operation: {
+      let proxy = FilterProxy(
+        earlyDecision: .none(501), // <-- we know the user id is 501
+        flowDecision: .allow(.fromGertrudeApp) // <-- so count any api req as an alive
+      )
+      let verdict = proxy.handleNewFlow(.mock)
+      expect(verdict.isDrop).toBeFalse()
+      expect(proxy.store.state.macappsAliveUntil).toEqual([501: .reference + .seconds(150)])
+    }
   }
 
   func testDeferredNewFlowLogsAndSetsUserId() {

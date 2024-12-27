@@ -65,6 +65,7 @@ final class FilterReducerTests: XCTestCase {
       $0.userKeychains[502] = [keychain]
       $0.appIdManifest = manifest
       $0.appCache = [:] // clears out app cache when new manifest is received
+      $0.macappsAliveUntil[502] = .epoch + .macappAliveBuffer
     }
 
     await expect(saveState.calls).toEqual([.init(
@@ -169,6 +170,7 @@ final class FilterReducerTests: XCTestCase {
   func testStreamBlockedRequests() async {
     let (store, _) = Filter.testStore(exhaustive: true)
     store.deps.filterExtension = .mock
+    store.deps.date = .constant(.epoch)
 
     // user not streaming, so we won't send the request
     store.deps.xpc.sendBlockedRequest = { _, _ in fatalError() }
@@ -182,7 +184,8 @@ final class FilterReducerTests: XCTestCase {
       enabled: true,
       userId: 502
     )))) {
-      $0.blockListeners[502] = Date(timeIntervalSince1970: 60 * 5)
+      $0.blockListeners[502] = .epoch + .minutes(5)
+      $0.macappsAliveUntil[502] = .epoch + .macappAliveBuffer
     }
 
     // now we're streaming blocks for 502
@@ -193,12 +196,14 @@ final class FilterReducerTests: XCTestCase {
     await store.send(.flowBlocked(flow, .mock))
     await store.send(.flowBlocked(FilterFlow(userId: 503), .mock)) // <-- different user
     await expect(sendBlocked.calls).toEqual([Both(502, flow.testBlockedReq())])
+    store.deps.date = .constant(.epoch + .minutes(5))
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: false,
       userId: 502
     )))) {
       $0.blockListeners = [:]
+      $0.macappsAliveUntil[502] = .epoch + .minutes(5) + .macappAliveBuffer
     }
 
     // no more blocks should be sent
@@ -390,10 +395,13 @@ final class FilterReducerTests: XCTestCase {
         502: .init(scope: .unrestricted, duration: 600, now: store.deps.date.now),
         503: otherUserSuspension,
       ]
+      $0.macappsAliveUntil[502] = .epoch + .macappAliveBuffer
     }
 
+    store.deps.date = .constant(.epoch + .minutes(2))
     await store.send(.xpc(.receivedAppMessage(.endFilterSuspension(userId: 502)))) {
       $0.suspensions = [503: otherUserSuspension]
+      $0.macappsAliveUntil[502] = .epoch + .minutes(2) + .macappAliveBuffer
     }
 
     await mainQueue.advance(by: .seconds(600))
@@ -550,11 +558,34 @@ final class FilterReducerTests: XCTestCase {
     await store
       .send(.xpc(.receivedAppMessage(.pauseDowntime(userId: 502, until: now + .minutes(5))))) {
         $0.userDowntime[502] = Downtime(window: "22:00-05:00", pausedUntil: now + .minutes(5))
+        $0.macappsAliveUntil[502] = now + .macappAliveBuffer
       }
 
+    store.deps.date = .constant(now + .minutes(2))
     await store.send(.xpc(.receivedAppMessage(.endDowntimePause(userId: 502)))) {
       $0.userDowntime[502] = Downtime(window: "22:00-05:00", pausedUntil: nil)
+      $0.macappsAliveUntil[502] = now + .minutes(2) + .macappAliveBuffer
     }
+  }
+
+  @MainActor
+  func testAliveMessageReceived() async {
+    let (store, _) = Filter.testStore()
+    await store.send(.xpc(.receivedAppMessage(.macappAlive(userId: 502)))) {
+      $0.macappsAliveUntil[502] = .epoch + .macappAliveBuffer
+    }
+  }
+
+  @MainActor
+  func testMacAppsPastAliveBufferCleanedUpInHeartbeat() async {
+    let (store, _) = Filter.testStore {
+      $0.macappsAliveUntil[502] = .epoch + .macappAliveBuffer
+    }
+    await store.send(.heartbeat)
+    store.deps.date = .constant(.epoch + .macappAliveBuffer - .seconds(1))
+    await store.send(.heartbeat)
+    store.deps.date = .constant(.epoch + .macappAliveBuffer + .seconds(1))
+    await store.send(.heartbeat) { $0.macappsAliveUntil = [:] }
   }
 
   @MainActor
@@ -650,4 +681,13 @@ extension FilterFlow {
       ipProtocol: ipProtocol
     )
   }
+}
+
+public extension Date {
+  static let epoch = Date(timeIntervalSince1970: 0)
+  static let reference = Date(timeIntervalSinceReferenceDate: 0)
+}
+
+public extension Double {
+  static let macappAliveBuffer = 150.0
 }

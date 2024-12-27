@@ -83,15 +83,15 @@ struct OnboardingFeature: Feature {
         state.step = step
         return .exec { send in
           await send(.receivedDeviceData(
-            currentUserId: device.currentUserId(),
-            users: try await device.listMacOSUsers()
+            currentUserId: self.device.currentUserId(),
+            users: try await self.device.listMacOSUsers()
           ))
         }
 
       case .resume(.checkingScreenRecordingPermission):
         state.windowOpen = true
         return .exec { send in
-          let granted = await monitoring.screenRecordingPermissionGranted()
+          let granted = await self.monitoring.screenRecordingPermissionGranted()
           log("resume checking screen recording, granted=\(granted)", "5d1d27fe")
           if granted {
             await send(.setStep(.allowScreenshots_success))
@@ -115,15 +115,15 @@ struct OnboardingFeature: Feature {
         state.step = self.app.inCorrectLocation ? .confirmGertrudeAccount : .wrongInstallDir
         return .exec { send in
           await send(.receivedDeviceData(
-            currentUserId: device.currentUserId(),
-            users: try await device.listMacOSUsers()
+            currentUserId: self.device.currentUserId(),
+            users: try await self.device.listMacOSUsers()
           ))
         }
 
       case .webview(.primaryBtnClicked) where step == .wrongInstallDir:
         log(step, action, "1d7defca")
         state.windowOpen = false
-        return .exec { _ in await app.quit() }
+        return .exec { _ in await self.app.quit() }
 
       case .webview(.primaryBtnClicked) where step == .confirmGertrudeAccount:
         log(step, action, "36a1852c")
@@ -143,8 +143,8 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .noGertrudeAccount:
         log("quit from no gertrude acct", "236defcb")
         return .exec { _ in
-          await storage.deleteAll()
-          await app.quit()
+          await self.storage.deleteAll()
+          await self.app.quit()
         }
 
       case .webview(.primaryBtnClicked) where step == .macosUserAccountType && !userIsAdmin:
@@ -191,7 +191,7 @@ struct OnboardingFeature: Feature {
         state.connectChildRequest = .ongoing
         return .exec { send in
           await send(.connectUser((TaskResult {
-            try await api.connectUser(.init(code: code, device: device, app: app))
+            try await self.api.connectUser(.init(code: code, device: device, app: app))
           })))
         }
 
@@ -216,7 +216,7 @@ struct OnboardingFeature: Feature {
         where step == .connectChild && state.connectChildRequest.isFailed:
         log("connect user failed secondary", "08de43c1")
         return .exec { _ in
-          await device.openWebUrl(.contact)
+          await self.device.openWebUrl(.contact)
         }
 
       case .webview(.primaryBtnClicked)
@@ -235,14 +235,14 @@ struct OnboardingFeature: Feature {
         log(step, action, "b183d96d")
         state.step = .allowNotifications_grant
         return .exec { _ in
-          await device.requestNotificationAuthorization()
-          await device.openSystemPrefs(.notifications)
+          await self.device.requestNotificationAuthorization()
+          await self.device.openSystemPrefs(.notifications)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowNotifications_grant:
         log(step, action, "9fa094ac")
         return .exec { send in
-          if await device.notificationsSetting() == .none {
+          if await self.device.notificationsSetting() == .none {
             await send(.setStep(.allowNotifications_failed))
           } else {
             await nextRequiredStage(from: step, send)
@@ -257,9 +257,9 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .allowNotifications_failed:
         log(step, action, "b183d96d")
         return .exec { send in
-          if await device.notificationsSetting() == .none {
-            await device.requestNotificationAuthorization()
-            await device.openSystemPrefs(.notifications)
+          if await self.device.notificationsSetting() == .none {
+            await self.device.requestNotificationAuthorization()
+            await self.device.openSystemPrefs(.notifications)
             await send(.setStep(.allowNotifications_grant))
           } else {
             await nextRequiredStage(from: step, send)
@@ -275,12 +275,12 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_required:
         return .exec { send in
-          let granted = await monitoring.screenRecordingPermissionGranted()
+          let granted = await self.monitoring.screenRecordingPermissionGranted()
           log("primary from .allowScreenshots_required, already granted=\(granted)", "ce78b67b")
           if granted {
             await nextRequiredStage(from: step, send)
           } else {
-            try? await monitoring.takeScreenshot(500) // trigger permission prompt
+            try? await self.monitoring.takeScreenshot(500) // trigger permission prompt
             await send(.delegate(.saveForResume(.checkingScreenRecordingPermission)))
             await send(.setStep(.allowScreenshots_grantAndRestart))
           }
@@ -306,10 +306,10 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_failed:
         log(step, action, "cfb65d32")
         return .exec { send in
-          if await monitoring.screenRecordingPermissionGranted() {
+          if await self.monitoring.screenRecordingPermissionGranted() {
             await send(.setStep(.allowScreenshots_success))
           } else {
-            await device.openSystemPrefs(.security(.screenRecording))
+            await self.device.openSystemPrefs(.security(.screenRecording))
             await send(.setStep(.allowScreenshots_grantAndRestart))
           }
         }
@@ -346,7 +346,7 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_grant:
         return .exec { send in
-          let granted = await monitoring.keystrokeRecordingPermissionGranted()
+          let granted = await self.monitoring.keystrokeRecordingPermissionGranted()
           log("primary from .allowKeylogging_grant, granted=\(granted)", "ce78b67b")
           if granted {
             await nextRequiredStage(from: step, send)
@@ -358,7 +358,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowKeylogging_grant:
         log(step, action, "5ccce8b9")
         return .exec { send in
-          if await monitoring.keystrokeRecordingPermissionGranted() {
+          if await self.monitoring.keystrokeRecordingPermissionGranted() {
             await nextRequiredStage(from: step, send)
           } else {
             await send(.setStep(.allowKeylogging_failed))
@@ -368,10 +368,10 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_failed:
         log(step, action, "36181833")
         return .exec { send in
-          if await monitoring.keystrokeRecordingPermissionGranted() {
+          if await self.monitoring.keystrokeRecordingPermissionGranted() {
             await nextRequiredStage(from: step, send)
           } else {
-            await device.openSystemPrefs(.security(.accessibility))
+            await self.device.openSystemPrefs(.security(.accessibility))
             await send(.setStep(.allowKeylogging_grant))
           }
         }
@@ -386,15 +386,17 @@ struct OnboardingFeature: Feature {
         log(step, action, "880e4b49")
         state.step = .installSysExt_allow
         return .exec { send in
-          try? await mainQueue.sleep(for: .seconds(3)) // let them see the explanation gif
-          let installResult = await systemExtension.installOverridingTimeout(60 * 4) // 4 minutes
+          try? await self.mainQueue.sleep(for: .seconds(3)) // let them see the explanation gif
+          let installResult = await self.systemExtension.installOverridingTimeout(60 * 4)
           log("sys ext install result=\(installResult)", "adbc0453")
           switch installResult {
           case .installedSuccessfully:
             await send(.setStep(.installSysExt_success))
-            // safeguard, make sure onboarding user not exempted
-            _ = await systemExtensionXpc.setUserExemption(device.currentUserId(), false)
-            switch await systemExtensionXpc.requestUserTypes() {
+            // NB: the two xpc calls below also implicitly establish the XPC connection
+            // so if they are ever removed, we should call requestAck() or similar here
+            // NB: safeguard, make sure onboarding user not exempted
+            _ = await self.systemExtensionXpc.setUserExemption(self.device.currentUserId(), false)
+            switch await self.systemExtensionXpc.requestUserTypes() {
             case .success(let userTypes):
               await send(.receivedFilterUsers(userTypes))
             case .failure(let err):
@@ -417,7 +419,7 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .installSysExt_explain:
         return .exec { send in
-          let startingState = await systemExtension.state()
+          let startingState = await self.systemExtension.state()
           log("primary from .installSysExt_explain, state=\(startingState)", "e585331d")
           switch startingState {
           case .notInstalled:
@@ -427,7 +429,7 @@ struct OnboardingFeature: Feature {
           case .installedAndRunning:
             await send(.setStep(.installSysExt_success))
           case .installedButNotRunning:
-            if await systemExtension.start() == .installedAndRunning {
+            if await self.systemExtension.start() == .installedAndRunning {
               log("non-running sys ext started successfully", "d0021f5d")
               await send(.setStep(.installSysExt_success))
             } else {
@@ -449,7 +451,7 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .installSysExt_allow,
            .webview(.secondaryBtnClicked) where step == .installSysExt_allow:
         return .exec { send in
-          let state = await systemExtension.state()
+          let state = await self.systemExtension.state()
           log("\(action) from .installSysExt_allow, state=\(state)", "b0e6e683")
           if state == .installedAndRunning {
             await send(.setStep(.installSysExt_success))
@@ -479,7 +481,7 @@ struct OnboardingFeature: Feature {
           state.filterUsers?.exempt.removeAll(where: { $0 == userId })
         }
         return .exec { _ in
-          _ = await systemExtensionXpc.setUserExemption(userId, enabled)
+          _ = await self.systemExtensionXpc.setUserExemption(userId, enabled)
         }
 
       case .webview(.primaryBtnClicked) where step == .exemptUsers:
@@ -510,18 +512,18 @@ struct OnboardingFeature: Feature {
         state.windowOpen = false
         guard childConnected else {
           return .exec { _ in
-            let persisted = try await storage.loadPersistentState()
+            let persisted = try await self.storage.loadPersistentState()
             if persisted?.user == nil, step < .allowNotifications_start {
               // unexpected super early bail, so we need to delete all storage and quit
               // so that if they launch Gertrude again, they get the onboarding flow again
-              await storage.deleteAll()
-              await app.quit()
+              await self.storage.deleteAll()
+              await self.app.quit()
             }
           }
         }
         return .exec { send in
-          if await app.isLaunchAtLoginEnabled() == false {
-            await app.enableLaunchAtLogin()
+          if await self.app.isLaunchAtLoginEnabled() == false {
+            await self.app.enableLaunchAtLogin()
           }
           if step < .locateMenuBarIcon {
             // unexpected early bail, so we need to start protection
@@ -631,7 +633,7 @@ extension OnboardingFeature.State.MacUser {
 
 extension OnboardingFeature.Reducer {
   func eventMeta() -> String {
-    "os: \(device.osVersion().name), sn: \(device.serialNumber() ?? ""), time: \(Date())"
+    "os: \(self.device.osVersion().name), sn: \(self.device.serialNumber() ?? ""), time: \(Date())"
   }
 
   func log(_ msg: String, _ id: String) {

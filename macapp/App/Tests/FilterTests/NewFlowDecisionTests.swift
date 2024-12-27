@@ -29,6 +29,16 @@ final class NewFlowDecisionTests: XCTestCase {
     expect(TestFilter.scenario().newFlowDecision(flow)).toBeNil()
   }
 
+  func testAwolMacappBlocked() {
+    let flow = FilterFlow.test(ipAddress: "4.4.4.4", hostname: "abc123.com", bundleId: "com.foo")
+    let key = RuleKey(key: .skeleton(scope: .bundleId("com.foo")))
+    let filter = TestFilter.scenario(
+      userKeychains: [502: key.into()], // <-- we would normally permit by this key...
+      macappsAliveUntil: [:] // <-- but the macapp is awol
+    )
+    expect(filter.newFlowDecision(flow)).toEqual(.block(.macappAWOL(502)))
+  }
+
   func testDecisionIsBlockWhenNoKeyAllowsAndUrlIsPresent() {
     let flow = FilterFlow.test(
       url: "https://unknown.com/foo",
@@ -36,6 +46,16 @@ final class NewFlowDecisionTests: XCTestCase {
       bundleId: "com.foo.bar"
     )
     expect(TestFilter.scenario().newFlowDecision(flow)).toEqual(.block(.defaultNotAllowed))
+  }
+
+  func testFilterSuspensionAllowNotGrantedIfMacappAppearsAWOL() {
+    let flow = FilterFlow.test(url: nil, hostname: "unknown.com")
+    let filter = TestFilter.scenario(
+      userKeychains: [502: [.mock]],
+      macappsAliveUntil: [:], // <-- macapp is awol!
+      suspensions: [502: .init(scope: .unrestricted, duration: 100)]
+    )
+    expect(filter.newFlowDecision(flow)).toEqual(.block(.macappAWOL(502)))
   }
 
   func testFlowAllowedForAppWithUnrestrictedScope() {

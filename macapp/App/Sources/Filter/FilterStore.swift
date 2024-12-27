@@ -29,6 +29,10 @@ public struct FilterStore: NetworkFilter {
     self.viewStore.send(.flowBlocked(flow, app))
   }
 
+  public func send(urlMessage: XPC.URLMessage) {
+    self.viewStore.send(.urlMessage(urlMessage))
+  }
+
   public func shouldSendBlockDecisions() -> AnyPublisher<Bool, Never> {
     self.viewStore.publisher.blockListeners.map { !$0.isEmpty }.eraseToAnyPublisher()
   }

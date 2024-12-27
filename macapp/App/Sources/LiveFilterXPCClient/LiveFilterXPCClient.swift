@@ -33,9 +33,18 @@ extension FilterXPCClient: DependencyKey {
       requestUserTypes: { await .init {
         try await xpc.requestUserTypes()
       }},
+      sendAlive: { await .init {
+        let success = try await xpc.sendAlive()
+        if !success {
+          await send(urlMessage: .alive(getuid()))
+          _ = try await xpc.requestAck()
+        }
+        return success
+      }},
       sendDeleteAllStoredState: { await .init {
         try await xpc.sendDeleteAllStoredState()
       }},
+      sendURLMessage: send(urlMessage:),
       sendUserRules: { manifest, keychains, downtime in await .init {
         try await xpc.sendUserRules(manifest: manifest, keychains: keychains, downtime: downtime)
       }},
@@ -92,6 +101,10 @@ actor ThreadSafeFilterXPC {
     try await self.filterXpc.requestAck()
   }
 
+  func sendAlive() async throws -> Bool {
+    try await self.filterXpc.sendAlive()
+  }
+
   func sendUserRules(
     manifest: AppIdManifest,
     keychains: [RuleKeychain],
@@ -119,4 +132,14 @@ actor ThreadSafeFilterXPC {
   func sendDeleteAllStoredState() async throws {
     try await self.filterXpc.sendDeleteAllStoredState()
   }
+}
+
+// helpers
+
+@Sendable
+private func send(urlMessage: XPC.URLMessage) async {
+  var request = URLRequest(url: urlMessage.url)
+  request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+  request.timeoutInterval = 2
+  _ = try? await URLSession.shared.data(for: request)
 }

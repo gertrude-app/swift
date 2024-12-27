@@ -18,13 +18,16 @@ codegen-typescript:
 
 codegen: codegen-typescript codegen-swift
 
-xcode:
+macapp:
   @open macapp/Xcode/Gertrude.xcodeproj
 
 # ios
 
 watch-ios:
   @just watch-build iosapp/lib-ios
+
+iosapp:
+  @open iosapp/Gertrude-iOS.xcodeproj
 
 # api
 

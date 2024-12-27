@@ -13,6 +13,7 @@ class TestFilter: NetworkFilter {
     var exemptUsers: Set<uid_t> = []
     var suspensions: [uid_t: FilterSuspension] = [:]
     var appCache: [String: AppDescriptor] = [:]
+    var macappsAliveUntil: [uid_t: Date] = [:]
   }
 
   var state = State()
@@ -33,6 +34,7 @@ class TestFilter: NetworkFilter {
     userIdFromAuditToken userId: uid_t? = 502,
     userKeychains: [uid_t: [RuleKeychain]] = [502: [.mock]],
     userDowntime: [uid_t: PlainTimeWindow] = [:],
+    macappsAliveUntil: [uid_t: Date] = [502: .distantFuture, 503: .distantFuture],
     date: Dependencies.DateGenerator = .init { Date() },
     appIdManifest: AppIdManifest = .init(
       apps: ["chrome": ["com.chrome"]],
@@ -55,7 +57,8 @@ class TestFilter: NetworkFilter {
         userDowntime: userDowntime.mapValues { Downtime(window: $0) },
         appIdManifest: appIdManifest,
         exemptUsers: exemptUsers,
-        suspensions: suspensions
+        suspensions: suspensions,
+        macappsAliveUntil: macappsAliveUntil
       )
       return filter
     }

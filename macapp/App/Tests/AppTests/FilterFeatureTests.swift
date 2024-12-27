@@ -45,6 +45,15 @@ final class FilterFeatureTests: XCTestCase {
   }
 
   @MainActor
+  func testEveryMinuteSendsAliveMsgToFilter() async {
+    let (store, _) = AppReducer.testStore()
+    let alive = mock(once: Result<Bool, XPCErr>.success(true))
+    store.deps.filterXpc.sendAlive = alive.fn
+    await store.send(.heartbeat(.everyMinute))
+    await expect(alive.called).toEqual(true)
+  }
+
+  @MainActor
   func testHeartbeatUpdatesFilterVersionIfPossible() async {
     let (store, _) = AppReducer.testStore {
       $0.appUpdates.installedVersion = "1.3.4"

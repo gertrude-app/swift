@@ -19,6 +19,7 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.mainQueue = .immediate
     store.deps.filterExtension.stateChanges = { Empty().eraseToAnyPublisher() }
     store.deps.filterXpc.events = { Empty().eraseToAnyPublisher() }
+    store.deps.filterXpc.sendAlive = { .success(true) }
     store.deps.websocket.state = { .notConnected }
     store.deps.app.installLocation = { .inApplicationsDir }
 
@@ -300,6 +301,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
     await store.receive(.onboarding(.delegate(.onboardingConfigComplete)))
     await store.receive(.startProtecting(user: user))
+    await store.receive(.networkConnectionChanged(connected: true))
     await store.receive(.websocket(.connectedSuccessfully))
 
     await store.receive(.checkIn(result: .success(checkInResult), reason: .startProtecting)) {

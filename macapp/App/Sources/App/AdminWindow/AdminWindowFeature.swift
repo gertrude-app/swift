@@ -279,14 +279,14 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.healthCheck(.enableFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = nil
         return .merge(
-          .exec { try await startFilter($0) },
+          .exec { try await self.startFilter($0) },
           self.withTimeoutAfter(seconds: 3)
         )
 
       case .webview(.healthCheck(.installFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = .installing
         return .merge(
-          .exec { try await installFilter($0) },
+          .exec { try await self.installFilter($0) },
           self.withTimeoutAfter(seconds: 20)
         )
 

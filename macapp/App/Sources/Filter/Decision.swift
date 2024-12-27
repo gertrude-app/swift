@@ -39,4 +39,5 @@ public protocol DecisionState {
   var exemptUsers: Set<uid_t> { get }
   var suspensions: [uid_t: FilterSuspension] { get }
   var appCache: [String: AppDescriptor] { get }
+  var macappsAliveUntil: [uid_t: Date] { get }
 }

@@ -4,6 +4,9 @@ import Foundation
 import NetworkExtension
 import os.log
 
+/// A proxy for the FilterDataProvider, which is impossible to test
+/// and now mostly forwards functionality to this class, passing DTOs
+/// where it traffics in types that are not constructable in tests.
 public class FilterProxy {
   #if !DEBUG
     let store: FilterStore
@@ -80,11 +83,17 @@ public class FilterProxy {
     }
 
     switch decision {
+    case .block(.urlMessage(let message)):
+      self.store.send(urlMessage: message)
+      return .drop()
     case .block:
       if self.sendingBlockDecisions {
         self.store.sendBlocked(filterFlow, auditToken: flow.sourceAppAuditToken)
       }
       return dropNewFlow()
+    case .allow(.fromGertrudeApp):
+      self.store.send(urlMessage: .alive(userId))
+      return .allow()
     case .allow:
       return .allow()
     case nil:
@@ -169,7 +178,7 @@ public class FilterProxy {
 
 public extension NEFilterFlow {
   /// A data transfer object for `NEFilterFlow`.
-  /// NB: the original object has more information
+  /// NB: the original object has more data
   struct DTO {
     let identifier: UUID
     let sourceAppAuditToken: Data?
@@ -205,20 +214,16 @@ extension FilterFlow {
 }
 
 private func dropFlow() -> NEFilterDataVerdict {
-  #if canImport(XCTest)
-    return .drop()
-  #elseif DEBUG
-    return .allow()
+  #if DEBUG
+    return getuid() < 500 ? .allow() : .drop()
   #else
     return .drop()
   #endif
 }
 
 private func dropNewFlow() -> NEFilterNewFlowVerdict {
-  #if canImport(XCTest)
-    return .drop()
-  #elseif DEBUG
-    return .allow()
+  #if DEBUG
+    return getuid() < 500 ? .allow() : .drop()
   #else
     return .drop()
   #endif

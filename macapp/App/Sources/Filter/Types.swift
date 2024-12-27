@@ -20,6 +20,7 @@ public extension XPCEvent {
       case suspendFilter(userId: uid_t, duration: Seconds<Int>)
       case setUserExemption(userId: uid_t, enabled: Bool)
       case deleteAllStoredState
+      case macappAlive(userId: uid_t)
     }
 
     case receivedAppMessage(MessageFromApp)

@@ -8,6 +8,10 @@ public typealias XPCErrorData = Data
     userId: uid_t,
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )
+  func receiveAlive(
+    for userId: uid_t,
+    reply: @escaping (Bool, XPCErrorData?) -> Void
+  )
   func receiveListUserTypesRequest(
     reply: @escaping (Data?, XPCErrorData?) -> Void
   )

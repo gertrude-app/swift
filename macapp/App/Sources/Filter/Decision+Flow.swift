@@ -44,7 +44,8 @@ public extension NetworkFilter {
       return .allow(.systemUiServerInternal)
     }
 
-    if flow.isFromGertrude {
+    let fromGertrude = flow.isFromGertrude
+    if fromGertrude, flow.hostname?.contains(".xpc.") != true {
       return .allow(.fromGertrudeApp)
     }
 
@@ -52,12 +53,21 @@ public extension NetworkFilter {
       return .block(.missingUserId)
     }
 
+    if fromGertrude, flow.hostname == XPC.URLMessage.alive(userId).hostname {
+      return .block(.urlMessage(.alive(userId)))
+    }
+
+    if self.state.macappsAliveUntil[userId] == nil,
+       self.state.userKeychains[userId] != nil {
+      return .block(.macappAWOL(userId))
+    }
+
     let app = appDescriptor(for: flow.bundleId ?? "", auditToken: auditToken)
     if self.activeSuspension(for: userId, permits: app) {
       return .allow(.filterSuspended)
     }
 
-    let keychains = state.userKeychains[userId] ?? []
+    let keychains = self.state.userKeychains[userId] ?? []
     guard !keychains.isEmpty else {
       return .block(.noUserKeys)
     }
