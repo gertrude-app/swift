@@ -30,7 +30,7 @@ extension RequestMagicLink: Resolver {
       let noAccountEmail = XPostmark.Email(
         to: email,
         subject: "Gertrude App Magic Link",
-        html: """
+        htmlBody: """
         A magic login link was requested for this email address, \
         but no Gertrude account exists with this email address. \
         Perhaps you signed up with a different email address? <br /><br /> \

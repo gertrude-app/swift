@@ -24,7 +24,7 @@ final class SignupTests: ApiTestCase {
 
     expect(output).toEqual(.init(admin: nil))
     expect(sent.emails.count).toEqual(1)
-    expect(sent.emails[0].html).toContain("already has an account")
+    expect(sent.emails[0].body).toContain("already has an account")
   }
 
   func testInitiateSignupHappyPath() async throws {
@@ -41,7 +41,7 @@ final class SignupTests: ApiTestCase {
     expect(admin.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(7)))
     expect(sent.emails.count).toEqual(1)
     expect(sent.emails[0].to).toEqual(email)
-    expect(sent.emails[0].html).toContain("verify your email address")
+    expect(sent.emails[0].body).toContain("verify your email address")
   }
 
   func testInitiateSignupWithGclidAndABVariant() async throws {

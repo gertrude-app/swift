@@ -33,8 +33,9 @@ class ApiTestCase: XCTestCase {
         self.sent.slacks.append(.init(message: msg, token: tok))
         return nil
       }
-      $0.postmark.send = { @Sendable email in
+      $0.postmark.sendEmail = { @Sendable email in
         self.sent.emails.append(email)
+        return .success(())
       }
       $0.websockets.sendEvent = {
         self.sent.websocketMessages.append($0)

@@ -233,7 +233,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(sent.emails).toHaveCount(1)
     let email = try XCTUnwrap(sent.emails.first)
     expect(email.to).toEqual("blob@blob.com")
-    expect(email.html).toContain("123456")
+    expect(email.body).toContain("123456")
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(

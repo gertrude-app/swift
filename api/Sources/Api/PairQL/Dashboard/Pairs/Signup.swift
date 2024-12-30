@@ -100,7 +100,7 @@ private func accountExists(with email: String, _ dashboardUrl: String) -> XPostm
     to: email,
     from: "Gertrude App <noreply@gertrude.app>",
     subject: "Gertrude Signup Request".withEmailSubjectDisambiguator,
-    html: """
+    htmlBody: """
     We received a request to initiate a signup for the Gertrude app, \
     but this email address already has an account! \
     Try <a href="\(dashboardUrl)/login">logging in</a> instead.
@@ -113,7 +113,7 @@ private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> X
     to: email,
     from: "Gertrude App <noreply@gertrude.app>",
     subject: "Action Required: Confirm your email".withEmailSubjectDisambiguator,
-    html: """
+    htmlBody: """
     Please verify your email address by clicking \
     <a href="\(dashboardUrl)/verify-signup-email/\(token.lowercased)">here</a>.\
     <br /><br />

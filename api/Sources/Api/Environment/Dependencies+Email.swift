@@ -11,20 +11,22 @@ public extension DependencyValues {
 
 public extension XPostmark.Client {
   func send(to: String, replyTo: String? = nil, subject: String, html: String) async throws {
-    try await self.send(.init(
+    try await self.sendEmail(.init(
       to: to,
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: replyTo,
       subject: subject.withEmailSubjectDisambiguator,
-      html: html
-    ))
+      htmlBody: html
+    )).loggingFailure()
+  }
+
+  func send(_ email: XPostmark.Email) async throws {
+    try await self.sendEmail(email).loggingFailure()
   }
 
   func toSuperAdmin(_ email: XPostmark.Email) {
     Task {
-      do {
-        try await self.send(email)
-      } catch {}
+      try await self.sendEmail(email).loggingFailure()
     }
   }
 
@@ -34,7 +36,7 @@ public extension XPostmark.Client {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: nil,
       subject: subject.withEmailSubjectDisambiguator,
-      html: html
+      htmlBody: html
     ))
   }
 
@@ -44,12 +46,12 @@ public extension XPostmark.Client {
 }
 
 public extension XPostmark.Email {
-  init(to: String, subject: String, html: String) {
+  init(to: String, subject: String, htmlBody: String) {
     self.init(
       to: to,
       from: "Gertrude App <noreply@gertrude.app>",
       subject: subject,
-      html: html
+      htmlBody: htmlBody
     )
   }
 
@@ -59,8 +61,21 @@ public extension XPostmark.Email {
       to: get(dependency: \.env).superAdminEmail,
       from: "Gertrude App <noreply@gertrude.app>",
       subject: "Gertrude API unexpected event".withEmailSubjectDisambiguator,
-      html: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)"
+      htmlBody: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)"
     )
+  }
+}
+
+extension Result where Success == Void, Failure == XPostmark.Client.Error {
+  func loggingFailure() async throws {
+    switch self {
+    case .failure(let err):
+      with(dependency: \.logger).error("Error sending email: \(err)")
+      await with(dependency: \.slack).sysLog("Error sending email: \(err)")
+      throw err
+    case .success:
+      break
+    }
   }
 }
 
