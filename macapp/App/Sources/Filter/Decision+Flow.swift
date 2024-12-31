@@ -8,7 +8,10 @@ public extension NetworkFilter {
     _ flow: FilterFlow,
     auditToken: Data? = nil
   ) -> FilterDecision.FromFlow? {
-    self.flowDecision(flow, auditToken: auditToken, canDefer: true)
+    #if DEBUG
+      if let mock = self.__TEST_MOCK_FLOW_DECISION { return mock }
+    #endif
+    return self.flowDecision(flow, auditToken: auditToken, canDefer: true)
   }
 
   func completedFlowDecision(
@@ -16,6 +19,9 @@ public extension NetworkFilter {
     readBytes: Data,
     auditToken: Data? = nil
   ) -> FilterDecision.FromFlow {
+    #if DEBUG
+      if case .some(.some(let mock)) = self.__TEST_MOCK_FLOW_DECISION { return mock }
+    #endif
     if flow.url == nil {
       flow.parseOutboundData(byteString: bytesToAscii(readBytes))
     }
@@ -38,7 +44,8 @@ public extension NetworkFilter {
       return .allow(.systemUiServerInternal)
     }
 
-    if flow.isFromGertrude {
+    let fromGertrude = flow.isFromGertrude
+    if fromGertrude, flow.hostname?.contains(".xpc.") != true {
       return .allow(.fromGertrudeApp)
     }
 
@@ -46,12 +53,21 @@ public extension NetworkFilter {
       return .block(.missingUserId)
     }
 
+    if fromGertrude, flow.hostname == XPC.URLMessage.alive(userId).hostname {
+      return .block(.urlMessage(.alive(userId)))
+    }
+
+    if self.state.macappsAliveUntil[userId] == nil,
+       self.state.userKeychains[userId] != nil {
+      return .block(.macappAWOL(userId))
+    }
+
     let app = appDescriptor(for: flow.bundleId ?? "", auditToken: auditToken)
     if self.activeSuspension(for: userId, permits: app) {
       return .allow(.filterSuspended)
     }
 
-    let keychains = state.userKeychains[userId] ?? []
+    let keychains = self.state.userKeychains[userId] ?? []
     guard !keychains.isEmpty else {
       return .block(.noUserKeys)
     }

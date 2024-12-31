@@ -26,6 +26,15 @@ final class EarlyDecisionTests: XCTestCase {
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.none(502))
   }
 
+  func testExemptUserNotConsideredAwol() {
+    let filter = TestFilter.scenario(
+      userIdFromAuditToken: 502,
+      macappsAliveUntil: [:], // <-- AWOL
+      exemptUsers: [502] // <-- but exempt
+    )
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow(.exemptUser(502)))
+  }
+
   func testBlockedByDowntime() {
     let downtime = PlainTimeWindow(
       start: .init(hour: 22, minute: 0),
@@ -101,6 +110,14 @@ final class EarlyDecisionTests: XCTestCase {
   func testUserWithUnrestrictedScopeFilterSuspensionAllowed() {
     let filter = TestFilter.scenario(suspensions: [502: .init(scope: .unrestricted, duration: 100)])
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow(.filterSuspended(502)))
+  }
+
+  func testFilterSuspensionAllowNotGrantedEarlyIfMacappAppearsAWOL() {
+    let filter = TestFilter.scenario(
+      macappsAliveUntil: [:],
+      suspensions: [502: .init(scope: .unrestricted, duration: 100)]
+    )
+    expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.none(502))
   }
 
   func testUserWithBrowserScopeFilterSuspensionNoDecision() {

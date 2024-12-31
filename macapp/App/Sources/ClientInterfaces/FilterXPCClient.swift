@@ -14,7 +14,9 @@ public struct FilterXPCClient: Sendable {
   public var pauseDowntime: @Sendable (Date) async -> Result<Void, XPCErr>
   public var requestAck: @Sendable () async -> Result<XPC.FilterAck, XPCErr>
   public var requestUserTypes: @Sendable () async -> Result<FilterUserTypes, XPCErr>
+  public var sendAlive: @Sendable () async -> Result<Bool, XPCErr>
   public var sendDeleteAllStoredState: @Sendable () async -> Result<Void, XPCErr>
+  public var sendURLMessage: @Sendable (XPC.URLMessage) async -> Void
   public var sendUserRules: @Sendable (AppIdManifest, [RuleKeychain], Downtime?)
     async -> Result<Void, XPCErr>
   public var setBlockStreaming: @Sendable (Bool) async -> Result<Void, XPCErr>
@@ -31,7 +33,9 @@ public struct FilterXPCClient: Sendable {
     pauseDowntime: @escaping @Sendable (Date) async -> Result<Void, XPCErr>,
     requestAck: @escaping @Sendable () async -> Result<XPC.FilterAck, XPCErr>,
     requestUserTypes: @escaping @Sendable () async -> Result<FilterUserTypes, XPCErr>,
+    sendAlive: @escaping @Sendable () async -> Result<Bool, XPCErr>,
     sendDeleteAllStoredState: @escaping @Sendable () async -> Result<Void, XPCErr>,
+    sendURLMessage: @escaping @Sendable (XPC.URLMessage) async -> Void,
     sendUserRules: @escaping @Sendable (AppIdManifest, [RuleKeychain], Downtime?)
     async -> Result<Void, XPCErr>,
     setBlockStreaming: @escaping @Sendable (Bool) async -> Result<Void, XPCErr>,
@@ -47,7 +51,9 @@ public struct FilterXPCClient: Sendable {
     self.pauseDowntime = pauseDowntime
     self.requestAck = requestAck
     self.requestUserTypes = requestUserTypes
+    self.sendAlive = sendAlive
     self.sendDeleteAllStoredState = sendDeleteAllStoredState
+    self.sendURLMessage = sendURLMessage
     self.sendUserRules = sendUserRules
     self.setBlockStreaming = setBlockStreaming
     self.setUserExemption = setUserExemption
@@ -105,10 +111,15 @@ extension FilterXPCClient: TestDependencyKey {
         "FilterXPCClient.requestUserTypes",
         placeholder: .success(.init(exempt: [], protected: []))
       ),
+      sendAlive: unimplemented(
+        "FilterXPCClient.sendAlive",
+        placeholder: .success(true)
+      ),
       sendDeleteAllStoredState: unimplemented(
         "FilterXPCClient.sendDeleteAllStoredState",
         placeholder: .success(())
       ),
+      sendURLMessage: unimplemented("FilterXPCClient.sendURLMessage"),
       sendUserRules: unimplemented(
         "FilterXPCClient.sendUserRules",
         placeholder: .success(())
@@ -147,7 +158,9 @@ extension FilterXPCClient: TestDependencyKey {
         numUserKeys: 0
       )) },
       requestUserTypes: { .success(.init(exempt: [], protected: [])) },
+      sendAlive: { .success(true) },
       sendDeleteAllStoredState: { .success(()) },
+      sendURLMessage: { _ in },
       sendUserRules: { _, _, _ in .success(()) },
       setBlockStreaming: { _ in .success(()) },
       setUserExemption: { _, _ in .success(()) },

@@ -21,6 +21,7 @@ struct FilterFeature: Feature {
 
   struct Reducer: FeatureReducer {
     @Dependency(\.api) var api
+    @Dependency(\.filterXpc) var xpc
 
     func reduce(into state: inout State, action: Action) -> Effect<Action> {
       switch action {
@@ -134,7 +135,7 @@ extension FilterFeature.RootReducer {
       if let expiration = state.filter.currentSuspensionExpiration, expiration <= now {
         state.filter.currentSuspensionExpiration = nil
       }
-      return .none
+      return .exec { _ in _ = await self.xpc.sendAlive() }
 
     case .heartbeat(.everyFiveMinutes):
       let appVersionString = state.appUpdates.installedVersion
@@ -200,7 +201,8 @@ extension FilterFeature.RootReducer {
             let installResult = await self.filterExtension.install()
             switch installResult {
             case .installedSuccessfully:
-              break
+              try await self.mainQueue.sleep(for: .milliseconds(10))
+              _ = await self.xpc.establishConnection()
             case .timedOutWaiting:
               // event `9ffabfe5` logged w/ more detail in FilterFeature.swift
               await send(.focusedNotification(.filterInstallTimeout))

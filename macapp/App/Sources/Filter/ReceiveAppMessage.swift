@@ -94,6 +94,17 @@ import os.log
     reply(nil)
   }
 
+  func receiveAlive(
+    for userId: uid_t,
+    reply: @escaping (Bool, XPCErrorData?) -> Void
+  ) {
+    os_log("[G•] FILTER xpc.receiveAlive(for: %{public}d)", userId)
+    self.subject.withValue {
+      $0.send(.receivedAppMessage(.macappAlive(userId: userId)))
+    }
+    reply(true, nil)
+  }
+
   func receiveAckRequest(
     randomInt: Int,
     userId: uid_t,
@@ -114,6 +125,9 @@ import os.log
       )
       let data = try XPC.encode(ack)
       reply(data, nil)
+      self.subject.withValue {
+        $0.send(.receivedAppMessage(.macappAlive(userId: userId)))
+      }
     } catch {
       os_log("[G•] FILTER xpc.receiveAckRequest error: %{public}@", "\(error)")
       reply(nil, XPC.errorData(error))

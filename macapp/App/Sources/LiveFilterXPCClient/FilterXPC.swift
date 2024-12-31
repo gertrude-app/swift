@@ -56,6 +56,12 @@ struct FilterXPC: Sendable {
     return ack
   }
 
+  func sendAlive() async throws -> Bool {
+    try await withTimeout(connection: sharedConnection) { filterProxy, continuation in
+      filterProxy.receiveAlive(for: getuid(), reply: continuation.dataHandler)
+    }
+  }
+
   func sendUserRules(
     manifest: AppIdManifest,
     keychains: [RuleKeychain],

@@ -34,7 +34,7 @@ class FilterMigratorTests: XCTestCase {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
-    migrator.userDefaults.setString = { key, value in
+    migrator.userDefaults.setString = { @Sendable key, value in
       setStringInvocations.append(.init(key, value))
     }
 
@@ -83,7 +83,7 @@ class FilterMigratorTests: XCTestCase {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
-    migrator.userDefaults.setString = { key, value in
+    migrator.userDefaults.setString = { @Sendable key, value in
       setStringInvocations.append(.init(key, value))
     }
 

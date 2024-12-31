@@ -4,6 +4,10 @@ import os.log
 
 public extension NetworkFilter {
   func earlyUserDecision(auditToken: Data?) -> FilterDecision.FromUserId {
+    #if DEBUG
+      if let mock = self.__TEST_MOCK_EARLY_DECISION { return mock }
+    #endif
+
     guard let userId = self.security.userIdFromAuditToken(auditToken) else {
       return self.logDecision(.block(.missingUserId))
     }
@@ -30,7 +34,8 @@ public extension NetworkFilter {
 
     if let suspension = self.state.suspensions[userId],
        suspension.isActive,
-       suspension.scope == .unrestricted {
+       suspension.scope == .unrestricted,
+       self.state.macappsAliveUntil[userId] != nil {
       return self.logDecision(.allow(.filterSuspended(userId)))
     }
 

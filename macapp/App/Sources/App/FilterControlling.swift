@@ -13,30 +13,30 @@ protocol FilterControlling: RootReducing {
 
 extension FilterControlling {
   func installFilter(_ send: Send<Action>) async throws {
-    await api.securityEvent(.systemExtensionChangeRequested, "install")
-    _ = await filter.install()
-    try await mainQueue.sleep(for: .milliseconds(10))
-    let result = await xpc.establishConnection()
+    await self.api.securityEvent(.systemExtensionChangeRequested, "install")
+    _ = await self.filter.install()
+    try await self.mainQueue.sleep(for: .milliseconds(10))
+    let result = await self.xpc.establishConnection()
     os_log("[G•] APP FilterControlling.installFilter() result: %{public}s", "\(result)")
-    await afterFilterChange(send, repairing: false)
+    await self.afterFilterChange(send, repairing: false)
   }
 
   func restartFilter(_ send: Send<Action>) async throws {
-    await api.securityEvent(.systemExtensionChangeRequested, "restart")
-    _ = await filter.restart()
-    try await mainQueue.sleep(for: .milliseconds(100))
-    let result = await xpc.establishConnection()
+    await self.api.securityEvent(.systemExtensionChangeRequested, "restart")
+    _ = await self.filter.restart()
+    try await self.mainQueue.sleep(for: .milliseconds(100))
+    let result = await self.xpc.establishConnection()
     os_log("[G•] APP FilterControlling.restartFilter() result: %{public}s", "\(result)")
-    await afterFilterChange(send, repairing: false)
+    await self.afterFilterChange(send, repairing: false)
   }
 
   func startFilter(_ send: Send<Action>) async throws {
-    await api.securityEvent(.systemExtensionChangeRequested, "start")
-    _ = await filter.start()
-    try await mainQueue.sleep(for: .milliseconds(100))
-    let result = await xpc.establishConnection()
+    await self.api.securityEvent(.systemExtensionChangeRequested, "start")
+    _ = await self.filter.start()
+    try await self.mainQueue.sleep(for: .milliseconds(100))
+    let result = await self.xpc.establishConnection()
     os_log("[G•] APP FilterControlling.startFilter() result: %{public}s", "\(result)")
-    await afterFilterChange(send, repairing: false)
+    await self.afterFilterChange(send, repairing: false)
   }
 
   func replaceFilter(
@@ -44,34 +44,34 @@ extension FilterControlling {
     attempt: Int = 1,
     reinstallOnFail: Bool = true
   ) async throws {
-    _ = await filter.replace()
-    await api.securityEvent(.systemExtensionChangeRequested, "replace")
-    var result = await xpc.establishConnection()
+    _ = await self.filter.replace()
+    await self.api.securityEvent(.systemExtensionChangeRequested, "replace")
+    var result = await self.xpc.establishConnection()
     os_log(
       "[G•] APP FilterControlling.replaceFilter() attempt: %{public}d, result: %{public}s",
       attempt,
       "\(result)"
     )
-    await afterFilterChange(send, repairing: true)
+    await self.afterFilterChange(send, repairing: true)
 
     // trying up to 4 times seems to get past some funky states fairly
     // reliably, especially the one i observe locally only, where the filter
     // shows up in an "orange" state in the system preferences pane
-    if attempt < 4, await xpc.notConnected() {
-      return try await self.replaceFilter(
+    if attempt < 4, await self.xpc.notConnected() {
+      return try await self.self.replaceFilter(
         send,
         attempt: attempt + 1,
         reinstallOnFail: reinstallOnFail
       )
     }
 
-    if reinstallOnFail, await xpc.notConnected() {
+    if reinstallOnFail, await self.xpc.notConnected() {
       os_log("[G•] APP FilterControlling.replaceFilter() failed, reinstalling")
-      _ = await filter.reinstall()
-      try await mainQueue.sleep(for: .milliseconds(500))
-      result = await xpc.establishConnection()
+      _ = await self.filter.reinstall()
+      try await self.mainQueue.sleep(for: .milliseconds(500))
+      result = await self.xpc.establishConnection()
       os_log("[G•] APP FilterControlling.replaceFilter() final: %{public}s", "\(result)")
-      await afterFilterChange(send, repairing: false)
+      await self.afterFilterChange(send, repairing: false)
     }
   }
 }

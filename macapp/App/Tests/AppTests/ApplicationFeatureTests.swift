@@ -1,3 +1,4 @@
+import Core
 import Gertie
 import MacAppRoute
 import TestSupport
@@ -52,5 +53,14 @@ final class ApplicationFeatureTests: XCTestCase {
       .toEqual([.init("Application blocked", "The app “FaceSkype” is not allowed")])
     await expect(securityEvent.calls)
       .toEqual([Both(.init(.blockedAppLaunchAttempted, "app: FaceSkype"), nil)])
+  }
+
+  @MainActor
+  func testSendsFilterAliveOnWake() async {
+    let (store, _) = AppReducer.testStore()
+    let alive = mock(once: Result<Bool, XPCErr>.success(true))
+    store.deps.filterXpc.sendAlive = alive.fn
+    await store.send(.application(.didWake))
+    await expect(alive.called).toEqual(true)
   }
 }

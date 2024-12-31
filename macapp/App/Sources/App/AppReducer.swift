@@ -42,6 +42,7 @@ struct AppReducer: Reducer, Sendable {
   enum CancelId {
     case heartbeatInterval
     case websocketMessages
+    case networkConnectionChanges
   }
 
   enum Action: Equatable, Sendable {
@@ -75,6 +76,7 @@ struct AppReducer: Reducer, Sendable {
     case startProtecting(user: UserData)
     case websocket(WebSocketFeature.Action)
     case setTrustedTimestamp(TrustedTimestamp)
+    case networkConnectionChanged(connected: Bool)
 
     indirect case adminAuthed(Action)
   }
@@ -87,6 +89,7 @@ struct AppReducer: Reducer, Sendable {
   @Dependency(\.network) var network
   @Dependency(\.storage) var storage
   @Dependency(\.websocket) var websocket
+  @Dependency(\.filterXpc) var xpc
 
   var body: some ReducerOf<Self> {
     Reduce<State, Action> { state, action in
@@ -98,7 +101,7 @@ struct AppReducer: Reducer, Sendable {
       case .loadedPersistentState(.none):
         state.onboarding.windowOpen = true
         return .exec { [new = state.persistent] _ in
-          try await storage.savePersistentState(new)
+          try await self.storage.savePersistentState(new)
         }
 
       case .loadedPersistentState(.some(let persisted)):
@@ -122,7 +125,7 @@ struct AppReducer: Reducer, Sendable {
           effects.append(.exec { [persist = state.persistent] _ in
             var withoutResume = persist
             withoutResume.resumeOnboarding = nil
-            try await storage.savePersistentState(withoutResume)
+            try await self.storage.savePersistentState(withoutResume)
           })
         }
         return .merge(effects)
@@ -130,35 +133,46 @@ struct AppReducer: Reducer, Sendable {
       case .startProtecting(let user):
         let onboardingWindowOpen = state.onboarding.windowOpen
         return .merge(
+
           .exec { [filterVersion = state.filter.version] send in
-            await api.setUserToken(user.token)
-            guard network.isConnected() else { return }
+            await self.api.setUserToken(user.token)
+            guard self.network.isConnected() else { return }
             await send(.checkIn(
-              result: TaskResult { try await api.appCheckIn(filterVersion) },
+              result: TaskResult { try await self.api.appCheckIn(filterVersion) },
               reason: .startProtecting
             ))
           },
+
           .exec { _ in
-            if onboardingWindowOpen == false, (await app.isLaunchAtLoginEnabled()) == false {
-              await app.enableLaunchAtLogin()
+            if onboardingWindowOpen == false, (await self.app.isLaunchAtLoginEnabled()) == false {
+              await self.app.enableLaunchAtLogin()
             }
           },
+
           .publisher {
-            websocket.receive()
+            self.websocket.receive()
               .map { .websocket(.receivedMessage($0)) }
-              .receive(on: mainQueue)
+              .receive(on: self.mainQueue)
           }.cancellable(id: CancelId.websocketMessages),
+
+          .publisher {
+            self.network.connectionChanges()
+              .map { .networkConnectionChanged(connected: $0) }
+              .receive(on: self.mainQueue)
+          }.cancellable(id: CancelId.networkConnectionChanges),
+
           .exec { send in
             var numTicks = 0
-            for await _ in bgQueue.timer(interval: .seconds(60)) {
+            for await _ in self.bgQueue.timer(interval: .seconds(60)) {
               numTicks += 1
               for interval in heartbeatIntervals(for: numTicks) {
                 await send(.heartbeat(interval))
               }
             }
           }.cancellable(id: CancelId.heartbeatInterval),
+
           .exec { _ in
-            try await app.startRelaunchWatcher()
+            try await self.app.startRelaunchWatcher()
           }
         )
 
@@ -172,9 +186,9 @@ struct AppReducer: Reducer, Sendable {
         return .exec { _ in
           switch notification {
           case .unexpectedError:
-            await device.notifyUnexpectedError()
+            await self.device.notifyUnexpectedError()
           case .text(let title, let body):
-            await device.showNotification(title, body)
+            await self.device.showNotification(title, body)
           }
         }
 
@@ -184,7 +198,7 @@ struct AppReducer: Reducer, Sendable {
         return .exec { [persist = state.persistent] _ in
           var copy = persist
           copy.resumeOnboarding = resume
-          try await storage.savePersistentState(copy)
+          try await self.storage.savePersistentState(copy)
         }
 
       case .onboarding(.delegate(.onboardingConfigComplete)):
@@ -198,6 +212,9 @@ struct AppReducer: Reducer, Sendable {
       case .setTrustedTimestamp(let timestamp):
         state.timestamp = timestamp
         return .none
+
+      case .networkConnectionChanged(connected: true):
+        return .exec { _ in _ = await self.xpc.sendAlive() }
 
       default:
         return .none

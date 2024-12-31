@@ -13,13 +13,17 @@ public struct Filter: Reducer, Sendable {
     public var suspensions: [uid_t: FilterSuspension] = [:]
     public var appCache: [String: AppDescriptor] = [:]
     public var blockListeners: [uid_t: Date] = [:]
+    public var macappsAliveUntil: [uid_t: Date] = [:]
     public var logs: FilterLogs = .init(bundleIds: [:], events: [:])
+
+    public init() {}
   }
 
   public enum Action: Equatable, Sendable {
     case extensionStarted
     case extensionStopping
     case xpc(XPCEvent.Filter)
+    case urlMessage(XPC.URLMessage)
     case flowBlocked(FilterFlow, AppDescriptor)
     case cacheAppDescriptor(String, AppDescriptor)
     case loadedPersistentState(Persistent.State?)
@@ -118,6 +122,12 @@ public struct Filter: Reducer, Sendable {
         }
       }
 
+      for (userId, expiration) in state.macappsAliveUntil {
+        if expiration < self.now {
+          state.macappsAliveUntil[userId] = nil
+        }
+      }
+
       for userId in state.userDowntime.keys {
         if let pauseExpiry = state.userDowntime[userId]?.pausedUntil, pauseExpiry < self.now {
           state.userDowntime[userId]?.pausedUntil = nil
@@ -168,11 +178,13 @@ public struct Filter: Reducer, Sendable {
       return .none
 
     case .xpc(.receivedAppMessage(.setBlockStreaming(true, let userId))):
+      state.recordAppActivity(from: userId)
       state.blockListeners[userId] = self.now + .minutes(5)
       os_log("[D•] FILTER state start streaming: %{public}@", "\(state.debug)")
       return .none
 
     case .xpc(.receivedAppMessage(.setBlockStreaming(false, let userId))):
+      state.recordAppActivity(from: userId)
       state.blockListeners[userId] = nil
       return .none
 
@@ -183,10 +195,12 @@ public struct Filter: Reducer, Sendable {
       return self.saving(state.persistent)
 
     case .xpc(.receivedAppMessage(.endFilterSuspension(let userId))):
+      state.recordAppActivity(from: userId)
       state.suspensions[userId] = nil
       return .cancel(id: CancelId.suspensionTimer(for: userId))
 
     case .xpc(.receivedAppMessage(.suspendFilter(let userId, let duration))):
+      state.recordAppActivity(from: userId)
       state.suspensions[userId] = .init(
         scope: .unrestricted,
         duration: duration,
@@ -206,6 +220,7 @@ public struct Filter: Reducer, Sendable {
       let downtime,
       let manifest
     ))):
+      state.recordAppActivity(from: userId)
       if !keychains.isEmpty {
         state.userKeychains[userId] = keychains
         state.exemptUsers.remove(userId)
@@ -230,14 +245,25 @@ public struct Filter: Reducer, Sendable {
       }
 
     case .xpc(.receivedAppMessage(.pauseDowntime(let userId, let expiration))):
+      state.recordAppActivity(from: userId)
       state.userDowntime[userId]?.pausedUntil = expiration
       return .none
 
     case .xpc(.receivedAppMessage(.endDowntimePause(let userId))):
+      state.recordAppActivity(from: userId)
       state.userDowntime[userId]?.pausedUntil = nil
       return .none
 
+    case .xpc(.receivedAppMessage(.macappAlive(let userId))),
+         .urlMessage(.alive(let userId)):
+      state.recordAppActivity(from: userId)
+      return .none
+
     case .xpc(.decodingAppMessageDataFailed):
+      return .none
+
+    case .urlMessage(.restartListener):
+      // not implemented yet
       return .none
     }
   }
@@ -246,6 +272,13 @@ public struct Filter: Reducer, Sendable {
     .run { [save = storage.savePersistentState] _ in
       try await save(state)
     }
+  }
+}
+
+public extension Filter.State {
+  mutating func recordAppActivity(from userId: uid_t) {
+    @Dependency(\.date.now) var now
+    self.macappsAliveUntil[userId] = now + .seconds(150)
   }
 }
 

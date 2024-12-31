@@ -66,7 +66,7 @@ public enum Relauncher {
       client.sleepForSeconds(sleepInterval)
       if iterations % 20 == 0 {
         os_log("[G•] HELPER checking for program termination...")
-      } else {
+      } else if iterations % 5 == 0 {
         os_log("[D•] HELPER checking for program termination...")
       }
 

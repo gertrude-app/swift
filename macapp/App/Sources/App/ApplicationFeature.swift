@@ -55,7 +55,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
           let setupState = await self.filterExtension.setup()
           await send(.filter(.receivedState(setupState)))
           if setupState.installed {
-            _ = await filterXpc.establishConnection()
+            _ = await self.filterXpc.establishConnection()
           }
         },
 
@@ -140,10 +140,14 @@ extension ApplicationFeature.RootReducer: RootReducing {
         }
       }
 
+    case .application(.didWake):
+      return .exec { _ in _ = await self.filterXpc.sendAlive() }
+
     case .application(.willTerminate):
       return .merge(
         .cancel(id: AppReducer.CancelId.heartbeatInterval),
         .cancel(id: AppReducer.CancelId.websocketMessages),
+        .cancel(id: AppReducer.CancelId.networkConnectionChanges),
         .exec { _ in await self.app.stopRelaunchWatcher() }
       )
 

@@ -76,6 +76,8 @@
   - don't take screenshots when login window is frontmost application
 - `2.6.0` (canary as of 12/17/24)
   - app blocking
+- `2.6.1` (canary as of 12/27/24)
+  - filter polices app, blocks if awol
 
 ## Sparkle Releases
 

@@ -73,6 +73,56 @@ public enum XPCEvent: Sendable, Equatable {
 }
 
 public extension XPC {
+  enum URLMessage: Sendable, Equatable {
+    case alive(uid_t)
+    case restartListener(uid_t)
+
+    public var string: String {
+      switch self {
+      case .alive(let userId):
+        return "x-alive--\(userId)"
+      case .restartListener(let userId):
+        return "x-restart-listener--\(userId)"
+      }
+    }
+
+    public var hostname: String {
+      "\(self.string).xpc.gertrude.app"
+    }
+
+    public var url: URL {
+      URL(string: "https://\(self.hostname)")!
+    }
+
+    public init?(string: String) {
+      guard string.starts(with: "x") else {
+        return nil
+      }
+      if string.starts(with: "x-alive--") {
+        if let uid = uid_t(login: string.dropFirst(9)) {
+          self = .alive(uid)
+        }
+      } else if string.starts(with: "x-restart-listener--") {
+        if let uid = uid_t(login: string.dropFirst(20)) {
+          self = .restartListener(uid)
+        }
+      }
+      return nil
+    }
+  }
+}
+
+private extension uid_t {
+  init?(login: Substring) {
+    if let num = UInt32(login), num > 500 {
+      self = num
+    } else {
+      return nil
+    }
+  }
+}
+
+public extension XPC {
   struct FilterAck: Sendable, Equatable, Codable {
     public var randomInt: Int
     public var version: String
