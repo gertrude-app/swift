@@ -2,7 +2,6 @@ import DuetSQL
 import Foundation
 import PairQL
 import Vapor
-import XPostmark
 
 struct SendPasswordResetEmail: Pair {
   static let auth: ClientAuth = .none

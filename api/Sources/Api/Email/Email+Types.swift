@@ -23,14 +23,6 @@ enum TemplateEmail {
 enum EmailLayout: String, CaseIterable {
   case base
   case newVersionAnnouncement
-
-  var slug: String {
-    self.rawValue.snakeCased.replacing("_", with: "-")
-  }
-
-  var name: String {
-    self.rawValue.snakeCased.replacing("_", with: " ").capitalized
-  }
 }
 
 protocol TemplateEmailModel: Sendable {
@@ -48,6 +40,25 @@ extension TemplateEmailModel {
   static var name: String { "\(Self.self)" }
   static var alias: String { Self.name.snakeCased.replacing("_", with: "-") }
   static var displayName: String { Self.name.replacing("_", with: " ") }
+}
+
+extension EmailLayout {
+  var slug: String {
+    self.rawValue.snakeCased.replacing("_", with: "-")
+  }
+
+  var name: String {
+    self.rawValue.snakeCased.replacing("_", with: " ").capitalized
+  }
+
+  init?(slug: String) {
+    self.init(
+      rawValue: slug.split(separator: "-")
+        .enumerated()
+        .map { i, s in i != 0 ? s.capitalized : String(s) }
+        .joined()
+    )
+  }
 }
 
 extension TemplateEmail {

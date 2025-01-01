@@ -37,6 +37,10 @@ public extension Configure {
           use: TestEmail.send(_:)
         )
         app.get(
+          "web-test-email", ":email",
+          use: TestEmail.web(_:)
+        )
+        app.get(
           "sync-email-templates",
           use: TestEmail.sync(_:)
         )
