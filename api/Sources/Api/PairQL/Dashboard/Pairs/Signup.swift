@@ -3,7 +3,6 @@ import DuetSQL
 import Foundation
 import PairQL
 import Vapor
-import XPostmark
 
 struct Signup: Pair {
   static let auth: ClientAuth = .none
@@ -51,7 +50,8 @@ extension Signup: Resolver {
       if existing.isPendingEmailVerification {
         try await sendVerificationEmail(to: existing, in: context)
       } else {
-        try await postmark.send(accountExists(with: email, context.dashboardUrl))
+        try await postmark
+          .send(template: .reSignup(to: email, model: .init(dashboardUrl: context.dashboardUrl)))
       }
 
       return .init(admin: nil)
@@ -92,32 +92,8 @@ func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
     )
 
   try await with(dependency: \.postmark)
-    .send(verify(admin.email.rawValue, context.dashboardUrl, token))
-}
-
-private func accountExists(with email: String, _ dashboardUrl: String) -> XPostmark.Email {
-  .init(
-    to: email,
-    from: "Gertrude App <noreply@gertrude.app>",
-    subject: "Gertrude Signup Request".withEmailSubjectDisambiguator,
-    htmlBody: """
-    We received a request to initiate a signup for the Gertrude app, \
-    but this email address already has an account! \
-    Try <a href="\(dashboardUrl)/login">logging in</a> instead.
-    """
-  )
-}
-
-private func verify(_ email: String, _ dashboardUrl: String, _ token: UUID) -> XPostmark.Email {
-  .init(
-    to: email,
-    from: "Gertrude App <noreply@gertrude.app>",
-    subject: "Action Required: Confirm your email".withEmailSubjectDisambiguator,
-    htmlBody: """
-    Please verify your email address by clicking \
-    <a href="\(dashboardUrl)/verify-signup-email/\(token.lowercased)">here</a>.\
-    <br /><br />
-    This link will expire in 24 hours.
-    """
-  )
+    .send(template: .initialSignup(
+      to: admin.email.rawValue,
+      model: .init(dashboardUrl: context.dashboardUrl, token: token)
+    ))
 }

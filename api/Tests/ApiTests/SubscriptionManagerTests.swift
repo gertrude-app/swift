@@ -45,7 +45,7 @@ final class SubscriptionManagerTests: ApiTestCase {
 
     expect(sent.emails.count).toEqual(1)
     expect(sent.emails[0].to).toEqual(trialEndingSoon.email.rawValue)
-    XCTAssert(sent.emails[0].subject.contains("trial ending soon"))
+    expect(sent.emails[0].template).toBe("trial-ending-soon")
   }
 
   func testNonExpiredStateDoesNotUpdate() async throws {

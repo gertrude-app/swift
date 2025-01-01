@@ -3,13 +3,11 @@ import Foundation
 
 extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
   func sendEmail(to address: String) async throws {
-    let subject = "[Gertrude App] New suspend filter request from \(userName)"
-    let html = """
-    User \(userName) submitted a new <b>suspend filter request</b>.
-     \(emailLink(url: self.url, text: "Click here")) to view the details and approve or deny.
-    """
     try await with(dependency: \.postmark)
-      .send(to: address, subject: subject, html: html)
+      .send(template: .notifySuspendFilter(
+        to: address,
+        model: .init(url: self.url, userName: self.userName)
+      ))
   }
 
   func sendSlack(channel: String, token: String) async throws {

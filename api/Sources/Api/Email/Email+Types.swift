@@ -33,7 +33,7 @@ enum EmailLayout: String, CaseIterable {
   }
 }
 
-protocol TemplateEmailModel {
+protocol TemplateEmailModel: Sendable {
   var templateModel: [String: String] { get }
   static var name: String { get }
   static var subject: String { get }

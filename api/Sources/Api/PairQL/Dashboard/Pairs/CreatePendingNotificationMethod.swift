@@ -52,18 +52,8 @@ private func sendVerification(
     }
 
   case .email(email: let email):
-    _ = try await with(dependency: \.postmark).send(
-      to: email,
-      subject: "Gertrude App verification code",
-      html: """
-      <p>
-        We received a request to verify permission to send Gertrude
-         App notification emails to this address.
-      </p>
-      <p>Your verification code is:</p>
-      <p style="margin-top:2em"><code style="font-size:4em">\(code)</code></p>
-      """
-    )
+    _ = try await with(dependency: \.postmark)
+      .send(template: .verifyNotificationEmail(to: email, model: .init(code: code)))
 
   case .text(phoneNumber: let phoneNumber):
     try await with(dependency: \.twilio).send(Text(

@@ -2,15 +2,36 @@ import Dependencies
 import Vapor
 import XPostmark
 
-public extension DependencyValues {
-  var postmark: XPostmark.Client {
-    get { self[XPostmark.Client.self] }
-    set { self[XPostmark.Client.self] = newValue }
+struct PostmarkClient: Sendable {
+  var _sendEmail: @Sendable (XPostmark.Email) async
+    -> Result<Void, XPostmark.Client.Error>
+  var _sendTemplateEmail: @Sendable (XPostmark.TemplateEmail) async
+    -> Result<Void, XPostmark.Client.Error>
+  var _sendTemplateEmailBatch: @Sendable ([XPostmark.TemplateEmail]) async
+    -> Result<[Result<Void, XPostmark.Client.BatchEmail.Error>], XPostmark.Client.Error>
+}
+
+extension PostmarkClient: DependencyKey {
+  public static var liveValue: PostmarkClient {
+    let env = Env.fromProcess(mode: try? Vapor.Environment.detect())
+    let pmClient = XPostmark.Client.live(apiKey: env.postmark.apiKey)
+    return .init(
+      _sendEmail: pmClient.sendEmail,
+      _sendTemplateEmail: pmClient.sendTemplateEmail,
+      _sendTemplateEmailBatch: pmClient.sendTemplateEmailBatch
+    )
   }
 }
 
-extension XPostmark.Client {
-  func send(template email: TemplateEmail) async throws {
+extension DependencyValues {
+  var postmark: PostmarkClient {
+    get { self[PostmarkClient.self] }
+    set { self[PostmarkClient.self] = newValue }
+  }
+}
+
+extension PostmarkClient {
+  func send(template email: Api.TemplateEmail) async throws {
     var templateEmail = XPostmark.TemplateEmail(
       to: "",
       from: "Gertrude App <noreply@gertrude.app>",
@@ -37,22 +58,23 @@ extension XPostmark.Client {
          .verifyNotificationEmail(let recipient, _):
       templateEmail.to = recipient
       templateEmail.templateModel["subjref"] = "".withEmailSubjectDisambiguator
-      try await self.sendTemplateEmail(templateEmail).loggingFailure()
+      try await self._sendTemplateEmail(templateEmail)
+        .loggingFailure(of: templateEmail.templateAlias, to: recipient)
     case .v2_7_0_Announce(let recipients, _, let dryRun):
-      let result = await self.sendTemplateEmailBatch(recipients.map {
+      guard get(dependency: \.env).mode == .dev else {
+        throw Abort(.forbidden)
+      }
+      print(await self._sendTemplateEmailBatch(recipients.map {
         var batchEmail = templateEmail
         batchEmail.to = $0
         batchEmail.templateModel["subjref"] = dryRun ? "".withEmailSubjectDisambiguator : ""
         return batchEmail
-      })
-      print(result) // todo
+      }))
     }
   }
-}
 
-public extension XPostmark.Client {
   func send(to: String, replyTo: String? = nil, subject: String, html: String) async throws {
-    try await self.sendEmail(.init(
+    try await self._sendEmail(.init(
       to: to,
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: replyTo,
@@ -61,13 +83,9 @@ public extension XPostmark.Client {
     )).loggingFailure()
   }
 
-  func send(_ email: XPostmark.Email) async throws {
-    try await self.sendEmail(email).loggingFailure()
-  }
-
   func toSuperAdmin(_ email: XPostmark.Email) {
     Task {
-      try await self.sendEmail(email).loggingFailure()
+      try await self._sendEmail(email).loggingFailure()
     }
   }
 
@@ -82,28 +100,13 @@ public extension XPostmark.Client {
   }
 
   func unexpected(_ id: String, _ detail: String = "") {
-    self.toSuperAdmin(.unexpected(id, detail))
-  }
-}
-
-public extension XPostmark.Email {
-  init(to: String, subject: String, htmlBody: String) {
-    self.init(
-      to: to,
-      from: "Gertrude App <noreply@gertrude.app>",
-      subject: subject,
-      htmlBody: htmlBody
-    )
-  }
-
-  static func unexpected(_ id: String, _ detail: String = "") -> Self {
     let search = "https://github.com/search?q=repo%3Agertrude-app%2Fswift%20\(id)&type=code"
-    return .init(
+    return self.toSuperAdmin(.init(
       to: get(dependency: \.env).superAdminEmail,
       from: "Gertrude App <noreply@gertrude.app>",
       subject: "Gertrude API unexpected event".withEmailSubjectDisambiguator,
       htmlBody: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)"
-    )
+    ))
   }
 }
 
@@ -118,12 +121,20 @@ extension Result where Success == Void, Failure == XPostmark.Client.Error {
       break
     }
   }
-}
 
-extension XPostmark.Client: DependencyKey {
-  public static var liveValue: XPostmark.Client {
-    let env = Env.fromProcess(mode: try? Vapor.Environment.detect())
-    return XPostmark.Client.live(apiKey: env.postmark.apiKey)
+  func loggingFailure(of template: String, to recipient: String) async throws {
+    switch self {
+    case .failure(let err):
+      with(dependency: \.logger)
+        .error("Error sending email \(template) to \(recipient): \(err)")
+      await with(dependency: \.slack).sysLog(to: "errors", """
+        Error sending `\(template)` email to `\(recipient)`
+        Detail: \(String(reflecting: err))
+      """)
+      throw err
+    case .success:
+      break
+    }
   }
 }
 

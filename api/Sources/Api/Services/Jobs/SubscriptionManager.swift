@@ -64,7 +64,7 @@ struct SubscriptionManager: AsyncScheduledJob {
       }
 
       if let event = update.email {
-        try await self.postmark.send(SubscriptionEmails.email(event, to: admin.email))
+        try await self.postmark.send(template: email(event, to: admin.email))
         logs.append("Sent `.\(event)` email to admin \(admin.email)")
       }
     }
@@ -171,5 +171,22 @@ private extension Admin {
       try await $0.devices(in: db)
     }.flatMap { $0 }
     return !childDevices.isEmpty
+  }
+}
+
+func email(_ event: SubscriptionEmail, to address: EmailAddress) -> TemplateEmail {
+  switch event {
+  case .trialEndingSoon:
+    return .trialEndingSoon(to: address.rawValue, model: .init())
+  case .trialEndedToOverdue:
+    return .trialEndedToOverdue(to: address.rawValue, model: .init())
+  case .overdueToUnpaid:
+    return .overdueToUnpaid(to: address.rawValue, model: .init())
+  case .paidToOverdue:
+    return .paidToOverdue(to: address.rawValue, model: .init())
+  case .unpaidToPendingDelete:
+    return .unpaidToPendingDelete(to: address.rawValue, model: .init())
+  case .deleteEmailUnverified:
+    return .deleteEmailUnverified(to: address.rawValue, model: .init())
   }
 }
