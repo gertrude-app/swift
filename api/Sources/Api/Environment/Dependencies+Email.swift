@@ -9,6 +9,47 @@ public extension DependencyValues {
   }
 }
 
+extension XPostmark.Client {
+  func send(template email: TemplateEmail) async throws {
+    var templateEmail = XPostmark.TemplateEmail(
+      to: "",
+      from: "Gertrude App <noreply@gertrude.app>",
+      templateAlias: email.model.templateAlias,
+      templateModel: email.model.templateModel,
+      messageStream: nil
+    )
+    switch email {
+    case .initialSignup(let recipient, _),
+         .reSignup(let recipient, _),
+         .trialEndingSoon(let recipient, _),
+         .trialEndedToOverdue(let recipient, _),
+         .overdueToUnpaid(let recipient, _),
+         .paidToOverdue(let recipient, _),
+         .unpaidToPendingDelete(let recipient, _),
+         .deleteEmailUnverified(let recipient, _),
+         .passwordReset(let recipient, _),
+         .passwordResetNoAccount(let recipient, _),
+         .magicLink(let recipient, _),
+         .magicLinkNoAccount(let recipient, _),
+         .notifySuspendFilter(let recipient, _),
+         .notifyUnlockRequest(let recipient, _),
+         .notifySecurityEvent(let recipient, _),
+         .verifyNotificationEmail(let recipient, _):
+      templateEmail.to = recipient
+      templateEmail.templateModel["subjref"] = "".withEmailSubjectDisambiguator
+      try await self.sendTemplateEmail(templateEmail).loggingFailure()
+    case .v2_7_0_Announce(let recipients, _, let dryRun):
+      let result = await self.sendTemplateEmailBatch(recipients.map {
+        var batchEmail = templateEmail
+        batchEmail.to = $0
+        batchEmail.templateModel["subjref"] = dryRun ? "".withEmailSubjectDisambiguator : ""
+        return batchEmail
+      })
+      print(result) // todo
+    }
+  }
+}
+
 public extension XPostmark.Client {
   func send(to: String, replyTo: String? = nil, subject: String, html: String) async throws {
     try await self.sendEmail(.init(
@@ -82,7 +123,7 @@ extension Result where Success == Void, Failure == XPostmark.Client.Error {
 extension XPostmark.Client: DependencyKey {
   public static var liveValue: XPostmark.Client {
     let env = Env.fromProcess(mode: try? Vapor.Environment.detect())
-    return XPostmark.Client.live(apiKey: env.postmarkApiKey)
+    return XPostmark.Client.live(apiKey: env.postmark.apiKey)
   }
 }
 

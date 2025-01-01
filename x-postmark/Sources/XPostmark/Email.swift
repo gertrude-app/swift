@@ -70,14 +70,14 @@ enum SingleEmail {
     let urlResponse: HTTPURLResponse
     switch email {
     case .email(let email):
-      (data, urlResponse) = try await HTTP.postJson(
-        ApiEmail(email: email),
+      (data, urlResponse) = try await HTTP.sendJson(
+        body: ApiEmail(email: email),
         to: "https://api.postmarkapp.com/email",
         headers: headers
       )
     case .template(let email):
-      (data, urlResponse) = try await HTTP.postJson(
-        ApiTemplateEmail(email: email),
+      (data, urlResponse) = try await HTTP.sendJson(
+        body: ApiTemplateEmail(email: email),
         to: "https://api.postmarkapp.com/email/withTemplate",
         headers: headers
       )

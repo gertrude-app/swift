@@ -50,6 +50,7 @@ let package = Package(
         .product(name: "XStripe", package: "x-stripe"),
         "Rainbow",
       ],
+      exclude: ["Email/Templates/", "Email/Layouts/"],
       swiftSettings: [
         .unsafeFlags([
           "-Xfrontend", "-warn-concurrency",

@@ -42,7 +42,7 @@ private func reset(_ email: String, _ dashboardUrl: String, _ token: UUID) -> XP
   .init(
     to: email,
     from: "Gertrude App <noreply@gertrude.app>",
-    subject: "Gertrude password reset".withEmailSubjectDisambiguator,
+    subject: "Gertrude app password reset".withEmailSubjectDisambiguator,
     htmlBody: """
     You can reset your Gertrude account password by clicking \
     <a href="\(dashboardUrl)/reset-password/\(token.lowercased)">here</a>.

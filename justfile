@@ -49,6 +49,14 @@ migrate-down: build-api
 nuke-test-db:
   @killall -q Postico; dropdb --if-exists gertrude_test; createdb gertrude_test
 
+# emails
+
+send-email template:
+  @curl http://127.0.0.1:8080/send-test-email/{{template}}
+
+sync-email-templates:
+  @curl http://127.0.0.1:8080/sync-email-templates
+
 #infra
 
 db-sync:

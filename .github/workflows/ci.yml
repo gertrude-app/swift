@@ -211,6 +211,7 @@ env:
   DASHBOARD_URL: /dashboard
   ANALYTICS_SITE_URL: /analytics
   POSTMARK_API_KEY: not-real
+  POSTMARK_SERVER_ID: not-real
   PRIMARY_SUPPORT_EMAIL: not-real
   SUPER_ADMIN_EMAIL: not-real
   STRIPE_SUBSCRIPTION_PRICE_ID: not-real

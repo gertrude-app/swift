@@ -1,0 +1,68 @@
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.logo {
+  max-width: 200px;
+}
+
+.subheading {
+  color: #445061;
+  text-align: center;
+  margin-bottom: 40px;
+  line-height: 1.45em;
+}
+
+@media (max-width: 599px) {
+  .subheading {
+    font-size: 18px !important;
+    line-height: 25px !important;
+  }
+}
+
+@media (min-width: 600px) {
+  .subheading {
+    font-size: 20px !important;
+    line-height: 29px !important;
+  }
+}
+
+.feature {
+  background: #fefefe;
+  margin-top: 20px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.feature h2 {
+  color: black;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.feature p {
+  font-size: 16px;
+  margin-top: 16px;
+  color: #64748b;
+  line-height: 22px;
+}
+
+.blog-callout {
+  margin-top: 40px;
+  text-align: center;
+  color: #64748b;
+}
+
+.feature a,
+.subheading a,
+.blog-callout a {
+  color: #d946ef;
+  font-weight: 500;
+}
+
+.blog-callout a {
+  text-decoration: none;
+}

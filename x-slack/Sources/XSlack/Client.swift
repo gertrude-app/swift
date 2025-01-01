@@ -21,8 +21,8 @@ public extension Slack {
   }
 
   do {
-    let response = try await HTTP.postJson(
-      slack,
+    let response = try await HTTP.sendJson(
+      body: slack,
       to: "https://slack.com/api/chat.postMessage",
       decoding: SendResponse.self,
       auth: .bearer(token),

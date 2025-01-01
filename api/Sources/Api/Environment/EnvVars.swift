@@ -5,7 +5,7 @@ import Vapor
 public struct Env: Sendable {
   public var mode: AppMode
   public var s3: S3
-  public var postmarkApiKey: String
+  public var postmark: Postmark
   public var database: Database
   public var dashboardUrl: String
   public var twilio: Twilio
@@ -21,6 +21,11 @@ public struct Env: Sendable {
     case dev
     case staging
     case test
+  }
+
+  public struct Postmark: Sendable {
+    public var serverId: Int
+    public var apiKey: String
   }
 
   public struct S3: Sendable {
@@ -96,7 +101,10 @@ extension Env: DependencyKey {
         bucketUrl: processEnv("CLOUD_STORAGE_BUCKET_URL"),
         bucket: processEnv("CLOUD_STORAGE_BUCKET")
       ),
-      postmarkApiKey: processEnv("POSTMARK_API_KEY"),
+      postmark: Postmark(
+        serverId: Int(processEnv("POSTMARK_SERVER_ID"))!,
+        apiKey: processEnv("POSTMARK_API_KEY")
+      ),
       database: Database(
         name: mode == .test
           ? processEnv("TEST_DATABASE_NAME")

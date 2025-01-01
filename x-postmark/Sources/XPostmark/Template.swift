@@ -35,8 +35,8 @@ public struct TemplateEmail: Equatable {
     ))
   }
   do {
-    let (data, urlResponse) = try await HTTP.postJson(
-      Batch(Messages: emails.map(ApiTemplateEmail.init)),
+    let (data, urlResponse) = try await HTTP.sendJson(
+      body: Batch(Messages: emails.map(ApiTemplateEmail.init)),
       to: "https://api.postmarkapp.com/email/batchWithTemplates",
       headers: [
         "Accept": "application/json",
