@@ -39,6 +39,7 @@ enum AuthedAdminRoute: PairRoute {
   case stripeUrl
   case securityEventsFeed
   case updateUnlockRequest(UpdateUnlockRequest.Input)
+  case requestPublicKeychain(RequestPublicKeychain.Input)
 }
 
 extension AuthedAdminRoute {
@@ -177,6 +178,10 @@ extension AuthedAdminRoute {
         Operation(CombinedUsersActivitySummaries.self)
         Body(.dashboardInput(CombinedUsersActivitySummaries.self))
       }
+      Route(.case(Self.requestPublicKeychain)) {
+        Operation(RequestPublicKeychain.self)
+        Body(.dashboardInput(RequestPublicKeychain.self))
+      }
     }
     .eraseToAnyParserPrinter()
 }
@@ -291,6 +296,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .deleteActivityItems_v2(let input):
       let output = try await DeleteActivityItems_v2.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .requestPublicKeychain(let input):
+      let output = try await RequestPublicKeychain.resolve(with: input, in: context)
       return try await self.respond(with: output)
     }
   }
