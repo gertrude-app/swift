@@ -157,7 +157,7 @@ jobs:
           key: api-${{ hashFiles('api/Package.resolved') }}
           restore-keys: api-
       - name: test-api
-        run: psql --version && cd api && swift test
+        run: cd api && swift test
 
   # files-changed:
   #   runs-on: namespace-profile-default
