@@ -160,7 +160,8 @@ jobs:
   files-changed:
     runs-on: namespace-profile-default
     outputs:
-      macapplib: ${{ steps.changes.outputs.macapplib }}
+      macapp: ${{ steps.changes.outputs.macapp }}
+      iosapp: ${{ steps.changes.outputs.iosapp }}
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -168,12 +169,21 @@ jobs:
         id: changes
         with:
           filters: |
-            macapplib:
+            macapp:
               - macapp/App/**
+              - pairql-macapp/**
+              - gertie/**
+              - x-kit/**
+              - ts-interop/**
+            iosapp:
+              - iosapp/lib-ios/**
+              - pairql-iosapp/**
+              - gertie/**
+              - x-kit/**
 
   macapp-lib:
     needs: files-changed
-    if: needs.files-changed.outputs.macapplib == 'true'
+    if: needs.files-changed.outputs.macapp == 'true'
     runs-on: macos-14
     steps:
       - name: checkout
@@ -185,12 +195,33 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: macapp/App/.build
-          key: macapp-spm--${{ hashFiles('macapp/App/Package.resolved') }}
-          restore-keys: macapp-spm--
+          key: macapp-xc15.3.0--${{ hashFiles('macapp/App/Package.resolved') }}
+          restore-keys: macapp-xc15.3.0--
       - name: build
         run: cd macapp/App && swift build
       - name: test
         run: cd macapp/App && swift test
+
+  iosapp-lib:
+    needs: files-changed
+    if: needs.files-changed.outputs.iosapp == 'true'
+    runs-on: macos-14
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 15.3.0
+      - uses: actions/cache@v4
+        with:
+          path: iosapp/lib-ios/.build
+          key: iosapp-xc15.3.0--${{ hashFiles('iosapp/lib-ios/Package.resolved') }}
+          restore-keys: iosapp-xc15.3.0--
+      - name: build
+        run: cd iosapp/lib-ios && swift build
+      - name: test
+        run: cd iosapp/lib-ios && swift test
 
 # env
 
@@ -217,3 +248,4 @@ env:
   STRIPE_SUBSCRIPTION_PRICE_ID: not-real
   STRIPE_SECRET_KEY: not-real
   SWIFT_DETERMINISTIC_HASHING: 1
+  TASK_MEGA_YIELD_COUNT: 50
