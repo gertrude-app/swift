@@ -331,6 +331,7 @@ extension Keychain: Model {
     case .authorId: .uuid(self.authorId)
     case .name: .string(self.name)
     case .description: .string(self.description)
+    case .warning: .string(self.warning)
     case .isPublic: .bool(self.isPublic)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
@@ -343,6 +344,7 @@ extension Keychain: Model {
       .authorId: .uuid(self.authorId),
       .name: .string(self.name),
       .description: .string(self.description),
+      .warning: .string(self.warning),
       .isPublic: .bool(self.isPublic),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,

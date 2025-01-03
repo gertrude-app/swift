@@ -234,6 +234,7 @@ extension Keychain {
     case authorId
     case name
     case description
+    case warning
     case isPublic
     case createdAt
     case updatedAt

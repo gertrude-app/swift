@@ -21,7 +21,8 @@ extension SaveKeychain: Resolver {
         authorId: context.admin.id,
         name: input.name,
         isPublic: false,
-        description: input.description
+        description: input.description,
+        warning: nil
       ))
       dashSecurityEvent(.keychainCreated, "name: \(keychain.name)", in: context)
     } else {

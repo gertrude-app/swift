@@ -5,6 +5,7 @@ struct Keychain: Codable, Sendable {
   var authorId: Admin.Id
   var name: String
   var description: String?
+  var warning: String?
   var isPublic: Bool
   var createdAt = Date()
   var updatedAt = Date()
@@ -14,13 +15,15 @@ struct Keychain: Codable, Sendable {
     authorId: Admin.Id,
     name: String,
     isPublic: Bool = false,
-    description: String? = nil
+    description: String? = nil,
+    warning: String? = nil
   ) {
     self.id = id
     self.authorId = authorId
     self.name = name
     self.isPublic = isPublic
     self.description = description
+    self.warning = warning
   }
 }
 
