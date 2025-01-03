@@ -78,6 +78,8 @@
   - app blocking
 - `2.6.1` (canary as of 12/27/24)
   - filter polices app, blocks if awol
+- `2.6.1` (canary as of 1/3/25)
+  - bypasses sequioa screen capture nag
 
 ## Sparkle Releases
 
