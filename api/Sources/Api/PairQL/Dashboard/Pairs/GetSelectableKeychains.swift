@@ -7,6 +7,7 @@ struct KeychainSummary: PairNestable {
   var authorId: Admin.Id
   var name: String
   var description: String?
+  var warning: String?
   var isPublic: Bool
   var numKeys: Int
 }
@@ -25,7 +26,7 @@ struct GetSelectableKeychains: Pair {
 extension GetSelectableKeychains: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     async let own = context.admin.keychains(in: context.db)
-    async let `public` = Api.Keychain.query()
+    async let `public` = Keychain.query()
       .where(.isPublic == true)
       .where(.authorId != context.admin.id)
       .all(in: context.db)
@@ -45,6 +46,7 @@ extension KeychainSummary {
       authorId: keychain.authorId,
       name: keychain.name,
       description: keychain.description,
+      warning: keychain.warning,
       isPublic: keychain.isPublic,
       numKeys: numKeys
     )
