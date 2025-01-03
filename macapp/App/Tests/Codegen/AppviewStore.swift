@@ -63,7 +63,7 @@ extension AppviewStore: CodeGenerator {
 
   func write() throws {
     let url = URL(fileURLWithPath: "/Users/jared/gertie/web/appviews/src/\(path)")
-    let file = String(data: try Data(contentsOf: url), encoding: .utf8)!
+    let file = try String(data: Data(contentsOf: url), encoding: .utf8)!
     let lines = file.components(separatedBy: "\n")
     guard lines.contains("// begin codegen"), lines.contains("// end codegen") else {
       fatalError("codegen markers not found in \(self.path)")
@@ -75,7 +75,7 @@ extension AppviewStore: CodeGenerator {
       if line == "// begin codegen" {
         inCodegen = true
         updated.append(line)
-        updated.append(try self.decls.joined(separator: "\n\n"))
+        try updated.append(self.decls.joined(separator: "\n\n"))
       } else if line.contains("// end codegen") {
         inCodegen = false
         updated.append(line)
