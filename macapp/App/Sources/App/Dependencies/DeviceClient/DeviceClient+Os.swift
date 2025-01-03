@@ -1,4 +1,5 @@
 import Foundation
+import Gertie
 
 struct MacOSVersion: Sendable {
   enum Name: String, Codable {
@@ -14,8 +15,8 @@ struct MacOSVersion: Sendable {
   let minor: Int
   let patch: Int
 
-  var semver: String {
-    "\(self.major).\(self.minor).\(self.patch)"
+  var semver: Semver {
+    .init(major: self.major, minor: self.minor, patch: self.patch)
   }
 
   var name: Name {
@@ -31,7 +32,7 @@ struct MacOSVersion: Sendable {
   }
 
   var description: String {
-    "\(self.name.rawValue)@\(self.semver)"
+    "\(self.name.rawValue)@\(self.semver.string)"
   }
 }
 
