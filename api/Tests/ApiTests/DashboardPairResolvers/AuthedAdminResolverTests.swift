@@ -230,10 +230,11 @@ final class AuthedAdminResolverTests: ApiTestCase {
     expect(preConfirm).toBeNil()
 
     // check that email was sent
-    expect(sent.sendgridEmails).toHaveCount(1)
-    let email = try XCTUnwrap(sent.sendgridEmails.first)
-    expect(email.firstRecipient).toEqual("blob@blob.com")
-    expect(email.text).toContain("123456")
+    expect(sent.emails).toHaveCount(1)
+    let email = try XCTUnwrap(sent.emails.first)
+    expect(email.to).toEqual("blob@blob.com")
+    expect(email.template).toBe("verify-notification-email")
+    expect(email.templateModel["code"]!).toBe("123456")
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(

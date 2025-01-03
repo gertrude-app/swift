@@ -33,25 +33,24 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
   }
 
   func sendEmail(to address: String) async throws {
-    let subjectPreamble =
-      requestIds.count > 1
-        ? "\(requestIds.count) new unlock requests from \(userName)"
-        : "New unlock request from \(userName)"
+    let subject = requestIds.count > 1
+      ? "\(requestIds.count) new unlock requests from \(userName)"
+      : "New unlock request from \(userName)"
 
-    let subject = "[Gertrude App] \(subjectPreamble)"
+    let unlockRequests = requestIds.count > 1
+      ? "\(requestIds.count) new <b>network unlock requests</b>"
+      : "a new <b>network unlock request</b>"
 
-    let unlockRequests =
-      requestIds.count > 1
-        ? "\(requestIds.count) new <b>network unlock requests</b>"
-        : "a new <b>network unlock request</b>"
-
-    let html = """
-    User \(userName) submitted \(unlockRequests).
-     \(Email.link(url: url, text: "Click here")) to view the details and approve or deny.
-    """
-
-    try await with(dependency: \.sendgrid)
-      .send(Email.fromApp(to: address, subject: subject, html: html))
+    try await with(dependency: \.postmark)
+      .send(template: .notifyUnlockRequest(
+        to: address,
+        model: .init(
+          subject: subject,
+          url: self.url,
+          userName: self.userName,
+          unlockRequests: unlockRequests
+        )
+      ))
   }
 }
 

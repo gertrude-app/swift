@@ -30,6 +30,23 @@ public extension Configure {
       use: PairQLRoute.handler(_:)
     )
 
+    #if DEBUG
+      if app.env.mode == .dev {
+        app.get(
+          "send-test-email", ":email",
+          use: TestEmail.send(_:)
+        )
+        app.get(
+          "web-test-email", ":email",
+          use: TestEmail.web(_:)
+        )
+        app.get(
+          "sync-email-templates",
+          use: TestEmail.sync(_:)
+        )
+      }
+    #endif
+
     app.get(
       "releases",
       use: ReleasesRoute.handler(_:)

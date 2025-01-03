@@ -31,7 +31,6 @@ struct SubscriptionManager: AsyncScheduledJob {
   @Dependency(\.db) var db
   @Dependency(\.date.now) var now
   @Dependency(\.postmark) var postmark
-  @Dependency(\.sendgrid) var sendgrid
 
   func run(context: QueueContext) async throws {
     guard self.env.mode == .prod else { return }
@@ -65,16 +64,16 @@ struct SubscriptionManager: AsyncScheduledJob {
       }
 
       if let event = update.email {
-        try await self.postmark.send(SubscriptionEmails.email(event, to: admin.email))
+        try await self.postmark.send(template: email(event, to: admin.email))
         logs.append("Sent `.\(event)` email to admin \(admin.email)")
       }
     }
 
     if self.env.mode == .prod, !logs.isEmpty {
-      self.sendgrid.fireAndForget(.toSuperAdmin(
+      self.postmark.toSuperAdmin(
         "Gertrude subscription manager events",
         "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>"
-      ))
+      )
     }
   }
 
@@ -172,5 +171,22 @@ private extension Admin {
       try await $0.devices(in: db)
     }.flatMap { $0 }
     return !childDevices.isEmpty
+  }
+}
+
+func email(_ event: SubscriptionEmail, to address: EmailAddress) -> TemplateEmail {
+  switch event {
+  case .trialEndingSoon:
+    return .trialEndingSoon(to: address.rawValue, model: .init())
+  case .trialEndedToOverdue:
+    return .trialEndedToOverdue(to: address.rawValue, model: .init())
+  case .overdueToUnpaid:
+    return .overdueToUnpaid(to: address.rawValue, model: .init())
+  case .paidToOverdue:
+    return .paidToOverdue(to: address.rawValue, model: .init())
+  case .unpaidToPendingDelete:
+    return .unpaidToPendingDelete(to: address.rawValue, model: .init())
+  case .deleteEmailUnverified:
+    return .deleteEmailUnverified(to: address.rawValue, model: .init())
   }
 }

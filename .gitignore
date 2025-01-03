@@ -5,6 +5,7 @@ node_modules/
 .vscode/*
 .nvim/*
 *.sql
+index.html
 
 buildServer.json
 

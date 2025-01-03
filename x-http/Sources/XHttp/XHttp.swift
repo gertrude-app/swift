@@ -12,19 +12,25 @@ public enum HTTP {
     case basicEncoded(String)
   }
 
-  public enum Method: String, Sendable {
+  public enum SendJsonMethod: String, Sendable {
     case post = "POST"
-    case get = "GET"
+    case put = "PUT"
   }
 
-  public static func postJson<Body: Encodable>(
-    _ body: Body,
+  public static func sendJson<Body: Encodable>(
+    body: Body,
     to urlString: String,
+    method: SendJsonMethod = .post,
     headers: [String: String] = [:],
     auth: AuthType? = nil,
     keyEncodingStrategy: JSONEncoder.KeyEncodingStrategy = .useDefaultKeys
   ) async throws -> (Data, HTTPURLResponse) {
-    var request = try urlRequest(to: urlString, method: .post, headers: headers, auth: auth)
+    var request = try urlRequest(
+      to: urlString,
+      method: method.rawValue,
+      headers: headers,
+      auth: auth
+    )
     request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
     request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
     let encoder = JSONEncoder()
@@ -33,18 +39,20 @@ public enum HTTP {
     return try convertResponse(try await data(for: request))
   }
 
-  public static func postJson<Body: Encodable, Response: Decodable>(
-    _ body: Body,
+  public static func sendJson<Body: Encodable, Response: Decodable>(
+    body: Body,
     to urlString: String,
+    method: SendJsonMethod = .post,
     decoding: Response.Type,
     headers: [String: String] = [:],
     auth: AuthType? = nil,
     keyEncodingStrategy: JSONEncoder.KeyEncodingStrategy = .useDefaultKeys,
     keyDecodingStrategy: JSONDecoder.KeyDecodingStrategy = .useDefaultKeys
   ) async throws -> Response {
-    let (data, _) = try await postJson(
-      body,
+    let (data, _) = try await sendJson(
+      body: body,
       to: urlString,
+      method: method,
       headers: headers,
       auth: auth,
       keyEncodingStrategy: keyEncodingStrategy
@@ -58,7 +66,7 @@ public enum HTTP {
     headers: [String: String] = [:],
     auth: AuthType? = nil
   ) async throws -> (Data, HTTPURLResponse) {
-    var request = try urlRequest(to: urlString, method: .post, headers: headers, auth: auth)
+    var request = try urlRequest(to: urlString, method: "POST", headers: headers, auth: auth)
     request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
     // @TODO: should use URLComponents for correct encoding...
     // @see: https://www.advancedswift.com/a-guide-to-urls-in-swift/#create-url-string
@@ -72,7 +80,7 @@ public enum HTTP {
     headers: [String: String] = [:],
     auth: AuthType? = nil
   ) async throws -> (Data, HTTPURLResponse) {
-    let request = try urlRequest(to: urlString, method: .get, headers: headers, auth: auth)
+    let request = try urlRequest(to: urlString, method: "GET", headers: headers, auth: auth)
     return try convertResponse(await data(for: request))
   }
 
@@ -92,7 +100,7 @@ public enum HTTP {
     headers: [String: String] = [:],
     auth: AuthType? = nil
   ) async throws -> (Data, HTTPURLResponse) {
-    let request = try urlRequest(to: urlString, method: .post, headers: headers, auth: auth)
+    let request = try urlRequest(to: urlString, method: "POST", headers: headers, auth: auth)
     return try convertResponse(await data(for: request))
   }
 
@@ -154,7 +162,7 @@ public enum HttpError: Error, LocalizedError {
 
 private func urlRequest(
   to urlString: String,
-  method: HTTP.Method,
+  method: String,
   headers: [String: String] = [:],
   auth: HTTP.AuthType? = nil
 ) throws -> URLRequest {
@@ -162,7 +170,7 @@ private func urlRequest(
     throw HttpError.invalidUrl(urlString)
   }
   var request = URLRequest(url: url)
-  request.httpMethod = method.rawValue
+  request.httpMethod = method
   headers.forEach { key, value in request.setValue(value, forHTTPHeaderField: key) }
   switch auth {
   case .bearer(let token):

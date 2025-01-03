@@ -1,4 +1,5 @@
 import DuetSQL
+import Foundation
 import IOSRoute
 import XCTest
 import XExpect

@@ -18,17 +18,15 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
   }
 
   func sendEmail(to address: String) async throws {
-    let subject = "[Gertrude App] Security event for child: \(userName)"
-
-    let html = """
-    Received security event: <b>\(desc)</b> for child <b>\(userName)</b>.
-    <br />
-    <br />
-    \(event.explanation)
-    """
-
-    let email = Email.fromApp(to: address, subject: subject, html: html)
-    try await with(dependency: \.sendgrid).send(email)
+    try await with(dependency: \.postmark)
+      .send(template: .notifySecurityEvent(
+        to: address,
+        model: .init(
+          userName: self.userName,
+          description: self.desc,
+          explanation: self.event.explanation
+        )
+      ))
   }
 
   func sendSlack(channel: String, token: String) async throws {

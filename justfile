@@ -52,7 +52,24 @@ migrate-down: build-api
 nuke-test-db:
   @killall -q Postico; dropdb --if-exists gertrude_test; createdb gertrude_test
 
-#infra
+# emails (requires local dev api running)
+
+send-email template:
+  @curl http://127.0.0.1:8080/send-test-email/{{template}}
+
+sync-email-templates:
+  @curl http://127.0.0.1:8080/sync-email-templates
+
+web-email template:
+  @curl -s http://127.0.0.1:8080/web-test-email/{{template}}
+
+# NB: requires `concurrently`, `vite` in $PATH
+watch-web-email template:
+  @concurrently -n serve,regen -c cyan.dim,magenta.dim \
+    "vite" \
+    "bash -c 'while true; do just web-email {{template}}; sleep 2; done;'"
+
+# infra
 
 db-sync:
 	@node ../infra/db-sync.mjs
@@ -105,9 +122,9 @@ nx-run-many targets:
   @pnpm exec nx run-many --parallel=10 --targets={{targets}}
 
 [private]
-watch-swift dir cmd ignore1="•" ignore2="•" ignore3="•":
-  @watchexec --project-origin . --clear --restart --watch {{dir}} --exts swift \
-  --ignore '**/.build/*/**' --ignore '{{ignore1}}' --ignore '{{ignore2}}' --ignore '{{ignore3}}' \
+watch-swift dir cmd ignore1="•" ignore2="•":
+  @watchexec --project-origin . --clear --restart --watch {{dir}} --exts swift,html \
+  --ignore '**/.build/*/**' --ignore '**/index.html' --ignore '{{ignore1}}' --ignore '{{ignore2}}' \
   {{cmd}}
 
 watch-build dir:

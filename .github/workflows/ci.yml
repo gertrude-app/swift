@@ -38,8 +38,6 @@ jobs:
         run: cd x-kit && swift build
       - name: build-x-postmark
         run: cd x-postmark && swift build
-      - name: build-x-sendgrid
-        run: cd x-sendgrid && swift build
       - name: build-x-slack
         run: cd x-slack && swift build
       - name: build-x-stripe
@@ -84,8 +82,8 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: api/.build
-          key: api-${{ hashFiles('api/Package.resolved') }}
-          restore-keys: api-
+          key: api-build-${{ hashFiles('api/Package.resolved') }}
+          restore-keys: api-build-
       - name: meta
         id: meta
         uses: friends-library/dev/actions/ts-pack/actions/meta@master
@@ -154,8 +152,8 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: api/.build
-          key: api-${{ hashFiles('api/Package.resolved') }}
-          restore-keys: api-
+          key: api-test-${{ hashFiles('api/Package.resolved') }}
+          restore-keys: api-test-
       - name: test-api
         run: cd api && swift test
 
@@ -212,8 +210,8 @@ env:
   TWILIO_FROM_PHONE: not-real
   DASHBOARD_URL: /dashboard
   ANALYTICS_SITE_URL: /analytics
-  SENDGRID_API_KEY: not-real
   POSTMARK_API_KEY: not-real
+  POSTMARK_SERVER_ID: 12345
   PRIMARY_SUPPORT_EMAIL: not-real
   SUPER_ADMIN_EMAIL: not-real
   STRIPE_SUBSCRIPTION_PRICE_ID: not-real

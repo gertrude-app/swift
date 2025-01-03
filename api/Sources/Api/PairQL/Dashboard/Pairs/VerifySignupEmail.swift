@@ -44,8 +44,8 @@ extension VerifySignupEmail: Resolver {
       ))
 
       if context.env.mode == .prod, !isTestAddress(admin.email.rawValue) {
-        with(dependency: \.sendgrid)
-          .fireAndForget(.toSuperAdmin("email verified", admin.email.rawValue))
+        with(dependency: \.postmark)
+          .toSuperAdmin("email verified", admin.email.rawValue)
       }
 
       return Output(token: token.value, adminId: admin.id)

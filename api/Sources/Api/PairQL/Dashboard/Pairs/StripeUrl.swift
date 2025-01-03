@@ -61,8 +61,8 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
     .createCheckoutSession(sessionData)
 
   guard let url = session.url else {
-    with(dependency: \.sendgrid)
-      .fireAndForget(.unexpected("b66e1eaf", "admin: \(context.admin.id)"))
+    with(dependency: \.postmark)
+      .unexpected("b66e1eaf", "admin: \(context.admin.id)")
     throw Abort(.internalServerError)
   }
   return url
