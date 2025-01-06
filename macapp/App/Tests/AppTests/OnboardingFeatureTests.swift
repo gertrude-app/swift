@@ -290,6 +290,8 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
     store.deps.date = .constant(.reference)
     store.deps.device.boottime = { .reference - 60 }
+    let preventScreenCaptureNag = mock(always: Result<Void, AppError>.success(()))
+    store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
 
     // they click "Next" on the install sys ext success screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -326,6 +328,7 @@ final class OnboardingFeatureTests: XCTestCase {
     await expect(setUserToken.calls).toEqual([UserData.mock.token, UserData.mock.token])
     await expect(setAccountActive.calls).toEqual([true])
     await expect(startRelaunchWatcher.calls.count).toEqual(1)
+    await expect(preventScreenCaptureNag.calls.count).toEqual(1)
 
     // they click to exempt the dad admin user
     await store.send(.onboarding(.webview(.setUserExemption(userId: 501, enabled: true)))) {

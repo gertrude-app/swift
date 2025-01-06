@@ -282,7 +282,7 @@ struct AppReducer: Reducer, Sendable {
   }
 
   func preventScreenCaptureNag() async {
-    switch await self.device.preventScreenCaptureNag() {
+    switch await self.app.preventScreenCaptureNag() {
     case .success:
       break
     case .failure(let error):

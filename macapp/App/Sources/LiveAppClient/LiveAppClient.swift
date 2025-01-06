@@ -34,6 +34,7 @@ extension AppClient: DependencyKey {
           LaunchAtLogin.isEnabled = true
         #endif
       },
+      hasFullDiskAccess: _testFullDiskAccess,
       isLaunchAtLoginEnabled: {
         LaunchAtLogin.isEnabled
       },
@@ -43,6 +44,7 @@ extension AppClient: DependencyKey {
       installedVersion: {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
       },
+      preventScreenCaptureNag: _preventScreenCaptureNag,
       quit: {
         stopRelaunchWatcher()
         exit(0)
