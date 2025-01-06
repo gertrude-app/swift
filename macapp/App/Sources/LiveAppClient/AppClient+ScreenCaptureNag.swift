@@ -48,6 +48,7 @@ import os.log
   do {
     try "FDA test".write(toFile: url.path, atomically: true, encoding: .utf8)
     os_log("[G•] FDA test success")
+    try? fd.removeItem(at: url)
     return true
   } catch {
     os_log("[G•] FDA test write error: %{public}s", String(reflecting: error))
