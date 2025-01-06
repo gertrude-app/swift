@@ -1,8 +1,17 @@
+import Core
 import Foundation
+import Gertie
+import os.log
 
 @Sendable func _preventScreenCaptureNag() async -> Result<Void, AppError> {
-  let macosVersion = macOSVersion().semver
+  let version = ProcessInfo.processInfo.operatingSystemVersion
+  let macosVersion = Semver(
+    major: version.majorVersion,
+    minor: version.minorVersion,
+    patch: version.patchVersion
+  )
   guard macosVersion.major >= 15 else {
+    os_log("[D•] skip screencapture nag fix, os: %{public}s", macosVersion.string)
     return .success(())
   }
 
@@ -27,6 +36,26 @@ import Foundation
     return write(plist, to: path)
   }
 }
+
+@Sendable func _testFullDiskAccess() async -> Bool {
+  let fd = FileManager.default
+  let path = "/Users/\(NSUserName())/Library/Mail/gertrude-FDA-\(UUID()).txt"
+  let url = URL(fileURLWithPath: path)
+  if !fd.fileExists(atPath: url.path) {
+    let result = fd.createFile(atPath: url.path, contents: nil, attributes: nil)
+    os_log("[D•] FDA test create result: %{public}s", "\(result)")
+  }
+  do {
+    try "FDA test".write(toFile: url.path, atomically: true, encoding: .utf8)
+    os_log("[G•] FDA test success")
+    return true
+  } catch {
+    os_log("[G•] FDA test write error: %{public}s", String(reflecting: error))
+    return false
+  }
+}
+
+// helpers
 
 private func write(_ plist: [String: Any], to url: URL) -> Result<Void, AppError> {
   do {

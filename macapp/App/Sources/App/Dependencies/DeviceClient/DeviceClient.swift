@@ -18,7 +18,6 @@ struct DeviceClient: Sendable {
   var openSystemPrefs: @Sendable (SystemPrefsLocation) async -> Void
   var openWebUrl: @Sendable (URL) async -> Void
   var osVersion: @Sendable () -> MacOSVersion
-  var preventScreenCaptureNag: @Sendable () async -> Result<Void, AppError>
   var quitBrowsers: @Sendable ([BrowserMatch]) async -> Void
   var requestNotificationAuthorization: @Sendable () async -> Void
   var runningAppFromPid: @Sendable (pid_t) -> RunningApp?
@@ -51,7 +50,6 @@ extension DeviceClient: DependencyKey {
     openSystemPrefs: openSystemPrefs(at:),
     openWebUrl: { NSWorkspace.shared.open($0) },
     osVersion: { macOSVersion() },
-    preventScreenCaptureNag: _preventScreenCaptureNag,
     quitBrowsers: quitAllBrowsers,
     requestNotificationAuthorization: requestNotificationAuth,
     runningAppFromPid: { .init(pid: $0) },
@@ -94,10 +92,6 @@ extension DeviceClient: TestDependencyKey {
       "DeviceClient.osVersion",
       placeholder: .init(major: 15, minor: 0, patch: 0)
     ),
-    preventScreenCaptureNag: unimplemented(
-      "DeviceClient.preventScreenCaptureNag",
-      placeholder: .success(())
-    ),
     quitBrowsers: unimplemented("DeviceClient.quitBrowsers"),
     requestNotificationAuthorization: unimplemented(
       "DeviceClient.requestNotificationAuthorization"
@@ -131,7 +125,6 @@ extension DeviceClient: TestDependencyKey {
     openSystemPrefs: { _ in },
     openWebUrl: { _ in },
     osVersion: { .init(major: 14, minor: 0, patch: 0) },
-    preventScreenCaptureNag: { .success(()) },
     quitBrowsers: { _ in },
     requestNotificationAuthorization: {},
     runningAppFromPid: { _ in nil },

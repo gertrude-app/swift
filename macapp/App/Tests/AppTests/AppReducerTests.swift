@@ -29,7 +29,7 @@ final class AppReducerTests: XCTestCase {
     store.deps.device.boottime = { .reference - 60 }
     store.deps.date = .constant(.reference)
     let preventScreenCaptureNag = mock(always: Result<Void, AppError>.success(()))
-    store.deps.device.preventScreenCaptureNag = preventScreenCaptureNag.fn
+    store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
 
     await store.send(.application(.didFinishLaunching))
 
@@ -122,7 +122,7 @@ final class AppReducerTests: XCTestCase {
   func testPreventsScreenCaptureNagEverySixHours() async {
     let (store, _) = AppReducer.testStore()
     let preventScreenCaptureNag = mock(always: Result<Void, AppError>.success(()))
-    store.deps.device.preventScreenCaptureNag = preventScreenCaptureNag.fn
+    store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
     await store.send(.heartbeat(.everySixHours))
     await expect(preventScreenCaptureNag.calls.count).toEqual(1)
     await store.send(.heartbeat(.everySixHours))
