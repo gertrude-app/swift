@@ -47,6 +47,13 @@ public extension Configure {
       }
     #endif
 
+    if app.env.mode != .staging {
+      app.get(
+        "dump-staging-data", ":token",
+        use: DumpStagingDataRoute.handler(_:)
+      )
+    }
+
     app.get(
       "releases",
       use: ReleasesRoute.handler(_:)

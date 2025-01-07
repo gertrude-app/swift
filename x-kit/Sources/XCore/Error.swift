@@ -14,3 +14,23 @@ public enum XCore {
     }
   }
 }
+
+public struct StringError: Error {
+  public var message: String
+
+  public init(_ message: String) {
+    self.message = message
+  }
+}
+
+extension StringError: ExpressibleByStringLiteral {
+  public init(stringLiteral value: String) {
+    self.message = value
+  }
+}
+
+public extension Result where Failure == StringError {
+  static func failure(_ message: String) -> Self {
+    .failure(.init(message))
+  }
+}

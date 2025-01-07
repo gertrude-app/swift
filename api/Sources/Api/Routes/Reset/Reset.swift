@@ -7,43 +7,22 @@ import XCore
 enum Reset {
   static func run() async throws {
     @Dependency(\.db) var db
-    try await db.delete(all: Admin.self)
-    try await self.createHtcPublicKeychain()
+    try await Admin.query()
+      .where(.id != Admin.Id.stagingPublicKeychainOwner)
+      .delete(in: db)
     try await AdminBetsy.create()
   }
 
-  static func createHtcPublicKeychain() async throws {
+  static func ensurePublicKeychainOwner() async throws {
     @Dependency(\.db) var db
-    let jared = try await db.create(Admin(
-      email: "jared-htc-author" |> self.testEmail,
-      password: try Bcrypt.hash("jared123")
-    ))
-    try await self.createKeychain(
-      id: Ids.htcKeychain,
-      adminId: jared.id,
-      name: "HTC",
-      isPublic: true,
-      description: "Keys for student's in Jared's How to Computer (HTC) class.",
-      keys: [
-        .anySubdomain(domain: .init("howtocomputer.link")!, scope: .unrestricted),
-        .anySubdomain(domain: .init("tailwind.css")!, scope: .webBrowsers),
-        .anySubdomain(domain: .init("vsassets.io")!, scope: .single(.identifiedAppSlug("vscode"))),
-        .anySubdomain(
-          domain: .init("executeprogram.com")!,
-          scope: .single(.bundleId("com.apple.Safari"))
-        ),
-        .domain(domain: .init("friendslibrary.com")!, scope: .unrestricted),
-        .domain(domain: .init("developer.mozilla.org")!, scope: .webBrowsers),
-        .domain(domain: .init("nextjs.org")!, scope: .webBrowsers),
-        .domain(domain: .init("www.snowpack.dev")!, scope: .webBrowsers),
-        .domain(domain: .init("regexr.com")!, scope: .webBrowsers),
-        .domain(domain: .init("api.netlify.com")!, scope: .unrestricted),
-        .domain(domain: .init("registry.npmjs.org")!, scope: .single(.bundleId(".node"))),
-        .skeleton(scope: .identifiedAppSlug("slack")),
-        .skeleton(scope: .bundleId("Y48LQG59RS.com.sequelpro.SequelPro")),
-        .ipAddress(ipAddress: .init("76.88.114.31")!, scope: .unrestricted),
-      ]
-    )
+    let existing = try? await db.find(Admin.Id.stagingPublicKeychainOwner)
+    if existing == nil {
+      try await db.create(Admin(
+        id: .stagingPublicKeychainOwner,
+        email: "public-keychain-owner" |> self.testEmail,
+        password: try Bcrypt.hash("\(UUID())")
+      ))
+    }
   }
 
   @discardableResult
@@ -157,10 +136,6 @@ enum Reset {
         createdAt: .init()
       ))
     }
-  }
-
-  enum Ids {
-    static let htcKeychain = Keychain.Id.from("AAA00000-0000-0000-0000-000000000000")
   }
 }
 

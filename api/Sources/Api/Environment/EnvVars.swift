@@ -162,4 +162,8 @@ extension Env: TestDependencyKey {
   public static var testValue: Env {
     .fromProcess(mode: .testing)
   }
+
+  func getUUID(_ key: String) -> UUID? {
+    self.get(key).flatMap(UUID.init(uuidString:))
+  }
 }
