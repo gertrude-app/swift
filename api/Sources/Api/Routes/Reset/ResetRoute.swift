@@ -1,6 +1,19 @@
 import Dependencies
 import Vapor
 
+struct ResetCommand: AsyncCommand {
+  struct Signature: CommandSignature {}
+  var help: String { "Reset staging data" }
+
+  func run(using context: CommandContext, signature: Signature) async throws {
+    guard get(dependency: \.env).mode != .prod else {
+      fatalError("`reset` is only allowed in non-prod environments")
+    }
+    try await Reset.run()
+    try await SyncStagingDataCommand().run(using: context, signature: .init())
+  }
+}
+
 enum ResetRoute {
   @Sendable static func handler(_ request: Request) async throws -> Response {
     guard request.env.mode != .prod else {
@@ -8,7 +21,13 @@ enum ResetRoute {
     }
 
     try await Reset.run()
+    try await SyncStagingDataCommand()
+      .exec(client: request.application.http.client.shared)
+      .mapError { Abort(.internalServerError, reason: $0.message) }
+      .get()
+
     let betsy = try await request.context.db.find(AdminBetsy.Ids.betsy)
+
     return .init(
       status: .ok,
       headers: ["Content-Type": "text/html"],
@@ -24,7 +43,7 @@ enum ResetRoute {
            in <code>./dashboard/.env</code>
         </p>
         <pre style="background: #eaeaea; padding: 1em 1em 0 1em;">
-        SNOWPACK_PUBLIC_TEST_ADMIN_CREDS=\(betsy.id.lowercased):\(betsy.id.lowercased)
+        VITE_ADMIN_CREDS=\(betsy.id.lowercased):\(betsy.id.lowercased)
         </pre>
         <p>
           ...or use her email address:

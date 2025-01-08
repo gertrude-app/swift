@@ -11,5 +11,8 @@ public extension Configure {
     app.queues.schedule(DiskSpaceJob()).hourly().at(0)
 
     try app.queues.startScheduledJobs()
+
+    app.asyncCommands.use(ResetCommand(), as: "reset")
+    app.asyncCommands.use(SyncStagingDataCommand(), as: "sync-staging-data")
   }
 }

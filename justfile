@@ -35,19 +35,25 @@ watch-api:
   @just watch-swift . 'just run-api' 'macapp/**/*'
 
 run-api: build-api
-	@just exec-api serve
+  @just exec-api serve
 
 run-api-ip: build-api
-	@just exec-api serve --hostname 192.168.10.227
+  @just exec-api serve --hostname 192.168.10.227
 
 build-api:
-	@cd api && swift build
+  @cd api && swift build
 
 migrate-up: build-api
-	@just exec-api migrate --yes
+  @just exec-api migrate --yes
 
 migrate-down: build-api
-	@just exec-api migrate --revert --yes
+  @just exec-api migrate --revert --yes
+
+reset: build-api
+  just exec-api reset
+
+sync-staging-data: build-api
+  @just exec-api sync-staging-data
 
 nuke-test-db:
   @killall -q Postico; dropdb --if-exists gertrude_test; createdb gertrude_test
@@ -72,44 +78,44 @@ watch-web-email template:
 # infra
 
 db-sync:
-	@node ../infra/db-sync.mjs
+  @node ../infra/db-sync.mjs
 
 sync-env:
-	@node ../infra/sync-env.mjs
+  @node ../infra/sync-env.mjs
 
 # root
 
 build:
-	@just nx-run-many build
+  @just nx-run-many build
 
 test:
-	@just nx-run-many test
+  @just nx-run-many test
 
 check:
-	@just build
-	@just test
+  @just build
+  @just test
 
 exclude:
-	@find . -path '**/.build/**/swift-nio*/**/hash.txt' -delete
-	@find . -path '**/.build/**/swift-nio*/**/*_nasm.inc' -delete
-	@find . -path '**/.build/**/swift-nio*/**/*_sha1.sh' -delete
-	@find . -path '**/.build/**/swift-nio*/**/*_llhttp.sh' -delete
-	@find . -path '**/.build/**/swift-nio*/**/LICENSE-MIT' -delete
+  @find . -path '**/.build/**/swift-nio*/**/hash.txt' -delete
+  @find . -path '**/.build/**/swift-nio*/**/*_nasm.inc' -delete
+  @find . -path '**/.build/**/swift-nio*/**/*_sha1.sh' -delete
+  @find . -path '**/.build/**/swift-nio*/**/*_llhttp.sh' -delete
+  @find . -path '**/.build/**/swift-nio*/**/LICENSE-MIT' -delete
 
 nx-reset:
-	@pnpm nx reset
+  @pnpm nx reset
 
 clean: nx-reset
-	@rm -rf node_modules/.cache
-	@rm -rf api/.build
-	@rm -rf duet/.build
-	@rm -rf pairql/.build
-	@rm -rf pairql-macapp/.build
-	@rm -rf shared/.build
-	@rm -rf x-kit/.build
+  @rm -rf node_modules/.cache
+  @rm -rf api/.build
+  @rm -rf duet/.build
+  @rm -rf pairql/.build
+  @rm -rf pairql-macapp/.build
+  @rm -rf shared/.build
+  @rm -rf x-kit/.build
 
 clean-api-tests:
-	@cd api && find .build -name '*AppTests*' -delete
+  @cd api && find .build -name '*AppTests*' -delete
 
 # helpers
 

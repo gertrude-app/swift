@@ -92,6 +92,12 @@ extension Request {
   }
 }
 
+extension Parameters {
+  func getUUID(_ key: String) -> UUID? {
+    self.get("token").flatMap(UUID.init(uuidString:))
+  }
+}
+
 // helpers
 
 private extension UUID {
