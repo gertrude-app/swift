@@ -28,6 +28,7 @@ enum ApplicationFeature {
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.network) var network
     @Dependency(\.date.now) var now
+    @Dependency(\.calendar) var calendar
     @Dependency(\.userDefaults) var userDefaults
   }
 }
@@ -127,7 +128,8 @@ extension ApplicationFeature.RootReducer: RootReducing {
         return .none
       }
       return .exec { _ in
-        if let app = self.device.runningAppFromPid(pid), blockedApps.blocks(app: app) {
+        if let app = self.device.runningAppFromPid(pid),
+           blockedApps.blocks(app: app, at: self.now, in: self.calendar) {
           await self.device.terminateApp(app)
           await self.device.notify(
             "Application blocked",

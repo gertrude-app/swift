@@ -4,8 +4,11 @@ import Gertie
 
 @Sendable func terminateAllBlockedApps(_ apps: [BlockedApp]) async {
   @Dependency(\.mainQueue) var mainQueue
+  @Dependency(\.date) var date
+  @Dependency(\.calendar) var calendar
+
   for app in NSWorkspace.shared.runningApplications {
-    if apps.blocks(app: app) {
+    if apps.blocks(app: app, at: date.now, in: calendar) {
       await terminate(app: app, retryDelay: .milliseconds(200), on: mainQueue)
     }
   }
@@ -19,13 +22,21 @@ import Gertie
 }
 
 extension BlockedApp {
-  func blocks(app: NSRunningApplication) -> Bool {
-    app.runningApp.map(self.blocks(app:)) ?? false
+  func blocks(
+    app: NSRunningApplication,
+    at date: Date,
+    in calendar: Calendar = .current
+  ) -> Bool {
+    app.runningApp.map { self.blocks(app: $0, at: date, in: calendar) } ?? false
   }
 }
 
 public extension Collection where Element == BlockedApp {
-  func blocks(app: NSRunningApplication) -> Bool {
-    self.contains { $0.blocks(app: app) }
+  func blocks(
+    app: NSRunningApplication,
+    at date: Date,
+    in calendar: Calendar = .current
+  ) -> Bool {
+    self.contains { $0.blocks(app: app, at: date, in: calendar) }
   }
 }

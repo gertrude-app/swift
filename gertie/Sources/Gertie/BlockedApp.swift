@@ -1,3 +1,5 @@
+import Foundation
+
 public struct BlockedApp {
   public var identifier: String
   public var schedule: RuleSchedule?
@@ -9,8 +11,11 @@ public struct BlockedApp {
 }
 
 public extension BlockedApp {
-  func blocks(app: RunningApp) -> Bool {
-    if app.localizedName == self.identifier {
+  func blocks(app: RunningApp, at date: Date, in calendar: Calendar = .current) -> Bool {
+    if self.schedule.map({ $0.active(at: date, in: calendar) }) == .some(false) {
+      // if it has a schedule, and it's not active, we know it isn't blocked
+      return false
+    } else if app.localizedName == self.identifier {
       return true
     } else if app.bundleName == self.identifier {
       return true
@@ -25,8 +30,8 @@ public extension BlockedApp {
 }
 
 public extension Collection where Element == BlockedApp {
-  func blocks(app: RunningApp) -> Bool {
-    self.contains { $0.blocks(app: app) }
+  func blocks(app: RunningApp, at date: Date, in calendar: Calendar = .current) -> Bool {
+    self.contains { $0.blocks(app: app, at: date, in: calendar) }
   }
 }
 
