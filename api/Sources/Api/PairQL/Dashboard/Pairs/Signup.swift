@@ -70,7 +70,7 @@ extension Signup: Resolver {
 
     let admin = try await context.db.create(Admin(
       email: .init(rawValue: email),
-      password: context.env.mode == .test ? input.password : try Bcrypt.hash(input.password),
+      password: context.env.mode == .test ? input.password : Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
       subscriptionStatusExpiration: now + .days(7),
       gclid: input.gclid,
