@@ -98,6 +98,11 @@ extension AdminWindowFeature.Action.View.AdvancedAction {
     var url: String?
   }
 
+  private struct _CaseSetWebviewDebugging: Codable {
+    var `case` = "setWebviewDebugging"
+    var enabled: Bool
+  }
+
   private struct _CaseForceUpdateToSpecificVersionClicked: Codable {
     var `case` = "forceUpdateToSpecificVersionClicked"
     var version: String
@@ -111,6 +116,8 @@ extension AdminWindowFeature.Action.View.AdvancedAction {
       try _CaseWebsocketEndpointSet(url: url).encode(to: encoder)
     case .appcastEndpointSet(let url):
       try _CaseAppcastEndpointSet(url: url).encode(to: encoder)
+    case .setWebviewDebugging(let enabled):
+      try _CaseSetWebviewDebugging(enabled: enabled).encode(to: encoder)
     case .forceUpdateToSpecificVersionClicked(let version):
       try _CaseForceUpdateToSpecificVersionClicked(version: version).encode(to: encoder)
     case .deleteAllDeviceStorageClicked:
@@ -131,6 +138,9 @@ extension AdminWindowFeature.Action.View.AdvancedAction {
     case "appcastEndpointSet":
       let value = try container.decode(_CaseAppcastEndpointSet.self)
       self = .appcastEndpointSet(url: value.url)
+    case "setWebviewDebugging":
+      let value = try container.decode(_CaseSetWebviewDebugging.self)
+      self = .setWebviewDebugging(enabled: value.enabled)
     case "forceUpdateToSpecificVersionClicked":
       let value = try container.decode(_CaseForceUpdateToSpecificVersionClicked.self)
       self = .forceUpdateToSpecificVersionClicked(version: value.version)

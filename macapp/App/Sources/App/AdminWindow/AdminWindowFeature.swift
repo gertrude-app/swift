@@ -81,6 +81,7 @@ struct AdminWindowFeature: Feature {
         var appcastEndpointOverride: String?
         var appcastEndpointDefault: String
         var appVersions: [String: String]?
+        var webviewDebugging: Bool
       }
 
       var advanced: Advanced?
@@ -107,6 +108,7 @@ struct AdminWindowFeature: Feature {
         case pairqlEndpointSet(url: String?)
         case websocketEndpointSet(url: String?)
         case appcastEndpointSet(url: String?)
+        case setWebviewDebugging(enabled: Bool)
         case forceUpdateToSpecificVersionClicked(version: String)
         case deleteAllDeviceStorageClicked
       }
@@ -160,11 +162,9 @@ struct AdminWindowFeature: Feature {
     @Dependency(\.mainQueue) var mainQueue
     @Dependency(\.monitoring) var monitoring
     @Dependency(\.network) var network
-    @Dependency(\.date.now) var now
     @Dependency(\.security) var security
     @Dependency(\.storage) var storage
     @Dependency(\.updater) var updater
-    @Dependency(\.websocket) var websocket
   }
 }
 
@@ -185,8 +185,8 @@ extension AdminWindowFeature.RootReducer {
       return .merge(
         .exec { send in
           await send(.adminWindow(.setExemptionData(
-            Failable { try await device.nonCurrentUsers() },
-            Failable(result: await xpc.requestUserTypes())
+            Failable { try await self.device.nonCurrentUsers() },
+            Failable(result: await self.xpc.requestUserTypes())
           )))
         },
         self.checkHealth(state: &state, action: action)
@@ -208,7 +208,7 @@ extension AdminWindowFeature.RootReducer {
         state.adminWindow.healthCheck.checkCompletionEffect,
         .exec { send in
           // wait for user feature reducer to send rules to filter
-          try await mainQueue.sleep(for: .milliseconds(10))
+          try await self.mainQueue.sleep(for: .milliseconds(10))
           await recheckFilter(send)
         }
       )
@@ -254,23 +254,23 @@ extension AdminWindowFeature.RootReducer {
 
       case .webview(.healthCheck(.fixKeystrokeRecordingPermissionClicked)):
         return .exec { _ in
-          await device.openSystemPrefs(.security(.accessibility))
+          await self.device.openSystemPrefs(.security(.accessibility))
         }
 
       case .webview(.healthCheck(.fixScreenRecordingPermissionClicked)):
         return .exec { _ in
-          await device.openSystemPrefs(.security(.screenRecording))
+          await self.device.openSystemPrefs(.security(.screenRecording))
         }
 
       case .webview(.healthCheck(.removeUserAdminPrivilegeClicked)),
            .webview(.administrateOSUserAccountsClicked):
         return .exec { _ in
-          await device.openSystemPrefs(.accounts)
+          await self.device.openSystemPrefs(.accounts)
         }
 
       case .webview(.healthCheck(.fixNotificationPermissionClicked)):
         return .exec { _ in
-          await device.openSystemPrefs(.notifications)
+          await self.device.openSystemPrefs(.notifications)
         }
 
       case .webview(.healthCheck(.repairOutOfDateFilterClicked)):
@@ -375,8 +375,8 @@ extension AdminWindowFeature.RootReducer {
         return .merge(
           .exec { send in
             try await restartFilter(send)
-            try await mainQueue.sleep(for: .milliseconds(10))
-            if await xpc.notConnected() {
+            try await self.mainQueue.sleep(for: .milliseconds(10))
+            if await self.xpc.notConnected() {
               try await replaceFilter(send)
             }
           },
@@ -391,10 +391,10 @@ extension AdminWindowFeature.RootReducer {
       case .webview(.confirmQuitAppClicked):
         state.adminWindow.quitting = true
         return .exec { _ in
-          await api.securityEvent(.appQuit)
+          await self.api.securityEvent(.appQuit)
           // give time for uploading keystrokes, websocket disconnect, etc
-          try await mainQueue.sleep(for: .seconds(2))
-          await app.quit()
+          try await self.mainQueue.sleep(for: .seconds(2))
+          await self.app.quit()
         }
 
       case .webview(.disconnectUserClicked):
@@ -414,34 +414,38 @@ extension AdminWindowFeature.RootReducer {
         }
         return .exec { send in
           if enabled {
-            await api.securityEvent(.macosUserExempted, "userId: \(userId)")
+            await self.api.securityEvent(.macosUserExempted, "userId: \(userId)")
           }
-          _ = await xpc.setUserExemption(userId, enabled)
+          _ = await self.xpc.setUserExemption(userId, enabled)
         }
 
       case .webview(.advanced(let advancedAction)):
         switch advancedAction {
         case .appcastEndpointSet(let url):
-          return .exec { _ in await updater.updateEndpointOverride(url) }
+          return .exec { _ in await self.updater.updateEndpointOverride(url) }
         case .pairqlEndpointSet(let url):
-          return .exec { _ in await api.updateEndpointOverride(url) }
+          return .exec { _ in await self.api.updateEndpointOverride(url) }
+        case .setWebviewDebugging(let enabled):
+          return .exec { _ in
+            UserDefaults.standard.set(enabled, forKey: "allowWebviewDebugging")
+          }
         case .websocketEndpointSet:
           return .none // handled by WebsocketFeature
         case .forceUpdateToSpecificVersionClicked:
           return .none // handled by UpdaterFeature
         case .deleteAllDeviceStorageClicked:
           return .exec { _ in
-            await storage.deleteAll()
-            _ = await xpc.sendDeleteAllStoredState()
+            await self.storage.deleteAll()
+            _ = await self.xpc.sendDeleteAllStoredState()
           }
         }
 
       case .webview(.gotoScreenClicked(.advanced)):
         state.adminWindow.screen = .advanced
         return .exec { send in
-          await api.securityEvent(.advancedSettingsOpened)
-          guard network.isConnected() else { return }
-          if let versions = try? await api.recentAppVersions() {
+          await self.api.securityEvent(.advancedSettingsOpened)
+          guard self.network.isConnected() else { return }
+          if let versions = try? await self.api.recentAppVersions() {
             await send(.adminWindow(.receivedRecentAppVersions(versions)))
           }
         }
@@ -462,34 +466,34 @@ extension AdminWindowFeature.RootReducer {
     let screenRecordingEnabled = state.user.data?.screenshotsEnabled == true
 
     let main = Effect<Action>.exec { send in
-      try await mainQueue.sleep(for: .seconds(1))
+      try await self.mainQueue.sleep(for: .seconds(1))
 
       await send(.checkIn(
-        result: network.isConnected()
-          ? TaskResult { try await api.appCheckIn(filterVersion) }
+        result: self.network.isConnected()
+          ? TaskResult { try await self.api.appCheckIn(filterVersion) }
           : .failure(NetworkClient.NotConnected()),
         reason: .healthCheck
       ))
 
       await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
-        keyloggingEnabled ? await monitoring.keystrokeRecordingPermissionGranted() : true
+        keyloggingEnabled ? await self.monitoring.keystrokeRecordingPermissionGranted() : true
       )))
 
       await send(.adminWindow(.setScreenRecordingPermissionOk(
-        screenRecordingEnabled ? await monitoring.screenRecordingPermissionGranted() : true
+        screenRecordingEnabled ? await self.monitoring.screenRecordingPermissionGranted() : true
       )))
 
       await send(.adminWindow(.setNotificationsSetting(
-        await device.notificationsSetting()
+        await self.device.notificationsSetting()
       )))
 
       await send(.adminWindow(.setMacOsUserType(
-        .init { try await device.currentMacOsUserType() }
+        .init { try await self.device.currentMacOsUserType() }
       )))
 
       await recheckFilter(send)
 
-      try await mainQueue.sleep(for: .seconds(10))
+      try await self.mainQueue.sleep(for: .seconds(10))
 
       await send(.adminWindow(.healthCheckTimeout))
     }.cancellable(id: CancelId.healthCheckTimeout, cancelInFlight: true)
@@ -507,13 +511,13 @@ extension AdminWindowFeature.RootReducer {
 
   func withTimeoutAfter(seconds: Int) -> Effect<Action> {
     .exec { send in
-      try await mainQueue.sleep(for: .seconds(seconds))
+      try await self.mainQueue.sleep(for: .seconds(seconds))
       await send(.adminWindow(.healthCheckTimeout))
     }.cancellable(id: CancelId.healthCheckTimeout, cancelInFlight: true)
   }
 
   private func recheckFilter(_ send: Send<Action>, repairing: Bool = false) async {
-    let filterState = await filter.state()
+    let filterState = await self.filter.state()
     await send(.adminWindow(.delegate(.healthCheckFilterExtensionState(filterState))))
     switch filterState {
     case .notInstalled:
@@ -523,7 +527,7 @@ extension AdminWindowFeature.RootReducer {
       await send(.adminWindow(.setFilterStatus(.unexpected)))
       return
     case .installedAndRunning:
-      switch await xpc.requestAck() {
+      switch await self.xpc.requestAck() {
       case .success(let ack) where ack.userId == getuid():
         await send(.adminWindow(.setFilterStatus(
           .installed(version: ack.version, numUserKeys: ack.numUserKeys)
@@ -536,7 +540,7 @@ extension AdminWindowFeature.RootReducer {
         await send(.adminWindow(.setFilterStatus(.communicationBroken(repairing: repairing))))
       }
     case .installedButNotRunning:
-      switch await xpc.requestAck() {
+      switch await self.xpc.requestAck() {
       case .success(let ack) where ack.userId == getuid():
         await send(.adminWindow(.setFilterStatus(
           .installed(version: ack.version, numUserKeys: ack.numUserKeys)
@@ -618,7 +622,8 @@ extension AdminWindowFeature.State.View {
         websocketEndpointDefault: WebSocketClient.defaultEndpoint().absoluteString,
         appcastEndpointOverride: UpdaterClient.endpointOverride()?.absoluteString,
         appcastEndpointDefault: UpdaterClient.defaultEndpoint().absoluteString,
-        appVersions: featureState.recentAppVersions
+        appVersions: featureState.recentAppVersions,
+        webviewDebugging: UserDefaults.standard.bool(forKey: "allowWebviewDebugging")
       )
     }
 

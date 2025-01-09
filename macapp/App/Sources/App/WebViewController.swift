@@ -37,7 +37,7 @@ class WebViewController<State, Action>:
     }
 
     if self.withTitleBar {
-      self.webView = WKWebView(frame: .zero, configuration: webConfiguration)
+      self.webView = GertrudeWebview(frame: .zero, configuration: webConfiguration)
     } else {
       self.webView = NoTitleWebView(frame: .zero, configuration: webConfiguration)
     }
@@ -49,6 +49,10 @@ class WebViewController<State, Action>:
 
     #if DEBUG
       self.webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
+    #else
+      if allowWebviewDebugging() {
+        self.webView.configuration.preferences.setValue(true, forKey: "developerExtrasEnabled")
+      }
     #endif
 
     let colorScheme = self.supportsDarkMode ? self.app.colorScheme() : .light
@@ -107,9 +111,50 @@ class WebViewController<State, Action>:
   }
 }
 
-class NoTitleWebView: WKWebView {
+class GertrudeWebview: WKWebView {
+  #if !DEBUG
+    override func willOpenMenu(_ menu: NSMenu, with event: NSEvent) {
+      if let reloadMenuItem = menu.item(withTitle: "Reload"), !allowWebviewDebugging() {
+        menu.removeItem(reloadMenuItem)
+      }
+    }
+  #endif
+}
+
+class NoTitleWebView: GertrudeWebview {
   override var mouseDownCanMoveWindow: Bool { true }
 }
+
+private func allowWebviewDebugging() -> Bool {
+  #if DEBUG
+    return true
+  #else
+    if UserDefaults.standard.bool(forKey: "allowWebviewDebugging") {
+      return true
+    } else if let envVar = ProcessInfo.processInfo.environment["ALLOW_WEBVIEW_DEBUGGING"] {
+      return toHash(envVar) == "a430287a9c7400e48d720da20b7e71b56b8f641347319123c7d3ed4815197830"
+    } else {
+      return false
+    }
+  #endif
+}
+
+#if canImport(CryptoKit)
+  import CryptoKit
+
+  func toHash(_ input: String) -> String {
+    if let inputData = input.data(using: .utf8) {
+      let hash = SHA256.hash(data: inputData)
+      return hash.compactMap { String(format: "%02x", $0) }.joined()
+    } else {
+      return UUID().uuidString
+    }
+  }
+#else
+  func toHash(_ input: String) -> String {
+    UUID().uuidString
+  }
+#endif
 
 typealias WebViewControllerOf<F: Feature> = WebViewController<
   F.Reducer.State,
