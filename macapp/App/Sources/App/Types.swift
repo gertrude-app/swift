@@ -2,6 +2,7 @@ import ClientInterfaces
 import ComposableArchitecture
 import Foundation
 import MacAppRoute
+import os.log
 
 typealias FeatureReducer = Reducer
 
@@ -71,7 +72,7 @@ public extension ApiClient {
         appVersion: appClient.installedVersion() ?? "unknown",
         filterVersion: filterVersion,
         userIsAdmin: device.currentMacOsUserType() == .admin,
-        osVersion: device.osVersion().semver,
+        osVersion: device.osVersion().semver.string,
         pendingFilterSuspension: pendingFilterSuspension,
         pendingUnlockRequests: pendingUnlockRequests,
         namedApps: sendNamedApps ? device.listRunningApps().filter(\.hasName) : nil
@@ -82,4 +83,27 @@ public extension ApiClient {
 
 extension URL {
   static let contact = URL(string: "https://gertrude.app/contact")!
+}
+
+struct AppError: Error, Equatable, Sendable {
+  var message: String
+
+  init(_ message: String) {
+    self.message = message
+  }
+
+  init(oslogging message: String, context: String? = nil) {
+    if let context {
+      os_log("[G•] AppError context: %{public}s, message: %{public}s", context, message)
+    } else {
+      os_log("[G•] AppError message: %{public}s", message)
+    }
+    self.message = message
+  }
+}
+
+extension AppError: ExpressibleByStringLiteral {
+  init(stringLiteral value: String) {
+    self.message = value
+  }
 }
