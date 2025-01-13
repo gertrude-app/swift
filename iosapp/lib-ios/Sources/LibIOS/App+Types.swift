@@ -1,6 +1,7 @@
 // @see https://developer.apple.com/documentation/familycontrols/familycontrolserror
 public enum AuthFailureReason: Error, Equatable {
-  // The device isn't signed into a valid iCloud account (also? .individual?)
+  /// The device isn't signed into a valid iCloud account (according to docs)
+  /// but i've verified this also is what you get with 18+ iCloud account
   case invalidAccountType
   /// Another authorized app already provides parental controls
   case authorizationConflict
