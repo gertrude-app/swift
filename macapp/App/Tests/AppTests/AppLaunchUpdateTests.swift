@@ -10,6 +10,7 @@ import XExpect
 @testable import ClientInterfaces
 
 final class UpdateTests: XCTestCase {
+  @MainActor
   func testAppLaunchNoPersistentStateSavesNewState() async {
     let (store, _) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { nil }
@@ -25,6 +26,7 @@ final class UpdateTests: XCTestCase {
     )])
   }
 
+  @MainActor
   func testAppLaunchDetectingUpdateJustOccurred_HappyPath() async {
     let (store, _) = AppReducer.testStore()
 
@@ -53,6 +55,32 @@ final class UpdateTests: XCTestCase {
     await expect(filterReplaced.called).toEqual(true)
   }
 
+  @MainActor
+  func testFullDiskAccessUpgradeStartsOnboarding() async {
+    let (store, _) = AppReducer.testStore {
+      $0.filter.version = "2.5.1" // <-- previous filter version, before FDA
+      $0.appUpdates.installedVersion = "2.7.0" // <-- app launches here, after FDA
+    }
+
+    store.deps.storage.loadPersistentState = { .version("2.5.1") }
+    store.deps.filterExtension.replace = { .installedSuccessfully }
+    store.deps.filterExtension.state = { .installedAndRunning }
+    store.deps.app.hasFullDiskAccess = { false }
+
+    await store.send(.application(.didFinishLaunching))
+
+    await store.skipReceivedActions()
+
+    // they should see the "upgrade" onboarding
+    expect(store.state.onboarding.windowOpen).toEqual(true)
+    expect(store.state.onboarding.upgrade).toEqual(true)
+    expect(store.state.onboarding.step).toEqual(.allowFullDiskAccess_grantAndRestart)
+
+    // and the filter version is updated as well
+    expect(store.state.filter.version).toEqual("2.7.0")
+  }
+
+  @MainActor
   func testAppLaunchDetectingUpdateJustOccurred_RepeatsFilterReplaceOnFail() async {
     let (store, _) = AppReducer.testStore()
 
@@ -77,6 +105,7 @@ final class UpdateTests: XCTestCase {
     expect(store.state.adminWindow.windowOpen).toEqual(false)
   }
 
+  @MainActor
   func testAppLaunchDetectingUpdateJustOccurred_OpensHealthCheckOnRepeatFail() async {
     let (store, _) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { .needsAppUpdate }
@@ -95,6 +124,7 @@ final class UpdateTests: XCTestCase {
     expect(store.state.adminWindow.screen).toEqual(.healthCheck)
   }
 
+  @MainActor
   func testAppLaunchDetectingUpdateJustOccurred_OpensHealthCheckOnNotInstalled() async {
     let (store, _) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { .needsAppUpdate }
@@ -109,6 +139,7 @@ final class UpdateTests: XCTestCase {
     expect(store.state.adminWindow.screen).toEqual(.healthCheck)
   }
 
+  @MainActor
   func testAppLaunchDetectingUpdateJustOccurred_OpensHealthCheckOnFilterCommunicationBroken() async {
     let (store, _) = AppReducer.testStore()
     store.deps.storage.loadPersistentState = { .needsAppUpdate }

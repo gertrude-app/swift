@@ -26,11 +26,12 @@ struct OnboardingFeature: Feature {
     var connectChildRequest: PayloadRequestState<String, String> = .idle
     var users: [MacUser] = []
     var filterUsers: FilterUserTypes?
+    var upgrade = false
   }
 
   enum Resume: Codable, Equatable, Sendable {
     case checkingScreenRecordingPermission
-    case checkingFullDiskAccessPermission
+    case checkingFullDiskAccessPermission(upgrade: Bool)
     case at(step: State.Step)
   }
 
@@ -50,6 +51,7 @@ struct OnboardingFeature: Feature {
     enum Delegate: Equatable, Sendable {
       case saveForResume(Resume?)
       case onboardingConfigComplete
+      case openForUpgrade(step: OnboardingFeature.State.Step)
     }
 
     case webview(View)
@@ -89,7 +91,7 @@ struct OnboardingFeature: Feature {
           ))
         }
 
-      case .resume(.checkingFullDiskAccessPermission):
+      case .resume(.checkingFullDiskAccessPermission(let upgrade)):
         state.windowOpen = true
         return .exec { send in
           let granted = await self.app.hasFullDiskAccess()
@@ -97,7 +99,9 @@ struct OnboardingFeature: Feature {
           if granted {
             await send(.setStep(.allowFullDiskAccess_success))
           } else {
-            await send(.delegate(.saveForResume(.checkingFullDiskAccessPermission)))
+            await send(
+              .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: upgrade)))
+            )
             await send(.setStep(.allowFullDiskAccess_failed))
           }
         }
@@ -300,15 +304,30 @@ struct OnboardingFeature: Feature {
         }
 
       case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_grantAndRestart:
-        return .exec { send in
+        return .exec { [isUpgrade = state.upgrade] send in
           await self.device.openSystemPrefs(.security(.fullDiskAccess))
-          await send(.delegate(.saveForResume(.checkingFullDiskAccessPermission)))
+          await send(
+            .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: isUpgrade)))
+          )
         }
+
+      case .webview(.secondaryBtnClicked)
+        where step == .allowFullDiskAccess_grantAndRestart && state.upgrade:
+        log(step, action, "f6057a7e")
+        state.windowOpen = false
+        return .none
 
       case .webview(.secondaryBtnClicked) where step == .allowFullDiskAccess_grantAndRestart:
         log(step, action, "cdd658e1")
         return .exec { send in
           await nextRequiredStage(from: step, send)
+        }
+
+      case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_success && state.upgrade:
+        log(step, action, "6e4f9800")
+        state.windowOpen = false
+        return .exec { send in
+          await send(.delegate(.saveForResume(nil)))
         }
 
       case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_success:
@@ -319,8 +338,21 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_failed:
         log(step, action, "2ecaa8e3")
-        state.step = .allowFullDiskAccess_grantAndRestart
-        return .none
+        return .exec { send in
+          if await self.app.hasFullDiskAccess() {
+            await send(.setStep(.allowFullDiskAccess_success))
+          } else {
+            await send(.setStep(.allowFullDiskAccess_grantAndRestart))
+          }
+        }
+
+      case .webview(.secondaryBtnClicked)
+        where step == .allowFullDiskAccess_failed && state.upgrade:
+        state.windowOpen = false
+        log(step, action, "c72e6681")
+        return .exec { send in
+          await send(.delegate(.saveForResume(nil)))
+        }
 
       case .webview(.secondaryBtnClicked) where step == .allowFullDiskAccess_failed:
         log(step, action, "bafcef2e")
@@ -600,7 +632,14 @@ struct OnboardingFeature: Feature {
         log("info modal opened at .\(step), detail=\(detail ?? "(nil)")", "f77ef50c")
         return .none
 
-      case .delegate:
+      case .delegate(.openForUpgrade(let step)):
+        state.step = step
+        state.upgrade = true
+        state.windowOpen = true
+        return .none
+
+      case .delegate(.saveForResume),
+           .delegate(.onboardingConfigComplete):
         return .none
       }
     }
