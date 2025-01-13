@@ -164,23 +164,25 @@ final class OnboardingFeatureTests: XCTestCase {
       $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
     }
 
-    // they click "Grant Permission" on the allow full disk acccess screen...
+    // they click "Grant Permission" on the allow full disk access screen...
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
     // ...we make a note to resume here after a quit/restart
-    await store.receive(.onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission))))
+    await store.receive(
+      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: false))))
+    )
     // ...and we send them to the full disk access grant system prefs pane
     await expect(openSysPrefs.calls).toEqual([.notifications, .security(.fullDiskAccess)])
 
     // check that we persisted the onboarding resumption state
     await expect(saveState.calls.count).toEqual(3)
     await expect(saveState.calls[2].resumeOnboarding)
-      .toEqual(.checkingFullDiskAccessPermission)
+      .toEqual(.checkingFullDiskAccessPermission(upgrade: false))
 
     // NB: here technically they RESTART the app, but instead of starting a new test
     // we simulate receiving the resume action to carry on where they should
     // we have other tests testing the resume from persisted state flow.
-    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission)))
+    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: false))))
 
     await store.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
       $0.onboarding.step = .allowFullDiskAccess_success
@@ -1490,7 +1492,7 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.monitoring.screenRecordingPermissionGranted = { false }
 
     store.deps.storage.loadPersistentState = { .mock {
-      $0.resumeOnboarding = .checkingFullDiskAccessPermission // <-- resume here
+      $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) // <-- resume here
     }}
 
     await store.send(.application(.didFinishLaunching))
@@ -1515,7 +1517,7 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.storage.savePersistentState = saveState.fn
 
     store.deps.storage.loadPersistentState = { .mock {
-      $0.resumeOnboarding = .checkingFullDiskAccessPermission // <-- resume here
+      $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) // <-- resume here
     }}
 
     await store.send(.application(.didFinishLaunching))
@@ -1530,12 +1532,11 @@ final class OnboardingFeatureTests: XCTestCase {
     // resume again after another quit & restart
     await expect(saveState.calls).toEqual([
       .mock { $0.resumeOnboarding = nil }, // <-- the first, default clear save
-      .mock { $0.resumeOnboarding = .checkingFullDiskAccessPermission },
+      .mock { $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) },
     ])
 
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
-    }
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_grantAndRestart)))
   }
 
   @MainActor
@@ -1562,6 +1563,142 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.monitoring.screenRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowScreenshots_required))
+  }
+
+  @MainActor
+  func testUpgradeFDAHappyPath() async {
+    let (store, _) = AppReducer.testStore()
+
+    await store
+      .send(.onboarding(.delegate(.openForUpgrade(step: .allowFullDiskAccess_grantAndRestart)))) {
+        $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
+        $0.onboarding.windowOpen = true
+        $0.onboarding.upgrade = true
+      }
+
+    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
+    store.deps.device.openSystemPrefs = openSysPrefs.fn
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+
+    // they click "Grant Permission" on the allow full disk access screen...
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+
+    // ...we make a note to resume here after a quit/restart
+    await store.receive(
+      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: true))))
+    )
+    // ...and we send them to the full disk access grant system prefs pane
+    await expect(openSysPrefs.calls).toEqual([.security(.fullDiskAccess)])
+
+    // check that we persisted the onboarding resumption state
+    await expect(saveState.calls.count).toEqual(1)
+    await expect(saveState.calls[0].resumeOnboarding)
+      .toEqual(.checkingFullDiskAccessPermission(upgrade: true))
+
+    let hasFullDiskAccess = mock(returning: [true])
+    store.deps.app.hasFullDiskAccess = hasFullDiskAccess.fn
+
+    // simulate receiving the resume action to carry on where they should
+    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true))))
+
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
+      $0.onboarding.step = .allowFullDiskAccess_success
+    }
+
+    expect(store.state.onboarding.step).toEqual(.allowFullDiskAccess_success)
+
+    // they click "Done" on the success screen...
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.windowOpen = false // ... so we close the window then b/c upgrade
+    }
+
+    await expect(saveState.calls.count).toEqual(2)
+    await expect(saveState.calls[1].resumeOnboarding).toBeNil()
+  }
+
+  @MainActor
+  func testSecondaryFromUpgradeFDAStartClosesWindowWithNoSaveForResume() async {
+    let (store, _) = AppReducer.testStore {
+      $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
+      $0.onboarding.upgrade = true
+    }
+
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+
+    // they elect to not give full disk access
+    await store.send(.onboarding(.webview(.secondaryBtnClicked))) {
+      $0.onboarding.windowOpen = false // so we close upgrade onboarding
+    }
+
+    await expect(saveState.calls.count).toEqual(0)
+  }
+
+  @MainActor
+  func testPrimaryFromUpgradeFDAFailGoesBacktoGrant() async {
+    let store = self.featureStore {
+      $0.step = .allowFullDiskAccess_failed
+      $0.upgrade = true
+    }
+    store.deps.app.hasFullDiskAccess = { false }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
+  }
+
+  @MainActor
+  func testPrimaryFDAFailGoesToSuccessIfTheyFixed() async {
+    let store = self.featureStore {
+      $0.step = .allowFullDiskAccess_failed
+      $0.upgrade = false
+    }
+    store.deps.app.hasFullDiskAccess = { true } // <-- they fixed it before click
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowFullDiskAccess_success))
+  }
+
+  @MainActor
+  func testPrimaryFromUpgradeFDAFailGoesToSuccessIfTheyFixed() async {
+    let store = self.featureStore {
+      $0.step = .allowFullDiskAccess_failed
+      $0.upgrade = true
+    }
+    store.deps.app.hasFullDiskAccess = { true } // <-- they fixed it before click
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowFullDiskAccess_success))
+  }
+
+  @MainActor
+  func testSecondaryFromUpgradeFDAFailClosesPreventingResume() async {
+    let (store, _) = AppReducer.testStore {
+      $0.onboarding.windowOpen = false
+      $0.onboarding.upgrade = true
+    }
+
+    store.deps.app.hasFullDiskAccess = { false }
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+
+    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true)))) {
+      $0.onboarding.windowOpen = true
+    }
+
+    // they end up on the failed screen
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_failed)))
+
+    // and we record that we're going to resume here, assuming they try again
+    await expect(saveState.calls.count).toEqual(1)
+    await expect(saveState.calls[0].resumeOnboarding)
+      .toEqual(.checkingFullDiskAccessPermission(upgrade: true))
+
+    // ... but instead they quit by clicking the secondary
+    await store.send(.onboarding(.webview(.secondaryBtnClicked))) {
+      $0.onboarding.windowOpen = false // so we close upgrade onboarding
+    }
+
+    // and won't resume
+    await expect(saveState.calls.count).toEqual(2)
+    await expect(saveState.calls[1].resumeOnboarding).toBeNil()
   }
 
   // helpers
