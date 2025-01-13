@@ -30,7 +30,7 @@ actor Ephemeral {
     let token = self.uuid()
     self.adminIds[token] = (
       adminId: adminId,
-      expiration: expiration ?? self.now + ONE_HOUR
+      expiration: expiration ?? self.now + .minutes(60)
     )
     return token
   }
@@ -75,7 +75,7 @@ actor Ephemeral {
     self.pendingMethods[model.id] = (
       model: model,
       code: code,
-      expiration: expiration ?? self.now + ONE_HOUR
+      expiration: expiration ?? self.now + .minutes(60)
     )
     return code
   }
@@ -104,7 +104,7 @@ actor Ephemeral {
     }
     self.pendingAppConnections[code] = (
       userId: userId,
-      expiration: expiration ?? self.now + ONE_HOUR
+      expiration: expiration ?? self.now + .days(2)
     )
     return code
   }
@@ -120,8 +120,6 @@ actor Ephemeral {
     return userId
   }
 }
-
-private let ONE_HOUR: TimeInterval = 60 * 60
 
 // dependency
 
