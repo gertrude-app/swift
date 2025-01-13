@@ -12,7 +12,7 @@ extension ConnectUser: Resolver {
         id: "6e7fc234",
         type: .unauthorized,
         debugMessage: "verification code not found",
-        userMessage: "Connection code not found, or expired. Please try again.",
+        userMessage: "Connection code expired, or not found. Plese create a new code and try again.",
         appTag: .connectionCodeNotFound
       )
     }
