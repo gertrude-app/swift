@@ -282,6 +282,10 @@ struct AppReducer: Reducer, Sendable {
   }
 
   func preventScreenCaptureNag() async {
+    guard await self.app.hasFullDiskAccess() else {
+      os_log("[G•] Skip preventScreenCaptureNag, missing full disk access")
+      return
+    }
     switch await self.app.preventScreenCaptureNag() {
     case .success:
       break

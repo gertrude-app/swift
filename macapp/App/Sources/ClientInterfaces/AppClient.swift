@@ -1,8 +1,8 @@
 import Combine
-import Core
 import Dependencies
 import Foundation
 import MacAppRoute
+import XCore
 
 public struct AppClient: Sendable {
   public enum ColorScheme: String, Sendable, Equatable {
@@ -18,7 +18,7 @@ public struct AppClient: Sendable {
   public var isLaunchAtLoginEnabled: @Sendable () async -> Bool
   public var installLocation: @Sendable () -> URL
   public var installedVersion: @Sendable () -> String?
-  public var preventScreenCaptureNag: @Sendable () async -> Result<Void, AppError>
+  public var preventScreenCaptureNag: @Sendable () async -> Result<Void, StringError>
   public var quit: @Sendable () async -> Void
   public var relaunch: @Sendable () async throws -> Void
   public var startRelaunchWatcher: @Sendable () async throws -> Void
@@ -33,7 +33,7 @@ public struct AppClient: Sendable {
     isLaunchAtLoginEnabled: @escaping @Sendable () async -> Bool,
     installLocation: @escaping @Sendable () -> URL,
     installedVersion: @escaping @Sendable () -> String?,
-    preventScreenCaptureNag: @escaping @Sendable () async -> Result<Void, AppError>,
+    preventScreenCaptureNag: @escaping @Sendable () async -> Result<Void, StringError>,
     quit: @escaping @Sendable () async -> Void,
     relaunch: @escaping @Sendable () async throws -> Void,
     startRelaunchWatcher: @escaping @Sendable () async throws -> Void,

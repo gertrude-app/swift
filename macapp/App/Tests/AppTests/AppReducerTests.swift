@@ -3,6 +3,7 @@ import ComposableArchitecture
 import Core
 import MacAppRoute
 import TestSupport
+import XCore
 import XCTest
 import XExpect
 
@@ -28,7 +29,7 @@ final class AppReducerTests: XCTestCase {
     store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
     store.deps.device.boottime = { .reference - 60 }
     store.deps.date = .constant(.reference)
-    let preventScreenCaptureNag = mock(always: Result<Void, AppError>.success(()))
+    let preventScreenCaptureNag = mock(always: Result<Void, StringError>.success(()))
     store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
 
     await store.send(.application(.didFinishLaunching))
@@ -121,7 +122,7 @@ final class AppReducerTests: XCTestCase {
   @MainActor
   func testPreventsScreenCaptureNagEverySixHours() async {
     let (store, _) = AppReducer.testStore()
-    let preventScreenCaptureNag = mock(always: Result<Void, AppError>.success(()))
+    let preventScreenCaptureNag = mock(always: Result<Void, StringError>.success(()))
     store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
     await store.send(.heartbeat(.everySixHours))
     await expect(preventScreenCaptureNag.calls.count).toEqual(1)
