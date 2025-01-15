@@ -82,6 +82,8 @@
   - bypasses sequioa screen capture nag
 - `2.6.3` (canary as of 1/14/25)
   - adds onboarding for full-disk-access for screen capture nags
+- `2.6.4` (canary as of 1/15/25)
+  - several tweaks/fixes from testing 2.6.3 upgrade permission onboarding
 
 ## Sparkle Releases
 
