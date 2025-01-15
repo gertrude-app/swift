@@ -1580,6 +1580,8 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.device.openSystemPrefs = openSysPrefs.fn
     let saveState = spy(on: Persistent.State.self, returning: ())
     store.deps.storage.savePersistentState = saveState.fn
+    let stopRelaunchWatcher = mock(always: ())
+    store.deps.app.stopRelaunchWatcher = stopRelaunchWatcher.fn
 
     // they click "Grant Permission" on the allow full disk access screen...
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
@@ -1590,6 +1592,8 @@ final class OnboardingFeatureTests: XCTestCase {
     )
     // ...and we send them to the full disk access grant system prefs pane
     await expect(openSysPrefs.calls).toEqual([.security(.fullDiskAccess)])
+    // ...and we stop the relaunch watcher so it doesn't interfere w/ os restarting
+    await expect(stopRelaunchWatcher.calls.count).toEqual(1)
 
     // check that we persisted the onboarding resumption state
     await expect(saveState.calls.count).toEqual(1)

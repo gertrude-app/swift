@@ -309,6 +309,15 @@ struct OnboardingFeature: Feature {
           await send(
             .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: isUpgrade)))
           )
+          if isUpgrade {
+            // if its an upgrade onboarding session, we've already started protecting
+            // and we don't want the relauncher to interfere with the OS restarting
+            // gertrude after granting full disk access, so stop it now
+            await self.app.stopRelaunchWatcher()
+            // but we also want to protect against the case where they fail to grant
+            try? await self.mainQueue.sleep(for: .seconds(60 * 5))
+            try await self.app.startRelaunchWatcher()
+          }
         }
 
       case .webview(.secondaryBtnClicked)
