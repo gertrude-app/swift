@@ -81,6 +81,25 @@ final class UpdateTests: XCTestCase {
   }
 
   @MainActor
+  func testStartProtectingWhenDoingUpgradeOnboarding() async {
+    let (store, _) = AppReducer.testStore {
+      $0.user.data = .mock // <-- we have a protected user
+    }
+
+    let persisted = Persistent.State(
+      appVersion: "2.5.0",
+      appUpdateReleaseChannel: .stable,
+      filterVersion: "2.5.0",
+      user: .mock,
+      // and though we are "onboarding", it's for upgrade ---------vvvv
+      resumeOnboarding: .checkingFullDiskAccessPermission(upgrade: true)
+    )
+
+    await store.send(.loadedPersistentState(persisted))
+    await store.receive(.startProtecting(user: .mock)) // so we start protecting immediately
+  }
+
+  @MainActor
   func testAppLaunchDetectingUpdateJustOccurred_RepeatsFilterReplaceOnFail() async {
     let (store, _) = AppReducer.testStore()
 

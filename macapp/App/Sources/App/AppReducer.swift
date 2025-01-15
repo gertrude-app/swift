@@ -110,10 +110,9 @@ struct AppReducer: Reducer, Sendable {
         var effects: [Effect<Action>] = []
         if let user = persisted.user {
           state.user = .init(data: user)
-          if persisted.resumeOnboarding == nil {
-            effects.append(.exec { send in
-              await send(.startProtecting(user: user))
-            })
+          if persisted.resumeOnboarding == nil ||
+            persisted.resumeOnboarding == .checkingFullDiskAccessPermission(upgrade: true) {
+            effects.append(.exec { send in await send(.startProtecting(user: user)) })
           } else {
             state.onboarding.connectChildRequest = .succeeded(payload: user.name)
           }
