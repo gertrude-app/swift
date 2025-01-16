@@ -17,7 +17,15 @@ extension PostmarkClient: DependencyKey {
     let pmClient = XPostmark.Client.live(apiKey: env.postmark.apiKey)
     return .init(
       _sendEmail: pmClient.sendEmail,
-      _sendTemplateEmail: pmClient.sendTemplateEmail,
+      _sendTemplateEmail: { email in
+        if isCypressTestAddress(email.to) {
+          with(dependency: \.logger)
+            .info("Not sending test email: `\(email.templateAlias)` to: `\(email.to)`")
+          return .success(())
+        } else {
+          return await pmClient.sendTemplateEmail(email)
+        }
+      },
       _sendTemplateEmailBatch: pmClient.sendTemplateEmailBatch
     )
   }
@@ -139,7 +147,7 @@ extension Result where Success == Void, Failure == XPostmark.Client.Error {
 }
 
 func isCypressTestAddress(_ email: String) -> Bool {
-  email.starts(with: "e2e-user-") && email.contains("@gertrude.app")
+  email.starts(with: "e2e-user-") && email.hasSuffix("@gertrude.app")
 }
 
 func isProdSmokeTestAddress(_ email: String) -> Bool {
