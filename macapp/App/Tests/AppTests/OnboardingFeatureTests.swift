@@ -1673,10 +1673,10 @@ final class OnboardingFeatureTests: XCTestCase {
   }
 
   @MainActor
-  func testSecondaryFromUpgradeFDAFailClosesPreventingResume() async {
+  func testSecondaryFromUpgradeRestartFDAFailClosesPreventingResume() async {
     let (store, _) = AppReducer.testStore {
       $0.onboarding.windowOpen = false
-      $0.onboarding.upgrade = true
+      $0.onboarding.upgrade = false
     }
 
     store.deps.app.hasFullDiskAccess = { false }
@@ -1685,6 +1685,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
     await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true)))) {
       $0.onboarding.windowOpen = true
+      $0.onboarding.upgrade = true
     }
 
     // they end up on the failed screen
@@ -1703,6 +1704,26 @@ final class OnboardingFeatureTests: XCTestCase {
     // and won't resume
     await expect(saveState.calls.count).toEqual(2)
     await expect(saveState.calls[1].resumeOnboarding).toBeNil()
+  }
+
+  @MainActor
+  func testUpgradeHappyPathSimulatingRestart() async {
+    let (store, _) = AppReducer.testStore {
+      $0.onboarding.windowOpen = false
+      $0.onboarding.upgrade = false
+    }
+    store.deps.app.hasFullDiskAccess = { true }
+    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true)))) {
+      $0.onboarding.windowOpen = true
+      $0.onboarding.upgrade = true // <-- we know we're still in upgrade mode...
+    }
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
+      $0.onboarding.step = .allowFullDiskAccess_success
+    }
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.windowOpen = false // ... so we close the window then b/c upgrade
+      $0.onboarding.upgrade = false
+    }
   }
 
   // helpers

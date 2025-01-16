@@ -93,6 +93,7 @@ struct OnboardingFeature: Feature {
 
       case .resume(.checkingFullDiskAccessPermission(let upgrade)):
         state.windowOpen = true
+        state.upgrade = upgrade
         return .exec { send in
           let granted = await self.app.hasFullDiskAccess()
           log("resume checking full disk access, granted=\(granted)", "7b54105c")
@@ -335,6 +336,7 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_success && state.upgrade:
         log(step, action, "6e4f9800")
         state.windowOpen = false
+        state.upgrade = false
         return .exec { send in
           await send(.delegate(.saveForResume(nil)))
         }
