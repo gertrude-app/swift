@@ -30,6 +30,7 @@ struct AdminWindowFeature: Feature {
       var accountStatus: Failable<AdminAccountStatus>?
       var screenRecordingPermissionOk: Bool?
       var keystrokeRecordingPermissionOk: Bool?
+      var fullDiskAccessPermissionOk: Bool?
       var macOsUserType: Failable<MacOSUserType>?
       var notificationsSetting: NotificationsSetting?
     }
@@ -99,6 +100,7 @@ struct AdminWindowFeature: Feature {
         case repairOutOfDateFilterClicked
         case fixScreenRecordingPermissionClicked
         case fixKeystrokeRecordingPermissionClicked
+        case fixFullDiskAccessPermissionClicked
         case removeUserAdminPrivilegeClicked
         case fixNotificationPermissionClicked
         case zeroKeysRefreshRulesClicked
@@ -135,6 +137,7 @@ struct AdminWindowFeature: Feature {
     case closeWindow
     case setScreenRecordingPermissionOk(Bool)
     case setKeystrokeRecordingPermissionOk(Bool)
+    case setFullDiskAccessPermissionOk(Bool)
     case setNotificationsSetting(NotificationsSetting)
     case setMacOsUserType(Failable<MacOSUserType>)
     case setFilterStatus(State.HealthCheck.FilterStatus)
@@ -257,6 +260,11 @@ extension AdminWindowFeature.RootReducer {
           await self.device.openSystemPrefs(.security(.accessibility))
         }
 
+      case .webview(.healthCheck(.fixFullDiskAccessPermissionClicked)):
+        return .exec { _ in
+          await device.openSystemPrefs(.security(.fullDiskAccess))
+        }
+
       case .webview(.healthCheck(.fixScreenRecordingPermissionClicked)):
         return .exec { _ in
           await self.device.openSystemPrefs(.security(.screenRecording))
@@ -338,6 +346,10 @@ extension AdminWindowFeature.RootReducer {
 
       case .setKeystrokeRecordingPermissionOk(let granted):
         state.adminWindow.healthCheck.keystrokeRecordingPermissionOk = granted
+        return state.adminWindow.healthCheck.checkCompletionEffect
+
+      case .setFullDiskAccessPermissionOk(let granted):
+        state.adminWindow.healthCheck.fullDiskAccessPermissionOk = granted
         return state.adminWindow.healthCheck.checkCompletionEffect
 
       case .setMacOsUserType(let userType):
@@ -481,6 +493,10 @@ extension AdminWindowFeature.RootReducer {
 
       await send(.adminWindow(.setScreenRecordingPermissionOk(
         screenRecordingEnabled ? await self.monitoring.screenRecordingPermissionGranted() : true
+      )))
+
+      await send(.adminWindow(.setFullDiskAccessPermissionOk(
+        await self.app.hasFullDiskAccess()
       )))
 
       await send(.adminWindow(.setNotificationsSetting(

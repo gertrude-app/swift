@@ -110,10 +110,9 @@ struct AppReducer: Reducer, Sendable {
         var effects: [Effect<Action>] = []
         if let user = persisted.user {
           state.user = .init(data: user)
-          if persisted.resumeOnboarding == nil {
-            effects.append(.exec { send in
-              await send(.startProtecting(user: user))
-            })
+          if persisted.resumeOnboarding == nil ||
+            persisted.resumeOnboarding == .checkingFullDiskAccessPermission(upgrade: true) {
+            effects.append(.exec { send in await send(.startProtecting(user: user)) })
           } else {
             state.onboarding.connectChildRequest = .succeeded(payload: user.name)
           }
@@ -133,7 +132,6 @@ struct AppReducer: Reducer, Sendable {
       case .startProtecting(let user):
         let onboardingWindowOpen = state.onboarding.windowOpen
         return .merge(
-
           .exec { [filterVersion = state.filter.version] send in
             await self.api.setUserToken(user.token)
             guard self.network.isConnected() else { return }
@@ -173,8 +171,17 @@ struct AppReducer: Reducer, Sendable {
 
           .exec { _ in
             try await self.app.startRelaunchWatcher()
+          },
+
+          .exec { _ in
+            await self.preventScreenCaptureNag()
           }
         )
+
+      case .heartbeat(.everySixHours):
+        return .exec { _ in
+          await self.preventScreenCaptureNag()
+        }
 
       case .focusedNotification(let notification):
         // dismiss windows/dropdowns so notification is visible, i.e. "focused"
@@ -270,6 +277,19 @@ struct AppReducer: Reducer, Sendable {
     }
     Scope(state: \.onboarding, action: /Action.onboarding) {
       OnboardingFeature.Reducer()
+    }
+  }
+
+  func preventScreenCaptureNag() async {
+    guard await self.app.hasFullDiskAccess() else {
+      os_log("[G•] Skip preventScreenCaptureNag, missing full disk access")
+      return
+    }
+    switch await self.app.preventScreenCaptureNag() {
+    case .success:
+      break
+    case .failure(let error):
+      unexpectedError(id: "3d2a5573", detail: error.message)
     }
   }
 }

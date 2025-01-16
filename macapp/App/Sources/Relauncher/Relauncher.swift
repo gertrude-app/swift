@@ -65,9 +65,9 @@ public enum Relauncher {
       iterations += 1
       client.sleepForSeconds(sleepInterval)
       if iterations % 20 == 0 {
-        os_log("[G•] HELPER checking for program termination...")
+        os_log("[G•] HELPER checking for program termination (1/20)...")
       } else if iterations % 5 == 0 {
-        os_log("[D•] HELPER checking for program termination...")
+        os_log("[D•] HELPER checking for program termination (1/5)...")
       }
 
       // new ppid means process was orphaned because app terminated

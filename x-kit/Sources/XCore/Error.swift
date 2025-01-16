@@ -23,6 +23,12 @@ public struct StringError: Error {
   }
 }
 
+public extension StringError {
+  func merge(with other: StringError) -> StringError {
+    .init("\(self.message)\n(+) \(other.message)")
+  }
+}
+
 extension StringError: ExpressibleByStringLiteral {
   public init(stringLiteral value: String) {
     self.message = value

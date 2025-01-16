@@ -3,6 +3,7 @@ import ComposableArchitecture
 import Core
 import MacAppRoute
 import TestSupport
+import XCore
 import XCTest
 import XExpect
 
@@ -28,6 +29,8 @@ final class AppReducerTests: XCTestCase {
     store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
     store.deps.device.boottime = { .reference - 60 }
     store.deps.date = .constant(.reference)
+    let preventScreenCaptureNag = mock(always: Result<Void, StringError>.success(()))
+    store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
 
     await store.send(.application(.didFinishLaunching))
 
@@ -49,6 +52,7 @@ final class AppReducerTests: XCTestCase {
     await expect(setUserToken.calls).toEqual([UserData.mock.token])
     await expect(enableLaunchAtLogin.calls.count).toEqual(1)
     await expect(startRelaunchWatcher.calls.count).toEqual(1)
+    await expect(preventScreenCaptureNag.calls.count).toEqual(1)
 
     let prevUser = store.state.user.data
 
@@ -113,6 +117,17 @@ final class AppReducerTests: XCTestCase {
     await Task.repeatYield()
 
     await expect(connectionEstablished).toEqual(true)
+  }
+
+  @MainActor
+  func testPreventsScreenCaptureNagEverySixHours() async {
+    let (store, _) = AppReducer.testStore()
+    let preventScreenCaptureNag = mock(always: Result<Void, StringError>.success(()))
+    store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
+    await store.send(.heartbeat(.everySixHours))
+    await expect(preventScreenCaptureNag.calls.count).toEqual(1)
+    await store.send(.heartbeat(.everySixHours))
+    await expect(preventScreenCaptureNag.calls.count).toEqual(2)
   }
 
   @MainActor

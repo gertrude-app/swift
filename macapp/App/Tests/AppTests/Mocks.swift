@@ -54,6 +54,16 @@ extension Persistent.State: Mocked {
     )
   }
 
+  static func version(_ version: String) -> Self {
+    .init(
+      appVersion: version,
+      appUpdateReleaseChannel: .stable,
+      filterVersion: version,
+      user: .mock,
+      resumeOnboarding: nil
+    )
+  }
+
   static var needsAppUpdate: Self {
     .init(
       appVersion: "0.9.9",

@@ -65,6 +65,16 @@ public struct Semver {
   public static let zero = Semver(major: 0, minor: 0, patch: 0)
 }
 
+public extension Semver {
+  init(os: OperatingSystemVersion) {
+    self.init(major: os.majorVersion, minor: os.minorVersion, patch: os.patchVersion)
+  }
+
+  static func fromOperatingSystemVersion() -> Semver {
+    Semver(os: ProcessInfo.processInfo.operatingSystemVersion)
+  }
+}
+
 extension Semver: Equatable {
   /// Semver semantic equality. Build metadata is ignored.
   public static func == (lhs: Semver, rhs: Semver) -> Bool {

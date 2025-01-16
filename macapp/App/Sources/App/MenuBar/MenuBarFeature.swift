@@ -111,7 +111,7 @@ extension MenuBarFeature.RootReducer {
         await self.api.securityEvent(.appQuit, "for uninstall")
         _ = await self.xpc.disconnectUser()
         _ = await self.filter.uninstall()
-        await self.storage.deleteAllPersistentState()
+        await self.storage.deleteAll()
         try? await self.mainQueue.sleep(for: .milliseconds(100))
         await self.app.quit()
       }

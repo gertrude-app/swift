@@ -18,6 +18,7 @@ extension OnboardingFeature.State {
     var users: [MacUser]
     var exemptableUserIds: [uid_t]
     var exemptUserIds: [uid_t]
+    var isUpgrade: Bool
 
     init(state: AppReducer.State) {
       @Dependency(\.device) var device
@@ -31,6 +32,7 @@ extension OnboardingFeature.State {
       self.users = state.onboarding.users
       self.exemptableUserIds = state.onboarding.exemptableUsers.map(\.id)
       self.exemptUserIds = state.onboarding.filterUsers?.exempt ?? []
+      self.isUpgrade = state.onboarding.upgrade
     }
   }
 }

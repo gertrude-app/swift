@@ -25,14 +25,18 @@ extension OnboardingFeature.State {
     case allowNotifications_grant
     case allowNotifications_failed
 
+    // full disk access
+    case allowFullDiskAccess_grantAndRestart
+    // next two give landing spots for resuming after quit/reopen
+    case allowFullDiskAccess_failed
+    case allowFullDiskAccess_success
+
     // screenshots
     case allowScreenshots_required
     case allowScreenshots_grantAndRestart
-    // these two states exist to give us a landing spot for resuming
-    // onboarding after the grant -> quit & reopen flow
+    // next two give landing spots for resuming after quit/reopen
     case allowScreenshots_failed
     case allowScreenshots_success
-    case screenshotsPrivacyWarning
 
     // keylogging
     case allowKeylogging_required
@@ -79,6 +83,12 @@ extension OnboardingFeature.State.Step {
     case .allowNotifications_grant:
       return .allowScreenshots_required
     case .allowNotifications_failed:
+      return .allowFullDiskAccess_grantAndRestart
+    case .allowFullDiskAccess_grantAndRestart:
+      return .allowFullDiskAccess_success
+    case .allowFullDiskAccess_success:
+      return .allowScreenshots_required
+    case .allowFullDiskAccess_failed:
       return .allowScreenshots_required
     case .allowScreenshots_required:
       return .allowScreenshots_grantAndRestart
@@ -87,8 +97,6 @@ extension OnboardingFeature.State.Step {
     case .allowScreenshots_failed:
       return .allowKeylogging_required
     case .allowScreenshots_success:
-      return .allowKeylogging_required
-    case .screenshotsPrivacyWarning:
       return .allowKeylogging_required
     case .allowKeylogging_required:
       return .allowKeylogging_grant
@@ -137,21 +145,29 @@ extension OnboardingFeature.State.Step {
       return .getChildConnectionCode
     case .howToUseGifs:
       return .connectChild
+
     case .allowNotifications_start:
       return .howToUseGifs
     case .allowNotifications_grant:
       return .allowNotifications_start
     case .allowNotifications_failed:
       return .allowNotifications_grant
-    case .allowScreenshots_required:
+
+    case .allowFullDiskAccess_grantAndRestart:
       return .allowNotifications_start
+    case .allowFullDiskAccess_failed:
+      return .allowFullDiskAccess_grantAndRestart
+    case .allowFullDiskAccess_success:
+      return .allowFullDiskAccess_grantAndRestart
+
+    case .allowScreenshots_required:
+      return .allowFullDiskAccess_grantAndRestart
+
     case .allowScreenshots_grantAndRestart:
       return .allowScreenshots_required
     case .allowScreenshots_failed:
       return .allowScreenshots_required
     case .allowScreenshots_success:
-      return .allowScreenshots_grantAndRestart
-    case .screenshotsPrivacyWarning:
       return .allowScreenshots_grantAndRestart
     case .allowKeylogging_required:
       return .allowScreenshots_required
@@ -201,11 +217,13 @@ extension OnboardingFeature.State.Step: Comparable {
     case .allowNotifications_start: return 30
     case .allowNotifications_grant: return 35
     case .allowNotifications_failed: return 40
+    case .allowFullDiskAccess_grantAndRestart: return 42
+    case .allowFullDiskAccess_failed: return 43
+    case .allowFullDiskAccess_success: return 44
     case .allowScreenshots_required: return 45
     case .allowScreenshots_grantAndRestart: return 55
     case .allowScreenshots_failed: return 60
     case .allowScreenshots_success: return 65
-    case .screenshotsPrivacyWarning: return 67
     case .allowKeylogging_required: return 70
     case .allowKeylogging_grant: return 80
     case .allowKeylogging_failed: return 85
