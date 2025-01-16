@@ -17,9 +17,10 @@ extension SendPasswordResetEmail: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     let postmark = get(dependency: \.postmark)
     let email = input.email.lowercased()
-    if !email.isValidEmail {
+    guard email.isValidEmail else {
       throw Abort(.badRequest)
     }
+
     if let admin = try? await Admin.query()
       .where(.email == email)
       .first(in: context.db) {
