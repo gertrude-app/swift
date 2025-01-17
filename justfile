@@ -73,7 +73,8 @@ web-email template:
 watch-web-email template:
   @concurrently -n serve,regen -c cyan.dim,magenta.dim \
     "vite" \
-    "bash -c 'while true; do just web-email {{template}}; sleep 2; done;'"
+    "bash -c 'while true; do just web-email {{template}}; sleep 2; done;'" \
+    "cd dev-emails && npm run dev"
 
 # infra
 

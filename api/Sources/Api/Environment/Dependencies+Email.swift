@@ -40,11 +40,18 @@ extension DependencyValues {
 
 extension PostmarkClient {
   func send(template email: Api.TemplateEmail) async throws {
+    var templateModel = email.model.templateModel
+
+    let date = Date()
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy"
+    templateModel["currentYear"] = formatter.string(from: date)
+
     var templateEmail = XPostmark.TemplateEmail(
       to: "",
       from: "Gertrude App <noreply@gertrude.app>",
       templateAlias: email.model.templateAlias,
-      templateModel: email.model.templateModel,
+      templateModel: templateModel,
       messageStream: nil
     )
     switch email {
@@ -72,7 +79,7 @@ extension PostmarkClient {
       guard get(dependency: \.env).mode == .dev else {
         throw Abort(.forbidden)
       }
-      print(await self._sendTemplateEmailBatch(recipients.map {
+      await print(self._sendTemplateEmailBatch(recipients.map {
         var batchEmail = templateEmail
         batchEmail.to = $0
         batchEmail.templateModel["subjref"] = dryRun ? "".withEmailSubjectDisambiguator : ""

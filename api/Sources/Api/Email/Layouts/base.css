@@ -1,18 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
 
 body {
-  padding: 0;
+  padding: 40px 20px;
+  background: #f8fafc;
 }
 
 * {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   margin: 0;
 }
 
 main {
-  padding: 40px 20px;
   min-height: 100vh;
-  background: #f8fafc;
+  margin: 8px;
 }
 
 main * {
@@ -40,15 +40,103 @@ h1 {
   }
 }
 
+p {
+  color: #334155;
+  font-size: 16px;
+}
+
+.subtle {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.centered {
+  text-align: center;
+}
+
 footer {
-  display: flex;
-  justify-content: center;
-  padding-top: 40px;
-  padding-bottom: 20px;
+  margin-top: 40px;
+  background-color: white;
+  padding: 16px;
+  border-radius: 20px;
 }
 
 footer .copy {
   color: #94a3b8;
-  font-size: 14px;
   font-family: monospace;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+footer a {
+  color: #94a3b8;
+}
+
+footer .link-container {
+  width: fit-content;
+  margin: 0 auto;
+  margin-top: 6px;
+}
+
+.action-button {
+  background-color: #8b5cf6;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+}
+
+.signature {
+  font-style: italic;
+  text-align: right;
+}
+
+.signature::before {
+  content: "~ ";
+}
+
+.code {
+  font-family: monospace;
+  font-size: 32px;
+  color: #5b21b6;
+  background-color: #ddd6fe;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #0f172a;
+  }
+
+  p {
+    color: #cbd5e1;
+  }
+
+  .subtle {
+    color: #94a3b8;
+  }
+
+  footer {
+    background-color: #02061788;
+  }
+
+  footer .copy {
+    color: #64748b;
+  }
+
+  footer a {
+    color: #64748b;
+  }
+
+  .action-button {
+    background-color: #7c3aed;
+  }
+
+  .code {
+    color: #ddd6fe;
+    background-color: #8b5cf644;
+  }
 }
