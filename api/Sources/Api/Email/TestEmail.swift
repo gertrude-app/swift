@@ -77,7 +77,7 @@ import Vapor
             subject: "New unlock request from Franny",
             url: localDash,
             userName: "Franny",
-            unlockRequests: "a new <b>network unlock request</b>"
+            unlockRequests: "a new <b>unlock request</b>"
           )
         ))
 
@@ -90,7 +90,7 @@ import Vapor
             subject: "3 new unlock requests from Franny",
             url: localDash,
             userName: "Franny",
-            unlockRequests: "3 new <b>network unlock requests</b>"
+            unlockRequests: "3 new <b>unlock requests</b>"
           )
         ))
 

@@ -22,7 +22,7 @@ enum TemplateEmail {
 
 enum EmailLayout: String, CaseIterable {
   case base
-  case newVersionAnnouncement
+  case topLogo
 }
 
 protocol TemplateEmailModel: Sendable {
