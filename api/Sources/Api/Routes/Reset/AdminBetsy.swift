@@ -18,7 +18,7 @@ enum AdminBetsy {
     let betsy = try await db.create(Admin(
       id: Ids.betsy,
       email: "betsy-mcstandard" |> Reset.testEmail,
-      password: try Bcrypt.hash("betsy123"),
+      password: Bcrypt.hash("betsy123"),
       subscriptionStatus: .trialing,
       subscriptionStatusExpiration: Date().advanced(by: .days(53)),
       subscriptionId: nil
@@ -59,17 +59,17 @@ enum AdminBetsy {
     let (jimmy, sally, _) = try await createUsers(betsy)
     let (musicTheory, misc) = try await createKeychains(betsy)
 
-    let firstPublicKeychain = try await Keychain.query()
+    if let firstPublicKeychain = try? await Keychain.query()
       .where(.isPublic == true)
-      .first(in: db)
-
-    try await db.create([
-      UserKeychain(userId: jimmy.id, keychainId: musicTheory.id),
-      UserKeychain(userId: jimmy.id, keychainId: misc.id),
-      UserKeychain(userId: jimmy.id, keychainId: firstPublicKeychain.id),
-      UserKeychain(userId: sally.id, keychainId: misc.id),
-      UserKeychain(userId: sally.id, keychainId: firstPublicKeychain.id),
-    ])
+      .first(in: db) {
+      try await db.create([
+        UserKeychain(userId: jimmy.id, keychainId: musicTheory.id),
+        UserKeychain(userId: jimmy.id, keychainId: misc.id),
+        UserKeychain(userId: jimmy.id, keychainId: firstPublicKeychain.id),
+        UserKeychain(userId: sally.id, keychainId: misc.id),
+        UserKeychain(userId: sally.id, keychainId: firstPublicKeychain.id),
+      ])
+    }
 
     try await self.createUserActivity()
   }

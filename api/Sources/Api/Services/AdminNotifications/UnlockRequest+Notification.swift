@@ -38,8 +38,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
       : "New unlock request from \(userName)"
 
     let unlockRequests = requestIds.count > 1
-      ? "\(requestIds.count) new <b>network unlock requests</b>"
-      : "a new <b>network unlock request</b>"
+      ? "\(requestIds.count) new <b>unlock requests</b>"
+      : "a new <b>unlock request</b>"
 
     try await with(dependency: \.postmark)
       .send(template: .notifyUnlockRequest(

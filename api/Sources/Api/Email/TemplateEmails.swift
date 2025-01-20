@@ -2,6 +2,7 @@ import Foundation
 
 struct InitialSignup: TemplateEmailModel {
   static var subject: String { "Action Required: Confirm your email" }
+  static var layout: EmailLayout { .topLogo }
   var dashboardUrl: String
   var token: UUID
   var templateModel: [String: String] { [
@@ -26,6 +27,7 @@ struct PasswordResetNoAccount: TemplateEmailModel {
 
 struct MagicLink: TemplateEmailModel {
   static var subject: String { "Gertrude App magic link" }
+  static var layout: EmailLayout { .topLogo }
   var url: String
   var templateModel: [String: String] { ["url": self.url] }
 }
@@ -80,7 +82,7 @@ struct VerifyNotificationEmail: TemplateEmailModel {
 }
 
 struct V2_7_0_Announce: TemplateEmailModel {
-  static var layout: EmailLayout { .newVersionAnnouncement }
+  static var layout: EmailLayout { .topLogo }
   static var displayName: String { "v2.7.0 Announcement" }
   static var subject: String { "Gertrude v2.7.0 is here!" }
 }

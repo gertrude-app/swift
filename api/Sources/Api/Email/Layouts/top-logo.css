@@ -1,11 +1,5 @@
-.logo-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 40px;
-}
-
-.logo {
-  max-width: 200px;
+h1 {
+  color: black;
 }
 
 .subheading {
@@ -65,4 +59,36 @@
 
 .blog-callout a {
   text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  h1 {
+    color: white;
+  }
+
+  .subheading {
+    color: #cbd5e1;
+  }
+
+  .feature {
+    background: #1e293b;
+  }
+
+  .feature h2 {
+    color: white;
+  }
+
+  .feature p {
+    color: #94a3b8;
+  }
+
+  .blog-callout {
+    color: #94a3b8;
+  }
+
+  .feature a,
+  .subheading a,
+  .blog-callout a {
+    color: #e879f9;
+  }
 }
