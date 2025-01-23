@@ -16,7 +16,6 @@ struct FilterFeature: Feature {
   enum Action: Equatable, Sendable {
     case receivedState(FilterExtensionState)
     case receivedVersion(String)
-    case replacedFilterVersion(String)
   }
 
   struct Reducer: FeatureReducer {
@@ -35,8 +34,7 @@ struct FilterFeature: Feature {
           }
         }
 
-      case .receivedVersion(let version),
-           .replacedFilterVersion(let version):
+      case .receivedVersion(let version):
         state.version = version
         return .none
       }
@@ -86,6 +84,10 @@ extension AppReducer.State {
 extension FilterFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
+
+    case .appUpdates(.delegate(.updateSucceeded(_, let newVersion))):
+      state.filter.version = newVersion
+      return .none
 
     case .websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       _, .accepted(let seconds, let extraMonitoring), let comment

@@ -140,7 +140,7 @@ jobs:
       SLACK_API_TOKEN: not-real
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:17
         env:
           POSTGRES_USER: vapor_username
           POSTGRES_PASSWORD: vapor_password

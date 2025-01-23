@@ -78,6 +78,14 @@
   - app blocking
 - `2.6.1` (canary as of 12/27/24)
   - filter polices app, blocks if awol
+- `2.6.2` (canary as of 1/3/25)
+  - bypasses sequioa screen capture nag
+- `2.6.3` (canary as of 1/14/25)
+  - adds onboarding for full-disk-access for screen capture nags
+- `2.6.4` (only used in internal testing)
+  - several tweaks/fixes from testing 2.6.3 upgrade permission onboarding
+- `2.6.5` (canary as of 1/16/25)
+  - fix failure to exit upgrade mode after os restart
 
 ## Sparkle Releases
 

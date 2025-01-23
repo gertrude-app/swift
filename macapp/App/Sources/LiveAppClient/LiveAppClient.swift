@@ -34,6 +34,7 @@ extension AppClient: DependencyKey {
           LaunchAtLogin.isEnabled = true
         #endif
       },
+      hasFullDiskAccess: _testFullDiskAccess,
       isLaunchAtLoginEnabled: {
         LaunchAtLogin.isEnabled
       },
@@ -43,6 +44,7 @@ extension AppClient: DependencyKey {
       installedVersion: {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
       },
+      preventScreenCaptureNag: _preventScreenCaptureNag,
       quit: {
         stopRelaunchWatcher()
         exit(0)
@@ -51,9 +53,13 @@ extension AppClient: DependencyKey {
       startRelaunchWatcher: {
         // stopping the debug build in xcode causes the relauncher to restart it
         #if !DEBUG
-          let pid = try await startRelauncher()
-          watcherPid.replace(with: pid)
-          os_log("[G•] APP started relaunch watcher, pid=%{public}d", pid)
+          if let pid = watcherPid.value {
+            os_log("[G•] APP relaunch watcher already running, pid=%{public}d", pid)
+          } else {
+            let pid = try await startRelauncher()
+            watcherPid.replace(with: pid)
+            os_log("[G•] APP started relaunch watcher, pid=%{public}d", pid)
+          }
         #endif
       },
       stopRelaunchWatcher: { stopRelaunchWatcher() }

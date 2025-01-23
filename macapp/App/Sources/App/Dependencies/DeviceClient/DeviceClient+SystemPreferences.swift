@@ -5,6 +5,7 @@ enum SystemPrefsLocation: Equatable {
     case accessibility
     case inputMonitoring
     case screenRecording
+    case fullDiskAccess
   }
 
   case security(SecurityLocation)
@@ -21,6 +22,8 @@ enum SystemPrefsLocation: Equatable {
   case .security(let securityLocation):
     let base = SystemPrefsLocation.baseURL + ".security?Privacy_"
     switch securityLocation {
+    case .fullDiskAccess:
+      openWorkspaceUrl(base + "AllFiles")
     case .screenRecording:
       openWorkspaceUrl(base + "ScreenCapture")
     case .inputMonitoring:

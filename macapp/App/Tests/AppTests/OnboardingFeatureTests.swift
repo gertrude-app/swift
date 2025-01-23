@@ -5,12 +5,14 @@ import Core
 import Gertie
 import MacAppRoute
 import TestSupport
+import XCore
 import XCTest
 import XExpect
 
 @testable import App
 
 final class OnboardingFeatureTests: XCTestCase {
+
   @MainActor
   func testFirstBootOnboardingHappyPathExhaustive() async {
     let (store, _) = AppReducer.testStore(exhaustive: true, mockDeps: false)
@@ -35,6 +37,8 @@ final class OnboardingFeatureTests: XCTestCase {
 
     await store.send(.application(.didFinishLaunching))
 
+    // ✅ section: welcome
+
     await store.receive(.loadedPersistentState(nil)) {
       $0.onboarding.windowOpen = true
       $0.onboarding.step = .welcome
@@ -46,6 +50,8 @@ final class OnboardingFeatureTests: XCTestCase {
 
     await expect(extSetup.calls.count).toEqual(1)
     await expect(saveState.calls.count).toEqual(1)
+
+    // ✅ section: account
 
     // they click next on the welcome screen...
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
@@ -65,6 +71,8 @@ final class OnboardingFeatureTests: XCTestCase {
       ]
       $0.onboarding.currentUser = .init(id: 502, name: "liljimmy", isAdmin: false)
     }
+
+    // ✅ section: child connection
 
     // next they confirm that they have a gertrude account...
     store.deps.device.currentMacOsUserType = { .standard }
@@ -120,6 +128,8 @@ final class OnboardingFeatureTests: XCTestCase {
     // they click "next" on the how to use gifs screen...
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
+    // ✅ section: notifications
+
     // ... and end up on the notifications screen
     await store.receive(.onboarding(.setStep(.allowNotifications_start))) {
       $0.onboarding.step = .allowNotifications_start
@@ -139,15 +149,53 @@ final class OnboardingFeatureTests: XCTestCase {
     await expect(requestNotifAuth.calls.count).toEqual(1)
     await expect(openSysPrefs.calls).toEqual([.notifications])
 
-    // they have not previously granted permission...
-    let screenshotsAllowed = mock(returning: [false, false], then: true)
-    store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
+    // ✅ section: full disk access
+
+    // the have not previously granted full disk access permission
+    let hasFullDiskAccess = mock(returning: [false], then: true)
+    store.deps.app.hasFullDiskAccess = hasFullDiskAccess.fn
 
     // ... and then clicked "Done" on the notifications grant screen
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
 
     // ...and we confirmed the setting and moved them on the happy path
     await expect(notifsSettings.calls.count).toEqual(2)
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_grantAndRestart))) {
+      $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
+    }
+
+    // they click "Grant Permission" on the allow full disk access screen...
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+
+    // ...we make a note to resume here after a quit/restart
+    await store.receive(
+      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: false))))
+    )
+    // ...and we send them to the full disk access grant system prefs pane
+    await expect(openSysPrefs.calls).toEqual([.notifications, .security(.fullDiskAccess)])
+
+    // check that we persisted the onboarding resumption state
+    await expect(saveState.calls.count).toEqual(3)
+    await expect(saveState.calls[2].resumeOnboarding)
+      .toEqual(.checkingFullDiskAccessPermission(upgrade: false))
+
+    // NB: here technically they RESTART the app, but instead of starting a new test
+    // we simulate receiving the resume action to carry on where they should
+    // we have other tests testing the resume from persisted state flow.
+    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: false))))
+
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
+      $0.onboarding.step = .allowFullDiskAccess_success
+    }
+
+    // ✅ section: screenshots
+
+    // they have not previously granted screenshot permission...
+    let screenshotsAllowed = mock(returning: [false, false], then: true)
+    store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
+
+    // they click the "Next" button from the full disk success
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
     await store.receive(.onboarding(.setStep(.allowScreenshots_required))) {
       $0.onboarding.step = .allowScreenshots_required
     }
@@ -161,8 +209,8 @@ final class OnboardingFeatureTests: XCTestCase {
     await store.receive(.onboarding(.delegate(.saveForResume(.checkingScreenRecordingPermission))))
 
     // check that we persisted the onboarding resumption state
-    await expect(saveState.calls.count).toEqual(3)
-    await expect(saveState.calls[2].resumeOnboarding)
+    await expect(saveState.calls.count).toEqual(4)
+    await expect(saveState.calls[3].resumeOnboarding)
       .toEqual(.checkingScreenRecordingPermission)
 
     await store.receive(.onboarding(.setStep(.allowScreenshots_grantAndRestart))) {
@@ -174,6 +222,9 @@ final class OnboardingFeatureTests: XCTestCase {
     // taking a screenshot ensures the full permissions prompt
     await expect(takeScreenshot.calls.count).toEqual(1)
 
+    let preventNag = mock(returning: [Result<Void, StringError>.success(())])
+    store.deps.app.preventScreenCaptureNag = preventNag.fn
+
     // NB: here technically they RESTART the app, but instead of starting a new test
     // we simulate receiving the resume action to carry on where they should
     // we have other tests testing the resume from persisted state flow.
@@ -182,6 +233,15 @@ final class OnboardingFeatureTests: XCTestCase {
     await store.receive(.onboarding(.setStep(.allowScreenshots_success))) {
       $0.onboarding.step = .allowScreenshots_success
     }
+
+    // we've come back from restart with good permissions, so we proactively
+    // fix the screen capture approvals file so that the next screen capture
+    // will not be nagged. we also take a screenshot to that just in case they
+    // are notified, they are still in the mode of granting permissions
+    await expect(preventNag.calls.count).toEqual(1)
+    await expect(takeScreenshot.calls.count).toEqual(2)
+
+    // ✅ section: keylogging
 
     // they click the "Next" button from the screen recording success
     await store.send(.onboarding(.webview(.primaryBtnClicked)))
@@ -204,6 +264,8 @@ final class OnboardingFeatureTests: XCTestCase {
 
     // ...and we checked the setting (which pops up prompt) and moved them on
     await expect(keyloggingAllowed.calls.count).toEqual(1)
+
+    // ✅ section: system extension
 
     // moving on from keylogging tests filter extension state, to possibly skip
     let filterState = mock(returning: [
@@ -269,6 +331,8 @@ final class OnboardingFeatureTests: XCTestCase {
       $0.onboarding.filterUsers = .init(exempt: [], protected: [])
     }
 
+    // 🔐 start protection actions
+
     // we kick off protection when they move past sys ext stage, lots happens...
     let setAccountActive = spy(on: Bool.self, returning: ())
     store.deps.api.setAccountActive = setAccountActive.fn
@@ -290,8 +354,13 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
     store.deps.date = .constant(.reference)
     store.deps.device.boottime = { .reference - 60 }
+    let preventScreenCaptureNag = mock(always: Result<Void, StringError>.success(()))
+    store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
+
+    // ✅ section: exempt users and wrap-up
 
     // they click "Next" on the install sys ext success screen
+    // NB: this actually kicks off the `.startProtecting` sequence
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.step = .exemptUsers // ...and go to exempt users
     }
@@ -326,6 +395,7 @@ final class OnboardingFeatureTests: XCTestCase {
     await expect(setUserToken.calls).toEqual([UserData.mock.token, UserData.mock.token])
     await expect(setAccountActive.calls).toEqual([true])
     await expect(startRelaunchWatcher.calls.count).toEqual(1)
+    await expect(preventScreenCaptureNag.calls.count).toEqual(1)
 
     // they click to exempt the dad admin user
     await store.send(.onboarding(.webview(.setUserExemption(userId: 501, enabled: true)))) {
@@ -380,19 +450,6 @@ final class OnboardingFeatureTests: XCTestCase {
     await store.send(.application(.willTerminate))
 
     await expect(stopRelaunchWatcher.calls.count).toEqual(1)
-  }
-
-  @MainActor
-  func testSequoiaGetsExtraScreenAboutPrivacyWarning() async {
-    let store = self.featureStore {
-      $0.step = .allowScreenshots_success
-    }
-    store.deps.device.osVersion = { .init(major: 15, minor: 0, patch: 1) }
-
-    await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.screenshotsPrivacyWarning))
-    await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.allowKeylogging_required))
   }
 
   @MainActor
@@ -678,6 +735,7 @@ final class OnboardingFeatureTests: XCTestCase {
     }
 
     store.deps.device.notificationsSetting = { .alert }
+    store.deps.app.hasFullDiskAccess = { true }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .installedAndRunning }
@@ -697,13 +755,14 @@ final class OnboardingFeatureTests: XCTestCase {
     }
 
     store.deps.device.notificationsSetting = { .alert }
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    store.deps.app.hasFullDiskAccess = { false }
+    store.deps.monitoring.screenRecordingPermissionGranted = { fatalError() }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { fatalError() }
     store.deps.filterExtension.state = { fatalError() }
 
     await store.send(.webview(.primaryBtnClicked)) { $0.step = .howToUseGifs }
     await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.allowScreenshots_required))
+    await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
   }
 
   @MainActor
@@ -717,6 +776,7 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     store.deps.filterExtension.state = { fatalError() }
+    store.deps.app.hasFullDiskAccess = { true }
 
     await store.send(.webview(.primaryBtnClicked)) { $0.step = .howToUseGifs }
     await store.send(.webview(.primaryBtnClicked))
@@ -734,6 +794,7 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
+    store.deps.app.hasFullDiskAccess = { true }
 
     await store.send(.webview(.primaryBtnClicked)) { $0.step = .howToUseGifs }
     await store.send(.webview(.primaryBtnClicked))
@@ -743,8 +804,18 @@ final class OnboardingFeatureTests: XCTestCase {
   }
 
   @MainActor
-  func testSkippingScreenshotsFromFinishNotifications() async {
+  func testFullDiskAccessFromFinishNotifications() async {
     let store = self.featureStore { $0.step = .allowNotifications_grant }
+    store.deps.app.hasFullDiskAccess = { true } // <-- skip
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    store.deps.device.notificationsSetting = { .alert }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_required))
+  }
+
+  @MainActor
+  func testSkippingScreenshotsFromFinishFullDiskAccess() async {
+    let store = self.featureStore { $0.step = .allowFullDiskAccess_success }
     store.deps.monitoring.screenRecordingPermissionGranted = { true } // <-- skip
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     store.deps.device.notificationsSetting = { .alert }
@@ -755,7 +826,6 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkippingKeyloggingFromFinishScreenshots() async {
     let store = self.featureStore { $0.step = .allowScreenshots_success }
-    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.primaryBtnClicked))
@@ -768,7 +838,6 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testFromScreenshotsRequiredScreenshotsAndKeyloggingAlreadyAllowed() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
-    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
@@ -960,7 +1029,6 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkipAllowingScreenshots() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
-    store.deps.device.osVersion = { .sonoma }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     // they click "Skip" on the allow screenshots start screen
     await store.send(.webview(.secondaryBtnClicked))
@@ -970,7 +1038,6 @@ final class OnboardingFeatureTests: XCTestCase {
   @MainActor
   func testSkipsMostScreenshotStepsIfPermsPreviouslyGranted() async {
     let store = self.featureStore { $0.step = .allowScreenshots_required }
-    store.deps.device.osVersion = { .sonoma }
 
     let screenshotsAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
@@ -1022,28 +1089,28 @@ final class OnboardingFeatureTests: XCTestCase {
     await store.receive(.setStep(.allowNotifications_grant))
 
     // NOW (3rd check) they finally fixed it, and clicked Try Again...
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    store.deps.app.hasFullDiskAccess = { false }
     await store.send(.webview(.primaryBtnClicked))
 
     // ...and we confirmed the setting and moved them on the happy path
     await expect(notifsSettings.calls.count).toEqual(3)
-    await store.receive(.setStep(.allowScreenshots_required))
+    await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
   }
 
   @MainActor
   func testSkipFromAllowNotificationsFailedStep() async {
     let store = self.featureStore { $0.step = .allowNotifications_failed }
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    store.deps.app.hasFullDiskAccess = { false }
     await store.send(.webview(.secondaryBtnClicked))
-    await store.receive(.setStep(.allowScreenshots_required))
+    await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
   }
 
   @MainActor
   func testSkipAllowNotificationsStep() async {
     let store = self.featureStore { $0.step = .allowNotifications_start }
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    store.deps.app.hasFullDiskAccess = { false }
     await store.send(.webview(.secondaryBtnClicked))
-    await store.receive(.setStep(.allowScreenshots_required))
+    await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
   }
 
   @MainActor
@@ -1406,7 +1473,261 @@ final class OnboardingFeatureTests: XCTestCase {
     ])
   }
 
+  @MainActor
+  func testSkipsFDAStepIfOsCatalina() async {
+    let store = self.featureStore { $0.step = .allowNotifications_failed }
+    store.deps.device.osVersion = { .init(major: 10, minor: 15, patch: 7) }
+    store.deps.app.hasFullDiskAccess = { fatalError() }
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_required))
+  }
+
+  @MainActor
+  func testResumingToCheckFDA_Success() async {
+    let (store, _) = AppReducer.testStore()
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.app.hasFullDiskAccess = { true } // <-- all good!
+    store.deps.storage.savePersistentState = saveState.fn
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+
+    store.deps.storage.loadPersistentState = { .mock {
+      $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) // <-- resume here
+    }}
+
+    await store.send(.application(.didFinishLaunching))
+    await store.skipReceivedActions()
+
+    store.assert {
+      $0.onboarding.windowOpen = true
+      $0.onboarding.step = .allowFullDiskAccess_success
+    }
+
+    await expect(saveState.calls).toEqual([.mock { $0.resumeOnboarding = nil }])
+
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+    await store.receive(.onboarding(.setStep(.allowScreenshots_required)))
+  }
+
+  @MainActor
+  func testResumingToCheckFDA_Failure() async {
+    let (store, _) = AppReducer.testStore()
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.app.hasFullDiskAccess = { false } // <-- still no bueno!
+    store.deps.storage.savePersistentState = saveState.fn
+
+    store.deps.storage.loadPersistentState = { .mock {
+      $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) // <-- resume here
+    }}
+
+    await store.send(.application(.didFinishLaunching))
+    await store.skipReceivedActions()
+
+    store.assert {
+      $0.onboarding.windowOpen = true
+      $0.onboarding.step = .allowFullDiskAccess_failed
+    }
+
+    // since the perms are still wrong, we need to save state to
+    // resume again after another quit & restart
+    await expect(saveState.calls).toEqual([
+      .mock { $0.resumeOnboarding = nil }, // <-- the first, default clear save
+      .mock { $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) },
+    ])
+
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_grantAndRestart)))
+  }
+
+  @MainActor
+  func testSkipsFDAIfAlreadyGranted() async {
+    let store = self.featureStore { $0.step = .allowNotifications_grant }
+    store.deps.device.notificationsSetting = { .alert }
+    store.deps.app.hasFullDiskAccess = { true } // <-- already granted, skip
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_required))
+  }
+
+  @MainActor
+  func testParentSkipsFDAStep() async {
+    let store = self.featureStore { $0.step = .allowFullDiskAccess_grantAndRestart }
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_required))
+  }
+
+  @MainActor
+  func testSkipsFromFDAFailed() async {
+    let store = self.featureStore { $0.step = .allowFullDiskAccess_failed }
+    store.deps.monitoring.screenRecordingPermissionGranted = { false }
+    await store.send(.webview(.secondaryBtnClicked))
+    await store.receive(.setStep(.allowScreenshots_required))
+  }
+
+  @MainActor
+  func testUpgradeFDAHappyPath() async {
+    let (store, _) = AppReducer.testStore()
+
+    await store
+      .send(.onboarding(.delegate(.openForUpgrade(step: .allowFullDiskAccess_grantAndRestart)))) {
+        $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
+        $0.onboarding.windowOpen = true
+        $0.onboarding.upgrade = true
+      }
+
+    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
+    store.deps.device.openSystemPrefs = openSysPrefs.fn
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+    let stopRelaunchWatcher = mock(always: ())
+    store.deps.app.stopRelaunchWatcher = stopRelaunchWatcher.fn
+
+    // they click "Grant Permission" on the allow full disk access screen...
+    await store.send(.onboarding(.webview(.primaryBtnClicked)))
+
+    // ...we make a note to resume here after a quit/restart
+    await store.receive(
+      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: true))))
+    )
+    // ...and we send them to the full disk access grant system prefs pane
+    await expect(openSysPrefs.calls).toEqual([.security(.fullDiskAccess)])
+    // ...and we stop the relaunch watcher so it doesn't interfere w/ os restarting
+    await expect(stopRelaunchWatcher.calls.count).toEqual(1)
+
+    // check that we persisted the onboarding resumption state
+    await expect(saveState.calls.count).toEqual(1)
+    await expect(saveState.calls[0].resumeOnboarding)
+      .toEqual(.checkingFullDiskAccessPermission(upgrade: true))
+
+    let hasFullDiskAccess = mock(returning: [true])
+    store.deps.app.hasFullDiskAccess = hasFullDiskAccess.fn
+
+    // simulate receiving the resume action to carry on where they should
+    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true))))
+
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
+      $0.onboarding.step = .allowFullDiskAccess_success
+    }
+
+    expect(store.state.onboarding.step).toEqual(.allowFullDiskAccess_success)
+
+    // they click "Done" on the success screen...
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.windowOpen = false // ... so we close the window then b/c upgrade
+    }
+
+    await expect(saveState.calls.count).toEqual(2)
+    await expect(saveState.calls[1].resumeOnboarding).toBeNil()
+  }
+
+  @MainActor
+  func testSecondaryFromUpgradeFDAStartClosesWindowWithNoSaveForResume() async {
+    let (store, _) = AppReducer.testStore {
+      $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
+      $0.onboarding.upgrade = true
+    }
+
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+
+    // they elect to not give full disk access
+    await store.send(.onboarding(.webview(.secondaryBtnClicked))) {
+      $0.onboarding.windowOpen = false // so we close upgrade onboarding
+    }
+
+    await expect(saveState.calls.count).toEqual(0)
+  }
+
+  @MainActor
+  func testPrimaryFromUpgradeFDAFailGoesBacktoGrant() async {
+    let store = self.featureStore {
+      $0.step = .allowFullDiskAccess_failed
+      $0.upgrade = true
+    }
+    store.deps.app.hasFullDiskAccess = { false }
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
+  }
+
+  @MainActor
+  func testPrimaryFDAFailGoesToSuccessIfTheyFixed() async {
+    let store = self.featureStore {
+      $0.step = .allowFullDiskAccess_failed
+      $0.upgrade = false
+    }
+    store.deps.app.hasFullDiskAccess = { true } // <-- they fixed it before click
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowFullDiskAccess_success))
+  }
+
+  @MainActor
+  func testPrimaryFromUpgradeFDAFailGoesToSuccessIfTheyFixed() async {
+    let store = self.featureStore {
+      $0.step = .allowFullDiskAccess_failed
+      $0.upgrade = true
+    }
+    store.deps.app.hasFullDiskAccess = { true } // <-- they fixed it before click
+    await store.send(.webview(.primaryBtnClicked))
+    await store.receive(.setStep(.allowFullDiskAccess_success))
+  }
+
+  @MainActor
+  func testSecondaryFromUpgradeRestartFDAFailClosesPreventingResume() async {
+    let (store, _) = AppReducer.testStore {
+      $0.onboarding.windowOpen = false
+      $0.onboarding.upgrade = false
+    }
+
+    store.deps.app.hasFullDiskAccess = { false }
+    let saveState = spy(on: Persistent.State.self, returning: ())
+    store.deps.storage.savePersistentState = saveState.fn
+
+    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true)))) {
+      $0.onboarding.windowOpen = true
+      $0.onboarding.upgrade = true
+    }
+
+    // they end up on the failed screen
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_failed)))
+
+    // and we record that we're going to resume here, assuming they try again
+    await expect(saveState.calls.count).toEqual(1)
+    await expect(saveState.calls[0].resumeOnboarding)
+      .toEqual(.checkingFullDiskAccessPermission(upgrade: true))
+
+    // ... but instead they quit by clicking the secondary
+    await store.send(.onboarding(.webview(.secondaryBtnClicked))) {
+      $0.onboarding.windowOpen = false // so we close upgrade onboarding
+    }
+
+    // and won't resume
+    await expect(saveState.calls.count).toEqual(2)
+    await expect(saveState.calls[1].resumeOnboarding).toBeNil()
+  }
+
+  @MainActor
+  func testUpgradeHappyPathSimulatingRestart() async {
+    let (store, _) = AppReducer.testStore {
+      $0.onboarding.windowOpen = false
+      $0.onboarding.upgrade = false
+    }
+    store.deps.app.hasFullDiskAccess = { true }
+    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true)))) {
+      $0.onboarding.windowOpen = true
+      $0.onboarding.upgrade = true // <-- we know we're still in upgrade mode...
+    }
+    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
+      $0.onboarding.step = .allowFullDiskAccess_success
+    }
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.windowOpen = false // ... so we close the window then b/c upgrade
+      $0.onboarding.upgrade = false
+    }
+  }
+
   // helpers
+
   func featureStore(
     mutateState: @escaping (inout OnboardingFeature.State) -> Void = { _ in }
   ) -> TestStoreOf<OnboardingFeature.Reducer> {
@@ -1418,6 +1739,7 @@ final class OnboardingFeatureTests: XCTestCase {
     }
     store.exhaustivity = .off
     store.deps.app.installLocation = { .inApplicationsDir }
+    store.deps.device.osVersion = { .sequoia }
     return store
   }
 }

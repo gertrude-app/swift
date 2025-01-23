@@ -2,7 +2,6 @@ import AppKit
 import Darwin
 import Dependencies
 import Foundation
-import os.log
 
 public struct RelauncherClient: Sendable {
   public var commandLineArgs: @Sendable () -> [String]

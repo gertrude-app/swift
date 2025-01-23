@@ -2,6 +2,7 @@ import ClientInterfaces
 import ComposableArchitecture
 import Foundation
 import MacAppRoute
+import os.log
 
 typealias FeatureReducer = Reducer
 
@@ -71,7 +72,7 @@ public extension ApiClient {
         appVersion: appClient.installedVersion() ?? "unknown",
         filterVersion: filterVersion,
         userIsAdmin: device.currentMacOsUserType() == .admin,
-        osVersion: device.osVersion().semver,
+        osVersion: device.osVersion().semver.string,
         pendingFilterSuspension: pendingFilterSuspension,
         pendingUnlockRequests: pendingUnlockRequests,
         namedApps: sendNamedApps ? device.listRunningApps().filter(\.hasName) : nil

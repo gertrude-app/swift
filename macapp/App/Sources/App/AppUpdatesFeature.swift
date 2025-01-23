@@ -17,6 +17,7 @@ struct AppUpdatesFeature: Feature {
     enum Delegate: Equatable, Sendable {
       case postUpdateFilterNotInstalled
       case postUpdateFilterReplaceFailed
+      case updateSucceeded(oldVersion: String, newVersion: String)
     }
 
     case delegate(Delegate)
@@ -32,6 +33,7 @@ struct AppUpdatesFeature: Feature {
     typealias Action = AppReducer.Action
     typealias State = AppReducer.State
     @Dependency(\.api) var api
+    @Dependency(\.app) var app
     @Dependency(\.device) var device
     @Dependency(\.filterXpc) var xpc
     @Dependency(\.filterExtension) var filter
@@ -63,32 +65,35 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       }
       return .merge(
         .exec { [updated = state.persistent] _ in
-          try await storage.savePersistentState(updated)
+          try await self.storage.savePersistentState(updated)
         },
-        .exec { [version = state.appUpdates.installedVersion] send in
-          switch await filter.state() {
+        .exec { [newVersion = state.appUpdates.installedVersion] send in
+          switch await self.filter.state() {
           case .notInstalled:
             await send(.appUpdates(.delegate(.postUpdateFilterNotInstalled)))
           default:
             try await replaceFilter(send)
-            if await xpc.notConnected() {
-              await api.securityEvent(.appUpdateFailedToReplaceSystemExtension)
+            if await self.xpc.notConnected() {
+              await self.api.securityEvent(.appUpdateFailedToReplaceSystemExtension)
               await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
-              unexpectedError(id: "cde231a0", detail: "state: \(await filter.state())")
+              unexpectedError(id: "cde231a0", detail: "state: \(await self.filter.state())")
             } else {
-              await api.securityEvent(.appUpdateSucceeded)
-              await send(.filter(.replacedFilterVersion(version)))
+              await self.api.securityEvent(.appUpdateSucceeded)
+              await send(.appUpdates(.delegate(.updateSucceeded(
+                oldVersion: restored.appVersion,
+                newVersion: newVersion
+              ))))
 
               // refresh the rules post-update, or else health check will complain
               await send(.checkIn(
-                result: TaskResult { try await api.appCheckIn(version) },
+                result: TaskResult { try await self.api.appCheckIn(newVersion) },
                 reason: .appUpdated
               ))
 
               // big sur doesn't get notification pushed when filter restarts
               // so check manually after attempting to replace the filter
-              try await mainQueue.sleep(for: .seconds(1))
-              await send(.filter(.receivedState(await filter.state())))
+              try await self.mainQueue.sleep(for: .seconds(1))
+              await send(.filter(.receivedState(await self.filter.state())))
             }
           }
         }
@@ -104,10 +109,10 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       let channel = state.appUpdates.releaseChannel
       let persist = state.persistent
       return .exec { _ in
-        if network.isConnected() {
+        if self.network.isConnected() {
           try await triggerUpdate(channel, persist)
         } else {
-          await device.notifyNoInternet()
+          await self.device.notifyNoInternet()
         }
       }
 
@@ -132,7 +137,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       }
 
     case .heartbeat(.everyHour):
-      if let dismissal = state.appUpdates.updateNagDismissedUntil, now > dismissal {
+      if let dismissal = state.appUpdates.updateNagDismissedUntil, self.now > dismissal {
         state.appUpdates.updateNagDismissedUntil = nil
       }
       return .none
@@ -141,19 +146,35 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       state.adminWindow.windowOpen = false // so they can see sparkle update
       let persist = state.persistent
       return .exec { _ in
-        if network.isConnected() {
+        if self.network.isConnected() {
           try await triggerUpdate(
             .init(force: true, version: version, requestingAppVersion: persist.appVersion),
             persist
           )
         } else {
-          await device.notifyNoInternet()
+          await self.device.notifyNoInternet()
         }
       }
 
     case .menuBar(.updateNagDismissClicked):
-      state.appUpdates.updateNagDismissedUntil = now.advanced(by: .hours(26))
+      state.appUpdates.updateNagDismissedUntil = self.now.advanced(by: .hours(26))
       return .none
+
+    case .appUpdates(.delegate(.updateSucceeded(let old, _))):
+      guard (Semver(old) ?? .zero) < .init("2.6.3")! else {
+        return .none
+      }
+      return .exec { send in
+        guard self.device.osVersion().major > 10 else {
+          // catalina doesn't autorestart, and very unlikely they'll ever get to 15.x
+          return
+        }
+        if await self.app.hasFullDiskAccess() == false {
+          await send(.onboarding(.delegate(.openForUpgrade(
+            step: .allowFullDiskAccess_grantAndRestart
+          ))))
+        }
+      }
 
     default:
       return .none
@@ -177,9 +198,9 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
     _ query: AppcastQuery,
     _ persist: Persistent.State
   ) async throws {
-    let feedUrl = "\(updater.endpoint.absoluteString)\(query.urlString)"
-    try await storage.savePersistentState(persist)
-    try await updater.triggerUpdate(feedUrl)
+    let feedUrl = "\(self.updater.endpoint.absoluteString)\(query.urlString)"
+    try await self.storage.savePersistentState(persist)
+    try await self.updater.triggerUpdate(feedUrl)
   }
 
   func afterFilterChange(_ send: Send<Action>, repairing: Bool) async {

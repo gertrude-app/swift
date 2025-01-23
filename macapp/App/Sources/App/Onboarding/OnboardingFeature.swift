@@ -26,10 +26,12 @@ struct OnboardingFeature: Feature {
     var connectChildRequest: PayloadRequestState<String, String> = .idle
     var users: [MacUser] = []
     var filterUsers: FilterUserTypes?
+    var upgrade = false
   }
 
   enum Resume: Codable, Equatable, Sendable {
     case checkingScreenRecordingPermission
+    case checkingFullDiskAccessPermission(upgrade: Bool)
     case at(step: State.Step)
   }
 
@@ -49,6 +51,7 @@ struct OnboardingFeature: Feature {
     enum Delegate: Equatable, Sendable {
       case saveForResume(Resume?)
       case onboardingConfigComplete
+      case openForUpgrade(step: OnboardingFeature.State.Step)
     }
 
     case webview(View)
@@ -88,6 +91,22 @@ struct OnboardingFeature: Feature {
           ))
         }
 
+      case .resume(.checkingFullDiskAccessPermission(let upgrade)):
+        state.windowOpen = true
+        state.upgrade = upgrade
+        return .exec { send in
+          let granted = await self.app.hasFullDiskAccess()
+          log("resume checking full disk access, granted=\(granted)", "7b54105c")
+          if granted {
+            await send(.setStep(.allowFullDiskAccess_success))
+          } else {
+            await send(
+              .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: upgrade)))
+            )
+            await send(.setStep(.allowFullDiskAccess_failed))
+          }
+        }
+
       case .resume(.checkingScreenRecordingPermission):
         state.windowOpen = true
         return .exec { send in
@@ -95,6 +114,18 @@ struct OnboardingFeature: Feature {
           log("resume checking screen recording, granted=\(granted)", "5d1d27fe")
           if granted {
             await send(.setStep(.allowScreenshots_success))
+            if await self.app.hasFullDiskAccess() {
+              switch await self.app.preventScreenCaptureNag() {
+              case .success:
+                break
+              case .failure(let err):
+                log("failed to prevent screen capture nag: \(err)", "e2114c6b")
+              }
+            }
+            // if we prevented the nag, this should do nothing, but in case something
+            // went wrong it seems better for them to see a permission prompt
+            // right _here_ while they're in screenshot permission mode, than later
+            try? await self.monitoring.takeScreenshot(500)
           } else {
             await send(.delegate(.saveForResume(.checkingScreenRecordingPermission)))
             await send(.setStep(.allowScreenshots_failed))
@@ -273,6 +304,73 @@ struct OnboardingFeature: Feature {
           await nextRequiredStage(from: step, send)
         }
 
+      case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_grantAndRestart:
+        return .exec { [isUpgrade = state.upgrade] send in
+          await self.device.openSystemPrefs(.security(.fullDiskAccess))
+          await send(
+            .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: isUpgrade)))
+          )
+          if isUpgrade {
+            // if its an upgrade onboarding session, we've already started protecting
+            // and we don't want the relauncher to interfere with the OS restarting
+            // gertrude after granting full disk access, so stop it now
+            await self.app.stopRelaunchWatcher()
+            // but we also want to protect against the case where they fail to grant
+            try? await self.mainQueue.sleep(for: .seconds(60 * 5))
+            try await self.app.startRelaunchWatcher()
+          }
+        }
+
+      case .webview(.secondaryBtnClicked)
+        where step == .allowFullDiskAccess_grantAndRestart && state.upgrade:
+        log(step, action, "f6057a7e")
+        state.windowOpen = false
+        return .none
+
+      case .webview(.secondaryBtnClicked) where step == .allowFullDiskAccess_grantAndRestart:
+        log(step, action, "cdd658e1")
+        return .exec { send in
+          await nextRequiredStage(from: step, send)
+        }
+
+      case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_success && state.upgrade:
+        log(step, action, "6e4f9800")
+        state.windowOpen = false
+        state.upgrade = false
+        return .exec { send in
+          await send(.delegate(.saveForResume(nil)))
+        }
+
+      case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_success:
+        log(step, action, "5dec2904")
+        return .exec { send in
+          await nextRequiredStage(from: step, send)
+        }
+
+      case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_failed:
+        log(step, action, "2ecaa8e3")
+        return .exec { send in
+          if await self.app.hasFullDiskAccess() {
+            await send(.setStep(.allowFullDiskAccess_success))
+          } else {
+            await send(.setStep(.allowFullDiskAccess_grantAndRestart))
+          }
+        }
+
+      case .webview(.secondaryBtnClicked)
+        where step == .allowFullDiskAccess_failed && state.upgrade:
+        state.windowOpen = false
+        log(step, action, "c72e6681")
+        return .exec { send in
+          await send(.delegate(.saveForResume(nil)))
+        }
+
+      case .webview(.secondaryBtnClicked) where step == .allowFullDiskAccess_failed:
+        log(step, action, "bafcef2e")
+        return .exec { send in
+          await nextRequiredStage(from: step, send)
+        }
+
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_required:
         return .exec { send in
           let granted = await self.monitoring.screenRecordingPermissionGranted()
@@ -322,12 +420,6 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_success:
         log(step, action, "fc9a6916")
-        return .exec { send in
-          await nextRequiredStage(from: step, send)
-        }
-
-      case .webview(.primaryBtnClicked) where step == .screenshotsPrivacyWarning:
-        log(step, action, "acbc3e06")
         return .exec { send in
           await nextRequiredStage(from: step, send)
         }
@@ -551,7 +643,14 @@ struct OnboardingFeature: Feature {
         log("info modal opened at .\(step), detail=\(detail ?? "(nil)")", "f77ef50c")
         return .none
 
-      case .delegate:
+      case .delegate(.openForUpgrade(let step)):
+        state.step = step
+        state.upgrade = true
+        state.windowOpen = true
+        return .none
+
+      case .delegate(.saveForResume),
+           .delegate(.onboardingConfigComplete):
         return .none
       }
     }
@@ -565,6 +664,14 @@ struct OnboardingFeature: Feature {
         log("notifications already .alert, skipping stage", "f2988b3c")
       }
 
+      if current < .allowFullDiskAccess_grantAndRestart, self.device.osVersion().major >= 11 {
+        if await self.app.hasFullDiskAccess() == false {
+          log("full disk access not granted yet", "eb7623c2")
+          return await send(.setStep(.allowFullDiskAccess_grantAndRestart))
+        }
+        log("full disk access already allowed, skipping stage", "c2b2f013")
+      }
+
       if current < .allowScreenshots_required {
         if await self.monitoring.screenRecordingPermissionGranted() == false {
           log("screen recording not granted yet", "3edcf34f")
@@ -576,10 +683,6 @@ struct OnboardingFeature: Feature {
       // if we're past the screenshot stage, we know we don't want to resume again
       // so, defensively always remove the onboarding resume state at this point
       await send(.delegate(.saveForResume(nil)))
-
-      if current == .allowScreenshots_success, self.device.osVersion().major >= 15 {
-        return await send(.setStep(.screenshotsPrivacyWarning))
-      }
 
       // checking keylogging pops up the system prompt, so we always
       // have to land them on this screen once, and test later.
