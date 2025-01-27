@@ -1,5 +1,6 @@
 import Foundation
 import TaggedTime
+import XCore
 
 public struct FilterSuspension: Equatable, Codable, Sendable {
   public var scope: AppScope
@@ -20,5 +21,11 @@ public struct FilterSuspension: Equatable, Codable, Sendable {
     self.scope = scope
     self.duration = duration
     self.expiresAt = expiresAt
+  }
+}
+
+public extension FilterSuspension {
+  func relativeExpiration(from now: Date = Date()) -> String {
+    now.timeRemaining(until: self.expiresAt)
   }
 }

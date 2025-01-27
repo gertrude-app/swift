@@ -17,6 +17,7 @@ enum WebSocketFeature {
     @Dependency(\.device) var device
     @Dependency(\.websocket) var websocket
     @Dependency(\.network) var network
+    @Dependency(\.date.now) var now
   }
 }
 
@@ -72,10 +73,11 @@ extension WebSocketFeature.RootReducer {
         try await websocket.disconnect()
       }
 
-    case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked))):
+    case .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(let durationInSeconds)))):
       guard state.admin.accountStatus != .inactive else { return .none }
       return .exec { _ in
-        try await websocket.send(.currentFilterState(.suspended))
+        let expiration = self.now + .seconds(durationInSeconds)
+        try await websocket.send(.currentFilterState_v2(.suspended(resuming: expiration)))
       }
 
     case .application(.didWake):
@@ -149,9 +151,9 @@ extension WebSocketClient {
     if let overrideFilterState {
       var stateCopy = state
       stateCopy.filter.extension = overrideFilterState
-      try await send(.currentFilterState(.init(from: stateCopy)))
+      try await send(.currentFilterState_v2(.init(from: stateCopy)))
     } else {
-      try await send(.currentFilterState(.init(from: state)))
+      try await send(.currentFilterState_v2(.init(from: state)))
     }
   }
 }

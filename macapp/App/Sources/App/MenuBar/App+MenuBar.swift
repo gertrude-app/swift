@@ -45,6 +45,7 @@ extension AppReducer.State {
         guard welcomeDismissed else {
           return .connectionSucceded(userName: user.name)
         }
+
         return .connected(.init(
           filterState: .init(from: self),
           recordingScreen: monitoring.suspensionMonitoring?.screenshotsEnabled

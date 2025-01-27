@@ -44,17 +44,21 @@ import Gertie
     }
   }
 
-  func filterState(for userDeviceId: UserDevice.Id) async -> FilterState.WithoutTimes? {
+  func status(for userDeviceId: UserDevice.Id) async -> ChildComputerStatus {
     for connection in self.connections.values {
       if connection.ids.userDevice == userDeviceId {
-        return await connection.filterState
+        let state = await connection.filterState
+        switch state {
+        case .withoutTimes(let filterState):
+          return filterState.status
+        case .withTimes(let filterState):
+          return filterState.status
+        case nil:
+          return .offline
+        }
       }
     }
-    return nil
-  }
-
-  func isUserDeviceOnline(_ id: UserDevice.Id) -> Bool {
-    self.connections.values.contains { $0.ids.userDevice == id }
+    return .offline
   }
 
   private func flush() {

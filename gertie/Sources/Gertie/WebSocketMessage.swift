@@ -20,7 +20,10 @@ public enum WebSocketMessage {
   }
 
   public enum FromAppToApi: Codable, Equatable {
+    // deprecated: remove when MSV is >= 2.7.0
+    @available(*, deprecated, message: "Use currentFilterState_v2 instead")
     case currentFilterState(FilterState.WithoutTimes)
+    case currentFilterState_v2(FilterState.WithTimes)
     case goingOffline
   }
 

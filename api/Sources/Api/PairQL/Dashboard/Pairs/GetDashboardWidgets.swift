@@ -9,7 +9,7 @@ struct GetDashboardWidgets: Pair {
   struct User: PairNestable {
     var id: Api.User.Id
     var name: String
-    var isOnline: Bool
+    var status: ChildComputerStatus
     var numDevices: Int
   }
 
@@ -96,7 +96,7 @@ extension GetDashboardWidgets: NoInputResolver {
       users: users.concurrentMap { user in .init(
         id: user.id,
         name: user.name,
-        isOnline: try await userOnline(user.id, userDevices),
+        status: try await consolidatedChildComputerStatus(user.id, userDevices),
         numDevices: userDevices.filter { $0.userId == user.id }.count
       ) },
       userActivitySummaries: userActivitySummaries(
@@ -120,13 +120,6 @@ extension GetDashboardWidgets: NoInputResolver {
 }
 
 // helpers
-
-func userOnline(_ userId: User.Id, _ userDevices: [UserDevice]) async throws -> Bool {
-  try await userDevices
-    .filter { $0.userId == userId }
-    .concurrentMap { await $0.isOnline() }
-    .contains(true)
-}
 
 func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],

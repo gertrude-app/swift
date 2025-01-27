@@ -17,6 +17,7 @@ final class AdminWindowFeatureTests: XCTestCase {
   func testAllNonCurrentUsersConsideredExemptable() async {
     await withDependencies {
       $0.app.installedVersion = { "1.0.0" }
+      $0.date = .constant(.reference)
     } operation: {
       let (store, _) = AppReducer.testStore(mockDeps: false) {
         $0.adminWindow.windowOpen = true
@@ -49,6 +50,7 @@ final class AdminWindowFeatureTests: XCTestCase {
       $0.history.userConnection = .established(welcomeDismissed: true)
     }
 
+    store.deps.date = .constant(.reference)
     store.deps.websocket = .mock
     store.deps.app = .mock
     let clearUserToken = mock(once: ())

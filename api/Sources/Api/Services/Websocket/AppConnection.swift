@@ -12,10 +12,15 @@ actor AppConnection {
     let keychains: [Keychain.Id]
   }
 
+  enum FilterStateData {
+    case withoutTimes(FilterState.WithoutTimes)
+    case withTimes(FilterState.WithTimes)
+  }
+
   let id: Id
   let ids: Ids
   let ws: WebSocket
-  var filterState: FilterState.WithoutTimes?
+  var filterState: FilterStateData?
 
   init(ws: WebSocket, ids: Ids) {
     self.id = .init(UUID())
@@ -43,10 +48,47 @@ actor AppConnection {
     with(dependency: \.logger)
       .notice("WS: WebSocket \(self.id.lowercased) got message: \(message)")
     switch message {
-    case .currentFilterState(let filterState):
-      self.filterState = filterState
+    case .currentFilterState(let filterStateWithoutTimes):
+      self.filterState = .withoutTimes(filterStateWithoutTimes)
+    case .currentFilterState_v2(let filterState):
+      self.filterState = .withTimes(filterState)
     case .goingOffline:
       Task { await with(dependency: \.websockets).remove(self) }
+    }
+  }
+}
+
+// NB: `nil` the dates while still supporting < `v2.7.0`
+extension FilterState.WithoutTimes {
+  var status: ChildComputerStatus {
+    switch self {
+    case .off:
+      return .filterOff
+    case .on:
+      return .filterOn
+    case .suspended:
+      return .filterSuspended(resuming: nil)
+    case .downtime:
+      return .downtime(ending: nil)
+    case .downtimePaused:
+      return .downtimePaused(resuming: nil)
+    }
+  }
+}
+
+extension FilterState.WithTimes {
+  var status: ChildComputerStatus {
+    switch self {
+    case .off:
+      return .filterOff
+    case .on:
+      return .filterOn
+    case .suspended(let resuming):
+      return .filterSuspended(resuming: resuming)
+    case .downtime(let ending):
+      return .downtime(ending: ending)
+    case .downtimePaused(let resuming):
+      return .downtimePaused(resuming: resuming)
     }
   }
 }

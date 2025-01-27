@@ -24,6 +24,7 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.filterXpc.sendAlive = { .success(true) }
     store.deps.websocket.state = { .notConnected }
     store.deps.app.installLocation = { .inApplicationsDir }
+    store.deps.date = .constant(.reference)
 
     store.deps.device.currentUserId = { 502 }
     store.deps.device.listMacOSUsers = DeviceClient.mock.listMacOSUsers
@@ -352,7 +353,6 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.monitoring.stopLoggingKeystrokes = stopLoggingKeystrokes.fn
     let startRelaunchWatcher = mock(always: ())
     store.deps.app.startRelaunchWatcher = startRelaunchWatcher.fn
-    store.deps.date = .constant(.reference)
     store.deps.device.boottime = { .reference - 60 }
     let preventScreenCaptureNag = mock(always: Result<Void, StringError>.success(()))
     store.deps.app.preventScreenCaptureNag = preventScreenCaptureNag.fn
@@ -390,7 +390,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
     // we need to ensure the websocket connection is setup, so they can do the tutorial vid
     await expect(connectWebsocket.calls).toEqual([UserData.mock.token])
-    await expect(wsSend.calls).toEqual([.currentFilterState(.off)])
+    await expect(wsSend.calls).toEqual([.currentFilterState_v2(.off)])
 
     await expect(setUserToken.calls).toEqual([UserData.mock.token, UserData.mock.token])
     await expect(setAccountActive.calls).toEqual([true])

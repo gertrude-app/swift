@@ -1,7 +1,6 @@
 import Foundation
-import Gertie
 
-extension Date {
+public extension Date {
   func timeRemaining(until future: Date = Date()) -> String {
     let secondsRemaining = Int(future.timeIntervalSince1970 - timeIntervalSince1970)
     switch secondsRemaining {
@@ -48,11 +47,5 @@ extension Date {
     default:
       return "\(secondsRemaining / 86400) days"
     }
-  }
-}
-
-extension FilterSuspension {
-  func relativeExpiration(from now: Date = Date()) -> String {
-    now.timeRemaining(until: expiresAt)
   }
 }
