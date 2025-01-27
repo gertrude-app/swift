@@ -54,6 +54,7 @@ extension OnboardingFeature.State {
     case exemptUsers
     case locateMenuBarIcon
     case viewHealthCheck
+    case encourageFilterSuspensions
     case howToUseGertrude
     case finish
   }
@@ -119,6 +120,8 @@ extension OnboardingFeature.State.Step {
     case .locateMenuBarIcon:
       return .viewHealthCheck
     case .viewHealthCheck:
+      return .encourageFilterSuspensions
+    case .encourageFilterSuspensions:
       return .howToUseGertrude
     case .howToUseGertrude:
       return .finish
@@ -191,8 +194,10 @@ extension OnboardingFeature.State.Step {
       return .installSysExt_explain
     case .viewHealthCheck:
       return .locateMenuBarIcon
-    case .howToUseGertrude:
+    case .encourageFilterSuspensions:
       return .viewHealthCheck
+    case .howToUseGertrude:
+      return .encourageFilterSuspensions
     case .finish:
       return .howToUseGertrude
     }
@@ -235,6 +240,7 @@ extension OnboardingFeature.State.Step: Comparable {
     case .exemptUsers: return 108
     case .locateMenuBarIcon: return 110
     case .viewHealthCheck: return 115
+    case .encourageFilterSuspensions: return 117
     case .howToUseGertrude: return 120
     case .finish: return 125
     }

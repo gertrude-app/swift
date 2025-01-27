@@ -415,6 +415,11 @@ final class OnboardingFeatureTests: XCTestCase {
 
     // they click "Next" on the health check screen
     await store.send(.onboarding(.webview(.primaryBtnClicked))) {
+      $0.onboarding.step = .encourageFilterSuspensions // go to encourage FS
+    }
+
+    // they click "Next" on the encourage filter suspensions screen
+    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
       $0.onboarding.step = .howToUseGertrude // ...and go to how to use
     }
 

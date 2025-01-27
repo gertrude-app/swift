@@ -588,6 +588,11 @@ struct OnboardingFeature: Feature {
 
       case .webview(.primaryBtnClicked) where step == .viewHealthCheck:
         log(step, action, "5c73a171")
+        state.step = .encourageFilterSuspensions
+        return .none
+
+      case .webview(.primaryBtnClicked) where step == .encourageFilterSuspensions:
+        log(step, action, "363f2d44")
         state.step = .howToUseGertrude
         return .none
 

@@ -86,6 +86,9 @@
   - several tweaks/fixes from testing 2.6.3 upgrade permission onboarding
 - `2.6.5` (canary as of 1/16/25)
   - fix failure to exit upgrade mode after os restart
+- `2.6.6` (canary as of 1/22/25)
+  - fix onboarding upgrade focus layout shift
+  - new "encourage filter suspensions" onboarding screen
 
 ## Sparkle Releases
 
