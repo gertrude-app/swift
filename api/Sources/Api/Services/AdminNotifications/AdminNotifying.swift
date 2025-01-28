@@ -3,20 +3,20 @@ import Tagged
 import XSlack
 
 protocol AdminNotifying {
-  func sendEmail(to address: String) async throws
-  func sendSlack(channel: String, token: String) async throws
   func sendText(to phoneNumber: String) async throws
+  func sendSlack(channel: String, token: String) async throws
+  func sendEmail(to address: String, isFallback: Bool) async throws
 }
 
 extension AdminNotifying {
   func send(with config: AdminVerifiedNotificationMethod.Config) async throws {
     switch config {
-    case .email(let address):
-      try await sendEmail(to: address)
-    case .slack(let channelId, _, let token):
-      try await sendSlack(channel: channelId, token: token)
     case .text(let phoneNumber):
       try await sendText(to: phoneNumber)
+    case .slack(let channelId, _, let token):
+      try await sendSlack(channel: channelId, token: token)
+    case .email(let address):
+      try await sendEmail(to: address, isFallback: false)
     }
   }
 }
