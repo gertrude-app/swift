@@ -17,7 +17,7 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
       .send(Text(to: .init(phoneNumber), message: message))
   }
 
-  func sendEmail(to address: String) async throws {
+  func sendEmail(to address: String, isFallback: Bool = false) async throws {
     try await with(dependency: \.postmark)
       .send(template: .notifySecurityEvent(
         to: address,

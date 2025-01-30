@@ -2,11 +2,11 @@ import Dependencies
 import Foundation
 
 extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
-  func sendEmail(to address: String) async throws {
+  func sendEmail(to address: String, isFallback: Bool = false) async throws {
     try await with(dependency: \.postmark)
       .send(template: .notifySuspendFilter(
         to: address,
-        model: .init(url: self.url, userName: self.userName)
+        model: .init(url: self.url, userName: self.userName, isFallback: isFallback)
       ))
   }
 

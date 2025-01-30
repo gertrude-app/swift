@@ -40,7 +40,12 @@ struct NotifySuspendFilter: TemplateEmailModel {
   static var subject: String { "[Gertrude App] New suspend filter request from {{userName}}" }
   var url: String
   var userName: String
-  var templateModel: [String: String] { ["url": self.url, "userName": self.userName] }
+  var isFallback: Bool
+  var templateModel: [String: String] { [
+    "url": self.url,
+    "userName": self.userName,
+    "fallbackNotice": self.isFallback ? EMAIL_NOTIFICATION_FALLBACK : "",
+  ] }
 }
 
 struct NotifyUnlockRequest: TemplateEmailModel {
@@ -49,11 +54,13 @@ struct NotifyUnlockRequest: TemplateEmailModel {
   var url: String
   var userName: String
   var unlockRequests: String
+  var isFallback: Bool
   var templateModel: [String: String] { [
     "subject": self.subject,
     "url": self.url,
     "userName": self.userName,
     "unlockRequests": self.unlockRequests,
+    "fallbackNotice": self.isFallback ? EMAIL_NOTIFICATION_FALLBACK : "",
   ] }
 }
 
@@ -112,3 +119,14 @@ enum AccountLifecycle {
     static var subject: String { "Gertrude unverified account deleted" }
   }
 }
+
+let EMAIL_NOTIFICATION_FALLBACK = """
+<br /><br /><br />
+<p>
+  👋 <b>Psst!</b> We're sending this notification <b>as an email</b> to your primary
+  account address because you currently <b>don’t have any notifications set up.</b> If
+  you’d rather receive events like these delivered as <b>text</b> or
+  <b>Slack</b> messages, or to a different email address, you can configure all of that in
+  the <a href="https://parents.gertrude.app/settings">Settings</a> screen.
+</p>
+"""

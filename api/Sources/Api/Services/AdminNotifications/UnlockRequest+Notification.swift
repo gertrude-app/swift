@@ -32,7 +32,7 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
       .send(Slack(text: text, channel: channel, token: token))
   }
 
-  func sendEmail(to address: String) async throws {
+  func sendEmail(to address: String, isFallback: Bool = false) async throws {
     let subject = requestIds.count > 1
       ? "\(requestIds.count) new unlock requests from \(userName)"
       : "New unlock request from \(userName)"
@@ -48,7 +48,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
           subject: subject,
           url: self.url,
           userName: self.userName,
-          unlockRequests: unlockRequests
+          unlockRequests: unlockRequests,
+          isFallback: isFallback
         )
       ))
   }

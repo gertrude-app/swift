@@ -67,7 +67,7 @@ import Vapor
       case "notify-suspend-filter":
         try await postmark.send(template: .notifySuspendFilter(
           to: to,
-          model: .init(url: localDash, userName: "Franny")
+          model: .init(url: localDash, userName: "Franny", isFallback: false)
         ))
 
       case "notify-unlock-request":
@@ -77,7 +77,8 @@ import Vapor
             subject: "New unlock request from Franny",
             url: localDash,
             userName: "Franny",
-            unlockRequests: "a new <b>unlock request</b>"
+            unlockRequests: "a new <b>unlock request</b>",
+            isFallback: false
           )
         ))
 
@@ -90,7 +91,8 @@ import Vapor
             subject: "3 new unlock requests from Franny",
             url: localDash,
             userName: "Franny",
-            unlockRequests: "3 new <b>unlock requests</b>"
+            unlockRequests: "3 new <b>unlock requests</b>",
+            isFallback: false
           )
         ))
 
