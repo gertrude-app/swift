@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import Foundation
 import Gertie
@@ -12,7 +13,7 @@ struct GetDevice: Pair {
     struct User: PairNestable {
       var id: Api.User.Id
       var name: String
-      var isOnline: Bool
+      var status: ChildComputerStatus
     }
 
     var id: Device.Id
@@ -47,6 +48,8 @@ extension GetDevice: Resolver {
       }
     }
 
+    @Dependency(\.websockets) var websockets
+
     return await .init(
       id: device.id,
       name: device.customName,
@@ -55,7 +58,7 @@ extension GetDevice: Resolver {
         .init(
           id: userDevice.userId,
           name: (try await userDevice.user(in: context.db)).name,
-          isOnline: await userDevice.isOnline()
+          status: await websockets.status(userDevice.id)
         )
       },
       appVersion: appVersion.description,

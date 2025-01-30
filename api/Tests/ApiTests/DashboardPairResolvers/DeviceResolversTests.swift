@@ -29,7 +29,7 @@ final class DeviceResolversTests: ApiTestCase {
     ))
 
     try await withDependencies {
-      $0.websockets.isUserDeviceOnline = { _ in false }
+      $0.websockets.status = { _ in .filterOn }
     } operation: {
       var singleOutput = try await GetDevice.resolve(
         with: device.id.rawValue,
@@ -41,8 +41,8 @@ final class DeviceResolversTests: ApiTestCase {
         name: "Pinky",
         releaseChannel: .canary,
         users: [
-          .init(id: user.id, name: user.name, isOnline: false),
-          .init(id: user2.id, name: user2.name, isOnline: false),
+          .init(id: user.id, name: user.name, status: .filterOn),
+          .init(id: user2.id, name: user2.name, status: .filterOn),
         ],
         appVersion: "2.2.2",
         serialNumber: "1234567890",

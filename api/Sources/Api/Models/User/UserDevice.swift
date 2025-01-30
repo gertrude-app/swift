@@ -55,7 +55,7 @@ extension UserDevice {
 }
 
 extension UserDevice {
-  func isOnline() async -> Bool {
-    await with(dependency: \.websockets).isUserDeviceOnline(self.id)
+  func status() async -> ChildComputerStatus {
+    await with(dependency: \.websockets).status(self.id)
   }
 }

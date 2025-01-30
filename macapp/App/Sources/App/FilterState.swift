@@ -4,28 +4,27 @@ import Gertie
 
 extension FilterState.WithRelativeTimes: Codable {}
 
-extension FilterState.WithRelativeTimes {
+extension FilterState.WithTimes {
   init(from state: AppReducer.State) {
     guard case .installedAndRunning = state.filter.extension else {
       self = .off
       return
     }
 
-    @Dependency(\.date) var date
+    @Dependency(\.date.now) var now
     @Dependency(\.calendar) var calendar
 
-    let now = date.now
     if let downtime = state.user.data?.downtime, downtime.contains(now, in: calendar) {
       if let pauseExpiration = state.user.downtimePausedUntil,
          pauseExpiration > now {
         self = .init(
           checkingFilterSuspensionIn: state,
-          orElse: .downtimePaused(resuming: now.timeRemaining(until: pauseExpiration))
+          orElse: .downtimePaused(resuming: pauseExpiration)
         )
       } else {
         let plainNow = PlainTime.from(now, in: calendar)
         let downtimeEnd = now.advanced(by: .minutes(plainNow.minutesUntil(downtime.end)))
-        self = .downtime(ending: now.timeRemaining(until: downtimeEnd))
+        self = .downtime(ending: downtimeEnd)
       }
       return
     }
@@ -35,7 +34,7 @@ extension FilterState.WithRelativeTimes {
 
   private init(
     checkingFilterSuspensionIn state: AppReducer.State,
-    orElse fallback: FilterState.WithRelativeTimes = .on
+    orElse fallback: FilterState.WithTimes = .on
   ) {
     @Dependency(\.date.now) var now
     guard let suspensionExpiration = state.filter.currentSuspensionExpiration,
@@ -43,12 +42,13 @@ extension FilterState.WithRelativeTimes {
       self = fallback
       return
     }
-    self = .suspended(resuming: now.timeRemaining(until: suspensionExpiration))
+    self = .suspended(resuming: suspensionExpiration)
   }
 }
 
-extension FilterState.WithoutTimes {
+extension FilterState.WithRelativeTimes {
   init(from state: AppReducer.State) {
-    self = FilterState.WithRelativeTimes(from: state).withoutTimes
+    @Dependency(\.date.now) var now
+    self = FilterState.WithTimes(from: state).withRelativeTimes(from: now)
   }
 }

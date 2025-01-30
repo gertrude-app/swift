@@ -35,7 +35,7 @@ struct GetUser: Pair {
   struct Device: PairNestable {
     var id: UserDevice.Id
     var deviceId: Api.Device.Id
-    var isOnline: Bool
+    var status: ChildComputerStatus
     var modelFamily: DeviceModelFamily
     var modelTitle: String
     var modelIdentifier: String
@@ -98,7 +98,7 @@ extension GetUser.User {
         return (GetUser.Device(
           id: userDevice.id,
           deviceId: adminDevice.id,
-          isOnline: await userDevice.isOnline(),
+          status: await userDevice.status(),
           modelFamily: adminDevice.model.family,
           modelTitle: adminDevice.model.shortDescription,
           modelIdentifier: adminDevice.model.identifier,

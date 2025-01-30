@@ -299,7 +299,7 @@ extension FilterFeature.RootReducer {
       if endedEarly { _ = await self.xpc.endFilterSuspension() }
       await self.api
         .securityEvent(endedEarly ? .filterSuspensionEndedEarly : .filterSuspensionExpired)
-      try? await self.websocket.send(.currentFilterState(.on))
+      try? await self.websocket.send(.currentFilterState_v2(.on))
       await self.device.notifyBrowsersQuitting()
       try await self.mainQueue.sleep(for: .seconds(60))
       await self.device.quitBrowsers(browsers)

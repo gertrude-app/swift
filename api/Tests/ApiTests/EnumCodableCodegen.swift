@@ -27,6 +27,7 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
         (GetAdmin.SubscriptionStatus.self, false),
         (SecurityEventsFeed.FeedEvent.self, false),
         (UserActivity.Item.self, true),
+        (ChildComputerStatus.self, false),
       ],
       imports: ["Tagged": "Tagged"],
       replacements: [

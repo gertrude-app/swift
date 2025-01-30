@@ -353,3 +353,73 @@ public extension UserActivity.Item {
     }
   }
 }
+
+extension ChildComputerStatus {
+  private struct _NamedCase: Codable {
+    var `case`: String
+    static func extract(from decoder: Decoder) throws -> String {
+      let container = try decoder.singleValueContainer()
+      return try container.decode(_NamedCase.self).case
+    }
+  }
+
+  private struct _TypeScriptDecodeError: Error {
+    var message: String
+  }
+
+  private struct _CaseFilterSuspended: Codable {
+    var `case` = "filterSuspended"
+    var resuming: Date?
+  }
+
+  private struct _CaseDowntime: Codable {
+    var `case` = "downtime"
+    var ending: Date?
+  }
+
+  private struct _CaseDowntimePaused: Codable {
+    var `case` = "downtimePaused"
+    var resuming: Date?
+  }
+
+  func encode(to encoder: Encoder) throws {
+    switch self {
+    case .filterSuspended(let resuming):
+      try _CaseFilterSuspended(resuming: resuming).encode(to: encoder)
+    case .downtime(let ending):
+      try _CaseDowntime(ending: ending).encode(to: encoder)
+    case .downtimePaused(let resuming):
+      try _CaseDowntimePaused(resuming: resuming).encode(to: encoder)
+    case .offline:
+      try _NamedCase(case: "offline").encode(to: encoder)
+    case .filterOff:
+      try _NamedCase(case: "filterOff").encode(to: encoder)
+    case .filterOn:
+      try _NamedCase(case: "filterOn").encode(to: encoder)
+    }
+  }
+
+  init(from decoder: Decoder) throws {
+    let caseName = try _NamedCase.extract(from: decoder)
+    let container = try decoder.singleValueContainer()
+    switch caseName {
+    case "filterSuspended":
+      let value = try container.decode(_CaseFilterSuspended.self)
+      self = .filterSuspended(resuming: value.resuming)
+    case "downtime":
+      let value = try container.decode(_CaseDowntime.self)
+      self = .downtime(ending: value.ending)
+    case "downtimePaused":
+      let value = try container.decode(_CaseDowntimePaused.self)
+      self = .downtimePaused(resuming: value.resuming)
+    case "offline":
+      self = .offline
+    case "filterOff":
+      self = .filterOff
+    case "filterOn":
+      self = .filterOn
+    default:
+      throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
+    }
+  }
+}

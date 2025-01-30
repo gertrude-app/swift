@@ -5,8 +5,7 @@ struct ConnectedApps: Sendable {
   var add: @Sendable (AppConnection) async -> Void
   var disconnectAll: @Sendable () async -> Void
   var remove: @Sendable (AppConnection) async -> Void
-  var filterState: @Sendable (UserDevice.Id) async -> FilterState.WithoutTimes?
-  var isUserDeviceOnline: @Sendable (UserDevice.Id) async -> Bool
+  var status: @Sendable (UserDevice.Id) async -> ChildComputerStatus
   var sendEvent: @Sendable (AppEvent) async throws -> Void
 }
 
@@ -35,8 +34,7 @@ extension ConnectedApps: DependencyKey {
       add: { await AppConnections.shared.add($0) },
       disconnectAll: { await AppConnections.shared.disconnectAll() },
       remove: { await AppConnections.shared.remove($0) },
-      filterState: { await AppConnections.shared.filterState(for: $0) },
-      isUserDeviceOnline: { await AppConnections.shared.isUserDeviceOnline($0) },
+      status: { await AppConnections.shared.status(for: $0) },
       sendEvent: { try await AppConnections.shared.send($0) }
     )
   }
@@ -49,8 +47,7 @@ extension ConnectedApps: DependencyKey {
         add: unimplemented("ConnectedApps.add()"),
         disconnectAll: unimplemented("ConnectedApps.disconnectAll()"),
         remove: unimplemented("ConnectedApps.remove()"),
-        filterState: unimplemented("ConnectedApps.filterState()", placeholder: nil),
-        isUserDeviceOnline: unimplemented("ConnectedApps.isUserDeviceOnline()", placeholder: false),
+        status: unimplemented("ConnectedApps.status()", placeholder: .filterOn),
         sendEvent: unimplemented("ConnectedApps.sendEvent()")
       )
     }
