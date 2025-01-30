@@ -1,0 +1,143 @@
+import SwiftUI
+
+struct WelcomeView: View {
+  let onPrimaryBtnTap: () -> Void
+
+  let greeting = "Hi there!"
+
+  @State var showButton = false
+  @State var showBg = false
+  @State var lettersOffset = Array(repeating: Vector(0, 40), count: "Hi there!".count)
+  @State var subtitleOffset = Vector(0, 20)
+  @State var buttonOffset = Vector(0, 20)
+
+  @Environment(\.colorScheme) var cs
+
+  let isIPad = UIDevice.current.userInterfaceIdiom == .pad
+  let isIPhone = UIDevice.current.userInterfaceIdiom == .phone
+
+  var body: some View {
+    ZStack {
+      Background()
+        .opacity(self.showBg ? 1 : 0)
+        .scaleEffect(y: self.isIPad ? 1 : (self.showBg ? 1 : 0))
+        .offset(y: self.showBg ? 0 : -440)
+        .ignoresSafeArea()
+        .onAppear {
+          withAnimation(.smooth(duration: 1)) {
+            self.showBg = true
+          }
+        }
+        .onDisappear {
+          withAnimation(.smooth(duration: 1)) {
+            self.showBg = false
+          }
+        }
+
+      VStack(alignment: self.isIPad ? .center : .leading, spacing: 12) {
+        if self.isIPhone {
+          Spacer()
+        }
+
+        HStack(spacing: 0) {
+          ForEach(Array(self.greeting.enumerated()), id: \.offset) { index, char in
+            Text(String(char))
+              .font(.system(size: 50, weight: .black))
+              .swooshIn(
+                tracking: self.$lettersOffset[index],
+                to: .origin,
+                after: .seconds(Double(index) / 15.0 + 0.5),
+                for: .milliseconds(600)
+              )
+          }
+        }
+
+        Text("Gertrude blocks unwanted stuff, like GIFs, from your device.")
+          .font(.system(size: 16, weight: .medium))
+          .multilineTextAlignment(self.isIPad ? .center : .leading)
+          .swooshIn(
+            tracking: self.$subtitleOffset,
+            to: .origin,
+            after: .seconds(1.0),
+            for: .milliseconds(800)
+          )
+
+        BigButton("Get started", variant: .primary) {
+          self.vanishingAnimations()
+          delayed(by: .milliseconds(800)) {
+            self.onPrimaryBtnTap()
+          }
+        }
+        .swooshIn(
+          tracking: self.$buttonOffset,
+          to: .origin,
+          after: .seconds(1.3),
+          for: .milliseconds(800)
+        )
+        .padding(.top, 20)
+      }
+      .padding(30)
+      .frame(maxWidth: 500)
+    }
+  }
+
+  func vanishingAnimations() {
+    withAnimation(.smooth(duration: 1)) {
+      self.showBg = false
+    }
+
+    self.lettersOffset.enumerated().forEach { i, _ in
+      delayed(by: .milliseconds(200)) {
+        withAnimation(.smooth(duration: 0.5)) {
+          self.lettersOffset[i].y = 50
+        }
+      }
+    }
+
+    delayed(by: .milliseconds(100)) {
+      withAnimation(.smooth(duration: 0.5)) {
+        self.subtitleOffset.y = 50
+      }
+    }
+
+    delayed(by: .zero) {
+      withAnimation(.smooth(duration: 0.5)) {
+        self.buttonOffset.y = 50
+      }
+    }
+  }
+}
+
+struct Background: View {
+  @Environment(\.colorScheme) var cs
+
+  var body: some View {
+    if #available(iOS 18.0, *) {
+      MeshGradient(width: 3, height: 6, points: [
+        .init(0, 0), .init(0.5, 0), .init(1, 0),
+        .init(0, 0.25), .init(0.5, 0.25), .init(1, 0.25),
+        .init(0, 0.12), .init(0.5, 0.2), .init(1, 0.5),
+        .init(0, 0.70), .init(0.5, 0.7), .init(1, 0.8),
+        .init(0, 0.85), .init(0.5, 0.85), .init(1, 0.8),
+        .init(0, 1), .init(0.5, 1), .init(1, 1),
+      ], colors: [
+        Color(cs, light: .violet100, dark: .violet950.opacity(0.5)),
+        Color(cs, light: .fuchsia300, dark: .fuchsia950),
+        Color(cs, light: .violet700, dark: .violet700),
+        Color(cs, light: .violet400, dark: .violet900),
+        Color(cs, light: .clear, dark: .violet950.opacity(0.5)),
+        Color(cs, light: .fuchsia400, dark: .fuchsia950),
+        .clear, .clear, .clear,
+        .clear, .clear, .clear,
+        .clear, .clear, .clear,
+        .clear, .clear, .clear,
+      ], smoothsColors: true)
+    } else {
+      // TODO: alternative for iOS 17
+    }
+  }
+}
+
+#Preview {
+  WelcomeView {}
+}

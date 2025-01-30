@@ -5,17 +5,12 @@ let package = Package(
   name: "LibIOS",
   platforms: [.macOS(.v14), .iOS(.v17)],
   products: [
-    .library(name: "LibIOS", targets: ["LibIOS"]),
     .library(name: "LibCore", targets: ["LibCore"]),
     .library(name: "LibFilter", targets: ["LibFilter"]),
     .library(name: "LibController", targets: ["LibController"]),
     .library(name: "LibClients", targets: ["LibClients"]),
   ],
   dependencies: [
-    .package(
-      url: "https://github.com/pointfreeco/swift-composable-architecture",
-      from: "1.0.0"
-    ),
     .package(
       url: "https://github.com/pointfreeco/swift-dependencies",
       from: "1.0.0"
@@ -32,14 +27,6 @@ let package = Package(
     .target(
       name: "LibCore",
       dependencies: []
-    ),
-    .target(
-      name: "LibIOS",
-      dependencies: [
-        "LibCore",
-        "LibClients",
-        .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-      ]
     ),
     .target(
       name: "LibFilter",
@@ -62,13 +49,6 @@ let package = Package(
         .product(name: "IOSRoute", package: "pairql-iosapp"),
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "DependenciesMacros", package: "swift-dependencies"),
-      ]
-    ),
-    .testTarget(
-      name: "LibIOSTests",
-      dependencies: [
-        "LibIOS",
-        .product(name: "XExpect", package: "x-expect"),
       ]
     ),
     .testTarget(

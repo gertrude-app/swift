@@ -10,8 +10,9 @@ public extension Color {
   static let violet700 = Color(hex: "#6d28d9")!
   static let violet800 = Color(hex: "#5b21b6")!
   static let violet900 = Color(hex: "#4c1d95")!
+  static let violet950 = Color(hex: "#2e1065")!
 
-  static let fuschia100 = Color(hex: "#fae8ff")!
+  static let fuchsia100 = Color(hex: "#fae8ff")!
   static let fuchsia200 = Color(hex: "#f5d0fe")!
   static let fuchsia300 = Color(hex: "#f0abfc")!
   static let fuchsia400 = Color(hex: "#e879f9")!
@@ -20,6 +21,7 @@ public extension Color {
   static let fuchsia700 = Color(hex: "#a21caf")!
   static let fuchsia800 = Color(hex: "#86198f")!
   static let fuchsia900 = Color(hex: "#701a75")!
+  static let fuchsia950 = Color(hex: "#4a044e")!
 
   init?(hex: String) {
     let r, g, b: Double
@@ -48,5 +50,13 @@ public extension Color {
     }
 
     self.init(red: r, green: g, blue: b)
+  }
+
+  init(_ colorScheme: ColorScheme, light: Color, dark: Color) {
+    if colorScheme == .dark {
+      self.init(dark)
+    } else {
+      self.init(light)
+    }
   }
 }
