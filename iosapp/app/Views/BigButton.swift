@@ -26,7 +26,7 @@ struct BigButton: View {
       }
       .padding(.horizontal, 20)
       .padding(.vertical, 14)
-      .background(self.variant == .primary ? Color(cs, light: .violet500, dark: .violet500) : Color(cs, light: .violet500.opacity(0.1), dark: .violet500.opacity(0.1)))
+      .background(self.variant == .primary ? Color(cs, light: .violet500, dark: .violet500) : Color(cs, light: .violet500.opacity(0.1), dark: .violet500.opacity(0.15)))
       .cornerRadius(16)
     }
   }
