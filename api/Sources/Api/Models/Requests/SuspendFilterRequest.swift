@@ -4,7 +4,7 @@ import TaggedTime
 
 struct SuspendFilterRequest: Codable, Sendable, Equatable {
   var id: Id
-  var userDeviceId: UserDevice.Id
+  var computerUserId: UserDevice.Id
   var status: RequestStatus
   var scope: AppScope
   var duration: Seconds<Int>
@@ -16,7 +16,7 @@ struct SuspendFilterRequest: Codable, Sendable, Equatable {
 
   init(
     id: Id = .init(),
-    userDeviceId: UserDevice.Id,
+    computerUserId: UserDevice.Id,
     status: RequestStatus = .pending,
     scope: AppScope,
     duration: Seconds<Int> = 180,
@@ -25,7 +25,7 @@ struct SuspendFilterRequest: Codable, Sendable, Equatable {
     extraMonitoring: String? = nil
   ) {
     self.id = id
-    self.userDeviceId = userDeviceId
+    self.computerUserId = computerUserId
     self.status = status
     self.scope = scope
     self.duration = duration
@@ -40,7 +40,7 @@ struct SuspendFilterRequest: Codable, Sendable, Equatable {
 extension SuspendFilterRequest {
   func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice {
     try await UserDevice.query()
-      .where(.id == self.userDeviceId)
+      .where(.id == self.computerUserId)
       .first(in: db)
   }
 

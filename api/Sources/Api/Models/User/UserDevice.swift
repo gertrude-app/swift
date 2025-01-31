@@ -3,8 +3,8 @@ import Gertie
 
 struct UserDevice: Codable, Sendable, Equatable {
   var id: Id
-  var userId: User.Id
-  var deviceId: Device.Id
+  var childId: User.Id
+  var computerId: Device.Id
   var isAdmin: Bool?
   var appVersion: String
   var username: String
@@ -15,8 +15,8 @@ struct UserDevice: Codable, Sendable, Equatable {
 
   init(
     id: Id = .init(),
-    userId: User.Id,
-    deviceId: Device.Id,
+    childId: User.Id,
+    computerId: Device.Id,
     isAdmin: Bool?,
     appVersion: String,
     username: String,
@@ -24,8 +24,8 @@ struct UserDevice: Codable, Sendable, Equatable {
     numericId: Int
   ) {
     self.id = id
-    self.userId = userId
-    self.deviceId = deviceId
+    self.childId = childId
+    self.computerId = computerId
     self.appVersion = appVersion
     self.username = username
     self.fullUsername = fullUsername
@@ -43,13 +43,13 @@ extension UserDevice {
 
   func user(in db: any DuetSQL.Client) async throws -> User {
     try await User.query()
-      .where(.id == self.userId)
+      .where(.id == self.childId)
       .first(in: db)
   }
 
   func adminDevice(in db: any DuetSQL.Client) async throws -> Device {
     try await Device.query()
-      .where(.id == self.deviceId)
+      .where(.id == self.computerId)
       .first(in: db)
   }
 }

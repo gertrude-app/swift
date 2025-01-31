@@ -9,7 +9,7 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase {
       $0.appVersion = "2.4.0"
     }
     let request = try await self.db.create(SuspendFilterRequest.random {
-      $0.userDeviceId = user.device.id
+      $0.computerUserId = user.device.id
       $0.status = .pending
     })
 

@@ -15,12 +15,12 @@ final class DeviceResolversTests: ApiTestCase {
     device.modelIdentifier = "MacBookPro16,1"
     try await self.db.update(device)
 
-    let user2 = try await self.db.create(User(adminId: user.adminId, name: "Bob"))
+    let user2 = try await self.db.create(User(parentId: user.parentId, name: "Bob"))
 
     // proves that we take the highest app version
     try await self.db.create(UserDevice(
-      userId: user2.id,
-      deviceId: device.id,
+      childId: user2.id,
+      computerId: device.id,
       isAdmin: false,
       appVersion: "2.0.1", // <-- lower app version
       username: "Bob",

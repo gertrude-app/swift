@@ -64,7 +64,7 @@ func userKeychainSummaries(
   in db: any DuetSQL.Client
 ) async throws -> [UserKeychainSummary] {
   let userKeychains = try await UserKeychain.query()
-    .where(.userId == userId)
+    .where(.childId == userId)
     .all(in: db)
   let keychains = try await Keychain.query()
     .where(.id |=| userKeychains.map(\.keychainId))
@@ -77,7 +77,7 @@ func userKeychainSummaries(
     )
     return .init(
       id: keychain.id,
-      authorId: keychain.authorId,
+      authorId: keychain.parentId,
       name: keychain.name,
       description: keychain.description,
       isPublic: keychain.isPublic,
@@ -91,7 +91,7 @@ extension GetUser.User {
   init(from user: Api.User, in db: any DuetSQL.Client) async throws {
     async let userKeychains = userKeychainSummaries(for: user.id, in: db)
     let pairs = try await UserDevice.query()
-      .where(.userId == user.id)
+      .where(.childId == user.id)
       .all(in: db)
       .concurrentMap { (userDevice: UserDevice) -> (GetUser.Device, Semver) in
         let adminDevice = try await userDevice.adminDevice(in: db)

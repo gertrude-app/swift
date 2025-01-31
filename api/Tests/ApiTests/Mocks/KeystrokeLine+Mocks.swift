@@ -6,7 +6,7 @@ import Gertie
 extension KeystrokeLine: RandomMocked {
   public static var mock: KeystrokeLine {
     KeystrokeLine(
-      userDeviceId: .init(),
+      computerUserId: .init(),
       appName: "@mock appName",
       line: "@mock line",
       createdAt: .reference
@@ -15,7 +15,7 @@ extension KeystrokeLine: RandomMocked {
 
   public static var empty: KeystrokeLine {
     KeystrokeLine(
-      userDeviceId: .init(),
+      computerUserId: .init(),
       appName: "",
       line: "",
       createdAt: .epoch
@@ -24,7 +24,7 @@ extension KeystrokeLine: RandomMocked {
 
   public static var random: KeystrokeLine {
     KeystrokeLine(
-      userDeviceId: .init(),
+      computerUserId: .init(),
       appName: "@random".random,
       line: "@random".random,
       createdAt: Date()

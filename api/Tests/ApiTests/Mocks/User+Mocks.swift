@@ -4,14 +4,14 @@ import Gertie
 
 extension User: RandomMocked {
   public static var mock: User {
-    User(adminId: .init(), name: "@mock name")
+    User(parentId: .init(), name: "@mock name")
   }
 
   public static var empty: User {
-    User(adminId: .init(), name: "")
+    User(parentId: .init(), name: "")
   }
 
   public static var random: User {
-    User(adminId: .init(), name: "@random".random)
+    User(parentId: .init(), name: "@random".random)
   }
 }

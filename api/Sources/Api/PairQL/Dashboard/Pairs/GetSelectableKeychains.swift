@@ -4,7 +4,7 @@ import PairQL
 
 struct KeychainSummary: PairNestable {
   var id: Api.Keychain.Id
-  var authorId: Admin.Id
+  var parentId: Admin.Id
   var name: String
   var description: String?
   var warning: String?
@@ -28,7 +28,7 @@ extension GetSelectableKeychains: NoInputResolver {
     async let own = context.admin.keychains(in: context.db)
     async let `public` = Keychain.query()
       .where(.isPublic == true)
-      .where(.authorId != context.admin.id)
+      .where(.parentId != context.admin.id)
       .all(in: context.db)
     return try await .init(
       own: own.concurrentMap { try await .init(from: $0) },
@@ -43,7 +43,7 @@ extension KeychainSummary {
     let numKeys = try await db.count(Key.self, where: .keychainId == keychain.id)
     self.init(
       id: keychain.id,
-      authorId: keychain.authorId,
+      parentId: keychain.parentId,
       name: keychain.name,
       description: keychain.description,
       warning: keychain.warning,

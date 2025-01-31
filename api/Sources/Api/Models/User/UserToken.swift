@@ -4,8 +4,8 @@ import Tagged
 
 struct UserToken: Codable, Sendable {
   var id: Id
-  var userId: User.Id
-  var userDeviceId: UserDevice.Id
+  var childId: User.Id
+  var computerUserId: UserDevice.Id
   var value: Value
   var createdAt = Date()
   var updatedAt = Date()
@@ -13,15 +13,15 @@ struct UserToken: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    userId: User.Id,
-    userDeviceId: UserDevice.Id,
+    childId: User.Id,
+    computerUserId: UserDevice.Id,
     value: Value? = nil
   ) {
     @Dependency(\.uuid) var uuid
     self.id = id
     self.value = value ?? .init(uuid())
-    self.userId = userId
-    self.userDeviceId = userDeviceId
+    self.childId = childId
+    self.computerUserId = computerUserId
   }
 }
 
@@ -36,13 +36,13 @@ extension UserToken {
 extension UserToken {
   func user(in db: any DuetSQL.Client) async throws -> User {
     try await User.query()
-      .where(.id == self.userId)
+      .where(.id == self.childId)
       .first(in: db)
   }
 
   func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice {
     try await UserDevice.query()
-      .where(.id == self.userDeviceId)
+      .where(.id == self.computerUserId)
       .first(in: db)
   }
 }

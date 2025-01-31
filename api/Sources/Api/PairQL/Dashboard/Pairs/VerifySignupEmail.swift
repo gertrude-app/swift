@@ -27,7 +27,7 @@ extension VerifySignupEmail: Resolver {
     // happy path: verification is successful
     case .notExpired(let adminId):
       var admin = try await context.db.find(adminId)
-      let token = try await context.db.create(AdminToken(adminId: admin.id))
+      let token = try await context.db.create(AdminToken(parentId: admin.id))
       if admin.subscriptionStatus != .pendingEmailVerification {
         return .init(token: token.value, adminId: admin.id)
       }
@@ -39,7 +39,7 @@ extension VerifySignupEmail: Resolver {
 
       // they get a default "verified" notification method, since they verified their email
       try await context.db.create(AdminVerifiedNotificationMethod(
-        adminId: admin.id,
+        parentId: admin.id,
         config: .email(email: admin.email.rawValue)
       ))
 

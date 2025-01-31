@@ -6,6 +6,7 @@ public protocol Model: Duet.Identifiable, Codable, Sendable {
   associatedtype ColumnName: CodingKey, Hashable, CaseIterable, ModelColumns
   static func columnName(_ column: ColumnName) -> String
   static var tableName: String { get }
+  static var schemaName: String { get }
   var insertValues: [ColumnName: Postgres.Data] { get }
   func postgresData(for: ColumnName) -> Postgres.Data
 }
@@ -20,6 +21,10 @@ public extension Model {
     DuetQuery()
   }
 
+  static var schemaName: String {
+    "public"
+  }
+
   static func column(_ name: String) throws -> ColumnName {
     for column in ColumnName.allCases {
       if Self.columnName(column) == name {
@@ -31,6 +36,10 @@ public extension Model {
 
   static var isSoftDeletable: Bool {
     (try? Self.column("deleted_at")) != nil
+  }
+
+  static var qualifiedTableName: String {
+    "\(schemaName).\(tableName)"
   }
 }
 

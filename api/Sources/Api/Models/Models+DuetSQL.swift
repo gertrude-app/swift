@@ -3,7 +3,8 @@ import Gertie
 import GertieIOS
 
 extension IOSBlockRule: Model {
-  public static let tableName = M31.tableName
+  public static let schemaName = "iosapp"
+  public static let tableName = "block_rules"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -35,7 +36,8 @@ extension BlockRule: PostgresJsonable {}
 
 extension Admin: Model {
   public typealias ColumnName = CodingKeys
-  public static let tableName = M1.tableName
+  public static let schemaName = "parent"
+  public static let tableName = "parents"
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
@@ -69,13 +71,14 @@ extension Admin: Model {
 }
 
 extension AdminNotification: Model {
-  public static let tableName = M1.tableName
+  public static let schemaName = "parent"
+  public static let tableName = "notifications"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .adminId: .uuid(self.adminId)
+    case .parentId: .uuid(self.parentId)
     case .methodId: .uuid(self.methodId)
     case .trigger: .enum(self.trigger)
     case .createdAt: .date(self.createdAt)
@@ -85,7 +88,7 @@ extension AdminNotification: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(self.adminId),
+      .parentId: .uuid(self.parentId),
       .methodId: .uuid(self.methodId),
       .trigger: .enum(self.trigger),
       .createdAt: .currentTimestamp,
@@ -94,13 +97,14 @@ extension AdminNotification: Model {
 }
 
 extension AdminToken: Model {
-  public static let tableName = M1.tableName
+  public static let tableName = "dash_tokens"
+  public static let schemaName = "parent"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .adminId: .uuid(self.adminId)
+    case .parentId: .uuid(self.parentId)
     case .value: .uuid(self.value)
     case .createdAt: .date(self.createdAt)
     case .deletedAt: .date(self.deletedAt)
@@ -110,7 +114,7 @@ extension AdminToken: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(self.adminId),
+      .parentId: .uuid(self.parentId),
       .value: .uuid(self.value),
       .createdAt: .currentTimestamp,
       .deletedAt: .date(self.deletedAt),
@@ -121,13 +125,14 @@ extension AdminToken: Model {
 extension AdminVerifiedNotificationMethod.Config: PostgresJsonable {}
 
 extension AdminVerifiedNotificationMethod: Model {
-  public static let tableName = M1.tableName
+  public static let schemaName = "parent"
+  public static let tableName = "verified_notification_methods"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .adminId: .uuid(self.adminId)
+    case .parentId: .uuid(self.parentId)
     case .config: .json(self.config.toPostgresJson)
     case .createdAt: .date(self.createdAt)
     }
@@ -136,7 +141,7 @@ extension AdminVerifiedNotificationMethod: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(self.adminId),
+      .parentId: .uuid(self.parentId),
       .config: .json(self.config.toPostgresJson),
       .createdAt: .currentTimestamp,
     ]
@@ -144,7 +149,8 @@ extension AdminVerifiedNotificationMethod: Model {
 }
 
 extension AppCategory: Model {
-  public static let tableName = M6.tableName
+  public static let schemaName = "macos"
+  public static let tableName = "app_categories"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -171,7 +177,8 @@ extension AppCategory: Model {
 }
 
 extension AppBundleId: Model {
-  public static let tableName = M6.tableName
+  public static let schemaName = "macos"
+  public static let tableName = "app_bundle_ids"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -196,14 +203,15 @@ extension AppBundleId: Model {
 }
 
 extension UserBlockedApp: Model {
-  public static let tableName = M30.tableName
+  public static let schemaName = "child"
+  public static let tableName = "blocked_mac_apps"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
     case .identifier: .string(self.identifier)
-    case .userId: .uuid(self.userId)
+    case .childId: .uuid(self.childId)
     case .schedule: .json(self.schedule?.toPostgresJson)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
@@ -214,7 +222,7 @@ extension UserBlockedApp: Model {
     [
       .id: .id(self),
       .identifier: .string(self.identifier),
-      .userId: .uuid(self.userId),
+      .childId: .uuid(self.childId),
       .schedule: .json(self.schedule?.toPostgresJson),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
@@ -223,14 +231,15 @@ extension UserBlockedApp: Model {
 }
 
 extension UserDevice: Model {
-  public static let tableName = M11.tableName
+  public static let schemaName = "child"
+  public static let tableName = "computer_users"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .deviceId: .uuid(self.deviceId)
-    case .userId: .uuid(self.userId)
+    case .computerId: .uuid(self.computerId)
+    case .childId: .uuid(self.childId)
     case .isAdmin: .bool(self.isAdmin)
     case .appVersion: .string(self.appVersion)
     case .fullUsername: .string(self.fullUsername)
@@ -244,8 +253,8 @@ extension UserDevice: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userId: .uuid(self.userId),
-      .deviceId: .uuid(self.deviceId),
+      .childId: .uuid(self.childId),
+      .computerId: .uuid(self.computerId),
       .appVersion: .string(self.appVersion),
       .username: .string(self.username),
       .fullUsername: .string(self.fullUsername),
@@ -258,13 +267,14 @@ extension UserDevice: Model {
 }
 
 extension Device: Model {
-  public static let tableName = M3.tableName
+  public static let schemaName = "parent"
+  public static let tableName = "computers"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .adminId: .uuid(self.adminId)
+    case .parentId: .uuid(self.parentId)
     case .customName: .string(self.customName)
     case .modelIdentifier: .string(self.modelIdentifier)
     case .serialNumber: .string(self.serialNumber)
@@ -279,7 +289,7 @@ extension Device: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(self.adminId),
+      .parentId: .uuid(self.parentId),
       .customName: .string(self.customName),
       .modelIdentifier: .string(self.modelIdentifier),
       .serialNumber: .string(self.serialNumber),
@@ -293,7 +303,8 @@ extension Device: Model {
 }
 
 extension IdentifiedApp: Model {
-  public static let tableName = M6.tableName
+  public static let schemaName = "macos"
+  public static let tableName = "identified_apps"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -322,13 +333,14 @@ extension IdentifiedApp: Model {
 }
 
 extension Keychain: Model {
-  public static let tableName = M2.tableName
+  public static let schemaName = "parent"
+  public static let tableName = "keychains"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .authorId: .uuid(self.authorId)
+    case .parentId: .uuid(self.parentId)
     case .name: .string(self.name)
     case .description: .string(self.description)
     case .warning: .string(self.warning)
@@ -341,7 +353,7 @@ extension Keychain: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .authorId: .uuid(self.authorId),
+      .parentId: .uuid(self.parentId),
       .name: .string(self.name),
       .description: .string(self.description),
       .warning: .string(self.warning),
@@ -355,7 +367,8 @@ extension Keychain: Model {
 extension Gertie.Key: PostgresJsonable {}
 
 extension Key: Model {
-  public static let tableName = M2.tableName
+  public static let schemaName = "parent"
+  public static let tableName = "keys"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -384,13 +397,14 @@ extension Key: Model {
 }
 
 extension KeystrokeLine: Model {
-  public static let tableName = M4.tableName
+  public static let schemaName = "macapp"
+  public static let tableName = "keystroke_lines"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .userDeviceId: .uuid(self.userDeviceId)
+    case .computerUserId: .uuid(self.computerUserId)
     case .appName: .string(self.appName)
     case .line: .string(self.line)
     case .filterSuspended: .bool(self.filterSuspended)
@@ -402,7 +416,7 @@ extension KeystrokeLine: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userDeviceId: .uuid(self.userDeviceId),
+      .computerUserId: .uuid(self.computerUserId),
       .appName: .string(self.appName),
       .line: .string(self.line),
       .filterSuspended: .bool(self.filterSuspended),
@@ -413,7 +427,8 @@ extension KeystrokeLine: Model {
 }
 
 extension Release: Model {
-  public static let tableName = M7.tableName
+  public static let schemaName = "macapp"
+  public static let tableName = "releases"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -448,13 +463,14 @@ extension Release: Model {
 }
 
 extension Screenshot: Model {
-  public static let tableName = M4.tableName
+  public static let schemaName = "macapp"
+  public static let tableName = "screenshots"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .userDeviceId: .uuid(self.userDeviceId)
+    case .computerUserId: .uuid(self.computerUserId)
     case .url: .string(self.url)
     case .width: .int(self.width)
     case .height: .int(self.height)
@@ -467,7 +483,7 @@ extension Screenshot: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userDeviceId: .uuid(self.userDeviceId),
+      .computerUserId: .uuid(self.computerUserId),
       .url: .string(self.url),
       .width: .int(self.width),
       .height: .int(self.height),
@@ -481,13 +497,14 @@ extension Screenshot: Model {
 extension AppScope: PostgresJsonable {}
 
 extension SuspendFilterRequest: Model {
-  public static let tableName = M5.tableName
+  public static let schemaName = "macapp"
+  public static let tableName = "suspend_filter_requests"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .userDeviceId: .uuid(self.userDeviceId)
+    case .computerUserId: .uuid(self.computerUserId)
     case .status: .enum(self.status)
     case .scope: .json(self.scope.toPostgresJson)
     case .duration: .int(self.duration.rawValue)
@@ -502,7 +519,7 @@ extension SuspendFilterRequest: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userDeviceId: .uuid(self.userDeviceId),
+      .computerUserId: .uuid(self.computerUserId),
       .status: .enum(self.status),
       .scope: .json(self.scope.toPostgresJson),
       .duration: .int(self.duration.rawValue),
@@ -516,13 +533,14 @@ extension SuspendFilterRequest: Model {
 }
 
 extension UnlockRequest: Model {
-  public static let tableName = M5.tableName
+  public static let schemaName = "macapp"
+  public static let tableName = "unlock_requests"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .userDeviceId: .uuid(self.userDeviceId)
+    case .computerUserId: .uuid(self.computerUserId)
     case .status: .enum(self.status)
     case .requestComment: .string(self.requestComment)
     case .responseComment: .string(self.responseComment)
@@ -538,7 +556,7 @@ extension UnlockRequest: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userDeviceId: .uuid(self.userDeviceId),
+      .computerUserId: .uuid(self.computerUserId),
       .status: .enum(self.status),
       .requestComment: .string(self.requestComment),
       .responseComment: .string(self.responseComment),
@@ -553,13 +571,14 @@ extension UnlockRequest: Model {
 }
 
 extension User: Model {
-  public static let tableName = M3.tableName
+  public static let schemaName = "parent"
+  public static let tableName = "children"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .adminId: .uuid(self.adminId)
+    case .parentId: .uuid(self.parentId)
     case .name: .string(self.name)
     case .keyloggingEnabled: .bool(self.keyloggingEnabled)
     case .screenshotsEnabled: .bool(self.screenshotsEnabled)
@@ -575,7 +594,7 @@ extension User: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(self.adminId),
+      .parentId: .uuid(self.parentId),
       .name: .string(self.name),
       .keyloggingEnabled: .bool(self.keyloggingEnabled),
       .screenshotsEnabled: .bool(self.screenshotsEnabled),
@@ -590,13 +609,14 @@ extension User: Model {
 }
 
 extension UserKeychain: Model {
-  public static let tableName = M3.tableName
+  public static let schemaName = "child"
+  public static let tableName = "keychains"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .userId: .uuid(self.userId)
+    case .childId: .uuid(self.childId)
     case .keychainId: .uuid(self.keychainId)
     case .schedule: .json(self.schedule?.toPostgresJson)
     case .createdAt: .date(self.createdAt)
@@ -606,7 +626,7 @@ extension UserKeychain: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userId: .uuid(self.userId),
+      .childId: .uuid(self.childId),
       .keychainId: .uuid(self.keychainId),
       .schedule: .json(self.schedule?.toPostgresJson),
       .createdAt: .currentTimestamp,
@@ -618,14 +638,15 @@ extension RuleSchedule: PostgresJsonable {}
 extension PlainTimeWindow: PostgresJsonable {}
 
 extension UserToken: Model {
-  public static let tableName = M3.tableName
+  public static let schemaName = "child"
+  public static let tableName = "macapp_tokens"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .userId: .uuid(self.userId)
-    case .userDeviceId: .uuid(self.userDeviceId)
+    case .childId: .uuid(self.childId)
+    case .computerUserId: .uuid(self.computerUserId)
     case .value: .uuid(self.value)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
@@ -636,8 +657,8 @@ extension UserToken: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .userId: .uuid(self.userId),
-      .userDeviceId: .uuid(self.userDeviceId),
+      .childId: .uuid(self.childId),
+      .computerUserId: .uuid(self.computerUserId),
       .value: .uuid(self.value),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
@@ -647,7 +668,8 @@ extension UserToken: Model {
 }
 
 extension InterestingEvent: Model {
-  public static let tableName = InterestingEvent.M8.tableName
+  public static let schemaName = "system"
+  public static let tableName = "interesting_events"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -656,8 +678,8 @@ extension InterestingEvent: Model {
     case .eventId: .string(self.eventId)
     case .kind: .string(self.kind)
     case .context: .string(self.context)
-    case .userDeviceId: .uuid(self.userDeviceId)
-    case .adminId: .uuid(self.adminId)
+    case .computerUserId: .uuid(self.computerUserId)
+    case .parentId: .uuid(self.parentId)
     case .detail: .string(self.detail)
     case .createdAt: .date(self.createdAt)
     }
@@ -669,8 +691,8 @@ extension InterestingEvent: Model {
       .eventId: .string(self.eventId),
       .kind: .string(self.kind),
       .context: .string(self.context),
-      .userDeviceId: .uuid(self.userDeviceId),
-      .adminId: .uuid(self.adminId),
+      .computerUserId: .uuid(self.computerUserId),
+      .parentId: .uuid(self.parentId),
       .detail: .string(self.detail),
       .createdAt: .currentTimestamp,
     ]
@@ -678,7 +700,8 @@ extension InterestingEvent: Model {
 }
 
 extension StripeEvent: Model {
-  public static let tableName = StripeEvent.M7.tableName
+  public static let schemaName = "system"
+  public static let tableName = "stripe_events"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -699,7 +722,8 @@ extension StripeEvent: Model {
 }
 
 extension DeletedEntity: Model {
-  public static let tableName = DeletedEntity.M16.tableName
+  public static let schemaName = "system"
+  public static let tableName = "deleted_entities"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -724,7 +748,8 @@ extension DeletedEntity: Model {
 }
 
 extension Browser: Model {
-  public static let tableName = Browser.M20.tableName
+  public static let schemaName = "macos"
+  public static let tableName = "browsers"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -745,7 +770,8 @@ extension Browser: Model {
 }
 
 extension UnidentifiedApp: Model {
-  public static let tableName = UnidentifiedApp.M28.tableName
+  public static let schemaName = "macos"
+  public static let tableName = "unidentified_apps"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
@@ -776,14 +802,15 @@ extension UnidentifiedApp: Model {
 extension BrowserMatch: PostgresJsonable {}
 
 extension SecurityEvent: Model {
-  public static let tableName = SecurityEvent.M21.tableName
+  public static let schemaName = "system"
+  public static let tableName = "security_events"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
-    case .adminId: .uuid(self.adminId)
-    case .userDeviceId: .uuid(self.userDeviceId)
+    case .parentId: .uuid(self.parentId)
+    case .computerUserId: .uuid(self.computerUserId)
     case .event: .string(self.event)
     case .detail: .string(self.detail)
     case .ipAddress: .string(self.ipAddress)
@@ -794,8 +821,8 @@ extension SecurityEvent: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
-      .adminId: .uuid(self.adminId),
-      .userDeviceId: .uuid(self.userDeviceId),
+      .parentId: .uuid(self.parentId),
+      .computerUserId: .uuid(self.computerUserId),
       .event: .string(self.event),
       .detail: .string(self.detail),
       .ipAddress: .string(self.ipAddress),

@@ -4,15 +4,15 @@ import Gertie
 
 extension AdminVerifiedNotificationMethod: RandomMocked {
   public static var mock: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(adminId: .init(), config: .mock)
+    AdminVerifiedNotificationMethod(parentId: .init(), config: .mock)
   }
 
   public static var empty: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(adminId: .init(), config: .empty)
+    AdminVerifiedNotificationMethod(parentId: .init(), config: .empty)
   }
 
   public static var random: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(adminId: .init(), config: .random)
+    AdminVerifiedNotificationMethod(parentId: .init(), config: .random)
   }
 }
 

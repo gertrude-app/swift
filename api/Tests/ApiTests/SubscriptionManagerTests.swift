@@ -230,11 +230,11 @@ private extension AdminEntities {
     config: (inout User, inout UserDevice, inout Device) -> Void = { _, _, _ in }
   ) async throws -> AdminWithOnboardedChildEntities {
     @Dependency(\.db) var db
-    var child = User.random { $0.adminId = model.id }
-    var adminDevice = Device.random { $0.adminId = model.id }
+    var child = User.random { $0.parentId = model.id }
+    var adminDevice = Device.random { $0.parentId = model.id }
     var userDevice = UserDevice.random {
-      $0.userId = child.id
-      $0.deviceId = adminDevice.id
+      $0.childId = child.id
+      $0.computerId = adminDevice.id
     }
     config(&child, &userDevice, &adminDevice)
     try await db.create(child)

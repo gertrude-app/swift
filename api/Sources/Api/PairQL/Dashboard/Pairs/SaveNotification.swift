@@ -20,7 +20,7 @@ extension SaveNotification: Resolver {
     if !input.isNew {
       var existing = try await AdminNotification.query()
         .where(.id == input.id)
-        .where(.adminId == context.admin.id)
+        .where(.parentId == context.admin.id)
         .first(in: context.db)
       existing.methodId = input.methodId
       existing.trigger = input.trigger
@@ -28,7 +28,7 @@ extension SaveNotification: Resolver {
       return .success
     } else {
       try await context.db.create(AdminNotification(
-        adminId: context.admin.id,
+        parentId: context.admin.id,
         methodId: input.methodId,
         trigger: input.trigger
       ))

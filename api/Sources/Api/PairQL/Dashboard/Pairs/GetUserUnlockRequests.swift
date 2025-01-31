@@ -14,7 +14,7 @@ extension GetUserUnlockRequests: Resolver {
     let user = try await context.verifiedUser(from: id)
     let userDevices = try await user.devices(in: context.db)
     let requests = try await UnlockRequest.query()
-      .where(.userDeviceId |=| userDevices.map { .id($0) })
+      .where(.computerUserId |=| userDevices.map { .id($0) })
       .all(in: context.db)
 
     // TODO: this is super inefficient, re-queries for same entities...

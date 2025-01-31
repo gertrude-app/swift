@@ -34,7 +34,7 @@ extension GetDevice: Resolver {
   static func resolve(with id: UUID, in context: AdminContext) async throws -> Output {
     let device = try await Device.query()
       .where(.id == id)
-      .where(.adminId == context.admin.id)
+      .where(.parentId == context.admin.id)
       .first(in: context.db)
 
     let userDevices = try await device.userDevices(in: context.db)
@@ -56,7 +56,7 @@ extension GetDevice: Resolver {
       releaseChannel: device.appReleaseChannel,
       users: try userDevices.concurrentMap { userDevice in
         .init(
-          id: userDevice.userId,
+          id: userDevice.childId,
           name: (try await userDevice.user(in: context.db)).name,
           status: await websockets.status(userDevice.id)
         )

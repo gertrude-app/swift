@@ -5,7 +5,7 @@ extension CreateSuspendFilterRequest_v2: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
     let userDevice = try await context.userDevice()
     let request = try await context.db.create(SuspendFilterRequest(
-      userDeviceId: userDevice.id,
+      computerUserId: userDevice.id,
       status: .pending,
       scope: .unrestricted,
       duration: .init(input.duration),
@@ -13,7 +13,7 @@ extension CreateSuspendFilterRequest_v2: Resolver {
     ))
 
     await with(dependency: \.adminNotifier).notify(
-      context.user.adminId,
+      context.user.parentId,
       .suspendFilterRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,
         userDeviceId: userDevice.id,

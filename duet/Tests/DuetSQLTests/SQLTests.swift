@@ -10,7 +10,7 @@ final class SqlTests: XCTestCase {
     let stmt = try await select(Thing.self)
 
     let expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     """
 
     expect(stmt.prepared).toEqual(expected)
@@ -21,7 +21,7 @@ final class SqlTests: XCTestCase {
     let stmt = try await select(Thing.self, withSoftDeleted: false)
 
     let expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE ("deleted_at" IS NULL OR "deleted_at" > $1)
     """
 
@@ -33,7 +33,7 @@ final class SqlTests: XCTestCase {
     let stmt = try await select(Thing.self)
 
     let expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     """
 
     expect(stmt.prepared).toEqual(expected)
@@ -43,7 +43,7 @@ final class SqlTests: XCTestCase {
   func testWhereClauses() async throws {
     var stmt = try await select(Thing.self, where: .string == "foo")
     var expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE "string" = $1
     """
 
@@ -52,7 +52,7 @@ final class SqlTests: XCTestCase {
 
     stmt = try await select(Thing.self, where: .isNull(.optionalInt))
     expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE "optional_int" IS NULL
     """
 
@@ -61,7 +61,7 @@ final class SqlTests: XCTestCase {
 
     stmt = try await select(Thing.self, where: .not(.isNull(.optionalInt)))
     expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE NOT "optional_int" IS NULL
     """
 
@@ -70,7 +70,7 @@ final class SqlTests: XCTestCase {
 
     stmt = try await select(Thing.self, where: .int < .int(42))
     expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE "int" < $1
     """
 
@@ -79,7 +79,7 @@ final class SqlTests: XCTestCase {
 
     stmt = try await select(Thing.self, where: .int >= .int(42))
     expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE "int" >= $1
     """
 
@@ -89,7 +89,7 @@ final class SqlTests: XCTestCase {
     let ids = [Thing.Id(.init()), Thing.Id(.init())]
     stmt = try await select(Thing.self, where: .id |=| ids)
     expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE "id" IN ($1, $2)
     """
 
@@ -105,7 +105,7 @@ final class SqlTests: XCTestCase {
     )
 
     let expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE ("id" = $1 AND "int" = $2)
     """
 
@@ -118,7 +118,7 @@ final class SqlTests: XCTestCase {
 
     let stmt = try await select(Thing.self, where: .id |=| ids)
     let expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE FALSE
     """
 
@@ -131,7 +131,7 @@ final class SqlTests: XCTestCase {
 
     let stmt = try await select(Thing.self, where: .id |=| ids)
     let expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     WHERE "id" = $1
     """
 
@@ -148,7 +148,7 @@ final class SqlTests: XCTestCase {
     )
 
     let expected = """
-    SELECT * FROM "things"
+    SELECT * FROM public.things
     ORDER BY "string" ASC
     LIMIT 2
     OFFSET 3
@@ -163,7 +163,7 @@ final class SqlTests: XCTestCase {
     _ = try? await client.count(Thing.self)
 
     let expected = """
-    SELECT COUNT(*) FROM "things"
+    SELECT COUNT(*) FROM public.things
     WHERE ("deleted_at" IS NULL OR "deleted_at" > $1)
     """
 
@@ -176,7 +176,7 @@ final class SqlTests: XCTestCase {
     _ = try? await client.count(Thing.self, where: .string == "a")
 
     let expected = """
-    SELECT COUNT(*) FROM "things"
+    SELECT COUNT(*) FROM public.things
     WHERE ("string" = $1 AND ("deleted_at" IS NULL OR "deleted_at" > $2))
     """
 
@@ -193,7 +193,7 @@ final class SqlTests: XCTestCase {
     )
 
     let expected = """
-    SELECT COUNT(*) FROM "things"
+    SELECT COUNT(*) FROM public.things
     WHERE "string" = $1
     """
 
@@ -206,7 +206,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.forceDelete(Thing.self)
 
     let expected = """
-    DELETE FROM "things"
+    DELETE FROM public.things
     RETURNING id
     """
 
@@ -219,7 +219,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.delete(all: Thing.self)
 
     let expected = """
-    UPDATE "things"
+    UPDATE public.things
     SET "deleted_at" = CURRENT_TIMESTAMP
     """
 
@@ -232,7 +232,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.forceDelete(Thing.self, where: .id == 123)
 
     let expected = """
-    DELETE FROM "things"
+    DELETE FROM public.things
     WHERE "id" = $1
     RETURNING id
     """
@@ -246,7 +246,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.delete(Thing.self, where: .id == 123)
 
     let expected = """
-    UPDATE "things"
+    UPDATE public.things
     SET "deleted_at" = CURRENT_TIMESTAMP
     WHERE "id" = $1
     """
@@ -261,7 +261,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.delete(Thing.self, byId: id)
 
     let expected = """
-    UPDATE "things"
+    UPDATE public.things
     SET "deleted_at" = CURRENT_TIMESTAMP
     WHERE "id" = $1
     """
@@ -280,7 +280,7 @@ final class SqlTests: XCTestCase {
     )
 
     let expected = """
-    DELETE FROM "things"
+    DELETE FROM public.things
     WHERE "id" = $1
     ORDER BY "created_at" ASC
     LIMIT 1
@@ -301,7 +301,7 @@ final class SqlTests: XCTestCase {
     )
 
     let expected = """
-    UPDATE "things"
+    UPDATE public.things
     SET "deleted_at" = CURRENT_TIMESTAMP
     WHERE "string" = $1
     ORDER BY "created_at" ASC
@@ -318,7 +318,7 @@ final class SqlTests: XCTestCase {
     _ = try? await client.update(thing)
 
     let expected = """
-    UPDATE "lil_things"
+    UPDATE public.lil_things
     SET "int" = $1, "deleted_at" = $2, "updated_at" = $3
     WHERE "id" = $4
     RETURNING *
@@ -335,7 +335,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.create([thing])
 
     let expected = """
-    INSERT INTO "lil_things"
+    INSERT INTO public.lil_things
     ("created_at", "deleted_at", "id", "int", "updated_at")
     VALUES
     ($1, $2, $3, $4, $5)
@@ -359,7 +359,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.create([thing1, thing2])
 
     let expected = """
-    INSERT INTO "lil_things"
+    INSERT INTO public.lil_things
     ("created_at", "deleted_at", "id", "int", "updated_at")
     VALUES
     ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10)
@@ -387,7 +387,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.create([thing])
 
     let expected = """
-    INSERT INTO "opt_lil_things"
+    INSERT INTO public.opt_lil_things
     ("created_at", "id", "int", "string")
     VALUES
     ($1, $2, $3, $4)
@@ -404,7 +404,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.create([thing])
 
     let expected = """
-    INSERT INTO "opt_lil_things"
+    INSERT INTO public.opt_lil_things
     ("created_at", "id", "int", "string")
     VALUES
     ($1, $2, $3, $4)
@@ -426,7 +426,7 @@ final class SqlTests: XCTestCase {
     _ = try? await client.update(thing)
 
     let expected = """
-    UPDATE "lil_things"
+    UPDATE public.lil_things
     SET "int" = $1, "deleted_at" = $2, "updated_at" = $3
     WHERE "id" = $4
     RETURNING *
@@ -452,7 +452,7 @@ final class SqlTests: XCTestCase {
     _ = try await client.create([thing])
 
     let expected = """
-    INSERT INTO "things"
+    INSERT INTO public.things
     ("bool", "created_at", "custom_enum", "id", "int", "optional_custom_enum", "optional_int", "optional_string", "string", "updated_at", "version")
     VALUES
     ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)

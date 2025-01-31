@@ -33,18 +33,18 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase {
     expect(unlockReq1.requestComment).toEqual(nil)
     expect(unlockReq1.appBundleId).toEqual("com.example.app")
     expect(unlockReq1.url).toEqual("https://example.com")
-    expect(unlockReq1.userDeviceId).toEqual(user.device.id)
+    expect(unlockReq1.computerUserId).toEqual(user.device.id)
     expect(unlockReq1.status).toEqual(.pending)
 
     let unlockReq2 = try await self.db.find(UnlockRequest.Id(uuids[1]))
     expect(unlockReq2.requestComment).toEqual(nil)
     expect(unlockReq2.appBundleId).toEqual("com.other.thing")
     expect(unlockReq2.url).toEqual("https://foo.com")
-    expect(unlockReq2.userDeviceId).toEqual(user.device.id)
+    expect(unlockReq2.computerUserId).toEqual(user.device.id)
     expect(unlockReq2.status).toEqual(.pending)
 
     expect(sent.adminNotifications).toEqual([.init(
-      adminId: user.adminId,
+      adminId: user.parentId,
       event: .unlockRequestSubmitted(.init(
         dashboardUrl: "",
         userId: user.id,

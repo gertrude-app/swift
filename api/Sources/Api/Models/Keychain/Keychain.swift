@@ -2,7 +2,7 @@ import DuetSQL
 
 struct Keychain: Codable, Sendable {
   var id: Id
-  var authorId: Admin.Id
+  var parentId: Admin.Id
   var name: String
   var description: String?
   var warning: String?
@@ -12,14 +12,14 @@ struct Keychain: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    authorId: Admin.Id,
+    parentId: Admin.Id,
     name: String,
     isPublic: Bool = false,
     description: String? = nil,
     warning: String? = nil
   ) {
     self.id = id
-    self.authorId = authorId
+    self.parentId = parentId
     self.name = name
     self.isPublic = isPublic
     self.description = description

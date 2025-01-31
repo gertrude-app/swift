@@ -27,8 +27,8 @@ func unexpected(_ id: String, _ adminId: Admin.Id? = nil, _ detail: String = "")
       eventId: id,
       kind: "event",
       context: "api",
-      userDeviceId: nil,
-      adminId: adminId,
+      computerUserId: nil,
+      parentId: adminId,
       detail: detail
     ))
   }

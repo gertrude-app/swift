@@ -8,7 +8,7 @@ extension CreateKeystrokeLines: Resolver {
     let userDevice = try await context.userDevice()
     let keystrokeLines = inputs.map { input in
       KeystrokeLine(
-        userDeviceId: userDevice.id,
+        computerUserId: userDevice.id,
         appName: input.appName,
         line: input.line.replacingOccurrences(of: "\0", with: "\u{FFFD}"),
         filterSuspended: input.filterSuspended ?? false,

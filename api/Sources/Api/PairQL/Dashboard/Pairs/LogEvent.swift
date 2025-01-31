@@ -21,8 +21,8 @@ extension LogEvent: Resolver {
       eventId: input.eventId,
       kind: "event",
       context: "dash",
-      userDeviceId: nil,
-      adminId: context.admin.id,
+      computerUserId: nil,
+      parentId: context.admin.id,
       detail: input.detail
     ))
     let msg = "Dash interesting event: \(input.eventId)  \(input.detail)"

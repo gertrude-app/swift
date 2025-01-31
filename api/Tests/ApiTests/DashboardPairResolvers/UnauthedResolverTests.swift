@@ -21,7 +21,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase {
       let adminToken = try await self.db.find(AdminToken.Id(uuids[1]))
       expect(output).toEqual(.init(token: .init(uuids[2]), adminId: admin.id))
       expect(adminToken.value).toEqual(.init(uuids[2]))
-      expect(adminToken.adminId).toEqual(admin.id)
+      expect(adminToken.parentId).toEqual(admin.id)
     }
   }
 

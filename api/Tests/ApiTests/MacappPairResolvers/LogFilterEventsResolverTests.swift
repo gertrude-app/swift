@@ -43,8 +43,8 @@ final class LogFilterEventsResolverTests: ApiTestCase {
 
     expect(event1.detail).toEqual("ev 1")
     expect(event2.detail).toEqual("ev 2 (4x)") // <-- appends non-1 count
-    expect(event1.userDeviceId).toEqual(user.device.id)
-    expect(event2.userDeviceId).toEqual(user.device.id)
+    expect(event1.computerUserId).toEqual(user.device.id)
+    expect(event2.computerUserId).toEqual(user.device.id)
     expect(event1.kind).toEqual("event")
     expect(event2.kind).toEqual("event")
     expect(event1.context).toEqual("macapp-filter")

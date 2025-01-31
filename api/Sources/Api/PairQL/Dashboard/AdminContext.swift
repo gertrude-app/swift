@@ -14,20 +14,20 @@ struct AdminContext: ResolverContext {
   func verifiedUser(from id: User.Id) async throws -> User {
     try await User.query()
       .where(.id == id)
-      .where(.adminId == self.admin.id)
+      .where(.parentId == self.admin.id)
       .first(in: self.db)
   }
 
   func users() async throws -> [User] {
     try await User.query()
-      .where(.adminId == self.admin.id)
+      .where(.parentId == self.admin.id)
       .all(in: self.db)
   }
 
   func userDevices() async throws -> [UserDevice] {
     let users = try await self.users()
     return try await UserDevice.query()
-      .where(.userId |=| users.map(\.id))
+      .where(.childId |=| users.map(\.id))
       .all(in: self.db)
   }
 }

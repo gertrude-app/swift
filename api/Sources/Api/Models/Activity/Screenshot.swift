@@ -2,7 +2,7 @@ import Duet
 
 struct Screenshot: Codable, Sendable {
   var id: Id
-  var userDeviceId: UserDevice.Id
+  var computerUserId: UserDevice.Id
   var url: String
   var width: Int
   var height: Int
@@ -12,7 +12,7 @@ struct Screenshot: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    userDeviceId: UserDevice.Id,
+    computerUserId: UserDevice.Id,
     url: String,
     width: Int,
     height: Int,
@@ -20,7 +20,7 @@ struct Screenshot: Codable, Sendable {
     createdAt: Date = Date()
   ) {
     self.id = id
-    self.userDeviceId = userDeviceId
+    self.computerUserId = computerUserId
     self.url = url
     self.width = width
     self.height = height

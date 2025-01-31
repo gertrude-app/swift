@@ -47,32 +47,32 @@ struct Admin: Codable, Sendable {
 extension Admin {
   func keychains(in db: any DuetSQL.Client) async throws -> [Keychain] {
     try await Keychain.query()
-      .where(.authorId == self.id)
+      .where(.parentId == self.id)
       .all(in: db)
   }
 
   func keychain(_ keychainId: Keychain.Id, in db: any DuetSQL.Client) async throws -> Keychain {
     try await Keychain.query()
-      .where(.authorId == self.id)
+      .where(.parentId == self.id)
       .where(.id == keychainId)
       .first(in: db)
   }
 
   func users(in db: any DuetSQL.Client) async throws -> [User] {
     try await User.query()
-      .where(.adminId == self.id)
+      .where(.parentId == self.id)
       .all(in: db)
   }
 
   func devices(in db: any DuetSQL.Client) async throws -> [Device] {
     try await Device.query()
-      .where(.adminId == self.id)
+      .where(.parentId == self.id)
       .all(in: db)
   }
 
   func notifications(in db: any DuetSQL.Client) async throws -> [AdminNotification] {
     try await AdminNotification.query()
-      .where(.adminId == self.id)
+      .where(.parentId == self.id)
       .all(in: db)
   }
 
@@ -80,7 +80,7 @@ extension Admin {
     in db: any DuetSQL.Client
   ) async throws -> [AdminVerifiedNotificationMethod] {
     try await AdminVerifiedNotificationMethod.query()
-      .where(.adminId == self.id)
+      .where(.parentId == self.id)
       .all(in: db)
   }
 }

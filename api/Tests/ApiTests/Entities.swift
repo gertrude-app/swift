@@ -86,7 +86,7 @@ extension ApiTestCase {
     with config: (inout Admin) -> Void = { _ in }
   ) async throws -> AdminEntities {
     let admin = try await self.db.create(Admin.random(with: config))
-    let token = try await self.db.create(AdminToken(adminId: admin.id))
+    let token = try await self.db.create(AdminToken(parentId: admin.id))
     return AdminEntities(model: admin, token: token)
   }
 
@@ -111,7 +111,7 @@ extension ApiTestCase {
     let admin = try await self.admin(with: adminConfig)
     let user = try await self.db.create(User.random {
       userConfig(&$0)
-      $0.adminId = admin.id
+      $0.parentId = admin.id
     })
     return UserEntities(model: user, admin: admin)
   }
@@ -119,15 +119,15 @@ extension ApiTestCase {
   func userWithDevice() async throws -> UserWithDeviceEntities {
     let user = try await self.user()
     let device = try await self.db.create(Device.random {
-      $0.adminId = user.admin.model.id
+      $0.parentId = user.admin.model.id
     })
     let userDevice = try await self.db.create(UserDevice.random {
-      $0.userId = user.model.id
-      $0.deviceId = device.id
+      $0.childId = user.model.id
+      $0.computerId = device.id
     })
     let token = try await self.db.create(UserToken(
-      userId: user.id,
-      userDeviceId: userDevice.id
+      childId: user.id,
+      computerUserId: userDevice.id
     ))
     return .init(
       model: user.model,
@@ -145,7 +145,7 @@ extension AdminEntities {
   ) async throws -> AdminWithKeychainEntities {
     @Dependency(\.db) var db
     var keychain = Keychain.random
-    keychain.authorId = self.model.id
+    keychain.parentId = self.model.id
     var key = Key.random
     key.keychainId = keychain.id
     config(&keychain, &key)
@@ -163,16 +163,16 @@ extension UserEntities {
     @Dependency(\.db) var db
     let device = try await db.create(Device.random {
       adminDevice(&$0)
-      $0.adminId = admin.id
+      $0.parentId = admin.id
     })
     let userDevice = try await db.create(UserDevice.random {
       config(&$0)
-      $0.userId = model.id
-      $0.deviceId = device.id
+      $0.childId = model.id
+      $0.computerId = device.id
     })
     let token = try await db.create(UserToken(
-      userId: self.model.id,
-      userDeviceId: userDevice.id
+      childId: self.model.id,
+      computerUserId: userDevice.id
     ))
     return .init(
       model: self.model,

@@ -39,7 +39,7 @@ struct SecurityEventsFeed: Pair {
 extension SecurityEventsFeed: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let models = try await SecurityEvent.query()
-      .where(.adminId == context.admin.id)
+      .where(.parentId == context.admin.id)
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .all(in: context.db)
@@ -51,17 +51,17 @@ extension SecurityEventsFeed: NoInputResolver {
 
     let devices = try await context.admin.devices(in: context.db)
     let userDevices = try await UserDevice.query()
-      .where(.deviceId |=| devices.map(\.id))
+      .where(.computerId |=| devices.map(\.id))
       .all(in: context.db)
       .reduce(into: [UserDevice.Id: UserDevice]()) { result, userDevice in
         result[userDevice.id] = userDevice
       }
 
     return models.compactMap { model in
-      if let userDeviceId = model.userDeviceId {
+      if let userDeviceId = model.computerUserId {
         guard let userDevice = userDevices[userDeviceId],
-              let child = children[userDevice.userId],
-              let device = devices.first(where: { $0.id == userDevice.deviceId }),
+              let child = children[userDevice.childId],
+              let device = devices.first(where: { $0.id == userDevice.computerId }),
               let event = Gertie.SecurityEvent.MacApp(rawValue: model.event) else {
           return nil
         }
@@ -69,7 +69,7 @@ extension SecurityEventsFeed: NoInputResolver {
           id: model.id,
           childId: child.id,
           childName: child.name,
-          deviceId: userDevice.deviceId,
+          deviceId: userDevice.computerId,
           deviceName: device.customName ?? device.model.shortDescription,
           event: event.toWords,
           detail: model.detail,

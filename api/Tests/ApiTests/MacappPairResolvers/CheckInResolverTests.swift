@@ -133,7 +133,7 @@ final class CheckInResolverTests: ApiTestCase {
   func testUserWithAtLeastOneKeyGetsAutoIncluded_v1() async throws {
     let user = try await self.userWithDevice()
     let admin = try await self.admin().withKeychain()
-    try await self.db.create(UserKeychain(userId: user.id, keychainId: admin.keychain.id))
+    try await self.db.create(UserKeychain(childId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
 
     let output = try await CheckIn.resolve(
@@ -146,7 +146,7 @@ final class CheckInResolverTests: ApiTestCase {
   func testIncludesResolvedFilterSuspension_v1() async throws {
     let user = try await self.userWithDevice()
     let susp = try await self.db.create(SuspendFilterRequest.mock {
-      $0.userDeviceId = user.device.id
+      $0.computerUserId = user.device.id
       $0.status = .accepted
       $0.duration = 777
       $0.extraMonitoring = "@55+k"
@@ -181,7 +181,7 @@ final class CheckInResolverTests: ApiTestCase {
   func testDoesNotIncludeUnresolvedSuspension_v1() async throws {
     let user = try await self.userWithDevice()
     let susp = try await self.db.create(SuspendFilterRequest.mock {
-      $0.userDeviceId = user.device.id
+      $0.computerUserId = user.device.id
       $0.status = .pending // <-- still pending!
     })
 
@@ -200,18 +200,18 @@ final class CheckInResolverTests: ApiTestCase {
   func testIncludesResolvedUnlockRequests_v1() async throws {
     let user = try await self.userWithDevice()
     let unlock1 = UnlockRequest.mock {
-      $0.userDeviceId = user.device.id
+      $0.computerUserId = user.device.id
       $0.status = .pending // <-- pending, will not be returned
     }
 
     let unlock2 = UnlockRequest.mock {
-      $0.userDeviceId = user.device.id
+      $0.computerUserId = user.device.id
       $0.status = .accepted // <-- resolved, will be returned
       $0.responseComment = "unlock2 response comment"
     }
 
     let unlock3 = UnlockRequest.mock {
-      $0.userDeviceId = user.device.id
+      $0.computerUserId = user.device.id
       $0.status = .rejected // <-- resolved, but not requested, not returned
     }
 

@@ -26,7 +26,7 @@ extension LoginMagicLink: Resolver {
     }
 
     dashSecurityEvent(.login, "using magic link", admin: adminId, in: context)
-    let token = try await context.db.create(AdminToken(adminId: adminId))
+    let token = try await context.db.create(AdminToken(parentId: adminId))
     return Output(token: token.value, adminId: adminId)
   }
 }

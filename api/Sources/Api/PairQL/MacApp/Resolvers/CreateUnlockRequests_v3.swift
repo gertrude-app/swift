@@ -6,7 +6,7 @@ extension CreateUnlockRequests_v3: Resolver {
 
     let requests = try await context.db.create(input.blockedRequests.map {
       UnlockRequest(
-        userDeviceId: userDevice.id,
+        computerUserId: userDevice.id,
         appBundleId: $0.bundleId,
         url: $0.url,
         hostname: $0.hostname,
@@ -17,7 +17,7 @@ extension CreateUnlockRequests_v3: Resolver {
     })
 
     await with(dependency: \.adminNotifier).notify(
-      context.user.adminId,
+      context.user.parentId,
       .unlockRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,
         userId: context.user.id,

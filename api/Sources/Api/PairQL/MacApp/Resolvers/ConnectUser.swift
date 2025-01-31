@@ -29,7 +29,7 @@ extension ConnectUser: Resolver {
     var existingUserDevice: UserDevice?
     if let adminDevice {
       existingUserDevice = try? await UserDevice.query()
-        .where(.deviceId == adminDevice.id)
+        .where(.computerId == adminDevice.id)
         .where(.numericId == .int(input.numericId))
         .first(in: context.db)
     }
@@ -41,7 +41,7 @@ extension ConnectUser: Resolver {
 
       // sanity check - we only "transfer" a device, if the admin accounts match
       let existingUser = try await existingUserDevice.user(in: context.db)
-      if existingUser.adminId != user.adminId {
+      if existingUser.parentId != user.parentId {
         throw context.error(
           id: "41a43089",
           type: .unauthorized,
@@ -50,18 +50,18 @@ extension ConnectUser: Resolver {
         )
       }
 
-      let oldUserId = existingUserDevice.userId
+      let oldUserId = existingUserDevice.childId
       existingUserDevice.username = input.username
       existingUserDevice.fullUsername = input.fullUsername
-      existingUserDevice.userId = user.id
+      existingUserDevice.childId = user.id
       existingUserDevice.isAdmin = input.isAdmin
 
       // update the device to be attached to the user issuing this request
       userDevice = try await context.db.update(existingUserDevice)
 
       let oldTokens = try await UserToken.query()
-        .where(.userDeviceId == userDevice.id)
-        .where(.userId == oldUserId)
+        .where(.computerUserId == userDevice.id)
+        .where(.childId == oldUserId)
         .all(in: context.db)
 
       @Dependency(\.date.now) var now
@@ -75,7 +75,7 @@ extension ConnectUser: Resolver {
       if adminDevice == nil {
         // create new admin device if we don't have one
         adminDevice = try await context.db.create(Device(
-          adminId: user.adminId,
+          parentId: user.parentId,
           osVersion: input.osVersion.flatMap(Semver.init),
           modelIdentifier: input.modelIdentifier,
           serialNumber: input.serialNumber
@@ -84,8 +84,8 @@ extension ConnectUser: Resolver {
 
       // ...and create the user device
       userDevice = try await context.db.create(UserDevice(
-        userId: user.id,
-        deviceId: adminDevice?.id ?? .init(),
+        childId: user.id,
+        computerId: adminDevice?.id ?? .init(),
         isAdmin: input.isAdmin,
         appVersion: input.appVersion,
         username: input.username,
@@ -95,8 +95,8 @@ extension ConnectUser: Resolver {
     }
 
     let token = try await context.db.create(UserToken(
-      userId: user.id,
-      userDeviceId: userDevice.id
+      childId: user.id,
+      computerUserId: userDevice.id
     ))
 
     return Output(

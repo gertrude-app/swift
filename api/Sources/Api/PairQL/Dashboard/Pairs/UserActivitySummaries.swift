@@ -53,7 +53,7 @@ extension UserActivitySummaries: Resolver {
     let latestEnd = dates.map(\.1).max() ?? .distantPast
 
     let screenshots = try await Screenshot.query()
-      .where(.userDeviceId |=| userDeviceIds)
+      .where(.computerUserId |=| userDeviceIds)
       .where(.createdAt <= .date(latestEnd))
       .where(.createdAt > .date(earliestStart))
       .orderBy(.createdAt, .desc)
@@ -61,7 +61,7 @@ extension UserActivitySummaries: Resolver {
       .all(in: db)
 
     let keystrokes = try await KeystrokeLine.query()
-      .where(.userDeviceId |=| userDeviceIds)
+      .where(.computerUserId |=| userDeviceIds)
       .where(.createdAt <= .date(latestEnd))
       .where(.createdAt > .date(earliestStart))
       .orderBy(.createdAt, .desc)
