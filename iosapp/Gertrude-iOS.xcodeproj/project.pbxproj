@@ -18,7 +18,7 @@
 		0F460A002D4BCA510038C617 /* BigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D62D4BCA510038C617 /* BigButton.swift */; };
 		0F460A012D4BCA510038C617 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609E82D4BCA510038C617 /* App.swift */; };
 		0F460A022D4BCA510038C617 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D82D4BCA510038C617 /* WelcomeView.swift */; };
-		0F68E4E82D4D635700B7134C /* ChoosFeaturesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F68E4E72D4D634E00B7134C /* ChoosFeaturesView.swift */; };
+		0F68E4EA2D4ECD1900B7134C /* ChooseWhatToBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */; };
 		0FAD76472D4D158E009A6FA6 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD76462D4D158E009A6FA6 /* ComposableArchitecture */; };
 		0FAD764B2D4D2916009A6FA6 /* LibCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD764A2D4D2916009A6FA6 /* LibCore */; };
 		0FAD764D2D4D291D009A6FA6 /* LibController in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD764C2D4D291D009A6FA6 /* LibController */; };
@@ -81,7 +81,7 @@
 		0F4609EA2D4BCA510038C617 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		0F4609EB2D4BCA510038C617 /* ExtensionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionClient.swift; sourceTree = "<group>"; };
 		0F4609EC2D4BCA510038C617 /* NewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewApp.swift; sourceTree = "<group>"; };
-		0F68E4E72D4D634E00B7134C /* ChoosFeaturesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoosFeaturesView.swift; sourceTree = "<group>"; };
+		0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseWhatToBlockView.swift; sourceTree = "<group>"; };
 		7F4A14502CB5843500FD6ABE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7F8B15012CCED8D6002E3C14 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		7FA7B8432AEB238700363B53 /* app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = app.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -147,7 +147,7 @@
 		0F4609DA2D4BCA510038C617 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				0F68E4E72D4D634E00B7134C /* ChoosFeaturesView.swift */,
+				0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */,
 				0F4609D62D4BCA510038C617 /* BigButton.swift */,
 				0F4609D82D4BCA510038C617 /* WelcomeView.swift */,
 				0F4609D92D4BCA510038C617 /* ButtonScreenView.swift */,
@@ -376,7 +376,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F4609EE2D4BCA510038C617 /* Shake 2.swift in Sources */,
-				0F68E4E82D4D635700B7134C /* ChoosFeaturesView.swift in Sources */,
+				0F68E4EA2D4ECD1900B7134C /* ChooseWhatToBlockView.swift in Sources */,
 				0F4609F02D4BCA510038C617 /* ContentView.swift in Sources */,
 				0F4609F22D4BCA510038C617 /* NewApp.swift in Sources */,
 				0F4609F32D4BCA510038C617 /* Animation.swift in Sources */,

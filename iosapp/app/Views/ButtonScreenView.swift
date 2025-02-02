@@ -8,6 +8,7 @@ struct ButtonScreenView: View {
   let onPrimaryBtnTap: () -> Void
   let secondaryBtn: (text: String, onTap: () -> Void)?
   let tertiaryBtn: (text: String, onTap: () -> Void)?
+  let primaryLooksLikeSecondary: Bool
   let listItems: [String]?
   let image: String?
   let screenType: ScreenType
@@ -23,6 +24,7 @@ struct ButtonScreenView: View {
   init(
     text: String,
     buttonText: String,
+    primaryLooksLikeSecondary: Bool = false,
     listItems: [String]? = nil,
     image: String? = nil,
     screenType: ScreenType = .info,
@@ -31,6 +33,7 @@ struct ButtonScreenView: View {
     self.text = text
     self.primaryBtnText = buttonText
     self.screenType = screenType
+    self.primaryLooksLikeSecondary = primaryLooksLikeSecondary
     self.listItems = listItems
     self.image = image
     self.onPrimaryBtnTap = onButtonTap
@@ -43,6 +46,7 @@ struct ButtonScreenView: View {
     text: String,
     primaryButtonText: String,
     secondaryButtonText: String,
+    primaryLooksLikeSecondary: Bool = false,
     listItems: [String]? = nil,
     image: String? = nil,
     screenType: ScreenType = .question,
@@ -51,6 +55,7 @@ struct ButtonScreenView: View {
   ) {
     self.text = text
     self.primaryBtnText = primaryButtonText
+    self.primaryLooksLikeSecondary = primaryLooksLikeSecondary
     self.listItems = listItems
     self.image = image
     self.screenType = screenType
@@ -65,6 +70,7 @@ struct ButtonScreenView: View {
     primaryButtonText: String,
     secondaryButtonText: String,
     tertiaryButtonText: String,
+    primaryLooksLikeSecondary: Bool = false,
     listItems: [String]? = nil,
     image: String? = nil,
     screenType: ScreenType = .question,
@@ -74,6 +80,7 @@ struct ButtonScreenView: View {
   ) {
     self.text = text
     self.primaryBtnText = primaryButtonText
+    self.primaryLooksLikeSecondary = primaryLooksLikeSecondary
     self.listItems = listItems
     self.image = image
     self.screenType = screenType
@@ -124,7 +131,7 @@ struct ButtonScreenView: View {
         .swooshIn(tracking: self.$textOffset, to: .origin, after: .zero, for: .milliseconds(800))
       }
 
-      BigButton(self.primaryBtnText, variant: .primary) {
+      BigButton(self.primaryBtnText, variant: self.primaryLooksLikeSecondary ? .secondary : .primary) {
         self.vanishingAnimations()
         delayed(by: .milliseconds(800)) {
           self.onPrimaryBtnTap()
@@ -226,6 +233,15 @@ struct ButtonScreenView: View {
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primaryButtonText: "Do something",
     secondaryButtonText: "Do something else"
+  ) {} secondary: {}
+}
+
+#Preview("2 buttons (both secondary)") {
+  ButtonScreenView(
+    text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
+    primaryButtonText: "Do something",
+    secondaryButtonText: "Do something else",
+    primaryLooksLikeSecondary: true
   ) {} secondary: {}
 }
 
