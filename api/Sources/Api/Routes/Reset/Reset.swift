@@ -31,7 +31,7 @@ enum Reset {
     _ config: AdminVerifiedNotificationMethod.Config
   ) async throws -> AdminVerifiedNotificationMethod {
     @Dependency(\.db) var db
-    return try await db.create(AdminVerifiedNotificationMethod(adminId: admin.id, config: config))
+    return try await db.create(AdminVerifiedNotificationMethod(parentId: admin.id, config: config))
   }
 
   static func testEmail(_ tag: String) -> EmailAddress {
@@ -50,7 +50,7 @@ enum Reset {
     @Dependency(\.db) var db
     let keychain = try await db.create(Keychain(
       id: id,
-      authorId: adminId,
+      parentId: adminId,
       name: name,
       isPublic: isPublic,
       description: description
@@ -116,7 +116,7 @@ enum Reset {
     if [1, 2, 3].shuffled().first! != 1 {
       let (width, height) = [(800, 600), (900, 600), (800, 500), (900, 500)].shuffled().first!
       return .left(Screenshot(
-        userDeviceId: userDeviceId,
+        computerUserId: userDeviceId,
         url: "https://fakeimg.pl/\(width)x\(height)/3e2a73/ffffff",
         width: width,
         height: height
@@ -130,7 +130,7 @@ enum Reset {
         ("Notes", "dear diary,\ni know i haven't written in a long time.\nsorry!"),
       ].shuffled().first!
       return .right(KeystrokeLine(
-        userDeviceId: userDeviceId,
+        computerUserId: userDeviceId,
         appName: app,
         line: line,
         createdAt: .init()
@@ -165,7 +165,7 @@ extension DuetSQL.Model where Self: HasCreatedAt {
 
     try await client.db.execute(
       """
-      UPDATE \(unsafeRaw: Self.tableName)
+      UPDATE \(unsafeRaw: Self.qualifiedTableName)
       SET \(col: .createdAt) = '\(unsafeRaw: createdAt.isoString)'
       WHERE id = '\(unsafeRaw: id.uuidString.lowercased())'
       """

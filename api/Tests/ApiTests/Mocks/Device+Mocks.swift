@@ -5,7 +5,7 @@ import Gertie
 extension Device: RandomMocked {
   public static var mock: Device {
     Device(
-      adminId: .init(),
+      parentId: .init(),
       customName: "@mock customName",
       modelIdentifier: "@mock modelIdentifier",
       serialNumber: "@mock serialNumber"
@@ -14,7 +14,7 @@ extension Device: RandomMocked {
 
   public static var empty: Device {
     Device(
-      adminId: .init(),
+      parentId: .init(),
       customName: nil,
       modelIdentifier: "",
       serialNumber: ""
@@ -23,7 +23,7 @@ extension Device: RandomMocked {
 
   public static var random: Device {
     Device(
-      adminId: .init(),
+      parentId: .init(),
       customName: "@random".random,
       modelIdentifier: "@random".random,
       serialNumber: "@random".random

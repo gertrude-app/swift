@@ -30,7 +30,7 @@ enum AdminBetsy {
     )
 
     try await db.create(AdminNotification(
-      adminId: betsy.id,
+      parentId: betsy.id,
       methodId: email.id,
       trigger: .unlockRequestSubmitted
     ))
@@ -46,14 +46,14 @@ enum AdminBetsy {
     )
 
     try await db.create(AdminNotification(
-      adminId: betsy.id,
+      parentId: betsy.id,
       methodId: text.id,
       trigger: .suspendFilterRequestSubmitted
     ))
 
     try await db.create(AdminToken(
       value: .init(rawValue: betsy.id.rawValue),
-      adminId: betsy.id
+      parentId: betsy.id
     ))
 
     let (jimmy, sally, _) = try await createUsers(betsy)
@@ -63,15 +63,15 @@ enum AdminBetsy {
       .where(.isPublic == true)
       .first(in: db) {
       try await db.create([
-        UserKeychain(userId: jimmy.id, keychainId: firstPublicKeychain.id),
-        UserKeychain(userId: sally.id, keychainId: firstPublicKeychain.id),
+        UserKeychain(childId: jimmy.id, keychainId: firstPublicKeychain.id),
+        UserKeychain(childId: sally.id, keychainId: firstPublicKeychain.id),
       ])
     }
 
     try await db.create([
-      UserKeychain(userId: jimmy.id, keychainId: musicTheory.id),
-      UserKeychain(userId: jimmy.id, keychainId: misc.id),
-      UserKeychain(userId: sally.id, keychainId: misc.id),
+      UserKeychain(childId: jimmy.id, keychainId: musicTheory.id),
+      UserKeychain(childId: jimmy.id, keychainId: misc.id),
+      UserKeychain(childId: sally.id, keychainId: misc.id),
     ])
 
     try await self.createUserActivity()
@@ -81,14 +81,14 @@ enum AdminBetsy {
     @Dependency(\.db) var db
     let jimmy = try await db.create(User(
       id: Ids.jimmysId,
-      adminId: betsy.id,
+      parentId: betsy.id,
       name: "Little Jimmy",
       keyloggingEnabled: true,
       screenshotsEnabled: true
     ))
 
     let macAir = try await db.create(Device(
-      adminId: betsy.id,
+      parentId: betsy.id,
       customName: nil,
       filterVersion: "2.6.0",
       modelIdentifier: "Mac14,2",
@@ -96,8 +96,8 @@ enum AdminBetsy {
     ))
 
     let userDevice = try await db.create(UserDevice(
-      userId: jimmy.id,
-      deviceId: macAir.id,
+      childId: jimmy.id,
+      computerId: macAir.id,
       isAdmin: false,
       appVersion: "2.6.0",
       username: "jimmy",
@@ -108,7 +108,7 @@ enum AdminBetsy {
     try await self.createTransientRequests(userDevice)
 
     let imac = try await db.create(Device(
-      adminId: betsy.id,
+      parentId: betsy.id,
       customName: nil,
       filterVersion: "2.6.0",
       modelIdentifier: "iMac19,2",
@@ -117,8 +117,8 @@ enum AdminBetsy {
 
     try await db.create(UserDevice(
       id: Ids.jimmysDevice,
-      userId: jimmy.id,
-      deviceId: imac.id,
+      childId: jimmy.id,
+      computerId: imac.id,
       isAdmin: false,
       appVersion: "2.6.0",
       username: "jimmy",
@@ -127,14 +127,14 @@ enum AdminBetsy {
     ))
 
     let sally = try await db.create(User(
-      adminId: betsy.id,
+      parentId: betsy.id,
       name: "Sally",
       keyloggingEnabled: false,
       screenshotsEnabled: false
     ))
 
     let macbookPro = try await db.create(Device(
-      adminId: betsy.id,
+      parentId: betsy.id,
       customName: "dads mbp",
       filterVersion: "2.6.0",
       modelIdentifier: "MacBookPro18,1",
@@ -143,8 +143,8 @@ enum AdminBetsy {
 
     try await db.create(UserDevice(
       id: Ids.sallysDevice,
-      userId: sally.id,
-      deviceId: macbookPro.id,
+      childId: sally.id,
+      computerId: macbookPro.id,
       isAdmin: false,
       appVersion: "2.6.0",
       username: "sally",
@@ -154,7 +154,7 @@ enum AdminBetsy {
 
     // henry has no devices
     let henry = try await db.create(User(
-      adminId: betsy.id,
+      parentId: betsy.id,
       name: "Henry",
       keyloggingEnabled: true,
       screenshotsEnabled: false
@@ -218,7 +218,7 @@ enum AdminBetsy {
   private static func createTransientRequests(_ userDevice: UserDevice) async throws {
     @Dependency(\.db) var db
     try await db.create(UnlockRequest(
-      userDeviceId: userDevice.id,
+      computerUserId: userDevice.id,
       appBundleId: ".com.apple.Safari",
       url: "https://www.youtube.com/watch?v=123456789",
       hostname: "youtube.com",
@@ -228,7 +228,7 @@ enum AdminBetsy {
     ))
 
     try await db.create(UnlockRequest(
-      userDeviceId: userDevice.id,
+      computerUserId: userDevice.id,
       appBundleId: "BQR82RBBHL.com.tinyspeck.slackmacgap.helper",
       hostname: "someotherwebsite.com",
       ipAddress: "234.423.32.2423",
@@ -238,7 +238,7 @@ enum AdminBetsy {
 
     try await db.create(SuspendFilterRequest(
       id: Ids.suspendFilter,
-      userDeviceId: userDevice.id,
+      computerUserId: userDevice.id,
       status: .pending,
       scope: .webBrowsers,
       requestComment: "I want to watch a video"

@@ -38,7 +38,7 @@ func consolidatedChildComputerStatus(
   _ userDevices: [UserDevice]
 ) async throws -> ChildComputerStatus {
   let statuses = try await userDevices
-    .filter { $0.userId == userId }
+    .filter { $0.childId == userId }
     .concurrentMap { await $0.status() }
   if statuses.isEmpty {
     return .offline

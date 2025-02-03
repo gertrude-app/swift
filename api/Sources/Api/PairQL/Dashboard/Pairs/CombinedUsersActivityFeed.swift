@@ -32,7 +32,7 @@ extension CombinedUsersActivityFeed: Resolver {
     return try await users.concurrentMap { user in
       let userDeviceIds = try await user.devices(in: context.db).map(\.id)
       async let keystrokes = KeystrokeLine.query()
-        .where(.userDeviceId |=| userDeviceIds)
+        .where(.computerUserId |=| userDeviceIds)
         .where(.createdAt <= .date(before))
         .where(.createdAt > .date(after))
         .orderBy(.createdAt, .desc)
@@ -40,7 +40,7 @@ extension CombinedUsersActivityFeed: Resolver {
         .all(in: context.db)
 
       async let screenshots = Screenshot.query()
-        .where(.userDeviceId |=| userDeviceIds)
+        .where(.computerUserId |=| userDeviceIds)
         .where(.createdAt <= .date(before))
         .where(.createdAt > .date(after))
         .orderBy(.createdAt, .desc)

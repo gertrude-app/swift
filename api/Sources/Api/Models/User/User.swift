@@ -3,7 +3,7 @@ import Gertie
 
 struct User: Codable, Sendable {
   var id: Id
-  var adminId: Admin.Id
+  var parentId: Admin.Id
   var name: String
   var keyloggingEnabled: Bool
   var screenshotsEnabled: Bool
@@ -16,7 +16,7 @@ struct User: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    adminId: Admin.Id,
+    parentId: Admin.Id,
     name: String,
     keyloggingEnabled: Bool = false,
     screenshotsEnabled: Bool = false,
@@ -26,7 +26,7 @@ struct User: Codable, Sendable {
     downtime: PlainTimeWindow? = nil
   ) {
     self.id = id
-    self.adminId = adminId
+    self.parentId = parentId
     self.name = name
     self.keyloggingEnabled = keyloggingEnabled
     self.screenshotsEnabled = screenshotsEnabled
@@ -42,13 +42,13 @@ struct User: Codable, Sendable {
 extension User {
   func devices(in db: any DuetSQL.Client) async throws -> [UserDevice] {
     try await UserDevice.query()
-      .where(.userId == self.id)
+      .where(.childId == self.id)
       .all(in: db)
   }
 
   func keychains(in db: any DuetSQL.Client) async throws -> [Keychain] {
     let pivots = try await UserKeychain.query()
-      .where(.userId == self.id)
+      .where(.childId == self.id)
       .all(in: db)
     return try await Keychain.query()
       .where(.id |=| pivots.map(\.keychainId))
@@ -57,13 +57,13 @@ extension User {
 
   func admin(in db: any DuetSQL.Client) async throws -> Admin {
     try await Admin.query()
-      .where(.id == self.adminId)
+      .where(.id == self.parentId)
       .first(in: db)
   }
 
   func blockedApps(in db: any DuetSQL.Client) async throws -> [UserBlockedApp] {
     try await UserBlockedApp.query()
-      .where(.userId == self.id)
+      .where(.childId == self.id)
       .all(in: db)
   }
 }

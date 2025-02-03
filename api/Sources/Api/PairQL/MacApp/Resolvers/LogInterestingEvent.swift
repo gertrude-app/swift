@@ -17,8 +17,8 @@ extension LogInterestingEvent: Resolver {
         eventId: input.eventId,
         kind: input.kind,
         context: "macapp",
-        userDeviceId: userDevice?.id,
-        adminId: nil,
+        computerUserId: userDevice?.id,
+        parentId: nil,
         detail: input.detail
       ))
 

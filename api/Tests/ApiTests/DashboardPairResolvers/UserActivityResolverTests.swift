@@ -7,11 +7,11 @@ final class UserActivityResolverTests: ApiTestCase {
   func testGetActivityDay() async throws {
     let user = try await self.userWithDevice()
     var screenshot = Screenshot.random
-    screenshot.userDeviceId = user.device.id
+    screenshot.computerUserId = user.device.id
     screenshot.createdAt = .reference - 1
     try await self.db.create(screenshot)
     var keystrokeLine = KeystrokeLine.random
-    keystrokeLine.userDeviceId = user.device.id
+    keystrokeLine.computerUserId = user.device.id
     keystrokeLine.createdAt = .reference
     try await self.db.create(keystrokeLine)
     let twoDaysAgo = Date.reference - .days(2)
@@ -57,23 +57,23 @@ final class UserActivityResolverTests: ApiTestCase {
 
     let user1 = try await self.userWithDevice()
     var screenshot = Screenshot.random
-    screenshot.userDeviceId = user1.device.id
+    screenshot.computerUserId = user1.device.id
     screenshot.createdAt = .reference - 5
     try await self.db.create(screenshot)
     var keystrokeLine = KeystrokeLine.random
-    keystrokeLine.userDeviceId = user1.device.id
+    keystrokeLine.computerUserId = user1.device.id
     keystrokeLine.createdAt = .reference - 4
     try await self.db.create(keystrokeLine)
 
     var user2 = try await self.userWithDevice()
-    user2.model.adminId = user1.adminId
+    user2.model.parentId = user1.parentId
     try await self.db.update(user2.model)
     var screenshot2 = Screenshot.random
-    screenshot2.userDeviceId = user2.device.id
+    screenshot2.computerUserId = user2.device.id
     screenshot2.createdAt = .reference - 3
     try await self.db.create(screenshot2)
     var keystrokeLine2 = KeystrokeLine.random
-    keystrokeLine2.userDeviceId = user2.device.id
+    keystrokeLine2.computerUserId = user2.device.id
     keystrokeLine2.createdAt = .reference - 2
     keystrokeLine2.deletedAt = .reference - 1 // <-- soft-deleted
     try await self.db.create(keystrokeLine2)
@@ -144,10 +144,10 @@ final class UserActivityResolverTests: ApiTestCase {
   func testDeleteActivityItems_v2() async throws {
     let user = try await self.userWithDevice()
     var screenshot = Screenshot.random
-    screenshot.userDeviceId = user.device.id
+    screenshot.computerUserId = user.device.id
     try await self.db.create(screenshot)
     var keystrokeLine = KeystrokeLine.random
-    keystrokeLine.userDeviceId = user.device.id
+    keystrokeLine.computerUserId = user.device.id
     try await self.db.create(keystrokeLine)
 
     let output = try await DeleteActivityItems_v2.resolve(

@@ -4,7 +4,7 @@ import Gertie
 import Tagged
 
 extension RequestStatus: PostgresEnum {
-  public var typeName: String { RequestTables.M5.requestStatusTypeName }
+  public var typeName: String { "enum_shared_request_status" }
 }
 
 protocol HasCreatedAt {
@@ -66,7 +66,7 @@ extension UserBlockedApp {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case identifier
-    case userId
+    case childId
     case schedule
     case createdAt
     case updatedAt
@@ -93,7 +93,7 @@ extension Admin {
 }
 
 extension Admin.SubscriptionStatus: PostgresEnum {
-  var typeName: String { Admin.M1.subscriptionStatusTypeName }
+  var typeName: String { "enum_parent_subscription_status" }
 }
 
 extension AdminNotification: Duet.Identifiable {
@@ -103,7 +103,7 @@ extension AdminNotification: Duet.Identifiable {
 extension AdminNotification {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case adminId
+    case parentId
     case methodId
     case trigger
     case createdAt
@@ -111,7 +111,7 @@ extension AdminNotification {
 }
 
 extension AdminNotification.Trigger: PostgresEnum {
-  var typeName: String { AdminNotification.M1.triggerTypeName }
+  var typeName: String { "enum_parent_notification_trigger" }
 }
 
 extension AdminToken: Duet.Identifiable {
@@ -121,7 +121,7 @@ extension AdminToken: Duet.Identifiable {
 extension AdminToken {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case adminId
+    case parentId
     case value
     case createdAt
     case deletedAt
@@ -135,7 +135,7 @@ extension AdminVerifiedNotificationMethod: Duet.Identifiable {
 extension AdminVerifiedNotificationMethod {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case adminId
+    case parentId
     case config
     case createdAt
   }
@@ -177,7 +177,7 @@ extension Device: Duet.Identifiable {
 extension Device {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case adminId
+    case parentId
     case customName
     case modelIdentifier
     case serialNumber
@@ -196,8 +196,8 @@ extension UserDevice: Duet.Identifiable {
 extension UserDevice {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case userId
-    case deviceId
+    case childId
+    case computerId
     case appVersion
     case isAdmin
     case username
@@ -231,7 +231,7 @@ extension Keychain: Duet.Identifiable {
 extension Keychain {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case authorId
+    case parentId
     case name
     case description
     case warning
@@ -264,21 +264,13 @@ extension KeystrokeLine: Duet.Identifiable {
 extension KeystrokeLine {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case userDeviceId
+    case computerUserId
     case appName
     case line
     case filterSuspended
     case createdAt
     case deletedAt
   }
-}
-
-extension NetworkDecisionVerdict: PostgresEnum {
-  public var typeName: String { Deleted.NetworkDecisionTable.M5.verdictTypeName }
-}
-
-extension NetworkDecisionReason: PostgresEnum {
-  public var typeName: String { Deleted.NetworkDecisionTable.M5.reasonTypeName }
 }
 
 extension Release: Duet.Identifiable {
@@ -301,7 +293,7 @@ extension Release {
 }
 
 extension ReleaseChannel: PostgresEnum {
-  public var typeName: String { Release.M7.channelTypeName }
+  public var typeName: String { "enum_release_channels" }
 }
 
 extension StripeEvent: Duet.Identifiable {
@@ -323,7 +315,7 @@ extension Screenshot: Duet.Identifiable {
 extension Screenshot {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case userDeviceId
+    case computerUserId
     case url
     case width
     case height
@@ -340,7 +332,7 @@ extension SuspendFilterRequest: Duet.Identifiable {
 extension SuspendFilterRequest {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case userDeviceId
+    case computerUserId
     case status
     case scope
     case duration
@@ -359,7 +351,7 @@ extension UnlockRequest: Duet.Identifiable {
 extension UnlockRequest {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case userDeviceId
+    case computerUserId
     case status
     case requestComment
     case responseComment
@@ -379,7 +371,7 @@ extension User: Duet.Identifiable {
 extension User {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case adminId
+    case parentId
     case name
     case keyloggingEnabled
     case screenshotsEnabled
@@ -399,7 +391,7 @@ extension UserKeychain: Duet.Identifiable {
 extension UserKeychain {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case userId
+    case childId
     case keychainId
     case schedule
     case createdAt
@@ -413,8 +405,8 @@ extension UserToken: Duet.Identifiable {
 extension UserToken {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case userId
-    case userDeviceId
+    case childId
+    case computerUserId
     case value
     case createdAt
     case updatedAt
@@ -432,8 +424,8 @@ extension InterestingEvent {
     case eventId
     case kind
     case context
-    case userDeviceId
-    case adminId
+    case computerUserId
+    case parentId
     case detail
     case createdAt
   }
@@ -488,8 +480,8 @@ extension SecurityEvent: Duet.Identifiable {
 extension SecurityEvent {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
-    case adminId
-    case userDeviceId
+    case parentId
+    case computerUserId
     case event
     case detail
     case ipAddress

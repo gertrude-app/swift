@@ -3,7 +3,7 @@ import Gertie
 
 struct Device: Codable, Sendable {
   var id: Id
-  var adminId: Admin.Id
+  var parentId: Admin.Id
   var customName: String?
   var modelIdentifier: String
   var serialNumber: String
@@ -15,7 +15,7 @@ struct Device: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    adminId: Admin.Id,
+    parentId: Admin.Id,
     customName: String? = nil,
     appReleaseChannel: ReleaseChannel = .stable,
     filterVersion: Semver? = nil,
@@ -24,7 +24,7 @@ struct Device: Codable, Sendable {
     serialNumber: String
   ) {
     self.id = id
-    self.adminId = adminId
+    self.parentId = parentId
     self.customName = customName
     self.appReleaseChannel = appReleaseChannel
     self.modelIdentifier = modelIdentifier
@@ -39,13 +39,13 @@ struct Device: Codable, Sendable {
 extension Device {
   func admin(in db: any DuetSQL.Client) async throws -> Admin {
     try await Admin.query()
-      .where(.id == self.adminId)
+      .where(.id == self.parentId)
       .first(in: db)
   }
 
   func userDevices(in db: any DuetSQL.Client) async throws -> [UserDevice] {
     try await UserDevice.query()
-      .where(.deviceId == self.id)
+      .where(.computerId == self.id)
       .all(in: db)
   }
 }

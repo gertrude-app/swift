@@ -57,7 +57,7 @@ extension Login: Resolver {
       throw context |> loginError
     }
 
-    let token = try await context.db.create(AdminToken(adminId: admin.id))
+    let token = try await context.db.create(AdminToken(parentId: admin.id))
     return .init(adminId: admin.id, token: token.value)
   }
 }

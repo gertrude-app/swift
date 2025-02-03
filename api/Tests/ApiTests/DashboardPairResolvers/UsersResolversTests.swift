@@ -56,7 +56,7 @@ final class UsersResolversTests: ApiTestCase {
 
     // and the empty keychain should be deleted
     let userKeychains = try await UserKeychain.query()
-      .where(.userId == user.id)
+      .where(.childId == user.id)
       .all(in: self.db)
     expect(userKeychains.isEmpty).toBeTrue()
     let retrievedKeychain = try? await self.db.find(keychainId)
@@ -121,14 +121,14 @@ final class UsersResolversTests: ApiTestCase {
   func testSetsNewKeychainsFromEmpty() async throws {
     let user = try await self.user()
     var keychain = Keychain.random
-    keychain.authorId = user.admin.id
+    keychain.parentId = user.admin.id
     try await self.db.create(keychain)
 
     let input = SaveUser.Input(from: user, keychains: [.init(id: keychain.id, schedule: nil)])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychainIds = try await UserKeychain.query()
-      .where(.userId == user.id)
+      .where(.childId == user.id)
       .all(in: self.db)
       .map(\.keychainId)
 
@@ -139,15 +139,15 @@ final class UsersResolversTests: ApiTestCase {
   func testDeletesExistingKeychains() async throws {
     let user = try await self.user()
     var keychain = Keychain.random
-    keychain.authorId = user.admin.id
+    keychain.parentId = user.admin.id
     try await self.db.create(keychain)
-    let pivot = try await self.db.create(UserKeychain(userId: user.id, keychainId: keychain.id))
+    let pivot = try await self.db.create(UserKeychain(childId: user.id, keychainId: keychain.id))
 
     let input = SaveUser.Input(from: user, keychains: [])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychains = try await UserKeychain.query()
-      .where(.userId == user.id)
+      .where(.childId == user.id)
       .all(in: self.db)
 
     expect(keychains.isEmpty).toBeTrue()
@@ -159,12 +159,12 @@ final class UsersResolversTests: ApiTestCase {
     let user = try await self.user()
 
     var keychain1 = Keychain.random
-    keychain1.authorId = user.admin.id
+    keychain1.parentId = user.admin.id
     var keychain2 = Keychain.random
-    keychain2.authorId = user.admin.id
+    keychain2.parentId = user.admin.id
     try await self.db.create([keychain1, keychain2])
 
-    let pivot = try await self.db.create(UserKeychain(userId: user.id, keychainId: keychain1.id))
+    let pivot = try await self.db.create(UserKeychain(childId: user.id, keychainId: keychain1.id))
 
     let input = SaveUser.Input(
       from: user,
@@ -176,7 +176,7 @@ final class UsersResolversTests: ApiTestCase {
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
     let keychainIds = try await UserKeychain.query()
-      .where(.userId == user.id)
+      .where(.childId == user.id)
       .all(in: self.db)
       .map(\.keychainId)
 
@@ -185,7 +185,7 @@ final class UsersResolversTests: ApiTestCase {
     expect(retrievedOldPivot).toBeNil()
 
     let newPivot = try? await UserKeychain.query()
-      .where(.userId == user.id)
+      .where(.childId == user.id)
       .first(in: self.db)
     expect(newPivot?.schedule)
       .toEqual(.init(mode: .active, days: .all, window: "04:00-08:00"))
@@ -202,7 +202,7 @@ final class UsersResolversTests: ApiTestCase {
 
   func testDeleteExistingBlockedApps() async throws {
     let user = try await self.user()
-    try await self.db.create([UserBlockedApp(identifier: "FaceSkype", userId: user.id)])
+    try await self.db.create([UserBlockedApp(identifier: "FaceSkype", childId: user.id)])
 
     var input = SaveUser.Input(from: user)
     input.blockedApps = nil // <-- nil does not delete
@@ -223,7 +223,7 @@ final class UsersResolversTests: ApiTestCase {
     let id1 = UserBlockedApp.Id()
     let id2 = UserBlockedApp.Id()
     let id3 = UserBlockedApp.Id()
-    try await self.db.create([UserBlockedApp(id: id1, identifier: "FaceSkype", userId: user.id)])
+    try await self.db.create([UserBlockedApp(id: id1, identifier: "FaceSkype", childId: user.id)])
 
     var input = SaveUser.Input(from: user)
     input.blockedApps = [

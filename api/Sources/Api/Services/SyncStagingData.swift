@@ -22,7 +22,7 @@ enum DumpStagingDataRoute {
       .where(.isPublic == true)
       .all(in: db)
     for i in 0 ..< keychains.count {
-      keychains[i].authorId = .stagingPublicKeychainOwner
+      keychains[i].parentId = .stagingPublicKeychainOwner
     }
 
     return SyncStagingData(
@@ -99,7 +99,8 @@ struct SyncStagingDataCommand: AsyncCommand {
       guard let json = buf.getString(at: 0, length: buf.readableBytes, encoding: .utf8) else {
         return .failure("Error converting buffer to string")
       }
-      let data = try JSON.decode(json, as: SyncStagingData.self, [.isoDates])
+      let replaced = json.replacingOccurrences(of: "authorId", with: "parentId")
+      let data = try JSON.decode(replaced, as: SyncStagingData.self, [.isoDates])
       return .success(data)
     } catch {
       return .failure("Error syncing staging data: \(error)")

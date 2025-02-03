@@ -5,8 +5,8 @@ struct InterestingEvent: Codable, Sendable {
   var eventId: String
   var kind: String
   var context: String
-  var userDeviceId: UserDevice.Id?
-  var adminId: Admin.Id?
+  var computerUserId: UserDevice.Id?
+  var parentId: Admin.Id?
   var detail: String?
   var createdAt = Date()
 
@@ -15,16 +15,16 @@ struct InterestingEvent: Codable, Sendable {
     eventId: String,
     kind: String,
     context: String,
-    userDeviceId: UserDevice.Id? = nil,
-    adminId: Admin.Id? = nil,
+    computerUserId: UserDevice.Id? = nil,
+    parentId: Admin.Id? = nil,
     detail: String? = nil
   ) {
     self.id = id
     self.eventId = eventId
     self.kind = kind
     self.context = context
-    self.userDeviceId = userDeviceId
-    self.adminId = adminId
+    self.computerUserId = computerUserId
+    self.parentId = parentId
     self.detail = detail
   }
 }

@@ -50,7 +50,7 @@ struct GetDashboardWidgets: Pair {
 extension GetDashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let users = try await Api.User.query()
-      .where(.adminId == context.admin.id)
+      .where(.parentId == context.admin.id)
       .all(in: context.db)
 
     guard !users.isEmpty else {
@@ -64,27 +64,27 @@ extension GetDashboardWidgets: NoInputResolver {
     }
 
     let userDevices = try await UserDevice.query()
-      .where(.userId |=| users.map(\.id))
+      .where(.childId |=| users.map(\.id))
       .all(in: context.db)
 
     let unlockRequests = try await Api.UnlockRequest.query()
-      .where(.userDeviceId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| userDevices.map(\.id))
       .where(.status == .enum(RequestStatus.pending))
       .all(in: context.db)
 
     let deviceToUserMap: [UserDevice.Id: Api.User] = userDevices.reduce(into: [:]) { map, device in
-      map[device.id] = users.first(where: { $0.id == device.userId })
+      map[device.id] = users.first(where: { $0.id == device.childId })
     }
 
     async let keystrokes = KeystrokeLine.query()
-      .where(.userDeviceId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| userDevices.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
       .all(in: context.db)
 
     async let screenshots = Screenshot.query()
-      .where(.userDeviceId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| userDevices.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
@@ -97,7 +97,7 @@ extension GetDashboardWidgets: NoInputResolver {
         id: user.id,
         name: user.name,
         status: try await consolidatedChildComputerStatus(user.id, userDevices),
-        numDevices: userDevices.filter { $0.userId == user.id }.count
+        numDevices: userDevices.filter { $0.childId == user.id }.count
       ) },
       userActivitySummaries: userActivitySummaries(
         users: users,
@@ -128,8 +128,8 @@ func mapUnlockRequests(
   unlockRequests.map { unlockRequest in
     .init(
       id: unlockRequest.id,
-      userId: map[unlockRequest.userDeviceId]?.id ?? .init(),
-      userName: map[unlockRequest.userDeviceId]?.name ?? "",
+      userId: map[unlockRequest.computerUserId]?.id ?? .init(),
+      userName: map[unlockRequest.computerUserId]?.name ?? "",
       target: unlockRequest.target ?? "",
       comment: unlockRequest.requestComment,
       createdAt: unlockRequest.createdAt
@@ -144,7 +144,7 @@ func recentScreenshots(
 ) -> [GetDashboardWidgets.RecentScreenshot] {
   users.compactMap { user in
     screenshots
-      .first { map[$0.userDeviceId]?.id == user.id }
+      .first { map[$0.computerUserId]?.id == user.id }
       .map { .init(id: $0.id, userName: user.name, url: $0.url, createdAt: $0.createdAt) }
   }
 }
@@ -156,8 +156,8 @@ func userActivitySummaries(
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.UserActivitySummary] {
   users.map { user in
-    let userScreenshots = screenshots.filter { map[$0.userDeviceId]?.id == user.id }
-    let userKeystrokes = keystrokes.filter { map[$0.userDeviceId]?.id == user.id }
+    let userScreenshots = screenshots.filter { map[$0.computerUserId]?.id == user.id }
+    let userKeystrokes = keystrokes.filter { map[$0.computerUserId]?.id == user.id }
     return .init(
       id: user.id,
       name: user.name,

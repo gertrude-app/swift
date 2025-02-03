@@ -64,7 +64,7 @@ extension CheckIn_v2: Resolver {
     if let suspensionReqId = input.pendingFilterSuspension,
        let resolved = try? await SuspendFilterRequest.query()
        .where(.id == suspensionReqId)
-       .where(.userDeviceId == userDevice.id)
+       .where(.computerUserId == userDevice.id)
        .where(.status != .enum(RequestStatus.pending))
        .first(in: context.db) {
       resolvedFilterSuspension = .init(
@@ -79,7 +79,7 @@ extension CheckIn_v2: Resolver {
        !unlockIds.isEmpty {
       let resolved = try await UnlockRequest.query()
         .where(.id |=| unlockIds)
-        .where(.userDeviceId == userDevice.id)
+        .where(.computerUserId == userDevice.id)
         .where(.status != .enum(RequestStatus.pending))
         .all(in: context.db)
       if !resolved.isEmpty {
@@ -143,7 +143,7 @@ func ruleKeychains(
   in db: any DuetSQL.Client
 ) async throws -> [RuleKeychain] {
   let userKeychains = try await UserKeychain.query()
-    .where(.userId == userId)
+    .where(.childId == userId)
     .all(in: db)
   let keychains = try await Keychain.query()
     .where(.id |=| userKeychains.map(\.keychainId))
@@ -188,16 +188,15 @@ func resolveLatestRelease(
 
 struct UpsertNamedApps: CustomQueryable {
   static func query(bindings: [Postgres.Data]) -> SQL.Statement {
-    typealias M28 = UnidentifiedApp.M28
-    typealias M30 = UnidentifiedApp.M30
+    typealias UA = UnidentifiedApp
     var stmt = SQL.Statement("""
-      INSERT INTO \(M28.tableName) (
+      INSERT INTO \(UA.qualifiedTableName) (
         id,
-        \(M28.bundleId),
-        \(M30.bundleName),
-        \(M30.localizedName),
-        \(M30.launchable),
-        \(M28.count),
+        \(UA.columnName(.bundleId)),
+        \(UA.columnName(.bundleName)),
+        \(UA.columnName(.localizedName)),
+        \(UA.columnName(.launchable)),
+        \(UA.columnName(.count)),
         created_at
       ) VALUES (
     """)
@@ -221,11 +220,11 @@ struct UpsertNamedApps: CustomQueryable {
     stmt.components.removeLast()
     stmt.components.append(.sql(", 1, CURRENT_TIMESTAMP)\n"))
     stmt.components.append(.sql("""
-      ON CONFLICT (\(M28.bundleId))
+      ON CONFLICT (\(UA.columnName(.bundleId)))
       DO UPDATE SET
-        \(M30.bundleName) = EXCLUDED.\(M30.bundleName),
-        \(M30.localizedName) = EXCLUDED.\(M30.localizedName),
-        \(M30.launchable) = EXCLUDED.\(M30.launchable)
+        \(UA.columnName(.bundleName))    = EXCLUDED.\(UA.columnName(.bundleName)),
+        \(UA.columnName(.localizedName)) = EXCLUDED.\(UA.columnName(.localizedName)),
+        \(UA.columnName(.launchable))    = EXCLUDED.\(UA.columnName(.launchable))
     """))
     return stmt
   }

@@ -36,7 +36,7 @@ final class ApiTests: ApiTestCase {
 
   func testDuetEscapesStringsProperly() async throws {
     let admin = try await self.db.create(Admin.random)
-    let m = try await self.db.create(Api.SecurityEvent(adminId: admin.id, event: "foo'bar"))
+    let m = try await self.db.create(Api.SecurityEvent(parentId: admin.id, event: "foo'bar"))
     let retrieved = try await self.db.find(m.id)
     expect(retrieved.event).toEqual("foo'bar")
   }
@@ -131,7 +131,7 @@ final class ApiTests: ApiTestCase {
     let uuid = try JSONDecoder().decode(UUID.self, from: response.body.data!)
     let req = try await self.db.find(SuspendFilterRequest.Id(uuid))
     let userDevice = try await req.userDevice(in: self.db)
-    expect(userDevice.userId).toEqual(user.id)
+    expect(userDevice.childId).toEqual(user.id)
   }
 }
 

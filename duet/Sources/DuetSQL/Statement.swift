@@ -19,7 +19,7 @@ public extension SQL {
 
 public extension SQL.Statement {
   internal static func update<M: Model>(_ model: M) -> SQL.Statement {
-    var stmt = SQL.Statement("UPDATE \"\(M.tableName)\"\nSET ")
+    var stmt = SQL.Statement("UPDATE \(M.qualifiedTableName)\nSET ")
     let values = model.insertValues.mapKeys { M.columnName($0) }
     for (column, value) in values {
       if column == "id" || column == "created_at" {
@@ -47,7 +47,7 @@ public extension SQL.Statement {
     let sorted = insert.keys.map { ($0, M.columnName($0)) }.sorted { $0.1 < $1.1 }
     let colList: String = sorted.map(\.1).quotedList
     let columns: [M.ColumnName] = sorted.map(\.0)
-    var stmt = SQL.Statement("INSERT INTO \"\(M.tableName)\"\n(\(colList))\nVALUES\n")
+    var stmt = SQL.Statement("INSERT INTO \(M.qualifiedTableName)\n(\(colList))\nVALUES\n")
     for model in models {
       stmt.components.append(.sql("("))
       for column in columns {
@@ -107,7 +107,7 @@ public extension SQL.Statement {
     offset: Int?
   ) -> SQL.Statement {
     .query(
-      initial: "UPDATE \"\(M.tableName)\"\nSET \"deleted_at\" = CURRENT_TIMESTAMP",
+      initial: "UPDATE \(M.qualifiedTableName)\nSET \"deleted_at\" = CURRENT_TIMESTAMP",
       M.self,
       where: constraint,
       orderBy: order,
@@ -132,7 +132,7 @@ public extension SQL.Statement {
     offset: Int? = nil
   ) -> SQL.Statement {
     .query(
-      initial: "\(query) \"\(M.tableName)\"",
+      initial: "\(query) \(M.qualifiedTableName)",
       M.self,
       where: constraint,
       orderBy: order,

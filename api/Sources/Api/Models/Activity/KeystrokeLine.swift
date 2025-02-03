@@ -2,7 +2,7 @@ import Duet
 
 struct KeystrokeLine: Codable, Sendable {
   var id: Id
-  var userDeviceId: UserDevice.Id
+  var computerUserId: UserDevice.Id
   var appName: String
   var line: String
   var filterSuspended: Bool
@@ -11,14 +11,14 @@ struct KeystrokeLine: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    userDeviceId: UserDevice.Id,
+    computerUserId: UserDevice.Id,
     appName: String,
     line: String,
     filterSuspended: Bool = false,
     createdAt: Date = Date()
   ) {
     self.id = id
-    self.userDeviceId = userDeviceId
+    self.computerUserId = computerUserId
     self.appName = appName
     self.line = line
     self.filterSuspended = filterSuspended

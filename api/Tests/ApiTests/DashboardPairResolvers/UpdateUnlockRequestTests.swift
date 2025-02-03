@@ -12,7 +12,7 @@ final class UpdateUnlockRequestTests: ApiTestCase {
     }
 
     var request = UnlockRequest.mock
-    request.userDeviceId = user.device.id
+    request.computerUserId = user.device.id
     request.status = .pending
     try await self.db.create(request)
 

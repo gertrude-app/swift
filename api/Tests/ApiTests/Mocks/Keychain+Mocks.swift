@@ -5,7 +5,7 @@ import Gertie
 extension Keychain: RandomMocked {
   public static var mock: Keychain {
     Keychain(
-      authorId: .init(),
+      parentId: .init(),
       name: "@mock name",
       isPublic: false,
       description: "@mock description"
@@ -13,12 +13,12 @@ extension Keychain: RandomMocked {
   }
 
   public static var empty: Keychain {
-    Keychain(authorId: .init(), name: "", isPublic: false)
+    Keychain(parentId: .init(), name: "", isPublic: false)
   }
 
   public static var random: Keychain {
     Keychain(
-      authorId: .init(),
+      parentId: .init(),
       name: "@mock name".random,
       isPublic: Bool.random(),
       description: "@mock description".random

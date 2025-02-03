@@ -28,7 +28,7 @@ extension CreateSignedScreenshotUpload: Resolver {
     let signedUrl = try with(dependency: \.aws).signedS3UploadUrl(objectName)
 
     try await context.db.create(Screenshot(
-      userDeviceId: userDevice.id,
+      computerUserId: userDevice.id,
       url: webUrlString,
       width: input.width,
       height: input.height,

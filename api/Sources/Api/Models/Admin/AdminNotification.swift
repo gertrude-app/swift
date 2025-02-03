@@ -3,19 +3,19 @@ import Tagged
 
 struct AdminNotification: Codable, Sendable {
   var id: Id
-  var adminId: Admin.Id
+  var parentId: Admin.Id
   var methodId: AdminVerifiedNotificationMethod.Id
   var trigger: Trigger
   var createdAt = Date()
 
   init(
     id: Id = .init(),
-    adminId: Admin.Id,
+    parentId: Admin.Id,
     methodId: AdminVerifiedNotificationMethod.Id,
     trigger: Trigger
   ) {
     self.id = id
-    self.adminId = adminId
+    self.parentId = parentId
     self.methodId = methodId
     self.trigger = trigger
   }

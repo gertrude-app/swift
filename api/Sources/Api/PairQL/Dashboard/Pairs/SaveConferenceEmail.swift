@@ -24,8 +24,8 @@ extension SaveConferenceEmail: Resolver {
       eventId: "cc29a271",
       kind: "event",
       context: "marketing",
-      userDeviceId: nil,
-      adminId: nil,
+      computerUserId: nil,
+      parentId: nil,
       detail: detail
     ))
 

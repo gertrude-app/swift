@@ -36,7 +36,7 @@ extension DashboardRoute: RouteResponder {
         )
 
       let admin = try await Admin.query()
-        .where(.id == token.adminId)
+        .where(.id == token.parentId)
         .first(in: context.db)
 
       let adminContext = AdminContext(

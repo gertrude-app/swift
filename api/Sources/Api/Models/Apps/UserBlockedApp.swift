@@ -4,7 +4,7 @@ import Gertie
 struct UserBlockedApp: Codable, Sendable {
   var id: Id
   var identifier: String
-  var userId: User.Id
+  var childId: User.Id
   var schedule: RuleSchedule?
   var createdAt = Date()
   var updatedAt = Date()
@@ -12,12 +12,12 @@ struct UserBlockedApp: Codable, Sendable {
   init(
     id: Id = .init(),
     identifier: String,
-    userId: User.Id,
+    childId: User.Id,
     schedule: RuleSchedule? = nil
   ) {
     self.id = id
     self.identifier = identifier
-    self.userId = userId
+    self.childId = childId
     self.schedule = schedule
   }
 }
@@ -51,7 +51,7 @@ extension UserBlockedApp {
     BlockedApp(identifier: self.identifier, schedule: self.schedule)
   }
 
-  init(dto: DTO, userId: User.Id) {
-    self.init(id: dto.id, identifier: dto.identifier, userId: userId, schedule: dto.schedule)
+  init(dto: DTO, childId: User.Id) {
+    self.init(id: dto.id, identifier: dto.identifier, childId: childId, schedule: dto.schedule)
   }
 }

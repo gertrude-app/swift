@@ -33,7 +33,7 @@ extension SaveUser: Resolver {
     if input.isNew {
       user = try await context.db.create(User(
         id: input.id,
-        adminId: context.admin.id,
+        parentId: context.admin.id,
         name: input.name,
         // vvv--- these are our recommended defaults
         keyloggingEnabled: true,
@@ -44,7 +44,7 @@ extension SaveUser: Resolver {
         downtime: input.downtime
       ))
       let keychain = try await context.db.create(Keychain(
-        authorId: context.admin.id,
+        parentId: context.admin.id,
         name: "\(input.name)’s Keychain",
         isPublic: false,
         description: """
@@ -53,7 +53,7 @@ extension SaveUser: Resolver {
         delete it, or create as many other keychains as you like.
         """
       ))
-      try await context.db.create(UserKeychain(userId: user.id, keychainId: keychain.id))
+      try await context.db.create(UserKeychain(childId: user.id, keychainId: keychain.id))
       dashSecurityEvent(.childAdded, "name: \(user.name)", in: context)
     } else {
       user = try await context.db.find(input.id)
@@ -75,9 +75,9 @@ extension SaveUser: Resolver {
         if !existing.elementsEqual(blockedApps) {
           dashSecurityEvent(.blockedAppsChanged, "child: \(user.name)", in: context)
           try await UserBlockedApp.query()
-            .where(.userId == user.id)
+            .where(.childId == user.id)
             .delete(in: context.db)
-          let models = blockedApps.map { UserBlockedApp(dto: $0, userId: user.id) }
+          let models = blockedApps.map { UserBlockedApp(dto: $0, childId: user.id) }
           try await context.db.create(models)
         }
       }
@@ -88,12 +88,12 @@ extension SaveUser: Resolver {
         dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
 
         try await UserKeychain.query()
-          .where(.userId == user.id)
+          .where(.childId == user.id)
           .delete(in: context.db)
 
         let pivots = input.keychains.map { keychain in
           UserKeychain(
-            userId: user.id,
+            childId: user.id,
             keychainId: keychain.id,
             schedule: keychain.schedule
           )

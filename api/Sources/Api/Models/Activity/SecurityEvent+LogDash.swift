@@ -43,7 +43,7 @@ private func dashSecurityEvent(
       // opt out of using the controlled uuid dependency
       // as the unstructured task causes test flakiness
       id: .init(UUID()),
-      adminId: adminId,
+      parentId: adminId,
       event: event.rawValue,
       detail: detail,
       ipAddress: ipAddress

@@ -37,5 +37,44 @@ extension Configure {
     app.migrations.add(AppBlockingFeature())
     app.migrations.add(IOSBlockRules())
     app.migrations.add(KeychainWarning())
+    // not deleted after here...
+    app.migrations.add(MultipleSchemas())
+    app.migrations.add(RecreateTables())
   }
 }
+
+// deleted migrations
+
+struct AdminTables: DeletedMigration {}
+struct ActivityTables: DeletedMigration {}
+struct DeviceFilterVersion: DeletedMigration {}
+struct IOSBlockRules: DeletedMigration {}
+struct AppBlockingFeature: DeletedMigration {}
+struct AddExtraMonitoring: DeletedMigration {}
+struct BrowsersTable: DeletedMigration {}
+struct AddReleaseNotes: DeletedMigration {}
+struct KeychainTables: DeletedMigration {}
+struct DeviceRefactor: DeletedMigration {}
+struct ModifySecurityEventsTable: DeletedMigration {}
+struct KeychainWarning: DeletedMigration {}
+struct DuringSuspensionActivity: DeletedMigration {}
+struct ReworkPayments: DeletedMigration {}
+struct DeviceIdForeignKey: DeletedMigration {}
+struct UnidentifiedApps: DeletedMigration {}
+struct ABTestVariants: DeletedMigration {}
+struct EliminateNetworkDecisionsTable: DeletedMigration {}
+struct RemoveUserTokenNullable: DeletedMigration {}
+struct RemoveSoftDeletes: DeletedMigration {}
+struct UserTables: DeletedMigration {}
+struct AddUserShowSuspensionActivity: DeletedMigration {}
+struct ScreenshotDisplayId: DeletedMigration {}
+struct RevertScreenshotDisplayId: DeletedMigration {}
+struct DropWaitlistedAdmins: DeletedMigration {}
+struct InterestingEventsTable: DeletedMigration {}
+struct MiscTables: DeletedMigration {}
+struct AddAdminGclid: DeletedMigration {}
+struct AppTables: DeletedMigration {}
+struct ScheduleFeatures: DeletedMigration {}
+struct RequestTables: DeletedMigration {}
+struct AddReleaseRequirementPace: DeletedMigration {}
+struct SecurityEvents: DeletedMigration {}

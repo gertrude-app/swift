@@ -97,7 +97,7 @@ class ApiTestCase: XCTestCase {
 
     let keychain = try await self.db.create(Keychain(
       id: .init(autoId),
-      authorId: admin.model.id,
+      parentId: admin.model.id,
       name: "Auto Included (test)"
     ))
 

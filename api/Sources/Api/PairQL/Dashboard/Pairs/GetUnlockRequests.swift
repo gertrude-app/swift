@@ -11,13 +11,13 @@ struct GetUnlockRequests: Pair {
 extension GetUnlockRequests: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let users = try await User.query()
-      .where(.adminId == context.admin.id)
+      .where(.parentId == context.admin.id)
       .all(in: context.db)
     let userDevices = try await UserDevice.query()
-      .where(.userId |=| users.map { .id($0) })
+      .where(.childId |=| users.map { .id($0) })
       .all(in: context.db)
     let requests = try await UnlockRequest.query()
-      .where(.userDeviceId |=| userDevices.map { .id($0) })
+      .where(.computerUserId |=| userDevices.map { .id($0) })
       .all(in: context.db)
 
     // TODO: this is super inefficient, re-queries for same entities...

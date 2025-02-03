@@ -17,7 +17,7 @@ final class MacAppResolverTests: ApiTestCase {
     )
 
     let suspendRequests = try await SuspendFilterRequest.query()
-      .where(.userDeviceId == user.device.id)
+      .where(.computerUserId == user.device.id)
       .all(in: self.db)
 
     expect(suspendRequests).toHaveCount(1)
@@ -27,7 +27,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     expect(sent.adminNotifications).toEqual([
       .init(
-        adminId: user.adminId,
+        adminId: user.parentId,
         event: .suspendFilterRequestSubmitted(.init(
           dashboardUrl: "",
           userDeviceId: user.device.id,
@@ -46,7 +46,7 @@ final class MacAppResolverTests: ApiTestCase {
 
     // admin gets two notifications on suspend filter request
     let slack = try await self.db.create(AdminVerifiedNotificationMethod(
-      adminId: user.adminId,
+      parentId: user.parentId,
       config: .slack(
         channelId: "#gertie",
         channelName: "Gertie",
@@ -54,16 +54,16 @@ final class MacAppResolverTests: ApiTestCase {
       )
     ))
     let text = try await self.db.create(AdminVerifiedNotificationMethod(
-      adminId: user.adminId,
+      parentId: user.parentId,
       config: .text(phoneNumber: "1234567890")
     ))
     try await self.db.create(AdminNotification(
-      adminId: user.adminId,
+      parentId: user.parentId,
       methodId: slack.id,
       trigger: .suspendFilterRequestSubmitted
     ))
     try await self.db.create(AdminNotification(
-      adminId: user.adminId,
+      parentId: user.parentId,
       methodId: text.id,
       trigger: .suspendFilterRequestSubmitted
     ))
@@ -195,14 +195,14 @@ final class MacAppResolverTests: ApiTestCase {
     )
 
     let retrieved = try await SecurityEvent.query()
-      .where(.userDeviceId == user.device.id)
+      .where(.computerUserId == user.device.id)
       .first(in: self.db)
 
     expect(output).toEqual(.success)
     expect(retrieved.event).toEqual("appQuit")
 
     expect(sent.adminNotifications).toEqual([.init(
-      adminId: user.adminId,
+      adminId: user.parentId,
       event: .adminChildSecurityEvent(.init(
         userName: user.name,
         event: .appQuit,

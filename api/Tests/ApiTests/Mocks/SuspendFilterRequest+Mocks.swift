@@ -4,14 +4,14 @@ import Gertie
 
 extension SuspendFilterRequest: RandomMocked {
   public static var mock: SuspendFilterRequest {
-    SuspendFilterRequest(userDeviceId: .init(), scope: .mock)
+    SuspendFilterRequest(computerUserId: .init(), scope: .mock)
   }
 
   public static var empty: SuspendFilterRequest {
-    SuspendFilterRequest(userDeviceId: .init(), scope: .empty)
+    SuspendFilterRequest(computerUserId: .init(), scope: .empty)
   }
 
   public static var random: SuspendFilterRequest {
-    SuspendFilterRequest(userDeviceId: .init(), scope: .random)
+    SuspendFilterRequest(computerUserId: .init(), scope: .random)
   }
 }

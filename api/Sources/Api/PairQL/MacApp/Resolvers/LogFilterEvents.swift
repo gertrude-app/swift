@@ -11,8 +11,8 @@ extension LogFilterEvents: Resolver {
         eventId: event.id,
         kind: "event",
         context: "macapp-filter",
-        userDeviceId: deviceId,
-        adminId: nil,
+        computerUserId: deviceId,
+        parentId: nil,
         detail: [event.detail, count > 1 ? "(\(count)x)" : nil]
           .compactMap { $0 }
           .joined(separator: " ")
@@ -51,9 +51,11 @@ extension LogFilterEvents: Resolver {
 
 struct UpsertUnidentifiedApps: CustomQueryable {
   static func query(bindings: [Postgres.Data]) -> SQL.Statement {
-    typealias UA = UnidentifiedApp.M28
+    let tableName = UnidentifiedApp.qualifiedTableName
+    let count = UnidentifiedApp.columnName(.count)
+    let bundleId = UnidentifiedApp.columnName(.bundleId)
     var stmt = SQL.Statement("""
-    INSERT INTO \(UA.tableName) (id, \(UA.bundleId), \(UA.count), created_at) VALUES (
+    INSERT INTO \(tableName) (id, \(bundleId), \(count), created_at) VALUES (
     """)
     for i in (0 ..< bindings.count).striding(by: 2) {
       stmt.components.append(.sql("'\(UUID().lowercased)', "))
@@ -65,8 +67,8 @@ struct UpsertUnidentifiedApps: CustomQueryable {
     stmt.components.removeLast()
     stmt.components.append(.sql(", CURRENT_TIMESTAMP)\n"))
     stmt.components.append(.sql("""
-    ON CONFLICT (\(UA.bundleId))
-    DO UPDATE SET \(UA.count) = \(UA.tableName).\(UA.count) + EXCLUDED.\(UA.count)
+    ON CONFLICT (\(bundleId))
+    DO UPDATE SET \(count) = \(tableName).\(count) + EXCLUDED.\(count)
     """))
     return stmt
   }
@@ -75,7 +77,7 @@ struct UpsertUnidentifiedApps: CustomQueryable {
 struct IdentifiedBundleIds: CustomQueryable {
   static func query(bindings: [Postgres.Data]) -> SQL.Statement {
     .init("""
-    SELECT \(AppBundleId.M6.bundleId) FROM \(AppBundleId.M6.tableName)
+    SELECT \(AppBundleId.columnName(.bundleId)) FROM \(AppBundleId.qualifiedTableName)
     """)
   }
 

@@ -98,12 +98,12 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testGetAdminWithNotifications() async throws {
     let admin = try await self.admin(with: \.subscriptionStatus, of: .paid)
     let method = AdminVerifiedNotificationMethod(
-      adminId: admin.id,
+      parentId: admin.id,
       config: .email(email: "blob@blob.com")
     )
     try await self.db.create(method)
     var notification = AdminNotification.random
-    notification.adminId = admin.id
+    notification.parentId = admin.id
     notification.methodId = method.id
     try await self.db.create(notification)
 
@@ -161,7 +161,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     // verify method now added to db w/ correct info
     let retrieved = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
-    expect(retrieved?.adminId).toEqual(admin.id)
+    expect(retrieved?.parentId).toEqual(admin.id)
     expect(retrieved?.config).toEqual(.text(phoneNumber: "+12345678901"))
   }
 
@@ -203,7 +203,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     // verify method now added to db w/ correct info
     let retrieved = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
-    expect(retrieved?.adminId).toEqual(admin.id)
+    expect(retrieved?.parentId).toEqual(admin.id)
     expect(retrieved?.config)
       .toEqual(.slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"))
   }
@@ -247,14 +247,14 @@ final class AuthedAdminResolverTests: ApiTestCase {
     // verify method now added to db w/ correct info
     let retrieved = try? await self.db.find(AdminVerifiedNotificationMethod.self, byId: id)
     expect(retrieved?.id.rawValue).toEqual(id)
-    expect(retrieved?.adminId).toEqual(admin.id)
+    expect(retrieved?.parentId).toEqual(admin.id)
     expect(retrieved?.config).toEqual(.email(email: "blob@blob.com"))
   }
 
   func testCreateNewAdminNotification() async throws {
     let admin = try await self.admin()
     let method = try await self.db.create(AdminVerifiedNotificationMethod(
-      adminId: admin.model.id,
+      parentId: admin.model.id,
       config: .email(email: "foo@bar.com")
     ))
 
@@ -347,15 +347,15 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testUpdateAdminNotification() async throws {
     let admin = try await self.admin()
     let email = try await self.db.create(AdminVerifiedNotificationMethod(
-      adminId: admin.model.id,
+      parentId: admin.model.id,
       config: .email(email: "foo@bar.com")
     ))
     let text = try await self.db.create(AdminVerifiedNotificationMethod(
-      adminId: admin.model.id,
+      parentId: admin.model.id,
       config: .text(phoneNumber: "1234567890")
     ))
     let notification = try await self.db.create(AdminNotification(
-      adminId: admin.model.id,
+      parentId: admin.model.id,
       methodId: email.id,
       trigger: .unlockRequestSubmitted
     ))
@@ -415,7 +415,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let expected = GetAdminKeychains.AdminKeychain(
       summary: KeychainSummary(
         id: admin.keychain.id,
-        authorId: admin.id,
+        parentId: admin.id,
         name: admin.keychain.name,
         description: admin.keychain.description,
         isPublic: admin.keychain.isPublic,
@@ -438,7 +438,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
 
     let otherAdmin = try await self.admin()
     var publicKeychain = Keychain.random
-    publicKeychain.authorId = otherAdmin.id
+    publicKeychain.parentId = otherAdmin.id
     publicKeychain.isPublic = true
     try await self.db.create(publicKeychain)
 
@@ -498,7 +498,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
   func testGetSuspendFilterRequest() async throws {
     let user = try await self.userWithDevice()
     var request = SuspendFilterRequest.random
-    request.userDeviceId = user.device.id
+    request.computerUserId = user.device.id
     try await self.db.create(request)
 
     let output = try await GetSuspendFilterRequest.resolve(
@@ -517,7 +517,7 @@ final class AuthedAdminResolverTests: ApiTestCase {
     let user = try await self.userWithDevice()
 
     var request = UnlockRequest.mock
-    request.userDeviceId = user.device.id
+    request.computerUserId = user.device.id
     request.status = .pending
     request.requestComment = "please dad"
     request.appBundleId = "com.rofl.biz"
