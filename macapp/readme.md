@@ -89,6 +89,7 @@
 - `2.6.6` (canary as of 1/22/25)
   - fix onboarding upgrade focus layout shift
   - new "encourage filter suspensions" onboarding screen
+- `2.7.0` (stable as of 1/30/25)
 
 ## Sparkle Releases
 
@@ -112,6 +113,11 @@ spctl -a -t open --context context:primary-signature -v /Volumes/Gertrude/Gertru
 ```
 
 - probably worth doublechecking by actually installing it as well...
+
+## Marketing Emails for Minor/Major Releases
+
+See https://gist.github.com/jaredh159/19da71a427ce2b890458f0694ce624c8 for code to send
+emails.
 
 ## LaunchAtLogin
 
