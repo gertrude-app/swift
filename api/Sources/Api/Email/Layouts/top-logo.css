@@ -50,9 +50,19 @@ h1 {
   color: #64748b;
 }
 
+.email-on-web {
+  margin-top: -10px;
+  margin-bottom: 35px;
+  font-size: 14px;
+  text-align: center;
+  color: #64748b;
+  font-style: italic;
+}
+
 .feature a,
 .subheading a,
-.blog-callout a {
+.blog-callout a,
+.email-on-web a {
   color: #d946ef;
   font-weight: 500;
 }

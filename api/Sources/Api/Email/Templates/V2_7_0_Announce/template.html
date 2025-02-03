@@ -1,106 +1,111 @@
-<h1>Gertrude 2.5.0 Released!</h1>
+<h1>Gertrude 2.7.0 Released!</h1>
 <p class="subheading" style="line-height: 1.45em">
-  Today we're releasing <strong>version 2.5.0</strong>, a big update to the
-  Gertrude macOS app, with some of your top-requested features, including
-  <em>scheduled keychains</em> and <em>downtime</em>. Plus, we've released the
-  first version of a
-  <a
-    href="https://gertrude.app/blog/how-parents-can-block-images-gif-search-ios-18"
-    >Gertrude iOS app,</a
-  >
-  focused on plugging holes in Apple's Screen Time features.
+  Today we're releasing <strong>version 2.7.0</strong>, a big update to the Gertrude app,
+  which includes a new ability to <b>block apps,</b> updates for changes in macOS Sequoia,
+  safety improvements, keychain warnings, and more.
 </p>
+
+<p class="email-on-web">
+  View this email on
+  <a href="https://gertrude.app/blog/gertrude-2-7-0">our blog</a>.
+</p>
+
 <section class="feature">
-  <h2>Scheduled keychains</h2>
+  <h2>Blocking Mac Apps</h2>
   <p>
-    If you've ever wanted to allow your kids access to a site or app, but only
-    at certain times, you can now do that with a new feature landing in Gertrude
-    2.5.0—<strong>Scheduled Keychains</strong>. Scheduled keychains are great
-    for things like games or entertainment-focused apps and sites that you're OK
-    with your child using, but <em>not all the time.</em> For instance, if you
-    have a keychain for Minecraft, you can assign it to only be active after
-    3pm, or on weekends. To add a schedule to a keychain, go to the "Settings"
-    screen for your child, scroll down to the assigned keychains area, and click
-    "Add Schedule".
+    As an additional layer of safety and control for parents, Gertrude
+    <code>v2.7.0</code> now allows you to
+    <a href="https://gertrude.app/docs/block-mac-apps">block any macOS app</a
+    >&mdash;either on a schedule, or all the time.
+  </p>
+  <p>
+    To access this new feature, make sure your child's Mac has the latest version of
+    Gertrude, then navigate to their
+    <a href="https://parents.gertrude.app/children">Settings</a> screen, and scroll down
+    to the area labeled <b>Blocked apps</b>. From there, you can type the name of an app
+    you want to block, and optionally configure it to only block on a schedule.
   </p>
 </section>
 <section class="feature">
-  <h2>Downtime</h2>
+  <h2>New Monitoring Safeguard</h2>
   <p>
-    Gertrude 2.5.0 brings another time-based feature for extra safety and peace
-    of mind:
-    <strong>Downtime</strong>. Downtime allows you to pick a daily time window
-    during which your child will have no access whatsoever to the internet. The
-    most common use case for this is disabling internet access
-    <strong>overnight,</strong> when your child should be sleeping or away from
-    screens.
+    It was recently brought to our attention that it was possible for very tech-savvy
+    child to take a specific sequence of steps that would result in part of the Gertrude
+    app no longer running. While we don't know that any child has ever exploited this
+    exact sequence, and even if they did it could not disable the internet filter, we
+    still felt it was important to address, because it could theoretically cause parents
+    to temporarily lose screenshot and keystroke monitoring.
   </p>
   <p>
-    To enable Downtime, go to the "Settings" screen for your child, and toggle
-    the Downtime option, then select a time. When your child's Mac is about to
-    go into downtime, they'll get a notification. Parent's can pause downtime
-    from the Gertrude menu bar dropdown with their admin password.
-  </p>
-</section>
-<section class="feature">
-  <h2>Security Events</h2>
-  <p>
-    Another new feature that landed recently is something we call “Security
-    Events.” The Gertrude macOS app and the parents website now record
-    noteworthy events like logins, filter suspensions, changes in protection
-    settings, and more. You can view a feed of recent security events from the
-    parents website in the new
-    <a href="https://parents.gertrude.app/security-events">Security</a> tab.
-    This area is especially useful if you have a highly tech-savvy child that
-    you're worried might try to circumvent Gertrude in any way, or if you have a
-    loved one you're protecting who is an adult with admin privileges on their
-    computer.
+    If the new version of Gertrude filter detects that this part is no longer running, the
+    filter will start blocking all internet access for the unmonitored user. This means
+    that any child who attempts this workaround will effectively cut off their internet
+    access until the app is completely running again, hopefully mitigating any danger.
   </p>
 </section>
 <section class="feature">
-  <h2>Gertrude Blocker iOS App</h2>
+  <h2>macOS Sequoia Updates</h2>
   <p>
-    When iOS 18 was released this fall, we were
-    <a
-      href="https://gertrude.app/blog/ios18-screentime-what-parents-should-know"
-      >dissapointed to find</a
-    >
-    that Apple had not fixed a
-    <a href="https://gertrude.app/blog/ios-17-cant-delete-messages-images"
-      >glaring loophole in Screen Time</a
-    >
-    introduced a year earlier in iOS 17—the inability for parents to block
-    <em>searching for animated GIFs</em> in the Apple texting app Messages.
-    Also, several new loopholes introduced that made iOS 18 even less safe for
-    kids.
+    Gertrude 2.7.0 also includes an update that is necessary to workaround changes in
+    privacy system settings in macOS Sequoia. Apple has recently shipped some changes
+    aimed at making it harder for malicious software to record your screen without your
+    knowledge. Gertrude's screenshot monitoring feature only works after an admin grants
+    permission, and always displays to your child when their screen is being recorded.
+    Despite this, the newest versions of Sequoia have started producing misleading
+    warnings about Gertrude accessing the screen. In some cases, these warnings could show
+    up hundreds of times a day, and could even reveal to your children the approximate
+    cadence and frequency of the screenshots.
   </p>
   <p>
-    Because of these issues, we created and released a simple iOS called
-    <strong>Gertrude Blocker</strong> that patches these loopholes in Screen
-    Time. Due to restrictions imposed by Apple, it only works for devices owned
-    by children under 18 with Apple Family Sharing turned on.
+    The new version is able to suppress these spurious warnings, but requires a new
+    permission in order to do so. You'll notice when you upgrade that Gertrude will open a
+    large window explaining the new permission and showing you how to grant it.
+  </p>
+</section>
+<section class="feature">
+  <h2>New Keychain Warnings</h2>
+  <p>
+    Some of our public keychains have areas of known risk that cannot be avoided, but
+    still make sense for certain users. For instance, the keychain for
+    <b>Google Docs</b> makes it possible for a child to search for and insert images, some
+    of which are moderately inappropriate. To make sure that parents are aware of the
+    risks, we've surfaced a new warning for any keychains that we believe are not
+    appropriate for all children.
+  </p>
+</section>
+<section class="feature">
+  <h2>Detailed Filter Status</h2>
+  <p>
+    The new version of the Gertrude app sends back more detailed information about it's
+    current filter status, including when it's suspended and when it will resume,
+    downtime, and more. This information will be showing up soon in the parent's website,
+    helping you see at a glance with even more clarity exactly what's going on with all
+    your kids' computers.
+  </p>
+</section>
+<section class="feature">
+  <h2>iOS App Updates Coming Soon...</h2>
+  <p>
+    We also have some exciting updates in the works for our
+    <a href="https://gertrude.app/blog/how-parents-can-block-images-gif-search-ios-18"
+      >Gertrude iOS app,</a
+    >
+    which we released a few months ago, including the ability to control new areas of
+    content blocking, a built-in ability to clear the cache from previously viewed GIFs,
+    and a much-improved onboarding and installation flow.
   </p>
   <p>
-    Right now the Gertrude iOS app doesn't have any direct integration with your
-    Gertrude account, but we're exploring making the app more configurable and
-    allowing it to be connected to and controlled by a parent from the Gertrude
-    parents site. For more details,
-    <a
-      href="https://gertrude.app/blog/how-parents-can-block-images-gif-search-ios-18"
-      >see our full writeup here</a
-    >
-    or
-    <a href="https://apps.apple.com/us/app/gertrude-blocker/id6736368820"
-      >view it in the app store here</a
-    >. We'd love to hear what you think if you try the app out!
+    We think these changes will pave the way towards eventually making the iOS app
+    configurable and controllable from your parents account, giving you the flexibility
+    and control you love about Gertrude for Mac, but on their iPhone or iPad. Stay tuned!
   </p>
 </section>
 <section class="feature">
   <h2>What Next?</h2>
   <p>
-    We're excited to know if these new features are useful to your family. We'd
-    also love to know what you think we should be working on next. If you have
-    ideas or feature requests, please
+    We're excited to know if these new features are useful to your family. We'd also love
+    to know what you think we should be working on next. If you have ideas or feature
+    requests, please
     <a href="https://gertrude.app/contact">reach out and let us know!</a>
   </p>
 </section>
