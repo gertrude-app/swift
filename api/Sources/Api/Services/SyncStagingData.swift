@@ -99,8 +99,7 @@ struct SyncStagingDataCommand: AsyncCommand {
       guard let json = buf.getString(at: 0, length: buf.readableBytes, encoding: .utf8) else {
         return .failure("Error converting buffer to string")
       }
-      let replaced = json.replacingOccurrences(of: "authorId", with: "parentId")
-      let data = try JSON.decode(replaced, as: SyncStagingData.self, [.isoDates])
+      let data = try JSON.decode(json, as: SyncStagingData.self, [.isoDates])
       return .success(data)
     } catch {
       return .failure("Error syncing staging data: \(error)")
