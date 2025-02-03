@@ -154,85 +154,84 @@ struct AdminQuery: CustomQueryable {
   static func query(bindings: [Postgres.Data]) -> SQL.Statement {
     .init("""
     SELECT
-        admins.id AS admin_id,
-        admins.email,
-        admins.gclid IS NOT NULL AS has_gclid,
-        admins.subscription_id,
-        admins.subscription_status,
-        admins.ab_test_variant,
-        admins.created_at AS admin_created_at,
-        COUNT(DISTINCT keychains.id) AS num_keychains,
-        COALESCE(an.num_notifications, 0) AS num_notifications,
-        users.id AS user_id,
-        users.name as user_name,
-        users.keylogging_enabled,
-        users.screenshots_enabled,
-        COALESCE(screenshot_count, 0) AS screenshot_count,
-        COALESCE(keystroke_count, 0) AS keystroke_count,
-        COUNT(DISTINCT user_keychain.keychain_id) AS user_keychain_count,
-        COUNT(DISTINCT CASE WHEN keys.deleted_at IS NULL THEN keys.id END) AS num_keys,
-        user_devices.numeric_id,
-        user_devices.app_version,
-        user_devices.created_at AS user_device_created_at,
-        user_devices.id AS user_device_id,
-        users.created_at AS user_created_at,
-        devices.filter_version,
-        devices.model_identifier,
-        devices.app_release_channel,
-        devices.os_version,
-        devices.id AS device_id
-    FROM admins
-    LEFT JOIN keychains ON admins.id = keychains.author_id
+      parent.parents.id AS admin_id,
+      parent.parents.email,
+      parent.parents.gclid IS NOT NULL AS has_gclid,
+      parent.parents.subscription_id,
+      parent.parents.subscription_status,
+      parent.parents.ab_test_variant,
+      parent.parents.created_at AS admin_created_at,
+      COUNT(DISTINCT parent.keychains.id) AS num_keychains,
+      COALESCE(an.num_notifications, 0) AS num_notifications,
+      parent.children.id AS user_id,
+      parent.children.name as user_name,
+      parent.children.keylogging_enabled,
+      parent.children.screenshots_enabled,
+      COALESCE(screenshot_count, 0) AS screenshot_count,
+      COALESCE(keystroke_count, 0) AS keystroke_count,
+      COUNT(DISTINCT child.keychains.keychain_id) AS user_keychain_count,
+      COUNT(DISTINCT CASE WHEN parent.keys.deleted_at IS NULL THEN parent.keys.id END) AS num_keys,
+      child.computer_users.numeric_id,
+      child.computer_users.app_version,
+      child.computer_users.created_at AS user_device_created_at,
+      child.computer_users.id AS user_device_id,
+      parent.children.created_at AS user_created_at,
+      parent.computers.filter_version,
+      parent.computers.model_identifier,
+      parent.computers.app_release_channel,
+      parent.computers.os_version,
+      parent.computers.id AS device_id
+    FROM parent.parents
+    LEFT JOIN parent.keychains ON parent.parents.id = parent.keychains.parent_id
     LEFT JOIN (
-        SELECT admin_id, COUNT(DISTINCT id) AS num_notifications
-        FROM admin_notifications
-        GROUP BY admin_id
-    ) AS an ON admins.id = an.admin_id
-    LEFT JOIN users ON admins.id = users.admin_id
+      SELECT parent_id, COUNT(DISTINCT id) AS num_notifications
+      FROM parent.notifications
+      GROUP BY parent_id
+    ) AS an ON parent.parents.id = an.parent_id
+    LEFT JOIN parent.children ON parent.parents.id = parent.children.parent_id
     LEFT JOIN (
-        SELECT ud.user_id, COUNT(DISTINCT s.id) AS screenshot_count
-        FROM screenshots s
-        JOIN user_devices ud ON s.user_device_id = ud.id
-        WHERE s.deleted_at IS NULL
-        GROUP BY ud.user_id
-    ) AS s ON users.id = s.user_id
+      SELECT ud.child_id, COUNT(DISTINCT s.id) AS screenshot_count
+      FROM macapp.screenshots s
+      JOIN child.computer_users ud ON s.computer_user_id = ud.id
+      WHERE s.deleted_at IS NULL
+      GROUP BY ud.child_id
+    ) AS s ON parent.children.id = s.child_id
     LEFT JOIN (
-        SELECT ud.user_id, COUNT(DISTINCT kl.id) AS keystroke_count
-        FROM keystroke_lines kl
-        JOIN user_devices ud ON kl.user_device_id = ud.id
-        WHERE kl.deleted_at IS NULL
-        GROUP BY ud.user_id
-    ) AS k ON users.id = k.user_id
-    LEFT JOIN user_devices ON users.id = user_devices.user_id
-    LEFT JOIN devices ON user_devices.device_id = devices.id
-    LEFT JOIN user_keychain ON users.id = user_keychain.user_id
-    LEFT JOIN keys ON user_keychain.keychain_id = keys.keychain_id
+      SELECT ud.child_id, COUNT(DISTINCT kl.id) AS keystroke_count
+      FROM macapp.keystroke_lines kl
+      JOIN child.computer_users ud ON kl.computer_user_id = ud.id
+      WHERE kl.deleted_at IS NULL
+      GROUP BY ud.child_id
+    ) AS k ON parent.children.id = k.child_id
+    LEFT JOIN child.computer_users ON parent.children.id = child.computer_users.child_id
+    LEFT JOIN parent.computers ON child.computer_users.computer_id = parent.computers.id
+    LEFT JOIN child.keychains ON parent.children.id = child.keychains.child_id
+    LEFT JOIN parent.keys ON child.keychains.keychain_id = parent.keys.keychain_id
     WHERE
-      admins.email NOT LIKE '%.smoke-test-%'
+      parent.parents.email NOT LIKE '%.smoke-test-%'
     GROUP BY
-      admins.id,
-      admins.email,
-      admins.subscription_id,
-      admins.subscription_status,
-      admins.created_at,
-      users.id,
-      users.name,
-      users.keylogging_enabled,
-      users.screenshots_enabled,
+      parent.parents.id,
+      parent.parents.email,
+      parent.parents.subscription_id,
+      parent.parents.subscription_status,
+      parent.parents.created_at,
+      parent.children.id,
+      parent.children.name,
+      parent.children.keylogging_enabled,
+      parent.children.screenshots_enabled,
       an.num_notifications,
       screenshot_count,
       keystroke_count,
-      user_devices.numeric_id,
-      user_devices.app_version,
-      user_devices.created_at,
-      user_devices.id,
-      users.created_at,
-      devices.filter_version,
-      devices.model_identifier,
-      devices.app_release_channel,
-      devices.os_version,
-      devices.id
-    ORDER BY admins.id;
+      child.computer_users.numeric_id,
+      child.computer_users.app_version,
+      child.computer_users.created_at,
+      child.computer_users.id,
+      parent.children.created_at,
+      parent.computers.filter_version,
+      parent.computers.model_identifier,
+      parent.computers.app_release_channel,
+      parent.computers.os_version,
+      parent.computers.id;
     """)
   }
 
