@@ -7,8 +7,8 @@ import Vapor
 import XCore
 
 enum SubscriptionEmail: Equatable {
-  case trialEndingSoon
-  case trialEndedToOverdue
+  case trialEndingSoon(length: Int, remaining: Int)
+  case trialEndedToOverdue(length: Int)
   case overdueToUnpaid
   case paidToOverdue
   case unpaidToPendingDelete
@@ -91,21 +91,28 @@ struct SubscriptionManager: AsyncScheduledJob {
         email: .deleteEmailUnverified
       )
 
-    case .trialing:
+    case .trialing where admin.trialPeriodDays == 60: // <-- legacy 60-day trial
       return .init(
         action: .update(
           status: .trialExpiringSoon,
           expiration: self.now + .days(7)
         ),
-        // NB: trial ending soon email is ALWAYS sent, regardless of onboarding status
-        // but if they have never onboarded, it will be the only email they receive
-        email: .trialEndingSoon
+        email: .trialEndingSoon(length: admin.trialPeriodDays, remaining: 7)
+      )
+
+    case .trialing:
+      return .init(
+        action: .update(
+          status: .trialExpiringSoon,
+          expiration: self.now + .days(3)
+        ),
+        email: .trialEndingSoon(length: admin.trialPeriodDays, remaining: 3)
       )
 
     case .trialExpiringSoon:
       return .init(
-        action: .update(status: .overdue, expiration: self.now + .days(14)),
-        email: completedOnboarding ? .trialEndedToOverdue : nil
+        action: .update(status: .overdue, expiration: self.now + .days(7)),
+        email: completedOnboarding ? .trialEndedToOverdue(length: admin.trialPeriodDays) : nil
       )
 
     case .overdue:
@@ -176,10 +183,13 @@ private extension Admin {
 
 func email(_ event: SubscriptionEmail, to address: EmailAddress) -> TemplateEmail {
   switch event {
-  case .trialEndingSoon:
-    return .trialEndingSoon(to: address.rawValue, model: .init())
-  case .trialEndedToOverdue:
-    return .trialEndedToOverdue(to: address.rawValue, model: .init())
+  case .trialEndingSoon(let length, let remaining):
+    return .trialEndingSoon(
+      to: address.rawValue,
+      model: .init(length: length, remaining: remaining)
+    )
+  case .trialEndedToOverdue(let length):
+    return .trialEndedToOverdue(to: address.rawValue, model: .init(length: length))
   case .overdueToUnpaid:
     return .overdueToUnpaid(to: address.rawValue, model: .init())
   case .paidToOverdue:

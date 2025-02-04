@@ -37,14 +37,16 @@ extension Configure {
     app.migrations.add(AppBlockingFeature())
     app.migrations.add(IOSBlockRules())
     app.migrations.add(KeychainWarning())
-    // not deleted after here...
     app.migrations.add(MultipleSchemas())
+    // not deleted after here...
     app.migrations.add(RecreateTables())
+    app.migrations.add(MarketingPrep())
   }
 }
 
 // deleted migrations
 
+// @see https://github.com/gertrude-app/swift/tree/833260d1
 struct AdminTables: DeletedMigration {}
 struct ActivityTables: DeletedMigration {}
 struct DeviceFilterVersion: DeletedMigration {}
@@ -78,3 +80,5 @@ struct ScheduleFeatures: DeletedMigration {}
 struct RequestTables: DeletedMigration {}
 struct AddReleaseRequirementPace: DeletedMigration {}
 struct SecurityEvents: DeletedMigration {}
+// @see https://github.com/gertrude-app/swift/tree/57c4073a
+struct MultipleSchemas: DeletedMigration {}

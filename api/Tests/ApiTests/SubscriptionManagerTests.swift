@@ -35,7 +35,7 @@ final class SubscriptionManagerTests: ApiTestCase {
     let retrievedTrialEndingSoon = try await self.db.find(trialEndingSoon.id)
     expect(retrievedTrialEndingSoon.subscriptionStatus).toEqual(.trialExpiringSoon)
     expect(retrievedTrialEndingSoon.subscriptionStatusExpiration)
-      .toEqual(.reference + .days(7))
+      .toEqual(.reference + .days(3))
 
     let retrievedShouldDelete = try? await self.db.find(shouldDelete.id)
     expect(retrievedShouldDelete).toBeNil()
@@ -62,8 +62,21 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatusExpiration = .epoch
     }
     expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
+      action: .update(status: .trialExpiringSoon, expiration: .reference + .days(3)),
+      email: .trialEndingSoon(length: 21, remaining: 3)
+    ))
+  }
+
+  func testLegacyLongTrialPeriod() async throws {
+    let parent = Admin.random {
+      $0.subscriptionStatus = .trialing
+      $0.trialPeriodDays = 60 // <-- legacy 60-day trial
+      $0.subscriptionStatusExpiration = .epoch
+    }
+
+    expect(try await SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(status: .trialExpiringSoon, expiration: .reference + .days(7)),
-      email: .trialEndingSoon
+      email: .trialEndingSoon(length: 60, remaining: 7)
     ))
   }
 
@@ -73,7 +86,7 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatusExpiration = .epoch
     }
     expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .overdue, expiration: .reference + .days(14)),
+      action: .update(status: .overdue, expiration: .reference + .days(7)),
       email: nil // <-- no email, they never onboarded
     ))
   }
@@ -84,8 +97,8 @@ final class SubscriptionManagerTests: ApiTestCase {
       $0.subscriptionStatusExpiration = .epoch
     }.withOnboardedChild().model
     expect(try await SubscriptionManager().subscriptionUpdate(for: admin)).toEqual(.init(
-      action: .update(status: .overdue, expiration: .reference + .days(14)),
-      email: .trialEndedToOverdue
+      action: .update(status: .overdue, expiration: .reference + .days(7)),
+      email: .trialEndedToOverdue(length: 21)
     ))
   }
 

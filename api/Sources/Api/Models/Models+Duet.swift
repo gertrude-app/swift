@@ -87,6 +87,8 @@ extension Admin {
     case subscriptionStatusExpiration
     case gclid
     case abTestVariant
+    case monthlyPrice
+    case trialPeriodDays
     case createdAt
     case updatedAt
   }

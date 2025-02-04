@@ -44,7 +44,6 @@ public struct Env: Sendable {
 
   public struct Stripe: Sendable {
     public var secretKey: String
-    public var subscriptionPriceId: String
   }
 
   public struct Twilio: Sendable {
@@ -118,10 +117,7 @@ extension Env: DependencyKey {
         authToken: processEnv("TWILIO_AUTH_TOKEN"),
         fromPhone: processEnv("TWILIO_FROM_PHONE")
       ),
-      stripe: Stripe(
-        secretKey: processEnv("STRIPE_SECRET_KEY"),
-        subscriptionPriceId: processEnv("STRIPE_SUBSCRIPTION_PRICE_ID")
-      ),
+      stripe: Stripe(secretKey: processEnv("STRIPE_SECRET_KEY")),
       primarySupportEmail: processEnv("PRIMARY_SUPPORT_EMAIL"),
       superAdminEmail: processEnv("SUPER_ADMIN_EMAIL"),
       analyticsSiteUrl: processEnv("ANALYTICS_SITE_URL"),

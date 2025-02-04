@@ -6,7 +6,7 @@ import PairQL
 
 struct UserKeychainSummary: PairNestable {
   var id: Api.Keychain.Id
-  var authorId: Admin.Id
+  var parentId: Admin.Id
   var name: String
   var description: String?
   var isPublic: Bool
@@ -77,7 +77,7 @@ func userKeychainSummaries(
     )
     return .init(
       id: keychain.id,
-      authorId: keychain.parentId,
+      parentId: keychain.parentId,
       name: keychain.name,
       description: keychain.description,
       isPublic: keychain.isPublic,

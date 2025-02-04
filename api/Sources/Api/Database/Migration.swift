@@ -74,13 +74,6 @@ extension Migration {
 protocol DeletedMigration: GertieMigration {}
 
 extension DeletedMigration {
-  func up(sql: SQLDatabase) async throws {
-    with(dependency: \.logger)
-      .error("Migration \(String(describing: Self.self).magenta) is deleted (up)")
-  }
-
-  func down(sql: SQLDatabase) async throws {
-    with(dependency: \.logger)
-      .error("Migration \(String(describing: Self.self).magenta) is deleted (down)")
-  }
+  func up(sql: SQLDatabase) async throws {}
+  func down(sql: SQLDatabase) async throws {}
 }

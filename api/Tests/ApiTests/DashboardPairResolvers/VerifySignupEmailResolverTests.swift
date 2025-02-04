@@ -22,7 +22,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase {
 
     expect(output.adminId).toEqual(admin.id)
     expect(retrieved.subscriptionStatus).toEqual(.trialing)
-    expect(retrieved.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(53)))
+    expect(retrieved.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(18)))
     expect(method.config).toEqual(.email(email: admin.email.rawValue))
   }
 

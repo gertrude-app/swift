@@ -32,7 +32,7 @@ extension VerifySignupEmail: Resolver {
         return .init(token: token.value, adminId: admin.id)
       }
 
-      admin.subscriptionStatusExpiration = get(dependency: \.date.now) + .days(60 - 7)
+      admin.subscriptionStatusExpiration = get(dependency: \.date.now) + .days(21 - 3)
       admin.subscriptionStatus = .trialing
 
       try await context.db.update(admin)

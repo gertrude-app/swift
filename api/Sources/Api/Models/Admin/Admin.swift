@@ -1,5 +1,6 @@
 import DuetSQL
 import Gertie
+import TaggedMoney
 
 struct Admin: Codable, Sendable {
   var id: Id
@@ -8,6 +9,8 @@ struct Admin: Codable, Sendable {
   var subscriptionId: SubscriptionId?
   var subscriptionStatus: SubscriptionStatus
   var subscriptionStatusExpiration: Date
+  var monthlyPrice: Cents<Int>
+  var trialPeriodDays: Int
   var gclid: String?
   var abTestVariant: String?
   var createdAt = Date()
@@ -28,6 +31,8 @@ struct Admin: Codable, Sendable {
     subscriptionStatus: SubscriptionStatus = .pendingEmailVerification,
     subscriptionStatusExpiration: Date = Date().advanced(by: .days(7)),
     subscriptionId: SubscriptionId? = nil,
+    monthlyPrice: Cents<Int> = .init(1500),
+    trialPeriodDays: Int = 21,
     gclid: String? = nil,
     abTestVariant: String? = nil
   ) {
@@ -37,8 +42,23 @@ struct Admin: Codable, Sendable {
     self.subscriptionId = subscriptionId
     self.subscriptionStatus = subscriptionStatus
     self.subscriptionStatusExpiration = subscriptionStatusExpiration
+    self.monthlyPrice = monthlyPrice
+    self.trialPeriodDays = trialPeriodDays
     self.gclid = gclid
     self.abTestVariant = abTestVariant
+  }
+}
+
+// extensions
+
+extension Admin {
+  var stripePriceId: String {
+    switch self.monthlyPrice.rawValue {
+    case 1500:
+      return "price_1QooP1GKRdhETuKAcVawow7B"
+    default:
+      return "price_1M9xZYGKRdhETuKA22aYJ4fI"
+    }
   }
 }
 
