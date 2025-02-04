@@ -97,10 +97,18 @@ struct V2_7_0_Announce: TemplateEmailModel {
 enum AccountLifecycle {
   struct TrialEndingSoon: TemplateEmailModel {
     static var subject: String { "[action required] Gertrude trial ending soon" }
+    var length: Int
+    var remaining: Int
+    var templateModel: [String: String] { [
+      "length": "\(self.length)",
+      "remaining": "\(self.remaining)",
+    ] }
   }
 
   struct TrialEndedToOverdue: TemplateEmailModel {
     static var subject: String { "[action required] Gertrude trial ended" }
+    var length: Int
+    var templateModel: [String: String] { ["length": "\(self.length)"] }
   }
 
   struct OverdueToUnpaid: TemplateEmailModel {

@@ -42,6 +42,7 @@ let package = Package(
         .product(name: "MacAppRoute", package: "pairql-macapp"),
         .product(name: "IOSRoute", package: "pairql-iosapp"),
         .product(name: "TaggedTime", package: "swift-tagged"),
+        .product(name: "TaggedMoney", package: "swift-tagged"),
         .product(name: "VaporRouting", package: "vapor-routing"),
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "XAws", package: "x-aws"),

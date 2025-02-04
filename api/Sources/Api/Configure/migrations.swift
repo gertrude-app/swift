@@ -40,6 +40,7 @@ extension Configure {
     app.migrations.add(MultipleSchemas())
     // not deleted after here...
     app.migrations.add(RecreateTables())
+    app.migrations.add(MarketingPrep())
   }
 }
 
@@ -79,5 +80,5 @@ struct ScheduleFeatures: DeletedMigration {}
 struct RequestTables: DeletedMigration {}
 struct AddReleaseRequirementPace: DeletedMigration {}
 struct SecurityEvents: DeletedMigration {}
-// see https://github.com/gertrude-app/swift/tree/57c4073a
+// @see https://github.com/gertrude-app/swift/tree/57c4073a
 struct MultipleSchemas: DeletedMigration {}

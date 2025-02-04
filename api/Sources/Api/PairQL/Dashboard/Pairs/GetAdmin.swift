@@ -31,6 +31,7 @@ struct GetAdmin: Pair {
     var notifications: [Notification]
     var verifiedNotificationMethods: [VerifiedNotificationMethod]
     var hasAdminChild: Bool
+    var monthlyPriceInDollars: Int
   }
 }
 
@@ -56,7 +57,8 @@ extension GetAdmin: NoInputResolver {
       verifiedNotificationMethods: try await methods.map {
         .init(id: $0.id, config: $0.config)
       },
-      hasAdminChild: try await hasAdminChild
+      hasAdminChild: try await hasAdminChild,
+      monthlyPriceInDollars: Int(admin.monthlyPrice.rawValue / 100)
     )
   }
 }

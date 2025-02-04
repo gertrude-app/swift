@@ -1,7 +1,7 @@
 Gertrude parent account holder,
 
 This is Jared from Gertrude, writing to let you know that because your Gertrude trial
-period ended, and we did not receive any payment within 2 weeks, your account has been
+period ended, and we did not receive any payment within 7 days, your account has been
 disabled. If you'd like to continue using Gertrude, please login to the parents website
 here:
 

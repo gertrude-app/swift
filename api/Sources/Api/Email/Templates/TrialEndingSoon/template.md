@@ -1,8 +1,8 @@
 Hi there! 👋
 
-This is Jared from Gertrude, writing to let you know that your 60 day free trial is ending
-in 7 days. If you'd like to continue using Gertrude, please login to the parents website
-here:
+This is Jared from Gertrude, writing to let you know that your {{length}} day free trial
+is ending in {{remaining}} days. If you'd like to continue using Gertrude, please login to
+the parents website here:
 
 https://parents.gertrude.app/settings
 

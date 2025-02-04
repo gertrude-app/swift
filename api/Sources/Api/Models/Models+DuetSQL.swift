@@ -49,6 +49,8 @@ extension Admin: Model {
     case .subscriptionStatusExpiration: .date(self.subscriptionStatusExpiration)
     case .gclid: .string(self.gclid)
     case .abTestVariant: .string(self.abTestVariant)
+    case .monthlyPrice: .int(self.monthlyPrice.rawValue)
+    case .trialPeriodDays: .int(self.trialPeriodDays)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
     }
@@ -64,6 +66,8 @@ extension Admin: Model {
       .subscriptionStatusExpiration: .date(subscriptionStatusExpiration),
       .gclid: .string(gclid),
       .abTestVariant: .string(abTestVariant),
+      .monthlyPrice: .int(monthlyPrice.rawValue),
+      .trialPeriodDays: .int(trialPeriodDays),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
