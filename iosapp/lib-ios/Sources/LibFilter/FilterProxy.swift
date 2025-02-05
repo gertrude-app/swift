@@ -1,4 +1,6 @@
+import Dependencies
 import GertieIOS
+import LibClients
 
 #if canImport(NetworkExtension)
   import NetworkExtension
@@ -7,16 +9,41 @@ import GertieIOS
 #endif
 
 public class FilterProxy {
-  var rules: [BlockRule] = BlockRule.defaults
-  var loadRules: () -> [BlockRule]?
+  @Dependency(\.osLog) var logger
+  @Dependency(\.storage) var storage
+  @Dependency(\.suspendingClock) var clock
 
-  public init(
-    rules: [BlockRule] = BlockRule.defaults,
-    loadRules: @escaping () -> [BlockRule]?
-  ) {
+  var rules: [BlockRule]
+  var heartbeatTask: Task<Void, Error>?
+
+  public init(rules: [BlockRule]) {
     self.rules = rules
-    self.loadRules = loadRules
+    self.logger.setPrefix("FILTER PROXY")
     self.readRules()
+  }
+
+  public func startHeartbeat(interval: Duration) {
+    self.heartbeatTask = Task {
+      while true {
+        try await self.clock.sleep(for: interval)
+        self.receiveHeartbeat()
+      }
+    }
+  }
+
+  func loadRules() -> [BlockRule]? {
+    guard let data = self.storage.loadData(forKey: .blockRulesStorageKey) else {
+      self.logger.log("no rules found")
+      return nil
+    }
+    do {
+      let rules = try JSONDecoder().decode([BlockRule].self, from: data)
+      self.logger.log("read \(rules.count) rules")
+      return rules
+    } catch {
+      self.logger.log("error decoding rules: \(String(reflecting: error))")
+      return nil
+    }
   }
 
   public func decideFlow(

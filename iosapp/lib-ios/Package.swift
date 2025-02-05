@@ -32,7 +32,9 @@ let package = Package(
       name: "LibFilter",
       dependencies: [
         "LibCore",
+        "LibClients",
         .product(name: "GertieIOS", package: "gertie"),
+        .product(name: "Dependencies", package: "swift-dependencies"),
       ]
     ),
     .target(
