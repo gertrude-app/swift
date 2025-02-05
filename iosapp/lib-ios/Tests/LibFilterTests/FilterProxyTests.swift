@@ -1,66 +1,118 @@
 import ConcurrencyExtras
+import Dependencies
 import XCTest
 import XExpect
 
 @testable import LibFilter
 
 final class FilterProxyTests: XCTestCase {
-  func testReadsRulesInHeartbeat() {
-    let invocations = LockIsolated(0)
-    let manager = FilterProxy(rules: []) {
-      invocations.withValue { $0 += 1 }
-      return [.urlContains("lol")]
+  func testReadsRulesInHeartbeat() async throws {
+    let logs = LockIsolated<[String]>([])
+    let rules = LockIsolated<[BlockRule]>([.urlContains("foo")])
+    let clock = TestClock()
+
+    let proxy = withDependencies {
+      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+      $0.suspendingClock = clock
+      $0.storage.loadData = { @Sendable _ in
+        try! JSONEncoder().encode(rules.value)
+      }
+    } operation: {
+      FilterProxy(rules: [])
     }
 
-    // loadRules is called in the init
-    expect(invocations.value).toEqual(1)
-    expect(manager.rules).toEqual([.urlContains("lol")])
+    expect(proxy.rules).toEqual([.urlContains("foo")])
+    expect(logs.value).toEqual(["read 1 rules"])
 
-    manager.receiveHeartbeat()
-    expect(invocations.value).toEqual(2)
-    expect(manager.rules).toEqual([.urlContains("lol")])
-    manager.receiveHeartbeat()
-    manager.receiveHeartbeat()
-    manager.receiveHeartbeat()
-    expect(invocations.value).toEqual(5)
+    proxy.startHeartbeat(interval: .seconds(60))
+    await clock.advance(by: .seconds(59))
+
+    // no heartbeat yet
+    expect(logs.value).toEqual(["read 1 rules"])
+    rules.setValue([.urlContains("bar"), .urlContains("baz")])
+
+    // heartbeat should happen here
+    await clock.advance(by: .seconds(1))
+    expect(logs.value).toEqual(["read 1 rules", "read 2 rules"])
+    expect(proxy.rules).toEqual([.urlContains("bar"), .urlContains("baz")])
   }
 
   func testReadsRulesOnStart() {
-    let loadRulesCalled = LockIsolated(0)
-    let manager = FilterProxy(rules: []) {
-      loadRulesCalled.withValue { $0 += 1 }
-      return [.urlContains("lol")]
+    let logs = LockIsolated<[String]>([])
+    let proxy = withDependencies {
+      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+      $0.storage.loadData = { @Sendable key in
+        expect(key).toEqual(.blockRulesStorageKey)
+        return try! JSONEncoder().encode([BlockRule.urlContains("lol")])
+      }
+    } operation: {
+      FilterProxy(rules: [])
     }
 
-    // loadRules is called in the init
-    expect(loadRulesCalled.value).toEqual(1)
-    expect(manager.rules).toEqual([.urlContains("lol")])
-
-    manager.startFilter()
-
-    expect(loadRulesCalled.value).toEqual(2)
-    expect(manager.rules).toEqual([.urlContains("lol")])
+    expect(proxy.rules).toEqual([.urlContains("lol")])
+    expect(logs.value).toEqual(["read 1 rules"])
   }
 
   func testHandleRulesChangesCausesReadRules() {
-    let loadRulesCalled = LockIsolated(0)
-    let manager = FilterProxy(rules: []) {
-      loadRulesCalled.withValue { $0 += 1 }
-      return [.urlContains("lol")]
+    let logs = LockIsolated<[String]>([])
+    let rules = LockIsolated<[BlockRule]>([.urlContains("foo")])
+
+    let proxy = withDependencies {
+      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+      $0.storage.loadData = { @Sendable _ in
+        try! JSONEncoder().encode(rules.value)
+      }
+    } operation: {
+      FilterProxy(rules: [])
     }
 
-    expect(loadRulesCalled.value).toEqual(1)
-    expect(manager.rules).toEqual([.urlContains("lol")])
+    // init
+    expect(proxy.rules).toEqual([.urlContains("foo")])
+    expect(logs.value).toEqual(["read 1 rules"])
 
-    manager.handleRulesChanged()
-    expect(loadRulesCalled.value).toEqual(2)
-    expect(manager.rules).toEqual([.urlContains("lol")])
+    rules.setValue([.urlContains("bar"), .urlContains("baz")])
+    proxy.handleRulesChanged()
+
+    expect(logs.value).toEqual(["read 1 rules", "read 2 rules"])
+    expect(proxy.rules).toEqual([.urlContains("bar"), .urlContains("baz")])
   }
 
-  func testReadRulesFailureRecordsErrAndKeepsOldRules() {
-    let manager = FilterProxy(rules: [.urlContains("old")]) { nil } // <- no rules
-    expect(manager.rules).toEqual([.urlContains("old")])
-    manager.receiveHeartbeat()
-    expect(manager.rules).toEqual([.urlContains("old")])
+  func testReadRulesNilLogsErrAndKeepsOldRules() {
+    let logs = LockIsolated<[String]>([])
+
+    let proxy = withDependencies {
+      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+      $0.storage.loadData = { @Sendable _ in nil }
+    } operation: {
+      FilterProxy(rules: [.urlContains("old")])
+    }
+
+    expect(proxy.rules).toEqual([.urlContains("old")])
+    expect(logs.value).toEqual(["no rules found"])
+
+    proxy.receiveHeartbeat()
+
+    expect(proxy.rules).toEqual([.urlContains("old")])
+    expect(logs.value).toEqual(["no rules found", "no rules found"])
+  }
+
+  func testReadRulesDecodeErrorLogsErrAndKeepsOldRules() {
+    struct TestError: Error {}
+    let logs = LockIsolated<[String]>([])
+
+    let proxy = withDependencies {
+      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+      $0.storage.loadData = { @Sendable _ in
+        String("nope").data(using: .utf8)!
+      }
+    } operation: {
+      FilterProxy(rules: [.urlContains("old")])
+    }
+
+    expect(logs.value.count).toEqual(1)
+    expect(logs.value[0]).toContain("error decoding rules:")
+
+    // we keep the rules
+    expect(proxy.rules).toEqual([.urlContains("old")])
   }
 }
