@@ -70,7 +70,7 @@ public struct AppReducer {
       case .appLaunched:
         return .merge(
           .run { send in
-            await send(.setRunning(await self.systemExtension.filterRunning()))
+            await send(.setRunning(self.systemExtension.filterRunning()))
           },
           .run { _ in
             let blockRules = try await self.api.fetchBlockRules()

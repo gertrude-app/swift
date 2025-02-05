@@ -14,20 +14,45 @@ extension Duration {
   }
 }
 
-struct Vector: Equatable, Identifiable {
+struct Vector: Equatable, Identifiable, AdditiveArithmetic {
   var x: Double
   var y: Double
+  
+  var magnitude: Double {
+    sqrt(x * x + y * y)
+  }
   
   var isOrigin: Bool {
     self.x == 0 && self.y == 0
   }
   
-  static var origin: Vector {
-    .init(0, 0)
+  var normalized: Vector {
+    self.scaledBy(1 / self.magnitude)
   }
 
+  func scaledBy(_ scalar: Double) -> Vector {
+    .init(x: x * scalar, y: y * scalar)
+  }
+  
+  static var zero: Vector {
+    .init(x: 0, y: 0)
+  }
+  
+  static func - (lhs: Vector, rhs: Vector) -> Vector {
+    return .init(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
+  }
+  
+  static func + (lhs: Vector, rhs: Vector) -> Vector {
+    return .init(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
+  }
+  
+  static func += (lhs: inout Vector, rhs: Vector) {
+      lhs = lhs + rhs
+  }
+  
+
   var id: UUID
-  init(_ x: Double, _ y: Double) {
+  init(x: Double, y: Double) {
     self.x = x
     self.y = y
     self.id = UUID()

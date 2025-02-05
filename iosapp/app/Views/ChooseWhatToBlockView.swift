@@ -2,19 +2,19 @@ import SwiftUI
 
 struct ChooseWhatToBlockView: View {
   @Environment(\.colorScheme) var cs
-  
+
   let onTap: () -> Void
-  
+
   struct BlockableItem: Identifiable {
     var name: String
     var shortDescription: String
     var longDescription: String
     var image: String
     var isSelected: Bool
-    
+
     var id: String
   }
-  
+
   @State private var blockableItems = [
     (
       "GIFs",
@@ -74,27 +74,27 @@ struct ChooseWhatToBlockView: View {
       id: name
     )
   }
-  
+
   @State private var sheetItem: BlockableItem? = nil
-  
-  @State private var iconOffset = Vector(0, 20)
-  @State private var titleOffset = Vector(0, 20)
-  @State private var paragraphOffset = Vector(0, 20)
-  @State private var itemOffsets = Array(repeating: Vector(0, 40), count: 8)
-  @State private var buttonOffset = Vector(0, 20)
+
+  @State private var iconOffset = Vector(x: 0, y: 20)
+  @State private var titleOffset = Vector(x: 0, y: 20)
+  @State private var paragraphOffset = Vector(x: 0, y: 20)
+  @State private var itemOffsets = Array(repeating: Vector(x: 0, y: 40), count: 8)
+  @State private var buttonOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
-  
+
   var body: some View {
     ScrollView {
       VStack(alignment: .center) {
         Image(systemName: "party.popper")
           .font(.system(size: 30, weight: .semibold))
-          .foregroundStyle(Color(cs, light: .violet800, dark: .violet400))
+          .foregroundStyle(Color(self.cs, light: .violet800, dark: .violet400))
           .padding(12)
-          .background(Color(cs, light: .violet300.opacity(0.6), dark: .violet950))
+          .background(Color(self.cs, light: .violet300.opacity(0.6), dark: .violet950))
           .cornerRadius(24)
-          .swooshIn(tracking: self.$iconOffset, to: .origin, after: .zero, for: .seconds(0.6))
-        
+          .swooshIn(tracking: self.$iconOffset, to: .zero, after: .zero, for: .seconds(0.6))
+
         Text("Success! We're nearly done.")
           .multilineTextAlignment(.center)
           .font(.system(size: 24, weight: .bold))
@@ -102,24 +102,24 @@ struct ChooseWhatToBlockView: View {
           .padding(.bottom, 8)
           .swooshIn(
             tracking: self.$titleOffset,
-            to: .origin,
+            to: .zero,
             after: .seconds(0.1),
             for: .seconds(0.6)
           )
-        
+
         Text(
           "Gertrude is all set to block content. Take a moment to decide if there are any of these types of content that you don't want to block:"
         )
         .multilineTextAlignment(.center)
         .font(.system(size: 18, weight: .medium))
-        .foregroundStyle(Color(cs, light: .black.opacity(0.8), dark: .white.opacity(0.8)))
+        .foregroundStyle(Color(self.cs, light: .black.opacity(0.8), dark: .white.opacity(0.8)))
         .swooshIn(
           tracking: self.$paragraphOffset,
-          to: .origin,
+          to: .zero,
           after: .seconds(0.2),
           for: .seconds(0.6)
         )
-        
+
         VStack(alignment: .leading) {
           ForEach(Array(self.$blockableItems.enumerated()), id: \.offset) { index, $item in
             Button {
@@ -133,7 +133,11 @@ struct ChooseWhatToBlockView: View {
                   .scaleEffect(item.isSelected ? 1 : 0)
                   .foregroundStyle(.white)
                   .padding(4)
-                  .background(item.isSelected ? Color.violet500 : Color(cs, light: .white, dark: .black))
+                  .background(item.isSelected ? Color.violet500 : Color(
+                    self.cs,
+                    light: .white,
+                    dark: .black
+                  ))
                   .cornerRadius(6)
                   .overlay {
                     RoundedRectangle(cornerRadius: 6)
@@ -142,41 +146,55 @@ struct ChooseWhatToBlockView: View {
                         lineWidth: 2
                       )
                   }
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                   HStack {
                     Text(item.name)
                       .font(.system(size: 18, weight: .semibold))
-                      .foregroundStyle(Color(cs, light: .black, dark: .white))
+                      .foregroundStyle(Color(self.cs, light: .black, dark: .white))
                     Button {
                       self.sheetItem = item
                     } label: {
                       Image(systemName: "questionmark.circle")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color(cs, light: .black.opacity(0.4), dark: .white.opacity(0.4)))
+                        .foregroundStyle(Color(
+                          self.cs,
+                          light: .black.opacity(0.4),
+                          dark: .white.opacity(0.4)
+                        ))
                         .multilineTextAlignment(.leading)
                     }
                   }
-                  
+
                   Text(item.shortDescription)
                     .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(Color(cs, light: .black.opacity(0.6), dark: .white.opacity(0.6)))
+                    .foregroundStyle(Color(
+                      self.cs,
+                      light: .black.opacity(0.6),
+                      dark: .white.opacity(0.6)
+                    ))
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
               }
               .frame(maxWidth: .infinity, alignment: .leading)
               .padding(.horizontal, 12)
               .padding(.vertical, 12)
-              .background(Gradient(colors: [Color(cs, light: .white, dark: .white.opacity(0.15)), Color(cs, light: .white.opacity(0.7), dark: .white.opacity(0.07))]))
+              .background(Gradient(colors: [
+                Color(self.cs, light: .white, dark: .white.opacity(0.15)),
+                Color(self.cs, light: .white.opacity(0.7), dark: .white.opacity(0.07)),
+              ]))
               .cornerRadius(16)
-              .shadow(color: Color(cs, light: .violet200, dark: .violet900.opacity(0.3)), radius: 3)
-              .opacity(item.isSelected ? 1 : cs == .light ? 0.7 : 0.5)
+              .shadow(
+                color: Color(self.cs, light: .violet200, dark: .violet900.opacity(0.3)),
+                radius: 3
+              )
+              .opacity(item.isSelected ? 1 : self.cs == .light ? 0.7 : 0.5)
             }
             .buttonStyle(BounceButtonStyle())
             .sensoryFeedback(.selection, trigger: item.isSelected)
             .swooshIn(
               tracking: self.$itemOffsets[index],
-              to: .origin,
+              to: .zero,
               after: .seconds(Double(index) / 15.0 + 0.3),
               for: .milliseconds(600)
             )
@@ -184,25 +202,25 @@ struct ChooseWhatToBlockView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        
-        BigButton("Done, continue", variant: .primary) {
+
+        BigButton("Done, continue", type: .button {
           self.vanishingAnimations()
           delayed(by: .seconds(0.5)) {
             self.onTap()
           }
-        }
-        .swooshIn(
-          tracking: self.$buttonOffset,
-          to: .origin,
-          after: .seconds(0.2),
-          for: .seconds(0.6)
-        )
+        }, variant: .primary)
+          .swooshIn(
+            tracking: self.$buttonOffset,
+            to: .zero,
+            after: .seconds(0.2),
+            for: .seconds(0.6)
+          )
       }
       .padding(.top, 100)
       .padding(.bottom, 50)
       .padding(.horizontal, 30)
     }
-    .background(Color(cs, light: .violet100, dark: .violet950.opacity(0.4)))
+    .background(Color(self.cs, light: .violet100, dark: .violet950.opacity(0.4)))
     .opacity(self.showBg ? 1 : 0)
     .onAppear {
       withAnimation(.smooth(duration: 0.5)) {
@@ -213,7 +231,8 @@ struct ChooseWhatToBlockView: View {
     .sheet(item: self.$sheetItem) { item in
       NavigationStack {
         ZStack {
-          Color(cs, light: .white, dark: .violet950.opacity(0.3)).edgesIgnoringSafeArea(.vertical)
+          Color(self.cs, light: .white, dark: .violet950.opacity(0.3))
+            .edgesIgnoringSafeArea(.vertical)
           VStack {
             Image(item.image)
               .resizable()
@@ -230,7 +249,11 @@ struct ChooseWhatToBlockView: View {
               .padding(.bottom, 4)
             Text(item.longDescription)
               .font(.system(size: 16))
-              .foregroundStyle(Color(cs, light: .black.opacity(0.7), dark: .white.opacity(0.7)))
+              .foregroundStyle(Color(
+                self.cs,
+                light: .black.opacity(0.7),
+                dark: .white.opacity(0.7)
+              ))
               .multilineTextAlignment(.center)
           }
           .presentationDetents([.height(600)])
@@ -242,9 +265,17 @@ struct ChooseWhatToBlockView: View {
               } label: {
                 Image(systemName: "xmark")
                   .font(.system(size: 10, weight: .bold))
-                  .foregroundStyle(Color(cs, light: .black.opacity(0.4), dark: .white.opacity(0.5)))
+                  .foregroundStyle(Color(
+                    self.cs,
+                    light: .black.opacity(0.4),
+                    dark: .white.opacity(0.5)
+                  ))
                   .padding(8)
-                  .background(Color(cs, light: .black.opacity(0.05), dark: .white.opacity(0.08)))
+                  .background(Color(
+                    self.cs,
+                    light: .black.opacity(0.05),
+                    dark: .white.opacity(0.08)
+                  ))
                   .cornerRadius(16)
               }
             }
@@ -253,15 +284,15 @@ struct ChooseWhatToBlockView: View {
       }
     }
   }
-  
+
   func vanishingAnimations() {
     withAnimation {
       self.iconOffset.y = -20
       self.titleOffset.y = -20
       self.paragraphOffset.y = -20
-      self.itemOffsets = Array(repeating: .init(0, -20), count: self.blockableItems.count)
+      self.itemOffsets = Array(repeating: .init(x: 0, y: -20), count: self.blockableItems.count)
     }
-    
+
     delayed(by: .milliseconds(100)) {
       withAnimation {
         self.buttonOffset.y = -20

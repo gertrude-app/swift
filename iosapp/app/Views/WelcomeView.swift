@@ -7,9 +7,9 @@ struct WelcomeView: View {
 
   @State var showButton = false
   @State var showBg = false
-  @State var lettersOffset = Array(repeating: Vector(0, 40), count: "Hi there!".count)
-  @State var subtitleOffset = Vector(0, 20)
-  @State var buttonOffset = Vector(0, 20)
+  @State var lettersOffset = Array(repeating: Vector(x: 0, y: 40), count: "Hi there!".count)
+  @State var subtitleOffset = Vector(x: 0, y: 20)
+  @State var buttonOffset = Vector(x: 0, y: 20)
 
   @Environment(\.colorScheme) var cs
 
@@ -45,7 +45,7 @@ struct WelcomeView: View {
               .font(.system(size: 50, weight: .black))
               .swooshIn(
                 tracking: self.$lettersOffset[index],
-                to: .origin,
+                to: .zero,
                 after: .seconds(Double(index) / 15.0 + 0.5),
                 for: .milliseconds(600)
               )
@@ -57,24 +57,24 @@ struct WelcomeView: View {
           .multilineTextAlignment(self.isIPad ? .center : .leading)
           .swooshIn(
             tracking: self.$subtitleOffset,
-            to: .origin,
+            to: .zero,
             after: .seconds(1.0),
             for: .milliseconds(800)
           )
 
-        BigButton("Get started", variant: .primary) {
+        BigButton("Get started", type: .button {
           self.vanishingAnimations()
           delayed(by: .milliseconds(800)) {
             self.onPrimaryBtnTap()
           }
-        }
-        .swooshIn(
-          tracking: self.$buttonOffset,
-          to: .origin,
-          after: .seconds(1.3),
-          for: .milliseconds(800)
-        )
-        .padding(.top, 20)
+        }, variant: .primary)
+          .swooshIn(
+            tracking: self.$buttonOffset,
+            to: .zero,
+            after: .seconds(1.3),
+            for: .milliseconds(800)
+          )
+          .padding(.top, 20)
       }
       .padding(30)
       .frame(maxWidth: 500)
@@ -121,12 +121,12 @@ struct Background: View {
         .init(0, 0.85), .init(0.5, 0.85), .init(1, 0.8),
         .init(0, 1), .init(0.5, 1), .init(1, 1),
       ], colors: [
-        Color(cs, light: .violet100, dark: .violet950.opacity(0.5)),
-        Color(cs, light: .fuchsia300, dark: .fuchsia950),
-        Color(cs, light: .violet700, dark: .violet700),
-        Color(cs, light: .violet400, dark: .violet900),
-        Color(cs, light: .clear, dark: .violet950.opacity(0.5)),
-        Color(cs, light: .fuchsia400, dark: .fuchsia950),
+        Color(cs, light: .violet100, dark: .violet950.opacity(0.25)),
+        Color(cs, light: .fuchsia300, dark: .fuchsia950.opacity(0.5)),
+        Color(cs, light: .violet700, dark: .violet700.opacity(0.5)),
+        Color(cs, light: .violet400, dark: .violet900.opacity(0.5)),
+        Color(cs, light: .clear, dark: .violet950.opacity(0.25)),
+        Color(cs, light: .fuchsia400, dark: .fuchsia950.opacity(0.5)),
         .clear, .clear, .clear,
         .clear, .clear, .clear,
         .clear, .clear, .clear,

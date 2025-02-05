@@ -9,7 +9,8 @@ public enum AuthFailureReason: Error, Equatable {
   case other(String)
   /// Device must be connected to the network in order to enroll with parental controls
   case networkError
-  /// The device must have a passcode set in order for an individual to enroll with parental controls
+  /// The device must have a passcode set in order for an individual to enroll with parental
+  /// controls
   case passcodeRequired
   /// The parent or guardian cancelled a request for authorization
   case authorizationCanceled

@@ -48,7 +48,6 @@ struct NewApp {
     case major_4
     case major_5
     case major_6
-    case major_7
 
     case family_1
     case family_2
@@ -89,6 +88,9 @@ struct NewApp {
 struct NewAppView: View {
   let store: StoreOf<NewApp>
 
+  @Environment(\.openURL) var openLink
+  @State private var showFamilyExplanation = false
+
   var body: some View {
     switch self.store.state {
     case .happyPath_1:
@@ -99,169 +101,163 @@ struct NewAppView: View {
     case .happyPath_2:
       ButtonScreenView(
         text: "The setup usually takes about 5-8 minutes, but in some cases extra steps are required.",
-        buttonText: "Next"
-      ) {
-        self.store.send(.advanceTo(.happyPath_3))
-      }
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.happyPath_3))
+        }, true)
+      )
 
     case .happyPath_3:
       ButtonScreenView(
         text: "Is this the device you want to protect?",
-        primaryButtonText: "Yes",
-        secondaryButtonText: "No"
-      ) {
-        self.store.send(.advanceTo(.happyPath_4))
-      } secondary: {
-        self.store.send(.advanceTo(.alt_1))
-      }
+        primary: ("Yes", .button {
+
+          self.store.send(.advanceTo(.happyPath_4))
+        }, true),
+        secondary: ("No", .button {
+          self.store.send(.advanceTo(.alt_1))
+        }, true)
+      )
 
     case .happyPath_4:
       ButtonScreenView(
         text: "Apple only allows Gertrude to do it's job on two kinds of devices:",
-        buttonText: "Next",
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.happyPath_5))
+        }, true),
         listItems: ["Devices used by children under 18", "Supervised devices"]
-      ) {
-        self.store.send(.advanceTo(.happyPath_5))
-      }
+      )
 
     case .happyPath_5:
       ButtonScreenView(
         text: "Is this a child's (under 18) device?",
-        primaryButtonText: "Yes, under 18",
-        secondaryButtonText: "No"
-      ) {
-        self.store.send(.advanceTo(.happyPath_6))
-      } secondary: {
-        self.store.send(.advanceTo(.major_1))
-      }
+        primary: ("Yes, under 18", .button {
+          self.store.send(.advanceTo(.happyPath_6))
+
+        }, true),
+        secondary: ("No", .button {
+          self.store.send(.advanceTo(.major_1))
+        }, true)
+      )
 
     case .happyPath_6:
       ButtonScreenView(
         text: "Are you the parent or guardian?",
-        primaryButtonText: "Yes",
-        secondaryButtonText: "No"
-      ) {
-        self.store.send(.advanceTo(.happyPath_7))
-      } secondary: {
-        self.store.send(.advanceTo(.alt_2))
-      }
+        primary: ("Yes", .button {
+          self.store.send(.advanceTo(.happyPath_7))
+        }, true),
+        secondary: ("No", .button {
+          self.store.send(.advanceTo(.alt_2))
+        }, true)
+      )
 
     case .happyPath_7:
       ButtonScreenView(
         text: "Apple also requires that the child's device be part of an Apple Family. Is the Apple Account for this device already in an Apple Family?",
-        primaryButtonText: "Yes, it's in an Apple Family",
-        secondaryButtonText: "No",
-        tertiaryButtonText: "I'm not sure"
-      ) {
-        self.store.send(.advanceTo(.happyPath_8))
-      } secondary: {
-        self.store.send(.advanceTo(.family_1))
-      } tertiary: {
-        self.store.send(.advanceTo(.family_4))
-      }
+        primary: ("Yes, it's in an Apple Family", .button {
+          self.store.send(.advanceTo(.happyPath_8))
+        }, true),
+        secondary: ("No", .button {
+          self.store.send(.advanceTo(.family_1))
+        }, true),
+        tertiary: ("I'm not sure", .button {
+          self.store.send(.advanceTo(.family_4))
+        }, true)
+      )
 
     case .happyPath_8:
       ButtonScreenView(
         text: "Next we'll authorize and install the content filter. It takes two steps, both of which are required.",
-        buttonText: "Next"
-      ) {
-        self.store.send(.advanceTo(.happyPath_9))
-      }
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.happyPath_9))
+        }, true)
+      )
 
     case .happyPath_9:
       ButtonScreenView(
         text: "For the first step, you'll authorize Gertrude to access Screen Time using your Apple ID (the parent/guardian, not the child's).",
-        buttonText: "Got it, next"
-      ) {
-        self.store.send(.advanceTo(.happyPath_10))
-      }
+        primary: ("Got it, next", .button {
+          self.store.send(.advanceTo(.happyPath_10))
+        }, true)
+      )
 
     case .happyPath_10:
       ButtonScreenView(
         text: "Don't get tricked! Be sure to click \"Allow\", even though it looks like you're supposed to click\"Don't Allow\".",
-        buttonText: "Got it, next",
+        primary: ("Got it, next", .button {
+          // TODO: this might go to errAuth
+          self.store.send(.advanceTo(.happyPath_11))
+        }, true),
         image: "AllowContentFilter"
-      ) {
-        // TODO: this might go to errAuth
-        self.store.send(.advanceTo(.happyPath_11))
-      }
+      )
 
     case .happyPath_11:
       ButtonScreenView(
         text: "Great! Half way there. In the next step, use the passcode of this device (the one you're holding), not your own.",
-        buttonText: "Got it, next"
-      ) {
-        self.store.send(.advanceTo(.happyPath_12))
-      }
+        primary: ("Got it, next", .button {
+          self.store.send(.advanceTo(.happyPath_12))
+        }, true)
+      )
 
     case .happyPath_12:
       ButtonScreenView(
         text: "Again, don't get tricked! Be sure to click \"Continue\", even though it looks like you're supposed to click\"Don't Allow\".",
-        buttonText: "Got it, next",
+        primary: ("Got it, next", .button {
+          // TODO: this might go to errInstall
+          self.store.send(.advanceTo(.happyPath_13))
+        }, true),
         image: "AllowScreenTimeAccess"
-      ) {
-        // TODO: this might go to errInstall
-        self.store.send(.advanceTo(.happyPath_13))
-      }
+      )
 
     case .happyPath_13:
-      // TODO: this should be a totally custom screen
       ChooseWhatToBlockView {
         self.store.send(.advanceTo(.happyPath_14))
       }
-      
+
     case .happyPath_14:
       ButtonScreenView(
         text: "Gertrude is now blocking new content, like when a new and unique search is made for GIFs. But content already viewed will still be visible unless we clear the cache.",
-        primaryButtonText: "Clear the cache",
-        secondaryButtonText: "No need, skip"
-      ) {
-        // TODO: could go straight to HP.16
-        self.store.send(.advanceTo(.happyPath_15))
-      } secondary: {
-        self.store.send(.advanceTo(.happyPath_18))
-      }
+        primary: ("Clear the cache", .button {
+          // TODO: could go straight to HP.16
+          self.store.send(.advanceTo(.happyPath_15))
+        }, true),
+        secondary: ("No need, skip", .button {
+          self.store.send(.advanceTo(.happyPath_18))
+        }, true)
+      )
 
     case .happyPath_15:
       ButtonScreenView(
         text: "Clearing the cache uses a lot of battery; we recommend you plug in the device now.",
-        buttonText: "Next"
-      ) {
-        self.store.send(.advanceTo(.happyPath_16))
-      }
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.happyPath_16))
+        }, true)
+      )
 
     case .happyPath_16:
-      // TODO: this should be a totally custom screen
-      VStack {
-        Text("Clearing cache...")
-        Button("Move along") {
-          self.store.send(.advanceTo(.happyPath_17))
-        }
-      }
+      ClearingCacheView()
 
     case .happyPath_17:
       ButtonScreenView(
         text: "Done! Previously downloaded GIFs should be gone!",
-        buttonText: "Next"
-      ) {
-        self.store.send(.advanceTo(.happyPath_18))
-      }
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.happyPath_18))
+        }, true)
+      )
 
     case .happyPath_18:
       ButtonScreenView(
         text: "All set! But, if you'd like to help other parents protect their kids, tap to give us a rating on the App Store.",
-        primaryButtonText: "Give a rating",
-        secondaryButtonText: "No thanks",
+        primary: ("Give a rating", .button {
+          self.store.send(.advanceTo(.happyPath_19))
+        }, true),
+        secondary: ("No thanks", .button {
+          self.store.send(.advanceTo(.happyPath_19))
+        }, true),
         screenType: .info
-      ) {
-        self.store.send(.advanceTo(.happyPath_19))
-      } secondary: {
-        self.store.send(.advanceTo(.happyPath_19))
-      }
+      )
 
     case .happyPath_19:
-      // TODO: should be a totally custom screen
-      Text("You're dunners!")
+      FinishedView()
 
     case .errAuth_1_1:
       Text("todo")
@@ -300,199 +296,229 @@ struct NewAppView: View {
       Text("todo")
 
     case .alt_1:
-      Text("todo")
+      ButtonScreenView(
+        text: "Gertrude must be installed on the device you want to protect, not on a parent or guardian's device. Delete the app and start over by installing it on the device you want to protect."
+      )
 
     case .alt_2:
       ButtonScreenView(
         text: "Setting up Gertrude requires your parent or guardian. Give your device to them so they can finish the setup.",
-        buttonText: "Done, continue"
-      ) {
-        self.store.send(.advanceTo(.happyPath_1))
-      }
+        primary: ("Done, continue", .button {
+          self.store.send(.advanceTo(.happyPath_1))
+        }, true)
+      )
 
     case .major_1:
       ButtonScreenView(
         text: "Getting this app working on the device of someone over 18 is harder, but still possible. We'll walk you through all the steps.",
-        buttonText: "Next"
-      ) {
-        self.store.send(.advanceTo(.major_2))
-      }
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.major_2))
+        }, true)
+      )
 
     case .major_2:
       ButtonScreenView(
         text: "Is this your device, or are you setting up Gertrude for someone else?",
-        primaryButtonText: "I'm helping someone else",
-        secondaryButtonText: "This is my device",
+        primary: ("I'm helping someone else", .button {
+          self.store.send(.advanceTo(.major_3))
+
+        }, true),
+        secondary: ("This is my device", .button {
+          self.store.send(.advanceTo(.major_6))
+        }, true),
         primaryLooksLikeSecondary: true
-      ) {
-        self.store.send(.advanceTo(.major_3))
-      } secondary: {
-        self.store.send(.advanceTo(.major_6))
-      }
+      )
 
     case .major_3:
       ButtonScreenView(
         text: "Are you the parent or guardian of the person who owns this device?",
-        primaryButtonText: "Yes",
-        secondaryButtonText: "No"
-      ) {
-        self.store.send(.advanceTo(.major_4))
-      } secondary: {
-        self.store.send(.advanceTo(.major_5))
-      }
+        primary: ("Yes", .button {
+          self.store.send(.advanceTo(.major_4))
+        }, true),
+        secondary: ("No", .button {
+          self.store.send(.advanceTo(.major_5))
+        }, true)
+      )
 
     case .major_4:
       ButtonScreenView(
         text: "The easiest way to make this work is to get this device signed into an Apple Account that is part of an Apple Family, with a birthday less than 18 years ago. If you can, do that now, then start the installation again, and the setup will be easy.\n\nHow can you do this?",
-        primaryButtonText: "Done",
-        secondaryButtonText: "Is there another way?",
+        primary: ("Done", .button {
+          self.store.send(.advanceTo(.happyPath_5))
+        }, true),
+        secondary: ("Is there another way?", .button {
+          self.store.send(.advanceTo(.major_5))
+        }, true),
         listItems: [
           "Perhaps there is a younger sibling whose account could be used?",
           "Apple does permit changing the birthday one time.",
           "Anyone can create an Apple Family, and invite others to join.",
         ]
-      ) {
-        self.store.send(.advanceTo(.happyPath_5))
-      } secondary: {
-        self.store.send(.advanceTo(.major_5))
-      }
+      )
 
     case .major_5:
       ButtonScreenView(
         text: "Do you own a Mac computer?",
-        primaryButtonText: "Yes",
-        secondaryButtonText: "No"
-      ) {
-        self.store.send(.advanceTo(.supervised_1))
-      } secondary: {
-        self.store.send(.advanceTo(.supervised_1))
-      }
+        primary: ("Yes", .button {
+          self.store.send(.advanceTo(.supervised_1))
+        }, true),
+        secondary: ("Yes", .button {
+          self.store.send(.advanceTo(.supervised_1))
+        }, true)
+      )
 
     case .major_6:
       ButtonScreenView(
         text: "Are you in an Apple Family, or could you join one?",
-        primaryButtonText: "Yes",
-        secondaryButtonText: "No",
-        tertiaryButtonText: "What's an Apple Family?"
-      ) {
-        self.store.send(.advanceTo(.major_4))
-      } secondary: {
-        self.store.send(.advanceTo(.supervised_1))
-      } tertiary: {}
-
-    case .major_7:
-      Text("todo")
+        primary: ("Yes", .button {
+          self.store.send(.advanceTo(.major_4))
+        }, true),
+        secondary: ("No", .button {
+          self.store.send(.advanceTo(.supervised_1))
+        }, true),
+        tertiary: ("What's an Apple Family?", .button {
+          self.showFamilyExplanation = true
+        }, false)
+      )
+      .sheet(isPresented: self.$showFamilyExplanation) {
+        ZStack {
+          Color.black.ignoresSafeArea(edges: .all)
+          ButtonScreenView(
+            text: "An Apple Family group allows sharing of apps and services. There's no cost, and it's easy to set one up. You would need someone else to start a group (if they didn't already have one) and then invite you to join.",
+            primary: (
+              "Instructions",
+              .link(URL(string: "https://support.apple.com/en-us/108380")!),
+              false
+            ),
+            secondary: ("Continue", .button {
+              self.store.send(.advanceTo(.family_2))
+            }, true)
+          )
+        }
+      }
 
     case .family_1:
       ButtonScreenView(
         text: "Sorry, Apple doesn't allow a content blocker to be installed on a device that's not in an Apple Family.",
-        buttonText: "Next"
-      ) {
-        self.store.send(.advanceTo(.family_2))
-      }
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.family_2))
+        }, true)
+      )
 
     case .family_2:
       ButtonScreenView(
         text: "Luckily, setting up an Apple family only takes a few minutes, and it's free.",
-        buttonText: "Next"
-      ) {
-        self.store.send(.advanceTo(.family_3))
-      }
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.family_3))
+        }, true)
+      )
 
     case .family_3:
       ButtonScreenView(
         text: "You'll need to start the setup on your iPhone or Mac.",
-        primaryButtonText: "Instructions",
-        secondaryButtonText: "Send me the info",
-        tertiaryButtonText: "Done, continue"
-      ) {
-        // TODO: link to https://support.apple.com/en-us/108380
-      } secondary: {
-        // TODO: share sheet
-      } tertiary: {
-        self.store.send(.advanceTo(.happyPath_7))
-      }
+        primary: (
+          "Instructions",
+          .link(URL(string: "https://support.apple.com/en-us/108380")!),
+          false
+        ),
+        secondary: (
+          "Send me the info",
+          .share("https://support.apple.com/en-us/108380"),
+          false
+        ),
+        tertiary: (
+          "Done, continue",
+          .button {
+            self.store.send(.advanceTo(.happyPath_7))
+          },
+          true
+        )
+      )
 
     case .family_4:
       ButtonScreenView(
         text: "An Apple Family group allows sharing of apps and services, plus it gives parents additional controls over their kids devices. There's no cost, and it's easy to set one up.",
-        buttonText: "Next"
-      ) {
-        self.store.send(.advanceTo(.family_2))
-      }
-      
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.family_2))
+        }, true)
+      )
+
     case .family_5:
       ButtonScreenView(
         text: "You can check if you're already setup by opening the \"Settings\" app on this device. If you see a \"Family\" section right below the Apple Account name and picture, you're already set.",
-        primaryButtonText: "Yes, in a family",
-        secondaryButtonText: "Not in a family yet"
-      ) {
-        self.store.send(.advanceTo(.happyPath_7))
-      } secondary: {
-        self.store.send(.advanceTo(.family_2))
-      }
+        primary: ("Yes, in a family", .button {
+          self.store.send(.advanceTo(.happyPath_7))
+        }, true),
+        secondary: ("Not in a family yet", .button {
+          self.store.send(.advanceTo(.family_2))
+        }, true)
+      )
 
     case .supervised_1:
       ButtonScreenView(
         text: "The other way to get Gertrude working is to put this device into supervised mode.",
-        buttonText: "What's that?"
-      ) {
-        self.store.send(.advanceTo(.supervised_1))
-      }
+        primary: ("What's that?", .button {
+          self.store.send(.advanceTo(.supervised_1))
+        }, true)
+      )
 
     case .supervised_2:
       ButtonScreenView(
         text: "Supervised mode is most often used for devices owned by schools or businesses, and it enables many additional options and restrictions.",
-        buttonText: "Next"
-      ) {
-        // TODO: might go to .supervised_4
-        self.store.send(.advanceTo(.supervised_3))
-      }
+        primary: ("Next", .button {
+          // TODO: might go to .supervised_4
+          self.store.send(.advanceTo(.supervised_3))
+        }, true)
+      )
 
     case .supervised_3:
       ButtonScreenView(
         text: "For supervised mode, you'll need a trusted friend with a Mac computer to be your administrator. They don't have to live with you, but they will need physical access to your device to set it up and from time to time after that.",
-        primaryButtonText: "I've got someone",
-        secondaryButtonText: "I don't have anyone"
-      ) {
-        self.store.send(.advanceTo(.supervised_4))
-      } secondary: {
-        self.store.send(.advanceTo(.supervised_6))
-      }
+        primary: ("I've got someone", .button {
+          self.store.send(.advanceTo(.supervised_4))
+
+        }, true),
+        secondary: ("I don't have anyone", .button {
+          self.store.send(.advanceTo(.supervised_6))
+
+        }, true)
+      )
 
     case .supervised_4:
       ButtonScreenView(
         text: "Setting up supervised mode requires temporarily erasing the device, an administrator with a Mac computer, and about an hour of work. You can restore the content and settings afterwards.",
-        primaryButtonText: "Show me how",
-        secondaryButtonText: "No thanks"
-      ) {
-        self.store.send(.advanceTo(.supervised_5))
-      } secondary: {
-        self.store.send(.advanceTo(.supervised_6))
-      }
+        primary: ("Show me how", .button {
+          self.store.send(.advanceTo(.supervised_5))
+        }, true),
+        secondary: ("No thanks", .button {
+          self.store.send(.advanceTo(.supervised_6))
+        }, true)
+      )
 
     case .supervised_5:
       ButtonScreenView(
         text: "We have a tutorial and a step-by-step video to guide you through the process.",
-        primaryButtonText: "Instructions",
-        secondaryButtonText: "Send the link"
-      ) {
-        // TODO: link to docs
-      } secondary: {
-        // TODO: pop up share sheet
-      }
+        primary: ("Instructions", .link(URL(string: "TODO")!), false),
+        secondary: ("Send the link", .share("TODO"), false)
+      )
 
     case .supervised_6:
       // TODO: custom screen
-      Text("Sorry, looks like Gertrude won't be able to help you with this device. Unfortunately we can only install the content blocker when Apple allows us, which is only for a child's device or a supervised device.")
+      Text(
+        "Sorry, looks like Gertrude won't be able to help you with this device. Unfortunately we can only install the content blocker when Apple allows us, which is only for a child's device or a supervised device."
+      )
 
     case .supervised_7:
       // TODO: custom screen
-      Text("Excellent! Looks like you've installed Gertrude under Supervised mode. Just a couple steps to get you all set up.")
+      Text(
+        "Excellent! Looks like you've installed Gertrude under Supervised mode. Just a couple steps to get you all set up."
+      )
 
     case .running:
       // TODO: custom screen
-      Text("Gertude is blocking unwanted content. You can quit the app now, it will keep blocking even when not running.")
+      Text(
+        "Gertude is blocking unwanted content. You can quit the app now, it will keep blocking even when not running."
+      )
     }
   }
 }
@@ -500,7 +526,7 @@ struct NewAppView: View {
 #Preview {
   NewAppView(
     store: Store(
-      initialState: .happyPath_1
+      initialState: .family_3
     ) {
       NewApp()
     }
