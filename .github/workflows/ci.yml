@@ -8,6 +8,7 @@ on:
 
 jobs:
   linux-build-libs-1:
+    if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
     container: swift:5.10-focal
     steps:
@@ -21,6 +22,7 @@ jobs:
         run: cd pairql-macapp && swift build
 
   linux-build-libs-2:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container: swift:5.10-focal
     steps:
@@ -44,6 +46,7 @@ jobs:
         run: cd x-stripe && swift build
 
   linux-lib-test-libs-1:
+    if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
     container: swift:5.10-focal
     steps:
@@ -55,6 +58,7 @@ jobs:
         run: cd pairql && swift test
 
   linux-lib-test-libs-2:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container: swift:5.10-focal
     steps:
@@ -132,6 +136,7 @@ jobs:
             pm2 restart staging > /dev/null
 
   linux-api-test:
+    if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
     container: swift:5.10-focal
     env:
@@ -158,6 +163,7 @@ jobs:
         run: cd api && swift test
 
   files-changed:
+    if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
     outputs:
       macapp: ${{ steps.changes.outputs.macapp }}
