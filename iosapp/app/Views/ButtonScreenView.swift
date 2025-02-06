@@ -14,12 +14,20 @@ struct ButtonScreenView: View {
   let image: String?
   let screenType: ScreenType
 
-  @State var showBg = false
-  @State var iconOffset = Vector(x: 0, y: -20)
-  @State var textOffset = Vector(x: 0, y: 20)
-  @State var primaryButtonOffset = Vector(x: 0, y: 20)
-  @State var secondaryButtonOffset = Vector(x: 0, y: 20)
-  @State var tertiaryButtonOffset = Vector(x: 0, y: 20)
+  @State private var showBg = false
+  @State private var iconOffset = Vector(x: 0, y: -20)
+  @State private var textOffset = Vector(x: 0, y: 20)
+  @State private var primaryButtonOffset = Vector(x: 0, y: 20)
+  @State private var secondaryButtonOffset = Vector(x: 0, y: 20)
+  @State private var tertiaryButtonOffset = Vector(x: 0, y: 20)
+
+  var icon: String {
+    switch self.screenType {
+    case .info: return "info.circle"
+    case .question: return "questionmark.circle"
+    case .error: return "exclamationmark.circle"
+    }
+  }
 
   init(
     text: String,
@@ -43,7 +51,7 @@ struct ButtonScreenView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
-      Image(systemName: self.screenType == .info ? "info.circle" : "questionmark.circle")
+      Image(systemName: self.icon)
         .font(.system(size: 40, weight: .regular))
         .foregroundStyle(Color(self.cs, light: .violet500, dark: .violet400))
         .swooshIn(tracking: self.$iconOffset, to: .zero, after: .zero, for: .milliseconds(800))
@@ -190,12 +198,14 @@ struct ButtonScreenView: View {
   enum ScreenType {
     case info
     case question
+    case error
   }
 }
 
 #Preview("No button") {
   ButtonScreenView(
-    text: "Lorem ipsum dolor sit amet consectetur adipiscing elit."
+    text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
+    screenType: .error
   )
 }
 

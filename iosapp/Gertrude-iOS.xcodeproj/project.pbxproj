@@ -18,6 +18,8 @@
 		0F460A002D4BCA510038C617 /* BigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D62D4BCA510038C617 /* BigButton.swift */; };
 		0F460A012D4BCA510038C617 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609E82D4BCA510038C617 /* App.swift */; };
 		0F460A022D4BCA510038C617 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D82D4BCA510038C617 /* WelcomeView.swift */; };
+		0F5DCFD42D5425BF003E2361 /* RunningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5DCFD32D5425BA003E2361 /* RunningView.swift */; };
+		0F5DCFD62D54DBDE003E2361 /* FairiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */; };
 		0F68E4EA2D4ECD1900B7134C /* ChooseWhatToBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */; };
 		0FA657FD2D5288B700BA1254 /* ClearingCacheView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA657FC2D5288B200BA1254 /* ClearingCacheView.swift */; };
 		0FA657FF2D538A5E00BA1254 /* FinishedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA657FE2D538A5A00BA1254 /* FinishedView.swift */; };
@@ -83,6 +85,8 @@
 		0F4609EA2D4BCA510038C617 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		0F4609EB2D4BCA510038C617 /* ExtensionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionClient.swift; sourceTree = "<group>"; };
 		0F4609EC2D4BCA510038C617 /* NewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewApp.swift; sourceTree = "<group>"; };
+		0F5DCFD32D5425BA003E2361 /* RunningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningView.swift; sourceTree = "<group>"; };
+		0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FairiesView.swift; sourceTree = "<group>"; };
 		0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseWhatToBlockView.swift; sourceTree = "<group>"; };
 		0FA657FC2D5288B200BA1254 /* ClearingCacheView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearingCacheView.swift; sourceTree = "<group>"; };
 		0FA657FE2D538A5A00BA1254 /* FinishedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishedView.swift; sourceTree = "<group>"; };
@@ -154,6 +158,8 @@
 				0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */,
 				0F4609D62D4BCA510038C617 /* BigButton.swift */,
 				0FA657FC2D5288B200BA1254 /* ClearingCacheView.swift */,
+				0F5DCFD32D5425BA003E2361 /* RunningView.swift */,
+				0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */,
 				0FA657FE2D538A5A00BA1254 /* FinishedView.swift */,
 				0F4609D82D4BCA510038C617 /* WelcomeView.swift */,
 				0F4609D92D4BCA510038C617 /* ButtonScreenView.swift */,
@@ -389,11 +395,13 @@
 				0F4609F32D4BCA510038C617 /* Animation.swift in Sources */,
 				0F4609F52D4BCA510038C617 /* ExtensionClient.swift in Sources */,
 				0F4609FA2D4BCA510038C617 /* ButtonScreenView.swift in Sources */,
+				0F5DCFD42D5425BF003E2361 /* RunningView.swift in Sources */,
 				0F4609FC2D4BCA510038C617 /* App+Types.swift in Sources */,
 				0F4609FD2D4BCA510038C617 /* Colors.swift in Sources */,
 				0F460A002D4BCA510038C617 /* BigButton.swift in Sources */,
 				0FA657FF2D538A5E00BA1254 /* FinishedView.swift in Sources */,
 				0F460A012D4BCA510038C617 /* App.swift in Sources */,
+				0F5DCFD62D54DBDE003E2361 /* FairiesView.swift in Sources */,
 				0F460A022D4BCA510038C617 /* WelcomeView.swift in Sources */,
 				7FA7B8472AEB238700363B53 /* IOSAppEntry.swift in Sources */,
 			);

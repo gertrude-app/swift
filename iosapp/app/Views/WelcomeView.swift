@@ -5,11 +5,11 @@ struct WelcomeView: View {
 
   let greeting = "Hi there!"
 
-  @State var showButton = false
-  @State var showBg = false
-  @State var lettersOffset = Array(repeating: Vector(x: 0, y: 40), count: "Hi there!".count)
-  @State var subtitleOffset = Vector(x: 0, y: 20)
-  @State var buttonOffset = Vector(x: 0, y: 20)
+  @State private var showButton = false
+  @State private var showBg = false
+  @State private var lettersOffset = Array(repeating: Vector(x: 0, y: 40), count: "Hi there!".count)
+  @State private var subtitleOffset = Vector(x: 0, y: 20)
+  @State private var buttonOffset = Vector(x: 0, y: 20)
 
   @Environment(\.colorScheme) var cs
 

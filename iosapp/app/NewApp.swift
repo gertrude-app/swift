@@ -32,9 +32,9 @@ struct NewApp {
     case errAuth_2
     case errAuth_3
     case errAuth_4
-    case errAuth_5_1
-    case errAuth_5_2
+    case errAuth_5
     case errAuth_6
+    case errAuth_7
 
     case errInstall_1
     case errInstall_2
@@ -90,6 +90,8 @@ struct NewAppView: View {
 
   @Environment(\.openURL) var openLink
   @State private var showFamilyExplanation = false
+
+  let supportUrl = URL(string: "https://gertrude.app/contact")!
 
   var body: some View {
     switch self.store.state {
@@ -260,40 +262,121 @@ struct NewAppView: View {
       FinishedView()
 
     case .errAuth_1_1:
-      Text("todo")
+      ButtonScreenView(
+        text: "Hmmm... Something didn't work right, let's get to the bottom of it.",
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.errAuth_1_2))
+        }, true),
+        screenType: .error
+      )
 
     case .errAuth_1_2:
-      Text("todo")
+      ButtonScreenView(
+        text: "It might be that the Apple Account is not part of an Apple Family. Apple won't allow the installation if it's not. Is the Apple Account a member of an Apple Family?",
+        primary: ("Yes", .button {
+          self.store.send(.advanceTo(.errAuth_1_3))
+        }, true),
+        secondary: ("No", .button {
+          self.store.send(.advanceTo(.family_2))
+        }, true),
+        tertiary: ("I'm not sure", .button {
+          self.store.send(.advanceTo(.family_4))
+        }, true),
+        screenType: .error
+      )
 
     case .errAuth_1_3:
-      Text("todo")
+      ButtonScreenView(
+        text: "Are you sure the birthday on the Apple Account is for someone under 18?\n\nGood to know: Apple does permit the birthday to be changed one time.",
+        primary: ("Age is 18 or over", .button {
+          self.store.send(.advanceTo(.major_1))
+        }, true),
+        secondary: ("Age is under 18", .button {
+          self.store.send(.advanceTo(.errAuth_1_4))
+        }, true),
+        screenType: .error
+      )
 
     case .errAuth_1_4:
-      Text("todo")
+      ButtonScreenView(
+        text: "Well gosh, we're not sure what's wrong then. Try powering the device off completely, then start the installation again. If you get here again, please contact us for more help using the link below.",
+        primary: ("Contact us", .link(self.supportUrl), false),
+        screenType: .error
+      )
 
     case .errAuth_2:
-      Text("todo")
+      ButtonScreenView(
+        text: "Whoops! Looks like you either clicked the wrong button, or canceled the process mid-way. No problem, we'll just try again.",
+        primary: ("Try again", .button {
+          self.store.send(.advanceTo(.happyPath_9))
+        }, true),
+        secondary: ("Contact us", .link(self.supportUrl), false),
+        screenType: .error
+      )
 
     case .errAuth_3:
-      Text("todo")
+      ButtonScreenView(
+        text: "A restriction is preventing Gertrude from being installed. Is this device is enrolled in mobile device management (MDM) by an organization or school? If so, try again on a device not managed by MDM.",
+        primary: ("Contact support", .link(self.supportUrl), false),
+        screenType: .error
+      )
 
     case .errAuth_4:
-      Text("todo")
+      ButtonScreenView(
+        text: "We got an error that there was a conflict with another parental controls app. If you know what that might be and can remove it, do so and then try again.",
+        primary: ("Done, continue", .button {
+          self.store.send(.advanceTo(.happyPath_8))
+        }, true),
+        screenType: .error
+      )
 
-    case .errAuth_5_1:
-      Text("todo")
-
-    case .errAuth_5_2:
-      Text("todo")
+    case .errAuth_5:
+      ButtonScreenView(
+        text: "Hmmm.. Are you sure you're connected to the internet? Double-check and try again when you're online.",
+        primary: ("Try again", .button {
+          self.store.send(.advanceTo(.happyPath_8))
+        }, true),
+        screenType: .error
+      )
 
     case .errAuth_6:
-      Text("todo")
+      ButtonScreenView(
+        text: "Sorry, Apple won't let us install unless this device has a passcode set. Go to the Settings app and set one up, then try again.",
+        primary: ("Try again", .button {
+          self.store.send(.advanceTo(.happyPath_8))
+        }, true),
+        screenType: .error
+      )
+
+    case .errAuth_7:
+      ButtonScreenView(
+        text: "Shucks, something went wrong, but we're not exactly sure what. Please try again, and if you end up here again, contact us for help.",
+        primary: ("Try again", .button {
+          self.store.send(.advanceTo(.happyPath_8))
+        }, true),
+        secondary: ("Contact us", .link(self.supportUrl), false),
+        screenType: .error
+      )
 
     case .errInstall_1:
-      Text("todo")
+      ButtonScreenView(
+        text: "Whoops! Looks like you either clicked the wrong button, or canceled the process mid-way. No problem, we'll just try again.",
+        primary: ("Try again", .button {
+          self.store.send(.advanceTo(.happyPath_8))
+        }, true),
+        secondary: ("Contact us", .link(self.supportUrl), false),
+        screenType: .error
+      )
 
     case .errInstall_2:
-      Text("todo")
+      ButtonScreenView(
+        text: "Shucks, something went wrong, but we're not exactly sure what. Please try again, and if you end up here again, contact us for help.",
+        primary: ("Try again", .button {
+          self.store.send(.advanceTo(.happyPath_8))
+        }, true),
+        secondary: ("Contact us", .link(self.supportUrl), false),
+        screenType: .error
+      )
 
     case .alt_1:
       ButtonScreenView(
@@ -503,22 +586,20 @@ struct NewAppView: View {
       )
 
     case .supervised_6:
-      // TODO: custom screen
-      Text(
-        "Sorry, looks like Gertrude won't be able to help you with this device. Unfortunately we can only install the content blocker when Apple allows us, which is only for a child's device or a supervised device."
+      ButtonScreenView(
+        text: "Sorry, looks like Gertrude won't be able to help you with this device. Unfortunately we can only install the content blocker when Apple allows us, which is only for a child's device or a supervised device."
       )
 
     case .supervised_7:
-      // TODO: custom screen
-      Text(
-        "Excellent! Looks like you've installed Gertrude under Supervised mode. Just a couple steps to get you all set up."
+      ButtonScreenView(
+        text: "Excellent! Looks like you've installed Gertrude under Supervised mode. Just a couple steps to get you all set up.",
+        primary: ("Next", .button {
+          self.store.send(.advanceTo(.happyPath_13))
+        }, true)
       )
 
     case .running:
-      // TODO: custom screen
-      Text(
-        "Gertude is blocking unwanted content. You can quit the app now, it will keep blocking even when not running."
-      )
+      RunningView()
     }
   }
 }
@@ -526,7 +607,7 @@ struct NewAppView: View {
 #Preview {
   NewAppView(
     store: Store(
-      initialState: .family_3
+      initialState: .happyPath_1
     ) {
       NewApp()
     }
