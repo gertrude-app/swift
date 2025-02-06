@@ -90,6 +90,8 @@
   - fix onboarding upgrade focus layout shift
   - new "encourage filter suspensions" onboarding screen
 - `2.7.0` (stable as of 1/30/25)
+- `2.7.1` (never "released", only used for new purchase/download)
+  - change text of onboarding screen w/ new trial period length of 21 days
 
 ## Sparkle Releases
 
