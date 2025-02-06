@@ -13,14 +13,11 @@ struct WelcomeView: View {
 
   @Environment(\.colorScheme) var cs
 
-  let isIPad = UIDevice.current.userInterfaceIdiom == .pad
-  let isIPhone = UIDevice.current.userInterfaceIdiom == .phone
-
   var body: some View {
     ZStack {
       Background()
         .opacity(self.showBg ? 1 : 0)
-        .scaleEffect(y: self.isIPad ? 1 : (self.showBg ? 1 : 0))
+        .scaleEffect(y: self.deviceType() == .pad ? 1 : (self.showBg ? 1 : 0))
         .offset(y: self.showBg ? 0 : -440)
         .ignoresSafeArea()
         .onAppear {
@@ -34,8 +31,8 @@ struct WelcomeView: View {
           }
         }
 
-      VStack(alignment: self.isIPad ? .center : .leading, spacing: 12) {
-        if self.isIPhone {
+      VStack(alignment: self.deviceType() == .pad ? .center : .leading, spacing: 12) {
+        if self.deviceType() == .phone {
           Spacer()
         }
 
@@ -54,7 +51,7 @@ struct WelcomeView: View {
 
         Text("Gertrude blocks unwanted stuff, like GIFs, from your device.")
           .font(.system(size: 16, weight: .medium))
-          .multilineTextAlignment(self.isIPad ? .center : .leading)
+          .multilineTextAlignment(self.deviceType() == .pad ? .center : .leading)
           .swooshIn(
             tracking: self.$subtitleOffset,
             to: .zero,
@@ -133,7 +130,8 @@ struct Background: View {
         .clear, .clear, .clear,
       ], smoothsColors: true)
     } else {
-      // TODO: alternative for iOS 17
+      Rectangle()
+        .fill(Gradient(colors: [Color(self.cs, light: .violet300, dark: .violet950), .clear]))
     }
   }
 }

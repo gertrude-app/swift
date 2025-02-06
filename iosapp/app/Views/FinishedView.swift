@@ -39,6 +39,7 @@ struct FinishedView: View {
 
       Spacer()
     }
+    .frame(maxWidth: .infinity)
     .padding(.horizontal, 30)
     .background(Gradient(colors: [.clear, Color(self.cs, light: .violet200, dark: .violet950)]))
     .opacity(self.showBg ? 1 : 0)

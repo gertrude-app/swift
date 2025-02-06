@@ -11,17 +11,9 @@ public struct ContentView: View {
   public var body: some View {
     NewAppView(store: Store(
       initialState: NewApp.State()
-//      initialState: .happyPath_13
     ) {
       NewApp()
     })
-  }
-}
-
-public extension View {
-  var deviceType: String {
-    @Dependency(\.device) var device
-    return device.type.rawValue
   }
 }
 

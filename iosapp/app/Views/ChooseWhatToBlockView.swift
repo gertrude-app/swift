@@ -216,10 +216,12 @@ struct ChooseWhatToBlockView: View {
             for: .seconds(0.6)
           )
       }
+      .frame(maxWidth: 500)
       .padding(.top, 100)
       .padding(.bottom, 50)
       .padding(.horizontal, 30)
     }
+    .frame(maxWidth: .infinity)
     .background(Color(self.cs, light: .violet100, dark: .violet950.opacity(0.4)))
     .opacity(self.showBg ? 1 : 0)
     .onAppear {

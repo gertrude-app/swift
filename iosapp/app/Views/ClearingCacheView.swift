@@ -12,6 +12,12 @@ struct ClearingCacheView: View {
   var body: some View {
     ZStack {
       FairiesView()
+        .opacity(self.showBg ? 1 : 0)
+        .onAppear {
+          withAnimation {
+            self.showBg = true
+          }
+        }
 
       VStack(spacing: 0) {
         ProgressView()

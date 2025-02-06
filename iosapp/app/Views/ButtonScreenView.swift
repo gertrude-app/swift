@@ -50,101 +50,107 @@ struct ButtonScreenView: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 16) {
-      Image(systemName: self.icon)
-        .font(.system(size: 40, weight: .regular))
-        .foregroundStyle(Color(self.cs, light: .violet500, dark: .violet400))
-        .swooshIn(tracking: self.$iconOffset, to: .zero, after: .zero, for: .milliseconds(800))
-        .frame(maxWidth: .infinity, alignment: .center)
-
-      Spacer()
-
-      if let image = self.image {
-        Image(image)
-          .frame(maxWidth: .infinity)
-          .padding(.bottom, 20)
-          .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
-      }
-
-      Text(self.text)
-        .font(.system(size: 18, weight: .medium))
-        .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
-
-      if let listItems = self.listItems {
-        VStack(alignment: .leading) {
-          ForEach(listItems, id: \.self) { item in
-            HStack(alignment: .top, spacing: 12) {
-              Image(systemName: "circle.fill")
-                .font(.system(size: 6))
-                .padding(.top, 7)
-                .foregroundStyle(Color(self.cs, light: .violet500, dark: .violet400))
-              Text(item)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color(self.cs, light: .violet950, dark: .violet100))
-                .opacity(0.8)
-              Spacer()
-            }
-            .padding(.leading, 14)
+    ZStack {
+      Rectangle()
+        .fill(Gradient(colors: [
+          Color(self.cs, light: .violet200, dark: .violet950.opacity(0.7)),
+          .clear,
+        ]))
+        .ignoresSafeArea()
+        .opacity(self.showBg ? 1 : 0)
+        .onAppear {
+          withAnimation(.smooth(duration: 0.7)) {
+            self.showBg = true
           }
         }
-        .padding(.bottom, 20)
-        .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
-      }
 
-      if let (text, type, animate) = self.primaryBtn {
-        BigButton(
-          text,
-          type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
-          variant: self.primaryLooksLikeSecondary ? .secondary : .primary
-        )
-        .swooshIn(
-          tracking: self.$primaryButtonOffset,
-          to: .zero,
-          after: .milliseconds(150),
-          for: .milliseconds(800)
-        )
-        .padding(.top, 12)
-      }
+      VStack(alignment: .leading, spacing: 16) {
+        Image(systemName: self.icon)
+          .font(.system(size: 40, weight: .regular))
+          .foregroundStyle(Color(self.cs, light: .violet500, dark: .violet400))
+          .swooshIn(tracking: self.$iconOffset, to: .zero, after: .zero, for: .milliseconds(800))
+          .frame(maxWidth: .infinity, alignment: .center)
 
-      if let (text, type, animate) = self.secondaryBtn {
-        BigButton(
-          text,
-          type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
-          variant: .secondary
-        )
-        .swooshIn(
-          tracking: self.$secondaryButtonOffset,
-          to: .zero,
-          after: .milliseconds(300),
-          for: .milliseconds(800)
-        )
-      }
+        Spacer()
 
-      if let (text, type, animate) = self.tertiaryBtn {
-        BigButton(
-          text,
-          type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
-          variant: .secondary
-        )
-        .swooshIn(
-          tracking: self.$tertiaryButtonOffset,
-          to: .zero,
-          after: .milliseconds(450),
-          for: .milliseconds(800)
-        )
+        if let image = self.image {
+          Image(image)
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, 20)
+            .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
+        }
+
+        Text(self.text)
+          .font(.system(size: 18, weight: .medium))
+          .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
+
+        if let listItems = self.listItems {
+          VStack(alignment: .leading) {
+            ForEach(listItems, id: \.self) { item in
+              HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "circle.fill")
+                  .font(.system(size: 6))
+                  .padding(.top, 7)
+                  .foregroundStyle(Color(self.cs, light: .violet500, dark: .violet400))
+                Text(item)
+                  .font(.system(size: 16, weight: .medium))
+                  .foregroundStyle(Color(self.cs, light: .violet950, dark: .violet100))
+                  .opacity(0.8)
+                Spacer()
+              }
+              .padding(.leading, 14)
+            }
+          }
+          .padding(.bottom, 20)
+          .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
+        }
+
+        if let (text, type, animate) = self.primaryBtn {
+          BigButton(
+            text,
+            type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
+            variant: self.primaryLooksLikeSecondary ? .secondary : .primary
+          )
+          .swooshIn(
+            tracking: self.$primaryButtonOffset,
+            to: .zero,
+            after: .milliseconds(150),
+            for: .milliseconds(800)
+          )
+          .padding(.top, 12)
+        }
+
+        if let (text, type, animate) = self.secondaryBtn {
+          BigButton(
+            text,
+            type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
+            variant: .secondary
+          )
+          .swooshIn(
+            tracking: self.$secondaryButtonOffset,
+            to: .zero,
+            after: .milliseconds(300),
+            for: .milliseconds(800)
+          )
+        }
+
+        if let (text, type, animate) = self.tertiaryBtn {
+          BigButton(
+            text,
+            type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
+            variant: .secondary
+          )
+          .swooshIn(
+            tracking: self.$tertiaryButtonOffset,
+            to: .zero,
+            after: .milliseconds(450),
+            for: .milliseconds(800)
+          )
+        }
       }
-    }
-    .padding(30)
-    .padding(.top, 50)
-    .background(Gradient(colors: [
-      Color(self.cs, light: .violet200, dark: .violet950.opacity(0.7)),
-      .clear,
-    ]))
-    .opacity(self.showBg ? 1 : 0)
-    .onAppear {
-      withAnimation(.smooth(duration: 0.7)) {
-        self.showBg = true
-      }
+      .frame(maxWidth: 500)
+      .padding(30)
+      .padding(.top, 50)
     }
   }
 
