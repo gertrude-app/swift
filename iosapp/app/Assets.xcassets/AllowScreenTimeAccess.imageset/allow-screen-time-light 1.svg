@@ -22,8 +22,8 @@
 <path d="M0 174H280V172H0V174Z" fill="black" fill-opacity="0.08" mask="url(#path-8-inside-1_13_12)"/>
 </g>
 </g>
-<path d="M84 244.188L91.6047 209L127.77 216.816" stroke="#FF0000" stroke-width="12"/>
-<path d="M96 216C132.5 279.5 183 288.5 212.5 283" stroke="#FF0000" stroke-width="12"/>
+<path d="M84 244.188L91.6047 209L127.77 216.816" stroke="#BB44FF" stroke-width="12"/>
+<path d="M96 216C132.5 279.5 183 288.5 212.5 283" stroke="#BB44FF" stroke-width="12"/>
 <defs>
 <filter id="filter0_b_13_12" x="-40" y="-40" width="360" height="292" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>

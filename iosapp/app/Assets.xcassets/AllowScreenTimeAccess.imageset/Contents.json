@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "allow-screen-time.svg",
+      "filename" : "allow-screen-time-light.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -17,7 +17,7 @@
       "scale" : "1x"
     },
     {
-      "filename" : "allow-screen-time 1.svg",
+      "filename" : "allow-screen-time-light 2.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
@@ -33,7 +33,7 @@
       "scale" : "2x"
     },
     {
-      "filename" : "allow-screen-time 2.svg",
+      "filename" : "allow-screen-time-light 1.svg",
       "idiom" : "universal",
       "scale" : "3x"
     },

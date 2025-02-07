@@ -3,12 +3,16 @@ import SwiftUI
 struct ButtonScreenView: View {
   @Environment(\.colorScheme) var cs
 
-  typealias ButtonConfig = (text: String, type: BigButton.ButtonType, true: Bool)
+  struct Config {
+    let text: String
+    let type: BigButton.ButtonType
+    let animate: Bool
+  }
 
   let text: String
-  let primaryBtn: ButtonConfig?
-  let secondaryBtn: ButtonConfig?
-  let tertiaryBtn: ButtonConfig?
+  let primaryBtn: Config?
+  let secondaryBtn: Config?
+  let tertiaryBtn: Config?
   let primaryLooksLikeSecondary: Bool
   let listItems: [String]?
   let image: String?
@@ -31,9 +35,9 @@ struct ButtonScreenView: View {
 
   init(
     text: String,
-    primary: ButtonConfig? = nil,
-    secondary: ButtonConfig? = nil,
-    tertiary: ButtonConfig? = nil,
+    primary: Config? = nil,
+    secondary: Config? = nil,
+    tertiary: Config? = nil,
     listItems: [String]? = nil,
     image: String? = nil,
     screenType: ScreenType = .info,
@@ -105,10 +109,10 @@ struct ButtonScreenView: View {
           .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
         }
 
-        if let (text, type, animate) = self.primaryBtn {
+        if let config = self.primaryBtn {
           BigButton(
-            text,
-            type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
+            config.text,
+            type: self.withOrWithoutVanishingAnimations(type: config.type, animate: config.animate),
             variant: self.primaryLooksLikeSecondary ? .secondary : .primary
           )
           .swooshIn(
@@ -120,10 +124,10 @@ struct ButtonScreenView: View {
           .padding(.top, 12)
         }
 
-        if let (text, type, animate) = self.secondaryBtn {
+        if let config = self.secondaryBtn {
           BigButton(
-            text,
-            type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
+            config.text,
+            type: self.withOrWithoutVanishingAnimations(type: config.type, animate: config.animate),
             variant: .secondary
           )
           .swooshIn(
@@ -134,10 +138,10 @@ struct ButtonScreenView: View {
           )
         }
 
-        if let (text, type, animate) = self.tertiaryBtn {
+        if let config = self.tertiaryBtn {
           BigButton(
-            text,
-            type: self.withOrWithoutVanishingAnimations(type: type, animate: animate),
+            config.text,
+            type: self.withOrWithoutVanishingAnimations(type: config.type, animate: config.animate),
             variant: .secondary
           )
           .swooshIn(
@@ -218,23 +222,23 @@ struct ButtonScreenView: View {
 #Preview("1 button") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-    primary: ("Next", .button {}, true)
+    primary: ButtonScreenView.Config(text: "Next", type: .button {}, animate: true)
   )
 }
 
 #Preview("2 buttons") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-    primary: ("Do something", .button {}, true),
-    secondary: ("Do something else", .button {}, true)
+    primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
+    secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true)
   )
 }
 
 #Preview("2 buttons (both secondary)") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-    primary: ("Do something", .button {}, true),
-    secondary: ("Do something else", .button {}, true),
+    primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
+    secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true),
     primaryLooksLikeSecondary: true
   )
 }
@@ -242,16 +246,16 @@ struct ButtonScreenView: View {
 #Preview("3 buttons") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-    primary: ("Do something", .button {}, true),
-    secondary: ("Do something else", .button {}, true),
-    tertiary: ("Do another thing", .button {}, true)
+    primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
+    secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true),
+    tertiary: ButtonScreenView.Config(text: "Do another thing", type: .button {}, animate: true)
   )
 }
 
 #Preview("list items (1 button)") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit:",
-    primary: ("Do something", .button {}, true),
+    primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
     listItems: ["Lorem ipsum dolor", "Sit amet consectetur adipiscing elit"]
   )
 }
@@ -259,8 +263,8 @@ struct ButtonScreenView: View {
 #Preview("list items (2 buttons)") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit:",
-    primary: ("Do something", .button {}, true),
-    secondary: ("Do something else", .button {}, true),
+    primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
+    secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true),
     listItems: [
       "Lorem ipsum dolor",
       "Sit amet consectetur adipiscing elit",
@@ -272,9 +276,9 @@ struct ButtonScreenView: View {
 #Preview("list items (3 buttons)") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-    primary: ("Do something", .button {}, true),
-    secondary: ("Do something else", .button {}, true),
-    tertiary: ("Do another thing", .button {}, true),
+    primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
+    secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true),
+    tertiary: ButtonScreenView.Config(text: "Do another thing", type: .button {}, animate: true),
     listItems: [
       "Lorem ipsum dolor",
       "Sit amet consectetur adipiscing elit",
@@ -286,7 +290,7 @@ struct ButtonScreenView: View {
 #Preview("with image") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-    primary: ("Do something", .button {}, true),
+    primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
     image: "AllowContentFilter"
   )
 }

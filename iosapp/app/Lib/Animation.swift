@@ -17,6 +17,7 @@ extension Duration {
 struct Vector: Equatable, Identifiable, AdditiveArithmetic {
   var x: Double
   var y: Double
+  var id: UUID
 
   var magnitude: Double {
     sqrt(self.x * self.x + self.y * self.y)
@@ -50,7 +51,6 @@ struct Vector: Equatable, Identifiable, AdditiveArithmetic {
     lhs = lhs + rhs
   }
 
-  var id: UUID
   init(x: Double, y: Double) {
     self.x = x
     self.y = y

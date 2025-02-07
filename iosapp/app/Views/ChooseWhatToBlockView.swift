@@ -83,6 +83,7 @@ struct ChooseWhatToBlockView: View {
   @State private var itemOffsets = Array(repeating: Vector(x: 0, y: 40), count: 8)
   @State private var buttonOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
+  @State private var showTooltip = false
 
   var body: some View {
     ScrollView {
@@ -127,68 +128,107 @@ struct ChooseWhatToBlockView: View {
                 item.isSelected.toggle()
               }
             } label: {
-              HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "checkmark")
-                  .font(.system(size: 12, weight: .bold))
-                  .scaleEffect(item.isSelected ? 1 : 0)
-                  .foregroundStyle(.white)
-                  .padding(4)
-                  .background(item.isSelected ? Color.violet500 : Color(
-                    self.cs,
-                    light: .white,
-                    dark: .black
-                  ))
-                  .cornerRadius(6)
-                  .overlay {
-                    RoundedRectangle(cornerRadius: 6)
-                      .stroke(
-                        item.isSelected ? Color.violet500 : Color.gray.opacity(0.2),
-                        lineWidth: 2
-                      )
+              ZStack {
+                HStack(alignment: .top, spacing: 12) {
+                  Image(systemName: "checkmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .scaleEffect(item.isSelected ? 1 : 0)
+                    .foregroundStyle(.white)
+                    .padding(4)
+                    .background(item.isSelected ? Color.violet500 : Color(
+                      self.cs,
+                      light: .white,
+                      dark: .black
+                    ))
+                    .cornerRadius(6)
+                    .overlay {
+                      RoundedRectangle(cornerRadius: 6)
+                        .stroke(
+                          item.isSelected ? Color.violet500 : Color.gray.opacity(0.2),
+                          lineWidth: 2
+                        )
+                    }
+                  
+                  VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 0) {
+                      Text(item.name)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Color(self.cs, light: .black, dark: .white))
+                      
+                      Button {
+                        withAnimation {
+                          self.showTooltip = false
+                        }
+                        self.sheetItem = item
+                      } label: {
+                        Image(systemName: "questionmark.circle")
+                          .font(.system(size: 12, weight: .medium))
+                          .foregroundStyle(Color(
+                            self.cs,
+                            light: .black.opacity(0.4),
+                            dark: .white.opacity(0.4)
+                          ))
+                          .padding(.horizontal, 8)
+                          .padding(.vertical, 4)
+                          .multilineTextAlignment(.leading)
+                      }
+                      
+                    }
+                    
+                    Text(item.shortDescription)
+                      .font(.system(size: 15, weight: .regular))
+                      .foregroundStyle(Color(
+                        self.cs,
+                        light: .black.opacity(0.6),
+                        dark: .white.opacity(0.6)
+                      ))
+                      .frame(maxWidth: .infinity, alignment: .leading)
                   }
-
-                VStack(alignment: .leading, spacing: 4) {
-                  HStack {
-                    Text(item.name)
-                      .font(.system(size: 18, weight: .semibold))
-                      .foregroundStyle(Color(self.cs, light: .black, dark: .white))
-                    Button {
-                      self.sheetItem = item
-                    } label: {
-                      Image(systemName: "questionmark.circle")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color(
-                          self.cs,
-                          light: .black.opacity(0.4),
-                          dark: .white.opacity(0.4)
-                        ))
-                        .multilineTextAlignment(.leading)
+                  
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .background(Gradient(colors: [
+                  Color(self.cs, light: .white, dark: .white.opacity(0.15)),
+                  Color(self.cs, light: .white.opacity(0.7), dark: .white.opacity(0.07)),
+                ]))
+                .cornerRadius(16)
+                .shadow(
+                  color: Color(self.cs, light: .violet200, dark: .violet900.opacity(0.3)),
+                  radius: 3
+                )
+                .opacity(item.isSelected ? 1 : self.cs == .light ? 0.7 : 0.5)
+                
+                if index == 0 {
+                  VStack(spacing: -24) {
+                    Text("Tap to find\nout more")
+                      .font(.system(size: 14, weight: .medium))
+                      .multilineTextAlignment(.center)
+                      .foregroundStyle(Color(cs, light: .white, dark: .violet900))
+                      .padding(.horizontal, 8)
+                      .padding(.vertical, 6)
+                      .background(Color(cs, light: .violet500, dark: .violet300))
+                      .cornerRadius(8)
+                      .frame(width: 120, height: 80)
+                      .shadow(color: Color(cs, light: .violet900, dark: .black).opacity(0.3), radius: 8, x: 0, y: 2)
+                    Rectangle()
+                      .fill(Color(cs, light: .violet500, dark: .violet300))
+                      .frame(width: 12, height: 12)
+                      .rotationEffect(.degrees(45))
+                  }
+                  .position(x: 98, y: -22)
+                  .opacity(self.showTooltip ? 1 : 0)
+                  .offset(y: self.showTooltip ? 0 : -10)
+                  .onAppear {
+                    delayed(by: .seconds(1.5)) {
+                      withAnimation(.bouncy(duration: 0.4, extraBounce: 0.3)) {
+                        self.showTooltip = true
+                      }
                     }
                   }
-
-                  Text(item.shortDescription)
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(Color(
-                      self.cs,
-                      light: .black.opacity(0.6),
-                      dark: .white.opacity(0.6)
-                    ))
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
               }
-              .frame(maxWidth: .infinity, alignment: .leading)
-              .padding(.horizontal, 12)
-              .padding(.vertical, 12)
-              .background(Gradient(colors: [
-                Color(self.cs, light: .white, dark: .white.opacity(0.15)),
-                Color(self.cs, light: .white.opacity(0.7), dark: .white.opacity(0.07)),
-              ]))
-              .cornerRadius(16)
-              .shadow(
-                color: Color(self.cs, light: .violet200, dark: .violet900.opacity(0.3)),
-                radius: 3
-              )
-              .opacity(item.isSelected ? 1 : self.cs == .light ? 0.7 : 0.5)
             }
             .buttonStyle(BounceButtonStyle())
             .sensoryFeedback(.selection, trigger: item.isSelected)
