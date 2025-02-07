@@ -40,6 +40,12 @@ extension OsLogClient: TestDependencyKey {
     debug: unimplemented("OsLogClient.debug"),
     setPrefix: { _ in } // <-- never want test failures from this
   )
+
+  public static let noop = OsLogClient(
+    log: { _ in },
+    debug: { _ in },
+    setPrefix: { _ in }
+  )
 }
 
 public extension DependencyValues {
