@@ -10,6 +10,13 @@ class FilterControlProvider: NEFilterControlProvider {
     self.proxy.notifyRulesChanged = { [weak self] in
       self?.notifyRulesChanged()
     }
+
+    #if DEBUG
+      self.proxy.startHeartbeat(initialDelay: .seconds(30), interval: .minutes(2))
+    #else
+      self.proxy.startHeartbeat(initialDelay: .seconds(60), interval: .minutes(60))
+    #endif
+
     os_log("[G•] CONTROLLER init")
   }
 
