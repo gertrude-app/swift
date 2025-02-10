@@ -38,15 +38,6 @@
       }
     },
     {
-      "identity" : "swift-composable-architecture",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-composable-architecture",
-      "state" : {
-        "revision" : "1f952d8c69ace5e53bb69a218e6ed00e03a4695c",
-        "version" : "1.11.2"
-      }
-    },
-    {
       "identity" : "swift-concurrency-extras",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-concurrency-extras",
