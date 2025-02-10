@@ -9,6 +9,7 @@ let package = Package(
     .library(name: "LibFilter", targets: ["LibFilter"]),
     .library(name: "LibController", targets: ["LibController"]),
     .library(name: "LibClients", targets: ["LibClients"]),
+    .library(name: "LibTemp", targets: ["LibTemp"]),
   ],
   dependencies: [
     .package(
@@ -18,6 +19,10 @@ let package = Package(
     .package(
       url: "https://github.com/pointfreeco/swift-concurrency-extras",
       from: "1.0.0"
+    ),
+    .package(
+      url: "https://github.com/pointfreeco/swift-composable-architecture",
+      from: "1.17.1"
     ),
     .package(path: "../../pairql-iosapp"),
     .package(path: "../../gertie"),
@@ -35,6 +40,16 @@ let package = Package(
         "LibClients",
         .product(name: "GertieIOS", package: "gertie"),
         .product(name: "Dependencies", package: "swift-dependencies"),
+      ]
+    ),
+    .target(
+      name: "LibTemp",
+      dependencies: [
+        "LibCore",
+        "LibClients",
+        .product(name: "GertieIOS", package: "gertie"),
+        .product(name: "Dependencies", package: "swift-dependencies"),
+        .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
       ]
     ),
     .target(
@@ -59,6 +74,13 @@ let package = Package(
         "LibFilter",
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
         .product(name: "GertieIOS", package: "gertie"),
+        .product(name: "XExpect", package: "x-expect"),
+      ]
+    ),
+    .testTarget(
+      name: "LibTempTests",
+      dependencies: [
+        "LibTemp",
         .product(name: "XExpect", package: "x-expect"),
       ]
     ),
