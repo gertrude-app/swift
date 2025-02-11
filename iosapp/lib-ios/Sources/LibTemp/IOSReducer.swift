@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Foundation
 import LibClients
 
 @Reducer
@@ -7,16 +8,49 @@ struct IOSReducer {
   public struct State: Equatable {
     var screen: Screen = .onboarding(.happyPath(.hiThere))
     var blockGroups: [BlockGroup] = .all
+    var firstLaunch: Date?
+    var batteryLevel: DeviceClient.BatteryLevel = .unknown
   }
 
   @ObservationIgnored
   @Dependency(\.api) var api
   @ObservationIgnored
+  @Dependency(\.appStore) var appStore
+  @ObservationIgnored
+  @Dependency(\.device) var device
+  @ObservationIgnored
   @Dependency(\.systemExtension) var systemExtension
+  @ObservationIgnored
+  @Dependency(\.storage) var storage
+  @ObservationIgnored
+  @Dependency(\.date.now) var now
+  @ObservationIgnored
+  @Dependency(\.locale) var locale
+  @ObservationIgnored
+  @Dependency(\.mainQueue) var mainQueue
+
+  enum CancelId {
+    case cacheClearUpdates
+  }
 
   public var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch (state.screen, action) {
+      case (_, .appDidLaunch):
+        return .run { send in
+          if let firstLaunch = self.storage.loadFirstLaunchDate() {
+            await send(.setFirstLaunch(firstLaunch))
+          } else {
+            let now = self.now
+            self.storage.saveFirstLaunchDate(now)
+            await send(.setFirstLaunch(now))
+            await self.api.logEvent(
+              "8d35f043",
+              "first launch, region: `\(self.locale.region?.identifier ?? "(nil)")`"
+            )
+          }
+        }
+
       case (.onboarding(.happyPath(.hiThere)), .onlyBtnTapped):
         state.screen = .onboarding(.happyPath(.timeExpectation))
         return .none
@@ -116,14 +150,83 @@ struct IOSReducer {
         state.blockGroups.toggle(blockGroup)
         return .none
 
+      case (.onboarding(.happyPath(.optOutBlockGroups)), .onlyBtnTapped):
+        state.screen = .onboarding(.happyPath(.promptClearCache))
+        return .run { send in
+          await send(.setBatteryLevel(self.device.batteryLevel()))
+        }
+
+      case (.onboarding(.happyPath(.promptClearCache)), .primaryBtnTapped):
+        switch state.batteryLevel {
+        case .level(0.35 ... 1.0):
+          state.screen = .onboarding(.happyPath(.clearingCache("")))
+          return .publisher {
+            self.device.clearCache()
+              .map { .receiveClearCacheUpdate($0) }
+              .receive(on: self.mainQueue)
+          }
+        default:
+          state.screen = .onboarding(.happyPath(.batteryWarning))
+          return .none
+        }
+
+      case (.onboarding(.happyPath(.batteryWarning)), .primaryBtnTapped):
+        state.screen = .onboarding(.happyPath(.clearingCache("")))
+        return .publisher {
+          self.device.clearCache()
+            .map { .receiveClearCacheUpdate($0) }
+            .receive(on: self.mainQueue)
+        }.cancellable(id: CancelId.cacheClearUpdates, cancelInFlight: true)
+
+      case (
+        .onboarding(.happyPath(.clearingCache)),
+        .receiveClearCacheUpdate(.bytesCleared(let bytes))
+      ):
+        state.screen = .onboarding(.happyPath(.clearingCache("\(bytes) bytes")))
+        return .none
+
+      case (.onboarding(.happyPath(.clearingCache)), .receiveClearCacheUpdate(.completed)):
+        state.screen = .onboarding(.happyPath(.cacheCleared))
+        return .cancel(id: CancelId.cacheClearUpdates)
+
+      case (.onboarding(.happyPath(.cacheCleared)), .onlyBtnTapped):
+        state.screen = .onboarding(.happyPath(.requestAppStoreRating))
+        return .none
+
+      case (.onboarding(.happyPath(.requestAppStoreRating)), .primaryBtnTapped):
+        state.screen = .onboarding(.happyPath(.doneQuit))
+        return .run { _ in
+          await self.appStore.requestRating()
+        }
+
+      case (.onboarding(.happyPath(.requestAppStoreRating)), .secondaryBtnTapped):
+        state.screen = .onboarding(.happyPath(.doneQuit))
+        return .run { _ in
+          await self.appStore.requestReview()
+        }
+
+      case (.onboarding(.happyPath(.requestAppStoreRating)), .tertiaryBtnTapped):
+        state.screen = .onboarding(.happyPath(.doneQuit))
+        return .none
+
+      // MARK: - setters
+
+      case (_, .setFirstLaunch(let date)):
+        state.firstLaunch = date
+        return .none
+
+      case (_, .setBatteryLevel(let level)):
+        state.batteryLevel = level
+        return .none
+
       // MARK: - error paths
 
       case (.onboarding(.childIsOnboardingFail), .onlyBtnTapped):
         state.screen = .onboarding(.happyPath(.hiThere))
         return .none
 
-      case (let screen, let action):
-        fatalError("unhandled combination:\n  .\(screen)\n  .\(action)")
+      default:
+        fatalError("unhandled combination:\n  .\(state.screen)\n  .\(action)")
       }
     }
   }
@@ -153,6 +256,12 @@ extension IOSReducer {
       case explainInstallWithDevicePasscode
       case dontGetTrickedPreInstall
       case optOutBlockGroups
+      case promptClearCache
+      case batteryWarning
+      case clearingCache(String)
+      case cacheCleared
+      case requestAppStoreRating
+      case doneQuit
     }
 
     // TODO: carefully think thru these flows, not sure if they landed correct
@@ -172,11 +281,17 @@ extension IOSReducer {
 
 extension IOSReducer {
   enum Action: Equatable {
+    case appDidLaunch
+    case setFirstLaunch(Date)
+
     // buttons
     case onlyBtnTapped
     case happyPathBtnTapped
     case sadPathBtnTapped
     case iDontKnowBtnTapped
+    case primaryBtnTapped
+    case secondaryBtnTapped
+    case tertiaryBtnTapped
 
     // auth
     case authorizationSucceeded
@@ -188,5 +303,7 @@ extension IOSReducer {
 
     // special
     case blockGroupToggled(BlockGroup)
+    case setBatteryLevel(DeviceClient.BatteryLevel)
+    case receiveClearCacheUpdate(DeviceClient.ClearCacheUpdate)
   }
 }

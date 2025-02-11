@@ -103,7 +103,7 @@ struct NewAppView: View {
 
     case .happyPath_2:
       ButtonScreenView(
-        text: "The setup usually takes about 5-8 minutes, but in some cases extra steps are required.",
+        text: "The setup usually takes about 5-7 minutes, but in some cases extra steps are required.",
         primary: ButtonScreenView.Config(
           text: "Next",
           type: .button {
