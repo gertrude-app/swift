@@ -10,6 +10,8 @@ struct IOSReducer {
     var blockGroups: [BlockGroup] = .all
     var firstLaunch: Date?
     var batteryLevel: DeviceClient.BatteryLevel = .unknown
+    var majorOnboarder: MajorOnboarder?
+    var ownsMac: Bool?
   }
 
   @ObservationIgnored
@@ -76,7 +78,7 @@ struct IOSReducer {
         return .none
 
       case (.onboarding(.happyPath(.confirmMinorDevice)), .sadPathBtnTapped):
-        state.screen = .onboarding(.major1_RENAME_ME)
+        state.screen = .onboarding(.major(.explainHarderButPossible))
         return .none
 
       case (.onboarding(.happyPath(.confirmParentIsOnboarding)), .happyPathBtnTapped):
@@ -209,6 +211,85 @@ struct IOSReducer {
         state.screen = .onboarding(.happyPath(.doneQuit))
         return .none
 
+      // MARK: - major (18+) path
+
+      case (.onboarding(.major(.explainHarderButPossible)), .onlyBtnTapped):
+        state.screen = .onboarding(.major(.askSelfOrOtherIsOnboarding))
+        return .none
+
+      case (.onboarding(.major(.askSelfOrOtherIsOnboarding)), .secondaryBtnTapped):
+        state.majorOnboarder = .other
+        state.screen = .onboarding(.major(.askIfOtherIsParent))
+        return .none
+
+      case (.onboarding(.major(.askIfOtherIsParent)), .primaryBtnTapped):
+        state.screen = .onboarding(.major(.explainFixAccountTypeEasyWay))
+        return .none
+
+      case (.onboarding(.major(.explainFixAccountTypeEasyWay)), .primaryBtnTapped):
+        state.screen = .onboarding(.happyPath(.confirmMinorDevice))
+        return .none
+
+      case (.onboarding(.major(.askSelfOrOtherIsOnboarding)), .tertiaryBtnTapped):
+        state.majorOnboarder = .self
+        state.screen = .onboarding(.major(.askIfInAppleFamily))
+        return .none
+
+      case (.onboarding(.major(.askIfInAppleFamily)), .tertiaryBtnTapped):
+        state.screen = .onboarding(.major(.explainAppleFamily))
+        return .none
+
+      case (.onboarding(.major(.explainAppleFamily)), .onlyBtnTapped):
+        state.screen = .onboarding(.major(.askIfInAppleFamily))
+        return .none
+
+      case (.onboarding(.major(.askIfInAppleFamily)), .primaryBtnTapped):
+        state.screen = .onboarding(.major(.explainFixAccountTypeEasyWay))
+        return .none
+
+      case (.onboarding(.major(.askIfInAppleFamily)), .secondaryBtnTapped):
+        state.screen = .onboarding(.supervision(.intro))
+        return .none
+
+      case (.onboarding(.major(.explainFixAccountTypeEasyWay)), .secondaryBtnTapped):
+        state.screen = .onboarding(.major(.askIfOwnsMac))
+        return .none
+
+      case (.onboarding(.major(.askIfOwnsMac)), _):
+        state.ownsMac = action == .primaryBtnTapped
+        state.screen = .onboarding(.supervision(.intro))
+        return .none
+
+      // MARK: - supervision
+
+      case (.onboarding(.supervision(.intro)), .onlyBtnTapped):
+        state.screen = .onboarding(.supervision(.explainSupervision))
+        return .none
+
+      case (.onboarding(.supervision(.explainSupervision)), .onlyBtnTapped):
+        if state.ownsMac != true || state.majorOnboarder == .self {
+          state.screen = .onboarding(.supervision(.explainNeedFriendWithMac))
+        } else {
+          state.screen = .onboarding(.supervision(.explainRequiresEraseAndSetup))
+        }
+        return .none
+
+      case (.onboarding(.supervision(.explainNeedFriendWithMac)), .primaryBtnTapped):
+        state.screen = .onboarding(.supervision(.explainRequiresEraseAndSetup))
+        return .none
+
+      case (.onboarding(.supervision(.explainNeedFriendWithMac)), .secondaryBtnTapped):
+        state.screen = .onboarding(.supervision(.sorryNoOtherWay))
+        return .none
+
+      case (.onboarding(.supervision(.explainRequiresEraseAndSetup)), .primaryBtnTapped):
+        state.screen = .onboarding(.supervision(.instructions))
+        return .none
+
+      case (.onboarding(.supervision(.explainRequiresEraseAndSetup)), .secondaryBtnTapped):
+        state.screen = .onboarding(.supervision(.sorryNoOtherWay))
+        return .none
+
       // MARK: - setters
 
       case (_, .setFirstLaunch(let date)):
@@ -236,11 +317,11 @@ extension IOSReducer {
   enum Onboarding: Equatable {
     case happyPath(HappyPath)
     case fixAppleFamily(FixAppleFamily)
+    case major(Major)
+    case supervision(Supervision)
 
     case onParentDeviceFail
     case childIsOnboardingFail
-
-    case major1_RENAME_ME
 
     enum HappyPath: Equatable {
       case hiThere
@@ -264,6 +345,25 @@ extension IOSReducer {
       case doneQuit
     }
 
+    enum Major: Equatable {
+      case explainHarderButPossible
+      case askSelfOrOtherIsOnboarding
+      case askIfOtherIsParent
+      case explainFixAccountTypeEasyWay
+      case askIfOwnsMac
+      case askIfInAppleFamily
+      case explainAppleFamily
+    }
+
+    enum Supervision: Equatable {
+      case intro
+      case explainSupervision
+      case explainNeedFriendWithMac
+      case explainRequiresEraseAndSetup
+      case instructions
+      case sorryNoOtherWay
+    }
+
     // TODO: carefully think thru these flows, not sure if they landed correct
     enum FixAppleFamily: Equatable {
       case explainRequiredForFiltering
@@ -276,6 +376,11 @@ extension IOSReducer {
 
   enum Screen: Equatable {
     case onboarding(Onboarding)
+  }
+
+  enum MajorOnboarder: Equatable {
+    case `self`
+    case other
   }
 }
 

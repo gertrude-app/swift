@@ -7,8 +7,6 @@ import XExpect
 @testable import LibTemp
 
 final class IOSReducerTests: XCTestCase {
-  var cancellables: Set<AnyCancellable> = []
-
   func testHappyPath() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let requestAuthInvocations = LockIsolated(0)
@@ -203,9 +201,6 @@ final class IOSReducerTests: XCTestCase {
     }
   }
 
-  // TODO: test that tertiary button from request app store rating goes to doneQuit
-  // without prompting for rating
-
   func testSkipsBatteryWarningWhenEnough() async throws {
     let clearCacheInvocations = LockIsolated(0)
     let store = await TestStore(initialState: IOSReducer.State(
@@ -296,24 +291,13 @@ final class IOSReducerTests: XCTestCase {
     // TODO: continue from here, w/ all permutations
   }
 
-  func testMajorFlow1() async throws {
-    let store = store(starting: .onboarding(.happyPath(.confirmMinorDevice)))
-
-    await store.send(.sadPathBtnTapped) {
-      $0.screen = .onboarding(.major1_RENAME_ME)
-    }
-
-    // TODO: contine from here, with all the permutations..
-    // consider a whole new file
-  }
-
   // TODO: check all tests from here, transfer/rewrite any missing/important ones:
   // https://github.com/gertrude-app/swift/blob/3b3b000e7fa63cc6c71fed21369114bc852c6dcf/iosapp/lib-ios/Tests/LibIOSTests/AppTests.swift
+}
 
-  func store(starting screen: IOSReducer.Screen) -> TestStore<IOSReducer.State, IOSReducer.Action> {
-    TestStore(initialState: IOSReducer.State(screen: screen)) {
-      IOSReducer()
-    }
+func store(starting screen: IOSReducer.Screen) -> TestStore<IOSReducer.State, IOSReducer.Action> {
+  TestStore(initialState: IOSReducer.State(screen: screen)) {
+    IOSReducer()
   }
 }
 
