@@ -72,6 +72,28 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     }
   }
 
+  func testInvalidAccountNotSureAboutAppleFamilyConfirmsNotInOne() async throws {
+    let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
+
+    await store.send(.tertiaryBtnTapped) { // <-- "I'm not sure"
+      $0.screen = .onboarding(.appleFamily(.checkIfInAppleFamily))
+      $0.returningTo = .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily)))
+    }
+
+    await store.send(.secondaryBtnTapped) { // <-- "No, not in a family"
+      $0.screen = .onboarding(.appleFamily(.explainSetupFreeAndEasy))
+    }
+
+    await store.send(.onlyBtnTapped) {
+      $0.screen = .onboarding(.appleFamily(.howToSetupAppleFamily))
+    }
+
+    await store.send(.tertiaryBtnTapped) { // <-- "Done, now in a family"
+      $0.screen = .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily)))
+      $0.returningTo = nil
+    }
+  }
+
   func testAuthConflict() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = await TestStore(

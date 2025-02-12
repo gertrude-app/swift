@@ -273,8 +273,28 @@ struct IOSReducer {
 
       // MARK: - apple family
 
+      case (.onboarding(.appleFamily(.explainRequiredForFiltering)), .onlyBtnTapped):
+        state.screen = .onboarding(.appleFamily(.explainSetupFreeAndEasy))
+        return .none
+
+      case (.onboarding(.appleFamily(.explainSetupFreeAndEasy)), .onlyBtnTapped):
+        state.screen = .onboarding(.appleFamily(.howToSetupAppleFamily))
+        return .none
+
       case (.onboarding(.appleFamily(.checkIfInAppleFamily)), .primaryBtnTapped):
         state.screen = state.takeReturningTo() ?? .onboarding(.happyPath(.confirmInAppleFamily))
+        return .none
+
+      case (.onboarding(.appleFamily(.checkIfInAppleFamily)), .secondaryBtnTapped):
+        state.screen = .onboarding(.appleFamily(.explainSetupFreeAndEasy))
+        return .none
+
+      case (.onboarding(.appleFamily(.howToSetupAppleFamily)), .tertiaryBtnTapped):
+        state.screen = state.takeReturningTo() ?? .onboarding(.happyPath(.confirmInAppleFamily))
+        return .none
+
+      case (.onboarding(.appleFamily(.explainWhatIsAppleFamily)), .onlyBtnTapped):
+        state.screen = .onboarding(.appleFamily(.checkIfInAppleFamily))
         return .none
 
       // MARK: - supervision

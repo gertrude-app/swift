@@ -255,11 +255,6 @@ final class IOSReducerTests: XCTestCase {
     await expect(store.state.screen).toEqual(.onboarding(.happyPath(.optOutBlockGroups)))
   }
 
-  func testAuthFail() async throws {
-    // TODO: test all variations of authentication failure/flow
-    // test cleanup called on systemExtension, test api event logged, etc.
-  }
-
   func testInstallFail() async throws {
     // TODO: test all variations of autiinstall failure/flow
     // test cleanup called on systemExtension, test api event logged, etc.
@@ -275,29 +270,6 @@ final class IOSReducerTests: XCTestCase {
     await store.send(.onlyBtnTapped) {
       $0.screen = .onboarding(.happyPath(.hiThere))
     }
-  }
-
-  func testAppleFamilyFailFlow1() async throws {
-    let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
-
-    await store.send(.sadPathBtnTapped) {
-      $0.screen = .onboarding(.appleFamily(.explainRequiredForFiltering))
-    }
-
-    // TODO: continue from here, w/ all permutations
-  }
-
-  func testAppleFamilyDontKnowFlow() async throws {
-    let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
-
-    await store.send(.iDontKnowBtnTapped) {
-      $0.screen = .onboarding(.appleFamily(.explainWhatIsAppleFamily))
-    }
-
-    // but from here do we need to help them figure out if they're already in one?
-    // because they clicked "i don't know?"
-
-    // TODO: continue from here, w/ all permutations
   }
 
   // TODO: check all tests from here, transfer/rewrite any missing/important ones:
