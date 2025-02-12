@@ -8,10 +8,18 @@ struct IOSReducer {
   public struct State: Equatable {
     var screen: Screen = .onboarding(.happyPath(.hiThere))
     var blockGroups: [BlockGroup] = .all
+    // TODO: maybe nest these in a struct?
     var firstLaunch: Date?
     var batteryLevel: DeviceClient.BatteryLevel = .unknown
     var majorOnboarder: MajorOnboarder?
     var ownsMac: Bool?
+    var returningTo: Screen?
+
+    mutating func takeReturningTo() -> Screen? {
+      let returningTo = self.returningTo
+      self.returningTo = nil
+      return returningTo
+    }
   }
 
   @ObservationIgnored
@@ -90,11 +98,11 @@ struct IOSReducer {
         return .none
 
       case (.onboarding(.happyPath(.confirmInAppleFamily)), .sadPathBtnTapped):
-        state.screen = .onboarding(.fixAppleFamily(.explainRequiredForFiltering))
+        state.screen = .onboarding(.appleFamily(.explainRequiredForFiltering))
         return .none
 
       case (.onboarding(.happyPath(.confirmInAppleFamily)), .iDontKnowBtnTapped):
-        state.screen = .onboarding(.fixAppleFamily(.explainWhatIsAppleFamily))
+        state.screen = .onboarding(.appleFamily(.explainWhatIsAppleFamily))
         return .none
 
       case (.onboarding(.happyPath(.confirmParentIsOnboarding)), .sadPathBtnTapped):
@@ -153,6 +161,9 @@ struct IOSReducer {
         return .none
 
       case (.onboarding(.happyPath(.optOutBlockGroups)), .onlyBtnTapped):
+        if state.blockGroups.isEmpty {
+          return .none
+        }
         state.screen = .onboarding(.happyPath(.promptClearCache))
         return .run { send in
           await send(.setBatteryLevel(self.device.batteryLevel()))
@@ -260,6 +271,12 @@ struct IOSReducer {
         state.screen = .onboarding(.supervision(.intro))
         return .none
 
+      // MARK: - apple family
+
+      case (.onboarding(.appleFamily(.checkIfInAppleFamily)), .primaryBtnTapped):
+        state.screen = state.takeReturningTo() ?? .onboarding(.happyPath(.confirmInAppleFamily))
+        return .none
+
       // MARK: - supervision
 
       case (.onboarding(.supervision(.intro)), .onlyBtnTapped):
@@ -302,6 +319,66 @@ struct IOSReducer {
 
       // MARK: - error paths
 
+      case (.onboarding(.happyPath(.dontGetTrickedPreAuth)), .authorizationFailed(let err)):
+        switch err {
+        case .invalidAccountType:
+          state.screen = .onboarding(.authFail(.invalidAccount(.letsFigureThisOut)))
+        case .authorizationCanceled:
+          state.screen = .onboarding(.authFail(.authCanceled))
+        case .restricted:
+          state.screen = .onboarding(.authFail(.restricted))
+        case .authorizationConflict:
+          state.screen = .onboarding(.authFail(.authConflict))
+        case .networkError:
+          state.screen = .onboarding(.authFail(.networkError))
+        case .passcodeRequired:
+          state.screen = .onboarding(.authFail(.passcodeRequired))
+        case .other, .unexpected:
+          state.screen = .onboarding(.authFail(.unexpected))
+        }
+        return .none
+
+      case (.onboarding(.authFail(.invalidAccount(.letsFigureThisOut))), .onlyBtnTapped):
+        state.screen = .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily)))
+        return .none
+
+      case (.onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))), .primaryBtnTapped):
+        state.screen = .onboarding(.authFail(.invalidAccount(.confirmIsMinor)))
+        return .none
+
+      case (.onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))), .secondaryBtnTapped):
+        state.screen = .onboarding(.appleFamily(.explainRequiredForFiltering))
+        return .none
+
+      case (.onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))), .tertiaryBtnTapped):
+        state.screen = .onboarding(.appleFamily(.checkIfInAppleFamily))
+        state.returningTo = .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily)))
+        return .none
+
+      case (.onboarding(.authFail(.invalidAccount(.confirmIsMinor))), .primaryBtnTapped):
+        state.screen = .onboarding(.major(.explainHarderButPossible))
+        return .none
+
+      case (.onboarding(.authFail(.invalidAccount(.confirmIsMinor))), .secondaryBtnTapped):
+        state.screen = .onboarding(.authFail(.invalidAccount(.unexpected)))
+        return .none
+
+      case (.onboarding(.authFail(.authConflict)), .onlyBtnTapped):
+        state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
+        return .none
+
+      case (.onboarding(.authFail(.networkError)), .onlyBtnTapped):
+        state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
+        return .none
+
+      case (.onboarding(.authFail(.passcodeRequired)), .onlyBtnTapped):
+        state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
+        return .none
+
+      case (.onboarding(.authFail(.authCanceled)), .primaryBtnTapped):
+        state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
+        return .none
+
       case (.onboarding(.childIsOnboardingFail), .onlyBtnTapped):
         state.screen = .onboarding(.happyPath(.hiThere))
         return .none
@@ -316,9 +393,10 @@ struct IOSReducer {
 extension IOSReducer {
   enum Onboarding: Equatable {
     case happyPath(HappyPath)
-    case fixAppleFamily(FixAppleFamily)
+    case appleFamily(AppleFamily)
     case major(Major)
     case supervision(Supervision)
+    case authFail(AuthFail)
 
     case onParentDeviceFail
     case childIsOnboardingFail
@@ -364,13 +442,31 @@ extension IOSReducer {
       case sorryNoOtherWay
     }
 
+    enum AuthFail: Equatable {
+      case invalidAccount(InvalidAccount)
+      case authConflict
+      case authCanceled
+      case restricted
+      case passcodeRequired
+      case networkError
+      case unexpected
+
+      enum InvalidAccount: Equatable {
+        case letsFigureThisOut
+        case confirmInAppleFamily
+        case confirmIsMinor
+        case unexpected
+      }
+    }
+
     // TODO: carefully think thru these flows, not sure if they landed correct
-    enum FixAppleFamily: Equatable {
+    enum AppleFamily: Equatable {
       case explainRequiredForFiltering
       case explainSetupFreeAndEasy
       case howToSetupAppleFamily
       // TODO: check this flow, how can we incorporate "it's required to install filter" idea?
       case explainWhatIsAppleFamily
+      case checkIfInAppleFamily
     }
   }
 
@@ -412,3 +508,9 @@ extension IOSReducer {
     case receiveClearCacheUpdate(DeviceClient.ClearCacheUpdate)
   }
 }
+
+// extension IOSReducer.State {
+//  func foo() {
+//    //
+//  }
+// }

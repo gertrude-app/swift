@@ -243,7 +243,16 @@ final class IOSReducerTests: XCTestCase {
   }
 
   func testCantAdvanceWithZeroBlockGroups() async throws {
-    // TODO: should also disable button in view
+    // 👉 TODO: should also disable button in view
+    let store = await TestStore(initialState: IOSReducer.State(
+      screen: .onboarding(.happyPath(.optOutBlockGroups)),
+      blockGroups: [] // <-- deselected all
+    )) {
+      IOSReducer()
+    }
+
+    await store.send(.onlyBtnTapped)
+    await expect(store.state.screen).toEqual(.onboarding(.happyPath(.optOutBlockGroups)))
   }
 
   func testAuthFail() async throws {
@@ -272,7 +281,7 @@ final class IOSReducerTests: XCTestCase {
     let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
 
     await store.send(.sadPathBtnTapped) {
-      $0.screen = .onboarding(.fixAppleFamily(.explainRequiredForFiltering))
+      $0.screen = .onboarding(.appleFamily(.explainRequiredForFiltering))
     }
 
     // TODO: continue from here, w/ all permutations
@@ -282,7 +291,7 @@ final class IOSReducerTests: XCTestCase {
     let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
 
     await store.send(.iDontKnowBtnTapped) {
-      $0.screen = .onboarding(.fixAppleFamily(.explainWhatIsAppleFamily))
+      $0.screen = .onboarding(.appleFamily(.explainWhatIsAppleFamily))
     }
 
     // but from here do we need to help them figure out if they're already in one?
