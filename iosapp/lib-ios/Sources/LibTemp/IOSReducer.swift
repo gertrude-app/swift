@@ -399,6 +399,24 @@ struct IOSReducer {
         state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
         return .none
 
+      case (.onboarding(.happyPath(.dontGetTrickedPreInstall)), .installFailed(let err)):
+        switch err {
+        case .configurationPermissionDenied:
+          state.screen = .onboarding(.installFail(.permissionDenied))
+        case .configurationCannotBeRemoved, .configurationDisabled, .configurationInternalError,
+             .configurationInvalid, .configurationStale, .unexpected:
+          state.screen = .onboarding(.installFail(.other(err)))
+        }
+        return .none
+
+      case (.onboarding(.installFail(.permissionDenied)), .primaryBtnTapped):
+        state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+        return .none
+
+      case (.onboarding(.installFail(.other)), .primaryBtnTapped):
+        state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+        return .none
+
       case (.onboarding(.childIsOnboardingFail), .onlyBtnTapped):
         state.screen = .onboarding(.happyPath(.hiThere))
         return .none
@@ -417,6 +435,7 @@ extension IOSReducer {
     case major(Major)
     case supervision(Supervision)
     case authFail(AuthFail)
+    case installFail(InstallFail)
 
     case onParentDeviceFail
     case childIsOnboardingFail
@@ -441,6 +460,16 @@ extension IOSReducer {
       case cacheCleared
       case requestAppStoreRating
       case doneQuit
+    }
+
+    // TODO: carefully think thru these flows, not sure if they landed correct
+    enum AppleFamily: Equatable {
+      case explainRequiredForFiltering
+      case explainSetupFreeAndEasy
+      case howToSetupAppleFamily
+      // TODO: check this flow, how can we incorporate "it's required to install filter" idea?
+      case explainWhatIsAppleFamily
+      case checkIfInAppleFamily
     }
 
     enum Major: Equatable {
@@ -479,14 +508,9 @@ extension IOSReducer {
       }
     }
 
-    // TODO: carefully think thru these flows, not sure if they landed correct
-    enum AppleFamily: Equatable {
-      case explainRequiredForFiltering
-      case explainSetupFreeAndEasy
-      case howToSetupAppleFamily
-      // TODO: check this flow, how can we incorporate "it's required to install filter" idea?
-      case explainWhatIsAppleFamily
-      case checkIfInAppleFamily
+    enum InstallFail: Equatable {
+      case permissionDenied
+      case other(FilterInstallError)
     }
   }
 
