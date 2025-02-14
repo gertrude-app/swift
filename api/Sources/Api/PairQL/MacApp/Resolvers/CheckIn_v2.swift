@@ -163,9 +163,17 @@ func resolveLatestRelease(
   currentAppVersion: String,
   in db: any Client
 ) async throws -> CheckIn_v2.LatestRelease {
-  let releases = try await Release.query()
-    .orderBy(.semver, .asc)
-    .all(in: db)
+  var query = Release.query().orderBy(.semver, .asc)
+
+  // special case, bug in 2.7.0/1 was fixed by a db change
+  // to screenshot rate, so don't force them to update
+  // but people behind 2.7.x should go up to >=2.7.2
+  // delete next time we ship a version we want all to upgrade to
+  if currentAppVersion == "2.7.0" || currentAppVersion == "2.7.1" {
+    query = query.where(.semver != "2.7.2")
+  }
+
+  let releases = try await query.all(in: db)
 
   let currentSemver = Semver(currentAppVersion)!
   var latest = CheckIn_v2.LatestRelease(semver: currentSemver.string)

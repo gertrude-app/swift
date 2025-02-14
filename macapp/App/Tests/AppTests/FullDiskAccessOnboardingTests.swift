@@ -196,7 +196,7 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
     await expect(saveState.calls.count).toEqual(2)
 
     // ensure we've restarted the monitoring after the FDA resume
-    // NB: this was broken in 2.7.0 and 2.7.2
+    // NB: this was broken in 2.7.0 and 2.7.1
     await expect(startLoggingKeystrokes2.calls.count).toEqual(1)
 
     // they click "Done" on the success screen...

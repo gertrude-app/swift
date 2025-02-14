@@ -33,6 +33,21 @@ final class CheckInLatestReleaseTests: ApiTestCase {
     expect(output).toEqual(.init(semver: "1.1.0"))
   }
 
+  func testSpecialCase_272_ignoredIfOn_27x() async throws {
+    try await self.replaceAllReleases(with: [
+      Release("2.5.0", pace: nil),
+      Release("2.7.0", pace: nil),
+      Release("2.7.2", pace: nil),
+    ])
+
+    let output = try await test(releaseChannel: .stable, currentVersion: "2.7.0")
+    expect(output).toEqual(.init(semver: "2.7.0"))
+    let output2 = try await test(releaseChannel: .stable, currentVersion: "2.7.1")
+    expect(output2).toEqual(.init(semver: "2.7.1"))
+    let output3 = try await test(releaseChannel: .stable, currentVersion: "2.5.0")
+    expect(output3).toEqual(.init(semver: "2.7.2"))
+  }
+
   func testAppBehindOne() async throws {
     try await self.replaceAllReleases(with: [
       Release("1.0.0", pace: 10, createdAt: .epoch),
