@@ -40,9 +40,12 @@ extension MonitoringFeature.RootReducer {
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
 
-    case .loadedPersistentState(.some(let persistent)):
-      guard persistent.resumeOnboarding == nil else { return .none }
-      return self.configureMonitoring(current: persistent.user, previous: nil)
+    case .loadedPersistentState(.some(let stored)):
+      guard stored.resumeOnboarding == nil ||
+        stored.resumeOnboarding == .checkingFullDiskAccessPermission(upgrade: true) else {
+        return .none
+      }
+      return self.configureMonitoring(current: stored.user, previous: nil)
 
     case .user(.updated(let previous)):
       return self.configureMonitoring(current: state.user.data, previous: previous)

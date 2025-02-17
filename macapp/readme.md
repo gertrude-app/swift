@@ -92,6 +92,8 @@
 - `2.7.0` (stable as of 1/30/25)
 - `2.7.1` (never "released", only used for new purchase/download)
   - change text of onboarding screen w/ new trial period length of 21 days
+- `2.7.2` (stable 2/14/25)
+  - fix resumption of monitoring after FDA upgrade onboarding
 
 ## Sparkle Releases
 

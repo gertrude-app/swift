@@ -12,7 +12,6 @@ import XExpect
 @testable import App
 
 final class OnboardingFeatureTests: XCTestCase {
-
   @MainActor
   func testFirstBootOnboardingHappyPathExhaustive() async {
     let (store, _) = AppReducer.testStore(exhaustive: true, mockDeps: false)
@@ -446,7 +445,7 @@ final class OnboardingFeatureTests: XCTestCase {
     )])
     await expect(enableLaunchAtLogin.calls.count).toEqual(1)
 
-    // shutdown tries fo flush keystrokes
+    // shutdown tries to flush keystrokes
     store.deps.monitoring.takePendingKeystrokes = { nil }
     // and stop relauncher
     let stopRelaunchWatcher = mock(always: ())
@@ -459,7 +458,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSingleUserOnlySkipsExemptUserScreen() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.step = .installSysExt_success
       $0.users = [.init(id: 501, name: "Dad", isAdmin: true)]
       $0.filterUsers = .init(exempt: [], protected: [])
@@ -472,7 +471,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testDoesntSkipExemptScreenIfOtherUsers() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.step = .installSysExt_success
       $0.currentUser = .init(id: 502, name: "Lil jimmy", isAdmin: false)
       $0.users = [
@@ -699,7 +698,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkippingFromAdminUserRemediation() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.step = .macosUserAccountType
       $0.userRemediationStep = .create
     }
@@ -710,7 +709,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testPrimaryBtnFromAllowScreenshotsGrantModalGoesToFailForVideo() async {
-    let store = self.featureStore { $0.step = .allowScreenshots_grantAndRestart }
+    let store = onboardingFeatureStore { $0.step = .allowScreenshots_grantAndRestart }
     await store.send(.webview(.primaryBtnClicked)) {
       $0.step = .allowScreenshots_failed
     }
@@ -718,7 +717,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSecondaryEscapeHatchFromAllowScreenshotsGrantGoesToNextStage() async {
-    let store = self.featureStore { $0.step = .allowScreenshots_grantAndRestart }
+    let store = onboardingFeatureStore { $0.step = .allowScreenshots_grantAndRestart }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_required))
@@ -726,7 +725,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSecondaryFromAllowNotificationsGrantModalGoesToFail() async {
-    let store = self.featureStore { $0.step = .allowNotifications_grant }
+    let store = onboardingFeatureStore { $0.step = .allowNotifications_grant }
     await store.send(.webview(.secondaryBtnClicked)) {
       $0.step = .allowNotifications_failed
     }
@@ -734,7 +733,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkippingAllStepsFromConnectSuccess() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.step = .connectChild
       $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
     }
@@ -754,7 +753,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkippingNotificationStepFromConnectSuccess() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.step = .connectChild
       $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
     }
@@ -772,7 +771,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkippingToKeyloggingFromConnectSuccess() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.step = .connectChild
       $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
     }
@@ -790,7 +789,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkippingToInstallSysExtFromConnectSuccess() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.step = .connectChild
       $0.connectChildRequest = .succeeded(payload: "Lil jimmy")
     }
@@ -810,7 +809,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testFullDiskAccessFromFinishNotifications() async {
-    let store = self.featureStore { $0.step = .allowNotifications_grant }
+    let store = onboardingFeatureStore { $0.step = .allowNotifications_grant }
     store.deps.app.hasFullDiskAccess = { true } // <-- skip
     store.deps.monitoring.screenRecordingPermissionGranted = { false }
     store.deps.device.notificationsSetting = { .alert }
@@ -820,7 +819,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkippingScreenshotsFromFinishFullDiskAccess() async {
-    let store = self.featureStore { $0.step = .allowFullDiskAccess_success }
+    let store = onboardingFeatureStore { $0.step = .allowFullDiskAccess_success }
     store.deps.monitoring.screenRecordingPermissionGranted = { true } // <-- skip
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     store.deps.device.notificationsSetting = { .alert }
@@ -830,7 +829,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkippingKeyloggingFromFinishScreenshots() async {
-    let store = self.featureStore { $0.step = .allowScreenshots_success }
+    let store = onboardingFeatureStore { $0.step = .allowScreenshots_success }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.primaryBtnClicked))
@@ -842,7 +841,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testFromScreenshotsRequiredScreenshotsAndKeyloggingAlreadyAllowed() async {
-    let store = self.featureStore { $0.step = .allowScreenshots_required }
+    let store = onboardingFeatureStore { $0.step = .allowScreenshots_required }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true }
     store.deps.filterExtension.state = { .notInstalled }
@@ -854,7 +853,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testClickingTryAgainPrimaryFromInstallSysExtFailed() async {
-    let store = self.featureStore { $0.step = .installSysExt_failed }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_failed }
     await store.send(.webview(.primaryBtnClicked)) {
       $0.step = .installSysExt_explain
     }
@@ -862,7 +861,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testClickingSkipSecondaryFromInstallSysExtFailed() async {
-    let store = self.featureStore { $0.step = .installSysExt_failed }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_failed }
     await store.send(.webview(.secondaryBtnClicked)) {
       $0.step = .locateMenuBarIcon
     }
@@ -870,7 +869,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testClickingHelpSecondaryFromInstallSysExt() async {
-    let store = self.featureStore { $0.step = .installSysExt_allow }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_allow }
     store.deps.filterExtension.state = { .notInstalled } // <-- not installed
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_failed)) // <-- goes to failed
@@ -878,7 +877,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testClickingHelpSecondaryFromInstallSysExt_WhenInstalled() async {
-    let store = self.featureStore { $0.step = .installSysExt_allow }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_allow }
     store.deps.filterExtension.state = { .installedAndRunning } // <-- installed
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_success)) // <-- goes to success
@@ -889,7 +888,7 @@ final class OnboardingFeatureTests: XCTestCase {
   // but we do have a button as well, this tests that it works
   @MainActor
   func testClickingDoneFromInstallSysExt() async {
-    let store = self.featureStore { $0.step = .installSysExt_allow }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_allow }
     let filterState = mock(returning: [FilterExtensionState.installedAndRunning])
     store.deps.filterExtension.state = filterState.fn
 
@@ -900,7 +899,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testHandleDetectingSysExtInstallFail() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.step = .installSysExt_trick
     }
     store.deps.mainQueue = .immediate
@@ -926,7 +925,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSysExtAlreadyInstalledAndRunning() async {
-    let store = self.featureStore { $0.step = .installSysExt_explain }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_explain }
     let filterState = mock(once: FilterExtensionState.installedAndRunning)
     store.deps.filterExtension.state = filterState.fn
 
@@ -938,7 +937,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSysExtAlreadyInstalledButNotRunning_StartsToSuccess() async {
-    let store = self.featureStore { $0.step = .installSysExt_explain }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_explain }
     let filterState = mock(once: FilterExtensionState.installedButNotRunning)
     store.deps.filterExtension.state = filterState.fn
     let filterStart = mock(once: FilterExtensionState.installedAndRunning)
@@ -954,7 +953,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSysExtAlreadyInstalledButNotRunning_StartFailsToError() async {
-    let store = self.featureStore { $0.step = .installSysExt_explain }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_explain }
     let filterState = mock(once: FilterExtensionState.installedButNotRunning)
     store.deps.filterExtension.state = filterState.fn
     let filterStart = mock(once: FilterExtensionState.installedButNotRunning)
@@ -968,7 +967,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipAllowKeylogging() async {
-    let store = self.featureStore { $0.step = .allowKeylogging_required }
+    let store = onboardingFeatureStore { $0.step = .allowKeylogging_required }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_explain))
@@ -976,7 +975,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipAllowKeyloggingSysExtAlreadyInstalled() async {
-    let store = self.featureStore { $0.step = .allowKeylogging_required }
+    let store = onboardingFeatureStore { $0.step = .allowKeylogging_required }
     store.deps.filterExtension.state = { .installedAndRunning }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.locateMenuBarIcon))
@@ -984,7 +983,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testFailedToAllowKeylogging() async {
-    let store = self.featureStore { $0.step = .allowKeylogging_grant }
+    let store = onboardingFeatureStore { $0.step = .allowKeylogging_grant }
     let keyloggingAllowed = mock(always: false) // <-- they failed to allow
     store.deps.monitoring.keystrokeRecordingPermissionGranted = keyloggingAllowed.fn
 
@@ -1009,7 +1008,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipFromKeylogginFail() async {
-    let store = self.featureStore { $0.step = .allowKeylogging_failed }
+    let store = onboardingFeatureStore { $0.step = .allowKeylogging_failed }
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.installSysExt_explain))
@@ -1017,7 +1016,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipsMostKeyloggingStepsIfPermsPreviouslyGranted() async {
-    let store = self.featureStore { $0.step = .allowKeylogging_required }
+    let store = onboardingFeatureStore { $0.step = .allowKeylogging_required }
 
     let keyloggingAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.keystrokeRecordingPermissionGranted = keyloggingAllowed.fn
@@ -1033,7 +1032,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipAllowingScreenshots() async {
-    let store = self.featureStore { $0.step = .allowScreenshots_required }
+    let store = onboardingFeatureStore { $0.step = .allowScreenshots_required }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     // they click "Skip" on the allow screenshots start screen
     await store.send(.webview(.secondaryBtnClicked))
@@ -1042,7 +1041,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipsMostScreenshotStepsIfPermsPreviouslyGranted() async {
-    let store = self.featureStore { $0.step = .allowScreenshots_required }
+    let store = onboardingFeatureStore { $0.step = .allowScreenshots_required }
 
     let screenshotsAllowed = mock(always: true) // <- they have granted permission
     store.deps.monitoring.screenRecordingPermissionGranted = screenshotsAllowed.fn
@@ -1060,7 +1059,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testFailureToGrantNotificationsSendsToFailScreen() async {
-    let store = self.featureStore { $0.step = .allowNotifications_grant }
+    let store = onboardingFeatureStore { $0.step = .allowNotifications_grant }
 
     let notifsSettings = mock(
       // they did NOT enable notifications (the first 2 times we check)
@@ -1104,7 +1103,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipFromAllowNotificationsFailedStep() async {
-    let store = self.featureStore { $0.step = .allowNotifications_failed }
+    let store = onboardingFeatureStore { $0.step = .allowNotifications_failed }
     store.deps.app.hasFullDiskAccess = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
@@ -1112,7 +1111,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipAllowNotificationsStep() async {
-    let store = self.featureStore { $0.step = .allowNotifications_start }
+    let store = onboardingFeatureStore { $0.step = .allowNotifications_start }
     store.deps.app.hasFullDiskAccess = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
@@ -1228,7 +1227,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testTryAgainFromScreenRecFailMovesOnIfPermsGranted() async {
-    let store = self.featureStore { $0.step = .allowScreenshots_failed }
+    let store = onboardingFeatureStore { $0.step = .allowScreenshots_failed }
     store.deps.monitoring.screenRecordingPermissionGranted = { true }
     await store.send(.webview(.primaryBtnClicked))
     await store.receive(.setStep(.allowScreenshots_success))
@@ -1236,7 +1235,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSkipFromScreenRecordingFailed() async {
-    let store = self.featureStore { $0.step = .allowScreenshots_failed }
+    let store = onboardingFeatureStore { $0.step = .allowScreenshots_failed }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_required))
@@ -1244,7 +1243,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testNoGertrudeAccountPrimary() async {
-    let store = self.featureStore { $0.step = .noGertrudeAccount }
+    let store = onboardingFeatureStore { $0.step = .noGertrudeAccount }
     await store.send(.webview(.primaryBtnClicked)) {
       $0.step = .macosUserAccountType
     }
@@ -1252,7 +1251,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSecondaryHelpFromAllowKeyloggingGrantGoesToFailForVideo() async {
-    let store = self.featureStore { $0.step = .allowKeylogging_grant }
+    let store = onboardingFeatureStore { $0.step = .allowKeylogging_grant }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { false }
     await store.send(.webview(.secondaryBtnClicked))
     await store.receive(.setStep(.allowKeylogging_failed))
@@ -1260,7 +1259,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSecondaryHelpFromAllowKeyloggingGrantGoesToNextIfPermGranted() async {
-    let store = self.featureStore { $0.step = .allowKeylogging_grant }
+    let store = onboardingFeatureStore { $0.step = .allowKeylogging_grant }
     store.deps.monitoring.keystrokeRecordingPermissionGranted = { true } // <-- granted
     store.deps.filterExtension.state = { .notInstalled }
     await store.send(.webview(.secondaryBtnClicked))
@@ -1269,7 +1268,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testNoGertrudeAccountQuit() async {
-    let store = self.featureStore()
+    let store = onboardingFeatureStore()
     store.deps.device = .mock
     let quit = mock(once: ())
     store.deps.app.quit = quit.fn
@@ -1289,7 +1288,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testBadUserTypeIgnoresDanger() async {
-    let store = self.featureStore()
+    let store = onboardingFeatureStore()
     store.deps.device.currentUserId = { 501 }
     store.deps.device.listMacOSUsers = { [.init(id: 501, name: "Dad", type: .admin)] }
     store.deps.device.notificationsSetting = { .none }
@@ -1310,7 +1309,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testBadUserTypeNoChoice() async {
-    let store = self.featureStore()
+    let store = onboardingFeatureStore()
     store.deps.device.currentUserId = { 501 }
     store.deps.device.listMacOSUsers = { [.init(id: 501, name: "Dad", type: .admin)] }
     store.deps.device.notificationsSetting = { .none }
@@ -1335,7 +1334,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testBadUserTypeWithChoice() async {
-    let store = self.featureStore()
+    let store = onboardingFeatureStore()
 
     store.deps.device.currentUserId = { 501 }
     store.deps.device.listMacOSUsers = { [
@@ -1371,7 +1370,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSettingStepDoesntOpenWindow() async {
-    let store = self.featureStore {
+    let store = onboardingFeatureStore {
       $0.windowOpen = false
     }
     // there's a 4 minute timeout for failed sys-ext install
@@ -1385,7 +1384,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSysExtInstallTimeoutDoesntPullBackToFailScreenIfPastThere() async {
-    let store = self.featureStore { $0.step = .installSysExt_trick }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_trick }
     store.deps.mainQueue = .immediate
     let timedOut = LockIsolated(false)
     store.deps.filterExtension.state = { .notInstalled }
@@ -1425,7 +1424,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
   @MainActor
   func testSysExtInstallTimeoutDoesGoToFailScreenIfNotPastStage() async {
-    let store = self.featureStore { $0.step = .installSysExt_trick }
+    let store = onboardingFeatureStore { $0.step = .installSysExt_trick }
     store.deps.mainQueue = .immediate
     let timedOut = LockIsolated(false)
     store.deps.filterExtension.state = { .notInstalled }
@@ -1478,273 +1477,20 @@ final class OnboardingFeatureTests: XCTestCase {
     ])
   }
 
-  @MainActor
-  func testSkipsFDAStepIfOsCatalina() async {
-    let store = self.featureStore { $0.step = .allowNotifications_failed }
-    store.deps.device.osVersion = { .init(major: 10, minor: 15, patch: 7) }
-    store.deps.app.hasFullDiskAccess = { fatalError() }
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
-    await store.send(.webview(.secondaryBtnClicked))
-    await store.receive(.setStep(.allowScreenshots_required))
-  }
-
-  @MainActor
-  func testResumingToCheckFDA_Success() async {
-    let (store, _) = AppReducer.testStore()
-    let saveState = spy(on: Persistent.State.self, returning: ())
-    store.deps.app.hasFullDiskAccess = { true } // <-- all good!
-    store.deps.storage.savePersistentState = saveState.fn
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
-
-    store.deps.storage.loadPersistentState = { .mock {
-      $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) // <-- resume here
-    }}
-
-    await store.send(.application(.didFinishLaunching))
-    await store.skipReceivedActions()
-
-    store.assert {
-      $0.onboarding.windowOpen = true
-      $0.onboarding.step = .allowFullDiskAccess_success
-    }
-
-    await expect(saveState.calls).toEqual([.mock { $0.resumeOnboarding = nil }])
-
-    await store.send(.onboarding(.webview(.primaryBtnClicked)))
-    await store.receive(.onboarding(.setStep(.allowScreenshots_required)))
-  }
-
-  @MainActor
-  func testResumingToCheckFDA_Failure() async {
-    let (store, _) = AppReducer.testStore()
-    let saveState = spy(on: Persistent.State.self, returning: ())
-    store.deps.app.hasFullDiskAccess = { false } // <-- still no bueno!
-    store.deps.storage.savePersistentState = saveState.fn
-
-    store.deps.storage.loadPersistentState = { .mock {
-      $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) // <-- resume here
-    }}
-
-    await store.send(.application(.didFinishLaunching))
-    await store.skipReceivedActions()
-
-    store.assert {
-      $0.onboarding.windowOpen = true
-      $0.onboarding.step = .allowFullDiskAccess_failed
-    }
-
-    // since the perms are still wrong, we need to save state to
-    // resume again after another quit & restart
-    await expect(saveState.calls).toEqual([
-      .mock { $0.resumeOnboarding = nil }, // <-- the first, default clear save
-      .mock { $0.resumeOnboarding = .checkingFullDiskAccessPermission(upgrade: false) },
-    ])
-
-    await store.send(.onboarding(.webview(.primaryBtnClicked)))
-    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_grantAndRestart)))
-  }
-
-  @MainActor
-  func testSkipsFDAIfAlreadyGranted() async {
-    let store = self.featureStore { $0.step = .allowNotifications_grant }
-    store.deps.device.notificationsSetting = { .alert }
-    store.deps.app.hasFullDiskAccess = { true } // <-- already granted, skip
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
-    await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.allowScreenshots_required))
-  }
-
-  @MainActor
-  func testParentSkipsFDAStep() async {
-    let store = self.featureStore { $0.step = .allowFullDiskAccess_grantAndRestart }
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
-    await store.send(.webview(.secondaryBtnClicked))
-    await store.receive(.setStep(.allowScreenshots_required))
-  }
-
-  @MainActor
-  func testSkipsFromFDAFailed() async {
-    let store = self.featureStore { $0.step = .allowFullDiskAccess_failed }
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
-    await store.send(.webview(.secondaryBtnClicked))
-    await store.receive(.setStep(.allowScreenshots_required))
-  }
-
-  @MainActor
-  func testUpgradeFDAHappyPath() async {
-    let (store, _) = AppReducer.testStore()
-
-    await store
-      .send(.onboarding(.delegate(.openForUpgrade(step: .allowFullDiskAccess_grantAndRestart)))) {
-        $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
-        $0.onboarding.windowOpen = true
-        $0.onboarding.upgrade = true
-      }
-
-    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
-    store.deps.device.openSystemPrefs = openSysPrefs.fn
-    let saveState = spy(on: Persistent.State.self, returning: ())
-    store.deps.storage.savePersistentState = saveState.fn
-    let stopRelaunchWatcher = mock(always: ())
-    store.deps.app.stopRelaunchWatcher = stopRelaunchWatcher.fn
-
-    // they click "Grant Permission" on the allow full disk access screen...
-    await store.send(.onboarding(.webview(.primaryBtnClicked)))
-
-    // ...we make a note to resume here after a quit/restart
-    await store.receive(
-      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: true))))
-    )
-    // ...and we send them to the full disk access grant system prefs pane
-    await expect(openSysPrefs.calls).toEqual([.security(.fullDiskAccess)])
-    // ...and we stop the relaunch watcher so it doesn't interfere w/ os restarting
-    await expect(stopRelaunchWatcher.calls.count).toEqual(1)
-
-    // check that we persisted the onboarding resumption state
-    await expect(saveState.calls.count).toEqual(1)
-    await expect(saveState.calls[0].resumeOnboarding)
-      .toEqual(.checkingFullDiskAccessPermission(upgrade: true))
-
-    let hasFullDiskAccess = mock(returning: [true])
-    store.deps.app.hasFullDiskAccess = hasFullDiskAccess.fn
-
-    // simulate receiving the resume action to carry on where they should
-    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true))))
-
-    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
-      $0.onboarding.step = .allowFullDiskAccess_success
-    }
-
-    expect(store.state.onboarding.step).toEqual(.allowFullDiskAccess_success)
-
-    // they click "Done" on the success screen...
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.windowOpen = false // ... so we close the window then b/c upgrade
-    }
-
-    await expect(saveState.calls.count).toEqual(2)
-    await expect(saveState.calls[1].resumeOnboarding).toBeNil()
-  }
-
-  @MainActor
-  func testSecondaryFromUpgradeFDAStartClosesWindowWithNoSaveForResume() async {
-    let (store, _) = AppReducer.testStore {
-      $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
-      $0.onboarding.upgrade = true
-    }
-
-    let saveState = spy(on: Persistent.State.self, returning: ())
-    store.deps.storage.savePersistentState = saveState.fn
-
-    // they elect to not give full disk access
-    await store.send(.onboarding(.webview(.secondaryBtnClicked))) {
-      $0.onboarding.windowOpen = false // so we close upgrade onboarding
-    }
-
-    await expect(saveState.calls.count).toEqual(0)
-  }
-
-  @MainActor
-  func testPrimaryFromUpgradeFDAFailGoesBacktoGrant() async {
-    let store = self.featureStore {
-      $0.step = .allowFullDiskAccess_failed
-      $0.upgrade = true
-    }
-    store.deps.app.hasFullDiskAccess = { false }
-    await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.allowFullDiskAccess_grantAndRestart))
-  }
-
-  @MainActor
-  func testPrimaryFDAFailGoesToSuccessIfTheyFixed() async {
-    let store = self.featureStore {
-      $0.step = .allowFullDiskAccess_failed
-      $0.upgrade = false
-    }
-    store.deps.app.hasFullDiskAccess = { true } // <-- they fixed it before click
-    await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.allowFullDiskAccess_success))
-  }
-
-  @MainActor
-  func testPrimaryFromUpgradeFDAFailGoesToSuccessIfTheyFixed() async {
-    let store = self.featureStore {
-      $0.step = .allowFullDiskAccess_failed
-      $0.upgrade = true
-    }
-    store.deps.app.hasFullDiskAccess = { true } // <-- they fixed it before click
-    await store.send(.webview(.primaryBtnClicked))
-    await store.receive(.setStep(.allowFullDiskAccess_success))
-  }
-
-  @MainActor
-  func testSecondaryFromUpgradeRestartFDAFailClosesPreventingResume() async {
-    let (store, _) = AppReducer.testStore {
-      $0.onboarding.windowOpen = false
-      $0.onboarding.upgrade = false
-    }
-
-    store.deps.app.hasFullDiskAccess = { false }
-    let saveState = spy(on: Persistent.State.self, returning: ())
-    store.deps.storage.savePersistentState = saveState.fn
-
-    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true)))) {
-      $0.onboarding.windowOpen = true
-      $0.onboarding.upgrade = true
-    }
-
-    // they end up on the failed screen
-    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_failed)))
-
-    // and we record that we're going to resume here, assuming they try again
-    await expect(saveState.calls.count).toEqual(1)
-    await expect(saveState.calls[0].resumeOnboarding)
-      .toEqual(.checkingFullDiskAccessPermission(upgrade: true))
-
-    // ... but instead they quit by clicking the secondary
-    await store.send(.onboarding(.webview(.secondaryBtnClicked))) {
-      $0.onboarding.windowOpen = false // so we close upgrade onboarding
-    }
-
-    // and won't resume
-    await expect(saveState.calls.count).toEqual(2)
-    await expect(saveState.calls[1].resumeOnboarding).toBeNil()
-  }
-
-  @MainActor
-  func testUpgradeHappyPathSimulatingRestart() async {
-    let (store, _) = AppReducer.testStore {
-      $0.onboarding.windowOpen = false
-      $0.onboarding.upgrade = false
-    }
-    store.deps.app.hasFullDiskAccess = { true }
-    await store.send(.onboarding(.resume(.checkingFullDiskAccessPermission(upgrade: true)))) {
-      $0.onboarding.windowOpen = true
-      $0.onboarding.upgrade = true // <-- we know we're still in upgrade mode...
-    }
-    await store.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
-      $0.onboarding.step = .allowFullDiskAccess_success
-    }
-    await store.send(.onboarding(.webview(.primaryBtnClicked))) {
-      $0.onboarding.windowOpen = false // ... so we close the window then b/c upgrade
-      $0.onboarding.upgrade = false
-    }
-  }
-
   // helpers
+}
 
-  func featureStore(
-    mutateState: @escaping (inout OnboardingFeature.State) -> Void = { _ in }
-  ) -> TestStoreOf<OnboardingFeature.Reducer> {
-    var state = OnboardingFeature.State()
-    state.windowOpen = true
-    mutateState(&state)
-    let store = TestStore(initialState: state) {
-      OnboardingFeature.Reducer()
-    }
-    store.exhaustivity = .off
-    store.deps.app.installLocation = { .inApplicationsDir }
-    store.deps.device.osVersion = { .sequoia }
-    return store
+func onboardingFeatureStore(
+  mutateState: @escaping (inout OnboardingFeature.State) -> Void = { _ in }
+) -> TestStoreOf<OnboardingFeature.Reducer> {
+  var state = OnboardingFeature.State()
+  state.windowOpen = true
+  mutateState(&state)
+  let store = TestStore(initialState: state) {
+    OnboardingFeature.Reducer()
   }
+  store.exhaustivity = .off
+  store.deps.app.installLocation = { .inApplicationsDir }
+  store.deps.device.osVersion = { .sequoia }
+  return store
 }
