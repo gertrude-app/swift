@@ -189,7 +189,6 @@ struct AppReducer: Reducer, Sendable {
         state.menuBar.dropdownOpen = false
         state.blockedRequests.windowOpen = false
         state.requestSuspension.windowOpen = false
-        state.onboarding.windowOpen = false
         return .exec { _ in
           switch notification {
           case .unexpectedError:
