@@ -1,4 +1,7 @@
+import Dependencies
 import GertieIOS
+import LibClients
+import LibCore
 
 #if canImport(NetworkExtension)
   import NetworkExtension
@@ -7,16 +10,48 @@ import GertieIOS
 #endif
 
 public class FilterProxy {
-  var rules: [BlockRule] = BlockRule.defaults
-  var loadRules: () -> [BlockRule]?
+  @Dependency(\.osLog) var logger
+  @Dependency(\.storage) var storage
+  @Dependency(\.suspendingClock) var clock
 
-  public init(
-    rules: [BlockRule] = BlockRule.defaults,
-    loadRules: @escaping () -> [BlockRule]?
-  ) {
-    self.rules = rules
-    self.loadRules = loadRules
+  var protectionMode: ProtectionMode
+  var heartbeatTask: Task<Void, Error>?
+
+  public init(protectionMode: ProtectionMode) {
+    self.protectionMode = protectionMode
+    self.logger.setPrefix("FILTER PROXY")
     self.readRules()
+  }
+
+  public func startHeartbeat(interval: Duration) {
+    self.heartbeatTask = Task {
+      while true {
+        try await self.clock.sleep(for: interval)
+        self.receiveHeartbeat()
+      }
+    }
+  }
+
+  func loadRules() -> ProtectionMode? {
+    guard let data = self.storage.loadData(forKey: .protectionModeStorageKey) else {
+      self.logger.log("no rules found")
+      return nil
+    }
+    do {
+      let mode = try JSONDecoder().decode(ProtectionMode.self, from: data)
+      switch mode {
+      case .normal(let rules):
+        self.logger.log("read \(rules.count) (normal) rules")
+      case .onboarding(let rules):
+        self.logger.log("read \(rules.count) (onboarding) rules")
+      case .emergencyLockdown:
+        self.logger.log("unexpected stored emergencyLockdown mode")
+      }
+      return mode
+    } catch {
+      self.logger.log("error decoding rules: \(String(reflecting: error))")
+      return nil
+    }
   }
 
   public func decideFlow(
@@ -28,7 +63,24 @@ public class FilterProxy {
     if hostname == "read-rules.gertrude.app" {
       self.readRules()
       return .drop
-    } else if self.rules.blocksFlow(
+    }
+
+    guard let rules = self.protectionMode.rules else {
+      if bundleId?.contains("com.netrivet.gertrude-ios.app") == true {
+        return .allow
+      } else if let hostname {
+        return hostname.hasSuffix("gertrude.app") ? .allow : .drop
+      } else if let url {
+        let withoutScheme = url.replacingOccurrences(of: "https://", with: "")
+        let segments = withoutScheme.split(separator: "/")
+        let host = segments.first ?? ""
+        return host == "api.gertrude.app" || host == "gertrude.app" ? .allow : .drop
+      } else {
+        return .drop
+      }
+    }
+
+    if rules.blocksFlow(
       hostname: hostname,
       url: url,
       bundleId: bundleId,
@@ -49,8 +101,8 @@ public class FilterProxy {
   }
 
   func readRules() {
-    if let newRules = self.loadRules() {
-      self.rules = newRules
+    if let protectionMode = self.loadRules() {
+      self.protectionMode = protectionMode
     }
   }
 

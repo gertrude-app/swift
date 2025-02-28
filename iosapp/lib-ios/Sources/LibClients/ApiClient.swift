@@ -8,7 +8,9 @@ import os.log
 
 @DependencyClient
 public struct ApiClient: Sendable {
-  public var fetchBlockRules: @Sendable () async throws -> [BlockRule]
+  public var fetchBlockRules: @Sendable (_ vendorId: UUID, _ disabledGroups: [BlockGroup])
+    async throws -> [BlockRule]
+  public var fetchDefaultBlockRules: @Sendable (_ vendorId: UUID?) async throws -> [BlockRule]
   public var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
 }
 
@@ -18,11 +20,22 @@ extension ApiClient: TestDependencyKey {
 
 extension ApiClient: DependencyKey {
   public static var liveValue: ApiClient {
-    ApiClient(
-      fetchBlockRules: {
-        @Dependency(\.device) var device
-        let payload = BlockRules.Input(vendorId: device.vendorId, version: "1.2.0")
-        let (data, _) = try await request(route: .blockRules(payload))
+    let version = Bundle.main
+      .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+    return ApiClient(
+      fetchBlockRules: { vendorId, disabledGroups in
+        let (data, _) = try await request(route: .blockRules_v2(.init(
+          disabledGroups: disabledGroups,
+          vendorId: vendorId,
+          version: version
+        )))
+        return try JSONDecoder().decode([BlockRule].self, from: data)
+      },
+      fetchDefaultBlockRules: { vendorId in
+        let (data, _) = try await request(route: .defaultBlockRules(.init(
+          vendorId: vendorId,
+          version: version
+        )))
         return try JSONDecoder().decode([BlockRule].self, from: data)
       },
       logEvent: { id, detail in

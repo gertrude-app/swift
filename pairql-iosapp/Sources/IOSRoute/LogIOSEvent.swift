@@ -1,6 +1,7 @@
 import Foundation
 import PairQL
 
+/// in use: v1.0.0 - present
 public struct LogIOSEvent: Pair {
   public static let auth: ClientAuth = .none
 

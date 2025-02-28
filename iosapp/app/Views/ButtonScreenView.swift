@@ -4,9 +4,19 @@ struct ButtonScreenView: View {
   @Environment(\.colorScheme) var cs
 
   struct Config {
-    let text: String
-    let type: BigButton.ButtonType
-    let animate: Bool
+    var text: String
+    var type: BigButton.ButtonType
+    var animate: Bool
+
+    init(text: String, type: BigButton.ButtonType, animate: Bool = true) {
+      self.text = text
+      self.type = type
+      self.animate = animate
+    }
+
+    init(_ text: String, animate: Bool = true, _ action: @escaping () -> Void) {
+      self.init(text: text, type: .button(action), animate: animate)
+    }
   }
 
   let text: String

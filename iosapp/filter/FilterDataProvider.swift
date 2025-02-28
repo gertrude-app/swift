@@ -5,36 +5,21 @@ import NetworkExtension
 import os.log
 
 class FilterDataProvider: NEFilterDataProvider {
-  var heartbeatTask: Task<Void, Never>?
-  let proxy = FilterProxy(rules: BlockRule.defaults, loadRules: {
-    guard let data = UserDefaults.gertrude.data(forKey: .blockRulesStorageKey) else {
-      os_log("[G•] FIlTER: no rules found")
-      return nil
-    }
-    do {
-      let rules = try JSONDecoder().decode([BlockRule].self, from: data)
-      os_log("[G•] FILTER read %{public}d rules", rules.count)
-      return rules
-    } catch {
-      os_log("[G•] FIlTER ERROR decoding rules: %{public}s", String(reflecting: error))
-      return nil
-    }
-  })
+  let proxy = FilterProxy(protectionMode: .emergencyLockdown)
+
+  override init() {
+    super.init()
+    os_log("[G•] FILTER init")
+    #if DEBUG
+      self.proxy.startHeartbeat(interval: .seconds(45))
+    #else
+      self.proxy.startHeartbeat(interval: .minutes(5))
+    #endif
+  }
 
   override func startFilter(completionHandler: @escaping (Error?) -> Void) {
     os_log("[G•] FILTER start")
     self.proxy.startFilter()
-    self.heartbeatTask = Task { [weak self] in
-      while true {
-        #if DEBUG
-          try? await Task.sleep(for: .seconds(60 * 1))
-        #else
-          try? await Task.sleep(for: .seconds(60 * 5))
-        #endif
-        os_log("[G•] send heartbeat")
-        self?.proxy.receiveHeartbeat()
-      }
-    }
     completionHandler(nil)
   }
 
@@ -56,15 +41,21 @@ class FilterDataProvider: NEFilterDataProvider {
     if let browserFlow = flow as? NEFilterBrowserFlow {
       flowType = .browser
       url = browserFlow.url?.absoluteString
-      os_log("[G•] handle new BROWSER flow (data) : %{public}s", String(describing: browserFlow))
+      os_log(
+        "[G•] FILTER handle new BROWSER flow (data) : %{public}s",
+        String(describing: browserFlow)
+      )
     } else if let socketFlow = flow as? NEFilterSocketFlow {
       flowType = .socket
       hostname = socketFlow.remoteHostname
-      os_log("[G•] handle new SOCKET flow (data) : %{public}s", String(describing: socketFlow))
+      os_log(
+        "[G•] FILTER handle new SOCKET flow (data) : %{public}s",
+        String(describing: socketFlow)
+      )
     } else {
       flowType = nil
       os_log(
-        "[G•] flow is NEITHER subclass (unreachable?) id: %{public}s",
+        "[G•] FILTER flow is NEITHER subclass (unreachable?) id: %{public}s",
         String(describing: flow.identifier)
       )
     }
@@ -77,7 +68,7 @@ class FilterDataProvider: NEFilterDataProvider {
     )
 
     os_log(
-      "[G•] flow verdict: %{public}s, hostname: %{public}s, url: %{public}s, sourceId: %{public}s",
+      "[G•] FILTER flow verdict: %{public}s, hostname: %{public}s, url: %{public}s, sourceId: %{public}s",
       verdict.description,
       hostname ?? "(nil)",
       url ?? "(nil)",

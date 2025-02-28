@@ -1,4 +1,35 @@
 import Foundation
+import GertieIOS
+
+public enum ProtectionMode {
+  case onboarding([BlockRule])
+  case normal([BlockRule])
+  case emergencyLockdown
+}
+
+public extension ProtectionMode {
+  var normalRules: [BlockRule]? {
+    switch self {
+    case .normal(let rules):
+      return rules
+    case .onboarding, .emergencyLockdown:
+      return nil
+    }
+  }
+
+  var rules: [BlockRule]? {
+    switch self {
+    case .onboarding(let rules):
+      return rules
+    case .normal(let rules):
+      return rules
+    case .emergencyLockdown:
+      return nil
+    }
+  }
+}
+
+extension ProtectionMode: Equatable, Sendable, Codable {}
 
 public extension UserDefaults {
   static let gertrude = UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
@@ -18,7 +49,11 @@ public extension String {
     #endif
   }
 
-  static var blockRulesStorageKey: String {
-    "blockRules.v1"
+  static var protectionModeStorageKey: String {
+    "ProtectionMode.v1.3.0"
+  }
+
+  static var disabledBlockGroupsStorageKey: String {
+    "disabledBlockGroups.v1.3.0"
   }
 }

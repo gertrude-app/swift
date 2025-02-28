@@ -2,6 +2,7 @@ import Dependencies
 import DependenciesMacros
 import Foundation
 import GertieIOS
+import LibCore
 
 @DependencyClient
 public struct StorageClient: Sendable {
@@ -31,13 +32,23 @@ extension StorageClient: DependencyKey {
 }
 
 public extension StorageClient {
-  func saveBlockRules(_ rules: [BlockRule]) {
-    self.saveCodable(value: rules, forKey: .blockRulesStorageKey)
+  func saveProtectionMode(_ protectionMode: ProtectionMode) {
+    self.saveCodable(value: protectionMode, forKey: .protectionModeStorageKey)
   }
 
-  func loadBlockRules() -> [BlockRule]? {
-    self.loadData(forKey: .blockRulesStorageKey).flatMap { data in
-      try? JSONDecoder().decode([BlockRule].self, from: data)
+  func loadProtectionMode() -> ProtectionMode? {
+    self.loadData(forKey: .protectionModeStorageKey).flatMap { data in
+      try? JSONDecoder().decode(ProtectionMode.self, from: data)
+    }
+  }
+
+  func saveDisabledBlockGroups(_ groups: [BlockGroup]) {
+    self.saveCodable(value: groups, forKey: .disabledBlockGroupsStorageKey)
+  }
+
+  func loadDisabledBlockGroups() -> [BlockGroup]? {
+    self.loadData(forKey: .disabledBlockGroupsStorageKey).flatMap { data in
+      try? JSONDecoder().decode([BlockGroup].self, from: data)
     }
   }
 
@@ -50,7 +61,7 @@ public extension StorageClient {
   }
 }
 
-extension String {
+public extension String {
   static var launchDateStorageKey: String {
     "firstLaunchDate"
   }
