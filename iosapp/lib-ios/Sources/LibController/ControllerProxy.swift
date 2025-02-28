@@ -4,6 +4,7 @@ import NetworkExtension
 
 public class ControllerProxy {
   @Dependency(\.api) var api
+  @Dependency(\.device) var device
   @Dependency(\.osLog) var logger
   @Dependency(\.storage) var storage
   @Dependency(\.suspendingClock) var clock
@@ -55,15 +56,26 @@ public class ControllerProxy {
   }
 
   func updateRules() async {
+    guard let vendorId = self.device.vendorId else {
+      self.logger.log("no vendor id, skipping rule update")
+      return
+    }
+
+    guard let disabled = self.storage.loadDisabledBlockGroups() else {
+      self.logger.log("no stored block groups, skipping rule update")
+      return
+    }
+
     self.logger.log("updating rules")
-    guard let apiRules = try? await self.api.fetchBlockRules() else {
+    guard let apiRules = try? await self.api.fetchBlockRules(vendorId, disabled) else {
       self.logger.log("failed to fetch rules")
       return
     }
-    let savedRules = self.storage.loadBlockRules()
+
+    let savedRules = self.storage.loadProtectionMode()?.normalRules
     if apiRules != savedRules {
       self.logger.log("saving changed rules")
-      self.storage.saveBlockRules(apiRules)
+      self.storage.saveProtectionMode(.normal(apiRules))
       self.notifyRulesChanged()
     } else {
       self.logger.log("rules unchanged")

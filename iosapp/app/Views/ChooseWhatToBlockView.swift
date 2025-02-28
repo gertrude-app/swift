@@ -1,82 +1,14 @@
+import LibApp
 import SwiftUI
 
 struct ChooseWhatToBlockView: View {
   @Environment(\.colorScheme) var cs
 
-  let onTap: () -> Void
+  let deselectedGroups: [BlockGroup]
+  let onGroupToggle: (BlockGroup) -> Void
+  let onDone: () -> Void
 
-  struct BlockableItem: Identifiable {
-    var name: String
-    var shortDescription: String
-    var longDescription: String
-    var image: String
-    var isSelected: Bool
-
-    var id: String
-  }
-
-  @State private var blockableItems = [
-    (
-      "GIFs",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "Amet irure eu laboris consequat commodo et dolor quis est duis anim ut voluptate. Laborum nostrud proident commodo occaecat sit excepteur cupidatat reprehenderit. Sit ullamco culpa duis officia occaecat ipsum deserunt dolore. Excepteur ut ut exercitation adipisicing consequat qui tempor proident.",
-      "MessagesGIFs"
-    ),
-    (
-      "Apple Maps images",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "Amet irure eu laboris consequat commodo et dolor quis est duis anim ut voluptate. Laborum nostrud proident commodo occaecat sit excepteur cupidatat reprehenderit. Sit ullamco culpa duis officia occaecat ipsum deserunt dolore. Excepteur ut ut exercitation adipisicing consequat qui tempor proident.",
-      "MapsImages"
-    ),
-    (
-      "AI features",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "Amet irure eu laboris consequat commodo et dolor quis est duis anim ut voluptate. Laborum nostrud proident commodo occaecat sit excepteur cupidatat reprehenderit. Sit ullamco culpa duis officia occaecat ipsum deserunt dolore. Excepteur ut ut exercitation adipisicing consequat qui tempor proident.",
-      "AIFeatures"
-    ),
-    (
-      "App store images",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "Amet irure eu laboris consequat commodo et dolor quis est duis anim ut voluptate. Laborum nostrud proident commodo occaecat sit excepteur cupidatat reprehenderit. Sit ullamco culpa duis officia occaecat ipsum deserunt dolore. Excepteur ut ut exercitation adipisicing consequat qui tempor proident.",
-      "AppStoreImages"
-    ),
-    (
-      "Spotlight",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "Amet irure eu laboris consequat commodo et dolor quis est duis anim ut voluptate. Laborum nostrud proident commodo occaecat sit excepteur cupidatat reprehenderit. Sit ullamco culpa duis officia occaecat ipsum deserunt dolore. Excepteur ut ut exercitation adipisicing consequat qui tempor proident.",
-      "SpotlightSearch"
-    ),
-    (
-      "Ads",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "Amet irure eu laboris consequat commodo et dolor quis est duis anim ut voluptate. Laborum nostrud proident commodo occaecat sit excepteur cupidatat reprehenderit. Sit ullamco culpa duis officia occaecat ipsum deserunt dolore. Excepteur ut ut exercitation adipisicing consequat qui tempor proident.",
-      "AdBlocking"
-    ),
-    (
-      "WhatsApp",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "Amet irure eu laboris consequat commodo et dolor quis est duis anim ut voluptate. Laborum nostrud proident commodo occaecat sit excepteur cupidatat reprehenderit. Sit ullamco culpa duis officia occaecat ipsum deserunt dolore. Excepteur ut ut exercitation adipisicing consequat qui tempor proident.",
-      "BadWhatsAppFeatures"
-    ),
-    (
-      "apple.com",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "Amet irure eu laboris consequat commodo et dolor quis est duis anim ut voluptate. Laborum nostrud proident commodo occaecat sit excepteur cupidatat reprehenderit. Sit ullamco culpa duis officia occaecat ipsum deserunt dolore. Excepteur ut ut exercitation adipisicing consequat qui tempor proident.",
-      "AppleWebsite"
-    ),
-  ].map { name, shortDescription, longDescription, image in
-    BlockableItem(
-      name: name,
-      shortDescription: shortDescription,
-      longDescription: longDescription,
-      image: image,
-      isSelected: true,
-      id: name
-    )
-  }
-
-  @State private var sheetItem: BlockableItem? = nil
-
+  @State private var sheetItem: BlockGroup? = nil
   @State private var iconOffset = Vector(x: 0, y: 20)
   @State private var titleOffset = Vector(x: 0, y: 20)
   @State private var paragraphOffset = Vector(x: 0, y: 20)
@@ -96,7 +28,7 @@ struct ChooseWhatToBlockView: View {
           .cornerRadius(24)
           .swooshIn(tracking: self.$iconOffset, to: .zero, after: .zero, for: .seconds(0.6))
 
-        Text("Success! We're nearly done.")
+        Text("Success! We’re nearly done.")
           .multilineTextAlignment(.center)
           .font(.system(size: 24, weight: .bold))
           .padding(.top, 28)
@@ -109,11 +41,12 @@ struct ChooseWhatToBlockView: View {
           )
 
         Text(
-          "Gertrude is all set to block content. Take a moment to decide if there are any of these types of content that you don't want to block:"
+          "Gertrude is all set to block content. Take a moment to decide if there are any of these types of content that you don’t want to block:"
         )
         .multilineTextAlignment(.center)
         .font(.system(size: 18, weight: .medium))
         .foregroundStyle(Color(self.cs, light: .black.opacity(0.8), dark: .white.opacity(0.8)))
+        .padding(.bottom, 20)
         .swooshIn(
           tracking: self.$paragraphOffset,
           to: .zero,
@@ -121,132 +54,12 @@ struct ChooseWhatToBlockView: View {
           for: .seconds(0.6)
         )
 
-        VStack(alignment: .leading) {
-          ForEach(Array(self.$blockableItems.enumerated()), id: \.offset) { index, $item in
-            Button {
-              withAnimation(.smooth(duration: 0.1)) {
-                item.isSelected.toggle()
-              }
-            } label: {
-              ZStack {
-                HStack(alignment: .top, spacing: 12) {
-                  Image(systemName: "checkmark")
-                    .font(.system(size: 12, weight: .bold))
-                    .scaleEffect(item.isSelected ? 1 : 0)
-                    .foregroundStyle(.white)
-                    .padding(4)
-                    .background(item.isSelected ? Color.violet500 : Color(
-                      self.cs,
-                      light: .white,
-                      dark: .black
-                    ))
-                    .cornerRadius(6)
-                    .overlay {
-                      RoundedRectangle(cornerRadius: 6)
-                        .stroke(
-                          item.isSelected ? Color.violet500 : Color.gray.opacity(0.2),
-                          lineWidth: 2
-                        )
-                    }
-                  
-                  VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 0) {
-                      Text(item.name)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(Color(self.cs, light: .black, dark: .white))
-                      
-                      Button {
-                        withAnimation {
-                          self.showTooltip = false
-                        }
-                        self.sheetItem = item
-                      } label: {
-                        Image(systemName: "questionmark.circle")
-                          .font(.system(size: 12, weight: .medium))
-                          .foregroundStyle(Color(
-                            self.cs,
-                            light: .black.opacity(0.4),
-                            dark: .white.opacity(0.4)
-                          ))
-                          .padding(.horizontal, 8)
-                          .padding(.vertical, 4)
-                          .multilineTextAlignment(.leading)
-                      }
-                      
-                    }
-                    
-                    Text(item.shortDescription)
-                      .font(.system(size: 15, weight: .regular))
-                      .foregroundStyle(Color(
-                        self.cs,
-                        light: .black.opacity(0.6),
-                        dark: .white.opacity(0.6)
-                      ))
-                      .frame(maxWidth: .infinity, alignment: .leading)
-                  }
-                  
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
-                .background(Gradient(colors: [
-                  Color(self.cs, light: .white, dark: .white.opacity(0.15)),
-                  Color(self.cs, light: .white.opacity(0.7), dark: .white.opacity(0.07)),
-                ]))
-                .cornerRadius(16)
-                .shadow(
-                  color: Color(self.cs, light: .violet200, dark: .violet900.opacity(0.3)),
-                  radius: 3
-                )
-                .opacity(item.isSelected ? 1 : self.cs == .light ? 0.7 : 0.5)
-                
-                if index == 0 {
-                  VStack(spacing: -24) {
-                    Text("Tap to find\nout more")
-                      .font(.system(size: 14, weight: .medium))
-                      .multilineTextAlignment(.center)
-                      .foregroundStyle(Color(cs, light: .white, dark: .violet900))
-                      .padding(.horizontal, 8)
-                      .padding(.vertical, 6)
-                      .background(Color(cs, light: .violet500, dark: .violet300))
-                      .cornerRadius(8)
-                      .frame(width: 120, height: 80)
-                      .shadow(color: Color(cs, light: .violet900, dark: .black).opacity(0.3), radius: 8, x: 0, y: 2)
-                    Rectangle()
-                      .fill(Color(cs, light: .violet500, dark: .violet300))
-                      .frame(width: 12, height: 12)
-                      .rotationEffect(.degrees(45))
-                  }
-                  .position(x: 98, y: -22)
-                  .opacity(self.showTooltip ? 1 : 0)
-                  .offset(y: self.showTooltip ? 0 : -10)
-                  .onAppear {
-                    delayed(by: .seconds(1.5)) {
-                      withAnimation(.bouncy(duration: 0.4, extraBounce: 0.3)) {
-                        self.showTooltip = true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            .buttonStyle(BounceButtonStyle())
-            .sensoryFeedback(.selection, trigger: item.isSelected)
-            .swooshIn(
-              tracking: self.$itemOffsets[index],
-              to: .zero,
-              after: .seconds(Double(index) / 15.0 + 0.3),
-              for: .milliseconds(600)
-            )
-          }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        self.selectableGroups
 
         BigButton("Done, continue", type: .button {
           self.vanishingAnimations()
           delayed(by: .seconds(0.5)) {
-            self.onTap()
+            self.onDone()
           }
         }, variant: .primary)
           .swooshIn(
@@ -285,7 +98,7 @@ struct ChooseWhatToBlockView: View {
                 RoundedRectangle(cornerRadius: 22)
                   .stroke(Color.black.opacity(0.05), lineWidth: 1)
               }
-            Text(item.name)
+            Text(item.title)
               .font(.system(size: 24, weight: .bold))
               .padding(.top, 20)
               .padding(.bottom, 4)
@@ -327,12 +140,143 @@ struct ChooseWhatToBlockView: View {
     }
   }
 
+  var selectableGroups: some View {
+    VStack(alignment: .leading) {
+      ForEach(Array(allBlockGroups.enumerated()), id: \.1) { (index: Int, item: BlockGroup) in
+        Button {
+          withAnimation(.smooth(duration: 0.1)) {
+            self.onGroupToggle(item)
+          }
+        } label: {
+          ZStack {
+            HStack(alignment: .top, spacing: 12) {
+              Image(systemName: "checkmark")
+                .font(.system(size: 12, weight: .bold))
+                .scaleEffect(self.isSelected(item) ? 1 : 0)
+                .foregroundStyle(.white)
+                .padding(4)
+                .background(self.isSelected(item) ? Color.violet500 : Color(
+                  self.cs,
+                  light: .white,
+                  dark: .black
+                ))
+                .cornerRadius(6)
+                .overlay {
+                  RoundedRectangle(cornerRadius: 6)
+                    .stroke(
+                      self.isSelected(item) ? Color.violet500 : Color.gray.opacity(0.2),
+                      lineWidth: 2
+                    )
+                }
+
+              VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 0) {
+                  Text(item.title)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color(self.cs, light: .black, dark: .white))
+
+                  Button {
+                    withAnimation {
+                      self.showTooltip = false
+                    }
+                    self.sheetItem = item
+                  } label: {
+                    Image(systemName: "questionmark.circle")
+                      .font(.system(size: 12, weight: .medium))
+                      .foregroundStyle(Color(
+                        self.cs,
+                        light: .black.opacity(0.4),
+                        dark: .white.opacity(0.4)
+                      ))
+                      .padding(.horizontal, 8)
+                      .padding(.vertical, 4)
+                      .multilineTextAlignment(.leading)
+                  }
+                }
+
+                Text(item.shortDescription)
+                  .font(.system(size: 15, weight: .regular))
+                  .foregroundStyle(Color(
+                    self.cs,
+                    light: .black.opacity(0.6),
+                    dark: .white.opacity(0.6)
+                  ))
+                  .frame(maxWidth: .infinity, alignment: .leading)
+              }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .background(Gradient(colors: [
+              Color(self.cs, light: .white, dark: .white.opacity(0.15)),
+              Color(self.cs, light: .white.opacity(0.7), dark: .white.opacity(0.07)),
+            ]))
+            .cornerRadius(16)
+            .shadow(
+              color: Color(self.cs, light: .violet200, dark: .violet900.opacity(0.3)),
+              radius: 3
+            )
+            .opacity(self.isSelected(item) ? 1 : self.cs == .light ? 0.7 : 0.5)
+
+            if index == 0 {
+              VStack(spacing: -24) {
+                Text("Tap to find\nout more")
+                  .font(.system(size: 14, weight: .medium))
+                  .multilineTextAlignment(.center)
+                  .foregroundStyle(Color(cs, light: .white, dark: .violet900))
+                  .padding(.horizontal, 8)
+                  .padding(.vertical, 6)
+                  .background(Color(cs, light: .violet500, dark: .violet300))
+                  .cornerRadius(8)
+                  .frame(width: 120, height: 80)
+                  .shadow(
+                    color: Color(cs, light: .violet900, dark: .black).opacity(0.3),
+                    radius: 8,
+                    x: 0,
+                    y: 2
+                  )
+                Rectangle()
+                  .fill(Color(cs, light: .violet500, dark: .violet300))
+                  .frame(width: 12, height: 12)
+                  .rotationEffect(.degrees(45))
+              }
+              .position(x: 98, y: -22)
+              .opacity(self.showTooltip ? 1 : 0)
+              .offset(y: self.showTooltip ? 0 : -10)
+              .onAppear {
+                delayed(by: .seconds(1.5)) {
+                  withAnimation(.bouncy(duration: 0.4, extraBounce: 0.3)) {
+                    self.showTooltip = true
+                  }
+                }
+              }
+            }
+          }
+        }
+        .buttonStyle(BounceButtonStyle())
+        .sensoryFeedback(.selection, trigger: self.isSelected(item))
+        .swooshIn(
+          tracking: self.$itemOffsets[index],
+          to: .zero,
+          after: .seconds(Double(index) / 15.0 + 0.3),
+          for: .milliseconds(600)
+        )
+      }
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, 20)
+  }
+
+  func isSelected(_ group: BlockGroup) -> Bool {
+    !self.deselectedGroups.contains(group)
+  }
+
   func vanishingAnimations() {
     withAnimation {
       self.iconOffset.y = -20
       self.titleOffset.y = -20
       self.paragraphOffset.y = -20
-      self.itemOffsets = Array(repeating: .init(x: 0, y: -20), count: self.blockableItems.count)
+      self.itemOffsets = Array(repeating: .init(x: 0, y: -20), count: allBlockGroups.count)
     }
 
     delayed(by: .milliseconds(100)) {
@@ -344,8 +288,64 @@ struct ChooseWhatToBlockView: View {
   }
 }
 
+let allBlockGroups: [BlockGroup] = .all
+
+extension BlockGroup {
+  var title: String {
+    switch self {
+    case .ads: "Ads"
+    case .aiFeatures: "AI features"
+    case .appStoreImages: "App store images"
+    case .appleMapsImages: "Apple Maps images"
+    case .appleWebsite: "apple.com"
+    case .gifs: "GIFs"
+    case .spotlightSearches: "Spotlight"
+    case .whatsAppFeatures: "WhatsApp"
+    }
+  }
+
+  var image: String {
+    switch self {
+    case .ads: "AdBlocking"
+    case .aiFeatures: "AIFeatures"
+    case .appStoreImages: "AppStoreImages"
+    case .appleMapsImages: "MapsImages"
+    case .appleWebsite: "AppleWebsite"
+    case .gifs: "MessagesGIFs"
+    case .spotlightSearches: "SpotlightSearch"
+    case .whatsAppFeatures: "BadWhatsAppFeatures"
+    }
+  }
+
+  var shortDescription: String {
+    switch self {
+    case .ads: "Block the most common ad providers across all apps."
+    case .aiFeatures: "Block certain cloud-based AI features like image recognition."
+    case .appStoreImages: "Block images from the App Store."
+    case .appleMapsImages: "Block all images from Apple Maps business listings."
+    case .appleWebsite: "Block web access to apple.com and linked sites."
+    case .gifs: "Block GIFs in Messages #images, WhatsApp, Signal, and more."
+    case .spotlightSearches: "Block internet searches through Spotlight."
+    case .whatsAppFeatures: "Block some parts of WhatsApp, including media content."
+    }
+  }
+
+  var longDescription: String {
+    switch self {
+    case .ads: "Blocks the 20 most common ad providers, including Google ads, in all browsers and apps. Does not guarantee to block all ads, but should make a noticeable difference."
+    case .aiFeatures: "Blocks certain cloud-based AI features like image recognition. For example, the iOS 18 feature where an item in a photo can be long-pressed, identified, and searched for online."
+    case .appStoreImages: "Eliminates all images for apps in the App Store, and in other places where the App Store appears, like in the Messages texting app."
+    case .appleMapsImages: "Apple Maps business listings show photos uploaded by customers and businesses, and for certain types of businesses, these can be explicit. This group blocks all images from within Apple Maps."
+    case .appleWebsite: "Certain parts of iOS (including the Settings app) contain links to the apple.com website. It is possible to view these pages and from there follow links to other parts of the web. This group blocks this access."
+    case .gifs: "Blocks viewing and searching for GIFs in the #images feature of Apple’s texting app, plus in other common messaging apps like WhatsApp, Skype, and Signal."
+    case .spotlightSearches: "The built in search bar in iOS (called Spotlight) allows searching for information and images from the internet. This group stops all spotlight internet searches. Local information are still permitted."
+    case .whatsAppFeatures: "This group attempts to block some of aspects of the WhatsApp app, including the media channels. It is experimental, and does not guarantee by any means that the app will be safe for children, but it does reduce some risks."
+    }
+  }
+}
+
 #Preview {
-  ChooseWhatToBlockView {}
+  ChooseWhatToBlockView(deselectedGroups: .all, onGroupToggle: { _ in }) {}
 }
 
 struct BounceButtonStyle: ButtonStyle {

@@ -8,15 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		0F4609EE2D4BCA510038C617 /* Shake.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609E52D4BCA510038C617 /* Shake.swift */; };
-		0F4609F02D4BCA510038C617 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609EA2D4BCA510038C617 /* ContentView.swift */; };
-		0F4609F22D4BCA510038C617 /* NewApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609EC2D4BCA510038C617 /* NewApp.swift */; };
+		0F4609F22D4BCA510038C617 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609EC2D4BCA510038C617 /* App.swift */; };
 		0F4609F32D4BCA510038C617 /* Animation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D32D4BCA510038C617 /* Animation.swift */; };
 		0F4609F52D4BCA510038C617 /* ExtensionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609EB2D4BCA510038C617 /* ExtensionClient.swift */; };
 		0F4609FA2D4BCA510038C617 /* ButtonScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D92D4BCA510038C617 /* ButtonScreenView.swift */; };
 		0F4609FC2D4BCA510038C617 /* App+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609E92D4BCA510038C617 /* App+Types.swift */; };
 		0F4609FD2D4BCA510038C617 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D42D4BCA510038C617 /* Colors.swift */; };
 		0F460A002D4BCA510038C617 /* BigButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D62D4BCA510038C617 /* BigButton.swift */; };
-		0F460A012D4BCA510038C617 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609E82D4BCA510038C617 /* App.swift */; };
 		0F460A022D4BCA510038C617 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D82D4BCA510038C617 /* WelcomeView.swift */; };
 		0F5DCFD42D5425BF003E2361 /* RunningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5DCFD32D5425BA003E2361 /* RunningView.swift */; };
 		0F5DCFD62D54DBDE003E2361 /* FairiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */; };
@@ -28,6 +26,7 @@
 		0FAD764D2D4D291D009A6FA6 /* LibController in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD764C2D4D291D009A6FA6 /* LibController */; };
 		0FAD764F2D4D292E009A6FA6 /* LibFilter in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD764E2D4D292E009A6FA6 /* LibFilter */; };
 		0FAD76512D4D295B009A6FA6 /* LibClients in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD76502D4D295B009A6FA6 /* LibClients */; };
+		7F6CB8E02D6640BB009E4672 /* LibApp in Frameworks */ = {isa = PBXBuildFile; productRef = 7F6CB8DF2D6640BB009E4672 /* LibApp */; };
 		7F8B15022CCED8D6002E3C14 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F8B15012CCED8D6002E3C14 /* Launch Screen.storyboard */; };
 		7FA7B8472AEB238700363B53 /* IOSAppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */; };
 		7FA7B84B2AEB238800363B53 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84A2AEB238800363B53 /* Assets.xcassets */; };
@@ -80,11 +79,9 @@
 		0F4609D82D4BCA510038C617 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		0F4609D92D4BCA510038C617 /* ButtonScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonScreenView.swift; sourceTree = "<group>"; };
 		0F4609E52D4BCA510038C617 /* Shake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shake.swift; sourceTree = "<group>"; };
-		0F4609E82D4BCA510038C617 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		0F4609E92D4BCA510038C617 /* App+Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "App+Types.swift"; sourceTree = "<group>"; };
-		0F4609EA2D4BCA510038C617 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		0F4609EB2D4BCA510038C617 /* ExtensionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionClient.swift; sourceTree = "<group>"; };
-		0F4609EC2D4BCA510038C617 /* NewApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewApp.swift; sourceTree = "<group>"; };
+		0F4609EC2D4BCA510038C617 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		0F5DCFD32D5425BA003E2361 /* RunningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningView.swift; sourceTree = "<group>"; };
 		0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FairiesView.swift; sourceTree = "<group>"; };
 		0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseWhatToBlockView.swift; sourceTree = "<group>"; };
@@ -116,6 +113,7 @@
 			files = (
 				0FAD76472D4D158E009A6FA6 /* ComposableArchitecture in Frameworks */,
 				0FAD76512D4D295B009A6FA6 /* LibClients in Frameworks */,
+				7F6CB8E02D6640BB009E4672 /* LibApp in Frameworks */,
 				7FE743DF2C8F4ED700607876 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -194,10 +192,8 @@
 			children = (
 				0F4609D52D4BCA510038C617 /* Lib */,
 				0F4609DA2D4BCA510038C617 /* Views */,
-				0F4609EC2D4BCA510038C617 /* NewApp.swift */,
-				0F4609E82D4BCA510038C617 /* App.swift */,
+				0F4609EC2D4BCA510038C617 /* App.swift */,
 				0F4609E92D4BCA510038C617 /* App+Types.swift */,
-				0F4609EA2D4BCA510038C617 /* ContentView.swift */,
 				0F4609EB2D4BCA510038C617 /* ExtensionClient.swift */,
 				7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */,
 				7F4A14502CB5843500FD6ABE /* Info.plist */,
@@ -267,6 +263,7 @@
 			packageProductDependencies = (
 				0FAD76462D4D158E009A6FA6 /* ComposableArchitecture */,
 				0FAD76502D4D295B009A6FA6 /* LibClients */,
+				7F6CB8DF2D6640BB009E4672 /* LibApp */,
 			);
 			productName = app;
 			productReference = 7FA7B8432AEB238700363B53 /* app.app */;
@@ -390,8 +387,7 @@
 				0F4609EE2D4BCA510038C617 /* Shake.swift in Sources */,
 				0F68E4EA2D4ECD1900B7134C /* ChooseWhatToBlockView.swift in Sources */,
 				0FA657FD2D5288B700BA1254 /* ClearingCacheView.swift in Sources */,
-				0F4609F02D4BCA510038C617 /* ContentView.swift in Sources */,
-				0F4609F22D4BCA510038C617 /* NewApp.swift in Sources */,
+				0F4609F22D4BCA510038C617 /* App.swift in Sources */,
 				0F4609F32D4BCA510038C617 /* Animation.swift in Sources */,
 				0F4609F52D4BCA510038C617 /* ExtensionClient.swift in Sources */,
 				0F4609FA2D4BCA510038C617 /* ButtonScreenView.swift in Sources */,
@@ -400,7 +396,6 @@
 				0F4609FD2D4BCA510038C617 /* Colors.swift in Sources */,
 				0F460A002D4BCA510038C617 /* BigButton.swift in Sources */,
 				0FA657FF2D538A5E00BA1254 /* FinishedView.swift in Sources */,
-				0F460A012D4BCA510038C617 /* App.swift in Sources */,
 				0F5DCFD62D54DBDE003E2361 /* FairiesView.swift in Sources */,
 				0F460A022D4BCA510038C617 /* WelcomeView.swift in Sources */,
 				7FA7B8472AEB238700363B53 /* IOSAppEntry.swift in Sources */,
@@ -842,6 +837,11 @@
 		0FAD76502D4D295B009A6FA6 /* LibClients */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = LibClients;
+		};
+		7F6CB8DF2D6640BB009E4672 /* LibApp */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0FAAAEC02D4BCFDF008EF174 /* XCLocalSwiftPackageReference "lib-ios" */;
+			productName = LibApp;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

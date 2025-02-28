@@ -5,7 +5,7 @@ import NetworkExtension
 import os.log
 
 class FilterDataProvider: NEFilterDataProvider {
-  let proxy = FilterProxy(rules: BlockRule.defaults)
+  let proxy = FilterProxy(protectionMode: .emergencyLockdown)
 
   override init() {
     super.init()

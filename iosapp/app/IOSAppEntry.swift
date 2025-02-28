@@ -1,21 +1,23 @@
 import ComposableArchitecture
+import LibApp
 import SwiftUI
 
 @main
 struct IOSAppEntry: App {
-  let store: StoreOf<AppReducer>
+  let store: StoreOf<IOSReducer>
 
   init() {
-    self.store = Store(initialState: .init()) {
-      AppReducer()
-    }
+    self.store = Store(
+      initialState: IOSReducer.State(),
+      reducer: { IOSReducer() }
+    )
   }
 
   var body: some Scene {
     WindowGroup {
-      ContentView(store: self.store)
+      AppView(store: self.store)
         .onAppear {
-          self.store.send(.appLaunched)
+          self.store.send(.programmatic(.appDidLaunch))
         }
     }
   }

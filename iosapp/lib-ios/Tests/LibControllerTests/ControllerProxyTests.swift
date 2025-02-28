@@ -1,6 +1,7 @@
 import ConcurrencyExtras
 import Dependencies
 import GertieIOS
+import LibCore
 import NetworkExtension
 import XCTest
 import XExpect
@@ -10,23 +11,33 @@ import XExpect
 final class ControllerProxyTests: XCTestCase {
   func testStartFilterHeartbeat() async {
     let testClock = TestClock()
-    let savedRules = LockIsolated<[Both<String, [BlockRule]>]>([])
+    let savedRules = LockIsolated<[Both<String, ProtectionMode>]>([])
     let fetchRules = LockIsolated(0)
     let notifyRulesChanged = LockIsolated(0)
+    let vendorId = UUID()
 
     let proxy = withDependencies {
       $0.osLog = .noop
+      $0.device.vendorId = vendorId
       $0.suspendingClock = testClock
       $0.api.logEvent = { @Sendable _, _ in }
-      $0.api.fetchBlockRules = {
+      $0.api.fetchBlockRules = { @Sendable vid, blockGroups in
+        precondition(vid == vendorId)
+        precondition(blockGroups == [.whatsAppFeatures])
         fetchRules.withValue { $0 += 1 }
         return [.bundleIdContains("bad"), .bundleIdContains("bad2")]
       }
-      $0.storage.loadData = { @Sendable _ in
-        try! JSONEncoder().encode([BlockRule.bundleIdContains("bad")])
+      $0.storage.loadData = { @Sendable key in
+        if key == .protectionModeStorageKey {
+          try! JSONEncoder().encode(ProtectionMode.normal([.bundleIdContains("bad")]))
+        } else if key == .disabledBlockGroupsStorageKey {
+          try! JSONEncoder().encode([BlockGroup.whatsAppFeatures])
+        } else {
+          fatalError("unexpected key: \(key)")
+        }
       }
       $0.storage.saveCodable = { @Sendable value, key in
-        savedRules.withValue { $0.append(.init(key, value as! [BlockRule])) }
+        savedRules.withValue { $0.append(.init(key, value as! ProtectionMode)) }
       }
     } operation: {
       ControllerProxy()
@@ -35,14 +46,14 @@ final class ControllerProxyTests: XCTestCase {
     proxy.notifyRulesChanged = { notifyRulesChanged.withValue { $0 += 1 } }
     proxy.startFilter()
     proxy.startHeartbeat(initialDelay: .seconds(60), interval: .minutes(5))
-    await Task.megaYield()
+    await Task.megaYield(count: 65)
 
     // fetches rules and writes updated rules to disk right away
     expect(fetchRules.value).toEqual(1)
     expect(notifyRulesChanged.value).toEqual(1)
-    let saved = Both<String, [BlockRule]>.init(
-      .blockRulesStorageKey,
-      [.bundleIdContains("bad"), .bundleIdContains("bad2")]
+    let saved = Both<String, ProtectionMode>.init(
+      .protectionModeStorageKey,
+      .normal([.bundleIdContains("bad"), .bundleIdContains("bad2")])
     )
     expect(savedRules.value).toEqual([saved])
 

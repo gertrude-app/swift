@@ -7,6 +7,12 @@ extension IOSRoute: RouteResponder {
     case .blockRules(let input):
       let output = try await BlockRules.resolve(with: input, in: context)
       return try await self.respond(with: output)
+    case .blockRules_v2(let input):
+      let output = try await BlockRules_v2.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .defaultBlockRules(let input):
+      let output = try await DefaultBlockRules.resolve(with: input, in: context)
+      return try await self.respond(with: output)
     case .logIOSEvent(let input):
       let output = try await LogIOSEvent.resolve(with: input, in: context)
       return try await self.respond(with: output)

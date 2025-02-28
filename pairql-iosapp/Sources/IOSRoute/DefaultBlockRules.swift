@@ -2,15 +2,15 @@ import Foundation
 import GertieIOS
 import PairQL
 
-/// deprecated: v1.0.0 - v1.1.x
-public struct BlockRules: Pair {
+/// in use: v1.3.0 - present
+public struct DefaultBlockRules: Pair {
   public static let auth: ClientAuth = .none
 
   public struct Input: PairInput {
     public var vendorId: UUID?
-    public var version: String?
+    public var version: String
 
-    public init(vendorId: UUID? = nil, version: String? = nil) {
+    public init(vendorId: UUID?, version: String) {
       self.vendorId = vendorId
       self.version = version
     }
@@ -19,4 +19,4 @@ public struct BlockRules: Pair {
   public typealias Output = [BlockRule]
 }
 
-extension BlockRule: PairOutput {}
+extension DefaultBlockRules: PairOutput {}
