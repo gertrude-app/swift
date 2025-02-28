@@ -56,18 +56,23 @@ struct ChooseWhatToBlockView: View {
 
         self.selectableGroups
 
-        BigButton("Done, continue", type: .button {
-          self.vanishingAnimations()
-          delayed(by: .seconds(0.5)) {
-            self.onDone()
-          }
-        }, variant: .primary)
-          .swooshIn(
-            tracking: self.$buttonOffset,
-            to: .zero,
-            after: .seconds(0.2),
-            for: .seconds(0.6)
-          )
+        BigButton(
+          "Done, continue",
+          type: .button {
+            self.vanishingAnimations()
+            delayed(by: .seconds(0.5)) {
+              self.onDone()
+            }
+          },
+          variant: .primary,
+          disabled: self.deselectedGroups == .all
+        )
+        .swooshIn(
+          tracking: self.$buttonOffset,
+          to: .zero,
+          after: .seconds(0.2),
+          for: .seconds(0.6)
+        )
       }
       .frame(maxWidth: 500)
       .padding(.top, 100)
@@ -104,11 +109,13 @@ struct ChooseWhatToBlockView: View {
               .padding(.bottom, 4)
             Text(item.longDescription)
               .font(.system(size: 16))
-              .foregroundStyle(Color(
-                self.cs,
-                light: .black.opacity(0.7),
-                dark: .white.opacity(0.7)
-              ))
+              .foregroundStyle(
+                Color(
+                  self.cs,
+                  light: .black.opacity(0.7),
+                  dark: .white.opacity(0.7)
+                )
+              )
               .multilineTextAlignment(.center)
           }
           .presentationDetents([.height(600)])
@@ -120,17 +127,21 @@ struct ChooseWhatToBlockView: View {
               } label: {
                 Image(systemName: "xmark")
                   .font(.system(size: 10, weight: .bold))
-                  .foregroundStyle(Color(
-                    self.cs,
-                    light: .black.opacity(0.4),
-                    dark: .white.opacity(0.5)
-                  ))
+                  .foregroundStyle(
+                    Color(
+                      self.cs,
+                      light: .black.opacity(0.4),
+                      dark: .white.opacity(0.5)
+                    )
+                  )
                   .padding(8)
-                  .background(Color(
-                    self.cs,
-                    light: .black.opacity(0.05),
-                    dark: .white.opacity(0.08)
-                  ))
+                  .background(
+                    Color(
+                      self.cs,
+                      light: .black.opacity(0.05),
+                      dark: .white.opacity(0.08)
+                    )
+                  )
                   .cornerRadius(16)
               }
             }
@@ -155,11 +166,15 @@ struct ChooseWhatToBlockView: View {
                 .scaleEffect(self.isSelected(item) ? 1 : 0)
                 .foregroundStyle(.white)
                 .padding(4)
-                .background(self.isSelected(item) ? Color.violet500 : Color(
-                  self.cs,
-                  light: .white,
-                  dark: .black
-                ))
+                .background(
+                  self.isSelected(item)
+                    ? Color.violet500
+                    : Color(
+                      self.cs,
+                      light: .white,
+                      dark: .black
+                    )
+                )
                 .cornerRadius(6)
                 .overlay {
                   RoundedRectangle(cornerRadius: 6)
@@ -183,11 +198,13 @@ struct ChooseWhatToBlockView: View {
                   } label: {
                     Image(systemName: "questionmark.circle")
                       .font(.system(size: 12, weight: .medium))
-                      .foregroundStyle(Color(
-                        self.cs,
-                        light: .black.opacity(0.4),
-                        dark: .white.opacity(0.4)
-                      ))
+                      .foregroundStyle(
+                        Color(
+                          self.cs,
+                          light: .black.opacity(0.4),
+                          dark: .white.opacity(0.4)
+                        )
+                      )
                       .padding(.horizontal, 8)
                       .padding(.vertical, 4)
                       .multilineTextAlignment(.leading)
@@ -196,21 +213,25 @@ struct ChooseWhatToBlockView: View {
 
                 Text(item.shortDescription)
                   .font(.system(size: 15, weight: .regular))
-                  .foregroundStyle(Color(
-                    self.cs,
-                    light: .black.opacity(0.6),
-                    dark: .white.opacity(0.6)
-                  ))
+                  .foregroundStyle(
+                    Color(
+                      self.cs,
+                      light: .black.opacity(0.6),
+                      dark: .white.opacity(0.6)
+                    )
+                  )
                   .frame(maxWidth: .infinity, alignment: .leading)
               }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 12)
             .padding(.vertical, 12)
-            .background(Gradient(colors: [
-              Color(self.cs, light: .white, dark: .white.opacity(0.15)),
-              Color(self.cs, light: .white.opacity(0.7), dark: .white.opacity(0.07)),
-            ]))
+            .background(
+              Gradient(colors: [
+                Color(self.cs, light: .white, dark: .white.opacity(0.15)),
+                Color(self.cs, light: .white.opacity(0.7), dark: .white.opacity(0.07)),
+              ])
+            )
             .cornerRadius(16)
             .shadow(
               color: Color(self.cs, light: .violet200, dark: .violet900.opacity(0.3)),
@@ -332,20 +353,32 @@ extension BlockGroup {
 
   var longDescription: String {
     switch self {
-    case .ads: "Blocks the 20 most common ad providers, including Google ads, in all browsers and apps. Does not guarantee to block all ads, but should make a noticeable difference."
-    case .aiFeatures: "Blocks certain cloud-based AI features like image recognition. For example, the iOS 18 feature where an item in a photo can be long-pressed, identified, and searched for online."
-    case .appStoreImages: "Eliminates all images for apps in the App Store, and in other places where the App Store appears, like in the Messages texting app."
-    case .appleMapsImages: "Apple Maps business listings show photos uploaded by customers and businesses, and for certain types of businesses, these can be explicit. This group blocks all images from within Apple Maps."
-    case .appleWebsite: "Certain parts of iOS (including the Settings app) contain links to the apple.com website. It is possible to view these pages and from there follow links to other parts of the web. This group blocks this access."
-    case .gifs: "Blocks viewing and searching for GIFs in the #images feature of Apple’s texting app, plus in other common messaging apps like WhatsApp, Skype, and Signal."
-    case .spotlightSearches: "The built in search bar in iOS (called Spotlight) allows searching for information and images from the internet. This group stops all spotlight internet searches. Local information are still permitted."
-    case .whatsAppFeatures: "This group attempts to block some of aspects of the WhatsApp app, including the media channels. It is experimental, and does not guarantee by any means that the app will be safe for children, but it does reduce some risks."
+    case .ads:
+      "Blocks the 20 most common ad providers, including Google ads, in all browsers and apps. Does not guarantee to block all ads, but should make a noticeable difference."
+    case .aiFeatures:
+      "Blocks certain cloud-based AI features like image recognition. For example, the iOS 18 feature where an item in a photo can be long-pressed, identified, and searched for online."
+    case .appStoreImages:
+      "Eliminates all images for apps in the App Store, and in other places where the App Store appears, like in the Messages texting app."
+    case .appleMapsImages:
+      "Apple Maps business listings show photos uploaded by customers and businesses, and for certain types of businesses, these can be explicit. This group blocks all images from within Apple Maps."
+    case .appleWebsite:
+      "Certain parts of iOS (including the Settings app) contain links to the apple.com website. It is possible to view these pages and from there follow links to other parts of the web. This group blocks this access."
+    case .gifs:
+      "Blocks viewing and searching for GIFs in the #images feature of Apple’s texting app, plus in other common messaging apps like WhatsApp, Skype, and Signal."
+    case .spotlightSearches:
+      "The built in search bar in iOS (called Spotlight) allows searching for information and images from the internet. This group stops all spotlight internet searches. Local information are still permitted."
+    case .whatsAppFeatures:
+      "This group attempts to block some of aspects of the WhatsApp app, including the media channels. It is experimental, and does not guarantee by any means that the app will be safe for children, but it does reduce some risks."
     }
   }
 }
 
-#Preview {
+#Preview("none selected") {
   ChooseWhatToBlockView(deselectedGroups: .all, onGroupToggle: { _ in }) {}
+}
+
+#Preview("all selected") {
+  ChooseWhatToBlockView(deselectedGroups: [], onGroupToggle: { _ in }) {}
 }
 
 struct BounceButtonStyle: ButtonStyle {

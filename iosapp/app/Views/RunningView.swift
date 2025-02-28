@@ -54,9 +54,18 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
+        Link(destination: URL(string: "https://gertrude.app")!) {
+          HStack {
+            Text("www.gertrude.app")
+            Image(systemName: "arrow.up.right")
+              .font(.system(size: 14, weight: .semibold))
+              .offset(y: 1.5)
+          }
+        }
+        .padding(.top, 25)
+
         Text("\(self.device.vendorId?.uuidString.lowercased() ?? "unknown")")
           .font(.system(size: 11, design: .monospaced))
-          .foregroundStyle(.black)
           .opacity(self.showVendorId ? 1 : 0)
           .padding(.top, 25)
 
