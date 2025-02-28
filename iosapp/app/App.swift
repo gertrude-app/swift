@@ -390,6 +390,7 @@ struct AppView: View {
 
     case .running(let showVendorId):
       RunningView(showVendorId: showVendorId)
+        .onShake { self.store.send(.interactive(.receivedShake)) }
     }
   }
 
