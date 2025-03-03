@@ -7,22 +7,32 @@ struct ButtonScreenView: View {
     var text: String
     var type: BigButton.ButtonType
     var animate: Bool
+    var asyncAction: Bool
 
-    init(text: String, type: BigButton.ButtonType, animate: Bool = true) {
+    init(
+      text: String,
+      type: BigButton.ButtonType,
+      animate: Bool = true,
+      asyncAction: Bool = false
+    ) {
       self.text = text
       self.type = type
       self.animate = animate
+      self.asyncAction = asyncAction
     }
 
-    init(_ text: String, animate: Bool = true, _ action: @escaping () -> Void) {
-      self.init(text: text, type: .button(action), animate: animate)
+    init(
+      _ text: String, animate: Bool = true, asyncAction: Bool = false,
+      _ action: @escaping () -> Void
+    ) {
+      self.init(text: text, type: .button(action), animate: animate, asyncAction: asyncAction)
     }
   }
 
   let text: String
-  let primaryBtn: Config?
-  let secondaryBtn: Config?
-  let tertiaryBtn: Config?
+  let primaryButtonConfig: Config?
+  let secondaryButtonConfig: Config?
+  let tertiaryButtonConfig: Config?
   let primaryLooksLikeSecondary: Bool
   let listItems: [String]?
   let image: String?
@@ -31,9 +41,9 @@ struct ButtonScreenView: View {
   @State private var showBg = false
   @State private var iconOffset = Vector(x: 0, y: -20)
   @State private var textOffset = Vector(x: 0, y: 20)
-  @State private var primaryButtonOffset = Vector(x: 0, y: 20)
-  @State private var secondaryButtonOffset = Vector(x: 0, y: 20)
-  @State private var tertiaryButtonOffset = Vector(x: 0, y: 20)
+  @State private var primaryButtonStatus = (offset: Vector(x: 0, y: 20), isLoading: false)
+  @State private var secondaryButtonStatus = (offset: Vector(x: 0, y: 20), isLoading: false)
+  @State private var tertiaryButtonStatus = (offset: Vector(x: 0, y: 20), isLoading: false)
 
   var icon: String {
     switch self.screenType {
@@ -57,19 +67,21 @@ struct ButtonScreenView: View {
     self.screenType = screenType
     self.listItems = listItems
     self.image = image
-    self.primaryBtn = primary
-    self.secondaryBtn = secondary
-    self.tertiaryBtn = tertiary
+    self.primaryButtonConfig = primary
+    self.secondaryButtonConfig = secondary
+    self.tertiaryButtonConfig = tertiary
     self.primaryLooksLikeSecondary = primaryLooksLikeSecondary
   }
 
   var body: some View {
     ZStack {
       Rectangle()
-        .fill(Gradient(colors: [
-          Color(self.cs, light: .violet200, dark: .violet950.opacity(0.7)),
-          .clear,
-        ]))
+        .fill(
+          Gradient(colors: [
+            Color(self.cs, light: .violet200, dark: .violet950.opacity(0.7)),
+            .clear,
+          ])
+        )
         .ignoresSafeArea()
         .opacity(self.showBg ? 1 : 0)
         .onAppear {
@@ -119,47 +131,74 @@ struct ButtonScreenView: View {
           .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
         }
 
-        if let config = self.primaryBtn {
-          BigButton(
-            config.text,
-            type: self.withOrWithoutVanishingAnimations(type: config.type, animate: config.animate),
-            variant: self.primaryLooksLikeSecondary ? .secondary : .primary
-          )
-          .swooshIn(
-            tracking: self.$primaryButtonOffset,
-            to: .zero,
-            after: .milliseconds(150),
-            for: .milliseconds(800)
-          )
-          .padding(.top, 12)
+        if let config = self.primaryButtonConfig {
+          if self.primaryButtonStatus.isLoading {
+            self.LoadingButton
+          } else {
+            BigButton(
+              config.text,
+              type: self.withOrWithoutVanishingAnimations(
+                type: config.type,
+                animate: config.animate,
+                asyncAction: config.asyncAction,
+                isLoading: self.$primaryButtonStatus.isLoading
+              ),
+              variant: self.primaryLooksLikeSecondary ? .secondary : .primary
+            )
+            .swooshIn(
+              tracking: self.$primaryButtonStatus.offset,
+              to: .zero,
+              after: .milliseconds(150),
+              for: .milliseconds(800)
+            )
+            .padding(.top, 12)
+          }
         }
 
-        if let config = self.secondaryBtn {
-          BigButton(
-            config.text,
-            type: self.withOrWithoutVanishingAnimations(type: config.type, animate: config.animate),
-            variant: .secondary
-          )
-          .swooshIn(
-            tracking: self.$secondaryButtonOffset,
-            to: .zero,
-            after: .milliseconds(300),
-            for: .milliseconds(800)
-          )
+        if let config = self.secondaryButtonConfig {
+          if self.secondaryButtonStatus.isLoading {
+            self.LoadingButton
+          } else {
+            BigButton(
+              config.text,
+              type: self.withOrWithoutVanishingAnimations(
+                type: config.type,
+                animate: config.animate,
+                asyncAction: config.asyncAction,
+                isLoading: self.$secondaryButtonStatus.isLoading
+              ),
+              variant: .secondary
+            )
+            .swooshIn(
+              tracking: self.$secondaryButtonStatus.offset,
+              to: .zero,
+              after: .milliseconds(300),
+              for: .milliseconds(800)
+            )
+          }
         }
 
-        if let config = self.tertiaryBtn {
-          BigButton(
-            config.text,
-            type: self.withOrWithoutVanishingAnimations(type: config.type, animate: config.animate),
-            variant: .secondary
-          )
-          .swooshIn(
-            tracking: self.$tertiaryButtonOffset,
-            to: .zero,
-            after: .milliseconds(450),
-            for: .milliseconds(800)
-          )
+        if let config = self.tertiaryButtonConfig {
+          if self.tertiaryButtonStatus.isLoading {
+            self.LoadingButton
+          } else {
+            BigButton(
+              config.text,
+              type: self.withOrWithoutVanishingAnimations(
+                type: config.type,
+                animate: config.animate,
+                asyncAction: config.asyncAction,
+                isLoading: self.$tertiaryButtonStatus.isLoading
+              ),
+              variant: .secondary
+            )
+            .swooshIn(
+              tracking: self.$tertiaryButtonStatus.offset,
+              to: .zero,
+              after: .milliseconds(450),
+              for: .milliseconds(800)
+            )
+          }
         }
       }
       .frame(maxWidth: 500)
@@ -168,8 +207,20 @@ struct ButtonScreenView: View {
     }
   }
 
-  func withOrWithoutVanishingAnimations(type: BigButton.ButtonType, animate: Bool) -> BigButton
-    .ButtonType {
+  var LoadingButton: some View {
+    HStack {
+      Spacer()
+      ProgressView()
+      Spacer()
+    }
+    .padding(.vertical, 21)
+  }
+
+  func withOrWithoutVanishingAnimations(
+    type: BigButton.ButtonType, animate: Bool, asyncAction: Bool, isLoading: Binding<Bool>
+  )
+    -> BigButton.ButtonType
+  {
     switch type {
     case .link(let url):
       .link(url)
@@ -182,6 +233,9 @@ struct ButtonScreenView: View {
           delayed(by: .milliseconds(800)) {
             onTap()
           }
+        } else if asyncAction {
+          isLoading.wrappedValue = true
+          onTap()
         } else {
           onTap()
         }
@@ -192,19 +246,19 @@ struct ButtonScreenView: View {
   func vanishingAnimations() {
     withAnimation {
       self.iconOffset.y = -20
-      self.tertiaryButtonOffset.y = 20
+      self.tertiaryButtonStatus.offset.y = 20
     }
 
     delayed(by: .milliseconds(100)) {
       withAnimation {
-        self.secondaryButtonOffset.y = 20
+        self.secondaryButtonStatus.offset.y = 20
         self.showBg = false
       }
     }
 
     delayed(by: .milliseconds(200)) {
       withAnimation {
-        self.primaryButtonOffset.y = 20
+        self.primaryButtonStatus.offset.y = 20
       }
     }
 
@@ -233,6 +287,14 @@ struct ButtonScreenView: View {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primary: ButtonScreenView.Config(text: "Next", type: .button {}, animate: true)
+  )
+}
+
+#Preview("1 button with async action") {
+  ButtonScreenView(
+    text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
+    primary: ButtonScreenView.Config(
+      text: "Next", type: .button {}, animate: false, asyncAction: true)
   )
 }
 
