@@ -133,7 +133,7 @@ public struct IOSReducer {
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
       #if DEBUG
-        state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+        state.screen = .onboarding(.happyPath(.dontGetTrickedPreAuth))
       #endif
       return .none
 

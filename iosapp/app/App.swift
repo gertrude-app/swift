@@ -66,13 +66,13 @@ struct AppView: View {
 
     case .onboarding(.happyPath(.explainTwoInstallSteps)):
       ButtonScreenView(
-        text: "Next we’ll authorize and install the content filter. It takes two steps, both of which are required.",
+        text: "Next we’ll authorize and install the content filter. It takes TWO steps, both of which are required.",
         primary: self.btn(text: "Next", .primary)
       )
 
     case .onboarding(.happyPath(.explainAuthWithParentAppleAccount)):
       ButtonScreenView(
-        text: "For the first step, you’ll authorize Gertrude to access Screen Time using your Apple ID (the parent/guardian, not the child’s).",
+        text: "For the first step, you’ll authorize Gertrude to access Screen Time using YOUR Apple ID (the parent/guardian, not the child’s).",
         primary: self.btn(text: "Got it, next", .primary)
       )
 
@@ -85,14 +85,14 @@ struct AppView: View {
 
     case .onboarding(.happyPath(.explainInstallWithDevicePasscode)):
       ButtonScreenView(
-        text: "Great! Half way there. In the next step, use the passcode of this device (the one you’re holding), not your own.",
+        text: "Great! Half way there. In the next step, use the passcode of THIS DEVICE (the one you’re holding), not your own.",
         primary: self.btn(text: "Got it, next", .primary)
       )
 
     case .onboarding(.happyPath(.dontGetTrickedPreInstall)):
       ButtonScreenView(
         text: "Again, don’t get tricked! Be sure to click “Allow”, even though it looks like you’re supposed to click “Don’t Allow”.",
-        primary: self.btn(text: "Got it, next", .primary, animate: false),
+        primary: self.btn(text: "Got it, next", .primary, animate: false, async: true),
         image: "AllowContentFilter"
       )
 
