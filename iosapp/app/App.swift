@@ -105,7 +105,7 @@ struct AppView: View {
 
     case .onboarding(.happyPath(.promptClearCache)):
       ButtonScreenView(
-        text: "Gertrude is now blocking new content, like when a new and unique search is made for GIFs. But content already viewed will still be visible unless we clear the cache.",
+        text: "Gertrude is now blocking new content, like when a new and unique search is made for GIFs. But content ALREADY VIEWED will still be visible unless we clear the cache.",
         primary: self.btn(text: "Clear the cache", .primary),
         secondary: self.btn(text: "No need, skip", .secondary)
       )
@@ -181,8 +181,9 @@ struct AppView: View {
 
     case .onboarding(.authFail(.restricted)):
       ButtonScreenView(
-        text: "A restriction is preventing Gertrude from being installed. Is this device is enrolled in mobile device management (MDM) by an organization or school? If so, try again on a device not managed by MDM.",
+        text: "A restriction is preventing Gertrude from being installed. Is this device enrolled in mobile device management (MDM) by an organization or school? If so, try again on a device not managed by MDM.",
         primary: .init(text: "Contact support", type: .link(.support), animate: false),
+        secondary: self.btn(text: "Start over", .secondary),
         screenType: .error
       )
 
@@ -341,7 +342,7 @@ struct AppView: View {
 
     case .onboarding(.supervision(.intro)):
       ButtonScreenView(
-        text: "The other way to get Gertrude working is to put this device into supervised mode.",
+        text: "The other way to get Gertrude working is to put this device into “supervised mode.”",
         primary: self.btn(text: "What’s that?", .primary)
       )
 
@@ -379,7 +380,10 @@ struct AppView: View {
 
     case .onboarding(.supervision(.sorryNoOtherWay)):
       ButtonScreenView(
-        text: "Sorry, looks like Gertrude won’t be able to help you with this device. Unfortunately we can only install the content blocker when Apple allows us, which is only for a child’s device or a supervised device."
+        text: "Sorry, looks like Gertrude won’t be able to help you with this device. Unfortunately we can only install the content blocker when Apple allows us, which is only for a child’s device or a supervised device.",
+        primary: .init(text: "Contact support", type: .link(.support), animate: false),
+        secondary: self.btn(text: "Start over", .secondary),
+        primaryLooksLikeSecondary: true
       )
 
     case .supervisionSuccessFirstLaunch:

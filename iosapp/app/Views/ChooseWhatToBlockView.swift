@@ -366,7 +366,7 @@ extension BlockGroup {
     case .gifs:
       "Blocks viewing and searching for GIFs in the #images feature of Apple’s texting app, plus in other common messaging apps like WhatsApp, Skype, and Signal."
     case .spotlightSearches:
-      "The built in search bar in iOS (called Spotlight) allows searching for information and images from the internet. This group stops all spotlight internet searches. Local information are still permitted."
+      "The built in search bar in iOS (called Spotlight) allows searching for information and images from the internet. This group stops all spotlight internet searches. On-device data searches are not blocked."
     case .whatsAppFeatures:
       "This group attempts to block some of aspects of the WhatsApp app, including the media channels. It is experimental, and does not guarantee by any means that the app will be safe for children, but it does reduce some risks."
     }

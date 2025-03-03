@@ -94,7 +94,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
 
     await store
       .send(.interactive(.onboardingBtnTapped(.tertiary, ""))) { // <-- "Done, now in a family"
-        $0.screen = .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily)))
+        $0.screen = .onboarding(.happyPath(.confirmInAppleFamily))
         $0.onboarding.returningTo = nil
       }
   }

@@ -422,8 +422,8 @@ public struct IOSReducer {
 
     case (.onboarding(.appleFamily(.howToSetupAppleFamily)), .tertiary):
       self.log(state.screen, action, "548e81b6")
-      state.screen = state.onboarding
-        .takeReturningTo() ?? .onboarding(.happyPath(.confirmInAppleFamily))
+      state.screen = .onboarding(.happyPath(.confirmInAppleFamily))
+      state.onboarding.returningTo = nil
       return .none
 
     case (.onboarding(.appleFamily(.explainWhatIsAppleFamily)), .primary):
@@ -468,6 +468,11 @@ public struct IOSReducer {
       state.screen = .onboarding(.supervision(.sorryNoOtherWay))
       return .none
 
+    case (.onboarding(.supervision(.sorryNoOtherWay)), .secondary):
+      self.log(state.screen, action, "f3b3f3b6")
+      state.screen = .onboarding(.happyPath(.hiThere))
+      return .none
+
     // MARK: - error paths
 
     case (.onboarding(.authFail(.invalidAccount(.letsFigureThisOut))), .primary):
@@ -499,6 +504,11 @@ public struct IOSReducer {
     case (.onboarding(.authFail(.invalidAccount(.confirmIsMinor))), .secondary):
       self.log(state.screen, action, "e457cf15")
       state.screen = .onboarding(.authFail(.invalidAccount(.unexpected)))
+      return .none
+
+    case (.onboarding(.authFail(.restricted)), .secondary):
+      self.log(state.screen, action, "b8422c3a")
+      state.screen = .onboarding(.happyPath(.hiThere))
       return .none
 
     case (.onboarding(.authFail(.authConflict)), .primary):
