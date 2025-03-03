@@ -63,6 +63,12 @@ struct RunningView: View {
           }
         }
         .padding(.top, 25)
+        .swooshIn(
+          tracking: self.$subtitleOffset,
+          to: .zero,
+          after: .seconds(0.5),
+          for: .seconds(0.5)
+        )
 
         Text("\(self.device.vendorId?.uuidString.lowercased() ?? "unknown")")
           .font(.system(size: 11, design: .monospaced))
