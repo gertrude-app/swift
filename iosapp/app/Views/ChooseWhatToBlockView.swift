@@ -99,10 +99,6 @@ struct ChooseWhatToBlockView: View {
               .frame(maxWidth: .infinity)
               .aspectRatio(contentMode: .fit)
               .shadow(color: .black.opacity(0.1), radius: 8)
-              .overlay {
-                RoundedRectangle(cornerRadius: 22)
-                  .stroke(Color.black.opacity(0.05), lineWidth: 1)
-              }
             Text(item.title)
               .font(.system(size: 24, weight: .bold))
               .padding(.top, 20)
