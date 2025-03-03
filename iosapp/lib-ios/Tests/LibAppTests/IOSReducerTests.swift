@@ -149,6 +149,7 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .onboarding(.happyPath(.dontGetTrickedPreInstall))
     }
 
+    expect(storedCodables.value.count).toEqual(1)
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
 
     await store.receive(.programmatic(.installSucceeded)) {
@@ -160,6 +161,13 @@ final class IOSReducerTests: XCTestCase {
       "first launch, region: `US`",
       "authorization succeeded",
       "filter install success",
+    ])
+
+    expect(storedCodables.value).toEqual([
+      .protectionMode(.onboarding([.urlContains("GIFs")])),
+      // we save empty on first load of screen, in case they quit before clicking next
+      // if they did, it would confuse the app to think they were in supervised mode
+      .disabledBlockGroups([]),
     ])
 
     await store.send(.interactive(.blockGroupToggled(.whatsAppFeatures))) {
@@ -174,9 +182,7 @@ final class IOSReducerTests: XCTestCase {
       $0.disabledBlockGroups = [.appleMapsImages]
     }
 
-    expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains("GIFs")])),
-    ])
+    expect(storedCodables.value.count).toEqual(2)
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) { // <-- "Done" from groups
       $0.screen = .onboarding(.happyPath(.promptClearCache))
@@ -184,6 +190,7 @@ final class IOSReducerTests: XCTestCase {
 
     expect(storedCodables.value).toEqual([
       .protectionMode(.onboarding([.urlContains("GIFs")])),
+      .disabledBlockGroups([]),
       .disabledBlockGroups([.appleMapsImages]),
     ])
 

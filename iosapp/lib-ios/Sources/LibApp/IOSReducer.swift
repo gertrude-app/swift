@@ -668,7 +668,9 @@ public struct IOSReducer {
         self.unexpected(state.screen, action, "c98b9525")
       }
       state.screen = .onboarding(.happyPath(.optOutBlockGroups))
-      return .none
+      return .run { _ in
+        self.storage.saveDisabledBlockGroups([])
+      }
 
     case .installFailed(let err):
       if state.screen != .onboarding(.happyPath(.dontGetTrickedPreInstall)) {
