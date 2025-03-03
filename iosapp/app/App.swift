@@ -428,8 +428,8 @@ struct AppView: View {
 
 extension URL {
   static let support = URL(string: "https://gertrude.app/contact")!
-  // 👍 TODO: real url
-  static let supervisionTutorial = URL(string: "https://gertrude.app/blog/supervision")!
+  static let supervisionTutorial =
+    URL(string: "https://gertrude.app/blog/gertrude-ios-supervised-mode")!
   static let appleFamily = URL(string: "https://support.apple.com/en-us/108380")!
 }
 
