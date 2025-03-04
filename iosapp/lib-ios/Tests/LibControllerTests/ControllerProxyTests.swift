@@ -46,7 +46,7 @@ final class ControllerProxyTests: XCTestCase {
     proxy.notifyRulesChanged = { notifyRulesChanged.withValue { $0 += 1 } }
     proxy.startFilter()
     proxy.startHeartbeat(initialDelay: .seconds(60), interval: .minutes(5))
-    await Task.megaYield(count: 65)
+    await Task.megaYield(count: 100)
 
     // fetches rules and writes updated rules to disk right away
     expect(fetchRules.value).toEqual(1)

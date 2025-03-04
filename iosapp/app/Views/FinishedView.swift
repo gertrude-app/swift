@@ -20,7 +20,7 @@ struct FinishedView: View {
         .cornerRadius(24)
         .swooshIn(tracking: self.$iconOffset, to: .zero, after: .seconds(0.2), for: .seconds(0.5))
 
-      Text("Quit the app, you're done!")
+      Text("Quit the app, you’re done!")
         .font(.system(size: 24, weight: .bold))
         .padding(.bottom, 12)
         .padding(.top, 28)

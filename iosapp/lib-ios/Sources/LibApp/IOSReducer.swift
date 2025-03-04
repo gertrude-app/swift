@@ -133,7 +133,7 @@ public struct IOSReducer {
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
       #if DEBUG
-        state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+        state.screen = .onboarding(.happyPath(.dontGetTrickedPreAuth))
       #endif
       return .none
 
@@ -422,8 +422,8 @@ public struct IOSReducer {
 
     case (.onboarding(.appleFamily(.howToSetupAppleFamily)), .tertiary):
       self.log(state.screen, action, "548e81b6")
-      state.screen = state.onboarding
-        .takeReturningTo() ?? .onboarding(.happyPath(.confirmInAppleFamily))
+      state.screen = .onboarding(.happyPath(.confirmInAppleFamily))
+      state.onboarding.returningTo = nil
       return .none
 
     case (.onboarding(.appleFamily(.explainWhatIsAppleFamily)), .primary):
@@ -468,6 +468,11 @@ public struct IOSReducer {
       state.screen = .onboarding(.supervision(.sorryNoOtherWay))
       return .none
 
+    case (.onboarding(.supervision(.sorryNoOtherWay)), .secondary):
+      self.log(state.screen, action, "f3b3f3b6")
+      state.screen = .onboarding(.happyPath(.hiThere))
+      return .none
+
     // MARK: - error paths
 
     case (.onboarding(.authFail(.invalidAccount(.letsFigureThisOut))), .primary):
@@ -499,6 +504,11 @@ public struct IOSReducer {
     case (.onboarding(.authFail(.invalidAccount(.confirmIsMinor))), .secondary):
       self.log(state.screen, action, "e457cf15")
       state.screen = .onboarding(.authFail(.invalidAccount(.unexpected)))
+      return .none
+
+    case (.onboarding(.authFail(.restricted)), .secondary):
+      self.log(state.screen, action, "b8422c3a")
+      state.screen = .onboarding(.happyPath(.hiThere))
       return .none
 
     case (.onboarding(.authFail(.authConflict)), .primary):
@@ -565,16 +575,19 @@ public struct IOSReducer {
         .run { send in
           let filterRunning = await self.systemExtension.filterRunning()
           let disabledBlockGroups = self.storage.loadDisabledBlockGroups()
-          switch (filterRunning, disabledBlockGroups) {
-          case (true, .some):
+          let hasLegacyData = self.storage.loadData(forKey: .legacyStorageKey) != nil
+          switch (filterRunning, disabledBlockGroups, hasLegacyData) {
+          case (true, .some, _):
             await send(.programmatic(.setScreen(.running(showVendorId: false))))
-          case (true, .none):
-            await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
-          case (false, .some):
+          case (false, .some, _):
             self.log("unexpected non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
-          case (false, .none):
+          case (false, .none, _):
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+          case (_, .none, true):
+            try await self.handleUpgrade(send: send)
+          case (true, .none, false):
+            await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
           }
         },
         // handle first launch
@@ -585,19 +598,16 @@ public struct IOSReducer {
             let now = self.now
             self.storage.saveFirstLaunchDate(now)
             await send(.programmatic(.setFirstLaunch(now)))
+            // prefetch the default block groups for onboarding
+            if let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId) {
+              self.storage.saveProtectionMode(.onboarding(defaultRules))
+            } else {
+              self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+            }
             await self.api.logEvent(
               "8d35f043",
               "first launch, region: `\(self.locale.region?.identifier ?? "(nil)")`"
             )
-          }
-        },
-        // prefetch the default block groups for onboarding
-        .run { send in
-          if let defaultRules = try? await self.api
-            .fetchDefaultBlockRules(self.device.vendorId) {
-            self.storage.saveProtectionMode(.onboarding(defaultRules))
-          } else {
-            self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
           }
         },
         // safeguard in case app crashed trying to fill the disk
@@ -668,7 +678,9 @@ public struct IOSReducer {
         self.unexpected(state.screen, action, "c98b9525")
       }
       state.screen = .onboarding(.happyPath(.optOutBlockGroups))
-      return .none
+      return .run { _ in
+        self.storage.saveDisabledBlockGroups([])
+      }
 
     case .installFailed(let err):
       if state.screen != .onboarding(.happyPath(.dontGetTrickedPreInstall)) {
@@ -710,6 +722,21 @@ public struct IOSReducer {
       state.screen = .onboarding(.happyPath(.cacheCleared))
       return .cancel(id: CancelId.cacheClearUpdates)
     }
+  }
+
+  func handleUpgrade(send: Send<Action>) async throws {
+    self.log("handling upgrade", "180e2347")
+    self.storage.saveDisabledBlockGroups([])
+    let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId)
+    if let defaultRules {
+      self.storage.saveProtectionMode(.normal(defaultRules))
+    } else {
+      self.log("unexpected upgrade rule failure", "8d4a445b")
+      self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+    }
+    self.storage.removeObject(forKey: .legacyStorageKey)
+    await send(.programmatic(.setScreen(.running(showVendorId: false))))
+    try await self.filter.notifyRulesChanged()
   }
 }
 
