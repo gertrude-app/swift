@@ -101,10 +101,12 @@ extension CheckIn_v2: Resolver {
         bindings.append(.string(namedApp.localizedName))
         bindings.append(.bool(namedApp.launchable))
       }
-      _ = try await context.db.customQuery(
-        UpsertNamedApps.self,
-        withBindings: bindings
-      )
+      if !bindings.isEmpty {
+        _ = try await context.db.customQuery(
+          UpsertNamedApps.self,
+          withBindings: bindings
+        )
+      }
     }
 
     return Output(

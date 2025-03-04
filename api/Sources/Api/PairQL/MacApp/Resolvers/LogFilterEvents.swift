@@ -33,10 +33,13 @@ extension LogFilterEvents: Resolver {
         bindings.append(.int(count))
       }
     }
-    _ = try await context.db.customQuery(
-      UpsertUnidentifiedApps.self,
-      withBindings: bindings
-    )
+
+    if !bindings.isEmpty {
+      _ = try await context.db.customQuery(
+        UpsertUnidentifiedApps.self,
+        withBindings: bindings
+      )
+    }
 
     if context.env.mode == .prod {
       for e in events {
