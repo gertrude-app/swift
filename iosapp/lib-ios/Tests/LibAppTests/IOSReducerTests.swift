@@ -233,6 +233,67 @@ final class IOSReducerTests: XCTestCase {
     expect(ratingRequestInvocations.value).toEqual(1)
   }
 
+  func testUpgradeFromV110() async throws {
+    let defaultBlocksInvocations = LockIsolated(0)
+    let storedCodables = LockIsolated<[SavedCodable]>([])
+    let removeObjectInvocations = LockIsolated<[String]>([])
+    let notifyFilterInvocations = LockIsolated(0)
+
+    let store = await TestStore(initialState: IOSReducer.State()) {
+      IOSReducer()
+    } withDependencies: {
+      $0.device.deleteCacheFillDir = {}
+      $0.api.logEvent = { @Sendable _, _ in }
+      $0.api.fetchDefaultBlockRules = { @Sendable _ in
+        defaultBlocksInvocations.withValue { $0 += 1 }
+        return [.urlContains("GIFs")]
+      }
+      $0.storage.removeObject = { @Sendable key in
+        removeObjectInvocations.withValue { $0.append(key) }
+      }
+      $0.systemExtension.filterRunning = { true } // <-- filter running
+      $0.storage.loadDate = { @Sendable _ in .reference } // <-- v1.1.0 launch date
+      $0.storage.loadData = { @Sendable key in
+        if key == .legacyStorageKey {
+          return "[]".data(using: .utf8) // <-- has V1 legacy data
+        } else {
+          return nil
+        }
+      }
+      $0.storage.saveCodable = { @Sendable value, key in
+        switch key {
+        case .disabledBlockGroupsStorageKey:
+          storedCodables.withValue { $0.append(.disabledBlockGroups(value as! [BlockGroup])) }
+        case .protectionModeStorageKey:
+          storedCodables.withValue { $0.append(.protectionMode(value as! ProtectionMode)) }
+        default:
+          fatalError("unexpected key: \(key)")
+        }
+      }
+      $0.filter.notifyRulesChanged = {
+        notifyFilterInvocations.withValue { $0 += 1 }
+      }
+    }
+
+    await store.send(.programmatic(.appDidLaunch))
+
+    await store.receive(.programmatic(.setFirstLaunch(.reference))) {
+      $0.onboarding.firstLaunch = .reference
+    }
+
+    await store.receive(.programmatic(.setScreen(.running(showVendorId: false)))) {
+      $0.screen = .running(showVendorId: false)
+    }
+
+    expect(removeObjectInvocations.value).toEqual([.legacyStorageKey])
+    expect(defaultBlocksInvocations.value).toEqual(1)
+    expect(notifyFilterInvocations.value).toEqual(1)
+    expect(storedCodables.value).toEqual([
+      .disabledBlockGroups([]),
+      .protectionMode(.normal([.urlContains("GIFs")])),
+    ])
+  }
+
   @MainActor
   func testUsesHardcodedBlockRulesIfApiDefaultsReqFails() async throws {
     let storedCodables = LockIsolated<[ProtectionMode]>([])
