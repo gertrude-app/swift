@@ -708,8 +708,8 @@ public struct IOSReducer {
       let diskSpace = state.onboarding.availableDiskSpaceInBytes
         .map { Bytes.humanReadable($0) } ?? "unknown"
       if let start = state.onboarding.startClearCache {
-        let elapsed = self.now.timeIntervalSince(start)
-        self.log(action, "cb9cf096", extra: "elapsed time: \(elapsed), disk: \(diskSpace)")
+        let elapsed = String(format: "%.1f", self.now.timeIntervalSince(start) / 60.0)
+        self.log(action, "cb9cf096", extra: "elapsed time: \(elapsed)m, disk: \(diskSpace)")
       } else {
         self.log(action, "cb9cf096", extra: "disk: \(diskSpace)")
       }
@@ -880,7 +880,7 @@ public extension IOSReducer {
 extension IOSReducer {
   private func log(_ msg: String, _ id: String) {
     #if !DEBUG
-      Task { await self.api.logEvent(id, "[onboarding]: \(msg), \(eventMeta())") }
+      Task { await self.api.logEvent(id, "[onboarding]: \(msg)") }
     #else
       if ProcessInfo.processInfo.environment["SWIFT_DETERMINISTIC_HASHING"] == nil {
         os_log("[G•] %{public}s", "[onboarding]: `\(id)` \(msg), \(self.eventMeta())\n")
@@ -944,6 +944,7 @@ private func shorten(_ input: String) -> String {
     .replacingOccurrences(of: "LibApp.IOSReducer.", with: "")
     .replacingOccurrences(of: "Action.Programmatic.", with: ".")
     .replacingOccurrences(of: "Action.Interactive.OnboardingBtn.", with: ".")
+    .replacingOccurrences(of: "LibClients.DeviceClient.ClearCacheUpdate.", with: ".")
     .replacingOccurrences(of: "Action.Interactive.", with: ".")
     .replacingOccurrences(of: "Onboarding.HappyPath.", with: ".")
     .replacingOccurrences(of: "Onboarding.", with: ".")
