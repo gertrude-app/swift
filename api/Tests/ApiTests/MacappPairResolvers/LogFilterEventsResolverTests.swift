@@ -58,5 +58,10 @@ final class LogFilterEventsResolverTests: ApiTestCase {
     expect(unidentifiedApps[0].count).toEqual(2)
     expect(unidentifiedApps[1].bundleId).toEqual("com.widget")
     expect(unidentifiedApps[1].count).toEqual(6) // <-- added to existing count
+
+    // ensure no crash if all bundle ids already identified
+    let input2 = FilterLogs(bundleIds: ["com.xcode": 1], events: [:])
+    let output = try await LogFilterEvents.resolve(with: input2, in: user.context)
+    expect(output).toEqual(.success)
   }
 }
