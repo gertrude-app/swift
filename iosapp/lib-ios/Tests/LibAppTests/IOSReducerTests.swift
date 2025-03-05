@@ -22,9 +22,11 @@ final class IOSReducerTests: XCTestCase {
     let batteryCheckInvocations = LockIsolated(0)
     let ratingRequestInvocations = LockIsolated(0)
     let defaultBlocksInvocations = LockIsolated(0)
+    let fetchBlockRulesInvocations = LockIsolated(0)
     let storedDates = LockIsolated<[Date]>([])
     let storedCodables = LockIsolated<[SavedCodable]>([])
     let cacheClearSubject = PassthroughSubject<DeviceClient.ClearCacheUpdate, Never>()
+    let vendorId = UUID()
 
     let store = await TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
@@ -37,6 +39,12 @@ final class IOSReducerTests: XCTestCase {
       }
       $0.api.fetchDefaultBlockRules = { @Sendable _ in
         defaultBlocksInvocations.withValue { $0 += 1 }
+        return [.urlContains("default-rule")]
+      }
+      $0.api.fetchBlockRules = { @Sendable vid, disabled in
+        expect(vid).toEqual(vendorId)
+        expect(disabled).toEqual([.appleMapsImages])
+        fetchBlockRulesInvocations.withValue { $0 += 1 }
         return [.urlContains("GIFs")]
       }
       $0.systemExtension.requestAuthorization = {
@@ -48,6 +56,7 @@ final class IOSReducerTests: XCTestCase {
         installInvocations.withValue { $0 += 1 }
         return .success(())
       }
+      $0.device.vendorId = vendorId
       $0.device.deleteCacheFillDir = {
         deleteCacheFillDirInvocations.withValue { $0 += 1 }
       }
@@ -94,7 +103,9 @@ final class IOSReducerTests: XCTestCase {
     expect(apiLoggedDetails.value).toEqual(["first launch, region: `US`"])
     expect(deleteCacheFillDirInvocations.value).toEqual(1)
     expect(defaultBlocksInvocations.value).toEqual(1)
-    expect(storedCodables.value).toEqual([.protectionMode(.onboarding([.urlContains("GIFs")]))])
+    expect(storedCodables.value).toEqual([
+      .protectionMode(.onboarding([.urlContains("default-rule")])),
+    ])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.timeExpectation))
@@ -164,7 +175,7 @@ final class IOSReducerTests: XCTestCase {
     ])
 
     expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains("GIFs")])),
+      .protectionMode(.onboarding([.urlContains("default-rule")])),
       // we save empty on first load of screen, in case they quit before clicking next
       // if they did, it would confuse the app to think they were in supervised mode
       .disabledBlockGroups([]),
@@ -188,10 +199,13 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .onboarding(.happyPath(.promptClearCache))
     }
 
+    expect(fetchBlockRulesInvocations.value).toEqual(1)
+
     expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains("GIFs")])),
-      .disabledBlockGroups([]),
-      .disabledBlockGroups([.appleMapsImages]),
+      .protectionMode(.onboarding([.urlContains("default-rule")])),
+      .disabledBlockGroups([]), // <-- on opt-out groups screen load, failsafe
+      .disabledBlockGroups([.appleMapsImages]), // <-- persist user choice after "Done"
+      .protectionMode(.normal([.urlContains("GIFs")])), // <-- got customized rules from api
     ])
 
     await store.receive(.programmatic(.setAvailableDiskSpaceInBytes(1024 * 12))) {

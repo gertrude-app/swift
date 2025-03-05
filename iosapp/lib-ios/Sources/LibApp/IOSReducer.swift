@@ -256,8 +256,17 @@ public struct IOSReducer {
       if state.disabledBlockGroups == .all { return .none }
       state.screen = .onboarding(.happyPath(.promptClearCache))
       return .merge(
-        .run { [optOuts = state.disabledBlockGroups] _ in
-          self.storage.saveDisabledBlockGroups(optOuts)
+        .run { [disabled = state.disabledBlockGroups] _ in
+          self.storage.saveDisabledBlockGroups(disabled)
+          if let vendorId = self.device.vendorId {
+            let rules = try await self.api.fetchBlockRules(
+              vendorId: vendorId,
+              disabledGroups: disabled
+            )
+            if !rules.isEmpty {
+              self.storage.saveProtectionMode(.normal(rules))
+            }
+          }
         },
         .run { send in
           await send(.programmatic(.setBatteryLevel(self.device.batteryLevel())))
@@ -600,7 +609,8 @@ public struct IOSReducer {
             self.storage.saveFirstLaunchDate(now)
             await send(.programmatic(.setFirstLaunch(now)))
             // prefetch the default block groups for onboarding
-            if let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId) {
+            let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId)
+            if let defaultRules, !defaultRules.isEmpty {
               self.storage.saveProtectionMode(.onboarding(defaultRules))
             } else {
               self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
