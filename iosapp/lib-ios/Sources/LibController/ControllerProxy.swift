@@ -72,6 +72,11 @@ public class ControllerProxy {
       return
     }
 
+    guard apiRules.count > 0 else {
+      self.logger.log("unexpected empty rules from api")
+      return
+    }
+
     let savedRules = self.storage.loadProtectionMode()?.normalRules
     if apiRules != savedRules {
       self.logger.log("saving changed rules")

@@ -16,17 +16,24 @@ public class FilterProxy {
 
   var protectionMode: ProtectionMode
   var heartbeatTask: Task<Void, Error>?
+  var normalHeartbeatInterval: Duration
+  var hearbeatInterval: Duration = .seconds(10)
 
-  public init(protectionMode: ProtectionMode) {
+  public init(
+    protectionMode: ProtectionMode,
+    normalHeartbeatInterval: Duration = .minutes(5)
+  ) {
     self.protectionMode = protectionMode
+    self.normalHeartbeatInterval = normalHeartbeatInterval
     self.logger.setPrefix("FILTER PROXY")
     self.readRules()
+    self.startHeartbeat()
   }
 
-  public func startHeartbeat(interval: Duration) {
+  func startHeartbeat() {
     self.heartbeatTask = Task {
       while true {
-        try await self.clock.sleep(for: interval)
+        try await self.clock.sleep(for: self.hearbeatInterval)
         self.receiveHeartbeat()
       }
     }
@@ -40,6 +47,9 @@ public class FilterProxy {
     do {
       let mode = try JSONDecoder().decode(ProtectionMode.self, from: data)
       switch mode {
+      case .normal([]), .onboarding([]):
+        self.logger.log("unexpected empty rules")
+        return .emergencyLockdown
       case .normal(let rules):
         self.logger.log("read \(rules.count) (normal) rules")
       case .onboarding(let rules):
@@ -101,8 +111,15 @@ public class FilterProxy {
   }
 
   func readRules() {
-    if let protectionMode = self.loadRules() {
-      self.protectionMode = protectionMode
+    // defensively set to check again quickly...
+    self.hearbeatInterval = .seconds(10)
+    guard let loadedMode = self.loadRules() else {
+      return
+    }
+    self.protectionMode = loadedMode
+    if loadedMode != .emergencyLockdown {
+      // ...only setting normal if we get valid rules
+      self.hearbeatInterval = self.normalHeartbeatInterval
     }
   }
 

@@ -587,6 +587,7 @@ public struct IOSReducer {
           case (_, .none, true):
             try await self.handleUpgrade(send: send)
           case (true, .none, false):
+            self.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
           }
         },

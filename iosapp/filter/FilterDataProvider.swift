@@ -5,16 +5,21 @@ import NetworkExtension
 import os.log
 
 class FilterDataProvider: NEFilterDataProvider {
-  let proxy = FilterProxy(protectionMode: .emergencyLockdown)
+  #if !DEBUG
+    let proxy = FilterProxy(
+      protectionMode: .emergencyLockdown,
+      normalHeartbeatInterval: .minutes(5)
+    )
+  #else
+    let proxy = FilterProxy(
+      protectionMode: .emergencyLockdown,
+      normalHeartbeatInterval: .seconds(45)
+    )
+  #endif
 
   override init() {
     super.init()
     os_log("[G•] FILTER init")
-    #if DEBUG
-      self.proxy.startHeartbeat(interval: .seconds(45))
-    #else
-      self.proxy.startHeartbeat(interval: .minutes(5))
-    #endif
   }
 
   override func startFilter(completionHandler: @escaping (Error?) -> Void) {
