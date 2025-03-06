@@ -1,4 +1,4 @@
-# Gertrude
+# Gertrude macOS
 
 ## Release notes
 
