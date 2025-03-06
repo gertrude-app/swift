@@ -99,6 +99,26 @@ extension ConnectUser: Resolver {
       computerUserId: userDevice.id
     ))
 
+    let parent = try? await context.db.find(user.parentId)
+    if let gclid = parent?.gclid, let parentId = parent?.id {
+      let markerEvent = try? await InterestingEvent.query()
+        .where(.eventId == "g-ad-conversion")
+        .where(.parentId == parentId)
+        .first(in: context.db)
+      if markerEvent == nil {
+        with(dependency: \.postmark).toSuperAdmin(
+          "google ad conversion",
+          "gclid: <code>\(gclid)</code><br/>time: <code>\(Date())</code>"
+        )
+        try await context.db.create(InterestingEvent(
+          eventId: "g-ad-conversion",
+          kind: "event",
+          context: "reporting",
+          parentId: parentId
+        ))
+      }
+    }
+
     return Output(
       id: user.id.rawValue,
       token: token.value.rawValue,
