@@ -25,17 +25,13 @@ struct CleanupJob: AsyncScheduledJob {
     var logs: [String] = []
 
     let deletedScreenshots = try await Screenshot.query()
-      .withSoftDeleted()
-      .where(.not(.isNull(.deletedAt)) .&& .deletedAt <= now)
-      .all(in: self.db)
+      .where(.or(
+        .not(.isNull(.deletedAt)) .&& .deletedAt <= now,
+        .createdAt <= 21.daysAgo
+      ))
+      .delete(in: self.db, force: true)
 
-    try await deletedScreenshots.chunked(into: Postgres.MAX_BIND_PARAMS).asyncForEach {
-      try await Screenshot.query()
-        .where(.id |=| $0.map(\.id))
-        .delete(in: self.db, force: true)
-    }
-
-    logs.append("Deleted \(deletedScreenshots.count) screenshots")
+    logs.append("Deleted \(deletedScreenshots) screenshots")
 
     let deletedNonPendingUnlockRequests = try await UnlockRequest.query()
       .where(.not(.equals(.status, .enum(RequestStatus.pending))))
