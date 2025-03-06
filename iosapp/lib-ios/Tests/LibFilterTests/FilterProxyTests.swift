@@ -38,6 +38,7 @@ final class FilterProxyTests: XCTestCase {
     let proxy = withDependencies {
       $0.osLog.log = { _ in }
       $0.storage.loadData = { @Sendable _ in nil }
+      $0.suspendingClock = TestClock()
     } operation: {
       FilterProxy(protectionMode: .emergencyLockdown)
     }
@@ -63,14 +64,16 @@ final class FilterProxyTests: XCTestCase {
         try! JSONEncoder().encode(rules.value)
       }
     } operation: {
-      FilterProxy(protectionMode: .emergencyLockdown)
+      FilterProxy(
+        protectionMode: .emergencyLockdown,
+        normalHeartbeatInterval: .seconds(60)
+      )
     }
 
     // initializer loads protection rules from storage
     expect(proxy.protectionMode).toEqual(.normal([.urlContains("foo")]))
     expect(logs.value).toEqual(["read 1 (normal) rules"])
 
-    proxy.startHeartbeat(interval: .seconds(60))
     await clock.advance(by: .seconds(59))
 
     // no heartbeat yet
@@ -83,10 +86,69 @@ final class FilterProxyTests: XCTestCase {
     expect(proxy.protectionMode).toEqual(.normal([.urlContains("bar"), .urlContains("baz")]))
   }
 
+  // simulate user defaults not being available on first boot, before unlock
+  // we need to keep checking quickly until they are available to not be in lockdown long
+  // @see https://christianselig.com/2024/10/beware-userdefaults/
+  func testNoDataFoundCausesFasterRecheckUntilFound() async throws {
+    let logs = LockIsolated<[String]>([])
+    let userDefaultsReady = LockIsolated(false)
+    let clock = TestClock()
+    let proxy = withDependencies {
+      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+      $0.suspendingClock = clock
+      $0.storage.loadData = { @Sendable _ in
+        if !userDefaultsReady.value {
+          return nil
+        } else {
+          return try! JSONEncoder().encode(ProtectionMode.normal([.urlContains("foo")]))
+        }
+      }
+    } operation: {
+      FilterProxy(
+        protectionMode: .emergencyLockdown,
+        normalHeartbeatInterval: .minutes(5)
+      )
+    }
+
+    // initializer tries to load, but finds no rules, goes into lockdown
+    expect(proxy.protectionMode).toEqual(.emergencyLockdown)
+    expect(logs.value).toEqual(["no rules found"])
+
+    await clock.advance(by: .seconds(9))
+    expect(logs.value).toEqual(["no rules found"])
+
+    // because we have no rules, we're checking every ten seconds
+    await clock.advance(by: .seconds(1))
+    expect(logs.value).toEqual(["no rules found", "no rules found"])
+    await clock.advance(by: .seconds(10))
+    expect(logs.value).toEqual(["no rules found", "no rules found", "no rules found"])
+
+    // simulate user defaults ready
+    userDefaultsReady.setValue(true)
+    await clock.advance(by: .seconds(9))
+    expect(logs.value.count).toEqual(3)
+    await clock.advance(by: .seconds(1))
+    expect(logs.value).toEqual([
+      "no rules found",
+      "no rules found",
+      "no rules found",
+      "read 1 (normal) rules",
+    ])
+    expect(proxy.protectionMode).toEqual(.normal([.urlContains("foo")]))
+
+    // now, we are not checking so often
+    await clock.advance(by: .seconds(10))
+    expect(logs.value.count).toEqual(4)
+
+    await clock.advance(by: .minutes(5))
+    expect(logs.value.count).toEqual(5)
+  }
+
   func testReadsRulesOnStart() {
     let logs = LockIsolated<[String]>([])
     let proxy = withDependencies {
       $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+      $0.suspendingClock = TestClock()
       $0.storage.loadData = { @Sendable key in
         expect(key).toEqual(.protectionModeStorageKey)
         return try! JSONEncoder().encode(ProtectionMode.normal([.urlContains("lol")]))
@@ -105,6 +167,7 @@ final class FilterProxyTests: XCTestCase {
 
     let proxy = withDependencies {
       $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+      $0.suspendingClock = TestClock()
       $0.storage.loadData = { @Sendable _ in
         try! JSONEncoder().encode(rules.value)
       }
@@ -129,6 +192,7 @@ final class FilterProxyTests: XCTestCase {
     let proxy = withDependencies {
       $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
       $0.storage.loadData = { @Sendable _ in nil }
+      $0.suspendingClock = TestClock()
     } operation: {
       FilterProxy(protectionMode: .normal([.urlContains("old")]))
     }
@@ -147,6 +211,7 @@ final class FilterProxyTests: XCTestCase {
     let logs = LockIsolated<[String]>([])
 
     let proxy = withDependencies {
+      $0.suspendingClock = TestClock()
       $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
       $0.storage.loadData = { @Sendable _ in
         String("nope").data(using: .utf8)! // <-- error

@@ -133,7 +133,7 @@ public struct IOSReducer {
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
       #if DEBUG
-        state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+        state.screen = .onboarding(.happyPath(.dontGetTrickedPreAuth))
       #endif
       return .none
 
@@ -256,8 +256,17 @@ public struct IOSReducer {
       if state.disabledBlockGroups == .all { return .none }
       state.screen = .onboarding(.happyPath(.promptClearCache))
       return .merge(
-        .run { [optOuts = state.disabledBlockGroups] _ in
-          self.storage.saveDisabledBlockGroups(optOuts)
+        .run { [disabled = state.disabledBlockGroups] _ in
+          self.storage.saveDisabledBlockGroups(disabled)
+          if let vendorId = self.device.vendorId {
+            let rules = try await self.api.fetchBlockRules(
+              vendorId: vendorId,
+              disabledGroups: disabled
+            )
+            if !rules.isEmpty {
+              self.storage.saveProtectionMode(.normal(rules))
+            }
+          }
         },
         .run { send in
           await send(.programmatic(.setBatteryLevel(self.device.batteryLevel())))
@@ -422,8 +431,8 @@ public struct IOSReducer {
 
     case (.onboarding(.appleFamily(.howToSetupAppleFamily)), .tertiary):
       self.log(state.screen, action, "548e81b6")
-      state.screen = state.onboarding
-        .takeReturningTo() ?? .onboarding(.happyPath(.confirmInAppleFamily))
+      state.screen = .onboarding(.happyPath(.confirmInAppleFamily))
+      state.onboarding.returningTo = nil
       return .none
 
     case (.onboarding(.appleFamily(.explainWhatIsAppleFamily)), .primary):
@@ -468,6 +477,11 @@ public struct IOSReducer {
       state.screen = .onboarding(.supervision(.sorryNoOtherWay))
       return .none
 
+    case (.onboarding(.supervision(.sorryNoOtherWay)), .secondary):
+      self.log(state.screen, action, "f3b3f3b6")
+      state.screen = .onboarding(.happyPath(.hiThere))
+      return .none
+
     // MARK: - error paths
 
     case (.onboarding(.authFail(.invalidAccount(.letsFigureThisOut))), .primary):
@@ -499,6 +513,11 @@ public struct IOSReducer {
     case (.onboarding(.authFail(.invalidAccount(.confirmIsMinor))), .secondary):
       self.log(state.screen, action, "e457cf15")
       state.screen = .onboarding(.authFail(.invalidAccount(.unexpected)))
+      return .none
+
+    case (.onboarding(.authFail(.restricted)), .secondary):
+      self.log(state.screen, action, "b8422c3a")
+      state.screen = .onboarding(.happyPath(.hiThere))
       return .none
 
     case (.onboarding(.authFail(.authConflict)), .primary):
@@ -565,16 +584,20 @@ public struct IOSReducer {
         .run { send in
           let filterRunning = await self.systemExtension.filterRunning()
           let disabledBlockGroups = self.storage.loadDisabledBlockGroups()
-          switch (filterRunning, disabledBlockGroups) {
-          case (true, .some):
+          let hasLegacyData = self.storage.loadData(forKey: .legacyStorageKey) != nil
+          switch (filterRunning, disabledBlockGroups, hasLegacyData) {
+          case (true, .some, _):
             await send(.programmatic(.setScreen(.running(showVendorId: false))))
-          case (true, .none):
-            await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
-          case (false, .some):
+          case (false, .some, _):
             self.log("unexpected non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
-          case (false, .none):
+          case (false, .none, _):
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+          case (_, .none, true):
+            try await self.handleUpgrade(send: send)
+          case (true, .none, false):
+            self.log("supervision success first launch", "bad8adcc")
+            await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
           }
         },
         // handle first launch
@@ -585,19 +608,17 @@ public struct IOSReducer {
             let now = self.now
             self.storage.saveFirstLaunchDate(now)
             await send(.programmatic(.setFirstLaunch(now)))
+            // prefetch the default block groups for onboarding
+            let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId)
+            if let defaultRules, !defaultRules.isEmpty {
+              self.storage.saveProtectionMode(.onboarding(defaultRules))
+            } else {
+              self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+            }
             await self.api.logEvent(
               "8d35f043",
               "first launch, region: `\(self.locale.region?.identifier ?? "(nil)")`"
             )
-          }
-        },
-        // prefetch the default block groups for onboarding
-        .run { send in
-          if let defaultRules = try? await self.api
-            .fetchDefaultBlockRules(self.device.vendorId) {
-            self.storage.saveProtectionMode(.onboarding(defaultRules))
-          } else {
-            self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
           }
         },
         // safeguard in case app crashed trying to fill the disk
@@ -668,7 +689,9 @@ public struct IOSReducer {
         self.unexpected(state.screen, action, "c98b9525")
       }
       state.screen = .onboarding(.happyPath(.optOutBlockGroups))
-      return .none
+      return .run { _ in
+        self.storage.saveDisabledBlockGroups([])
+      }
 
     case .installFailed(let err):
       if state.screen != .onboarding(.happyPath(.dontGetTrickedPreInstall)) {
@@ -696,8 +719,8 @@ public struct IOSReducer {
       let diskSpace = state.onboarding.availableDiskSpaceInBytes
         .map { Bytes.humanReadable($0) } ?? "unknown"
       if let start = state.onboarding.startClearCache {
-        let elapsed = self.now.timeIntervalSince(start)
-        self.log(action, "cb9cf096", extra: "elapsed time: \(elapsed), disk: \(diskSpace)")
+        let elapsed = String(format: "%.1f", self.now.timeIntervalSince(start) / 60.0)
+        self.log(action, "cb9cf096", extra: "elapsed time: \(elapsed)m, disk: \(diskSpace)")
       } else {
         self.log(action, "cb9cf096", extra: "disk: \(diskSpace)")
       }
@@ -710,6 +733,21 @@ public struct IOSReducer {
       state.screen = .onboarding(.happyPath(.cacheCleared))
       return .cancel(id: CancelId.cacheClearUpdates)
     }
+  }
+
+  func handleUpgrade(send: Send<Action>) async throws {
+    self.log("handling upgrade", "180e2347")
+    self.storage.saveDisabledBlockGroups([])
+    let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId)
+    if let defaultRules {
+      self.storage.saveProtectionMode(.normal(defaultRules))
+    } else {
+      self.log("unexpected upgrade rule failure", "8d4a445b")
+      self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+    }
+    self.storage.removeObject(forKey: .legacyStorageKey)
+    await send(.programmatic(.setScreen(.running(showVendorId: false))))
+    try await self.filter.notifyRulesChanged()
   }
 }
 
@@ -853,7 +891,7 @@ public extension IOSReducer {
 extension IOSReducer {
   private func log(_ msg: String, _ id: String) {
     #if !DEBUG
-      Task { await self.api.logEvent(id, "[onboarding]: \(msg), \(eventMeta())") }
+      Task { await self.api.logEvent(id, "[onboarding]: \(msg)") }
     #else
       if ProcessInfo.processInfo.environment["SWIFT_DETERMINISTIC_HASHING"] == nil {
         os_log("[G•] %{public}s", "[onboarding]: `\(id)` \(msg), \(self.eventMeta())\n")
@@ -917,6 +955,7 @@ private func shorten(_ input: String) -> String {
     .replacingOccurrences(of: "LibApp.IOSReducer.", with: "")
     .replacingOccurrences(of: "Action.Programmatic.", with: ".")
     .replacingOccurrences(of: "Action.Interactive.OnboardingBtn.", with: ".")
+    .replacingOccurrences(of: "LibClients.DeviceClient.ClearCacheUpdate.", with: ".")
     .replacingOccurrences(of: "Action.Interactive.", with: ".")
     .replacingOccurrences(of: "Onboarding.HappyPath.", with: ".")
     .replacingOccurrences(of: "Onboarding.", with: ".")

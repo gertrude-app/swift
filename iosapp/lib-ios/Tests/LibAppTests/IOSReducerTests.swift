@@ -22,9 +22,11 @@ final class IOSReducerTests: XCTestCase {
     let batteryCheckInvocations = LockIsolated(0)
     let ratingRequestInvocations = LockIsolated(0)
     let defaultBlocksInvocations = LockIsolated(0)
+    let fetchBlockRulesInvocations = LockIsolated(0)
     let storedDates = LockIsolated<[Date]>([])
     let storedCodables = LockIsolated<[SavedCodable]>([])
     let cacheClearSubject = PassthroughSubject<DeviceClient.ClearCacheUpdate, Never>()
+    let vendorId = UUID()
 
     let store = await TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
@@ -37,6 +39,12 @@ final class IOSReducerTests: XCTestCase {
       }
       $0.api.fetchDefaultBlockRules = { @Sendable _ in
         defaultBlocksInvocations.withValue { $0 += 1 }
+        return [.urlContains("default-rule")]
+      }
+      $0.api.fetchBlockRules = { @Sendable vid, disabled in
+        expect(vid).toEqual(vendorId)
+        expect(disabled).toEqual([.appleMapsImages])
+        fetchBlockRulesInvocations.withValue { $0 += 1 }
         return [.urlContains("GIFs")]
       }
       $0.systemExtension.requestAuthorization = {
@@ -48,6 +56,7 @@ final class IOSReducerTests: XCTestCase {
         installInvocations.withValue { $0 += 1 }
         return .success(())
       }
+      $0.device.vendorId = vendorId
       $0.device.deleteCacheFillDir = {
         deleteCacheFillDirInvocations.withValue { $0 += 1 }
       }
@@ -94,7 +103,9 @@ final class IOSReducerTests: XCTestCase {
     expect(apiLoggedDetails.value).toEqual(["first launch, region: `US`"])
     expect(deleteCacheFillDirInvocations.value).toEqual(1)
     expect(defaultBlocksInvocations.value).toEqual(1)
-    expect(storedCodables.value).toEqual([.protectionMode(.onboarding([.urlContains("GIFs")]))])
+    expect(storedCodables.value).toEqual([
+      .protectionMode(.onboarding([.urlContains("default-rule")])),
+    ])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.timeExpectation))
@@ -149,6 +160,7 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .onboarding(.happyPath(.dontGetTrickedPreInstall))
     }
 
+    expect(storedCodables.value.count).toEqual(1)
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
 
     await store.receive(.programmatic(.installSucceeded)) {
@@ -160,6 +172,13 @@ final class IOSReducerTests: XCTestCase {
       "first launch, region: `US`",
       "authorization succeeded",
       "filter install success",
+    ])
+
+    expect(storedCodables.value).toEqual([
+      .protectionMode(.onboarding([.urlContains("default-rule")])),
+      // we save empty on first load of screen, in case they quit before clicking next
+      // if they did, it would confuse the app to think they were in supervised mode
+      .disabledBlockGroups([]),
     ])
 
     await store.send(.interactive(.blockGroupToggled(.whatsAppFeatures))) {
@@ -174,17 +193,19 @@ final class IOSReducerTests: XCTestCase {
       $0.disabledBlockGroups = [.appleMapsImages]
     }
 
-    expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains("GIFs")])),
-    ])
+    expect(storedCodables.value.count).toEqual(2)
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) { // <-- "Done" from groups
       $0.screen = .onboarding(.happyPath(.promptClearCache))
     }
 
+    expect(fetchBlockRulesInvocations.value).toEqual(1)
+
     expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains("GIFs")])),
-      .disabledBlockGroups([.appleMapsImages]),
+      .protectionMode(.onboarding([.urlContains("default-rule")])),
+      .disabledBlockGroups([]), // <-- on opt-out groups screen load, failsafe
+      .disabledBlockGroups([.appleMapsImages]), // <-- persist user choice after "Done"
+      .protectionMode(.normal([.urlContains("GIFs")])), // <-- got customized rules from api
     ])
 
     await store.receive(.programmatic(.setAvailableDiskSpaceInBytes(1024 * 12))) {
@@ -224,6 +245,67 @@ final class IOSReducerTests: XCTestCase {
     }
 
     expect(ratingRequestInvocations.value).toEqual(1)
+  }
+
+  func testUpgradeFromV110() async throws {
+    let defaultBlocksInvocations = LockIsolated(0)
+    let storedCodables = LockIsolated<[SavedCodable]>([])
+    let removeObjectInvocations = LockIsolated<[String]>([])
+    let notifyFilterInvocations = LockIsolated(0)
+
+    let store = await TestStore(initialState: IOSReducer.State()) {
+      IOSReducer()
+    } withDependencies: {
+      $0.device.deleteCacheFillDir = {}
+      $0.api.logEvent = { @Sendable _, _ in }
+      $0.api.fetchDefaultBlockRules = { @Sendable _ in
+        defaultBlocksInvocations.withValue { $0 += 1 }
+        return [.urlContains("GIFs")]
+      }
+      $0.storage.removeObject = { @Sendable key in
+        removeObjectInvocations.withValue { $0.append(key) }
+      }
+      $0.systemExtension.filterRunning = { true } // <-- filter running
+      $0.storage.loadDate = { @Sendable _ in .reference } // <-- v1.1.0 launch date
+      $0.storage.loadData = { @Sendable key in
+        if key == .legacyStorageKey {
+          return "[]".data(using: .utf8) // <-- has V1 legacy data
+        } else {
+          return nil
+        }
+      }
+      $0.storage.saveCodable = { @Sendable value, key in
+        switch key {
+        case .disabledBlockGroupsStorageKey:
+          storedCodables.withValue { $0.append(.disabledBlockGroups(value as! [BlockGroup])) }
+        case .protectionModeStorageKey:
+          storedCodables.withValue { $0.append(.protectionMode(value as! ProtectionMode)) }
+        default:
+          fatalError("unexpected key: \(key)")
+        }
+      }
+      $0.filter.notifyRulesChanged = {
+        notifyFilterInvocations.withValue { $0 += 1 }
+      }
+    }
+
+    await store.send(.programmatic(.appDidLaunch))
+
+    await store.receive(.programmatic(.setFirstLaunch(.reference))) {
+      $0.onboarding.firstLaunch = .reference
+    }
+
+    await store.receive(.programmatic(.setScreen(.running(showVendorId: false)))) {
+      $0.screen = .running(showVendorId: false)
+    }
+
+    expect(removeObjectInvocations.value).toEqual([.legacyStorageKey])
+    expect(defaultBlocksInvocations.value).toEqual(1)
+    expect(notifyFilterInvocations.value).toEqual(1)
+    expect(storedCodables.value).toEqual([
+      .disabledBlockGroups([]),
+      .protectionMode(.normal([.urlContains("GIFs")])),
+    ])
   }
 
   @MainActor
