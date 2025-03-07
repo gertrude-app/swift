@@ -41,6 +41,7 @@ extension Configure {
     // not deleted after here...
     app.migrations.add(RecreateTables())
     app.migrations.add(MarketingPrep())
+    app.migrations.add(SearchPaths())
   }
 }
 
