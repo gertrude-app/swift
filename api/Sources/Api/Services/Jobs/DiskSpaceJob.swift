@@ -27,23 +27,23 @@ struct DiskSpaceJob: AsyncScheduledJob {
     do {
       try proc.run()
     } catch {
-      await self.slack.sysLog("Error running disk space check: \(error)")
+      await self.slack.error("Error running disk space check: \(error)")
       return
     }
 
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
     guard let percent = Int(String(data: data, encoding: .utf8) ?? "") else {
-      await self.slack.sysLog("Error parsing disk space check output")
+      await self.slack.error("Error parsing disk space check output")
       return
     }
 
     switch percent {
     case ..<45:
-      await self.slack.sysLog("Unexpected disk usage amount: \(percent)%")
+      await self.slack.error("Unexpected disk usage amount: \(percent)%")
     case 45 ..< 89:
       self.logger.notice("Disk space looks OK: \(percent)%")
     default:
-      await self.slack.sysLog("Disk space is dangerously low: \(percent)%")
+      await self.slack.error("Disk space is dangerously low: \(percent)%")
       self.postmark.toSuperAdmin(
         "API Disk space dangerously low",
         "Disk space dangerously low: <code style='color: red;'>\(percent)%</code> used"

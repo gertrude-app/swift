@@ -41,7 +41,7 @@ extension AdminNotifier: DependencyKey {
               }
             } catch {
               await slack
-                .sysLogErr("failed to notify admin \(adminId) of event \(event): \(error)")
+                .error("failed to notify admin \(adminId) of event \(event): \(error)")
             }
           }
 
@@ -58,13 +58,13 @@ extension AdminNotifier: DependencyKey {
             }
           } catch {
             await slack
-              .sysLogErr("failed to fallback email admin \(adminId) of event \(event): \(error)")
+              .error("failed to fallback email admin \(adminId) of event \(event): \(error)")
           }
         }
 
       } catch {
         await slack
-          .sysLogErr("failed to find admin \(adminId) data for event \(event): \(error)")
+          .error("failed to find admin \(adminId) data for event \(event): \(error)")
       }
     }
   }

@@ -29,7 +29,7 @@ extension SaveConferenceEmail: Resolver {
       detail: detail
     ))
 
-    await with(dependency: \.slack).sysLog(detail)
+    await with(dependency: \.slack).internal(.info, detail)
     return .success
   }
 }

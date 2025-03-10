@@ -27,7 +27,7 @@ enum SiteFormsRoute {
     try await spamChallenge(data)
 
     Task {
-      await with(dependency: \.slack).sysLog(data.slackText)
+      await with(dependency: \.slack).internal(.contactForm, data.slackText)
       try await with(dependency: \.postmark).send(
         to: req.env.primarySupportEmail,
         replyTo: data.email,
@@ -76,20 +76,14 @@ enum SiteFormsRoute {
 }
 
 private func spamChallenge(_ data: FormData) async throws {
-  switch await get(dependency: \.cloudflare).verifyTurnstileToken(data.turnstileToken) {
+  switch await get(dependency: \.cloudflare)
+    .verifyTurnstileToken(data.turnstileToken) {
   case .success:
     break
-  case .failure(let errorCodes, let messages):
-    // TEMP: log to slack for now, delete this when i trust it more
-    await with(dependency: \.slack).sysLog(to: "errors", """
-    *Site form spam rejected*
-    Data: `\(try JSON.encode(data))`
-    Error codes: \(errorCodes.joined(separator: ", "))
-    Messages: \(messages?.joined(separator: ", ") ?? "(nil)")
-    """)
+  case .failure:
     throw Abort(.badRequest)
   case .error(let error):
-    await with(dependency: \.slack).sysLog(to: "errors", """
+    await with(dependency: \.slack).error("""
     *Error verifying turnstile token*
     Data: `\(try JSON.encode(data))`
     Error: \(String(reflecting: error))

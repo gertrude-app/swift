@@ -25,6 +25,7 @@ extension Signup: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     @Dependency(\.date.now) var now
     @Dependency(\.postmark) var postmark
+    @Dependency(\.slack) var slack
 
     let email = input.email.lowercased()
     if !email.isValidEmail {
@@ -58,14 +59,8 @@ extension Signup: Resolver {
     }
 
     if context.env.mode == .prod, !isTestAddress(email) {
-      postmark.toSuperAdmin(
-        "signup",
-        [
-          "email: \(email)",
-          "g-ad: \(input.gclid != nil)",
-          "A/B: \(input.abTestVariant ?? "(nil)")",
-        ].joined(separator: "<br />")
-      )
+      postmark.toSuperAdmin("signup", "email: \(email)<br/>g-ad: \(input.gclid != nil)")
+      await slack.internal(.signups, "email: `\(email)`\ng-ad: `\(input.gclid != nil)`")
     }
 
     let admin = try await context.db.create(Admin(
