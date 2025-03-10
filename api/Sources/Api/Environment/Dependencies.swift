@@ -16,7 +16,7 @@ func get<Value>(dependency keyPath: KeyPath<DependencyValues, Value>) -> Value {
   return value
 }
 
-extension AWS.Client: DependencyKey {
+extension AWS.Client: @retroactive DependencyKey {
   public static var liveValue: AWS.Client {
     @Dependency(\.env.s3) var s3
     return .live(
@@ -42,7 +42,7 @@ public extension DependencyValues {
   }
 }
 
-extension XSlack.Slack.Client: DependencyKey {
+extension XSlack.Slack.Client: @retroactive DependencyKey {
   public static var liveValue: XSlack.Slack.Client {
     .live
   }
@@ -61,7 +61,7 @@ extension VerificationCodeGenerator: DependencyKey {
   }
 }
 
-extension Stripe.Client: DependencyKey {
+extension Stripe.Client: @retroactive DependencyKey {
   public static var liveValue: Stripe.Client {
     @Dependency(\.env.stripe.secretKey) var secretKey
     return .live(secretKey: secretKey)
@@ -145,7 +145,7 @@ private enum LoggerKey: DependencyKey {
     )
   }
 
-  extension AWS.Client: TestDependencyKey {
+  extension AWS.Client: @retroactive TestDependencyKey {
     public static var testValue: AWS.Client {
       .init(signedS3UploadUrl: { _ in
         unimplemented("AWS.Client.signedS3UploadUrl()", placeholder: URL(string: "")!)
@@ -153,7 +153,7 @@ private enum LoggerKey: DependencyKey {
     }
   }
 
-  extension XSlack.Slack.Client: TestDependencyKey {
+  extension XSlack.Slack.Client: @retroactive TestDependencyKey {
     public static var testValue: XSlack.Slack.Client {
       .init(send: { _, _ in
         unimplemented("XSlack.Client.send()", placeholder: "")

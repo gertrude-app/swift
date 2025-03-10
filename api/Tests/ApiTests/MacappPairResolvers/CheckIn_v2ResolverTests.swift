@@ -6,7 +6,7 @@ import XExpect
 
 @testable import Api
 
-final class CheckIn_v2ResolverTests: ApiTestCase {
+final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
   func testCheckIn_UserProps() async throws {
     let user = try await self.user(with: {
       $0.keyloggingEnabled = false

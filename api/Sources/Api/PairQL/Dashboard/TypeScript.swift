@@ -1,6 +1,6 @@
 import Gertie
 import TypeScriptInterop
 
-extension Gertie.Key: TypeScriptAliased {}
-extension AppScope: TypeScriptAliased {}
-extension AppScope.Single: TypeScriptAliased {}
+extension Gertie.Key: @retroactive TypeScriptAliased {}
+extension AppScope: @retroactive TypeScriptAliased {}
+extension AppScope.Single: @retroactive TypeScriptAliased {}

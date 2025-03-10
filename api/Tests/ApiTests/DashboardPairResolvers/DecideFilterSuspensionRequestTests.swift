@@ -3,7 +3,7 @@ import XExpect
 
 @testable import Api
 
-final class DecideFilterSuspensionRequestTests: ApiTestCase {
+final class DecideFilterSuspensionRequestTests: ApiTestCase, @unchecked Sendable {
   func testDecideSuspendFilterRequest_Accepted() async throws {
     let user = try await self.user().withDevice {
       $0.appVersion = "2.4.0"

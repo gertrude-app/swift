@@ -6,7 +6,7 @@ import XExpect
 
 @testable import Api
 
-final class iOSResolverTests: ApiTestCase {
+final class iOSResolverTests: ApiTestCase, @unchecked Sendable {
   func testLogIOSEvent() async throws {
     let eventId = UUID().uuidString
     let vendorId = UUID()

@@ -7,7 +7,7 @@ import XExpect
 
 @testable import Api
 
-final class MacAppResolverTests: ApiTestCase {
+final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   func testCreateSuspendFilterRequest() async throws {
     let user = try await self.userWithDevice()
 

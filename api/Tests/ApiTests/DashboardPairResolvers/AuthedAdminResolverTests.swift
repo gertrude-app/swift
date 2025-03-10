@@ -6,7 +6,7 @@ import XExpect
 
 @testable import Api
 
-final class AuthedAdminResolverTests: ApiTestCase {
+final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   func testStripeUrlForBillingPortalSession() async throws {
     let admin = try await self.admin {
       $0.subscriptionId = .init(rawValue: "sub_123")

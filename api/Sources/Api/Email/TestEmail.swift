@@ -186,12 +186,13 @@ import Vapor
     let html = "<!DOCTYPE html>\n<html>" + lines.joined(separator: "\n") + "\n"
     let fm = FileManager.default
     let path = fm.currentDirectoryPath + "/../index.html"
-    let current = (try? String(contentsOfFile: path)) ?? ""
+    let current = (try? String(contentsOfFile: path, encoding: .utf8)) ?? ""
     if current == html {
       return Response(body: .init(string: ""))
-    } else {
-      fm.createFile(atPath: path, contents: html.data(using: .utf8), attributes: nil)
+    } else if fm.createFile(atPath: path, contents: html.data(using: .utf8), attributes: nil) {
       return Response(body: .init(string: "<root>/index.html regenerated\n"))
+    } else {
+      return Response(body: .init(string: "ERROR writing file\n"))
     }
   }
 

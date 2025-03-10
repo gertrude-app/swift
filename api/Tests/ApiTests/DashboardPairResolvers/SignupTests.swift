@@ -5,7 +5,7 @@ import XExpect
 
 @testable import Api
 
-final class SignupTests: ApiTestCase {
+final class SignupTests: ApiTestCase, @unchecked Sendable {
   let context = Context.mock
 
   func testInitiateSignupWithBadEmailErrorsBadRequest() async throws {

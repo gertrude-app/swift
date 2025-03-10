@@ -5,7 +5,7 @@ import XExpect
 
 @testable import Api
 
-final class CreateUnlockRequestsResolverTests: ApiTestCase {
+final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable {
   func testCreateUnlockRequests_v3() async throws {
     let user = try await self.userWithDevice()
     let blocked = CreateUnlockRequests_v3.Input.BlockedRequest(

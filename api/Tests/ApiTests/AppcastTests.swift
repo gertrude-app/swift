@@ -4,7 +4,7 @@ import XExpect
 
 @testable import Api
 
-final class AppcastTests: ApiTestCase {
+final class AppcastTests: ApiTestCase, @unchecked Sendable {
   func testAppcastVersions() async throws {
     try await self.replaceAllReleases(with: [
       Release("2.0.0", channel: .stable, pace: nil, createdAt: .epoch),

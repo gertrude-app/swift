@@ -3,7 +3,7 @@ import XExpect
 
 @testable import Api
 
-final class UserActivityResolverTests: ApiTestCase {
+final class UserActivityResolverTests: ApiTestCase, @unchecked Sendable {
   func testGetActivityDay() async throws {
     let user = try await self.userWithDevice()
     var screenshot = Screenshot.random

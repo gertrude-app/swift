@@ -4,7 +4,7 @@ import XExpect
 
 @testable import Api
 
-final class SubscriptionManagerTests: ApiTestCase {
+final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
   func testAdvanceExpiredFn() async throws {
     try await self.db.delete(all: Admin.self)
     try await self.db.delete(all: DeletedEntity.self)
