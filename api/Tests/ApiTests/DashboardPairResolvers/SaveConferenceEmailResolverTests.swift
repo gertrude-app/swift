@@ -4,7 +4,7 @@ import XExpect
 
 @testable import Api
 
-final class SaveConferenceEmailResolverTests: ApiTestCase {
+final class SaveConferenceEmailResolverTests: ApiTestCase, @unchecked Sendable {
   func testSaveConferenceEmailResolver() async throws {
     try await self.db.delete(all: InterestingEvent.self)
     let input = SaveConferenceEmail.Input(email: "a@b.com", source: .booth)

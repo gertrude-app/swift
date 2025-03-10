@@ -3,7 +3,7 @@ import DuetSQL
 import Gertie
 import Tagged
 
-extension RequestStatus: PostgresEnum {
+extension RequestStatus: @retroactive PostgresEnum {
   public var typeName: String { "enum_shared_request_status" }
 }
 
@@ -294,7 +294,7 @@ extension Release {
   }
 }
 
-extension ReleaseChannel: PostgresEnum {
+extension ReleaseChannel: @retroactive PostgresEnum {
   public var typeName: String { "enum_release_channels" }
 }
 

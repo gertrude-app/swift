@@ -4,7 +4,7 @@ import XExpect
 
 @testable import Api
 
-final class DeviceResolversTests: ApiTestCase {
+final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
   func testGetDevices() async throws {
     try await self.db.delete(all: Device.self)
     let user = try await self.user().withDevice { $0.appVersion = "2.2.2" }

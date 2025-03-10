@@ -6,7 +6,7 @@ import XExpect
 
 @testable import Api
 
-final class CheckInNameAppsTests: ApiTestCase {
+final class CheckInNameAppsTests: ApiTestCase, @unchecked Sendable {
   func testNameTotallyUnknownApp() async throws {
     let app = RunningApp(
       bundleId: "com.\(UUID().lowercased)",

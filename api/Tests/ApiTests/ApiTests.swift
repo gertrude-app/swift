@@ -12,7 +12,7 @@ import XExpect
 
 @testable import Api
 
-final class ApiTests: ApiTestCase {
+final class ApiTests: ApiTestCase, @unchecked Sendable {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
   func testDashboardRoute() async throws {
