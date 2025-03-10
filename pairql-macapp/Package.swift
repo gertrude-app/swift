@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -22,11 +22,7 @@ let package = Package(
         .product(name: "PairQL", package: "pairql"),
         .product(name: "Gertie", package: "gertie"),
       ],
-      swiftSettings: [.unsafeFlags([
-        "-Xfrontend", "-warn-concurrency",
-        "-Xfrontend", "-enable-actor-data-race-checks",
-        "-Xfrontend", "-warnings-as-errors",
-      ])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
     ),
     .testTarget(name: "MacAppRouteTests", dependencies: [
       .target(name: "MacAppRoute"),
