@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -15,11 +15,7 @@ let package = Package(
     .target(
       name: "XAws",
       dependencies: [.product(name: "Crypto", package: "swift-crypto")],
-      swiftSettings: [.unsafeFlags([
-        "-Xfrontend", "-warn-concurrency",
-        "-Xfrontend", "-enable-actor-data-race-checks",
-        "-Xfrontend", "-warnings-as-errors",
-      ])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
     ),
     .testTarget(
       name: "XAwsTests",
