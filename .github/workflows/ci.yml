@@ -54,8 +54,8 @@ jobs:
         uses: actions/checkout@v4
       - name: test-duet
         run: cd duet && swift test
-      - name: test-pairql
-        run: cd pairql && swift test
+      - name: test-pairql-macapp
+        run: cd pairql-macapp && swift test
 
   linux-lib-test-libs-2:
     if: github.event_name == 'pull_request'
@@ -64,8 +64,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
-      - name: test-pairql-macapp
-        run: cd pairql-macapp && swift test
       - name: test-ts-interop
         run: cd ts-interop && swift test
       - name: test-gertie
