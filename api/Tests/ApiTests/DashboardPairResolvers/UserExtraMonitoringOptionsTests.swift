@@ -5,7 +5,7 @@ import XExpect
 
 @testable import Api
 
-final class UserExtraMonitoringOptionsTests: ApiTestCase {
+final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
   func testExtraMonitoringOptions() {
     let cases: [(Bool, Int?, [FilterSuspensionDecision.ExtraMonitoring: String])] = [
       (

@@ -9,12 +9,12 @@ import XSlack
 
 @testable import Api
 
-class ApiTestCase: XCTestCase {
+class ApiTestCase: XCTestCase, @unchecked Sendable {
   @Dependency(\.db) var db
   @Dependency(\.env) var env
 
-  static var app: Application!
-  static var migrated = false
+  nonisolated(unsafe) static var app: Application!
+  nonisolated(unsafe) static var migrated = false
 
   var sent = Sent()
   var app: Application { Self.app }

@@ -8,7 +8,7 @@ import XExpect
 
 // NB: all these tests were ported to v2, when this type
 // is removed, you can just nuke this file without thinking
-final class CheckInResolverTests: ApiTestCase {
+final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
   func testCheckIn_UserProps_v1() async throws {
     let user = try await self.user(with: {
       $0.keyloggingEnabled = false

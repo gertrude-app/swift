@@ -157,7 +157,7 @@ enum DashboardTsCodegenRoute {
 
 // extensions
 
-extension Tagged: TypeScriptAliased where RawValue == UUID {
+extension Tagged: @retroactive TypeScriptAliased where RawValue == UUID {
   public static var typescriptAlias: String {
     "UUID"
   }

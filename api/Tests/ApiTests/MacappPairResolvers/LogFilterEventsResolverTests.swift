@@ -6,7 +6,7 @@ import XExpect
 
 @testable import Api
 
-final class LogFilterEventsResolverTests: ApiTestCase {
+final class LogFilterEventsResolverTests: ApiTestCase, @unchecked Sendable {
   func testLogFilterEvents() async throws {
     try await self.db.delete(all: IdentifiedApp.self)
     try await self.db.delete(all: UnidentifiedApp.self)
