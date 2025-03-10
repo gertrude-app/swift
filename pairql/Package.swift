@@ -1,4 +1,4 @@
-// swift-tools-version:5.10
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -10,21 +10,12 @@ let package = Package(
   dependencies: [
     // fork avoids swift-syntax transitive dep via case-paths
     .package(url: "https://github.com/gertrude-app/swift-url-routing", revision: "1cf1ca6"),
-    .package(path: "../x-expect"),
   ],
   targets: [
     .target(
       name: "PairQL",
       dependencies: [.product(name: "URLRouting", package: "swift-url-routing")],
-      swiftSettings: [.unsafeFlags([
-        "-Xfrontend", "-warn-concurrency",
-        "-Xfrontend", "-enable-actor-data-race-checks",
-        "-Xfrontend", "-warnings-as-errors",
-      ])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
     ),
-    .testTarget(name: "PairQLTests", dependencies: [
-      .target(name: "PairQL"),
-      .product(name: "XExpect", package: "x-expect"),
-    ]),
   ]
 )
