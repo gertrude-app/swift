@@ -148,9 +148,9 @@ extension Semver: Codable {
 }
 
 extension Semver: LosslessStringConvertible {
-  private nonisolated(unsafe) static let semverRegexPattern =
+  private static let semverRegexPattern =
     #"^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([\da-zA-Z\-]+(?:\.[\da-zA-Z\-]+)*))?$"#
-  private nonisolated(unsafe) static let semverRegex =
+  private static let semverRegex =
     try! NSRegularExpression(pattern: semverRegexPattern)
 
   public init?(_ description: String) {
@@ -217,7 +217,7 @@ private func validateBuildMetadataIdentifier(_ str: String) -> Bool {
 }
 
 private extension CharacterSet {
-  nonisolated(unsafe) static let semverIdentifierAllowed: CharacterSet = {
+  static let semverIdentifierAllowed: CharacterSet = {
     var set = CharacterSet(charactersIn: "0" ... "9")
     set.insert(charactersIn: "a" ... "z")
     set.insert(charactersIn: "A" ... "Z")
@@ -225,7 +225,7 @@ private extension CharacterSet {
     return set
   }()
 
-  nonisolated(unsafe) static let asciiDigits = CharacterSet(charactersIn: "0" ... "9")
+  static let asciiDigits = CharacterSet(charactersIn: "0" ... "9")
 }
 
 private extension String {
