@@ -11,6 +11,7 @@ let package = Package(
     .package("onevcat/Rainbow@4.0.1"),
     .package("jaredh159/swift-tagged@0.8.2"),
     .package("pointfreeco/swift-dependencies@1.0.0"),
+    .package("pointfreeco/swift-concurrency-extras@1.1.0"),
     .package("m-barthelemy/vapor-queues-fluent-driver@3.0.0-beta1"),
     // fork avoids swift-syntax transitive dep via swift-url-routing -> case-paths
     .package(url: "https://github.com/gertrude-app/vapor-routing", revision: "8e1028d"),
@@ -45,6 +46,7 @@ let package = Package(
         .product(name: "TaggedMoney", package: "swift-tagged"),
         .product(name: "VaporRouting", package: "vapor-routing"),
         .product(name: "Dependencies", package: "swift-dependencies"),
+        .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
         .product(name: "XAws", package: "x-aws"),
         .product(name: "XPostmark", package: "x-postmark"),
         .product(name: "XSlack", package: "x-slack"),

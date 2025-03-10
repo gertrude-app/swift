@@ -1,4 +1,3 @@
-import Dependencies
 import DuetSQL
 import Gertie
 import Vapor
@@ -10,6 +9,7 @@ enum StripeEventsRoute {
       return Response(status: .badRequest)
     }
 
+    let slack = get(dependency: \.slack)
     let stripeEvent = try await request.context.db.create(StripeEvent(json: json))
     let event = try? JSON.decode(json, as: EventInfo.self)
 
@@ -29,7 +29,10 @@ enum StripeEventsRoute {
         switch (admin.subscriptionId, event?.data?.object?.subscription) {
         case (.none, .some(let subscriptionId)):
           admin.subscriptionId = .init(rawValue: subscriptionId)
-          Task { await with(dependency: \.slack).sysLog("*FIRST Payment* from `\(email)`") }
+          Task {
+            await slack.internal(.info, "*FIRST Payment* from `\(email)`")
+            await slack.internal(.stripe, "*FIRST Payment* from `\(email)`")
+          }
         case (.some(let existing), .some(let subscriptionId))
           where existing.rawValue != subscriptionId:
           admin.subscriptionId = .init(rawValue: subscriptionId)
@@ -44,7 +47,7 @@ enum StripeEventsRoute {
     }
 
     Task {
-      await with(dependency: \.slack).sysLog("""
+      await slack.internal(.stripe, """
         *Received Gertrude Stripe Event:*
         - type: `\(event?.type ?? "(nil)")`
         - customer email: `\(event?.data?.object?.customer_email ?? "(nil)")`

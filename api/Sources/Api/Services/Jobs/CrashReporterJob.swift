@@ -25,13 +25,13 @@ struct CrashReporterJob: AsyncScheduledJob {
     do {
       try proc.run()
     } catch {
-      await self.slack.sysLog("Error running crash report job: \(error)")
+      await self.slack.error("Error running crash report job: \(error)")
       return
     }
 
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
     guard let json = String(data: data, encoding: .utf8) else {
-      await self.slack.sysLog("Error parsing disk space check output")
+      await self.slack.error("Error parsing disk space check output")
       return
     }
 
@@ -39,12 +39,12 @@ struct CrashReporterJob: AsyncScheduledJob {
     do {
       processes = try JSON.decode(json, as: [Pm2Process].self)
     } catch {
-      await self.slack.sysLog("Error decoding `pm2 jlist`: \(error)")
+      await self.slack.error("Error decoding `pm2 jlist`: \(error)")
       return
     }
 
     guard let prod = processes.filter({ $0.name == "production" }).first else {
-      await self.slack.sysLog("Could not find production process in pm2 list")
+      await self.slack.error("Could not find production process in pm2 list")
       return
     }
 
@@ -54,7 +54,7 @@ struct CrashReporterJob: AsyncScheduledJob {
       return
     }
 
-    await self.slack.sysLog("\(num_crashes) crashes detected in production API")
+    await self.slack.error("\(num_crashes) crashes detected in production API")
     self.postmark.toSuperAdmin("API Crashed", "\(num_crashes) times")
   }
 }

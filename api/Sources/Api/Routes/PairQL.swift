@@ -147,7 +147,7 @@ private func slackPairQLRouteNotFound(_ request: Request, _ error: Error) async 
     return
   }
 
-  try? await with(dependency: \.slack).sysLog(to: "errors", """
+  try? await with(dependency: \.slack).error("""
   *PairQL parsing error:*
   domain: `\(domain)`
   operation: `\(operation)`

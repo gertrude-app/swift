@@ -130,7 +130,7 @@ extension Result where Success == Void, Failure == XPostmark.Client.Error {
     switch self {
     case .failure(let err):
       with(dependency: \.logger).error("Error sending email: \(err)")
-      await with(dependency: \.slack).sysLog("Error sending email: \(err)")
+      await with(dependency: \.slack).error("Error sending email: \(err)")
       throw err
     case .success:
       break
@@ -142,7 +142,7 @@ extension Result where Success == Void, Failure == XPostmark.Client.Error {
     case .failure(let err):
       with(dependency: \.logger)
         .error("Error sending email \(template) to \(recipient): \(err)")
-      await with(dependency: \.slack).sysLog(to: "errors", """
+      await with(dependency: \.slack).error("""
         Error sending `\(template)` email to `\(recipient)`
         Detail: \(String(reflecting: err))
       """)

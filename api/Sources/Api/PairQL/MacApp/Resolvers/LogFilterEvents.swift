@@ -41,11 +41,12 @@ extension LogFilterEvents: Resolver {
       )
     }
 
-    if context.env.mode == .prod {
-      for e in events {
-        await with(dependency: \.slack)
-          .sysLog("Macapp *filter* event: \(githubSearch(e.eventId)) \(e.detail ?? "")")
-      }
+    let slack = get(dependency: \.slack)
+    for event in events {
+      await slack.internal(
+        .info,
+        "Macapp *filter* event: \(githubSearch(event.eventId)) \(event.detail ?? "")"
+      )
     }
 
     return .success

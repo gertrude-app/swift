@@ -30,7 +30,9 @@ class ApiTestCase: XCTestCase {
         self.sent.texts.append($0)
       }
       $0.slack.send = { @Sendable msg, tok in
-        self.sent.slacks.append(.init(message: msg, token: tok))
+        if msg.channel != "debug" {
+          self.sent.slacks.append(.init(message: msg, token: tok))
+        }
         return nil
       }
       $0.postmark._sendTemplateEmail = { @Sendable email in

@@ -16,8 +16,13 @@ extension LogIOSEvent: Resolver {
     ))
 
     if context.env.mode == .prod {
-      await with(dependency: \.slack)
-        .sysLog("iOS app event: \(githubSearch(input.eventId)) \(detail)")
+      let slack = get(dependency: \.slack)
+      let message = "iOS app event: \(githubSearch(input.eventId)) \(detail)"
+      if detail.contains("[onboarding]") {
+        await slack.internal(.iosOnboarding, message)
+      } else {
+        await slack.internal(.iosLogs, message)
+      }
     }
 
     return .success
