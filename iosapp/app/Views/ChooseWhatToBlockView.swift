@@ -27,7 +27,7 @@ struct ChooseWhatToBlockView: View {
           .background(Color(self.cs, light: .violet300.opacity(0.6), dark: .violet950))
           .cornerRadius(24)
           .swooshIn(tracking: self.$iconOffset, to: .zero, after: .zero, for: .seconds(0.6))
-
+        
         Text("Success! We’re nearly done.")
           .multilineTextAlignment(.center)
           .font(.system(size: 24, weight: .bold))
@@ -39,7 +39,7 @@ struct ChooseWhatToBlockView: View {
             after: .seconds(0.1),
             for: .seconds(0.6)
           )
-
+        
         Text(
           "Gertrude is all set to block content. Take a moment to decide if there are any of these types of content that you don’t want to block:"
         )
@@ -53,9 +53,9 @@ struct ChooseWhatToBlockView: View {
           after: .seconds(0.2),
           for: .seconds(0.6)
         )
-
+        
         self.selectableGroups
-
+        
         BigButton(
           "Done, continue",
           type: .button {

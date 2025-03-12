@@ -38,6 +38,11 @@ class FilterDataProvider: NEFilterDataProvider {
   }
 
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
+    
+    if RecordingStatus.isRecording() {
+      return .allow()
+    }
+    
     var hostname: String?
     var url: String?
     let bundleId: String? = flow.sourceAppIdentifier

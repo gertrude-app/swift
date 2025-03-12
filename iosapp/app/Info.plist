@@ -2,12 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>UILaunchScreen</key>
-  <dict>
-    <key>UIColorName</key>
-    <string>white</string>
-    <key>UIImageName</key>
-    <string>GertrudeIcon</string>
-  </dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>To save demonstration screenshots.</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>white</string>
+		<key>UIImageName</key>
+		<string>GertrudeIcon</string>
+	</dict>
 </dict>
 </plist>

@@ -1,0 +1,255 @@
+diff --git a/iosapp/Gertrude-iOS.xcodeproj/project.pbxproj b/iosapp/Gertrude-iOS.xcodeproj/project.pbxproj
+index 6dcae152..75fd5269 100644
+--- a/iosapp/Gertrude-iOS.xcodeproj/project.pbxproj
++++ b/iosapp/Gertrude-iOS.xcodeproj/project.pbxproj
+@@ -559,7 +559,7 @@
+ 				CODE_SIGN_STYLE = Automatic;
+ 				CURRENT_PROJECT_VERSION = 11;
+ 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
+-				DEVELOPMENT_TEAM = WFN83LM943;
++				DEVELOPMENT_TEAM = J83773RWC3;
+ 				ENABLE_PREVIEWS = YES;
+ 				GENERATE_INFOPLIST_FILE = YES;
+ 				INFOPLIST_FILE = app/Info.plist;
+@@ -575,7 +575,7 @@
+ 					"@executable_path/Frameworks",
+ 				);
+ 				MARKETING_VERSION = 1.3.0;
+-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
++				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+ 				SUPPORTS_MACCATALYST = NO;
+@@ -598,7 +598,7 @@
+ 				CODE_SIGN_STYLE = Automatic;
+ 				CURRENT_PROJECT_VERSION = 11;
+ 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
+-				DEVELOPMENT_TEAM = WFN83LM943;
++				DEVELOPMENT_TEAM = J83773RWC3;
+ 				ENABLE_PREVIEWS = YES;
+ 				GENERATE_INFOPLIST_FILE = YES;
+ 				INFOPLIST_FILE = app/Info.plist;
+@@ -614,7 +614,7 @@
+ 					"@executable_path/Frameworks",
+ 				);
+ 				MARKETING_VERSION = 1.3.0;
+-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
++				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+ 				SUPPORTS_MACCATALYST = NO;
+@@ -632,7 +632,7 @@
+ 				CODE_SIGN_ENTITLEMENTS = filter/filter.entitlements;
+ 				CODE_SIGN_STYLE = Automatic;
+ 				CURRENT_PROJECT_VERSION = 11;
+-				DEVELOPMENT_TEAM = WFN83LM943;
++				DEVELOPMENT_TEAM = J83773RWC3;
+ 				GENERATE_INFOPLIST_FILE = YES;
+ 				INFOPLIST_FILE = filter/Info.plist;
+ 				INFOPLIST_KEY_CFBundleDisplayName = filter;
+@@ -644,7 +644,7 @@
+ 					"@executable_path/../../Frameworks",
+ 				);
+ 				MARKETING_VERSION = 1.3.0;
+-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.filter";
++				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.filter";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SKIP_INSTALL = YES;
+ 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+@@ -662,7 +662,7 @@
+ 				CODE_SIGN_ENTITLEMENTS = filter/filter.entitlements;
+ 				CODE_SIGN_STYLE = Automatic;
+ 				CURRENT_PROJECT_VERSION = 11;
+-				DEVELOPMENT_TEAM = WFN83LM943;
++				DEVELOPMENT_TEAM = J83773RWC3;
+ 				GENERATE_INFOPLIST_FILE = YES;
+ 				INFOPLIST_FILE = filter/Info.plist;
+ 				INFOPLIST_KEY_CFBundleDisplayName = filter;
+@@ -674,7 +674,7 @@
+ 					"@executable_path/../../Frameworks",
+ 				);
+ 				MARKETING_VERSION = 1.3.0;
+-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.filter";
++				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.filter";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SKIP_INSTALL = YES;
+ 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+@@ -693,7 +693,7 @@
+ 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
+ 				CODE_SIGN_STYLE = Automatic;
+ 				CURRENT_PROJECT_VERSION = 11;
+-				DEVELOPMENT_TEAM = WFN83LM943;
++				DEVELOPMENT_TEAM = J83773RWC3;
+ 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+ 				GCC_C_LANGUAGE_STANDARD = gnu17;
+ 				GENERATE_INFOPLIST_FILE = YES;
+@@ -708,7 +708,7 @@
+ 				);
+ 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+ 				MARKETING_VERSION = 1.3.0;
+-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.controller";
++				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.controller";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SKIP_INSTALL = YES;
+ 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+@@ -729,7 +729,7 @@
+ 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
+ 				CODE_SIGN_STYLE = Automatic;
+ 				CURRENT_PROJECT_VERSION = 11;
+-				DEVELOPMENT_TEAM = WFN83LM943;
++				DEVELOPMENT_TEAM = J83773RWC3;
+ 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+ 				GCC_C_LANGUAGE_STANDARD = gnu17;
+ 				GENERATE_INFOPLIST_FILE = YES;
+@@ -744,7 +744,7 @@
+ 				);
+ 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+ 				MARKETING_VERSION = 1.3.0;
+-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.controller";
++				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.controller";
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SKIP_INSTALL = YES;
+ 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+diff --git a/iosapp/app/Info.plist b/iosapp/app/Info.plist
+index 8146926c..cf835699 100644
+--- a/iosapp/app/Info.plist
++++ b/iosapp/app/Info.plist
+@@ -2,12 +2,12 @@
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+ <dict>
+-  <key>UILaunchScreen</key>
+-  <dict>
+-    <key>UIColorName</key>
+-    <string>white</string>
+-    <key>UIImageName</key>
+-    <string>GertrudeIcon</string>
+-  </dict>
++	<key>UILaunchScreen</key>
++	<dict>
++		<key>UIColorName</key>
++		<string>white</string>
++		<key>UIImageName</key>
++		<string>GertrudeIcon</string>
++	</dict>
+ </dict>
+ </plist>
+diff --git a/iosapp/app/app.entitlements b/iosapp/app/app.entitlements
+index 31b7058b..fe84539f 100644
+--- a/iosapp/app/app.entitlements
++++ b/iosapp/app/app.entitlements
+@@ -2,15 +2,15 @@
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+ <dict>
+-  <key>com.apple.developer.family-controls</key>
+-  <true/>
+-  <key>com.apple.developer.networking.networkextension</key>
+-  <array>
+-    <string>content-filter-provider</string>
+-  </array>
+-  <key>com.apple.security.application-groups</key>
+-  <array>
+-    <string>group.com.netrivet.gertrude-ios.app</string>
+-  </array>
++	<key>com.apple.developer.family-controls</key>
++	<true/>
++	<key>com.apple.developer.networking.networkextension</key>
++	<array>
++		<string>content-filter-provider</string>
++	</array>
++	<key>com.apple.security.application-groups</key>
++	<array>
++		<string>group.com.ftc.gertrude-ios.app</string>
++	</array>
+ </dict>
+ </plist>
+diff --git a/iosapp/controller/controller.entitlements b/iosapp/controller/controller.entitlements
+index 462251b3..44c3fa57 100644
+--- a/iosapp/controller/controller.entitlements
++++ b/iosapp/controller/controller.entitlements
+@@ -2,13 +2,13 @@
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+ <dict>
+-  <key>com.apple.developer.networking.networkextension</key>
+-  <array>
+-    <string>content-filter-provider</string>
+-  </array>
+-  <key>com.apple.security.application-groups</key>
+-  <array>
+-    <string>group.com.netrivet.gertrude-ios.app</string>
+-  </array>
++	<key>com.apple.developer.networking.networkextension</key>
++	<array>
++		<string>content-filter-provider</string>
++	</array>
++	<key>com.apple.security.application-groups</key>
++	<array>
++		<string>group.com.ftc.gertrude-ios.app</string>
++	</array>
+ </dict>
+ </plist>
+diff --git a/iosapp/filter/filter.entitlements b/iosapp/filter/filter.entitlements
+index 462251b3..44c3fa57 100644
+--- a/iosapp/filter/filter.entitlements
++++ b/iosapp/filter/filter.entitlements
+@@ -2,13 +2,13 @@
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+ <plist version="1.0">
+ <dict>
+-  <key>com.apple.developer.networking.networkextension</key>
+-  <array>
+-    <string>content-filter-provider</string>
+-  </array>
+-  <key>com.apple.security.application-groups</key>
+-  <array>
+-    <string>group.com.netrivet.gertrude-ios.app</string>
+-  </array>
++	<key>com.apple.developer.networking.networkextension</key>
++	<array>
++		<string>content-filter-provider</string>
++	</array>
++	<key>com.apple.security.application-groups</key>
++	<array>
++		<string>group.com.ftc.gertrude-ios.app</string>
++	</array>
+ </dict>
+ </plist>
+diff --git a/iosapp/lib-ios/Sources/LibCore/Types.swift b/iosapp/lib-ios/Sources/LibCore/Types.swift
+index 60d0190d..4f3181a9 100644
+--- a/iosapp/lib-ios/Sources/LibCore/Types.swift
++++ b/iosapp/lib-ios/Sources/LibCore/Types.swift
+@@ -32,7 +32,7 @@ public extension ProtectionMode {
+ extension ProtectionMode: Equatable, Sendable, Codable {}
+ 
+ public extension UserDefaults {
+-  static let gertrude = UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
++  static let gertrude = UserDefaults(suiteName: "group.com.ftc.gertrude-ios.app")!
+ }
+ 
+ public extension String {
+diff --git a/iosapp/lib-ios/Sources/LibFilter/FilterProxy.swift b/iosapp/lib-ios/Sources/LibFilter/FilterProxy.swift
+index 9d38ad76..65ca015e 100644
+--- a/iosapp/lib-ios/Sources/LibFilter/FilterProxy.swift
++++ b/iosapp/lib-ios/Sources/LibFilter/FilterProxy.swift
+@@ -76,7 +76,7 @@ public class FilterProxy {
+     }
+ 
+     guard let rules = self.protectionMode.rules else {
+-      if bundleId?.contains("com.netrivet.gertrude-ios.app") == true {
++      if bundleId?.contains("com.ftc.gertrude-ios.app") == true {
+         return .allow
+       } else if let hostname {
+         return hostname.hasSuffix("gertrude.app") ? .allow : .drop
+@@ -147,8 +147,8 @@ public extension FilterProxy {
+ // helpers
+ 
+ public extension String {
+-  static let gertrudeBundleIdLong = "WFN83LM943.com.netrivet.gertrude-ios.app"
+-  static let gertrudeBundleIdShort = "com.netrivet.gertrude-ios.app"
++  static let gertrudeBundleIdLong = "WFN83LM943.com.ftc.gertrude-ios.app"
++  static let gertrudeBundleIdShort = "com.ftc.gertrude-ios.app"
+ }
+ 
+ // conformances

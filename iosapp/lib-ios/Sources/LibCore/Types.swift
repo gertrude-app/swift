@@ -32,7 +32,7 @@ public extension ProtectionMode {
 extension ProtectionMode: Equatable, Sendable, Codable {}
 
 public extension UserDefaults {
-  static let gertrude = UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
+  static let gertrude = UserDefaults(suiteName: "group.com.ftc.gertrude-ios.app")!
 }
 
 public extension String {

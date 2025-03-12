@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -38,6 +38,8 @@
 		7FE743D62C8F431500607876 /* FilterControlProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FE743D52C8F431500607876 /* FilterControlProvider.swift */; };
 		7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FE743D22C8F431500607876 /* controller.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7FE743DF2C8F4ED700607876 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
+		F4D05ACB2D81FD7F00BE6642 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4D05ACA2D81FD7F00BE6642 /* ReplayKit.framework */; };
+		F4D05AD22D81FD7F00BE6642 /* recorder.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F4D05AC92D81FD7F00BE6642 /* recorder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +57,13 @@
 			remoteGlobalIDString = 7FE743D12C8F431500607876;
 			remoteInfo = controller;
 		};
+		F4D05AD02D81FD7F00BE6642 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7FA7B83B2AEB238700363B53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F4D05AC82D81FD7F00BE6642;
+			remoteInfo = recorder;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -65,6 +74,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */,
+				F4D05AD22D81FD7F00BE6642 /* recorder.appex in Embed Foundation Extensions */,
 				7FA7B8632AEB243400363B53 /* filter.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -104,7 +114,30 @@
 		7FE743D72C8F431500607876 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7FE743D82C8F431500607876 /* controller.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = controller.entitlements; sourceTree = "<group>"; };
 		7FFB548E2CB4768600EBFA3B /* lib-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "lib-ios"; sourceTree = "<group>"; };
+		F4D05AC92D81FD7F00BE6642 /* recorder.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = recorder.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4D05ACA2D81FD7F00BE6642 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F40E6B8D2D8203C4005B5868 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				RecordingStatus.swift,
+			);
+			target = 7FA7B8572AEB243400363B53 /* filter */;
+		};
+		F4D05AD52D81FD7F00BE6642 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = F4D05AC82D81FD7F00BE6642 /* recorder */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F4D05ACC2D81FD7F00BE6642 /* recorder */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (F40E6B8D2D8203C4005B5868 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, F4D05AD52D81FD7F00BE6642 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = recorder; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		7FA7B8402AEB238700363B53 /* Frameworks */ = {
@@ -134,6 +167,14 @@
 			files = (
 				0FAD764D2D4D291D009A6FA6 /* LibController in Frameworks */,
 				7FE743D32C8F431500607876 /* NetworkExtension.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4D05AC62D81FD7F00BE6642 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4D05ACB2D81FD7F00BE6642 /* ReplayKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -172,6 +213,7 @@
 				7FA7B8452AEB238700363B53 /* app */,
 				7FA7B85C2AEB243400363B53 /* filter */,
 				7FE743D42C8F431500607876 /* controller */,
+				F4D05ACC2D81FD7F00BE6642 /* recorder */,
 				7FA7B8592AEB243400363B53 /* Frameworks */,
 				7FA7B8442AEB238700363B53 /* Products */,
 			);
@@ -183,6 +225,7 @@
 				7FA7B8432AEB238700363B53 /* app.app */,
 				7FA7B8582AEB243400363B53 /* filter.appex */,
 				7FE743D22C8F431500607876 /* controller.appex */,
+				F4D05AC92D81FD7F00BE6642 /* recorder.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -217,6 +260,7 @@
 			isa = PBXGroup;
 			children = (
 				7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */,
+				F4D05ACA2D81FD7F00BE6642 /* ReplayKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -258,6 +302,7 @@
 			dependencies = (
 				7FA7B8622AEB243400363B53 /* PBXTargetDependency */,
 				7FE743DA2C8F431500607876 /* PBXTargetDependency */,
+				F4D05AD12D81FD7F00BE6642 /* PBXTargetDependency */,
 			);
 			name = app;
 			packageProductDependencies = (
@@ -307,6 +352,28 @@
 			productReference = 7FE743D22C8F431500607876 /* controller.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		F4D05AC82D81FD7F00BE6642 /* recorder */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4D05AD62D81FD7F00BE6642 /* Build configuration list for PBXNativeTarget "recorder" */;
+			buildPhases = (
+				F4D05AC52D81FD7F00BE6642 /* Sources */,
+				F4D05AC62D81FD7F00BE6642 /* Frameworks */,
+				F4D05AC72D81FD7F00BE6642 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F4D05ACC2D81FD7F00BE6642 /* recorder */,
+			);
+			name = recorder;
+			packageProductDependencies = (
+			);
+			productName = recorder;
+			productReference = F4D05AC92D81FD7F00BE6642 /* recorder.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -314,7 +381,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1530;
+				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					7FA7B8422AEB238700363B53 = {
@@ -325,6 +392,9 @@
 					};
 					7FE743D12C8F431500607876 = {
 						CreatedOnToolsVersion = 15.3;
+					};
+					F4D05AC82D81FD7F00BE6642 = {
+						CreatedOnToolsVersion = 16.2;
 					};
 				};
 			};
@@ -348,6 +418,7 @@
 				7FA7B8422AEB238700363B53 /* app */,
 				7FA7B8572AEB243400363B53 /* filter */,
 				7FE743D12C8F431500607876 /* controller */,
+				F4D05AC82D81FD7F00BE6642 /* recorder */,
 			);
 		};
 /* End PBXProject section */
@@ -371,6 +442,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		7FE743D02C8F431500607876 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4D05AC72D81FD7F00BE6642 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -418,6 +496,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F4D05AC52D81FD7F00BE6642 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -430,6 +515,11 @@
 			isa = PBXTargetDependency;
 			target = 7FE743D12C8F431500607876 /* controller */;
 			targetProxy = 7FE743D92C8F431500607876 /* PBXContainerItemProxy */;
+		};
+		F4D05AD12D81FD7F00BE6642 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F4D05AC82D81FD7F00BE6642 /* recorder */;
+			targetProxy = F4D05AD02D81FD7F00BE6642 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -559,7 +649,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = app/Info.plist;
@@ -575,7 +665,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -598,7 +688,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = app/Info.plist;
@@ -614,7 +704,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -632,7 +722,7 @@
 				CODE_SIGN_ENTITLEMENTS = filter/filter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = filter/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = filter;
@@ -644,7 +734,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.filter";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.filter";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -662,7 +752,7 @@
 				CODE_SIGN_ENTITLEMENTS = filter/filter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = filter/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = filter;
@@ -674,7 +764,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.filter";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.filter";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -693,7 +783,7 @@
 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -708,7 +798,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.controller";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.controller";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -729,7 +819,7 @@
 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -744,13 +834,76 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.3.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.controller";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.controller";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F4D05AD32D81FD7F00BE6642 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = recorder/recorder.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J83773RWC3;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = recorder/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = recorder;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.recorder";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F4D05AD42D81FD7F00BE6642 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = recorder/recorder.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = J83773RWC3;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = recorder/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = recorder;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.recorder";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -792,6 +945,15 @@
 			buildConfigurations = (
 				7FE743DD2C8F431500607876 /* Debug */,
 				7FE743DE2C8F431500607876 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4D05AD62D81FD7F00BE6642 /* Build configuration list for PBXNativeTarget "recorder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4D05AD32D81FD7F00BE6642 /* Debug */,
+				F4D05AD42D81FD7F00BE6642 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

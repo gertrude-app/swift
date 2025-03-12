@@ -76,7 +76,7 @@ public class FilterProxy {
     }
 
     guard let rules = self.protectionMode.rules else {
-      if bundleId?.contains("com.netrivet.gertrude-ios.app") == true {
+      if bundleId?.contains("com.ftc.gertrude-ios.app") == true {
         return .allow
       } else if let hostname {
         return hostname.hasSuffix("gertrude.app") ? .allow : .drop
@@ -147,8 +147,8 @@ public extension FilterProxy {
 // helpers
 
 public extension String {
-  static let gertrudeBundleIdLong = "WFN83LM943.com.netrivet.gertrude-ios.app"
-  static let gertrudeBundleIdShort = "com.netrivet.gertrude-ios.app"
+  static let gertrudeBundleIdLong = "J83773RWC3.com.ftc.gertrude-ios.app"
+  static let gertrudeBundleIdShort = "com.ftc.gertrude-ios.app"
 }
 
 // conformances
