@@ -93,7 +93,7 @@ public class ControllerProxy {
     return Task {
       await self.api.logEvent(
         id: "4d6edf26",
-        detail: "unexpected handle new flow from FilterControlProvider"
+        detail: "unexpected error handle new flow from FilterControlProvider"
       )
     }
   }
