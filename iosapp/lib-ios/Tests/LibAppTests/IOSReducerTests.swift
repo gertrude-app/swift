@@ -100,7 +100,7 @@ final class IOSReducerTests: XCTestCase {
     }
 
     expect(storedDates.value).toEqual([.reference])
-    expect(apiLoggedDetails.value).toEqual(["first launch, region: `US`"])
+    expect(apiLoggedDetails.value).toEqual(["[onboarding] first launch, region: `US`"])
     expect(deleteCacheFillDirInvocations.value).toEqual(1)
     expect(defaultBlocksInvocations.value).toEqual(1)
     expect(storedCodables.value).toEqual([
@@ -152,8 +152,8 @@ final class IOSReducerTests: XCTestCase {
 
     expect(requestAuthInvocations.value).toEqual(1)
     expect(apiLoggedDetails.value).toEqual([
-      "first launch, region: `US`",
-      "authorization succeeded",
+      "[onboarding] first launch, region: `US`",
+      "[onboarding] authorization succeeded",
     ])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
@@ -169,9 +169,9 @@ final class IOSReducerTests: XCTestCase {
 
     expect(installInvocations.value).toEqual(1)
     expect(apiLoggedDetails.value).toEqual([
-      "first launch, region: `US`",
-      "authorization succeeded",
-      "filter install success",
+      "[onboarding] first launch, region: `US`",
+      "[onboarding] authorization succeeded",
+      "[onboarding] filter install success",
     ])
 
     expect(storedCodables.value).toEqual([
