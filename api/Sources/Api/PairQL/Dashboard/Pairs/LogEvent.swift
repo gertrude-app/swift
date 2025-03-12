@@ -28,7 +28,11 @@ extension LogEvent: Resolver {
 
     let slack = get(dependency: \.slack)
     if input.detail.contains("use-case survey") {
-      await slack.internal(.signups, input.detail)
+      await slack.internal(.signups, """
+        *Signup use-case survey:*
+        id: `\(context.admin.id.lowercased)`
+        \(input.detail)
+      """)
     } else {
       let msg = "Dash interesting event: \(input.eventId)  \(input.detail)"
       await slack.internal(.info, msg)

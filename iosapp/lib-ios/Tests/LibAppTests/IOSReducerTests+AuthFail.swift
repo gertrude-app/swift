@@ -27,7 +27,8 @@ final class IOSReducerTestsAuthFail: XCTestCase {
       $0.screen = .onboarding(.authFail(.invalidAccount(.letsFigureThisOut)))
     }
 
-    expect(apiLoggedDetails.value).toEqual(["authorization failed: invalidAccountType"])
+    expect(apiLoggedDetails.value)
+      .toEqual(["[onboarding] authorization failed: invalidAccountType"])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily)))
@@ -120,7 +121,8 @@ final class IOSReducerTestsAuthFail: XCTestCase {
       $0.screen = .onboarding(.authFail(.authConflict))
     }
 
-    expect(apiLoggedDetails.value).toEqual(["authorization failed: authorizationConflict"])
+    expect(apiLoggedDetails.value)
+      .toEqual(["[onboarding] authorization failed: authorizationConflict"])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
@@ -147,7 +149,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
       $0.screen = .onboarding(.authFail(.unexpected))
     }
     expect(apiLoggedDetails.value).toEqual([
-      "authorization failed: unexpected(LibClients.AuthFailureReason.Unexpected.invalidArgument)",
+      "[onboarding] authorization failed: unexpected(LibClients.AuthFailureReason.Unexpected.invalidArgument)",
     ])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
@@ -175,7 +177,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
       $0.screen = .onboarding(.authFail(.unexpected))
     }
     expect(apiLoggedDetails.value).toEqual([
-      "authorization failed: other(\"printer on fire\")",
+      "[onboarding] authorization failed: other(\"printer on fire\")",
     ])
   }
 
@@ -198,7 +200,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     await store.receive(.programmatic(.authorizationFailed(.networkError))) {
       $0.screen = .onboarding(.authFail(.networkError))
     }
-    expect(apiLoggedDetails.value).toEqual(["authorization failed: networkError"])
+    expect(apiLoggedDetails.value).toEqual(["[onboarding] authorization failed: networkError"])
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
     }
@@ -223,7 +225,8 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     await store.receive(.programmatic(.authorizationFailed(.passcodeRequired))) {
       $0.screen = .onboarding(.authFail(.passcodeRequired))
     }
-    expect(apiLoggedDetails.value).toEqual(["authorization failed: passcodeRequired"])
+    expect(apiLoggedDetails.value)
+      .toEqual(["[onboarding] authorization failed: passcodeRequired"])
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
     }
@@ -248,7 +251,8 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     await store.receive(.programmatic(.authorizationFailed(.restricted))) {
       $0.screen = .onboarding(.authFail(.restricted))
     }
-    expect(apiLoggedDetails.value).toEqual(["authorization failed: restricted"])
+    expect(apiLoggedDetails.value)
+      .toEqual(["[onboarding] authorization failed: restricted"])
   }
 
   func testCanceledAuthFail() async throws {
@@ -270,7 +274,8 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     await store.receive(.programmatic(.authorizationFailed(.authorizationCanceled))) {
       $0.screen = .onboarding(.authFail(.authCanceled))
     }
-    expect(apiLoggedDetails.value).toEqual(["authorization failed: authorizationCanceled"])
+    expect(apiLoggedDetails.value)
+      .toEqual(["[onboarding] authorization failed: authorizationCanceled"])
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
     }

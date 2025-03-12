@@ -64,6 +64,9 @@ extension XSlack.Slack.Client {
   }
 
   private func sendInternal(_ slack: XSlack.Slack.Message, _ token: String) async -> String? {
+    if slack.channel == InternalChannel.debug.rawValue {
+      return await self.send(slack, token)
+    }
     var copy = slack
     copy.channel = InternalChannel.debug.rawValue
     let debug = copy

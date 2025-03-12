@@ -51,16 +51,13 @@ extension Signup: Resolver {
       if existing.isPendingEmailVerification {
         try await sendVerificationEmail(to: existing, in: context)
       } else {
-        try await postmark
-          .send(template: .reSignup(to: email, model: .init(dashboardUrl: context.dashboardUrl)))
+        try await postmark.send(template: .reSignup(
+          to: email,
+          model: .init(dashboardUrl: context.dashboardUrl)
+        ))
       }
 
       return .init(admin: nil)
-    }
-
-    if context.env.mode == .prod, !isTestAddress(email) {
-      postmark.toSuperAdmin("signup", "email: \(email)<br/>g-ad: \(input.gclid != nil)")
-      await slack.internal(.signups, "email: `\(email)`\ng-ad: `\(input.gclid != nil)`")
     }
 
     let admin = try await context.db.create(Admin(
@@ -71,6 +68,15 @@ extension Signup: Resolver {
       gclid: input.gclid,
       abTestVariant: input.abTestVariant
     ))
+
+    if context.env.mode == .prod, !isTestAddress(email) {
+      await slack.internal(.signups, """
+        *New signup:*
+        id: `\(admin.id.lowercased)`
+        email: `\(email)`
+        g-ad: `\(input.gclid != nil)`
+      """)
+    }
 
     try await sendVerificationEmail(to: admin, in: context)
     return .init(admin: nil)

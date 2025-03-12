@@ -224,11 +224,11 @@ public struct IOSReducer {
         switch await self.systemExtension.requestAuthorization() {
         case .success:
           await send(.programmatic(.authorizationSucceeded))
-          await self.api.logEvent("4a0c585f", "authorization succeeded")
+          await self.api.logEvent("4a0c585f", "[onboarding] authorization succeeded")
         case .failure(let reason):
           await send(.programmatic(.authorizationFailed(reason)))
           await self.systemExtension.cleanupForRetry()
-          await self.api.logEvent("e2e02460", "authorization failed: \(reason)")
+          await self.api.logEvent("e2e02460", "[onboarding] authorization failed: \(reason)")
         }
       }
 
@@ -243,11 +243,11 @@ public struct IOSReducer {
         switch await self.systemExtension.installFilter() {
         case .success:
           await send(.programmatic(.installSucceeded))
-          await self.api.logEvent("adced334", "filter install success")
+          await self.api.logEvent("adced334", "[onboarding] filter install success")
         case .failure(let error):
           await send(.programmatic(.installFailed(error)))
           await self.systemExtension.cleanupForRetry()
-          await self.api.logEvent("004d0d89", "filter install failed: \(error)")
+          await self.api.logEvent("004d0d89", "[onboarding] filter install failed: \(error)")
         }
       }
 
@@ -617,7 +617,7 @@ public struct IOSReducer {
             }
             await self.api.logEvent(
               "8d35f043",
-              "first launch, region: `\(self.locale.region?.identifier ?? "(nil)")`"
+              "[onboarding] first launch, region: `\(self.locale.region?.identifier ?? "(nil)")`"
             )
           }
         },
