@@ -31,7 +31,8 @@ final class IOSReducerTestsInstallFail: XCTestCase {
       $0.screen = .onboarding(.installFail(.permissionDenied))
     }
 
-    expect(apiLoggedDetails.value).toEqual(["filter install failed: configurationPermissionDenied"])
+    expect(apiLoggedDetails.value)
+      .toEqual(["[onboarding] filter install failed: configurationPermissionDenied"])
     expect(cleanupInvocations.value).toEqual(1)
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) { // <-- "try again"
@@ -59,7 +60,8 @@ final class IOSReducerTestsInstallFail: XCTestCase {
     await store.receive(.programmatic(.installFailed(.configurationInternalError))) {
       $0.screen = .onboarding(.installFail(.other(.configurationInternalError)))
     }
-    expect(apiLoggedDetails.value).toEqual(["filter install failed: configurationInternalError"])
+    expect(apiLoggedDetails.value)
+      .toEqual(["[onboarding] filter install failed: configurationInternalError"])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) { // <-- "try again"
       $0.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
