@@ -37,7 +37,7 @@ extension VerifySignupEmail: Resolver {
 
       try await context.db.update(admin)
 
-      // they get a default "verified" notification method, since they verified their email
+      // they get a default "verified" notification method, since they verified email
       try await context.db.create(AdminVerifiedNotificationMethod(
         parentId: admin.id,
         config: .email(email: admin.email.rawValue)
@@ -45,7 +45,9 @@ extension VerifySignupEmail: Resolver {
 
       if context.env.mode == .prod, !isTestAddress(admin.email.rawValue) {
         with(dependency: \.postmark)
-          .toSuperAdmin("email verified", admin.email.rawValue)
+          .toSuperAdmin("signup completed", admin.email.rawValue)
+        await with(dependency: \.slack)
+          .internal(.signups, "email verified: `\(admin.email.rawValue)`")
       }
 
       return Output(token: token.value, adminId: admin.id)
