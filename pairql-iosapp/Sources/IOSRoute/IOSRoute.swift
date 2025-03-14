@@ -5,6 +5,7 @@ public enum IOSRoute: PairRoute {
   case blockRules_v2(BlockRules_v2.Input)
   case defaultBlockRules(DefaultBlockRules.Input)
   case logIOSEvent(LogIOSEvent.Input)
+  case recoveryDirective(RecoveryDirective.Input)
 }
 
 public extension IOSRoute {
@@ -24,6 +25,10 @@ public extension IOSRoute {
     Route(.case(Self.logIOSEvent)) {
       Operation(LogIOSEvent.self)
       Body(.json(LogIOSEvent.Input.self))
+    }
+    Route(.case(Self.recoveryDirective)) {
+      Operation(RecoveryDirective.self)
+      Body(.json(RecoveryDirective.Input.self))
     }
   }
   .eraseToAnyParserPrinter()
