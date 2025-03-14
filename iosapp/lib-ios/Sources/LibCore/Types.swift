@@ -31,6 +31,23 @@ public extension ProtectionMode {
 
 extension ProtectionMode: Equatable, Sendable, Codable {}
 
+public extension Optional where Wrapped == ProtectionMode {
+  var missingRules: Bool {
+    switch self {
+    case .none:
+      return true
+    case .some(.emergencyLockdown):
+      return true
+    case .some(.onboarding([])):
+      return true
+    case .some(.normal([])):
+      return true
+    default:
+      return false
+    }
+  }
+}
+
 public extension UserDefaults {
   static let gertrude = UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
 }

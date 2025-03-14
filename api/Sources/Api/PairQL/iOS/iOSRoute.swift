@@ -16,6 +16,9 @@ extension IOSRoute: RouteResponder {
     case .logIOSEvent(let input):
       let output = try await LogIOSEvent.resolve(with: input, in: context)
       return try await self.respond(with: output)
+    case .recoveryDirective(let input):
+      let output = try await RecoveryDirective.resolve(with: input, in: context)
+      return try await self.respond(with: output)
     }
   }
 }

@@ -116,16 +116,49 @@ public struct IOSReducer {
     case .sheetDismissed:
       return .none
 
-    case .receivedShake where state.screen.isRunning:
-      state.screen = .running(showVendorId: true)
+    case .receivedShake where state.screen == .running(showVendorId: true, timesShaken: 5):
+      state.screen = .running(showVendorId: false)
       return .run { send in
-        guard let disabled = self.storage.loadDisabledBlockGroups(),
-              let vendorId = self.device.vendorId else {
+        self.log("entering recovery mode", "a8998540")
+        if self.storage.loadDisabledBlockGroups() == nil {
+          self.storage.saveDisabledBlockGroups([])
+        }
+        let rules = self.storage.loadProtectionMode()
+        if rules.missingRules {
+          self.log("rules missing in recovery mode", "bcca235f")
+          let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId)
+          if let defaultRules, !defaultRules.isEmpty {
+            self.storage.saveProtectionMode(.normal(defaultRules))
+          } else {
+            self.log("failed to fetch defaults in recovery mode", "2c3a4481")
+            self.storage.saveProtectionMode(.normal(BlockRule.defaults))
+          }
+        }
+        try await self.filter.notifyRulesChanged()
+        let directive = try? await self.api.recoveryDirective()
+        if directive == "retry" {
+          await self.systemExtension.cleanupForRetry()
+          self.log("received retry directive", "aeaa467d")
+        }
+      }
+
+    case .receivedShake where state.screen.isRunning:
+      let timesShaken = (state.screen.timesShaken ?? 0) + 1
+      state.screen = .running(showVendorId: true, timesShaken: timesShaken)
+      return .run { send in
+        guard timesShaken == 1 else { return }
+        guard let vendorId = self.device.vendorId else {
+          self.log("UNEXPECTED: no vendor id on shake", "caec76fe")
           return
+        }
+        let disabled = self.storage.loadDisabledBlockGroups()
+        if disabled == nil {
+          self.log("UNEXPECTED: no stored disabled block groups on shake", "de5592c2")
+          self.storage.saveDisabledBlockGroups([])
         }
         let rules = try await self.api.fetchBlockRules(
           vendorId: vendorId,
-          disabledGroups: disabled
+          disabledGroups: disabled ?? []
         )
         self.storage.saveProtectionMode(.normal(rules))
         try await self.filter.notifyRulesChanged()
@@ -841,11 +874,16 @@ public extension IOSReducer {
     case launching
     case onboarding(Onboarding)
     case supervisionSuccessFirstLaunch
-    case running(showVendorId: Bool)
+    case running(showVendorId: Bool, timesShaken: Int = 0)
 
     var isRunning: Bool {
       if case .running = self { return true }
       return false
+    }
+
+    var timesShaken: Int? {
+      if case .running(_, let timesShaken) = self { return timesShaken }
+      return nil
     }
   }
 
