@@ -12,6 +12,7 @@ public struct ApiClient: Sendable {
     async throws -> [BlockRule]
   public var fetchDefaultBlockRules: @Sendable (_ vendorId: UUID?) async throws -> [BlockRule]
   public var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
+  public var recoveryDirective: @Sendable () async throws -> String?
 }
 
 extension ApiClient: TestDependencyKey {
@@ -53,6 +54,20 @@ extension ApiClient: DependencyKey {
         } catch {
           os_log("[G•] error logging event: %{public}s", String(reflecting: error))
         }
+      },
+      recoveryDirective: {
+        @Dependency(\.locale) var locale
+        @Dependency(\.device) var device
+        let payload = RecoveryDirective.Input(
+          vendorId: device.vendorId,
+          deviceType: device.type.rawValue,
+          iOSVersion: device.iOSVersion,
+          locale: locale.region?.identifier,
+          version: version
+        )
+        let (data, _) = try await request(route: .recoveryDirective(payload))
+        let result = try JSONDecoder().decode(RecoveryDirective.Output.self, from: data)
+        return result.directive
       }
     )
   }

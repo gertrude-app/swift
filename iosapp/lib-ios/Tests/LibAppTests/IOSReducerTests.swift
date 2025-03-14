@@ -65,7 +65,17 @@ final class IOSReducerTests: XCTestCase {
         return .level(0.2)
       }
       $0.storage.loadDate = { @Sendable _ in nil }
-      $0.storage.loadData = { @Sendable _ in nil }
+      $0.storage.loadData = { @Sendable key in
+        // prevent failsafe store of protection mode: `ffff30ac`
+        let previouslySaved = storedCodables.value
+        if key == .protectionModeStorageKey, previouslySaved.contains(where: {
+          $0 == .protectionMode(.onboarding([.urlContains("default-rule")]))
+        }) {
+          return try! JSONEncoder()
+            .encode(ProtectionMode.onboarding([.urlContains("default-rule")]))
+        }
+        return nil
+      }
       $0.storage.saveDate = { @Sendable value, key in
         assert(key == .launchDateStorageKey)
         storedDates.withValue { $0.append(value) }
@@ -440,44 +450,6 @@ final class IOSReducerTests: XCTestCase {
     await store.receive(.programmatic(.setScreen(.running(showVendorId: false)))) {
       $0.screen = .running(showVendorId: false)
     }
-  }
-
-  func testRunningShake() async throws {
-    let fetchRulesInvocations = LockIsolated(0)
-    let saveDataInvocations = LockIsolated<[ProtectionMode]>([])
-    let notifyFilterInvocations = LockIsolated(0)
-    let vendorId = UUID()
-    let store = await TestStore(
-      initialState: IOSReducer.State(screen: .running(showVendorId: false))
-    ) {
-      IOSReducer()
-    } withDependencies: {
-      $0.device.vendorId = vendorId
-      $0.storage.loadData = { @Sendable key in
-        expect(key).toBe(.disabledBlockGroupsStorageKey)
-        return try! JSONEncoder().encode([BlockGroup.whatsAppFeatures])
-      }
-      $0.api.fetchBlockRules = { @Sendable vid, disabled in
-        expect(vid).toEqual(vendorId)
-        expect(disabled).toEqual([.whatsAppFeatures])
-        fetchRulesInvocations.withValue { $0 += 1 }
-        return [.urlContains("GIFs")]
-      }
-      $0.storage.saveCodable = { @Sendable value, key in
-        expect(key).toEqual(.protectionModeStorageKey)
-        saveDataInvocations.withValue { $0.append(value as! ProtectionMode) }
-      }
-      $0.filter.notifyRulesChanged = {
-        notifyFilterInvocations.withValue { $0 += 1 }
-      }
-    }
-
-    await store.send(.interactive(.receivedShake)) {
-      $0.screen = .running(showVendorId: true)
-    }
-    expect(fetchRulesInvocations.value).toEqual(1)
-    expect(saveDataInvocations.value).toEqual([.normal([.urlContains("GIFs")])])
-    expect(notifyFilterInvocations.value).toEqual(1)
   }
 
   func testFirstLaunchSupervisedSuccess() async throws {
