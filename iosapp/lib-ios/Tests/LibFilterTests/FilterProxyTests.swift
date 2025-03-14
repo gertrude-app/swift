@@ -30,15 +30,26 @@ final class FilterProxyTests: XCTestCase {
         ("api.gertrude.app", nil, "com.acme.com", .allow),
         (nil, "anysite.com", "12345.com.acme", .drop),
         ("anothersite.com", nil, "com.acme", .drop),
-        (nil, nil, nil, .drop),
         ("safesite.com", nil, nil, .drop),
         (nil, "safesite.com", nil, .drop),
+        // allowances for screen time auth
+        ("apple.com", nil, "com.acme", .allow),
+        ("configuration.icloud.com", nil, "com.acme", .allow),
+        ("configuration.icloud.net", nil, "com.acme", .allow),
+        ("bag.itunes.apple.com", nil, "com.acme", .allow),
+        ("fbs.smoot.apple.com", nil, "com.acme", .allow),
+        ("smp-device-content.apple.com", nil, "com.acme", .allow),
+        ("badbad.com", nil, "com.apple.mDNSResponder", .allow),
+        ("badbad.com", nil, "com.apple.Preferences", .allow),
+        (nil, nil, "com.anybody", .allow),
       ]
 
     let proxy = withDependencies {
       $0.osLog.log = { _ in }
       $0.storage.loadData = { @Sendable _ in nil }
       $0.suspendingClock = TestClock()
+      $0.calendar = Calendar(identifier: .gregorian)
+      $0.date = .constant(Date(timeIntervalSince1970: 400))
     } operation: {
       FilterProxy(protectionMode: .emergencyLockdown)
     }
@@ -50,6 +61,24 @@ final class FilterProxyTests: XCTestCase {
       expect(proxy.decideFlow(hostname: host, url: url, bundleId: bundleId, flowType: .socket))
         .toEqual(expected)
     }
+  }
+
+  func testLockDownRecoveryWindow() {
+    var components = DateComponents()
+    components.hour = 19
+    components.minute = 3
+    let now = Calendar.current.date(from: components)!
+    let proxy = withDependencies {
+      $0.osLog.log = { _ in }
+      $0.storage.loadData = { @Sendable _ in nil }
+      $0.suspendingClock = TestClock()
+      $0.calendar = Calendar(identifier: .gregorian)
+      $0.date = .constant(now)
+    } operation: {
+      FilterProxy(protectionMode: .emergencyLockdown)
+    }
+    expect(proxy.decideFlow(hostname: "any.com", url: "any.com", bundleId: "com.x", flowType: nil))
+      .toEqual(.allow)
   }
 
   func testReadsRulesInHeartbeat() async throws {
