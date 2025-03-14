@@ -8,6 +8,7 @@ struct RunningView: View {
   @State private var iconOffset = Vector(x: 0, y: 20)
   @State private var titleOffset = Vector(x: 0, y: 20)
   @State private var subtitleOffset = Vector(x: 0, y: 20)
+  @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
 
   let showVendorId: Bool
@@ -64,7 +65,7 @@ struct RunningView: View {
         }
         .padding(.top, 25)
         .swooshIn(
-          tracking: self.$subtitleOffset,
+          tracking: self.$linkOffset,
           to: .zero,
           after: .seconds(0.5),
           for: .seconds(0.5)

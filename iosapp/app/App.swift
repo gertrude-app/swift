@@ -392,7 +392,7 @@ struct AppView: View {
         primary: self.btn(text: "Next", .primary)
       )
 
-    case .running(let showVendorId):
+    case .running(let showVendorId, timesShaken: _):
       RunningView(showVendorId: showVendorId)
         .onShake { self.store.send(.interactive(.receivedShake)) }
     }
