@@ -11,6 +11,9 @@
   - totally revamped/expanded onboarding
   - opt-out groups
   - clear cache after install
+- `1.3.1` (3/14/25)
+  - add recovery mode, various failsafes for app deletion
+  - fix animation of running screen link
 
 ## Screenshots for release
 
