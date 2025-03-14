@@ -65,7 +65,17 @@ final class IOSReducerTests: XCTestCase {
         return .level(0.2)
       }
       $0.storage.loadDate = { @Sendable _ in nil }
-      $0.storage.loadData = { @Sendable _ in nil }
+      $0.storage.loadData = { @Sendable key in
+        // prevent failsafe store of protection mode: `ffff30ac`
+        let previouslySaved = storedCodables.value
+        if key == .protectionModeStorageKey, previouslySaved.contains(where: {
+          $0 == .protectionMode(.onboarding([.urlContains("default-rule")]))
+        }) {
+          return try! JSONEncoder()
+            .encode(ProtectionMode.onboarding([.urlContains("default-rule")]))
+        }
+        return nil
+      }
       $0.storage.saveDate = { @Sendable value, key in
         assert(key == .launchDateStorageKey)
         storedDates.withValue { $0.append(value) }

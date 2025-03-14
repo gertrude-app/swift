@@ -148,12 +148,12 @@ public struct IOSReducer {
       return .run { send in
         guard timesShaken == 1 else { return }
         guard let vendorId = self.device.vendorId else {
-          self.log("UNEXPECTED: no vendor id on shake", "caec76fe")
+          self.log("UNEXPECTED no vendor id on shake", "caec76fe")
           return
         }
         let disabled = self.storage.loadDisabledBlockGroups()
         if disabled == nil {
-          self.log("UNEXPECTED: no stored disabled block groups on shake", "de5592c2")
+          self.log("UNEXPECTED no stored disabled block groups on shake", "de5592c2")
           self.storage.saveDisabledBlockGroups([])
         }
         let rules = try await self.api.fetchBlockRules(
@@ -292,13 +292,20 @@ public struct IOSReducer {
         .run { [disabled = state.disabledBlockGroups] _ in
           self.storage.saveDisabledBlockGroups(disabled)
           if let vendorId = self.device.vendorId {
-            let rules = try await self.api.fetchBlockRules(
+            let result = try? await self.api.fetchBlockRules(
               vendorId: vendorId,
               disabledGroups: disabled
             )
-            if !rules.isEmpty {
+            if let rules = result, !rules.isEmpty {
               self.storage.saveProtectionMode(.normal(rules))
             }
+          } else {
+            self.log("UNEXPECTED no vendor id on opt out", "d9e93a4b")
+          }
+          // NB: safeguard so we don't ever end up with empty rules
+          if self.storage.loadProtectionMode().missingRules {
+            self.log("UNEXPECTED missing rules after opt-out", "ffff30ac")
+            self.storage.saveProtectionMode(.normal(BlockRule.defaults))
           }
         },
         .run { send in
@@ -622,7 +629,8 @@ public struct IOSReducer {
           case (true, .some, _):
             await send(.programmatic(.setScreen(.running(showVendorId: false))))
           case (false, .some, _):
-            self.log("unexpected non-running filter w/ stored groups", "23c207e2")
+            // NB: if they remove the filter via Settings then launch app, we'll get here
+            self.log("non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
           case (false, .none, _):
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
