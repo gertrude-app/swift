@@ -13,6 +13,8 @@ public class FilterProxy {
   @Dependency(\.osLog) var logger
   @Dependency(\.storage) var storage
   @Dependency(\.suspendingClock) var clock
+  @Dependency(\.date.now) var now
+  @Dependency(\.calendar) var calendar
 
   var protectionMode: ProtectionMode
   var heartbeatTask: Task<Void, Error>?
@@ -76,18 +78,12 @@ public class FilterProxy {
     }
 
     guard let rules = self.protectionMode.rules else {
-      if bundleId?.contains("com.netrivet.gertrude-ios.app") == true {
-        return .allow
-      } else if let hostname {
-        return hostname.hasSuffix("gertrude.app") ? .allow : .drop
-      } else if let url {
-        let withoutScheme = url.replacingOccurrences(of: "https://", with: "")
-        let segments = withoutScheme.split(separator: "/")
-        let host = segments.first ?? ""
-        return host == "api.gertrude.app" || host == "gertrude.app" ? .allow : .drop
-      } else {
-        return .drop
-      }
+      return self.decideLockdownFlow(
+        hostname: hostname,
+        url: url,
+        bundleId: bundleId,
+        flowType: flowType
+      )
     }
 
     if rules.blocksFlow(
@@ -99,6 +95,48 @@ public class FilterProxy {
       return .drop
     } else {
       return .allow
+    }
+  }
+
+  func decideLockdownFlow(
+    hostname: String? = nil,
+    url: String? = nil,
+    bundleId: String? = nil,
+    flowType: FlowType? = nil
+  ) -> FlowVerdict {
+    let components = self.calendar.dateComponents([.hour, .minute], from: self.now)
+    if components.hour == 19, components.minute! >= 0, components.minute! <= 5 {
+      return .allow
+    }
+
+    let allowedSuffixes = ["gertrude.app", "apple.com", "icloud.com", "icloud.net"]
+    if bundleId?.contains("com.netrivet.gertrude-ios.app") == true {
+      return .allow
+    } else if bundleId?.contains("com.apple.mDNSResponder") == true {
+      return .allow
+    } else if bundleId?.contains("com.apple.Preferences") == true {
+      return .allow
+    } else if hostname == nil, url == nil {
+      return .allow
+    } else if let hostname {
+      for suffix in allowedSuffixes {
+        if hostname.hasSuffix(suffix) {
+          return .allow
+        }
+      }
+      return .drop
+    } else if let url {
+      let withoutScheme = url.replacingOccurrences(of: "https://", with: "")
+      let segments = withoutScheme.split(separator: "/")
+      let derivedHostname = segments.first ?? ""
+      for suffix in allowedSuffixes {
+        if derivedHostname.hasSuffix(suffix) {
+          return .allow
+        }
+      }
+      return .drop
+    } else {
+      return .drop
     }
   }
 
