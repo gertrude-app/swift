@@ -6,9 +6,10 @@ import XExpect
 @testable import LibApp
 
 final class IOSReducerTestsAuthFail: XCTestCase {
+  @MainActor
   func testInvalidAccountToSupervision() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
     ) {
       IOSReducer()
@@ -44,6 +45,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     }
   }
 
+  @MainActor
   func testInvalidAccountUnder18Unexpected() async throws {
     let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmIsMinor))))
 
@@ -52,6 +54,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     }
   }
 
+  @MainActor
   func testInvalidAccountNotInAppleFamily() async throws {
     let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
 
@@ -61,6 +64,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
       }
   }
 
+  @MainActor
   func testInvalidAccountNotSureAboutAppleFamily() async throws {
     let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
 
@@ -76,6 +80,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
       }
   }
 
+  @MainActor
   func testInvalidAccountNotSureAboutAppleFamilyConfirmsNotInOne() async throws {
     let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
 
@@ -100,9 +105,10 @@ final class IOSReducerTestsAuthFail: XCTestCase {
       }
   }
 
+  @MainActor
   func testAuthConflict() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
     ) {
       IOSReducer()
@@ -129,9 +135,10 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     }
   }
 
+  @MainActor
   func testUnexpectedAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
     ) {
       IOSReducer()
@@ -157,9 +164,10 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     }
   }
 
+  @MainActor
   func testOtherAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
     ) {
       IOSReducer()
@@ -181,9 +189,10 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     ])
   }
 
+  @MainActor
   func testNetworkErrorAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
     ) {
       IOSReducer()
@@ -206,9 +215,10 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     }
   }
 
+  @MainActor
   func testPasscodeRequiredAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
     ) {
       IOSReducer()
@@ -232,9 +242,10 @@ final class IOSReducerTestsAuthFail: XCTestCase {
     }
   }
 
+  @MainActor
   func testRestrictedAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
     ) {
       IOSReducer()
@@ -255,9 +266,10 @@ final class IOSReducerTestsAuthFail: XCTestCase {
       .toEqual(["[onboarding] authorization failed: restricted"])
   }
 
+  @MainActor
   func testCanceledAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
     ) {
       IOSReducer()
