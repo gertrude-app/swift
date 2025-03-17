@@ -63,7 +63,7 @@ extension Request {
   }
 
   func userToken() async throws -> UserToken {
-    guard let header = headers.first(name: .authorization),
+    guard let header = self.headers.first(name: .authorization),
           let uuid = UUID(authorizationHeader: header) else {
       throw Abort(.badRequest, reason: "invalid user auth token")
     }

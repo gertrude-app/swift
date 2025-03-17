@@ -69,7 +69,10 @@ import XCore
   return state.publisher()
 }
 
-private class _State {
+// NB: re @unchecked Sendable:
+//   - the two combine subjects have internal locking
+//   - the cancellables is only touched in the fileprivate init
+private final class _State: @unchecked Sendable {
   private let totalAvailableSpace: Int?
   // NB: combine subjects are thread-safe, per an apple engineer on swift forums
   // they lock internally, so it's safe to hammer them with events from multiple threads

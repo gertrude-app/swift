@@ -44,7 +44,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   }
 
   func testInvalidAccountUnder18Unexpected() async throws {
-    let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmIsMinor))))
+    let store = await store(starting: .onboarding(.authFail(.invalidAccount(.confirmIsMinor))))
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) { // <-- "Age is UNDER 18"
       $0.screen = .onboarding(.authFail(.invalidAccount(.unexpected)))
@@ -52,7 +52,8 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   }
 
   func testInvalidAccountNotInAppleFamily() async throws {
-    let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
+    let store =
+      await store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
 
     await store
       .send(.interactive(.onboardingBtnTapped(.secondary, ""))) { // <-- "Not in Apple Family"
@@ -61,7 +62,8 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   }
 
   func testInvalidAccountNotSureAboutAppleFamily() async throws {
-    let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
+    let store =
+      await store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
 
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) { // <-- "I'm not sure"
       $0.screen = .onboarding(.appleFamily(.checkIfInAppleFamily))
@@ -76,7 +78,8 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   }
 
   func testInvalidAccountNotSureAboutAppleFamilyConfirmsNotInOne() async throws {
-    let store = store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
+    let store =
+      await store(starting: .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))))
 
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) { // <-- "I'm not sure"
       $0.screen = .onboarding(.appleFamily(.checkIfInAppleFamily))

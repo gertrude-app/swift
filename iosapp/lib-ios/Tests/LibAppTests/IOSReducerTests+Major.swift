@@ -6,6 +6,7 @@ import XExpect
 @testable import LibApp
 
 final class IOSReducerTestsMajor: XCTestCase {
+  @MainActor
   func testMajorHappiestPath() async throws {
     let store = store(starting: .onboarding(.happyPath(.confirmMinorDevice)))
 
@@ -31,6 +32,7 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testMajorSelfPath1() async throws {
     let store = store(starting: .onboarding(.major(.askSelfOrOtherIsOnboarding)))
 
@@ -75,6 +77,7 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testMajorSelfNoAppleFamilyStraightToSupervision() async throws {
     let store = store(starting: .onboarding(.major(.askSelfOrOtherIsOnboarding)))
 
@@ -88,6 +91,7 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testMajorNoMacSetsState() async throws {
     let store = store(starting: .onboarding(.major(.askIfOwnsMac)))
 

@@ -1,5 +1,5 @@
 // @see https://developer.apple.com/documentation/familycontrols/familycontrolserror
-public enum AuthFailureReason: Error, Equatable {
+public enum AuthFailureReason: Error, Equatable, Sendable {
   /// The device isn't signed into a valid iCloud account (according to docs)
   /// but i've verified this also is what you get with 18+ iCloud account
   case invalidAccountType
@@ -18,7 +18,7 @@ public enum AuthFailureReason: Error, Equatable {
   /// likely an MDM supervised device, see https://developer.apple.com/forums/thread/746716
   case restricted
 
-  public enum Unexpected: Equatable {
+  public enum Unexpected: Equatable, Sendable {
     /// The method's arguments are invalid
     case invalidArgument
     /// The system failed to set up the Family Control famework

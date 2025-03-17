@@ -9,7 +9,7 @@ import LibCore
   public struct NEProviderStopReason {} // CI
 #endif
 
-public class FilterProxy {
+public class FilterProxy: @unchecked Sendable {
   @Dependency(\.osLog) var logger
   @Dependency(\.storage) var storage
   @Dependency(\.suspendingClock) var clock

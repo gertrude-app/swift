@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import ComposableArchitecture
 import GertieIOS
 import LibClients
@@ -30,7 +30,7 @@ final class IOSReducerTests: XCTestCase {
 
     let store = await TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
-    } withDependencies: {
+    } withDependencies: { @Sendable in
       $0.date = .constant(.reference)
       $0.mainQueue = .immediate
       $0.locale = Locale(identifier: "en_US")
@@ -362,7 +362,7 @@ final class IOSReducerTests: XCTestCase {
   }
 
   func testSkipReviewAndRating() async throws {
-    let store = store(starting: .onboarding(.happyPath(.requestAppStoreRating)))
+    let store = await store(starting: .onboarding(.happyPath(.requestAppStoreRating)))
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) {
       $0.screen = .onboarding(.happyPath(.doneQuit))
     }
@@ -512,15 +512,16 @@ final class IOSReducerTests: XCTestCase {
   }
 
   func testParentDeviceFail() async throws {
-    let store = store(starting: .onboarding(.happyPath(.confirmChildsDevice)))
+    let store = await store(starting: .onboarding(.happyPath(.confirmChildsDevice)))
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) {
       $0.screen = .onboarding(.onParentDeviceFail)
     }
   }
 
+  @MainActor
   func testCantAdvanceWithZeroBlockGroups() async throws {
-    let store = await TestStore(initialState: IOSReducer.State(
+    let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.optOutBlockGroups)),
       disabledBlockGroups: .all // <-- deselected all
     )) {
@@ -528,11 +529,11 @@ final class IOSReducerTests: XCTestCase {
     }
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
-    await expect(store.state.screen).toEqual(.onboarding(.happyPath(.optOutBlockGroups)))
+    expect(store.state.screen).toEqual(.onboarding(.happyPath(.optOutBlockGroups)))
   }
 
   func testConfirmParentIsOnboardingFail() async throws {
-    let store = store(starting: .onboarding(.happyPath(.confirmParentIsOnboarding)))
+    let store = await store(starting: .onboarding(.happyPath(.confirmParentIsOnboarding)))
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) {
       $0.screen = .onboarding(.childIsOnboardingFail)
@@ -544,7 +545,7 @@ final class IOSReducerTests: XCTestCase {
   }
 
   func testSkipCacheClear() async throws {
-    let store = store(starting: .onboarding(.happyPath(.promptClearCache)))
+    let store = await store(starting: .onboarding(.happyPath(.promptClearCache)))
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) {
       $0.screen = .onboarding(.happyPath(.requestAppStoreRating))
@@ -552,6 +553,7 @@ final class IOSReducerTests: XCTestCase {
   }
 }
 
+@MainActor
 func store(starting screen: IOSReducer.Screen) -> TestStore<IOSReducer.State, IOSReducer.Action> {
   TestStore(initialState: IOSReducer.State(screen: screen)) {
     IOSReducer()

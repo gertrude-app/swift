@@ -7,8 +7,13 @@ class FilterControlProvider: NEFilterControlProvider {
 
   override init() {
     super.init()
-    self.proxy.notifyRulesChanged = { [weak self] in
-      self?.notifyRulesChanged()
+    // self.proxy.notifyRulesChanged = { [weak self] in
+    //   self?.notifyRulesChanged()
+    // }
+    self.proxy.notifyRulesChanged.withValue { [weak self] in
+      $0 = { [weak self] in
+        self?.notifyRulesChanged()
+      }
     }
 
     #if DEBUG

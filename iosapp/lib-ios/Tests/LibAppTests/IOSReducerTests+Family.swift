@@ -7,7 +7,7 @@ import XExpect
 
 final class IOSReducerTestsFamily: XCTestCase {
   func testAppleFamilyFailFlow1() async throws {
-    let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
+    let store = await store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) { // <-- not in family
       $0.screen = .onboarding(.appleFamily(.explainRequiredForFiltering))
@@ -27,7 +27,7 @@ final class IOSReducerTestsFamily: XCTestCase {
   }
 
   func testAppleFamilyDontKnowAtFirstButConfirmInOne() async throws {
-    let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
+    let store = await store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
 
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) { // <-- i'm not sure
       $0.screen = .onboarding(.appleFamily(.explainWhatIsAppleFamily))
@@ -44,7 +44,7 @@ final class IOSReducerTestsFamily: XCTestCase {
   }
 
   func testAppleFamilyDontKnowAtFirstButConfirmNotInOne() async throws {
-    let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
+    let store = await store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
 
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) { // <-- i'm not sure
       $0.screen = .onboarding(.appleFamily(.explainWhatIsAppleFamily))

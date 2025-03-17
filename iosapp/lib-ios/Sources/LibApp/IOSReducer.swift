@@ -62,24 +62,20 @@ public struct IOSReducer {
     }
   }
 
+  struct Deps: Sendable {
+    @Dependency(\.api) var api
+    @Dependency(\.appStore) var appStore
+    @Dependency(\.device) var device
+    @Dependency(\.filter) var filter
+    @Dependency(\.systemExtension) var systemExtension
+    @Dependency(\.storage) var storage
+    @Dependency(\.date.now) var now
+    @Dependency(\.locale) var locale
+    @Dependency(\.mainQueue) var mainQueue
+  }
+
   @ObservationIgnored
-  @Dependency(\.api) var api
-  @ObservationIgnored
-  @Dependency(\.appStore) var appStore
-  @ObservationIgnored
-  @Dependency(\.device) var device
-  @ObservationIgnored
-  @Dependency(\.filter) var filter
-  @ObservationIgnored
-  @Dependency(\.systemExtension) var systemExtension
-  @ObservationIgnored
-  @Dependency(\.storage) var storage
-  @ObservationIgnored
-  @Dependency(\.date.now) var now
-  @ObservationIgnored
-  @Dependency(\.locale) var locale
-  @ObservationIgnored
-  @Dependency(\.mainQueue) var mainQueue
+  let deps = Deps()
 
   enum CancelId {
     case cacheClearUpdates
@@ -104,12 +100,12 @@ public struct IOSReducer {
       return self.onboardingBtnTapped(btn, state: &state, action: action)
 
     case .blockGroupToggled(let group):
-      self.log("block group toggled: \(group)", "02976f9b")
+      self.deps.log("block group toggled: \(group)", "02976f9b")
       state.disabledBlockGroups.toggle(group)
       return .none
 
     case .sheetDismissed where state.screen == .onboarding(.major(.explainAppleFamily)):
-      self.log(state.screen, action, "118d259f")
+      self.deps.log(state.screen, action, "118d259f")
       state.screen = .onboarding(.major(.askIfInAppleFamily))
       return .none
 
@@ -118,17 +114,17 @@ public struct IOSReducer {
 
     case .receivedShake where state.screen.isRunning:
       state.screen = .running(showVendorId: true)
-      return .run { send in
-        guard let disabled = self.storage.loadDisabledBlockGroups(),
-              let vendorId = self.device.vendorId else {
+      return .run { [deps = self.deps] send in
+        guard let disabled = deps.storage.loadDisabledBlockGroups(),
+              let vendorId = deps.device.vendorId else {
           return
         }
-        let rules = try await self.api.fetchBlockRules(
+        let rules = try await deps.api.fetchBlockRules(
           vendorId: vendorId,
           disabledGroups: disabled
         )
-        self.storage.saveProtectionMode(.normal(rules))
-        try await self.filter.notifyRulesChanged()
+        deps.storage.saveProtectionMode(.normal(rules))
+        try await deps.filter.notifyRulesChanged()
       }
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
@@ -149,130 +145,130 @@ public struct IOSReducer {
   ) -> Effect<Action> {
     switch (state.screen, btn) {
     case (.onboarding(.happyPath(.hiThere)), .primary):
-      self.log(state.screen, action, "6f97eb1b")
+      self.deps.log(state.screen, action, "6f97eb1b")
       state.screen = .onboarding(.happyPath(.timeExpectation))
       return .none
 
     case (.onboarding(.happyPath(.timeExpectation)), .primary):
-      self.log(state.screen, action, "762bf9bf")
+      self.deps.log(state.screen, action, "762bf9bf")
       state.screen = .onboarding(.happyPath(.confirmChildsDevice))
       return .none
 
     case (.onboarding(.happyPath(.confirmChildsDevice)), .primary):
-      self.log(state.screen, action, "666d5e0f")
+      self.deps.log(state.screen, action, "666d5e0f")
       state.screen = .onboarding(.happyPath(.explainMinorOrSupervised))
       return .none
 
     case (.onboarding(.happyPath(.confirmChildsDevice)), .secondary):
-      self.log(state.screen, action, "30fac4e6")
+      self.deps.log(state.screen, action, "30fac4e6")
       state.screen = .onboarding(.onParentDeviceFail)
       return .none
 
     case (.onboarding(.happyPath(.explainMinorOrSupervised)), .primary):
-      self.log(state.screen, action, "6bc91c73")
+      self.deps.log(state.screen, action, "6bc91c73")
       state.screen = .onboarding(.happyPath(.confirmMinorDevice))
       return .none
 
     case (.onboarding(.happyPath(.confirmMinorDevice)), .primary):
-      self.log(state.screen, action, "e17137b0")
+      self.deps.log(state.screen, action, "e17137b0")
       state.screen = .onboarding(.happyPath(.confirmParentIsOnboarding))
       return .none
 
     case (.onboarding(.happyPath(.confirmMinorDevice)), .secondary):
-      self.log(state.screen, action, "a21c9040")
+      self.deps.log(state.screen, action, "a21c9040")
       state.screen = .onboarding(.major(.explainHarderButPossible))
       return .none
 
     case (.onboarding(.happyPath(.confirmParentIsOnboarding)), .primary):
-      self.log(state.screen, action, "51611498")
+      self.deps.log(state.screen, action, "51611498")
       state.screen = .onboarding(.happyPath(.confirmInAppleFamily))
       return .none
 
     case (.onboarding(.happyPath(.confirmInAppleFamily)), .primary):
-      self.log(state.screen, action, "7d0fd46e")
+      self.deps.log(state.screen, action, "7d0fd46e")
       state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
       return .none
 
     case (.onboarding(.happyPath(.confirmInAppleFamily)), .secondary):
-      self.log(state.screen, action, "daa8c7fd")
+      self.deps.log(state.screen, action, "daa8c7fd")
       state.screen = .onboarding(.appleFamily(.explainRequiredForFiltering))
       return .none
 
     case (.onboarding(.happyPath(.confirmInAppleFamily)), .tertiary):
-      self.log(state.screen, action, "232fb200")
+      self.deps.log(state.screen, action, "232fb200")
       state.screen = .onboarding(.appleFamily(.explainWhatIsAppleFamily))
       return .none
 
     case (.onboarding(.happyPath(.confirmParentIsOnboarding)), .secondary):
-      self.log(state.screen, action, "3c4772ad")
+      self.deps.log(state.screen, action, "3c4772ad")
       state.screen = .onboarding(.childIsOnboardingFail)
       return .none
 
     case (.onboarding(.happyPath(.explainTwoInstallSteps)), .primary):
-      self.log(state.screen, action, "6582656c")
+      self.deps.log(state.screen, action, "6582656c")
       state.screen = .onboarding(.happyPath(.explainAuthWithParentAppleAccount))
       return .none
 
     case (.onboarding(.happyPath(.explainAuthWithParentAppleAccount)), .primary):
-      self.log(state.screen, action, "5d3a5ba2")
+      self.deps.log(state.screen, action, "5d3a5ba2")
       state.screen = .onboarding(.happyPath(.dontGetTrickedPreAuth))
       return .none
 
     case (.onboarding(.happyPath(.dontGetTrickedPreAuth)), .primary):
-      self.log(state.screen, action, "87601352")
-      return .run { send in
-        switch await self.systemExtension.requestAuthorization() {
+      self.deps.log(state.screen, action, "87601352")
+      return .run { [deps = self.deps] send in
+        switch await deps.systemExtension.requestAuthorization() {
         case .success:
           await send(.programmatic(.authorizationSucceeded))
-          await self.api.logEvent("4a0c585f", "authorization succeeded")
+          await deps.api.logEvent("4a0c585f", "authorization succeeded")
         case .failure(let reason):
           await send(.programmatic(.authorizationFailed(reason)))
-          await self.systemExtension.cleanupForRetry()
-          await self.api.logEvent("e2e02460", "authorization failed: \(reason)")
+          await deps.systemExtension.cleanupForRetry()
+          await deps.api.logEvent("e2e02460", "authorization failed: \(reason)")
         }
       }
 
     case (.onboarding(.happyPath(.explainInstallWithDevicePasscode)), .primary):
-      self.log(state.screen, action, "5dcaa641")
+      self.deps.log(state.screen, action, "5dcaa641")
       state.screen = .onboarding(.happyPath(.dontGetTrickedPreInstall))
       return .none
 
     case (.onboarding(.happyPath(.dontGetTrickedPreInstall)), .primary):
-      self.log(state.screen, action, "47bee21e")
-      return .run { send in
-        switch await self.systemExtension.installFilter() {
+      self.deps.log(state.screen, action, "47bee21e")
+      return .run { [deps = self.deps] send in
+        switch await deps.systemExtension.installFilter() {
         case .success:
           await send(.programmatic(.installSucceeded))
-          await self.api.logEvent("adced334", "filter install success")
+          await deps.api.logEvent("adced334", "filter install success")
         case .failure(let error):
           await send(.programmatic(.installFailed(error)))
-          await self.systemExtension.cleanupForRetry()
-          await self.api.logEvent("004d0d89", "filter install failed: \(error)")
+          await deps.systemExtension.cleanupForRetry()
+          await deps.api.logEvent("004d0d89", "filter install failed: \(error)")
         }
       }
 
     case (.onboarding(.happyPath(.optOutBlockGroups)), .primary):
-      self.log(state.screen, action, "cdb31095")
+      self.deps.log(state.screen, action, "cdb31095")
       if state.disabledBlockGroups == .all { return .none }
       state.screen = .onboarding(.happyPath(.promptClearCache))
       return .merge(
-        .run { [disabled = state.disabledBlockGroups] _ in
-          self.storage.saveDisabledBlockGroups(disabled)
-          if let vendorId = self.device.vendorId {
-            let rules = try await self.api.fetchBlockRules(
+        .run { [disabled = state.disabledBlockGroups, deps = self.deps] _ in
+          deps.storage.saveDisabledBlockGroups(disabled)
+          if let vendorId = deps.device.vendorId {
+            let rules = try await deps.api.fetchBlockRules(
               vendorId: vendorId,
               disabledGroups: disabled
             )
             if !rules.isEmpty {
-              self.storage.saveProtectionMode(.normal(rules))
+              deps.storage.saveProtectionMode(.normal(rules))
             }
           }
         },
-        .run { send in
-          await send(.programmatic(.setBatteryLevel(self.device.batteryLevel())))
+        .run { [deps = self.deps] send in
+          await send(.programmatic(.setBatteryLevel(deps.device.batteryLevel())))
         },
-        .run { send in
-          if let bytes = await self.device.availableDiskSpaceInBytes() {
+        .run { [deps = self.deps] send in
+          if let bytes = await deps.device.availableDiskSpaceInBytes() {
             await send(.programmatic(.setAvailableDiskSpaceInBytes(bytes)))
           }
         }
@@ -282,126 +278,126 @@ public struct IOSReducer {
       let available = state.onboarding.availableDiskSpaceInBytes ?? -1
       let humanSize = Bytes.humanReadable(available, decimalPlaces: 1, prefix: .binary)
       if state.onboarding.batteryLevel.isLow || available > (Bytes.inGigabyte * 60) {
-        self.log("clear cache -> battery warning, disk size: \(humanSize)", "ea3f9c37")
+        self.deps.log("clear cache -> battery warning, disk size: \(humanSize)", "ea3f9c37")
         state.screen = .onboarding(.happyPath(.batteryWarning))
         return .none
       } else {
-        self.log("clear cache, skip battery warning, disk size: \(humanSize)", "8a8a3033")
-        state.onboarding.startClearCache = self.now
+        self.deps.log("clear cache, skip battery warning, disk size: \(humanSize)", "8a8a3033")
+        state.onboarding.startClearCache = self.deps.now
         state.screen = .onboarding(.happyPath(.clearingCache(0)))
         return .publisher {
-          self.device.clearCache(state.onboarding.availableDiskSpaceInBytes)
+          self.deps.device.clearCache(state.onboarding.availableDiskSpaceInBytes)
             .map { .programmatic(.receiveClearCacheUpdate($0)) }
-            .receive(on: self.mainQueue)
+            .receive(on: self.deps.mainQueue)
         }
       }
 
     case (.onboarding(.happyPath(.promptClearCache)), .secondary):
-      self.log(state.screen, action, "1221f1a3")
+      self.deps.log(state.screen, action, "1221f1a3")
       state.screen = .onboarding(.happyPath(.requestAppStoreRating))
       return .none
 
     case (.onboarding(.happyPath(.batteryWarning)), .primary):
-      self.log(state.screen, action, "72dc8e84")
-      state.onboarding.startClearCache = self.now
+      self.deps.log(state.screen, action, "72dc8e84")
+      state.onboarding.startClearCache = self.deps.now
       state.screen = .onboarding(.happyPath(.clearingCache(0)))
       return .publisher {
-        self.device.clearCache(state.onboarding.availableDiskSpaceInBytes)
+        self.deps.device.clearCache(state.onboarding.availableDiskSpaceInBytes)
           .map { .programmatic(.receiveClearCacheUpdate($0)) }
-          .receive(on: self.mainQueue)
+          .receive(on: self.deps.mainQueue)
       }.cancellable(id: CancelId.cacheClearUpdates, cancelInFlight: true)
 
     case (.onboarding(.happyPath(.cacheCleared)), .primary):
-      self.log(state.screen, action, "f9f2e206")
+      self.deps.log(state.screen, action, "f9f2e206")
       state.screen = .onboarding(.happyPath(.requestAppStoreRating))
       return .none
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .primary):
-      self.log(state.screen, action, "4fc0b1bf")
+      self.deps.log(state.screen, action, "4fc0b1bf")
       state.screen = .onboarding(.happyPath(.doneQuit))
-      return .run { _ in
-        await self.appStore.requestRating()
+      return .run { [deps = self.deps] _ in
+        await deps.appStore.requestRating()
       }
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .secondary):
-      self.log(state.screen, action, "a9480aa2")
+      self.deps.log(state.screen, action, "a9480aa2")
       state.screen = .onboarding(.happyPath(.doneQuit))
-      return .run { _ in
-        await self.appStore.requestReview()
+      return .run { [deps = self.deps] _ in
+        await deps.appStore.requestReview()
       }
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .tertiary):
-      self.log(state.screen, action, "0dddc87c")
+      self.deps.log(state.screen, action, "0dddc87c")
       state.screen = .onboarding(.happyPath(.doneQuit))
       return .none
 
       // MARK: - major (18+) path
 
     case (.onboarding(.major(.explainHarderButPossible)), .primary):
-      self.log(state.screen, action, "085eb5a6")
+      self.deps.log(state.screen, action, "085eb5a6")
       state.screen = .onboarding(.major(.askSelfOrOtherIsOnboarding))
       return .none
 
     case (.onboarding(.major(.askSelfOrOtherIsOnboarding)), .secondary):
-      self.log(state.screen, action, "6d88421b")
+      self.deps.log(state.screen, action, "6d88421b")
       state.onboarding.majorOnboarder = .other
       state.screen = .onboarding(.major(.askIfOtherIsParent))
       return .none
 
     case (.onboarding(.major(.askIfOtherIsParent)), .primary):
-      self.log(state.screen, action, "e0605ab9")
+      self.deps.log(state.screen, action, "e0605ab9")
       state.screen = .onboarding(.major(.explainFixAccountTypeEasyWay))
       return .none
 
     case (.onboarding(.major(.askIfOtherIsParent)), .secondary):
-      self.log(state.screen, action, "db2a8c0b")
+      self.deps.log(state.screen, action, "db2a8c0b")
       state.screen = .onboarding(.major(.askIfOwnsMac))
       return .none
 
     case (.onboarding(.major(.explainFixAccountTypeEasyWay)), .primary):
-      self.log(state.screen, action, "1ed887e0")
+      self.deps.log(state.screen, action, "1ed887e0")
       state.screen = .onboarding(.happyPath(.confirmMinorDevice))
       return .none
 
     case (.onboarding(.major(.askSelfOrOtherIsOnboarding)), .tertiary):
-      self.log(state.screen, action, "bbc0dac1", extra: "onboarder is self")
+      self.deps.log(state.screen, action, "bbc0dac1", extra: "onboarder is self")
       state.onboarding.majorOnboarder = .self
       state.screen = .onboarding(.major(.askIfInAppleFamily))
       return .none
 
     case (.onboarding(.major(.askIfInAppleFamily)), .primary):
-      self.log(state.screen, action, "605151b9")
+      self.deps.log(state.screen, action, "605151b9")
       state.screen = .onboarding(.major(.explainFixAccountTypeEasyWay))
       return .none
 
     case (.onboarding(.major(.askIfInAppleFamily)), .secondary):
-      self.log(state.screen, action, "0fa6bc2a")
+      self.deps.log(state.screen, action, "0fa6bc2a")
       state.screen = .onboarding(.supervision(.intro))
       return .none
 
     case (.onboarding(.major(.askIfInAppleFamily)), .tertiary):
-      self.log(state.screen, action, "d17b9ef6")
+      self.deps.log(state.screen, action, "d17b9ef6")
       state.screen = .onboarding(.major(.explainAppleFamily))
       return .none
 
     case (.onboarding(.major(.explainAppleFamily)), .primary):
-      self.log(state.screen, action, "62f783e1")
+      self.deps.log(state.screen, action, "62f783e1")
       state.screen = .onboarding(.major(.askIfInAppleFamily))
       return .none
 
     case (.onboarding(.major(.explainFixAccountTypeEasyWay)), .secondary):
-      self.log(state.screen, action, "fd166517")
+      self.deps.log(state.screen, action, "fd166517")
       state.screen = .onboarding(.major(.askIfOwnsMac))
       return .none
 
     case (.onboarding(.major(.askIfOwnsMac)), .primary):
-      self.log(state.screen, action, "219ba991")
+      self.deps.log(state.screen, action, "219ba991")
       state.onboarding.ownsMac = true
       state.screen = .onboarding(.supervision(.intro))
       return .none
 
     case (.onboarding(.major(.askIfOwnsMac)), .secondary):
-      self.log(state.screen, action, "c1f63c92")
+      self.deps.log(state.screen, action, "c1f63c92")
       state.onboarding.ownsMac = false
       state.screen = .onboarding(.supervision(.intro))
       return .none
@@ -409,159 +405,159 @@ public struct IOSReducer {
       // MARK: - apple family
 
     case (.onboarding(.appleFamily(.explainRequiredForFiltering)), .primary):
-      self.log(state.screen, action, "97a57eb2")
+      self.deps.log(state.screen, action, "97a57eb2")
       state.screen = .onboarding(.appleFamily(.explainSetupFreeAndEasy))
       return .none
 
     case (.onboarding(.appleFamily(.explainSetupFreeAndEasy)), .primary):
-      self.log(state.screen, action, "2badbcb8")
+      self.deps.log(state.screen, action, "2badbcb8")
       state.screen = .onboarding(.appleFamily(.howToSetupAppleFamily))
       return .none
 
     case (.onboarding(.appleFamily(.checkIfInAppleFamily)), .primary):
-      self.log(state.screen, action, "07cac029")
+      self.deps.log(state.screen, action, "07cac029")
       state.screen = state.onboarding
         .takeReturningTo() ?? .onboarding(.happyPath(.confirmInAppleFamily))
       return .none
 
     case (.onboarding(.appleFamily(.checkIfInAppleFamily)), .secondary):
-      self.log(state.screen, action, "b311a78a")
+      self.deps.log(state.screen, action, "b311a78a")
       state.screen = .onboarding(.appleFamily(.explainSetupFreeAndEasy))
       return .none
 
     case (.onboarding(.appleFamily(.howToSetupAppleFamily)), .tertiary):
-      self.log(state.screen, action, "548e81b6")
+      self.deps.log(state.screen, action, "548e81b6")
       state.screen = .onboarding(.happyPath(.confirmInAppleFamily))
       state.onboarding.returningTo = nil
       return .none
 
     case (.onboarding(.appleFamily(.explainWhatIsAppleFamily)), .primary):
-      self.log(state.screen, action, "1c495932")
+      self.deps.log(state.screen, action, "1c495932")
       state.screen = .onboarding(.appleFamily(.checkIfInAppleFamily))
       return .none
 
       // MARK: - supervision
 
     case (.onboarding(.supervision(.intro)), .primary):
-      self.log(state.screen, action, "ad77fbb6")
+      self.deps.log(state.screen, action, "ad77fbb6")
       state.screen = .onboarding(.supervision(.explainSupervision))
       return .none
 
     case (.onboarding(.supervision(.explainSupervision)), .primary):
       if state.onboarding.ownsMac != true || state.onboarding.majorOnboarder == .self {
-        self.log(state.screen, action, "896bc216", extra: "NEEDS friend w/ mac")
+        self.deps.log(state.screen, action, "896bc216", extra: "NEEDS friend w/ mac")
         state.screen = .onboarding(.supervision(.explainNeedFriendWithMac))
       } else {
-        self.log(state.screen, action, "25a77e6a", extra: "HAS friend w/ mac")
+        self.deps.log(state.screen, action, "25a77e6a", extra: "HAS friend w/ mac")
         state.screen = .onboarding(.supervision(.explainRequiresEraseAndSetup))
       }
       return .none
 
     case (.onboarding(.supervision(.explainNeedFriendWithMac)), .primary):
-      self.log(state.screen, action, "0c5bdbdd")
+      self.deps.log(state.screen, action, "0c5bdbdd")
       state.screen = .onboarding(.supervision(.explainRequiresEraseAndSetup))
       return .none
 
     case (.onboarding(.supervision(.explainNeedFriendWithMac)), .secondary):
-      self.log(state.screen, action, "d858eaf8")
+      self.deps.log(state.screen, action, "d858eaf8")
       state.screen = .onboarding(.supervision(.sorryNoOtherWay))
       return .none
 
     case (.onboarding(.supervision(.explainRequiresEraseAndSetup)), .primary):
-      self.log(state.screen, action, "dc1521e6")
+      self.deps.log(state.screen, action, "dc1521e6")
       state.screen = .onboarding(.supervision(.instructions))
       return .none
 
     case (.onboarding(.supervision(.explainRequiresEraseAndSetup)), .secondary):
-      self.log(state.screen, action, "bee80538")
+      self.deps.log(state.screen, action, "bee80538")
       state.screen = .onboarding(.supervision(.sorryNoOtherWay))
       return .none
 
     case (.onboarding(.supervision(.sorryNoOtherWay)), .secondary):
-      self.log(state.screen, action, "f3b3f3b6")
+      self.deps.log(state.screen, action, "f3b3f3b6")
       state.screen = .onboarding(.happyPath(.hiThere))
       return .none
 
     // MARK: - error paths
 
     case (.onboarding(.authFail(.invalidAccount(.letsFigureThisOut))), .primary):
-      self.log(state.screen, action, "285efafb")
+      self.deps.log(state.screen, action, "285efafb")
       state.screen = .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily)))
       return .none
 
     case (.onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))), .primary):
-      self.log(state.screen, action, "e90ff997")
+      self.deps.log(state.screen, action, "e90ff997")
       state.screen = .onboarding(.authFail(.invalidAccount(.confirmIsMinor)))
       return .none
 
     case (.onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))), .secondary):
-      self.log(state.screen, action, "39c52acf")
+      self.deps.log(state.screen, action, "39c52acf")
       state.screen = .onboarding(.appleFamily(.explainRequiredForFiltering))
       return .none
 
     case (.onboarding(.authFail(.invalidAccount(.confirmInAppleFamily))), .tertiary):
-      self.log(state.screen, action, "a9cbe4fe")
+      self.deps.log(state.screen, action, "a9cbe4fe")
       state.screen = .onboarding(.appleFamily(.checkIfInAppleFamily))
       state.onboarding.returningTo = .onboarding(.authFail(.invalidAccount(.confirmInAppleFamily)))
       return .none
 
     case (.onboarding(.authFail(.invalidAccount(.confirmIsMinor))), .primary):
-      self.log(state.screen, action, "9d0d9eac")
+      self.deps.log(state.screen, action, "9d0d9eac")
       state.screen = .onboarding(.major(.explainHarderButPossible))
       return .none
 
     case (.onboarding(.authFail(.invalidAccount(.confirmIsMinor))), .secondary):
-      self.log(state.screen, action, "e457cf15")
+      self.deps.log(state.screen, action, "e457cf15")
       state.screen = .onboarding(.authFail(.invalidAccount(.unexpected)))
       return .none
 
     case (.onboarding(.authFail(.restricted)), .secondary):
-      self.log(state.screen, action, "b8422c3a")
+      self.deps.log(state.screen, action, "b8422c3a")
       state.screen = .onboarding(.happyPath(.hiThere))
       return .none
 
     case (.onboarding(.authFail(.authConflict)), .primary):
-      self.log(state.screen, action, "7b53bdc0")
+      self.deps.log(state.screen, action, "7b53bdc0")
       state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
       return .none
 
     case (.onboarding(.authFail(.networkError)), .primary):
-      self.log(state.screen, action, "16e57d91")
+      self.deps.log(state.screen, action, "16e57d91")
       state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
       return .none
 
     case (.onboarding(.authFail(.passcodeRequired)), .primary):
-      self.log(state.screen, action, "d2888470")
+      self.deps.log(state.screen, action, "d2888470")
       state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
       return .none
 
     case (.onboarding(.authFail(.authCanceled)), .primary):
-      self.log(state.screen, action, "6e3b2c93")
+      self.deps.log(state.screen, action, "6e3b2c93")
       state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
       return .none
 
     case (.onboarding(.authFail(.unexpected)), .primary):
-      self.log(state.screen, action, "87c5ad82")
+      self.deps.log(state.screen, action, "87c5ad82")
       state.screen = .onboarding(.happyPath(.explainTwoInstallSteps))
       return .none
 
     case (.onboarding(.installFail(.permissionDenied)), .primary):
-      self.log(state.screen, action, "b122af01")
+      self.deps.log(state.screen, action, "b122af01")
       state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
       return .none
 
     case (.onboarding(.installFail(.other)), .primary):
-      self.log(state.screen, action, "cf059547")
+      self.deps.log(state.screen, action, "cf059547")
       state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
       return .none
 
     case (.onboarding(.childIsOnboardingFail), .primary):
-      self.log(state.screen, action, "566a3484")
+      self.deps.log(state.screen, action, "566a3484")
       state.screen = .onboarding(.happyPath(.hiThere))
       return .none
 
     case (.supervisionSuccessFirstLaunch, .primary):
-      self.log(state.screen, action, "aa563df6")
+      self.deps.log(state.screen, action, "aa563df6")
       state.screen = .onboarding(.happyPath(.optOutBlockGroups))
       return .none
 
@@ -569,7 +565,7 @@ public struct IOSReducer {
       #if DEBUG
         fatalError("Unhandled combination:\n -> btn: .\(btn)\n -> screen: .\(state.screen)")
       #else
-        self.log(state.screen, action, "7c039b10", extra: "UNHANDLED ACTION")
+        self.deps.log(state.screen, action, "7c039b10", extra: "UNHANDLED ACTION")
         state.screen = state.screen.fallbackDestination(from: btn)
         return .none
       #endif
@@ -581,49 +577,60 @@ public struct IOSReducer {
     case .appDidLaunch:
       return .merge(
         // detect current state and set screen
-        .run { send in
-          let filterRunning = await self.systemExtension.filterRunning()
-          let disabledBlockGroups = self.storage.loadDisabledBlockGroups()
-          let hasLegacyData = self.storage.loadData(forKey: .legacyStorageKey) != nil
+        .run { [deps = self.deps] send in
+          let filterRunning = await deps.systemExtension.filterRunning()
+          let disabledBlockGroups = deps.storage.loadDisabledBlockGroups()
+          let hasLegacyData = deps.storage.loadData(forKey: .legacyStorageKey) != nil
           switch (filterRunning, disabledBlockGroups, hasLegacyData) {
           case (true, .some, _):
             await send(.programmatic(.setScreen(.running(showVendorId: false))))
           case (false, .some, _):
-            self.log("unexpected non-running filter w/ stored groups", "23c207e2")
+            deps.log("unexpected non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
           case (false, .none, _):
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
           case (_, .none, true):
-            try await self.handleUpgrade(send: send)
+            deps.log("handling upgrade", "180e2347")
+            deps.storage.saveDisabledBlockGroups([])
+            let defaultRules = try? await deps.api.fetchDefaultBlockRules(deps.device.vendorId)
+            if let defaultRules {
+              deps.storage.saveProtectionMode(.normal(defaultRules))
+            } else {
+              deps.log("unexpected upgrade rule failure", "8d4a445b")
+              deps.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+            }
+            deps.storage.removeObject(forKey: .legacyStorageKey)
+            await send(.programmatic(.setScreen(.running(showVendorId: false))))
+            try await deps.filter.notifyRulesChanged()
           case (true, .none, false):
-            self.log("supervision success first launch", "bad8adcc")
+            deps.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
           }
         },
         // handle first launch
-        .run { send in
-          if let firstLaunch = self.storage.loadFirstLaunchDate() {
+        .run { [deps = self.deps] send in
+          if let firstLaunch = deps.storage.loadFirstLaunchDate() {
             await send(.programmatic(.setFirstLaunch(firstLaunch)))
           } else {
-            let now = self.now
-            self.storage.saveFirstLaunchDate(now)
+            let now = deps.now
+            deps.storage.saveFirstLaunchDate(now)
             await send(.programmatic(.setFirstLaunch(now)))
             // prefetch the default block groups for onboarding
-            let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId)
+            let defaultRules = try? await deps.api.fetchDefaultBlockRules(deps.device.vendorId)
             if let defaultRules, !defaultRules.isEmpty {
-              self.storage.saveProtectionMode(.onboarding(defaultRules))
+              deps.storage.saveProtectionMode(.onboarding(defaultRules))
             } else {
-              self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+              deps.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
             }
-            await self.api.logEvent(
+            await deps.api.logEvent(
               "8d35f043",
-              "first launch, region: `\(self.locale.region?.identifier ?? "(nil)")`"
+              "first launch, region: `\(deps.locale.region?.identifier ?? "(nil)")`"
             )
           }
         },
         // safeguard in case app crashed trying to fill the disk
-        .run { send in
-          await self.device.deleteCacheFillDir()
+        .run { [deps = self.deps] send in
+          await deps.device.deleteCacheFillDir()
         }
       )
 
@@ -645,65 +652,65 @@ public struct IOSReducer {
 
     case .authorizationSucceeded:
       if state.screen == .onboarding(.happyPath(.dontGetTrickedPreAuth)) {
-        self.log(action, "021834f6")
+        self.deps.log(action, "021834f6")
       } else {
-        self.unexpected(state.screen, action, "e30624c6")
+        self.deps.unexpected(state.screen, action, "e30624c6")
       }
       state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
       return .none
 
     case .authorizationFailed(let err):
       if state.screen != .onboarding(.happyPath(.dontGetTrickedPreAuth)) {
-        self.unexpected(state.screen, action, "fa49f256")
+        self.deps.unexpected(state.screen, action, "fa49f256")
       }
       let errStr = String(reflecting: err)
       switch err {
       case .invalidAccountType:
-        self.log(action, "2bcf3d96", extra: "invalid account: \(errStr)")
+        self.deps.log(action, "2bcf3d96", extra: "invalid account: \(errStr)")
         state.screen = .onboarding(.authFail(.invalidAccount(.letsFigureThisOut)))
       case .authorizationCanceled:
-        self.log(action, "e220a765", extra: "auth canceled: \(errStr)")
+        self.deps.log(action, "e220a765", extra: "auth canceled: \(errStr)")
         state.screen = .onboarding(.authFail(.authCanceled))
       case .restricted:
-        self.log(action, "6f0a66e4", extra: "restricted: \(errStr)")
+        self.deps.log(action, "6f0a66e4", extra: "restricted: \(errStr)")
         state.screen = .onboarding(.authFail(.restricted))
       case .authorizationConflict:
-        self.log(action, "24220209", extra: "auth conflict: \(errStr)")
+        self.deps.log(action, "24220209", extra: "auth conflict: \(errStr)")
         state.screen = .onboarding(.authFail(.authConflict))
       case .networkError:
-        self.log(action, "104a7ef6", extra: "network: \(errStr)")
+        self.deps.log(action, "104a7ef6", extra: "network: \(errStr)")
         state.screen = .onboarding(.authFail(.networkError))
       case .passcodeRequired:
-        self.log(action, "d2e2ee7c", extra: "passcode req: \(errStr)")
+        self.deps.log(action, "d2e2ee7c", extra: "passcode req: \(errStr)")
         state.screen = .onboarding(.authFail(.passcodeRequired))
       case .other, .unexpected:
-        self.log(action, "f4ed05fd", extra: "other/unexpected: \(errStr)")
+        self.deps.log(action, "f4ed05fd", extra: "other/unexpected: \(errStr)")
         state.screen = .onboarding(.authFail(.unexpected))
       }
       return .none
 
     case .installSucceeded:
       if state.screen == .onboarding(.happyPath(.dontGetTrickedPreInstall)) {
-        self.log(action, "421d373b")
+        self.deps.log(action, "421d373b")
       } else {
-        self.unexpected(state.screen, action, "c98b9525")
+        self.deps.unexpected(state.screen, action, "c98b9525")
       }
       state.screen = .onboarding(.happyPath(.optOutBlockGroups))
-      return .run { _ in
-        self.storage.saveDisabledBlockGroups([])
+      return .run { [deps = self.deps] _ in
+        deps.storage.saveDisabledBlockGroups([])
       }
 
     case .installFailed(let err):
       if state.screen != .onboarding(.happyPath(.dontGetTrickedPreInstall)) {
-        self.unexpected(state.screen, action, "93958bd1")
+        self.deps.unexpected(state.screen, action, "93958bd1")
       }
       switch err {
       case .configurationPermissionDenied:
-        self.log(action, "0dc1632a", extra: "install failed, permission denied")
+        self.deps.log(action, "0dc1632a", extra: "install failed, permission denied")
         state.screen = .onboarding(.installFail(.permissionDenied))
       case .configurationCannotBeRemoved, .configurationDisabled, .configurationInternalError,
            .configurationInvalid, .configurationStale, .unexpected:
-        self.log(action, "321558ed", extra: "other error: \(String(reflecting: err))")
+        self.deps.log(action, "321558ed", extra: "other error: \(String(reflecting: err))")
         state.screen = .onboarding(.installFail(.other(err)))
       }
       return .none
@@ -715,39 +722,24 @@ public struct IOSReducer {
       return .none
 
     case .receiveClearCacheUpdate(.finished):
-      state.onboarding.endClearCache = self.now
+      state.onboarding.endClearCache = self.deps.now
       let diskSpace = state.onboarding.availableDiskSpaceInBytes
         .map { Bytes.humanReadable($0) } ?? "unknown"
       if let start = state.onboarding.startClearCache {
-        let elapsed = String(format: "%.1f", self.now.timeIntervalSince(start) / 60.0)
-        self.log(action, "cb9cf096", extra: "elapsed time: \(elapsed)m, disk: \(diskSpace)")
+        let elapsed = String(format: "%.1f", self.deps.now.timeIntervalSince(start) / 60.0)
+        self.deps.log(action, "cb9cf096", extra: "elapsed time: \(elapsed)m, disk: \(diskSpace)")
       } else {
-        self.log(action, "cb9cf096", extra: "disk: \(diskSpace)")
+        self.deps.log(action, "cb9cf096", extra: "disk: \(diskSpace)")
       }
       state.screen = .onboarding(.happyPath(.cacheCleared))
       return .cancel(id: CancelId.cacheClearUpdates)
 
     case .receiveClearCacheUpdate(.errorCouldNotCreateDir):
-      self.log("UNEXPECTED error, could not create cache clear dir", "ae941213")
-      state.onboarding.endClearCache = self.now
+      self.deps.log("UNEXPECTED error, could not create cache clear dir", "ae941213")
+      state.onboarding.endClearCache = self.deps.now
       state.screen = .onboarding(.happyPath(.cacheCleared))
       return .cancel(id: CancelId.cacheClearUpdates)
     }
-  }
-
-  func handleUpgrade(send: Send<Action>) async throws {
-    self.log("handling upgrade", "180e2347")
-    self.storage.saveDisabledBlockGroups([])
-    let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId)
-    if let defaultRules {
-      self.storage.saveProtectionMode(.normal(defaultRules))
-    } else {
-      self.log("unexpected upgrade rule failure", "8d4a445b")
-      self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
-    }
-    self.storage.removeObject(forKey: .legacyStorageKey)
-    await send(.programmatic(.setScreen(.running(showVendorId: false))))
-    try await self.filter.notifyRulesChanged()
   }
 }
 
@@ -888,8 +880,8 @@ public extension IOSReducer {
   }
 }
 
-extension IOSReducer {
-  private func log(_ msg: String, _ id: String) {
+private extension IOSReducer.Deps {
+  func log(_ msg: String, _ id: String) {
     #if !DEBUG
       Task { await self.api.logEvent(id, "[onboarding]: \(msg)") }
     #else
@@ -900,17 +892,17 @@ extension IOSReducer {
     #endif
   }
 
-  private func log(
-    _ screen: Screen,
-    _ action: Action.Interactive,
+  func log(
+    _ screen: IOSReducer.Screen,
+    _ action: IOSReducer.Action.Interactive,
     _ id: String,
     extra: String? = nil
   ) {
     self.log(screen, action: .interactive(action), id, extra: extra)
   }
 
-  private func log(
-    _ action: Action.Programmatic,
+  func log(
+    _ action: IOSReducer.Action.Programmatic,
     _ id: String,
     extra: String? = nil
   ) {
@@ -921,9 +913,9 @@ extension IOSReducer {
     self.log(msg, id)
   }
 
-  private func log(
-    _ screen: Screen,
-    action: Action,
+  func log(
+    _ screen: IOSReducer.Screen,
+    action: IOSReducer.Action,
     _ id: String,
     extra: String? = nil
   ) {
@@ -934,18 +926,18 @@ extension IOSReducer {
     self.log(msg, id)
   }
 
-  private func unexpected(
-    _ screen: Screen,
-    _ action: Action.Programmatic,
+  func unexpected(
+    _ screen: IOSReducer.Screen,
+    _ action: IOSReducer.Action.Programmatic,
     _ id: String
   ) {
     self.log(
-      "UNEXPECTED: received .\(shorten("\(Action.programmatic(action))")) from screen .\(shorten("\(screen)"))",
+      "UNEXPECTED: received .\(shorten("\(IOSReducer.Action.programmatic(action))")) from screen .\(shorten("\(screen)"))",
       id
     )
   }
 
-  private func eventMeta() -> String {
+  func eventMeta() -> String {
     "device: \(self.device.type), iOS: \(self.device.iOSVersion), vendorId: \(self.device.vendorId?.uuidString.lowercased() ?? "nil")"
   }
 }
