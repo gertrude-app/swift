@@ -15,7 +15,7 @@ func spyOnNotifications(_ store: TestStoreOf<AppReducer>) -> ActorIsolated<[Test
   return spy
 }
 
-struct TestNotification: Equatable {
+struct TestNotification: Equatable, Sendable {
   var title: String
   var body: String
   init(_ title: String, _ body: String) {

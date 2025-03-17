@@ -5,7 +5,7 @@ import Foundation
 import Gertie
 import TaggedTime
 
-extension FilterXPCClient: DependencyKey {
+extension FilterXPCClient: @retroactive DependencyKey {
   public static var liveValue: Self {
     let xpc = ThreadSafeFilterXPC()
     return .init(
