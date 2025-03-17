@@ -257,13 +257,14 @@ final class IOSReducerTests: XCTestCase {
     expect(ratingRequestInvocations.value).toEqual(1)
   }
 
+  @MainActor
   func testUpgradeFromV110() async throws {
     let defaultBlocksInvocations = LockIsolated(0)
     let storedCodables = LockIsolated<[SavedCodable]>([])
     let removeObjectInvocations = LockIsolated<[String]>([])
     let notifyFilterInvocations = LockIsolated(0)
 
-    let store = await TestStore(initialState: IOSReducer.State()) {
+    let store = TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
     } withDependencies: {
       $0.device.deleteCacheFillDir = {}
@@ -352,9 +353,10 @@ final class IOSReducerTests: XCTestCase {
     expect(storedCodables.value).toEqual([.onboarding(BlockRule.defaults)])
   }
 
+  @MainActor
   func testChooseWriteReview() async throws {
     let writeReviewInvocations = LockIsolated(0)
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.requestAppStoreRating)))
     ) {
       IOSReducer()
@@ -371,6 +373,7 @@ final class IOSReducerTests: XCTestCase {
     expect(writeReviewInvocations.value).toEqual(1)
   }
 
+  @MainActor
   func testSkipReviewAndRating() async throws {
     let store = store(starting: .onboarding(.happyPath(.requestAppStoreRating)))
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) {
@@ -378,9 +381,10 @@ final class IOSReducerTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testSkipsBatteryWarningWhenEnough() async throws {
     let clearCacheInvocations = LockIsolated(0)
-    let store = await TestStore(initialState: IOSReducer.State(
+    let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.promptClearCache)),
       onboarding: .init(
         batteryLevel: .level(0.75), // <-- enough battery
@@ -403,9 +407,10 @@ final class IOSReducerTests: XCTestCase {
     expect(clearCacheInvocations.value).toEqual(1)
   }
 
+  @MainActor
   func testShowsBatteryWarningWhenHugeDiskToClear() async throws {
     let clearCacheInvocations = LockIsolated(0)
-    let store = await TestStore(initialState: IOSReducer.State(
+    let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.promptClearCache)),
       onboarding: .init(
         batteryLevel: .level(0.95), // <-- lots of battery, but...
@@ -483,6 +488,7 @@ final class IOSReducerTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testParentDeviceFail() async throws {
     let store = store(starting: .onboarding(.happyPath(.confirmChildsDevice)))
 
@@ -503,6 +509,7 @@ final class IOSReducerTests: XCTestCase {
     await expect(store.state.screen).toEqual(.onboarding(.happyPath(.optOutBlockGroups)))
   }
 
+  @MainActor
   func testConfirmParentIsOnboardingFail() async throws {
     let store = store(starting: .onboarding(.happyPath(.confirmParentIsOnboarding)))
 
@@ -515,6 +522,7 @@ final class IOSReducerTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testSkipCacheClear() async throws {
     let store = store(starting: .onboarding(.happyPath(.promptClearCache)))
 

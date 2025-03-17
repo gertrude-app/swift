@@ -6,6 +6,7 @@ import XExpect
 @testable import LibApp
 
 final class IOSReducerTestsMajor: XCTestCase {
+  @MainActor
   func testMajorHappiestPath() async throws {
     let store = store(starting: .onboarding(.happyPath(.confirmMinorDevice)))
 
@@ -31,6 +32,7 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testMajorSelfPath1() async throws {
     let store = store(starting: .onboarding(.major(.askSelfOrOtherIsOnboarding)))
 
@@ -75,6 +77,7 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testMajorSelfNoAppleFamilyStraightToSupervision() async throws {
     let store = store(starting: .onboarding(.major(.askSelfOrOtherIsOnboarding)))
 
@@ -88,6 +91,7 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testMajorNoMacSetsState() async throws {
     let store = store(starting: .onboarding(.major(.askIfOwnsMac)))
 
@@ -97,8 +101,9 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testSupervisionHappiestPath() async throws {
-    let store = await TestStore(initialState: IOSReducer.State(
+    let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.supervision(.intro)),
       onboarding: .init(majorOnboarder: .other, ownsMac: true)
     )) {
@@ -118,8 +123,9 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testSupervisionNeedsFriendHasFriendPath() async throws {
-    let store = await TestStore(initialState: IOSReducer.State(
+    let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.supervision(.intro)),
       onboarding: .init(majorOnboarder: .self, ownsMac: true)
     )) {
@@ -143,8 +149,9 @@ final class IOSReducerTestsMajor: XCTestCase {
     }
   }
 
+  @MainActor
   func testSupervisionNeedsFriendNoFriendPath() async throws {
-    let store = await TestStore(initialState: IOSReducer.State(
+    let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.supervision(.intro)),
       onboarding: .init(majorOnboarder: .self, ownsMac: false)
     )) {
@@ -165,8 +172,9 @@ final class IOSReducerTestsMajor: XCTestCase {
       }
   }
 
+  @MainActor
   func testSupervisionOtherNotParentOrGuardian() async throws {
-    let store = await TestStore(initialState: IOSReducer.State(
+    let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.major(.askIfOtherIsParent)),
       onboarding: .init(majorOnboarder: .other, ownsMac: nil)
     )) {
