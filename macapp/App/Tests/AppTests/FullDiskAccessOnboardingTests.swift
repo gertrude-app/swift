@@ -78,12 +78,10 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
 
     expect(filterReplacedInvocations.value).toEqual(1)
 
+    await store.receive(.checkIn(result: .success(checkInResult), reason: .appUpdated))
     await store.receive(.setTrustedTimestamp(.reference)) {
       $0.timestamp = .reference
     }
-
-    await store.receive(.checkIn(result: .success(checkInResult), reason: .appUpdated))
-    await store.receive(.user(.updated(previous: persisted.user)))
 
     await store
       .receive(.onboarding(.delegate(.openForUpgrade(step: .allowFullDiskAccess_grantAndRestart)))) {
@@ -94,6 +92,7 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
 
     // from update success aftermath
     await store.receive(.filter(.receivedState(.installedAndRunning)))
+    await store.receive(.user(.updated(previous: persisted.user)))
     await store.receive(.setTrustedTimestamp(.reference))
     await store.receive(.user(.updated(previous: persisted.user)))
     await expect(saveState.calls.count).toEqual(3)
@@ -183,12 +182,13 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
       }
 
     await resumeStore.receive(.websocket(.connectedSuccessfully))
-    await resumeStore.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
-      $0.onboarding.step = .allowFullDiskAccess_success
-    }
 
     await resumeStore.receive(.checkIn(result: .success(checkInResult), reason: .startProtecting)) {
       $0.appUpdates.latestVersion = checkInResult.latestRelease
+    }
+
+    await resumeStore.receive(.onboarding(.setStep(.allowFullDiskAccess_success))) {
+      $0.onboarding.step = .allowFullDiskAccess_success
     }
 
     await resumeStore.receive(.user(.updated(previous: resuming.user)))

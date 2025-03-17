@@ -76,7 +76,7 @@ final class WebsocketTests: XCTestCase {
     self.send(.pong(nil))
     expect(self.state).toEqual(.connected)
 
-    self.scheduler.advance(by: PONG_CONFIRMATION_DELAY + self.conn.pingInterval - 1)
+    self.scheduler.advance(by: .seconds(5) + self.conn.pingInterval - 1)
     expect(self.state).toEqual(.connected)
 
     self.scheduler.advance(by: 1)

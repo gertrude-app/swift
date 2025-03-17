@@ -4,7 +4,7 @@ import Dependencies
 import Gertie
 import Sparkle
 
-extension UpdaterClient: DependencyKey {
+extension UpdaterClient: @retroactive DependencyKey {
   public static var liveValue: Self {
     let updater = UpdateManager()
     manager.replace(with: updater)
