@@ -229,6 +229,22 @@ jobs:
       - name: test
         run: cd iosapp/lib-ios && swift test
 
+  swiftformat:
+    if: github.event_name == 'pull_request'
+    runs-on: namespace-profile-default
+    container: swift:6.0.3-focal
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: build
+        run: |
+          git clone --depth 1 --branch 0.55.5 https://github.com/nicklockwood/SwiftFormat
+          cd SwiftFormat && swift build -c debug
+          cp ./.build/debug/swiftformat /usr/local/bin
+          cd ../ && rm -rf SwiftFormat/
+      - name: lint
+        run: swiftformat . --lint
+
 # env
 
 env:
