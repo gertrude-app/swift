@@ -7,7 +7,7 @@ public struct Mock<T> {
   public var called: Bool { get async { await self.invocations.value > 0 } }
   public var calls: [()] {
     get async {
-      Array(repeating: (), count: await self.invocations.value)
+      await Array(repeating: (), count: self.invocations.value)
     }
   }
 }

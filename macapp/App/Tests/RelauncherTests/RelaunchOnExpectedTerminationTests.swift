@@ -86,8 +86,8 @@ final class RelaunchOnExpectedTerminationTests: XCTestCase {
 
     let totalTimeSlept = invocations.value.reduce(0.0) { total, invocation in
       switch invocation {
-      case .sleepForSeconds(let seconds): return total + seconds
-      default: return total
+      case .sleepForSeconds(let seconds): total + seconds
+      default: total
       }
     }
     // we quit at around 20 seconds

@@ -15,9 +15,9 @@ public struct RuleSchedule {
 public extension RuleSchedule {
   func active(at date: Date, in calendar: Calendar = .current) -> Bool {
     if self.days.contains(date, in: calendar) {
-      return self.window.contains(date, in: calendar) ? self.mode.isActive : !self.mode.isActive
+      self.window.contains(date, in: calendar) ? self.mode.isActive : !self.mode.isActive
     } else {
-      return !self.mode.isActive
+      !self.mode.isActive
     }
   }
 }

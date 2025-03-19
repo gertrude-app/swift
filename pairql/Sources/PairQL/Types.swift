@@ -50,7 +50,7 @@ public extension PairOutput {
   }
 
   func json() throws -> String {
-    guard let json = String(data: try jsonData(), encoding: .utf8) else {
+    guard let json = try String(data: jsonData(), encoding: .utf8) else {
       throw PairJsonEncodingError()
     }
     return json
@@ -103,11 +103,11 @@ public struct Operation<P: Pair>: ParserPrinter {
   }
 
   public func parse(_ input: inout URLRequestData) throws {
-    try Path { pair.name }.parse(&input)
+    try Path { self.pair.name }.parse(&input)
   }
 
   public func print(_ output: Void, into input: inout URLRequestData) throws {
-    try Path { pair.name }.print(output, into: &input)
+    try Path { self.pair.name }.print(output, into: &input)
   }
 }
 
@@ -116,7 +116,7 @@ public extension Conversion {
     _ Pair: P.Type,
     dateDecodingStrategy strategy: JSONDecoder.DateDecodingStrategy? = nil
   ) -> Self where Self == Conversions.JSON<P.Input> {
-    if let strategy = strategy {
+    if let strategy {
       let decoder = JSONDecoder()
       decoder.dateDecodingStrategy = strategy
       return .init(Pair.Input, decoder: decoder)

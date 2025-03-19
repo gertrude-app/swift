@@ -313,7 +313,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     expect(deleted.first?.type).toEqual("Admin")
     expect(deleted.first?.reason).toEqual("self-deleted from use-case initial screen")
     expect(deleted.first!.data).toContain(admin.id.lowercased)
-    expect(try? await self.db.find(admin.id)).toBeNil()
+    await expect(try? self.db.find(admin.id)).toBeNil()
   }
 
   func testAdminCantDeleteOtherAdmin() async throws {
@@ -445,9 +445,9 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await GetSelectableKeychains.resolve(in: context(admin))
 
-    expect(output).toEqual(.init(
-      own: [try await .init(from: admin.keychain)],
-      public: [try await .init(from: publicKeychain)]
+    await expect(output).toEqual(try .init(
+      own: [.init(from: admin.keychain)],
+      public: [.init(from: publicKeychain)]
     ))
   }
 
@@ -569,7 +569,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     ])
 
     let output = try await LatestAppVersions
-      .resolve(in: context(try await self.admin()))
+      .resolve(in: context(self.admin()))
 
     expect(output).toEqual(.init(stable: "2.2.0", beta: "2.5.2", canary: "3.0.0"))
   }

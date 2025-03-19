@@ -88,7 +88,7 @@ class AppMigratorTests: XCTestCase {
       $0.device.osVersion = { .sonoma }
     } operation: {
 
-      var migrator = testMigrator
+      var migrator = self.testMigrator
 
       let apiUser = UserData(
         id: .zeros,
@@ -136,7 +136,7 @@ class AppMigratorTests: XCTestCase {
 
       let result = await migrator.migrate()
       await expect(setApiToken.calls).toEqual([.deadbeef])
-      expect(await checkIn.calls.count).toEqual(1)
+      await expect(checkIn.calls.count).toEqual(1)
       expect(getStringInvocations.value).toEqual([
         "persistent.state.v2",
         "persistent.state.v1",
@@ -169,7 +169,7 @@ class AppMigratorTests: XCTestCase {
       $0.device.currentMacOsUserType = { .standard }
       $0.device.osVersion = { .sonoma }
     } operation: {
-      var migrator = testMigrator
+      var migrator = self.testMigrator
 
       // simulate that we can't fetch the user from the api
       // so we need to pull all of the old info from storage

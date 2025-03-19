@@ -34,9 +34,9 @@ extension Request {
   var id: String {
     if let value = logger[metadataKey: "request-id"],
        let uuid = UUID(uuidString: "\(value)") {
-      return uuid.uuidString.lowercased()
+      uuid.uuidString.lowercased()
     } else {
-      return UUID().uuidString.lowercased()
+      UUID().uuidString.lowercased()
     }
   }
 
@@ -72,7 +72,7 @@ extension Request {
       .where(.value == uuid)
       .first(in: self.context.db)
 
-    guard let userToken = userToken else {
+    guard let userToken else {
       // the mac app looks for this specific error message (for now, at least)
       throw Abort(.unauthorized, reason: "user auth token not found")
     }

@@ -63,11 +63,11 @@ public struct FilterXPCClient: Sendable {
 
   public func connected(attemptRepair: Bool = false) async -> Bool {
     if await self.checkConnectionHealth().isSuccess {
-      return true
+      true
     } else if attemptRepair {
-      return await self.establishConnection().isSuccess
+      await self.establishConnection().isSuccess
     } else {
-      return false
+      false
     }
   }
 

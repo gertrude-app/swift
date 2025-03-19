@@ -66,7 +66,6 @@ public extension Key {
         throw ModelDecodingError("invalid ip string \(ipString) for Key")
       }
       self = .ipAddress(ipAddress: ip, scope: scope)
-
     default:
       throw ModelDecodingError("unknown key type `\(type)`")
     }

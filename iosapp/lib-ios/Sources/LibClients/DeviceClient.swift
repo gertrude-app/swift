@@ -42,8 +42,8 @@ public extension DeviceClient {
 
     public var isLow: Bool {
       switch self {
-      case .unknown: return false
-      case .level(let level): return level < 0.35
+      case .unknown: false
+      case .level(let level): level < 0.35
       }
     }
   }

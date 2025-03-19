@@ -266,8 +266,8 @@ public func expect<T: Equatable>(
   EquatableOptionalExpectation(value: value, file: file, line: line)
 }
 
-public func expect<T>(
-  _ value: T?,
+public func expect(
+  _ value: (some Any)?,
   file: StaticString = #fileID,
   line: UInt = #line
 ) -> OptionalExpectation {

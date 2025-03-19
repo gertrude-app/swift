@@ -41,7 +41,7 @@ struct AppMigrator: Migrator {
 
     log("found v1 token `\(token)`")
     await self.api.setUserToken(token)
-    let user = (try? await api.appCheckIn(nil))?.userData
+    let user = await (try? self.api.appCheckIn(nil))?.userData
     let v1Version = self.userDefaults.v1(.installedAppVersion) ?? "unknown"
 
     if let user {
@@ -121,11 +121,11 @@ extension AppMigrator {
       static func toBool(_ string: String?) -> Bool? {
         switch string {
         case "true":
-          return true
+          true
         case "false":
-          return false
+          false
         default:
-          return nil
+          nil
         }
       }
     }

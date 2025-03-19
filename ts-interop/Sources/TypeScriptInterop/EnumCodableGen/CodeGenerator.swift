@@ -18,7 +18,7 @@ public extension AggregateCodeGenerator {
   }
 }
 
-public extension Sequence where Element == CodeGenerator {
+public extension Sequence<CodeGenerator> {
   func write() throws {
     for element in self {
       try element.write()

@@ -60,9 +60,9 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
 extension AdminEvent.UnlockRequestSubmitted {
   private var url: String {
     if requestIds.count == 1, let first = requestIds.first {
-      return self.individualRequestUrl(first)
+      self.individualRequestUrl(first)
     } else {
-      return self.userUnlockRequestsUrl
+      self.userUnlockRequestsUrl
     }
   }
 

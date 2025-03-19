@@ -38,15 +38,15 @@ public extension FilterState.WithTimes {
   func withRelativeTimes(from now: Date = .init()) -> FilterState.WithRelativeTimes {
     switch self {
     case .off:
-      return .off
+      .off
     case .on:
-      return .on
+      .on
     case .suspended(resuming: let date):
-      return .suspended(resuming: now.timeRemaining(until: date))
+      .suspended(resuming: now.timeRemaining(until: date))
     case .downtime(ending: let date):
-      return .downtime(ending: now.timeRemaining(until: date))
+      .downtime(ending: now.timeRemaining(until: date))
     case .downtimePaused(resuming: let date):
-      return .downtimePaused(resuming: now.timeRemaining(until: date))
+      .downtimePaused(resuming: now.timeRemaining(until: date))
     }
   }
 }
@@ -55,24 +55,24 @@ public extension FilterState.WithRelativeTimes {
   var isSuspended: Bool {
     switch self {
     case .suspended:
-      return true
+      true
     case .off, .on, .downtime, .downtimePaused:
-      return false
+      false
     }
   }
 
   var withoutTimes: FilterState.WithoutTimes {
     switch self {
     case .off:
-      return .off
+      .off
     case .on:
-      return .on
+      .on
     case .suspended:
-      return .suspended
+      .suspended
     case .downtime:
-      return .downtime
+      .downtime
     case .downtimePaused:
-      return .downtimePaused
+      .downtimePaused
     }
   }
 }

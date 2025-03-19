@@ -44,20 +44,20 @@ extension GetAdmin: NoInputResolver {
     async let methods = admin.verifiedNotificationMethods(in: context.db)
     async let hasAdminChild = try await admin.users(in: context.db)
       .concurrentMap { try await $0.devices(in: context.db) }
-      .flatMap { $0 }
+      .flatMap(\.self)
       .contains { $0.isAdmin == true }
 
-    return .init(
+    return try await .init(
       id: admin.id,
       email: admin.email.rawValue,
-      subscriptionStatus: try .init(admin),
-      notifications: try await notifications.map {
+      subscriptionStatus: .init(admin),
+      notifications: notifications.map {
         .init(id: $0.id, trigger: $0.trigger, methodId: $0.methodId)
       },
-      verifiedNotificationMethods: try await methods.map {
+      verifiedNotificationMethods: methods.map {
         .init(id: $0.id, config: $0.config)
       },
-      hasAdminChild: try await hasAdminChild,
+      hasAdminChild: hasAdminChild,
       monthlyPriceInDollars: Int(admin.monthlyPrice.rawValue / 100)
     )
   }

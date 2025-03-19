@@ -30,7 +30,7 @@ protocol PqlErrorConvertible: Error {
 // extensions
 
 extension RouteResponder {
-  static func respond<T: PairOutput>(with output: T) async throws -> Response {
+  static func respond(with output: some PairOutput) async throws -> Response {
     try output.response()
   }
 }
@@ -38,7 +38,7 @@ extension RouteResponder {
 extension Resolver {
   static func result(with input: Input, in context: Context) async -> Result<Output, Error> {
     do {
-      return .success(try await resolve(with: input, in: context))
+      return try await .success(resolve(with: input, in: context))
     } catch {
       return .failure(error)
     }
@@ -47,10 +47,10 @@ extension Resolver {
 
 extension PairOutput {
   func response() throws -> Response {
-    Response(
+    try Response(
       status: .ok,
       headers: ["Content-Type": "application/json"],
-      body: .init(data: try jsonData())
+      body: .init(data: jsonData())
     )
   }
 }
@@ -114,7 +114,7 @@ extension ResolverContext {
 }
 
 extension Stripe.Api.Error: PqlErrorConvertible {
-  func pqlError<C: ResolverContext>(in context: C) -> PqlError {
+  func pqlError(in context: some ResolverContext) -> PqlError {
     context.error(
       id: "xstripe:\(type):\(code ?? "")",
       type: .serverError,
@@ -125,10 +125,10 @@ extension Stripe.Api.Error: PqlErrorConvertible {
 }
 
 extension DuetSQLError: PqlErrorConvertible {
-  func pqlError<C: ResolverContext>(in context: C) -> PqlError {
+  func pqlError(in context: some ResolverContext) -> PqlError {
     switch self {
     case .notFound(let modelType):
-      return context.error(
+      context.error(
         id: "6ac1205a",
         type: .notFound,
         debugMessage: "DuetSQL: \(modelType) not found",
@@ -140,49 +140,49 @@ extension DuetSQLError: PqlErrorConvertible {
         showContactSupport: false
       )
     case .decodingFailed:
-      return context.error(
+      context.error(
         id: "416d42b5",
         type: .serverError,
         debugMessage: "DuetSQL model decoding failed",
         showContactSupport: true
       )
     case .emptyBulkInsertInput:
-      return context.error(
+      context.error(
         id: "c3d8dbfe",
         type: .serverError,
         debugMessage: "DuetSQL: empty bulk insert input",
         showContactSupport: true
       )
     case .invalidEntity:
-      return context.error(
+      context.error(
         id: "cc7c423d",
         type: .serverError,
         debugMessage: "DuetSQL: invalid entity",
         showContactSupport: true
       )
     case .missingExpectedColumn(let column):
-      return context.error(
+      context.error(
         id: "a6b2da10",
         type: .serverError,
         debugMessage: "DuetSQL: missing expected column `\(column)`",
         showContactSupport: true
       )
     case .nonUniformBulkInsertInput:
-      return context.error(
+      context.error(
         id: "0d09dbca",
         type: .serverError,
         debugMessage: "DuetSQL: non-uniform bulk insert input",
         showContactSupport: true
       )
     case .notImplemented(let fn):
-      return context.error(
+      context.error(
         id: "e3b3ae0e",
         type: .serverError,
         debugMessage: "DuetSQL: not implemented `\(fn)`",
         showContactSupport: true
       )
     case .tooManyResultsForDeleteOne:
-      return context.error(
+      context.error(
         id: "277b3958",
         type: .serverError,
         debugMessage: "DuetSQL: too many results for delete one",

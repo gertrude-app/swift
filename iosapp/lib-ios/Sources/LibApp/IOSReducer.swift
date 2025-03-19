@@ -91,9 +91,9 @@ public struct IOSReducer {
     Reduce { state, action in
       switch action {
       case .interactive(let interactiveAction):
-        return self.interactive(state: &state, action: interactiveAction)
+        self.interactive(state: &state, action: interactiveAction)
       case .programmatic(let programmaticAction):
-        return self.programmatic(state: &state, action: programmaticAction)
+        self.programmatic(state: &state, action: programmaticAction)
       }
     }
   }

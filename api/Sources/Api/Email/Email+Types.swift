@@ -38,8 +38,8 @@ extension TemplateEmailModel {
   var templateAlias: String { Self.alias }
   static var layout: EmailLayout { .base }
   static var name: String { "\(Self.self)" }
-  static var alias: String { Self.name.snakeCased.replacing("_", with: "-") }
-  static var displayName: String { Self.name.replacing("_", with: " ") }
+  static var alias: String { name.snakeCased.replacing("_", with: "-") }
+  static var displayName: String { name.replacing("_", with: " ") }
 }
 
 extension EmailLayout {
@@ -64,23 +64,23 @@ extension EmailLayout {
 extension TemplateEmail {
   var model: any TemplateEmailModel {
     switch self {
-    case .initialSignup(_, let model): return model
-    case .reSignup(_, let model): return model
-    case .v2_7_0_Announce(_, let model, _): return model
-    case .trialEndingSoon(_, let model): return model
-    case .trialEndedToOverdue(_, let model): return model
-    case .overdueToUnpaid(_, let model): return model
-    case .paidToOverdue(_, let model): return model
-    case .unpaidToPendingDelete(_, let model): return model
-    case .deleteEmailUnverified(_, let model): return model
-    case .passwordReset(_, let model): return model
-    case .passwordResetNoAccount(_, let model): return model
-    case .magicLink(_, let model): return model
-    case .magicLinkNoAccount(_, let model): return model
-    case .notifySuspendFilter(_, let model): return model
-    case .notifyUnlockRequest(_, let model): return model
-    case .notifySecurityEvent(_, let model): return model
-    case .verifyNotificationEmail(_, let model): return model
+    case .initialSignup(_, let model): model
+    case .reSignup(_, let model): model
+    case .v2_7_0_Announce(_, let model, _): model
+    case .trialEndingSoon(_, let model): model
+    case .trialEndedToOverdue(_, let model): model
+    case .overdueToUnpaid(_, let model): model
+    case .paidToOverdue(_, let model): model
+    case .unpaidToPendingDelete(_, let model): model
+    case .deleteEmailUnverified(_, let model): model
+    case .passwordReset(_, let model): model
+    case .passwordResetNoAccount(_, let model): model
+    case .magicLink(_, let model): model
+    case .magicLinkNoAccount(_, let model): model
+    case .notifySuspendFilter(_, let model): model
+    case .notifyUnlockRequest(_, let model): model
+    case .notifySecurityEvent(_, let model): model
+    case .verifyNotificationEmail(_, let model): model
     }
   }
 }

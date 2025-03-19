@@ -506,7 +506,7 @@ final class TestClient: Client, @unchecked Sendable {
     } else if self.stmts.count > 1 {
       fatalError("Multiple statements were executed")
     } else {
-      return self.stmts[0]
+      self.stmts[0]
     }
   }
 

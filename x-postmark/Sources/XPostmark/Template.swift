@@ -55,9 +55,9 @@ public struct TemplateEmail: Equatable, Sendable {
         let responses = try JSONDecoder().decode([BatchEmailResponse].self, from: data)
         return .success(responses.map { response in
           if response.ErrorCode == 0 {
-            return .success(())
+            .success(())
           } else {
-            return .failure(.init(
+            .failure(.init(
               errorCode: response.ErrorCode,
               message: response.Message
             ))

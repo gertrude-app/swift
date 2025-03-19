@@ -175,8 +175,8 @@ public extension FilterProxy {
 
     public var description: String {
       switch self {
-      case .allow: return "ALLOW"
-      case .drop: return "DROP"
+      case .allow: "ALLOW"
+      case .drop: "DROP"
       }
     }
   }

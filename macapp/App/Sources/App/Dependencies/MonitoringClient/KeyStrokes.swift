@@ -20,9 +20,9 @@ struct Keystroke {
   var isNewline: Bool {
     switch (self.char, self.keyCode) {
     case ("\r", _), (_, Self.NEWLINE_KEYCODE):
-      return true
+      true
     default:
-      return false
+      false
     }
   }
 
@@ -36,17 +36,17 @@ struct Keystroke {
 
   var display: String {
     if self.modifiers.contains(.control) {
-      return " <CTRL-\(self.char)> "
+      " <CTRL-\(self.char)> "
     } else if self.modifiers.contains(.option) {
-      return " <OPT-\(self.char)> "
+      " <OPT-\(self.char)> "
     } else if self.modifiers.contains(.command) {
-      return " <⌘\(self.char)> "
+      " <⌘\(self.char)> "
     } else if self.isEscape {
-      return "<ESC>"
+      "<ESC>"
     } else if self.char.isWhitespace || !self.char.isASCII {
-      return " "
+      " "
     } else {
-      return String(self.char)
+      String(self.char)
     }
   }
 
@@ -154,7 +154,7 @@ extension Keystrokes: CustomStringConvertible {
       } else {
         dateStr = String(describing: Date(timeIntervalSince1970: 0))
       }
-      return "\(dateStr): \(lines[timestamp] ?? "")"
+      return "\(dateStr): \(self.lines[timestamp] ?? "")"
     }.joined(separator: "\n")
   }
 }

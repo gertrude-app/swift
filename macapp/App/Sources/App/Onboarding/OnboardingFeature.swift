@@ -85,9 +85,9 @@ struct OnboardingFeature: Feature {
         state.windowOpen = true
         state.step = step
         return .exec { send in
-          await send(.receivedDeviceData(
+          try await send(.receivedDeviceData(
             currentUserId: self.device.currentUserId(),
-            users: try await self.device.listMacOSUsers()
+            users: self.device.listMacOSUsers()
           ))
         }
 
@@ -145,9 +145,9 @@ struct OnboardingFeature: Feature {
         log(step, action, "e712e261")
         state.step = self.app.inCorrectLocation ? .confirmGertrudeAccount : .wrongInstallDir
         return .exec { send in
-          await send(.receivedDeviceData(
+          try await send(.receivedDeviceData(
             currentUserId: self.device.currentUserId(),
-            users: try await self.device.listMacOSUsers()
+            users: self.device.listMacOSUsers()
           ))
         }
 
@@ -222,7 +222,7 @@ struct OnboardingFeature: Feature {
         state.connectChildRequest = .ongoing
         return .exec { send in
           await send(.connectUser((TaskResult {
-            try await self.api.connectUser(.init(code: code, device: device, app: app))
+            try await self.api.connectUser(.init(code: code, device: self.device, app: self.app))
           })))
         }
 
@@ -259,7 +259,7 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .howToUseGifs:
         log(step, action, "16472dce")
         return .exec { send in
-          await nextRequiredStage(from: .howToUseGifs, send)
+          await self.nextRequiredStage(from: .howToUseGifs, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowNotifications_start:
@@ -276,7 +276,7 @@ struct OnboardingFeature: Feature {
           if await self.device.notificationsSetting() == .none {
             await send(.setStep(.allowNotifications_failed))
           } else {
-            await nextRequiredStage(from: step, send)
+            await self.nextRequiredStage(from: step, send)
           }
         }
 
@@ -293,7 +293,7 @@ struct OnboardingFeature: Feature {
             await self.device.openSystemPrefs(.notifications)
             await send(.setStep(.allowNotifications_grant))
           } else {
-            await nextRequiredStage(from: step, send)
+            await self.nextRequiredStage(from: step, send)
           }
         }
 
@@ -301,7 +301,7 @@ struct OnboardingFeature: Feature {
         where step == .allowNotifications_start || step == .allowNotifications_failed:
         log(step, action, "8cf52d46")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_grantAndRestart:
@@ -330,7 +330,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowFullDiskAccess_grantAndRestart:
         log(step, action, "cdd658e1")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_success && state.upgrade:
@@ -344,7 +344,7 @@ struct OnboardingFeature: Feature {
       case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_success:
         log(step, action, "5dec2904")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowFullDiskAccess_failed:
@@ -368,7 +368,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowFullDiskAccess_failed:
         log(step, action, "bafcef2e")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_required:
@@ -376,7 +376,7 @@ struct OnboardingFeature: Feature {
           let granted = await self.monitoring.screenRecordingPermissionGranted()
           log("primary from .allowScreenshots_required, already granted=\(granted)", "ce78b67b")
           if granted {
-            await nextRequiredStage(from: step, send)
+            await self.nextRequiredStage(from: step, send)
           } else {
             try? await self.monitoring.takeScreenshot(500) // trigger permission prompt
             await send(.delegate(.saveForResume(.checkingScreenRecordingPermission)))
@@ -387,7 +387,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowScreenshots_required:
         log(step, action, "b2907efa")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_grantAndRestart:
@@ -398,7 +398,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowScreenshots_grantAndRestart:
         log(step, action, "a85b700c")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_failed:
@@ -415,25 +415,25 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowScreenshots_failed:
         log(step, action, "9616ea42")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowScreenshots_success:
         log(step, action, "fc9a6916")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_required:
         log(step, action, "6db8471f")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.secondaryBtnClicked) where step == .allowKeylogging_required:
         log(step, action, "61a87bb2")
         return .exec { send in
-          await nextRequiredStage(from: .installSysExt_explain, send)
+          await self.nextRequiredStage(from: .installSysExt_explain, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .allowKeylogging_grant:
@@ -441,7 +441,7 @@ struct OnboardingFeature: Feature {
           let granted = await self.monitoring.keystrokeRecordingPermissionGranted()
           log("primary from .allowKeylogging_grant, granted=\(granted)", "ce78b67b")
           if granted {
-            await nextRequiredStage(from: step, send)
+            await self.nextRequiredStage(from: step, send)
           } else {
             await send(.setStep(.allowKeylogging_failed))
           }
@@ -451,7 +451,7 @@ struct OnboardingFeature: Feature {
         log(step, action, "5ccce8b9")
         return .exec { send in
           if await self.monitoring.keystrokeRecordingPermissionGranted() {
-            await nextRequiredStage(from: step, send)
+            await self.nextRequiredStage(from: step, send)
           } else {
             await send(.setStep(.allowKeylogging_failed))
           }
@@ -461,7 +461,7 @@ struct OnboardingFeature: Feature {
         log(step, action, "36181833")
         return .exec { send in
           if await self.monitoring.keystrokeRecordingPermissionGranted() {
-            await nextRequiredStage(from: step, send)
+            await self.nextRequiredStage(from: step, send)
           } else {
             await self.device.openSystemPrefs(.security(.accessibility))
             await send(.setStep(.allowKeylogging_grant))
@@ -471,7 +471,7 @@ struct OnboardingFeature: Feature {
       case .webview(.secondaryBtnClicked) where step == .allowKeylogging_failed:
         log(step, action, "775f57f9")
         return .exec { send in
-          await nextRequiredStage(from: step, send)
+          await self.nextRequiredStage(from: step, send)
         }
 
       case .webview(.primaryBtnClicked) where step == .installSysExt_trick:
@@ -746,7 +746,7 @@ extension OnboardingFeature.Reducer {
 
   func log(_ msg: String, _ id: String) {
     #if !DEBUG
-      Task { interestingEvent(id: id, "[onboarding]: \(msg), \(eventMeta())") }
+      Task { interestingEvent(id: id, "[onboarding]: \(msg), \(self.eventMeta())") }
     #else
       if ProcessInfo.processInfo.environment["SWIFT_DETERMINISTIC_HASHING"] == nil {
         print("\n[onboarding]: `\(id)` \(msg), \(self.eventMeta())\n")

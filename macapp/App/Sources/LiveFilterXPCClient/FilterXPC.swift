@@ -12,7 +12,7 @@ struct FilterXPC: Sendable {
   @Dependency(\.filterExtension) var filterExtension
 
   func establishConnection() async throws {
-    let checkConnection = await Result { try await checkConnectionHealth() }
+    let checkConnection = await Result { try await self.checkConnectionHealth() }
     guard checkConnection.isFailure else { return }
 
     // stored connection can go bad if something happens on the filter side
@@ -179,4 +179,4 @@ func newConnection() -> NSXPCConnection {
 }
 
 private let sharedConnection = Connection { newConnection() }
-internal let xpcEventSubject = Mutex(PassthroughSubject<XPCEvent.App, Never>())
+let xpcEventSubject = Mutex(PassthroughSubject<XPCEvent.App, Never>())

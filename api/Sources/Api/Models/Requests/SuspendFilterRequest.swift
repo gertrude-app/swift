@@ -47,11 +47,11 @@ extension SuspendFilterRequest {
   var decision: FilterSuspensionDecision? {
     switch self.status {
     case .pending:
-      return nil
+      nil
     case .rejected:
-      return .rejected
+      .rejected
     case .accepted:
-      return .accepted(
+      .accepted(
         duration: self.duration,
         extraMonitoring: self.extraMonitoring
           .flatMap(FilterSuspensionDecision.ExtraMonitoring.init(magicString:))

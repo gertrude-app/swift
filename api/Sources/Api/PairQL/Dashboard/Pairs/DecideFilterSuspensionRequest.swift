@@ -57,9 +57,9 @@ extension DecideFilterSuspensionRequest.Decision {
   var filterSuspensionDecision: FilterSuspensionDecision {
     switch self {
     case .rejected:
-      return .rejected
+      .rejected
     case .accepted(let durationInSeconds, let magicString):
-      return .accepted(
+      .accepted(
         duration: .init(durationInSeconds),
         extraMonitoring: magicString
           .flatMap(FilterSuspensionDecision.ExtraMonitoring.init(magicString:))

@@ -13,7 +13,7 @@ final class AppcastTests: ApiTestCase, @unchecked Sendable {
     ])
 
     try await app.test(.GET, "appcast.xml", afterResponse: { res in
-      expect(await filenames(from: res)).toEqual([
+      await expect(self.filenames(from: res)).toEqual([
         "Gertrude.2.1.1.zip",
         "Gertrude.2.0.0.zip",
       ])
@@ -21,7 +21,7 @@ final class AppcastTests: ApiTestCase, @unchecked Sendable {
 
     // canary is one behind stable, so...
     try await app.test(.GET, "appcast.xml?channel=canary", afterResponse: { res in
-      expect(await filenames(from: res)).toEqual([
+      await expect(self.filenames(from: res)).toEqual([
         "Gertrude.2.1.1.zip", // <-- ...includes stable
         "Gertrude.2.1.0.zip",
         "Gertrude.2.0.0.zip",

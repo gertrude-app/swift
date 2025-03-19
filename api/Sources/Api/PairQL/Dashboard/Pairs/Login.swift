@@ -35,19 +35,18 @@ extension Login: Resolver {
       )
     }
 
-    let match: Bool
-    switch context.env.mode {
+    let match: Bool = switch context.env.mode {
     case .test:
       // for test speed, bcrypt verification is slow, by design
-      match = input.password == admin.password
+      input.password == admin.password
     case .dev:
       if input.password == "good" {
-        match = true
+        true
       } else {
-        match = try Bcrypt.verify(input.password, created: admin.password)
+        try Bcrypt.verify(input.password, created: admin.password)
       }
     case .prod, .staging:
-      match = try Bcrypt.verify(input.password, created: admin.password)
+      try Bcrypt.verify(input.password, created: admin.password)
     }
 
     if match {

@@ -80,9 +80,9 @@ public extension XPC {
     public var string: String {
       switch self {
       case .alive(let userId):
-        return "x-alive--\(userId)"
+        "x-alive--\(userId)"
       case .restartListener(let userId):
-        return "x-restart-listener--\(userId)"
+        "x-restart-listener--\(userId)"
       }
     }
 
@@ -141,7 +141,7 @@ public extension XPC {
 public extension Result where Failure == XPCErr {
   init(catching body: @escaping () async throws -> Success) async {
     do {
-      self = .success(try await body())
+      self = try await .success(body())
     } catch {
       self = .failure(.init(error))
     }
@@ -152,9 +152,9 @@ public extension Result {
   var isSuccess: Bool {
     switch self {
     case .success:
-      return true
+      true
     case .failure:
-      return false
+      false
     }
   }
 

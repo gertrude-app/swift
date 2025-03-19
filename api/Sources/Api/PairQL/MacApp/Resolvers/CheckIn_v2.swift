@@ -109,11 +109,11 @@ extension CheckIn_v2: Resolver {
       }
     }
 
-    return Output(
-      adminAccountStatus: try await admin.accountStatus,
-      appManifest: try await appManifest,
+    return try await Output(
+      adminAccountStatus: admin.accountStatus,
+      appManifest: appManifest,
       keychains: keychains,
-      latestRelease: try await latestRelease,
+      latestRelease: latestRelease,
       updateReleaseChannel: channel,
       userData: .init(
         id: context.user.id.rawValue,
@@ -125,10 +125,10 @@ extension CheckIn_v2: Resolver {
         screenshotFrequency: context.user.screenshotsFrequency,
         screenshotSize: context.user.screenshotsResolution,
         downtime: context.user.downtime,
-        blockedApps: try await blockedApps.map(\.blockedApp),
+        blockedApps: blockedApps.map(\.blockedApp),
         connectedAt: userDevice.createdAt
       ),
-      browsers: try await browsers.map(\.match),
+      browsers: browsers.map(\.match),
       resolvedFilterSuspension: resolvedFilterSuspension,
       resolvedUnlockRequests: resolvedUnlockRequests,
       trustedTime: get(dependency: \.date.now).timeIntervalSince1970

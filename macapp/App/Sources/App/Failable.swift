@@ -17,13 +17,13 @@ enum Failable<T> {
 
   init(throwing: () async throws -> T) async {
     do {
-      self = .ok(value: try await throwing())
+      self = try await .ok(value: throwing())
     } catch {
       self = .error
     }
   }
 
-  init<E: Error>(result: Result<T, E>) {
+  init(result: Result<T, some Error>) {
     switch result {
     case .success(let value):
       self = .ok(value: value)

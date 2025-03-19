@@ -36,9 +36,9 @@ final class FilterManager: NSObject {
   // loading filter configuration only needs to be done once, and is async
   private func getState() -> FilterExtensionState {
     if self.system.filterProviderConfiguration() == nil {
-      return .notInstalled
+      .notInstalled
     } else {
-      return self.system.isNEFilterManagerSharedEnabled()
+      self.system.isNEFilterManagerSharedEnabled()
         ? .installedAndRunning : .installedButNotRunning
     }
   }

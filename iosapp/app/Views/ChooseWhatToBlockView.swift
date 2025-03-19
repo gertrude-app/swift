@@ -240,20 +240,20 @@ struct ChooseWhatToBlockView: View {
                 Text("Tap to find\nout more")
                   .font(.system(size: 14, weight: .medium))
                   .multilineTextAlignment(.center)
-                  .foregroundStyle(Color(cs, light: .white, dark: .violet900))
+                  .foregroundStyle(Color(self.cs, light: .white, dark: .violet900))
                   .padding(.horizontal, 8)
                   .padding(.vertical, 6)
-                  .background(Color(cs, light: .violet500, dark: .violet300))
+                  .background(Color(self.cs, light: .violet500, dark: .violet300))
                   .cornerRadius(8)
                   .frame(width: 120, height: 80)
                   .shadow(
-                    color: Color(cs, light: .violet900, dark: .black).opacity(0.3),
+                    color: Color(self.cs, light: .violet900, dark: .black).opacity(0.3),
                     radius: 8,
                     x: 0,
                     y: 2
                   )
                 Rectangle()
-                  .fill(Color(cs, light: .violet500, dark: .violet300))
+                  .fill(Color(self.cs, light: .violet500, dark: .violet300))
                   .frame(width: 12, height: 12)
                   .rotationEffect(.degrees(45))
               }

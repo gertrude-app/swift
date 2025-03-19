@@ -76,7 +76,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
             if await self.xpc.notConnected() {
               await self.api.securityEvent(.appUpdateFailedToReplaceSystemExtension)
               await send(.appUpdates(.delegate(.postUpdateFilterReplaceFailed)))
-              unexpectedError(id: "cde231a0", detail: "state: \(await self.filter.state())")
+              await unexpectedError(id: "cde231a0", detail: "state: \(self.filter.state())")
             } else {
               await self.api.securityEvent(.appUpdateSucceeded)
               await send(.appUpdates(.delegate(.updateSucceeded(
@@ -93,7 +93,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
               // big sur doesn't get notification pushed when filter restarts
               // so check manually after attempting to replace the filter
               try await self.mainQueue.sleep(for: .seconds(1))
-              await send(.filter(.receivedState(await self.filter.state())))
+              await send(.filter(.receivedState(self.filter.state())))
             }
           }
         }
@@ -110,7 +110,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       let persist = state.persistent
       return .exec { _ in
         if self.network.isConnected() {
-          try await triggerUpdate(channel, persist)
+          try await self.triggerUpdate(channel, persist)
         } else {
           await self.device.notifyNoInternet()
         }
@@ -132,7 +132,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       }
       return .exec { _ in
         if shouldUpdate {
-          try await triggerUpdate(channel, persist)
+          try await self.triggerUpdate(channel, persist)
         }
       }
 
@@ -147,7 +147,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
       let persist = state.persistent
       return .exec { _ in
         if self.network.isConnected() {
-          try await triggerUpdate(
+          try await self.triggerUpdate(
             .init(force: true, version: version, requestingAppVersion: persist.appVersion),
             persist
           )

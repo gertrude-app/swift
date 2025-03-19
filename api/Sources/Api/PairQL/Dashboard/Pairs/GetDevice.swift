@@ -50,15 +50,15 @@ extension GetDevice: Resolver {
 
     @Dependency(\.websockets) var websockets
 
-    return await .init(
+    return try await .init(
       id: device.id,
       name: device.customName,
       releaseChannel: device.appReleaseChannel,
-      users: try userDevices.concurrentMap { userDevice in
-        .init(
+      users: userDevices.concurrentMap { userDevice in
+        try await .init(
           id: userDevice.childId,
-          name: (try await userDevice.user(in: context.db)).name,
-          status: await websockets.status(userDevice.id)
+          name: (userDevice.user(in: context.db)).name,
+          status: websockets.status(userDevice.id)
         )
       },
       appVersion: appVersion.description,
