@@ -11,39 +11,39 @@ public extension ProtectionMode {
   var normalRules: [BlockRule]? {
     switch self {
     case .normal(let rules):
-      return rules
+      rules
     case .onboarding, .emergencyLockdown:
-      return nil
+      nil
     }
   }
 
   var rules: [BlockRule]? {
     switch self {
     case .onboarding(let rules):
-      return rules
+      rules
     case .normal(let rules):
-      return rules
+      rules
     case .emergencyLockdown:
-      return nil
+      nil
     }
   }
 }
 
 extension ProtectionMode: Equatable, Sendable, Codable {}
 
-public extension Optional where Wrapped == ProtectionMode {
+public extension ProtectionMode? {
   var missingRules: Bool {
     switch self {
     case .none:
-      return true
+      true
     case .some(.emergencyLockdown):
-      return true
+      true
     case .some(.onboarding([])):
-      return true
+      true
     case .some(.normal([])):
-      return true
+      true
     default:
-      return false
+      false
     }
   }
 }

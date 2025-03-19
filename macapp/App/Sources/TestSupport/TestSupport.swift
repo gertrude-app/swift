@@ -38,7 +38,7 @@ public struct ControllingNow {
   private let elapsed: LockIsolated<Int>
   private let scheduler: TestSchedulerOf<DispatchQueue>?
 
-  internal init(
+  init(
     generator: DateGenerator,
     elapsed: LockIsolated<Int>,
     scheduler: TestSchedulerOf<DispatchQueue>? = nil
@@ -74,7 +74,7 @@ public struct ControllingNow {
   public func advance(seconds advance: Int) async {
     let current = self.elapsed.value
     self.elapsed.setValue(current + advance)
-    if let scheduler = scheduler {
+    if let scheduler {
       await scheduler.advance(by: .seconds(advance))
     }
   }
@@ -85,7 +85,7 @@ public func expect<T: Equatable>(
   file: StaticString = #filePath,
   line: UInt = #line
 ) async -> EquatableExpectation<T> {
-  EquatableExpectation(value: await isolated.value, file: file, line: line)
+  await EquatableExpectation(value: isolated.value, file: file, line: line)
 }
 
 public func expect<T: Equatable>(

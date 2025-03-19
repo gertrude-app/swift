@@ -25,14 +25,14 @@ enum DumpStagingDataRoute {
       keychains[i].parentId = .stagingPublicKeychainOwner
     }
 
-    return SyncStagingData(
+    return try await SyncStagingData(
       keychains: keychains,
-      keys: try await Key.query()
+      keys: Key.query()
         .where(.keychainId |=| keychains.map(\.id))
         .all(in: db),
-      appBundleIds: try await AppBundleId.query().all(in: db),
-      appCategories: try await AppCategory.query().all(in: db),
-      identifiedApps: try await IdentifiedApp.query().all(in: db)
+      appBundleIds: AppBundleId.query().all(in: db),
+      appCategories: AppCategory.query().all(in: db),
+      identifiedApps: IdentifiedApp.query().all(in: db)
     )
   }
 }

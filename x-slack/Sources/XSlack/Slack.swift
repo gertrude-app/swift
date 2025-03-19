@@ -36,9 +36,9 @@ public extension Slack {
     public var text: String {
       switch self.content {
       case .text(let text):
-        return text
+        text
       case .blocks(_, let fallbackText):
-        return fallbackText
+        fallbackText
       }
     }
 
@@ -81,15 +81,15 @@ extension Slack.Emoji: CustomStringConvertible {
   public var description: String {
     switch self {
     case .fireEngine:
-      return "fire_engine"
+      "fire_engine"
     case .robotFace:
-      return "robot_face"
+      "robot_face"
     case .books:
-      return "books"
+      "books"
     case .orangeBook:
-      return "orange_book"
+      "orange_book"
     case .custom(let custom):
-      return custom
+      custom
     }
   }
 }

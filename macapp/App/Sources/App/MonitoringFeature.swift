@@ -204,15 +204,15 @@ extension MonitoringFeature.RootReducer {
 
     // no change, do nothing
     case (.none, .none, _):
-      return .none
+      .none
 
     // no change, do nothing
     case (.some(let current), .some(let previous), false) where current.equals(previous):
-      return .none
+      .none
 
     // no user anymore, just cancel
     case (.none, .some, _):
-      return .merge(
+      .merge(
         .cancel(id: CancelId.screenshots),
         .exec { _ in await monitoring.stopLoggingKeystrokes() }
       )
@@ -220,7 +220,7 @@ extension MonitoringFeature.RootReducer {
     // current info changed (or we're forcing), reconfigure
     case (.some(let current), .some, _),
          (.some(let current), .none, _):
-      return .merge(
+      .merge(
         .cancel(id: CancelId.screenshots),
         .exec { _ in
           guard current.keyloggingEnabled else {

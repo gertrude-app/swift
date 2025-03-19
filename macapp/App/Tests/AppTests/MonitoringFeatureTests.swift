@@ -153,8 +153,8 @@ final class MonitoringFeatureTests: XCTestCase {
     } operation: {
       let (store, bgQueue) = AppReducer.testStore()
       store.deps.api.checkIn = { _ in throw TestErr("stop launch checkin") }
-      let (takeScreenshot, uploadScreenshot, _) = spyScreenshots(store)
-      let keylogging = spyKeylogging(store)
+      let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
+      let keylogging = self.spyKeylogging(store)
 
       // user is NOT monitored...
       store.deps.storage.loadPersistentState = { .mock { $0.user = .notMonitored } }

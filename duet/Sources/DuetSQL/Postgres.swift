@@ -94,35 +94,35 @@ extension Postgres.Data: Equatable {
   public static func == (lhs: Postgres.Data, rhs: Postgres.Data) -> Bool {
     switch (lhs, rhs) {
     case (.id(let lhsId), .id(let rhsId)):
-      return lhsId.uuidId == rhsId.uuidId
+      lhsId.uuidId == rhsId.uuidId
     case (.string(let lhsVal), .string(let rhsVal)),
          (.json(let lhsVal), .json(let rhsVal)),
          (.varchar(let lhsVal), .varchar(let rhsVal)):
-      return lhsVal == rhsVal
+      lhsVal == rhsVal
     case (.intArray(let lhsVal), .intArray(let rhsVal)):
-      return lhsVal == rhsVal
+      lhsVal == rhsVal
     case (.int(let lhsVal), .int(let rhsVal)):
-      return lhsVal == rhsVal
+      lhsVal == rhsVal
     case (.int64(let lhsVal), .int64(let rhsVal)):
-      return lhsVal == rhsVal
+      lhsVal == rhsVal
     case (.float(let lhsVal), .float(let rhsVal)):
-      return lhsVal == rhsVal
+      lhsVal == rhsVal
     case (.double(let lhsVal), .double(let rhsVal)):
-      return lhsVal == rhsVal
+      lhsVal == rhsVal
     case (.uuid(let lhsVal), .uuid(let rhsVal)):
-      return lhsVal?.uuidString == rhsVal?.uuidString
+      lhsVal?.uuidString == rhsVal?.uuidString
     case (.bool(let lhsVal), .bool(let rhsVal)):
-      return lhsVal == rhsVal
+      lhsVal == rhsVal
     case (.date(let lhsVal), .date(let rhsVal)):
-      return lhsVal == rhsVal
+      lhsVal == rhsVal
     case (.enum(let lhsVal), .enum(let rhsVal)):
-      return lhsVal?.rawValue == rhsVal?.rawValue
+      lhsVal?.rawValue == rhsVal?.rawValue
     case (.null, .null):
-      return true
+      true
     case (.currentTimestamp, .currentTimestamp):
-      return true
+      true
     default:
-      return false
+      false
     }
   }
 }

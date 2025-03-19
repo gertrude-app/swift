@@ -5,12 +5,10 @@ extension LogInterestingEvent: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     let task = Task {
       // prevent FK error if device id deleted, or invalid
-      let userDevice: UserDevice?
-      if let deviceIdInput = input.deviceId,
-         let device = try? await context.db.find(UserDevice.Id(deviceIdInput)) {
-        userDevice = device
+      let userDevice: UserDevice? = if let deviceId = input.deviceId {
+        try? await context.db.find(UserDevice.Id(deviceId))
       } else {
-        userDevice = nil
+        nil
       }
 
       try await context.db.create(InterestingEvent(
@@ -54,27 +52,27 @@ extension LogInterestingEvent: Resolver {
 
 private func shorten(_ detail: String) -> String {
   if detail.contains("Code=-1200") {
-    return "SSL Error =-1200\(errorLoc(detail))"
+    "SSL Error =-1200\(errorLoc(detail))"
   } else if detail.contains("Code=-1004") {
-    return "Failed to Connect Error =-1004\(errorLoc(detail))"
+    "Failed to Connect Error =-1004\(errorLoc(detail))"
   } else if detail.contains("Code=-1017") {
-    return "Parse Response Error =-1017\(errorLoc(detail))"
+    "Parse Response Error =-1017\(errorLoc(detail))"
   } else if detail.contains("[onboarding]") {
-    return detail
+    detail
   } else if detail.count > 150 {
-    return detail.prefix(100) + " [...]"
+    detail.prefix(100) + " [...]"
   } else {
-    return detail
+    detail
   }
 }
 
 private func errorLoc(_ detail: String) -> String {
   if detail.contains("=https://gertrude.nyc3") {
-    return " (spaces)"
+    " (spaces)"
   } else if detail.contains("=https://api.gertrude.app") {
-    return " (API)"
+    " (API)"
   } else {
-    return ""
+    ""
   }
 }
 

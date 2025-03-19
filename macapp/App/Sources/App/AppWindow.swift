@@ -38,7 +38,7 @@ extension AppWindow {
     windowDelegate.events
       .receive(on: mainQueue)
       .sink { [weak self] event in
-        guard let self = self else { return }
+        guard let self else { return }
         switch event {
         case .willClose:
           self.window = nil
@@ -96,7 +96,7 @@ extension AppWindow {
     wvc.supportsDarkMode = self.supportsDarkMode
 
     wvc.send = { [weak self] action in
-      guard let self = self else { return }
+      guard let self else { return }
       self.viewStore.send(self.embed(action))
     }
 
@@ -104,7 +104,7 @@ extension AppWindow {
     viewStore.publisher
       .receive(on: mainQueue)
       .sink { [weak self] _ in
-        guard let self = self, wvc.isReady.value else { return }
+        guard let self, wvc.isReady.value else { return }
         wvc.updateState(self.viewStore.state)
       }.store(in: &cancellables)
 
@@ -122,7 +122,7 @@ extension AppWindow {
       .removeDuplicates()
       .prefix(2)
       .sink { [weak self] isReady in
-        guard let self = self, isReady else { return }
+        guard let self, isReady else { return }
         wvc.updateState(self.viewStore.state)
         wvc.updateColorScheme(self.appClient.colorScheme())
         // give a brief moment for appview to re-render

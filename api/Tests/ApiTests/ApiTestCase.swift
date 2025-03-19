@@ -59,7 +59,7 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
     // doing this once per test run gives about a 10x speedup when running all tests
     if !self.migrated {
       // app needs a db for migrations
-      Self.app.databases.use(.testDb, as: .psql, isDefault: true)
+      self.app.databases.use(.testDb, as: .psql, isDefault: true)
       try! self.app.autoRevert().wait()
       try! self.app.autoMigrate().wait()
       self.migrated = true

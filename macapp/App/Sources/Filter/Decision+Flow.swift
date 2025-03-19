@@ -141,7 +141,7 @@ public extension NetworkFilter {
 
 public func bytesToAscii(_ bytes: Data) -> String {
   var str = ""
-  bytes.forEach { byte in
+  for byte in bytes {
     switch byte {
     // ascii characters possible in hostname
     case 45 ... 57, 61, 63, 65 ... 90, 95, 97 ... 122:

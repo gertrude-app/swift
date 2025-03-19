@@ -3,6 +3,7 @@
 --disable yodaConditions
 --disable fileHeader
 --disable unusedArguments
+--disable wrapSingleLineComments
 --binarygrouping none
 --hexgrouping none
 --indent 2

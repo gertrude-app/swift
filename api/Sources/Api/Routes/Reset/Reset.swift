@@ -20,7 +20,7 @@ enum Reset {
       try await db.create(Admin(
         id: .stagingPublicKeychainOwner,
         email: "public-keychain-owner" |> self.testEmail,
-        password: try Bcrypt.hash("\(UUID())")
+        password: Bcrypt.hash("\(UUID())")
       ))
     }
   }
@@ -76,7 +76,7 @@ enum Reset {
   ) async throws {
     @Dependency(\.db) var db
     let items = Array(repeating: (), count: num)
-      .map { createActivityItem(deviceId, subtractingDays: subtractingDays) }
+      .map { self.createActivityItem(deviceId, subtractingDays: subtractingDays) }
     let keystrokeLines = try await db.create(items.compactMap(\.right))
     let screenshots = try await db.create(items.compactMap(\.left))
 

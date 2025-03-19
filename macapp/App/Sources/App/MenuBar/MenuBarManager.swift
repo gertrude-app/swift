@@ -50,7 +50,7 @@ import WebKit
     self.viewStore.publisher
       .receive(on: self.mainQueue)
       .sink { [weak self] _ in
-        guard let self = self, self.vc.isReady.value else { return }
+        guard let self, self.vc.isReady.value else { return }
         self.vc.updateState(self.viewStore.state.webview)
       }.store(in: &self.cancellables)
 
@@ -58,7 +58,7 @@ import WebKit
     self.app.colorSchemeChanges()
       .receive(on: self.mainQueue)
       .sink { [weak self] colorScheme in
-        guard let self = self, self.vc.isReady.value else { return }
+        guard let self, self.vc.isReady.value else { return }
         self.vc.updateColorScheme(colorScheme)
       }.store(in: &self.cancellables)
 
@@ -68,7 +68,7 @@ import WebKit
       .prefix(2)
       .removeDuplicates()
       .sink { [weak self] ready in
-        guard let self = self, ready else { return }
+        guard let self, ready else { return }
         self.vc.updateState(self.viewStore.state.webview)
         self.vc.updateColorScheme(self.app.colorScheme())
       }.store(in: &self.cancellables)
@@ -79,7 +79,7 @@ import WebKit
       .receive(on: self.mainQueue)
       .dropFirst()
       .sink { [weak self] isOpen in
-        guard let self = self else { return }
+        guard let self else { return }
         self.setPopoverVisibility(to: isOpen)
       }.store(in: &self.cancellables)
   }

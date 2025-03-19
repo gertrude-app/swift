@@ -91,4 +91,4 @@ actor ThreadSafeXPCManager {
   }
 }
 
-internal let xpcEventSubject = Mutex(PassthroughSubject<XPCEvent.Filter, Never>())
+let xpcEventSubject = Mutex(PassthroughSubject<XPCEvent.Filter, Never>())

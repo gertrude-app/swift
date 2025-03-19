@@ -4,11 +4,11 @@ extension FilterSuspensionDecision.ExtraMonitoring {
   var magicString: String {
     switch self {
     case .addKeylogging:
-      return "k"
+      "k"
     case .setScreenshotFreq(let frequency):
-      return "@\(frequency)"
+      "@\(frequency)"
     case .addKeyloggingAndSetScreenshotFreq(let frequency):
-      return "@\(frequency)+k"
+      "@\(frequency)+k"
     }
   }
 

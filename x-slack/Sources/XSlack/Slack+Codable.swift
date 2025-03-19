@@ -46,7 +46,7 @@ extension Slack.Message.Content.Block: Encodable {
     case .section(let text, let accessory):
       try container.encode("section", forKey: .type)
       try container.encode(TextObject(text), forKey: .text)
-      if let accessory = accessory {
+      if let accessory {
         try container.encode(accessory, forKey: .accessory)
       }
     }

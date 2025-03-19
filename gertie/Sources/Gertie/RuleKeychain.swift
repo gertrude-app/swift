@@ -28,7 +28,7 @@ public struct RuleKey {
 
 // extensions
 
-public extension Array where Element == RuleKeychain {
+public extension [RuleKeychain] {
   var numKeys: Int { self.map(\.keys.count).reduce(0, +) }
 }
 

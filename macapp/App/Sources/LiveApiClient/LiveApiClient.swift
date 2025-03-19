@@ -132,5 +132,5 @@ extension ApiClient: @retroactive DependencyKey {
   )
 }
 
-internal let accountActive = ActorIsolated<Bool>(true)
-internal let userToken = ActorIsolated<UUID?>(nil)
+let accountActive = ActorIsolated<Bool>(true)
+let userToken = ActorIsolated<UUID?>(nil)

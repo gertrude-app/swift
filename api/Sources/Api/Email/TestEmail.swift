@@ -116,14 +116,19 @@ import Vapor
       case "admin-trial-ending-soon":
         try await postmark
           .send(template: .trialEndingSoon(to: to, model: .init(length: 21, remaining: 3)))
+
       case "admin-trial-ended-to-overdue":
         try await postmark.send(template: .trialEndedToOverdue(to: to, model: .init(length: 21)))
+
       case "admin-overdue-to-unpaid":
         try await postmark.send(template: .overdueToUnpaid(to: to, model: .init()))
+
       case "admin-paid-to-overdue":
         try await postmark.send(template: .paidToOverdue(to: to, model: .init()))
+
       case "admin-unpaid-to-pending-delete":
         try await postmark.send(template: .unpaidToPendingDelete(to: to, model: .init()))
+
       case "admin-delete-email-unverified":
         try await postmark.send(template: .deleteEmailUnverified(to: to, model: .init()))
 

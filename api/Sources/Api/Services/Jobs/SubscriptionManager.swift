@@ -57,7 +57,7 @@ struct SubscriptionManager: AsyncScheduledJob {
         try await self.db.create(DeletedEntity(
           type: "Admin",
           reason: reason,
-          data: try JSON.encode(admin, [.isoDates])
+          data: JSON.encode(admin, [.isoDates])
         ))
         try await self.db.delete(admin)
         logs.append("Deleted admin \(admin.email) reason: \(reason)")
@@ -176,7 +176,7 @@ private extension Admin {
     let children = try await users(in: db)
     let childDevices = try await children.concurrentMap {
       try await $0.devices(in: db)
-    }.flatMap { $0 }
+    }.flatMap(\.self)
     return !childDevices.isEmpty
   }
 }
@@ -184,19 +184,19 @@ private extension Admin {
 func email(_ event: SubscriptionEmail, to address: EmailAddress) -> TemplateEmail {
   switch event {
   case .trialEndingSoon(let length, let remaining):
-    return .trialEndingSoon(
+    .trialEndingSoon(
       to: address.rawValue,
       model: .init(length: length, remaining: remaining)
     )
   case .trialEndedToOverdue(let length):
-    return .trialEndedToOverdue(to: address.rawValue, model: .init(length: length))
+    .trialEndedToOverdue(to: address.rawValue, model: .init(length: length))
   case .overdueToUnpaid:
-    return .overdueToUnpaid(to: address.rawValue, model: .init())
+    .overdueToUnpaid(to: address.rawValue, model: .init())
   case .paidToOverdue:
-    return .paidToOverdue(to: address.rawValue, model: .init())
+    .paidToOverdue(to: address.rawValue, model: .init())
   case .unpaidToPendingDelete:
-    return .unpaidToPendingDelete(to: address.rawValue, model: .init())
+    .unpaidToPendingDelete(to: address.rawValue, model: .init())
   case .deleteEmailUnverified:
-    return .deleteEmailUnverified(to: address.rawValue, model: .init())
+    .deleteEmailUnverified(to: address.rawValue, model: .init())
   }
 }

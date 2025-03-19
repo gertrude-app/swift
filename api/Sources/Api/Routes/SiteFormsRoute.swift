@@ -19,7 +19,7 @@ private struct FormData: Codable {
 enum SiteFormsRoute {
   @Sendable static func handler(_ req: Request) async throws -> Response {
     guard let data = try? req.content.decode(FormData.self) else {
-      let body = ((try? await req.collectedBody()).map { $0 }) ?? "(nil)"
+      let body = await ((try? req.collectedBody()).map(\.self)) ?? "(nil)"
       with(dependency: \.logger).error("Invalid form data: `\(body)`")
       throw Abort(.badRequest, reason: "Invalid form data")
     }
@@ -83,9 +83,9 @@ private func spamChallenge(_ data: FormData) async throws {
   case .failure:
     throw Abort(.badRequest)
   case .error(let error):
-    await with(dependency: \.slack).error("""
+    try await with(dependency: \.slack).error("""
     *Error verifying turnstile token*
-    Data: `\(try JSON.encode(data))`
+    Data: `\(JSON.encode(data))`
     Error: \(String(reflecting: error))
     """)
     // allow it to pass thru, as it might be a valid submission
@@ -118,9 +118,9 @@ extension FormData {
 extension FormData.Form {
   var name: String {
     switch self {
-    case .contact: return "Contact Form"
-    case .lockdownGuide: return "Definitive Lockdown Guide Form"
-    case .fiveThings: return "Five Things You Forgot Form"
+    case .contact: "Contact Form"
+    case .lockdownGuide: "Definitive Lockdown Guide Form"
+    case .fiveThings: "Five Things You Forgot Form"
     }
   }
 }

@@ -55,9 +55,9 @@ extension Admin {
   var stripePriceId: String {
     switch self.monthlyPrice.rawValue {
     case 1500:
-      return "price_1QooP1GKRdhETuKAcVawow7B"
+      "price_1QooP1GKRdhETuKAcVawow7B"
     default:
-      return "price_1M9xZYGKRdhETuKA22aYJ4fI"
+      "price_1M9xZYGKRdhETuKA22aYJ4fI"
     }
   }
 }
@@ -123,11 +123,11 @@ extension Admin {
     var accountStatus: AdminAccountStatus {
       switch self {
       case .paid, .trialing, .trialExpiringSoon, .complimentary:
-        return .active
+        .active
       case .overdue:
-        return .needsAttention
+        .needsAttention
       case .pendingEmailVerification, .unpaid, .pendingAccountDeletion:
-        return .inactive
+        .inactive
       }
     }
   }

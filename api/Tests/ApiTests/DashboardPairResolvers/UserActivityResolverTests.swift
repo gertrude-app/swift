@@ -159,7 +159,7 @@ final class UserActivityResolverTests: ApiTestCase, @unchecked Sendable {
     )
 
     expect(output).toEqual(.success)
-    expect(try? await self.db.find(keystrokeLine.id)).toBeNil()
-    expect(try? await self.db.find(screenshot.id)).toBeNil()
+    await expect(try? self.db.find(keystrokeLine.id)).toBeNil()
+    await expect(try? self.db.find(screenshot.id)).toBeNil()
   }
 }

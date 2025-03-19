@@ -393,7 +393,7 @@ final class FilterFeatureTests: XCTestCase {
     )
 
     await store.send(.xpc(.receivedExtensionMessage(.logs(logs))))
-    expect(await logFilterEvents.calls).toEqual([logs])
+    await expect(logFilterEvents.calls).toEqual([logs])
   }
 }
 

@@ -60,15 +60,15 @@ public class WebSocketConnection: WebSocketDelegate {
   public func clientState() -> ClientInterfaces.WebSocketClient.State {
     switch self.currentState {
     case .connected:
-      return .connected
+      .connected
     case .disconnected:
-      return .notConnected
+      .notConnected
     case .idle:
-      return .notConnected
+      .notConnected
     case .connecting:
-      return .connecting
+      .connecting
     case .waitingForPong:
-      return .connected
+      .connected
     }
   }
 

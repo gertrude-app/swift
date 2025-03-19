@@ -37,14 +37,12 @@ struct BigButton: View {
         ? Color(
           self.cs,
           light: .violet500,
-          dark:
-            .violet600.opacity(0.9)
+          dark: .violet600.opacity(0.9)
         )
         : Color(
           self.cs,
           light: .violet500.opacity(0.1),
-          dark:
-            .violet500.opacity(0.15)
+          dark: .violet500.opacity(0.15)
         )
     )
     .cornerRadius(16)

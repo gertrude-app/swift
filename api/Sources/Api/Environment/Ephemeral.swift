@@ -38,9 +38,9 @@ actor Ephemeral {
   func unexpiredAdminIdFromToken(_ token: UUID) -> Admin.Id? {
     switch self.adminIdFromToken(token) {
     case .notExpired(let adminId):
-      return adminId
+      adminId
     case .expired, .notFound, .previouslyRetrieved:
-      return nil
+      nil
     }
   }
 

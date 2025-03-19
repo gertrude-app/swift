@@ -30,13 +30,13 @@ public extension AppScope {
   func permits(_ app: AppDescriptor) -> Bool {
     switch self {
     case .unrestricted:
-      return true
+      true
     case .webBrowsers:
-      return app.categories.contains("browser")
+      app.categories.contains("browser")
     case .single(.identifiedAppSlug(let slug)):
-      return app.slug == slug
+      app.slug == slug
     case .single(.bundleId(let bundleId)):
-      return app.bundleId == bundleId
+      app.bundleId == bundleId
     }
   }
 }
@@ -54,11 +54,11 @@ public extension AppScope {
     public static var random: AppScope {
       switch Int.random(in: 1 ... 6) {
       case 1:
-        return .webBrowsers
+        .webBrowsers
       case 2:
-        return .unrestricted
+        .unrestricted
       default:
-        return .single(.random)
+        .single(.random)
       }
     }
   }
@@ -74,9 +74,9 @@ public extension AppScope {
 
     public static var random: AppScope.Single {
       if Bool.random() {
-        return .bundleId("com.foo.\(Int.random(in: 10000 ... 99999))")
+        .bundleId("com.foo.\(Int.random(in: 10000 ... 99999))")
       } else {
-        return .identifiedAppSlug("slug-\(Int.random(in: 10000 ... 99999))")
+        .identifiedAppSlug("slug-\(Int.random(in: 10000 ... 99999))")
       }
     }
   }

@@ -95,10 +95,10 @@ extension GetUser.User {
       .all(in: db)
       .concurrentMap { (userDevice: UserDevice) -> (GetUser.Device, Semver) in
         let adminDevice = try await userDevice.adminDevice(in: db)
-        return (GetUser.Device(
+        return await (GetUser.Device(
           id: userDevice.id,
           deviceId: adminDevice.id,
-          status: await userDevice.status(),
+          status: userDevice.status(),
           modelFamily: adminDevice.model.family,
           modelTitle: adminDevice.model.shortDescription,
           modelIdentifier: adminDevice.model.identifier,
@@ -110,10 +110,10 @@ extension GetUser.User {
 
     var blockedApps: [UserBlockedApp.DTO]?
     if versions.contains(where: { $0 >= .init("2.6.0")! }) {
-      blockedApps = (try await user.blockedApps(in: db)).map(\.dto)
+      blockedApps = try await (user.blockedApps(in: db)).map(\.dto)
     }
 
-    self.init(
+    try await self.init(
       id: user.id,
       name: user.name,
       keyloggingEnabled: user.keyloggingEnabled,
@@ -121,7 +121,7 @@ extension GetUser.User {
       screenshotsResolution: user.screenshotsResolution,
       screenshotsFrequency: user.screenshotsFrequency,
       showSuspensionActivity: user.showSuspensionActivity,
-      keychains: try await userKeychains,
+      keychains: userKeychains,
       downtime: user.downtime,
       devices: devices.uniqued(on: \.id),
       blockedApps: blockedApps,

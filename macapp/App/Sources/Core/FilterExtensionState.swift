@@ -11,9 +11,9 @@ public enum FilterExtensionState: Equatable, Sendable {
   public var installed: Bool {
     switch self {
     case .installedAndRunning, .installedButNotRunning:
-      return true
+      true
     case .unknown, .errorLoadingConfig, .notInstalled:
-      return false
+      false
     }
   }
 
@@ -21,9 +21,9 @@ public enum FilterExtensionState: Equatable, Sendable {
     switch self {
     // xpc is reachable in both these states (same as `installed`)
     case .installedAndRunning, .installedButNotRunning:
-      return true
+      true
     case .unknown, .errorLoadingConfig, .notInstalled:
-      return false
+      false
     }
   }
 }

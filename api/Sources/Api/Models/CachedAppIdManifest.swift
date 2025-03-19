@@ -51,7 +51,7 @@ private func loadAppIdManifest() async throws -> AppIdManifest {
 
   var appData: [IdentifiedApp.Id: AppData] = [:]
 
-  apps.forEach { app in
+  for app in apps {
     let ids = bundleIds.filter { $0.identifiedAppId == app.id }
     appData[app.id] = AppData(
       bundleIds: ids,

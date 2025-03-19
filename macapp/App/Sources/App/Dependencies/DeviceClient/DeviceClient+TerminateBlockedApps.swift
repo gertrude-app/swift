@@ -31,7 +31,7 @@ extension BlockedApp {
   }
 }
 
-public extension Collection where Element == BlockedApp {
+public extension Collection<BlockedApp> {
   func blocks(
     app: NSRunningApplication,
     at date: Date,

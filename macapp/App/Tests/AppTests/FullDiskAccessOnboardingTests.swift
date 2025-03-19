@@ -83,12 +83,13 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
       $0.timestamp = .reference
     }
 
-    await store
-      .receive(.onboarding(.delegate(.openForUpgrade(step: .allowFullDiskAccess_grantAndRestart)))) {
-        $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
-        $0.onboarding.windowOpen = true
-        $0.onboarding.upgrade = true
-      }
+    await store.receive(.onboarding(
+      .delegate(.openForUpgrade(step: .allowFullDiskAccess_grantAndRestart))
+    )) {
+      $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
+      $0.onboarding.windowOpen = true
+      $0.onboarding.upgrade = true
+    }
 
     // from update success aftermath
     await store.receive(.filter(.receivedState(.installedAndRunning)))

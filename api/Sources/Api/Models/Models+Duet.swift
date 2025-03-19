@@ -17,7 +17,7 @@ protocol HasOptionalDeletedAt {
 
 extension HasOptionalDeletedAt {
   var isDeleted: Bool {
-    guard let deletedAt = deletedAt else { return false }
+    guard let deletedAt else { return false }
     @Dependency(\.date.now) var now
     return deletedAt < now
   }
@@ -34,9 +34,9 @@ extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
   var createdAt: Date {
     switch self {
     case .left(let model):
-      return model.createdAt
+      model.createdAt
     case .right(let model):
-      return model.createdAt
+      model.createdAt
     }
   }
 }

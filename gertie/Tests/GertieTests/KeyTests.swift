@@ -282,7 +282,7 @@ private func decode<T: Decodable>(_ string: String) -> T {
   return try! decoder.decode(T.self, from: string.data(using: .utf8)!)
 }
 
-private func jsonPretty<T: Encodable>(_ value: T) -> String {
+private func jsonPretty(_ value: some Encodable) -> String {
   let encoder = JSONEncoder()
   encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
   let data = try! encoder.encode(value)

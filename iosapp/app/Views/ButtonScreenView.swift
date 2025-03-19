@@ -47,9 +47,9 @@ struct ButtonScreenView: View {
 
   var icon: String {
     switch self.screenType {
-    case .info: return "info.circle"
-    case .question: return "questionmark.circle"
-    case .error: return "exclamationmark.circle"
+    case .info: "info.circle"
+    case .question: "questionmark.circle"
+    case .error: "exclamationmark.circle"
     }
   }
 
@@ -219,8 +219,7 @@ struct ButtonScreenView: View {
   func withOrWithoutVanishingAnimations(
     type: BigButton.ButtonType, animate: Bool, asyncAction: Bool, isLoading: Binding<Bool>
   )
-    -> BigButton.ButtonType
-  {
+    -> BigButton.ButtonType {
     switch type {
     case .link(let url):
       .link(url)
@@ -294,7 +293,8 @@ struct ButtonScreenView: View {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primary: ButtonScreenView.Config(
-      text: "Next", type: .button {}, animate: false, asyncAction: true)
+      text: "Next", type: .button {}, animate: false, asyncAction: true
+    )
   )
 }
 

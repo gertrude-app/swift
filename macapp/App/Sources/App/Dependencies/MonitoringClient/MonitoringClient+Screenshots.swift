@@ -134,7 +134,7 @@ private func downsampleToJpeg(imageAt imageURL: URL, to maxDimension: CGFloat) -
 
 private let lastImage = Mutex<CGImage?>(nil)
 
-internal actor ScreenshotBuffer {
+actor ScreenshotBuffer {
   private var buffer: [ScreenshotData] = []
 
   func append(_ screenshot: ScreenshotData) {
@@ -150,4 +150,4 @@ internal actor ScreenshotBuffer {
   }
 }
 
-internal let screenshotBuffer = ScreenshotBuffer()
+let screenshotBuffer = ScreenshotBuffer()

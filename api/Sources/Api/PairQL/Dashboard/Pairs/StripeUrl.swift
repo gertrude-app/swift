@@ -21,20 +21,20 @@ extension StripeUrl: NoInputResolver {
          (.trialExpiringSoon, nil),
          (.overdue, nil),
          (.unpaid, nil):
-      return .init(url: try await checkoutSessionUrl(for: context))
+      return try await .init(url: checkoutSessionUrl(for: context))
 
     case (.paid, .some(let subscription)),
          (.overdue, .some(let subscription)),
          (.unpaid, .some(let subscription)):
-      return .init(url: try await billingPortalSessionUrl(for: subscription, in: context))
+      return try await .init(url: billingPortalSessionUrl(for: subscription, in: context))
 
     // should never happen...
     case (let status, let subscription):
       unexpected("65554aa1", context, ".\(status), \(subscription ?? "nil")")
       if let subscription {
-        return .init(url: try await billingPortalSessionUrl(for: subscription, in: context))
+        return try await .init(url: billingPortalSessionUrl(for: subscription, in: context))
       } else {
-        return .init(url: try await checkoutSessionUrl(for: context))
+        return try await .init(url: checkoutSessionUrl(for: context))
       }
     }
   }

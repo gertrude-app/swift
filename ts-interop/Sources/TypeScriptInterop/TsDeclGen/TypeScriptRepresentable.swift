@@ -41,7 +41,7 @@ extension Node: TypeScriptRepresentable {
   }
 }
 
-extension Array where Element == Node.Property {
+extension [Node.Property] {
   func declaration(_ ctx: Context) -> String {
     let props = map { prop in prop.declaration(ctx) }
     return props.joined(separator: ctx.compact("; ", or: ";\n\(ctx.indent)")) + ";"
@@ -79,23 +79,23 @@ extension Node.Primitive: TypeScriptRepresentable {
   func declaration(_ ctx: Context) -> String {
     switch self {
     case .boolean:
-      return ctx.config.alias(for: Bool.self) ?? "boolean"
+      ctx.config.alias(for: Bool.self) ?? "boolean"
     case .date:
-      return ctx.config.alias(for: Date.self) ?? "Date"
+      ctx.config.alias(for: Date.self) ?? "Date"
     case .uuid:
-      return ctx.config.alias(for: UUID.self) ?? "UUID"
+      ctx.config.alias(for: UUID.self) ?? "UUID"
     case .null:
-      return "null"
+      "null"
     case .number(let type):
-      return ctx.config.alias(for: type) ?? "number"
+      ctx.config.alias(for: type) ?? "number"
     case .string:
-      return ctx.config.alias(for: String.self) ?? "string"
+      ctx.config.alias(for: String.self) ?? "string"
     case .void:
-      return ctx.config.alias(for: Void.self) ?? "void"
+      ctx.config.alias(for: Void.self) ?? "void"
     case .never:
-      return ctx.config.alias(for: Never.self) ?? "never"
+      ctx.config.alias(for: Never.self) ?? "never"
     case .stringLiteral(let string):
-      return "'\(string)'"
+      "'\(string)'"
     }
   }
 }
