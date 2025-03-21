@@ -14,22 +14,22 @@ public extension BlockedApp {
   func blocks(app: RunningApp, at date: Date, in calendar: Calendar = .current) -> Bool {
     if self.schedule.map({ $0.active(at: date, in: calendar) }) == .some(false) {
       // if it has a schedule, and it's not active, we know it isn't blocked
-      return false
+      false
     } else if app.localizedName == self.identifier {
-      return true
+      true
     } else if app.bundleName == self.identifier {
-      return true
+      true
     } else if app.bundleId == self.identifier {
-      return true
+      true
     } else if self.identifier.contains("."), app.bundleId.contains(self.identifier) {
-      return true
+      true
     } else {
-      return false
+      false
     }
   }
 }
 
-public extension Collection where Element == BlockedApp {
+public extension Collection<BlockedApp> {
   func blocks(app: RunningApp, at date: Date, in calendar: Calendar = .current) -> Bool {
     self.contains { $0.blocks(app: app, at: date, in: calendar) }
   }

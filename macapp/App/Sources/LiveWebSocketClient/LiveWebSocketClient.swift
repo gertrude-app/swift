@@ -7,7 +7,7 @@ import Gertie
 import os.log
 import Starscream
 
-extension ClientInterfaces.WebSocketClient: DependencyKey {
+extension ClientInterfaces.WebSocketClient: @retroactive DependencyKey {
   public static var liveValue: Self {
     @Dependency(\.mainQueue) var mainQueue
 

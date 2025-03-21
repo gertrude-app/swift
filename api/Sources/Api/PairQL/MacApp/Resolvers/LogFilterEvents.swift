@@ -14,7 +14,7 @@ extension LogFilterEvents: Resolver {
         computerUserId: deviceId,
         parentId: nil,
         detail: [event.detail, count > 1 ? "(\(count)x)" : nil]
-          .compactMap { $0 }
+          .compactMap(\.self)
           .joined(separator: " ")
       )
     })

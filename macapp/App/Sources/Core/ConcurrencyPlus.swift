@@ -55,21 +55,21 @@ public extension CheckedContinuation where E == Error {
   }
 
   var resumingHandler: (T?, Error?) -> Void {
-    { resume(with: $0, error: $1) }
+    { self.resume(with: $0, error: $1) }
   }
 
   var dataHandler: (T?, Data?) -> Void {
-    { resume(with: $0, error: $1.map(XPCErr.init(data:))) }
+    { self.resume(with: $0, error: $1.map(XPCErr.init(data:))) }
   }
 }
 
 public extension CheckedContinuation where T == Void, E == Error {
   var resumingHandler: (Error?) -> Void {
-    { resume(with: $0) }
+    { self.resume(with: $0) }
   }
 
   var dataHandler: (Data?) -> Void {
-    { resume(with: $0.map(XPCErr.init(data:))) }
+    { self.resume(with: $0.map(XPCErr.init(data:))) }
   }
 }
 
@@ -87,10 +87,10 @@ public extension CheckedContinuation where T: Decodable, E == Error {
   }
 
   var resumingHandler: (Data?, Error?) -> Void {
-    { resume(with: $0, error: $1) }
+    { self.resume(with: $0, error: $1) }
   }
 
   var dataHandler: (Data?, Data?) -> Void {
-    { resume(with: $0, error: $1.map(XPCErr.init(data:))) }
+    { self.resume(with: $0, error: $1.map(XPCErr.init(data:))) }
   }
 }

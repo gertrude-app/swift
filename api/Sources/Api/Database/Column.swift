@@ -19,16 +19,16 @@ public enum ColumnType {
 
   var sql: String {
     switch self {
-    case .text: return "text"
-    case .uuid: return "uuid"
-    case .date: return "date"
-    case .int: return "int"
-    case .bigint: return "bigint"
-    case .boolean: return "boolean"
-    case .jsonb: return "jsonb"
-    case .varchar(let length): return "varchar(\(length))"
-    case .timestampWithTimezone: return "timestamp with time zone"
-    case .custom(let type): return type
+    case .text: "text"
+    case .uuid: "uuid"
+    case .date: "date"
+    case .int: "int"
+    case .bigint: "bigint"
+    case .boolean: "boolean"
+    case .jsonb: "jsonb"
+    case .varchar(let length): "varchar(\(length))"
+    case .timestampWithTimezone: "timestamp with time zone"
+    case .custom(let type): type
     }
   }
 }
@@ -45,17 +45,17 @@ struct Column {
     public var sql: String {
       switch self {
       case .boolean(let value):
-        return value ? "TRUE" : "FALSE"
+        value ? "TRUE" : "FALSE"
       case .text(let value):
-        return "'\(value)'"
+        "'\(value)'"
       case .int(let value):
-        return "\(value)"
+        "\(value)"
       case .uuid(let value):
-        return "'\(value)'"
+        "'\(value)'"
       case .enumValue(let value):
-        return "'\(value.rawValue)'::\(value.typeName)"
+        "'\(value.rawValue)'::\(value.typeName)"
       case .currentTimestamp:
-        return "CURRENT_TIMESTAMP"
+        "CURRENT_TIMESTAMP"
       }
     }
   }
@@ -69,13 +69,13 @@ struct Column {
     var sql: String {
       switch self {
       case .notNull:
-        return "NOT NULL"
+        "NOT NULL"
       case .nullable:
-        return ""
+        ""
       case .primaryKey:
-        return "PRIMARY KEY"
+        "PRIMARY KEY"
       case .unique:
-        return "UNIQUE"
+        "UNIQUE"
       }
     }
   }
@@ -95,7 +95,7 @@ struct Column {
     if !withoutNull.isEmpty {
       sql += " \(self.constraints.map(\.sql).joined(separator: " "))"
     }
-    if let defaultValue = defaultValue {
+    if let defaultValue {
       sql += " DEFAULT \(defaultValue.sql)"
     }
     return sql

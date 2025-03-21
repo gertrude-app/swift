@@ -8,7 +8,7 @@ import XExpect
 
 @testable import Api
 
-final class ConnectUserResolversTests: ApiTestCase {
+final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
   override func invokeTest() {
     withDependencies {
       $0.verificationCode = .liveValue

@@ -27,6 +27,9 @@ enum ResetRoute {
       .get()
 
     let betsy = try await request.context.db.find(AdminBetsy.Ids.betsy)
+    let dashUrl = request.env.dashboardUrl
+    let jimmysId = AdminBetsy.Ids.jimmysId
+    let filterReqId = AdminBetsy.Ids.suspendFilter.lowercased
 
     return .init(
       status: .ok,
@@ -51,8 +54,7 @@ enum ResetRoute {
         </p>
         <p>
           To test a filter suspension, use
-          <a href ="\(request.env.dashboardUrl)/children/\(AdminBetsy.Ids
-        .jimmysId)/suspend-filter-requests/\(AdminBetsy.Ids.suspendFilter.lowercased)">
+          <a href ="\(dashUrl)/children/\(jimmysId)/suspend-filter-requests/\(filterReqId)">
           this route</a> in the dashboard web app:<br />
         </p>
         </body></html>

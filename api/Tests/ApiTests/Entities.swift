@@ -163,11 +163,11 @@ extension UserEntities {
     @Dependency(\.db) var db
     let device = try await db.create(Device.random {
       adminDevice(&$0)
-      $0.parentId = admin.id
+      $0.parentId = self.admin.id
     })
     let userDevice = try await db.create(UserDevice.random {
       config(&$0)
-      $0.childId = model.id
+      $0.childId = self.model.id
       $0.computerId = device.id
     })
     let token = try await db.create(UserToken(

@@ -39,15 +39,15 @@ public struct Config {
     switch self.aliases[.init(type)] {
     case .some(.some(let alias)):
       // prefer explicit alias over conformance
-      return alias
+      alias
     case .some(.none):
       if let aliased = type as? TypeScriptAliased.Type {
-        return aliased.typescriptAlias
+        aliased.typescriptAlias
       } else {
-        return AnyType(type).name
+        AnyType(type).name
       }
     case .none:
-      return (type as? TypeScriptAliased.Type)?.typescriptAlias
+      (type as? TypeScriptAliased.Type)?.typescriptAlias
     }
   }
 }

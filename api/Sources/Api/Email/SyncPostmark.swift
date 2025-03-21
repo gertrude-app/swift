@@ -68,8 +68,8 @@ import XHttp
     static func pmTemplateInput() -> EditTemplate.Input {
       let templateDir = FileManager.default
         .currentDirectoryPath + "/Sources/Api/Email/Templates/\(Self.name)"
-      let html = try! String(contentsOfFile: templateDir + "/template.html")
-      let text = try! String(contentsOfFile: templateDir + "/template.md")
+      let html = try! String(contentsOfFile: templateDir + "/template.html", encoding: .utf8)
+      let text = try! String(contentsOfFile: templateDir + "/template.md", encoding: .utf8)
       return EditTemplate.Input(
         Name: Self.displayName,
         Subject: "\(Self.subject){{subjref}}",
@@ -84,17 +84,17 @@ import XHttp
   extension EmailLayout {
     func pmTemplateInput() -> EditTemplate.Input {
       let layoutsDir = FileManager.default.currentDirectoryPath + "/Sources/Api/Email/Layouts"
-      let baseCss = try! String(contentsOfFile: layoutsDir + "/base.css")
+      let baseCss = try! String(contentsOfFile: layoutsDir + "/base.css", encoding: .utf8)
       let layoutCss = self == .base ? "" :
-        (try? String(contentsOfFile: layoutsDir + "/\(self.slug).css")) ?? ""
-      let baseHtml = try! String(contentsOfFile: layoutsDir + "/base.html")
+        (try? String(contentsOfFile: layoutsDir + "/\(self.slug).css", encoding: .utf8)) ?? ""
+      let baseHtml = try! String(contentsOfFile: layoutsDir + "/base.html", encoding: .utf8)
         .replacingOccurrences(of: "/* CSS_HERE */", with: baseCss + layoutCss)
 
       var layoutHtml = baseHtml
       if self != .base {
         layoutHtml = baseHtml.replacingOccurrences(
           of: "{{{ @content }}}",
-          with: try! String(contentsOfFile: layoutsDir + "/\(self.slug).html")
+          with: try! String(contentsOfFile: layoutsDir + "/\(self.slug).html", encoding: .utf8)
         )
       }
 

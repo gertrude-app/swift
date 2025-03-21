@@ -162,7 +162,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
       self.url ?? self.hostname ?? self.ipAddress ?? self.remoteEndpoint,
       self.bundleId,
     ]
-    .compactMap { $0 }
+    .compactMap(\.self)
     .joined(separator: " ")
   }
 }

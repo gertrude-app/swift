@@ -4,7 +4,7 @@ import XExpect
 
 @testable import Api
 
-final class StripeEventTests: ApiTestCase {
+final class StripeEventTests: ApiTestCase, @unchecked Sendable {
   func testSetsSubscriptionId() async throws {
     let admin = try await self.db.create(
       Admin.random(with: { $0.subscriptionId = nil })

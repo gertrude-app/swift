@@ -28,15 +28,15 @@ extension AdminVerifiedNotificationMethod.Config: RandomMocked {
   public static var random: Self {
     switch Int.random(in: 1 ... 3) {
     case 1:
-      return .email(email: "bob-random".random + "@example.com")
+      .email(email: "bob-random".random + "@example.com")
     case 2:
-      return .slack(
+      .slack(
         channelId: "C\(Int.random)",
         channelName: "Channel".random,
         token: "xoxb-random".random
       )
     default:
-      return .text(phoneNumber: "555-555-" + "\(Int.random)")
+      .text(phoneNumber: "555-555-" + "\(Int.random)")
     }
   }
 }

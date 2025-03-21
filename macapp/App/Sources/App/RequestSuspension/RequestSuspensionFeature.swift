@@ -69,7 +69,7 @@ struct RequestSuspensionFeature: Feature {
         state.request = .ongoing
         return .exec { send in
           await send(.createSuspensionRequest(TaskResult {
-            try await api.createSuspendFilterRequest(.init(
+            try await self.api.createSuspendFilterRequest(.init(
               duration: durationInSeconds,
               comment: comment
             ))
@@ -80,7 +80,7 @@ struct RequestSuspensionFeature: Feature {
         state.request = .succeeded
         state.pending = .init(id: id, createdAt: self.now)
         return .exec { send in
-          try await bgQueue.sleep(for: .seconds(10))
+          try await self.bgQueue.sleep(for: .seconds(10))
           await send(.createSuspensionRequestSuccessTimedOut)
         }.cancellable(id: CancelId.successTimeout, cancelInFlight: true)
 

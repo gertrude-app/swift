@@ -8,11 +8,11 @@ public enum IpProtocol: Equatable, CustomStringConvertible, Codable, Sendable {
   public var number: Int32 {
     switch self {
     case .tcp(let num):
-      return num
+      num
     case .udp(let num):
-      return num
+      num
     case .other(let num):
-      return num
+      num
     }
   }
 
@@ -23,49 +23,49 @@ public enum IpProtocol: Equatable, CustomStringConvertible, Codable, Sendable {
   public var isTcp: Bool {
     switch self {
     case .tcp:
-      return true
+      true
     default:
-      return false
+      false
     }
   }
 
   public var isUdp: Bool {
     switch self {
     case .udp:
-      return true
+      true
     default:
-      return false
+      false
     }
   }
 
   public var isOther: Bool {
     switch self {
     case .other:
-      return true
+      true
     default:
-      return false
+      false
     }
   }
 
   public var shortDescription: String {
     switch self {
     case .tcp:
-      return "TCP"
+      "TCP"
     case .udp:
-      return "UDP"
+      "UDP"
     case .other:
-      return "OTHER"
+      "OTHER"
     }
   }
 
   public var description: String {
     switch self {
     case .tcp:
-      return "TCP"
+      "TCP"
     case .udp:
-      return "UDP"
+      "UDP"
     case .other(let number):
-      return "OTHER(\(number))"
+      "OTHER(\(number))"
     }
   }
 
@@ -98,11 +98,11 @@ public extension IpProtocol {
   var kind: Kind {
     switch self {
     case .tcp:
-      return .tcp
+      .tcp
     case .udp:
-      return .udp
+      .udp
     case .other:
-      return .other
+      .other
     }
   }
 }

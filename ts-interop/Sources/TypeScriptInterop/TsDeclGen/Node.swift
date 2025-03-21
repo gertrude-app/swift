@@ -24,17 +24,17 @@ public indirect enum Node: Equatable {
   var anyType: AnyType {
     switch self {
     case .array(_, let anyType):
-      return .array(of: anyType.type)
+      .array(of: anyType.type)
     case .object(_, let type):
-      return type
+      type
     case .objectUnion(_, let type):
-      return type
+      type
     case .primitive(let primitive):
-      return primitive.anyType
+      primitive.anyType
     case .record(let node):
-      return node.anyType
+      node.anyType
     case .stringUnion(_, let type):
-      return type
+      type
     }
   }
 
@@ -109,19 +109,19 @@ extension Node {
   init(from type: TypeInfo) throws {
     switch type.kind {
     case .struct where type.isArray:
-      self = .array(try Node(from: type.genericTypes[0]), .init(type.genericTypes[0]))
+      self = try .array(Node(from: type.genericTypes[0]), .init(type.genericTypes[0]))
     case .struct where type.isDict && type.genericTypes[0] == String.self:
-      self = .record(try Node(from: type.genericTypes[1]))
+      self = try .record(Node(from: type.genericTypes[1]))
     case .struct where type.isDict:
       throw Error(message: "Dictionaries with non-string keys are not supported")
     case .struct:
-      self = .object(try type.properties.map(Node.Property.init), .init(type.type))
+      self = try .object(type.properties.map(Node.Property.init), .init(type.type))
     case .optional:
       self = try Node(from: type.genericTypes[0])
     case .enum where type.numberOfPayloadEnumCases == 0:
       self = .stringUnion(type.cases.map(\.name), .init(type.type))
     case .enum:
-      self = .objectUnion(try type.cases.map { try .init(caseWithValue: $0) }, .init(type.type))
+      self = try .objectUnion(type.cases.map { try .init(caseWithValue: $0) }, .init(type.type))
     case .tuple:
       throw Error(message: "Tuples are not supported")
     default:
@@ -148,10 +148,10 @@ extension Node.ObjectUnionMember {
     // unary named values come through as unary tuple: Foo.bar(foo: Int)
     if associatedValueType.kind == .tuple, associatedValueType.properties.count == 1 {
       let member = associatedValueType.properties[0]
-      associatedValues.append(.init(
+      try associatedValues.append(.init(
         name: member.name,
-        value: try Node(from: member.type),
-        optional: try member.isOptional
+        value: Node(from: member.type),
+        optional: member.isOptional
       ))
 
       // n-ary tuples: Foo.bar(Int, Int), Foo.bar(foo: Int, bar: Int)
@@ -160,10 +160,10 @@ extension Node.ObjectUnionMember {
         guard member.name != "" else {
           throw Node.Error(message: "Multiple unnamed tuple members are not supported")
         }
-        associatedValues.append(.init(
+        try associatedValues.append(.init(
           name: member.name,
-          value: try Node(from: member.type),
-          optional: try member.isOptional
+          value: Node(from: member.type),
+          optional: member.isOptional
         ))
       }
 
@@ -174,9 +174,9 @@ extension Node.ObjectUnionMember {
 
       // unary non-tuple associated value: Foo.bar(Int)
     } else {
-      associatedValues.append(.init(
+      try associatedValues.append(.init(
         name: `case`.name,
-        value: try Node(from: associatedValue),
+        value: Node(from: associatedValue),
         optional: associatedValueType.kind == .optional
       ))
     }
@@ -187,23 +187,23 @@ extension Node.Primitive {
   var anyType: AnyType {
     switch self {
     case .boolean:
-      return .bool
+      .bool
     case .date:
-      return .init(Date.self)
+      .init(Date.self)
     case .never:
-      return .init(fullyQualifiedName: "Swift.Never", name: "Never", type: Never.self)
+      .init(fullyQualifiedName: "Swift.Never", name: "Never", type: Never.self)
     case .null:
-      return .init(fullyQualifiedName: "TypeScriptInterop.Null", name: "Null", type: Any?.self)
+      .init(fullyQualifiedName: "TypeScriptInterop.Null", name: "Null", type: Any?.self)
     case .number(let type):
-      return type
+      type
     case .string:
-      return .init(String.self)
+      .init(String.self)
     case .stringLiteral:
-      return .init(String.self)
+      .init(String.self)
     case .uuid:
-      return .init(UUID.self)
+      .init(UUID.self)
     case .void:
-      return .init(Void.self)
+      .init(Void.self)
     }
   }
 }

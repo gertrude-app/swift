@@ -15,7 +15,7 @@ public extension ApiClient {
   func securityEvent(deviceId: UUID, event: SecurityEvent.MacApp, detail: String? = nil) async {
     @Dependency(\.network) var network
     guard network.isConnected() else {
-      buffer(event, detail, deviceId, try? await self.getUserToken())
+      await buffer(event, detail, deviceId, try? self.getUserToken())
       return
     }
     await self.logSecurityEvent(
@@ -38,19 +38,18 @@ private func buffer(
   _ deviceId: UUID,
   _ userToken: UUID?
 ) {
-  guard let userToken = userToken else {
+  guard let userToken else {
     return
   }
 
   @Dependency(\.date.now) var now
   @Dependency(\.userDefaults) var userDefaults
 
-  let timestampedDetail: String
-  switch detail {
+  let timestampedDetail = switch detail {
   case .some(let detail):
-    timestampedDetail = "\(detail) (at \(now))"
+    "\(detail) (at \(now))"
   case .none:
-    timestampedDetail = "at \(now)"
+    "at \(now)"
   }
 
   var buffered = (try? userDefaults.loadJson(

@@ -31,7 +31,7 @@ final class MenuBarFeatureTests: XCTestCase {
         $0.user.downtimePausedUntil = now + .minutes(10)
       }
 
-      expect(await pauseDowntime.calls).toEqual([now + .minutes(10)])
+      await expect(pauseDowntime.calls).toEqual([now + .minutes(10)])
       expect(FilterState.WithRelativeTimes(from: store.state))
         .toEqual(.downtimePaused(resuming: "10 minutes from now"))
 
@@ -39,7 +39,7 @@ final class MenuBarFeatureTests: XCTestCase {
         $0.user.downtimePausedUntil = nil
       }
 
-      expect(await resumeDowntime.calls.count).toEqual(1)
+      await expect(resumeDowntime.calls.count).toEqual(1)
 
       expect(FilterState.WithRelativeTimes(from: store.state))
         .toEqual(.downtime(ending: "about 6 hours from now"))

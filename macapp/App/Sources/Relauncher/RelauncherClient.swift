@@ -81,7 +81,7 @@ extension RelauncherClient: DependencyKey {
 public extension CommandLine {
   static func arguments() -> [String] {
     UnsafeBufferPointer(start: unsafeArgv, count: Int(argc)).lazy
-      .compactMap { $0 }
+      .compactMap(\.self)
       .compactMap { String(validatingUTF8: $0) }
   }
 }

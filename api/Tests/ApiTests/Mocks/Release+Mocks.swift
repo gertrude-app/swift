@@ -31,9 +31,9 @@ extension Release: RandomMocked {
       semver: "1.0.0".random,
       channel: {
         switch Int.random(in: 0 ... 2) {
-        case 0: return .stable
-        case 1: return .beta
-        default: return .canary
+        case 0: .stable
+        case 1: .beta
+        default: .canary
         }
       }(),
       signature: "signature".random,

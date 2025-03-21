@@ -65,32 +65,32 @@ extension QueryAdmins: NoInputResolver {
     for row in rows where row.userDeviceId != nil {
       let userDeviceId = try expect(row.userDeviceId)
       guard installations[userDeviceId] == nil else { continue }
-      let installation = AdminData.Child.Installation(
-        userId: try expect(row.numericId),
-        appVersion: try expect(row.appVersion),
+      let installation = try AdminData.Child.Installation(
+        userId: expect(row.numericId),
+        appVersion: expect(row.appVersion),
         filterVersion: row.filterVersion ?? "unknown",
-        modelIdentifier: try expect(row.modelIdentifier),
-        appReleaseChannel: try expect(row.appReleaseChannel),
+        modelIdentifier: expect(row.modelIdentifier),
+        appReleaseChannel: expect(row.appReleaseChannel),
         osVersionNumber: row.osVersion?.description,
         osVersionName: osVersionName(row.osVersion),
-        createdAt: try expect(row.userDeviceCreatedAt)
+        createdAt: expect(row.userDeviceCreatedAt)
       )
-      installations[userDeviceId] = (installation, try expect(row.userId))
+      installations[userDeviceId] = try (installation, expect(row.userId))
     }
 
     var children: [User.Id: (AdminData.Child, Admin.Id)] = [:]
     for row in rows where row.userId != nil {
       let userId = try expect(row.userId)
       guard children[userId] == nil else { continue }
-      let child = AdminData.Child(
-        name: try expect(row.userName),
-        keyloggingEnabled: try expect(row.keyloggingEnabled),
-        screenshotsEnabled: try expect(row.screenshotsEnabled),
+      let child = try AdminData.Child(
+        name: expect(row.userName),
+        keyloggingEnabled: expect(row.keyloggingEnabled),
+        screenshotsEnabled: expect(row.screenshotsEnabled),
         numKeychains: row.userKeychainCount,
         numKeys: row.numKeys,
         numActivityItems: row.keystrokeCount + row.screenshotCount,
         installations: [],
-        createdAt: try expect(row.userCreatedAt)
+        createdAt: expect(row.userCreatedAt)
       )
       children[userId] = (child, row.adminId)
     }
@@ -130,21 +130,21 @@ extension QueryAdmins: NoInputResolver {
 func osVersionName(_ osVersion: Semver?) -> String? {
   switch osVersion?.major {
   case 10:
-    return "Catalina"
+    "Catalina"
   case 11:
-    return "Big Sur"
+    "Big Sur"
   case 12:
-    return "Monterey"
+    "Monterey"
   case 13:
-    return "Ventura"
+    "Ventura"
   case 14:
-    return "Sonoma"
+    "Sonoma"
   case 15:
-    return "Sequoia"
+    "Sequoia"
   case nil:
-    return nil
+    nil
   default:
-    return "(Unknown \(osVersion?.major ?? 0))"
+    "(Unknown \(osVersion?.major ?? 0))"
   }
 }
 

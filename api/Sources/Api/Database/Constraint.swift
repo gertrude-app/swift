@@ -9,11 +9,11 @@ enum Constraint {
     var sql: String {
       switch self {
       case .cascade:
-        return "CASCADE"
+        "CASCADE"
       case .noAction:
-        return "NO ACTION"
+        "NO ACTION"
       case .setNull:
-        return "SET NULL"
+        "SET NULL"
       }
     }
   }
@@ -57,22 +57,22 @@ enum Constraint {
   var addSql: SQLQueryString {
     switch self {
     case .notNull(let Migration, let column):
-      return """
+      """
         ALTER TABLE \(table: Migration.self)
         ALTER COLUMN \(col: column) SET NOT NULL
       """
     case .unique(let Migration, let columns):
-      return """
+      """
         ALTER TABLE \(table: Migration)
         ADD CONSTRAINT \(constraint: self) UNIQUE (\(unsafeRaw: columns.csv))
       """
     case .primaryKey(let Migration, let columns):
-      return """
+      """
         ALTER TABLE \(table: Migration)
         ADD CONSTRAINT \(constraint: self) PRIMARY KEY (\(unsafeRaw: columns.csv))
       """
     case .foreignKey(let Table, let ReferencedTable, let column, let onDelete):
-      return """
+      """
         ALTER TABLE \(table: Table)
         ADD CONSTRAINT \(constraint: self)
           FOREIGN KEY (\(col: column))
@@ -85,14 +85,14 @@ enum Constraint {
   var dropSql: SQLQueryString {
     switch self {
     case .notNull(let Migration, let column):
-      return """
+      """
         ALTER TABLE \(table: Migration.self)
         ALTER COLUMN \(col: column) DROP NOT NULL
       """
     case .unique(let Migration, _),
          .foreignKey(let Migration, _, _, _),
          .primaryKey(let Migration, _):
-      return """
+      """
         ALTER TABLE \(table: Migration)
         DROP CONSTRAINT \(constraint: self)
       """
@@ -109,7 +109,7 @@ private func invariant(_ ident: String) -> String {
   return ident
 }
 
-private extension Set where Element == FieldKey {
+private extension Set<FieldKey> {
   var psv: String {
     map(\.description).sorted().joined(separator: "+")
   }

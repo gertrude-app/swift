@@ -3,7 +3,7 @@ import XExpect
 
 @testable import Api
 
-final class UserActivityResolverTests: ApiTestCase {
+final class UserActivityResolverTests: ApiTestCase, @unchecked Sendable {
   func testGetActivityDay() async throws {
     let user = try await self.userWithDevice()
     var screenshot = Screenshot.random
@@ -159,7 +159,7 @@ final class UserActivityResolverTests: ApiTestCase {
     )
 
     expect(output).toEqual(.success)
-    expect(try? await self.db.find(keystrokeLine.id)).toBeNil()
-    expect(try? await self.db.find(screenshot.id)).toBeNil()
+    await expect(try? self.db.find(keystrokeLine.id)).toBeNil()
+    await expect(try? self.db.find(screenshot.id)).toBeNil()
   }
 }

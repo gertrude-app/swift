@@ -17,11 +17,11 @@ extension AppConnection.Ids {
   func satisfies(matcher: AppEvent.Matcher) -> Bool {
     switch matcher {
     case .user(let userId):
-      return self.user == userId
+      self.user == userId
     case .usersWith(let keychainId):
-      return self.keychains.contains(keychainId)
+      self.keychains.contains(keychainId)
     case .userDevice(let userDeviceId):
-      return self.userDevice == userDeviceId
+      self.userDevice == userDeviceId
     }
   }
 }

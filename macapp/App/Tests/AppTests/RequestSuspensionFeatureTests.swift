@@ -25,10 +25,10 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     store.deps.api.checkIn = checkIn.fn
 
     // because we have a pending suspension, the .everyMinute heartbeat will check
-    expect(await checkIn.calls.count).toEqual(0)
+    await expect(checkIn.calls.count).toEqual(0)
     await bgQueue.advance(by: .seconds(60))
-    expect(await checkIn.calls.count).toEqual(1)
-    expect(await checkIn.calls[0].pendingFilterSuspension).toEqual(reqId)
+    await expect(checkIn.calls.count).toEqual(1)
+    await expect(checkIn.calls[0].pendingFilterSuspension).toEqual(reqId)
 
     store.assert {
       // heartbeat check returned nada, so we're still waiting for parent response
@@ -47,7 +47,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
 
     // ...and don't check in the heartbeat again
     await bgQueue.advance(by: .seconds(60 * 10))
-    expect(await checkIn.calls.count).toEqual(1)
+    await expect(checkIn.calls.count).toEqual(1)
   }
 
   @MainActor
@@ -145,7 +145,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
 
     for i in 1 ... 10 {
       await time.advance(seconds: 60)
-      expect(await checkIn.calls.count).toEqual(i)
+      await expect(checkIn.calls.count).toEqual(i)
     }
 
     store.assert {
@@ -153,14 +153,14 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     }
 
     await time.advance(seconds: 60)
-    expect(await checkIn.calls.count).toEqual(10)
+    await expect(checkIn.calls.count).toEqual(10)
     await store.skipReceivedActions()
     store.assert {
       $0.requestSuspension.pending = nil
     }
 
     await time.advance(seconds: 60 * 4)
-    expect(await checkIn.calls.count).toEqual(10) // still 10
+    await expect(checkIn.calls.count).toEqual(10) // still 10
   }
 
   @MainActor
@@ -178,12 +178,12 @@ final class RequestSuspensionFeatureTests: XCTestCase {
       )
     )
 
-    expect(await connect.calls.count).toEqual(1)
+    await expect(connect.calls.count).toEqual(1)
 
     await store
       .send(.blockedRequests(.webview(.unlockRequestSubmitted(comment: nil))))
 
-    expect(await connect.calls.count).toEqual(2)
+    await expect(connect.calls.count).toEqual(2)
   }
 
   @MainActor

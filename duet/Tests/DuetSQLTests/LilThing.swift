@@ -68,15 +68,15 @@ extension LilThing: Model {
   func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id:
-      return .id(self)
+      .id(self)
     case .int:
-      return .int(self.int)
+      .int(self.int)
     case .createdAt:
-      return .date(self.createdAt)
+      .date(self.createdAt)
     case .updatedAt:
-      return .date(self.updatedAt)
+      .date(self.updatedAt)
     case .deletedAt:
-      return .date(self.deletedAt)
+      .date(self.deletedAt)
     }
   }
 }
@@ -108,13 +108,13 @@ extension OptLilThing: Model {
   func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id:
-      return .id(self)
+      .id(self)
     case .int:
-      return .int(self.int)
+      .int(self.int)
     case .string:
-      return .string(self.string)
+      .string(self.string)
     case .createdAt:
-      return .date(self.createdAt)
+      .date(self.createdAt)
     }
   }
 }

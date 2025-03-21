@@ -8,7 +8,7 @@ public enum XCore {
       public var errorDescription: String? {
         switch self {
         case .isoStringConversion(let string):
-          return "Failed to create Date() from invalid ISO string `\(string)`"
+          "Failed to create Date() from invalid ISO string `\(string)`"
         }
       }
     }

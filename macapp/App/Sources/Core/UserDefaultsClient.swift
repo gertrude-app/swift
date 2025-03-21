@@ -35,8 +35,8 @@ public struct UserDefaultsClient: Sendable {
     try self.getString(key).flatMap { try JSON.decode($0, as: T.self) }
   }
 
-  public func saveJson<T: Encodable>(from value: T, at key: String) throws {
-    self.setString(key: key, value: try JSON.encode(value))
+  public func saveJson(from value: some Encodable, at key: String) throws {
+    try self.setString(key: key, value: JSON.encode(value))
   }
 }
 
@@ -56,7 +56,7 @@ extension UserDefaultsClient: DependencyKey {
     getString: { UserDefaults.standard.string(forKey: $0) },
     remove: { UserDefaults.standard.removeObject(forKey: $0) },
     removeAll: {
-      UserDefaults.standard.dictionaryRepresentation().keys.forEach { key in
+      for key in UserDefaults.standard.dictionaryRepresentation().keys {
         UserDefaults.standard.removeObject(forKey: key)
       }
     }

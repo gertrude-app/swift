@@ -6,6 +6,7 @@ import XExpect
 @testable import LibApp
 
 final class IOSReducerTestsFamily: XCTestCase {
+  @MainActor
   func testAppleFamilyFailFlow1() async throws {
     let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
 
@@ -26,6 +27,7 @@ final class IOSReducerTestsFamily: XCTestCase {
     }
   }
 
+  @MainActor
   func testAppleFamilyDontKnowAtFirstButConfirmInOne() async throws {
     let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
 
@@ -43,6 +45,7 @@ final class IOSReducerTestsFamily: XCTestCase {
       }
   }
 
+  @MainActor
   func testAppleFamilyDontKnowAtFirstButConfirmNotInOne() async throws {
     let store = store(starting: .onboarding(.happyPath(.confirmInAppleFamily)))
 

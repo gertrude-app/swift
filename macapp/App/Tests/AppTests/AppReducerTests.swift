@@ -168,10 +168,10 @@ final class AppReducerTests: XCTestCase {
 // helpers
 
 extension AppReducer {
-  static func testStore<R: ReducerOf<AppReducer>>(
+  static func testStore(
     exhaustive: Bool = false,
     mockDeps: Bool = true,
-    reducer: R = AppReducer(),
+    reducer: some ReducerOf<AppReducer> = AppReducer(),
     mutateState: @escaping (inout State) -> Void = { _ in }
   ) -> (TestStoreOf<AppReducer>, TestSchedulerOf<DispatchQueue>) {
     var state = State(appVersion: "1.0.0")

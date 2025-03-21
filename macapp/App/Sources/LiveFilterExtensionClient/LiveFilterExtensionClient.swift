@@ -5,7 +5,7 @@ import Dependencies
 import NetworkExtension
 import SystemExtensions
 
-extension FilterExtensionClient: DependencyKey {
+extension FilterExtensionClient: @retroactive DependencyKey {
   public static var liveValue: Self {
     let manager = ThreadSafeFilterManager()
     return FilterExtensionClient(

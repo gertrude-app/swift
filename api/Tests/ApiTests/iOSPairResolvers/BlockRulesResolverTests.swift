@@ -5,7 +5,7 @@ import XExpect
 
 @testable import Api
 
-final class BlockRulesResolverTests: ApiTestCase {
+final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
   func testBlockRules() async throws {
     let vendorId = UUID()
     try await self.db.delete(all: IOSBlockRule.self)

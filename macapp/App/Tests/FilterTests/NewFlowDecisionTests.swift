@@ -164,7 +164,7 @@ extension RuleKey {
   }
 }
 
-extension Array where Element == RuleKey {
+extension [RuleKey] {
   func into() -> [RuleKeychain] {
     [RuleKeychain(keys: self)]
   }

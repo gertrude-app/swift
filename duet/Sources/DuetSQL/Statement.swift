@@ -218,16 +218,16 @@ public extension SQL.Statement {
       components.compactMap {
         switch $0 {
         case .sql:
-          return nil
+          nil
         case .binding(let data):
-          return data
+          data
         }
       }
     }
   #endif
 }
 
-extension Sequence where Element == String {
+extension Sequence<String> {
   var list: String {
     joined(separator: ", ")
   }

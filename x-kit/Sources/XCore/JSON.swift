@@ -46,8 +46,8 @@ public enum JSON {
     return try decoder.decode(type, from: data)
   }
 
-  public static func encode<T: Encodable>(
-    _ value: T,
+  public static func encode(
+    _ value: some Encodable,
     _ options: EncodeOptions = []
   ) throws -> String {
     let data = try data(value, options)
@@ -57,8 +57,8 @@ public enum JSON {
     return json
   }
 
-  public static func data<T: Encodable>(
-    _ value: T,
+  public static func data(
+    _ value: some Encodable,
     _ options: EncodeOptions = []
   ) throws -> Data {
     let encoder = JSONEncoder()

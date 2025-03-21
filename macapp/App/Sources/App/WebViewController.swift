@@ -66,7 +66,7 @@ class WebViewController<State, Action>:
     view = self.webView
   }
 
-  nonisolated func userContentController(
+  func userContentController(
     _ userContentController: WKUserContentController,
     didReceive message: WKScriptMessage
   ) {
@@ -78,17 +78,13 @@ class WebViewController<State, Action>:
     }
 
     if message == "__APPVIEW_READY__" {
-      Task { [weak self] in
-        await self?.ready()
-      }
+      self.ready()
       return
     }
 
     do {
       let action = try JSON.decode(message, as: Action.self)
-      Task { [weak self] in
-        await self?.send(action: action)
-      }
+      self.send(action: action)
     } catch {
       let actionType = String(reflecting: Action.self)
       let errMsg = "ERR: could not decode action from webview: \(message) as \(actionType)\n"

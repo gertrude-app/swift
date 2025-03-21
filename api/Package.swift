@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -55,10 +55,6 @@ let package = Package(
       ],
       exclude: ["Email/Templates/", "Email/Layouts/"],
       swiftSettings: [
-        .unsafeFlags([
-          "-Xfrontend", "-warn-concurrency",
-          "-Xfrontend", "-enable-actor-data-race-checks",
-        ]),
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
       ]
     ),

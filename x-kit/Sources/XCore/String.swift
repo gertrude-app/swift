@@ -27,18 +27,18 @@ public extension String {
     )
   }
 
-  func regexReplace<Pattern: StringProtocol, Replacement: StringProtocol>(
-    _ pattern: Pattern,
-    _ replacement: Replacement
+  func regexReplace(
+    _ pattern: some StringProtocol,
+    _ replacement: some StringProtocol
   ) -> String {
     replacingOccurrences(of: pattern, with: replacement, options: .regularExpression)
   }
 
-  func regexRemove<Pattern: StringProtocol>(_ pattern: Pattern) -> String {
+  func regexRemove(_ pattern: some StringProtocol) -> String {
     self.regexReplace(pattern, "")
   }
 
-  func matchesRegex<Pattern: StringProtocol>(_ pattern: Pattern) -> Bool {
+  func matchesRegex(_ pattern: some StringProtocol) -> Bool {
     range(of: pattern, options: .regularExpression) != nil
   }
 

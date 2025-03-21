@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version:6.0
 import PackageDescription
 
 let package = Package(
@@ -21,13 +21,7 @@ let package = Package(
         .product(name: "XCore", package: "x-kit"),
         .product(name: "Tagged", package: "swift-tagged"),
       ],
-      swiftSettings: [
-        .unsafeFlags([
-          "-Xfrontend", "-warn-concurrency",
-          "-Xfrontend", "-enable-actor-data-race-checks",
-          "-Xfrontend", "-warnings-as-errors",
-        ]),
-      ]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
     ),
     .target(
       name: "DuetSQL",
@@ -37,13 +31,7 @@ let package = Package(
         .product(name: "XCore", package: "x-kit"),
         .product(name: "Tagged", package: "swift-tagged"),
       ],
-      swiftSettings: [
-        .unsafeFlags([
-          "-Xfrontend", "-warn-concurrency",
-          "-Xfrontend", "-enable-actor-data-race-checks",
-          "-Xfrontend", "-warnings-as-errors",
-        ]),
-      ]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
     ),
     .testTarget(
       name: "DuetSQLTests",

@@ -16,18 +16,18 @@ enum PayloadRequestState<T, E> {
   var isSucceeded: Bool {
     switch self {
     case .succeeded:
-      return true
+      true
     default:
-      return false
+      false
     }
   }
 
   var isFailed: Bool {
     switch self {
     case .failed:
-      return true
+      true
     default:
-      return false
+      false
     }
   }
 }

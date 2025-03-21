@@ -64,142 +64,138 @@ extension OnboardingFeature.State.Step {
   var primaryFallbackNextStep: Self {
     switch self {
     case .welcome:
-      return .confirmGertrudeAccount
+      .confirmGertrudeAccount
     case .wrongInstallDir:
-      return .confirmGertrudeAccount
+      .confirmGertrudeAccount
     case .confirmGertrudeAccount:
-      return .macosUserAccountType
+      .macosUserAccountType
     case .noGertrudeAccount:
-      return .macosUserAccountType
+      .macosUserAccountType
     case .macosUserAccountType:
-      return .getChildConnectionCode
+      .getChildConnectionCode
     case .getChildConnectionCode:
-      return .connectChild
+      .connectChild
     case .connectChild:
-      return .howToUseGifs
+      .howToUseGifs
     case .howToUseGifs:
-      return .allowNotifications_start
+      .allowNotifications_start
     case .allowNotifications_start:
-      return .allowNotifications_grant
+      .allowNotifications_grant
     case .allowNotifications_grant:
-      return .allowScreenshots_required
+      .allowScreenshots_required
     case .allowNotifications_failed:
-      return .allowFullDiskAccess_grantAndRestart
+      .allowFullDiskAccess_grantAndRestart
     case .allowFullDiskAccess_grantAndRestart:
-      return .allowFullDiskAccess_success
+      .allowFullDiskAccess_success
     case .allowFullDiskAccess_success:
-      return .allowScreenshots_required
+      .allowScreenshots_required
     case .allowFullDiskAccess_failed:
-      return .allowScreenshots_required
+      .allowScreenshots_required
     case .allowScreenshots_required:
-      return .allowScreenshots_grantAndRestart
+      .allowScreenshots_grantAndRestart
     case .allowScreenshots_grantAndRestart:
-      return .allowScreenshots_success
+      .allowScreenshots_success
     case .allowScreenshots_failed:
-      return .allowKeylogging_required
+      .allowKeylogging_required
     case .allowScreenshots_success:
-      return .allowKeylogging_required
+      .allowKeylogging_required
     case .allowKeylogging_required:
-      return .allowKeylogging_grant
+      .allowKeylogging_grant
     case .allowKeylogging_grant:
-      return .installSysExt_explain
+      .installSysExt_explain
     case .allowKeylogging_failed:
-      return .installSysExt_explain
+      .installSysExt_explain
     case .installSysExt_explain:
-      return .installSysExt_trick
+      .installSysExt_trick
     case .installSysExt_trick:
-      return .installSysExt_allow
+      .installSysExt_allow
     case .installSysExt_allow:
-      return .installSysExt_success
+      .installSysExt_success
     case .installSysExt_failed:
-      return .installSysExt_success
+      .installSysExt_success
     case .installSysExt_success:
-      return .locateMenuBarIcon
+      .locateMenuBarIcon
     case .exemptUsers:
-      return .locateMenuBarIcon
+      .locateMenuBarIcon
     case .locateMenuBarIcon:
-      return .viewHealthCheck
+      .viewHealthCheck
     case .viewHealthCheck:
-      return .encourageFilterSuspensions
+      .encourageFilterSuspensions
     case .encourageFilterSuspensions:
-      return .howToUseGertrude
+      .howToUseGertrude
     case .howToUseGertrude:
-      return .finish
+      .finish
     case .finish:
-      return .finish
+      .finish
     }
   }
 
   var secondaryFallbackNextStep: Self {
     switch self {
     case .welcome:
-      return .welcome
+      .welcome
     case .wrongInstallDir:
-      return .welcome
+      .welcome
     case .confirmGertrudeAccount:
-      return .welcome
+      .welcome
     case .noGertrudeAccount:
-      return .confirmGertrudeAccount
+      .confirmGertrudeAccount
     case .macosUserAccountType:
-      return .confirmGertrudeAccount
+      .confirmGertrudeAccount
     case .getChildConnectionCode:
-      return .macosUserAccountType
+      .macosUserAccountType
     case .connectChild:
-      return .getChildConnectionCode
+      .getChildConnectionCode
     case .howToUseGifs:
-      return .connectChild
-
+      .connectChild
     case .allowNotifications_start:
-      return .howToUseGifs
+      .howToUseGifs
     case .allowNotifications_grant:
-      return .allowNotifications_start
+      .allowNotifications_start
     case .allowNotifications_failed:
-      return .allowNotifications_grant
-
+      .allowNotifications_grant
     case .allowFullDiskAccess_grantAndRestart:
-      return .allowNotifications_start
+      .allowNotifications_start
     case .allowFullDiskAccess_failed:
-      return .allowFullDiskAccess_grantAndRestart
+      .allowFullDiskAccess_grantAndRestart
     case .allowFullDiskAccess_success:
-      return .allowFullDiskAccess_grantAndRestart
-
+      .allowFullDiskAccess_grantAndRestart
     case .allowScreenshots_required:
-      return .allowFullDiskAccess_grantAndRestart
-
+      .allowFullDiskAccess_grantAndRestart
     case .allowScreenshots_grantAndRestart:
-      return .allowScreenshots_required
+      .allowScreenshots_required
     case .allowScreenshots_failed:
-      return .allowScreenshots_required
+      .allowScreenshots_required
     case .allowScreenshots_success:
-      return .allowScreenshots_grantAndRestart
+      .allowScreenshots_grantAndRestart
     case .allowKeylogging_required:
-      return .allowScreenshots_required
+      .allowScreenshots_required
     case .allowKeylogging_grant:
-      return .allowKeylogging_required
+      .allowKeylogging_required
     case .allowKeylogging_failed:
-      return .allowKeylogging_required
+      .allowKeylogging_required
     case .installSysExt_explain:
-      return .allowKeylogging_required
+      .allowKeylogging_required
     case .installSysExt_trick:
-      return .installSysExt_explain
+      .installSysExt_explain
     case .installSysExt_allow:
-      return .installSysExt_trick
+      .installSysExt_trick
     case .installSysExt_failed:
-      return .installSysExt_explain
+      .installSysExt_explain
     case .installSysExt_success:
-      return .installSysExt_explain
+      .installSysExt_explain
     case .exemptUsers:
-      return .installSysExt_explain
+      .installSysExt_explain
     case .locateMenuBarIcon:
-      return .installSysExt_explain
+      .installSysExt_explain
     case .viewHealthCheck:
-      return .locateMenuBarIcon
+      .locateMenuBarIcon
     case .encourageFilterSuspensions:
-      return .viewHealthCheck
+      .viewHealthCheck
     case .howToUseGertrude:
-      return .encourageFilterSuspensions
+      .encourageFilterSuspensions
     case .finish:
-      return .howToUseGertrude
+      .howToUseGertrude
     }
   }
 }
@@ -211,38 +207,38 @@ extension OnboardingFeature.State.Step: Comparable {
 
   private var asInt: Int {
     switch self {
-    case .welcome: return 0
-    case .wrongInstallDir: return 3
-    case .confirmGertrudeAccount: return 5
-    case .noGertrudeAccount: return 10
-    case .macosUserAccountType: return 15
-    case .getChildConnectionCode: return 20
-    case .connectChild: return 25
-    case .howToUseGifs: return 28
-    case .allowNotifications_start: return 30
-    case .allowNotifications_grant: return 35
-    case .allowNotifications_failed: return 40
-    case .allowFullDiskAccess_grantAndRestart: return 42
-    case .allowFullDiskAccess_failed: return 43
-    case .allowFullDiskAccess_success: return 44
-    case .allowScreenshots_required: return 45
-    case .allowScreenshots_grantAndRestart: return 55
-    case .allowScreenshots_failed: return 60
-    case .allowScreenshots_success: return 65
-    case .allowKeylogging_required: return 70
-    case .allowKeylogging_grant: return 80
-    case .allowKeylogging_failed: return 85
-    case .installSysExt_explain: return 90
-    case .installSysExt_trick: return 92
-    case .installSysExt_allow: return 95
-    case .installSysExt_failed: return 100
-    case .installSysExt_success: return 105
-    case .exemptUsers: return 108
-    case .locateMenuBarIcon: return 110
-    case .viewHealthCheck: return 115
-    case .encourageFilterSuspensions: return 117
-    case .howToUseGertrude: return 120
-    case .finish: return 125
+    case .welcome: 0
+    case .wrongInstallDir: 3
+    case .confirmGertrudeAccount: 5
+    case .noGertrudeAccount: 10
+    case .macosUserAccountType: 15
+    case .getChildConnectionCode: 20
+    case .connectChild: 25
+    case .howToUseGifs: 28
+    case .allowNotifications_start: 30
+    case .allowNotifications_grant: 35
+    case .allowNotifications_failed: 40
+    case .allowFullDiskAccess_grantAndRestart: 42
+    case .allowFullDiskAccess_failed: 43
+    case .allowFullDiskAccess_success: 44
+    case .allowScreenshots_required: 45
+    case .allowScreenshots_grantAndRestart: 55
+    case .allowScreenshots_failed: 60
+    case .allowScreenshots_success: 65
+    case .allowKeylogging_required: 70
+    case .allowKeylogging_grant: 80
+    case .allowKeylogging_failed: 85
+    case .installSysExt_explain: 90
+    case .installSysExt_trick: 92
+    case .installSysExt_allow: 95
+    case .installSysExt_failed: 100
+    case .installSysExt_success: 105
+    case .exemptUsers: 108
+    case .locateMenuBarIcon: 110
+    case .viewHealthCheck: 115
+    case .encourageFilterSuspensions: 117
+    case .howToUseGertrude: 120
+    case .finish: 125
     }
   }
 }

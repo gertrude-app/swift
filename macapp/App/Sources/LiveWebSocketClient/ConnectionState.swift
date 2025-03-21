@@ -34,59 +34,59 @@ public enum ConnectionState: Sendable {
     case .idle:
       switch event {
       case .receivedConnected:
-        return .connected
+        .connected
       case .initiatingDisconnect:
-        return .disconnected
+        .disconnected
       default:
-        return self
+        self
       }
 
     case .waitingForPong:
       switch event {
       case .receivedPong:
-        return .connected
+        .connected
       case .failedToReceiveTimelyPong, .initiatingDisconnect:
-        return .disconnected
+        .disconnected
       default:
-        return self
+        self
       }
 
     case .disconnected:
       switch event {
       case .initiatingConnection:
-        return .idle
+        .idle
       default:
-        return self
+        self
       }
 
     case .connected:
       switch event {
       case .receivedDisconnected, .receivedCancelled, .initiatingDisconnect:
-        return .disconnected
+        .disconnected
       case .sentPing:
-        return .waitingForPong
+        .waitingForPong
       default:
-        return self
+        self
       }
 
     case .connecting:
       switch event {
 
       case .receivedConnected:
-        return .connected
+        .connected
 
       case .receivedCancelled:
-        return .disconnected
+        .disconnected
 
       case .receivedDisconnected:
-        return .disconnected
+        .disconnected
 
       case .sentPing,
            .failedToReceiveTimelyPong,
            .initiatingConnection,
            .initiatingDisconnect,
            .receivedPong:
-        return self
+        self
       }
     }
   }

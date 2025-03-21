@@ -66,7 +66,7 @@ public struct Filter: Reducer, Sendable {
         },
 
         .run { [load = storage.loadPersistentState] send in
-          await send(.loadedPersistentState(try load()))
+          try await send(.loadedPersistentState(load()))
         },
 
         .run { send in
@@ -76,7 +76,7 @@ public struct Filter: Reducer, Sendable {
         }.cancellable(id: CancelId.heartbeat, cancelInFlight: true),
 
         .publisher {
-          xpc.events()
+          self.xpc.events()
             .map { .xpc($0) }
             .receive(on: self.mainQueue)
         }
@@ -210,7 +210,7 @@ public struct Filter: Reducer, Sendable {
         // NB: this sleep pauses (and thus becomes incorrect) when the computer is asleep
         // ideally we should use ContinuousClock instead, but it's not available for our targets
         // so we check for stale suspensions in the heartbeat, cancelling the timer
-        try await mainQueue.sleep(for: .seconds(duration.rawValue))
+        try await self.mainQueue.sleep(for: .seconds(duration.rawValue))
         await send(.suspensionTimerEnded(userId))
       }.cancellable(id: CancelId.suspensionTimer(for: userId), cancelInFlight: true)
 

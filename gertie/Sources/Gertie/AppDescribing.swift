@@ -4,7 +4,7 @@ public protocol AppDescribing {
   var appIdManifest: AppIdManifest { get }
   func rootApp(fromAuditToken: Data?) -> (bundleId: String?, displayName: String?)
   func appCache(get: String) -> AppDescriptor?
-  func appCache(insert: AppDescriptor, for: String) -> Void
+  func appCache(insert: AppDescriptor, for: String)
 }
 
 public extension AppDescribing {
@@ -18,7 +18,7 @@ public extension AppDescribing {
     // if we can't find a slug for the bundle id, but we have a token, look for a root app
     if slug == nil, let token = auditToken {
       let (rootBundleId, rootDisplayName) = self.rootApp(fromAuditToken: token)
-      if let rootBundleId = rootBundleId, rootBundleId != bundleId {
+      if let rootBundleId, rootBundleId != bundleId {
         var rootApp = self.appDescriptor(for: rootBundleId)
 
         // if we happened also to find a display name not known by the

@@ -4,7 +4,7 @@ import XExpect
 
 @testable import Api
 
-final class UsersResolversTests: ApiTestCase {
+final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
   func testSaveAndDeleteNewUser() async throws {
     let admin = try await self.admin()
 

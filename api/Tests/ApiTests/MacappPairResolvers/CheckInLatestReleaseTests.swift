@@ -7,7 +7,7 @@ import XExpect
 
 @testable import Api
 
-final class CheckInLatestReleaseTests: ApiTestCase {
+final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
   func test(
     releaseChannel: ReleaseChannel,
     currentVersion: String

@@ -20,7 +20,7 @@ public extension EndpointOverridable {
   }
 
   static func defaultEndpoint() -> URL {
-    Self.endpointDefault
+    endpointDefault
   }
 
   func clearEndpointOverride() {
@@ -32,7 +32,7 @@ public extension EndpointOverridable {
   }
 
   static func endpointOverride() -> URL? {
-    Self.endpointOverride.value
+    self.endpointOverride.value
   }
 
   func setEndpointOverride(_ url: URL) {
