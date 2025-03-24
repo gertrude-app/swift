@@ -46,7 +46,7 @@ public extension BlockRule {
   }
 }
 
-public extension Array where Element == BlockRule {
+public extension [BlockRule] {
   func blocksFlow(
     hostname: String?,
     url: String?,

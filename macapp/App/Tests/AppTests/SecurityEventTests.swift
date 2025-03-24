@@ -49,9 +49,9 @@ final class SecurityEventTests: XCTestCase {
       event: .advancedSettingsOpened,
       detail: "at \(store.deps.date.now)"
     )
-    expect(setStringCalls.value).toEqual([
+    expect(setStringCalls.value).toEqual(try [
       .init(event1Json, .bufferedSecurityEventsKey),
-      .init(try JSON.encode([event1, event2]), .bufferedSecurityEventsKey),
+      .init(JSON.encode([event1, event2]), .bufferedSecurityEventsKey),
     ])
 
     // internet comes back on

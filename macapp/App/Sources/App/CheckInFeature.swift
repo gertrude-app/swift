@@ -3,7 +3,7 @@ import Core
 import Foundation
 import MacAppRoute
 
-struct CheckInFeature {
+enum CheckInFeature {
   struct RootReducer: RootReducing {
     typealias Action = AppReducer.Action
     typealias State = AppReducer.State

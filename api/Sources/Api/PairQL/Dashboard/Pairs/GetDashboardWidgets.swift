@@ -93,17 +93,17 @@ extension GetDashboardWidgets: NoInputResolver {
     async let notifications = context.admin.notifications(in: context.db)
 
     return try await .init(
-      users: users.concurrentMap { user in .init(
+      users: users.concurrentMap { user in try await .init(
         id: user.id,
         name: user.name,
-        status: try await consolidatedChildComputerStatus(user.id, userDevices),
+        status: consolidatedChildComputerStatus(user.id, userDevices),
         numDevices: userDevices.filter { $0.childId == user.id }.count
       ) },
       userActivitySummaries: userActivitySummaries(
         users: users,
         map: deviceToUserMap,
-        keystrokes: try await keystrokes,
-        screenshots: try await screenshots
+        keystrokes: keystrokes,
+        screenshots: screenshots
       ),
       unlockRequests: mapUnlockRequests(
         unlockRequests: unlockRequests,
@@ -112,9 +112,9 @@ extension GetDashboardWidgets: NoInputResolver {
       recentScreenshots: recentScreenshots(
         users: users,
         map: deviceToUserMap,
-        screenshots: try await screenshots
+        screenshots: screenshots
       ),
-      numAdminNotifications: try await notifications.count
+      numAdminNotifications: notifications.count
     )
   }
 }

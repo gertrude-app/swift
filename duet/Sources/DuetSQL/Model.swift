@@ -27,7 +27,7 @@ public extension Model {
 
   static func column(_ name: String) throws -> ColumnName {
     for column in ColumnName.allCases {
-      if Self.columnName(column) == name {
+      if columnName(column) == name {
         return column
       }
     }
@@ -35,7 +35,7 @@ public extension Model {
   }
 
   static var isSoftDeletable: Bool {
-    (try? Self.column("deleted_at")) != nil
+    (try? column("deleted_at")) != nil
   }
 
   static var qualifiedTableName: String {

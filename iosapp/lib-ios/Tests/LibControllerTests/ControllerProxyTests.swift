@@ -51,7 +51,7 @@ final class ControllerProxyTests: XCTestCase {
     // fetches rules and writes updated rules to disk right away
     expect(fetchRules.value).toEqual(1)
     expect(notifyRulesChanged.value).toEqual(1)
-    let saved = Both<String, ProtectionMode>.init(
+    let saved = Both<String, ProtectionMode>(
       .protectionModeStorageKey,
       .normal([.bundleIdContains("bad"), .bundleIdContains("bad2")])
     )

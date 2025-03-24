@@ -122,7 +122,7 @@ private class _State {
   }
 }
 
-internal extension URL {
+extension URL {
   static var fillDir: URL {
     FileManager.default
       .urls(for: .documentDirectory, in: .userDomainMask)[0]

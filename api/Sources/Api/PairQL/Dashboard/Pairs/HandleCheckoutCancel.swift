@@ -18,7 +18,7 @@ extension HandleCheckoutCancel: Resolver {
     let session = try await with(dependency: \.stripe)
       .getCheckoutSession(input.stripeCheckoutSessionId)
 
-    let detail = "admin: \(context.admin.id), session: \(try JSON.encode(session)))"
+    let detail = try "admin: \(context.admin.id), session: \(JSON.encode(session)))"
     with(dependency: \.postmark).toSuperAdmin("Checkout canceled", detail)
 
     return .success

@@ -6,7 +6,7 @@ import XStripe
 
 @testable import Api
 
-final class VerifySignupEmailResolverTests: ApiTestCase {
+final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
   let context = Context.mock
 
   func testVerifySignupEmailSetsSubscriptionStatusAndCreatesNotificationMethod() async throws {

@@ -151,11 +151,11 @@ extension MenuBarFeature.Action.DowntimePauseDuration {
   func expiration(from date: Date) -> Date {
     switch self {
     case .tenMinutes:
-      return date + .minutes(10)
+      date + .minutes(10)
     case .oneHour:
-      return date + .hours(1)
+      date + .hours(1)
     case .oneDay:
-      return date + .days(1)
+      date + .days(1)
     }
   }
 }

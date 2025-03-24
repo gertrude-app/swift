@@ -18,9 +18,9 @@ enum ReleasesRoute {
       Item(version: $0.semver, channel: $0.channel)
     }
 
-    return Response(
+    return try Response(
       headers: ["Content-Type": "application/json"],
-      body: .init(string: try JSON.encode(items))
+      body: .init(string: JSON.encode(items))
     )
   }
 }

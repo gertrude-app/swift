@@ -1,5 +1,4 @@
-// swift-tools-version: 5.7
-
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -21,11 +20,7 @@ let package = Package(
       dependencies: [
         .product(name: "Runtime", package: "Runtime"),
       ],
-      swiftSettings: [.unsafeFlags([
-        "-Xfrontend", "-warn-concurrency",
-        "-Xfrontend", "-enable-actor-data-race-checks",
-        "-Xfrontend", "-warnings-as-errors",
-      ])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
     ),
     .testTarget(
       name: "TypeScriptInteropTests",

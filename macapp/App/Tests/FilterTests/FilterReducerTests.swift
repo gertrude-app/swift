@@ -625,7 +625,7 @@ final class FilterReducerTests: XCTestCase {
       $0.logs.bundleIds = [:]
     }
 
-    expect(await sendLogs.calls)
+    await expect(sendLogs.calls)
       .toEqual([.init(bundleIds: ["com.widget": 498], events: [event1: 2])])
   }
 

@@ -64,7 +64,7 @@ import Gertie
   private func flush() {
     self.logger.notice("AppConnections: flushing closed connections (ws)")
     self.logger.notice("  -> self.id: \(self.id.lowercased) (ws)")
-    self.connections.values.filter(\.ws.isClosed).forEach { connection in
+    for connection in self.connections.values.filter(\.ws.isClosed) {
       self.logger.notice("  -> removing connection: \(connection.id) (ws)")
       self.logger.notice("  -> for user device id: \(connection.ids.userDevice) (ws)")
       self.remove(connection)

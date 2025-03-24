@@ -30,7 +30,7 @@ import MacAppRoute
   }
 }
 
-internal func terminate(
+func terminate(
   app: NSRunningApplication,
   retryDelay: DispatchQueue.SchedulerTimeType.Stride = .seconds(3),
   on scheduler: AnySchedulerOf<DispatchQueue>

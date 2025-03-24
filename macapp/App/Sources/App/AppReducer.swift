@@ -142,7 +142,7 @@ struct AppReducer: Reducer, Sendable {
           },
 
           .exec { _ in
-            if onboardingWindowOpen == false, (await self.app.isLaunchAtLoginEnabled()) == false {
+            if onboardingWindowOpen == false, await (self.app.isLaunchAtLoginEnabled()) == false {
               await self.app.enableLaunchAtLogin()
             }
           },

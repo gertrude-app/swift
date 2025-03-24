@@ -49,9 +49,9 @@ public extension EnumCodableGen.EnumType {
       throw NonEnumError(message: "Expected enum type, got \(info.kind)")
     }
 
-    self.init(
+    try self.init(
       name: typeName(info.type),
-      cases: try info.cases.map { try .init(from: $0) }
+      cases: info.cases.map { try .init(from: $0) }
     )
   }
 
@@ -124,15 +124,15 @@ extension EnumCodableGen.EnumType.Case {
     // tuple payloads, eg: .foo(a: Int, b: Bool), .bar(c: String), .baz(Int, Bool)
     // but NOT .foo(Int), which falls into `else` branch below
     if case .tuple = payloadType.kind {
-      self = .init(
+      self = try .init(
         name: caseData.name,
-        values: try payloadType.properties.map { try .init(from: $0) }
+        values: payloadType.properties.map { try .init(from: $0) }
       )
       // flatten unary payload of a user struct: `case foo(SomeStruct)`
     } else if payloadType.isUserStruct {
-      self = .init(
+      self = try .init(
         name: caseData.name,
-        values: try payloadType.properties.map { try .init(from: $0) },
+        values: payloadType.properties.map { try .init(from: $0) },
         isFlattenedUserStruct: true
       )
       // mostly (i think) single, unnamed payloads, like `case foo(Int)`
@@ -159,11 +159,11 @@ extension EnumCodableGen.EnumType.Case {
 
   var switchPattern: String {
     if values.isEmpty {
-      return "case .\(name):"
+      "case .\(name):"
     } else if isFlattenedUserStruct {
-      return "case .\(name)(let unflat):"
+      "case .\(name)(let unflat):"
     } else {
-      return "case .\(name)(let \(values.map(\.requireName).joined(separator: ", let "))):"
+      "case .\(name)(let \(values.map(\.requireName).joined(separator: ", let "))):"
     }
   }
 
@@ -217,18 +217,18 @@ extension EnumCodableGen.EnumType.Case.Value {
   var constructArg: String {
     switch name {
     case .some(let name):
-      return "\(name): value.\(name)"
+      "\(name): value.\(name)"
     case .none(let caseName):
-      return "value.\(caseName)"
+      "value.\(caseName)"
     }
   }
 
   var requireName: String {
     switch name {
     case .none(let caseName):
-      return caseName
+      caseName
     case .some(let label):
-      return label
+      label
     }
   }
 }

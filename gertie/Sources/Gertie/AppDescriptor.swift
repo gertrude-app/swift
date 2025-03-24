@@ -35,7 +35,7 @@ extension AppDescriptor: CustomStringConvertible {
 
     var desc = ""
     var suffix = ""
-    if let displayName = displayName {
+    if let displayName {
       desc = "\"\(displayName)\" ("
       suffix = ")"
     }
@@ -44,7 +44,7 @@ extension AppDescriptor: CustomStringConvertible {
     subParts += self.categories.sorted().map { "category:\($0)" }
     subParts.append(self.bundleId)
 
-    return desc + subParts.compactMap { $0 }.joined(separator: ", ") + suffix
+    return desc + subParts.compactMap(\.self).joined(separator: ", ") + suffix
   }
 }
 

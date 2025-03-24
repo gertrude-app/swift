@@ -46,13 +46,13 @@ enum PairQLRoute: Equatable, RouteResponder {
   static func respond(to route: PairQLRoute, in context: Context) async throws -> Response {
     switch route {
     case .macApp(let appRoute):
-      return try await MacAppRoute.respond(to: appRoute, in: context)
+      try await MacAppRoute.respond(to: appRoute, in: context)
     case .dashboard(let dashboardRoute):
-      return try await DashboardRoute.respond(to: dashboardRoute, in: context)
+      try await DashboardRoute.respond(to: dashboardRoute, in: context)
     case .superAdmin(let superAdminRoute):
-      return try await SuperAdminRoute.respond(to: superAdminRoute, in: context)
+      try await SuperAdminRoute.respond(to: superAdminRoute, in: context)
     case .iOS(let iosAppRoute):
-      return try await IOSRoute.respond(to: iosAppRoute, in: context)
+      try await IOSRoute.respond(to: iosAppRoute, in: context)
     }
   }
 

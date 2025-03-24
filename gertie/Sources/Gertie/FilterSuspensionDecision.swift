@@ -15,9 +15,9 @@ public extension FilterSuspensionDecision {
   var requestStatus: RequestStatus {
     switch self {
     case .rejected:
-      return .rejected
+      .rejected
     case .accepted:
-      return .accepted
+      .accepted
     }
   }
 }
@@ -26,27 +26,27 @@ public extension FilterSuspensionDecision.ExtraMonitoring {
   var screenshotsFrequency: Int? {
     switch self {
     case .addKeylogging:
-      return nil
+      nil
     case .setScreenshotFreq(let frequency), .addKeyloggingAndSetScreenshotFreq(let frequency):
-      return frequency
+      frequency
     }
   }
 
   var setsScreenshotFrequency: Bool {
     switch self {
     case .addKeylogging:
-      return false
+      false
     case .setScreenshotFreq, .addKeyloggingAndSetScreenshotFreq:
-      return true
+      true
     }
   }
 
   var addsKeylogging: Bool {
     switch self {
     case .addKeylogging, .addKeyloggingAndSetScreenshotFreq:
-      return true
+      true
     case .setScreenshotFreq:
-      return false
+      false
     }
   }
 }

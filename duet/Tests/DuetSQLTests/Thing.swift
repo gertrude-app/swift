@@ -98,29 +98,29 @@ extension Thing: Model {
   func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id:
-      return .id(self)
+      .id(self)
     case .string:
-      return .string(self.string)
+      .string(self.string)
     case .version:
-      return .varchar(self.version)
+      .varchar(self.version)
     case .int:
-      return .int(self.int)
+      .int(self.int)
     case .bool:
-      return .bool(self.bool)
+      .bool(self.bool)
     case .optionalInt:
-      return .int(self.optionalInt)
+      .int(self.optionalInt)
     case .optionalString:
-      return .string(self.optionalString)
+      .string(self.optionalString)
     case .customEnum:
-      return .enum(self.customEnum)
+      .enum(self.customEnum)
     case .optionalCustomEnum:
-      return .enum(self.optionalCustomEnum)
+      .enum(self.optionalCustomEnum)
     case .createdAt:
-      return .date(self.createdAt)
+      .date(self.createdAt)
     case .updatedAt:
-      return .date(self.updatedAt)
+      .date(self.updatedAt)
     case .deletedAt:
-      return .date(self.deletedAt)
+      .date(self.deletedAt)
     }
   }
 }

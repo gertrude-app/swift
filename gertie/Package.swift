@@ -1,4 +1,4 @@
-// swift-tools-version:5.10
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -20,11 +20,7 @@ let package = Package(
         .product(name: "XCore", package: "x-kit"),
         .product(name: "TaggedTime", package: "swift-tagged"),
       ],
-      swiftSettings: [.unsafeFlags([
-        "-Xfrontend", "-warn-concurrency",
-        "-Xfrontend", "-enable-actor-data-race-checks",
-        "-Xfrontend", "-warnings-as-errors",
-      ])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
     ),
     .testTarget(
       name: "GertieTests",
@@ -36,11 +32,7 @@ let package = Package(
     .target(
       name: "GertieIOS",
       dependencies: [],
-      swiftSettings: [.unsafeFlags([
-        "-Xfrontend", "-warn-concurrency",
-        "-Xfrontend", "-enable-actor-data-race-checks",
-        "-Xfrontend", "-warnings-as-errors",
-      ])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
     ),
   ]
 )

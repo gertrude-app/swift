@@ -73,7 +73,7 @@ public extension Key.Path {
 
   func matches(url: String) -> Bool {
     let url = url.regexRemove("^https?://").lowercased()
-    if let regex = regex {
+    if let regex {
       return url.matchesRegex(regex)
     } else {
       return url.regexRemove("/$") == domain.string + "/" + path.regexRemove("/$")

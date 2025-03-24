@@ -110,16 +110,19 @@ struct BlockedRequestsFeature: Feature {
         // shouldn't need to check network connection, a blocked request should imply connected
         return .exec { send in
           await send(.createUnlockRequests(TaskResult {
-            try await api.createUnlockRequests(.init(blockedRequests: inputReqs, comment: comment))
+            try await self.api.createUnlockRequests(.init(
+              blockedRequests: inputReqs,
+              comment: comment
+            ))
           }))
         }
 
       case .createUnlockRequests(.success(let ids)):
         state.createUnlockRequests = .succeeded
-        state.pendingUnlockRequests = ids.map { .init(id: $0, createdAt: now) }
+        state.pendingUnlockRequests = ids.map { .init(id: $0, createdAt: self.now) }
         state.selectedRequestIds = []
         return .exec { send in
-          try await mainQueue.sleep(for: .seconds(10))
+          try await self.mainQueue.sleep(for: .seconds(10))
           await send(.createUnlockRequestsSuccessTimedOut)
         }.cancellable(id: CancelId.timeout, cancelInFlight: true)
 
@@ -156,7 +159,7 @@ extension BlockedRequestsFeature.RootReducer {
         await send(.blockedRequests(.receivedFilterCommunicationConfirmation(connected)))
         if !connected {
           unexpectedError(id: "46d4be97")
-        } else if (await filterXpc.setBlockStreaming(true)).isFailure {
+        } else if await (filterXpc.setBlockStreaming(true)).isFailure {
           unexpectedError(id: "f2c3b277")
         }
       }
@@ -247,7 +250,7 @@ extension BlockedRequest {
       target: url ?? hostname ?? ipAddress ?? "unknown",
       protocol: ipProtocol?.kind ?? .other,
       searchableText: [url, hostname, ipAddress, app.searchableText]
-        .compactMap { $0 }
+        .compactMap(\.self)
         .joined(separator: " "),
       app: app.displayName ?? app.bundleId
     )
@@ -257,7 +260,7 @@ extension BlockedRequest {
 extension AppDescriptor {
   var searchableText: String {
     ([displayName, bundleId, slug] + .init(categories))
-      .compactMap { $0 }
+      .compactMap(\.self)
       .joined(separator: " ")
   }
 }

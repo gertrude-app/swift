@@ -191,7 +191,7 @@ extension FilterFeature.RootReducer {
         await api.securityEvent(.systemExtensionChangeRequested, "stop")
         _ = await self.filterExtension.stop()
         try await self.mainQueue.sleep(for: .seconds(2))
-        await send(.filter(.receivedState(await self.filterExtension.state())))
+        await send(.filter(.receivedState(self.filterExtension.state())))
       }
 
     case .menuBar(.turnOnFilterClicked):
@@ -237,7 +237,7 @@ extension FilterFeature.RootReducer {
           // on Big Sur, the extension state change doesn't get pushed through the publisher
           // so we also poll the state to make sure the admin/user is getting good feedback
           try await self.mainQueue.sleep(for: .milliseconds(200))
-          await send(.filter(.receivedState(await self.filterExtension.state())))
+          await send(.filter(.receivedState(self.filterExtension.state())))
           for _ in 1 ... 10 {
             try await self.mainQueue.sleep(for: .seconds(1))
             let state = await self.filterExtension.state()
@@ -252,6 +252,7 @@ extension FilterFeature.RootReducer {
           }
         }
       )
+
     default:
       return .none
     }

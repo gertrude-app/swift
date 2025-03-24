@@ -48,11 +48,11 @@ public extension PqlError {
 
     var statusCode: Int {
       switch self {
-      case .notFound: return 404
-      case .badRequest: return 400
-      case .serverError: return 500
-      case .unauthorized: return 401
-      case .loggedOut: return 401
+      case .notFound: 404
+      case .badRequest: 400
+      case .serverError: 500
+      case .unauthorized: 401
+      case .loggedOut: 401
       }
     }
   }

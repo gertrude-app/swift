@@ -13,7 +13,7 @@ public extension BlockedRequest {
   }
 }
 
-extension CreateKeystrokeLines.KeystrokeLineInput: Mocked {
+extension CreateKeystrokeLines.KeystrokeLineInput: @retroactive Mocked {
   public static var mock: Self {
     .init(
       appName: "Xcode",
@@ -33,7 +33,7 @@ extension CreateKeystrokeLines.KeystrokeLineInput: Mocked {
   }
 }
 
-extension Persistent.State: Mocked {
+extension Persistent.State: @retroactive Mocked {
   public static var mock: Self {
     .init(
       appVersion: "1.0.0",

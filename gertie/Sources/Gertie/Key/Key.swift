@@ -54,17 +54,17 @@ public extension Key {
     public static var random: Key {
       switch Int.random(in: 1 ... 6) {
       case 1:
-        return .domain(domain: .init("foo.com")!, scope: .random)
+        .domain(domain: .init("foo.com")!, scope: .random)
       case 2:
-        return .anySubdomain(domain: .init("foo.com")!, scope: .random)
+        .anySubdomain(domain: .init("foo.com")!, scope: .random)
       case 3:
-        return .skeleton(scope: .random)
+        .skeleton(scope: .random)
       case 4:
-        return .domainRegex(pattern: .init("foo-*.com")!, scope: .random)
+        .domainRegex(pattern: .init("foo-*.com")!, scope: .random)
       case 5:
-        return .path(path: .init("foo.com/bar")!, scope: .random)
+        .path(path: .init("foo.com/bar")!, scope: .random)
       default:
-        return .ipAddress(ipAddress: .init("1.2.3.4")!, scope: .random)
+        .ipAddress(ipAddress: .init("1.2.3.4")!, scope: .random)
       }
     }
   }

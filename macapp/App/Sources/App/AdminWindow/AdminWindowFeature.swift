@@ -189,7 +189,7 @@ extension AdminWindowFeature.RootReducer {
         .exec { send in
           await send(.adminWindow(.setExemptionData(
             Failable { try await self.device.nonCurrentUsers() },
-            Failable(result: await self.xpc.requestUserTypes())
+            Failable(result: self.xpc.requestUserTypes())
           )))
         },
         self.checkHealth(state: &state, action: action)
@@ -212,7 +212,7 @@ extension AdminWindowFeature.RootReducer {
         .exec { send in
           // wait for user feature reducer to send rules to filter
           try await self.mainQueue.sleep(for: .milliseconds(10))
-          await recheckFilter(send)
+          await self.recheckFilter(send)
         }
       )
 
@@ -488,26 +488,26 @@ extension AdminWindowFeature.RootReducer {
       ))
 
       await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
-        keyloggingEnabled ? await self.monitoring.keystrokeRecordingPermissionGranted() : true
+        keyloggingEnabled ? self.monitoring.keystrokeRecordingPermissionGranted() : true
       )))
 
       await send(.adminWindow(.setScreenRecordingPermissionOk(
-        screenRecordingEnabled ? await self.monitoring.screenRecordingPermissionGranted() : true
+        screenRecordingEnabled ? self.monitoring.screenRecordingPermissionGranted() : true
       )))
 
       await send(.adminWindow(.setFullDiskAccessPermissionOk(
-        await self.app.hasFullDiskAccess()
+        self.app.hasFullDiskAccess()
       )))
 
       await send(.adminWindow(.setNotificationsSetting(
-        await self.device.notificationsSetting()
+        self.device.notificationsSetting()
       )))
 
       await send(.adminWindow(.setMacOsUserType(
         .init { try await self.device.currentMacOsUserType() }
       )))
 
-      await recheckFilter(send)
+      await self.recheckFilter(send)
 
       try await self.mainQueue.sleep(for: .seconds(10))
 

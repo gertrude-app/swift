@@ -9,12 +9,12 @@ import XSlack
 
 @testable import Api
 
-class ApiTestCase: XCTestCase {
+class ApiTestCase: XCTestCase, @unchecked Sendable {
   @Dependency(\.db) var db
   @Dependency(\.env) var env
 
-  static var app: Application!
-  static var migrated = false
+  nonisolated(unsafe) static var app: Application!
+  nonisolated(unsafe) static var migrated = false
 
   var sent = Sent()
   var app: Application { Self.app }
@@ -59,7 +59,7 @@ class ApiTestCase: XCTestCase {
     // doing this once per test run gives about a 10x speedup when running all tests
     if !self.migrated {
       // app needs a db for migrations
-      Self.app.databases.use(.testDb, as: .psql, isDefault: true)
+      self.app.databases.use(.testDb, as: .psql, isDefault: true)
       try! self.app.autoRevert().wait()
       try! self.app.autoMigrate().wait()
       self.migrated = true

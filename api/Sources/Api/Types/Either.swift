@@ -11,9 +11,9 @@ extension Either {
   ) -> Either<NewLeft, Right> {
     switch self {
     case .left(let left):
-      return .left(transform(left))
+      .left(transform(left))
     case .right(let right):
-      return .right(right)
+      .right(right)
     }
   }
 
@@ -22,9 +22,9 @@ extension Either {
   ) -> Either<Left, NewRight> {
     switch self {
     case .left(let left):
-      return .left(left)
+      .left(left)
     case .right(let right):
-      return .right(transform(right))
+      .right(transform(right))
     }
   }
 }
@@ -33,18 +33,18 @@ extension Either {
   func `is`(_: Left.Type) -> Bool {
     switch self {
     case .left:
-      return true
+      true
     case .right:
-      return false
+      false
     }
   }
 
   func `is`(_: Right.Type) -> Bool {
     switch self {
     case .left:
-      return false
+      false
     case .right:
-      return true
+      true
     }
   }
 }
@@ -58,7 +58,7 @@ extension Either {
       return left
     }
     set {
-      if let newValue = newValue {
+      if let newValue {
         self = .left(newValue)
       }
     }
@@ -72,7 +72,7 @@ extension Either {
       return right
     }
     set {
-      if let newValue = newValue {
+      if let newValue {
         self = .right(newValue)
       }
     }
@@ -88,9 +88,9 @@ extension Either {
 extension Either: Equatable where Left: Equatable, Right: Equatable {
   static func == (lhs: Self, rhs: Self) -> Bool {
     switch (lhs, rhs) {
-    case (.left(let l), .left(let r)): return l == r
-    case (.right(let l), .right(let r)): return l == r
-    case (.left, .right), (.right, .left): return false
+    case (.left(let l), .left(let r)): l == r
+    case (.right(let l), .right(let r)): l == r
+    case (.left, .right), (.right, .left): false
     }
   }
 }
@@ -98,10 +98,10 @@ extension Either: Equatable where Left: Equatable, Right: Equatable {
 extension Either: Comparable where Left: Comparable, Right: Comparable {
   static func < (lhs: Self, rhs: Self) -> Bool {
     switch (lhs, rhs) {
-    case (.left(let l), .left(let r)): return l < r
-    case (.right(let l), .right(let r)): return l < r
-    case (.left, .right): return true
-    case (.right, .left): return false
+    case (.left(let l), .left(let r)): l < r
+    case (.right(let l), .right(let r)): l < r
+    case (.left, .right): true
+    case (.right, .left): false
     }
   }
 }

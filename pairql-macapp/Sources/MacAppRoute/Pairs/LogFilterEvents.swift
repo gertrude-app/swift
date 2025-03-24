@@ -9,4 +9,4 @@ public struct LogFilterEvents: Pair {
   public typealias Output = Infallible
 }
 
-extension FilterLogs: PairInput {}
+extension FilterLogs: @retroactive PairInput {}

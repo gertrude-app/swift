@@ -6,7 +6,7 @@ import XExpect
 
 @testable import Api
 
-final class LogInterestingEventResolverTests: ApiTestCase {
+final class LogInterestingEventResolverTests: ApiTestCase, @unchecked Sendable {
   func testNonSearchableIdDoesntSlackUselessCodeLink() async throws {
     let input = LogInterestingEvent.Input(
       // dynamically assembled event id, not searchable in github

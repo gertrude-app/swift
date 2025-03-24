@@ -15,14 +15,14 @@ public struct CollectionExpectation<T: Collection> {
   }
 
   public var not: Self {
-    Self(collection: self.collection, negated: true, file: #file, line: #line)
+    Self(collection: self.collection, negated: true, file: #fileID, line: #line)
   }
 
   public func toHaveCount(_ count: Int) {
     if self.negated {
       XCTAssertNotEqual(self.collection.count, count, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(self.collection.count, count, file: self.file, line: self.line)
+      expectNoDifference(self.collection.count, count, fileID: self.file, line: self.line)
     }
   }
 
@@ -40,7 +40,7 @@ public extension CollectionExpectation where T: Equatable {
     if self.negated {
       XCTAssertNotEqual(self.collection, expected, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(self.collection, expected, file: self.file, line: self.line)
+      expectNoDifference(self.collection, expected, fileID: self.file, line: self.line)
     }
   }
 }
@@ -80,14 +80,14 @@ public struct EquatableExpectation<T: Equatable> {
   }
 
   public var not: Self {
-    Self(value: self.value, negated: true, file: #file, line: #line)
+    Self(value: self.value, negated: true, file: #fileID, line: #line)
   }
 
   public func toEqual(_ other: T) {
     if self.negated {
       XCTAssertNotEqual(self.value, other, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(self.value, other, file: self.file, line: self.line)
+      expectNoDifference(self.value, other, fileID: self.file, line: self.line)
     }
   }
 }
@@ -106,14 +106,14 @@ public struct EquatableOptionalExpectation<T: Equatable> {
   }
 
   public var not: Self {
-    Self(value: self.value, negated: true, file: #file, line: #line)
+    Self(value: self.value, negated: true, file: #fileID, line: #line)
   }
 
   public func toEqual(_ other: T) {
     if self.negated {
       XCTAssertNotEqual(self.value, other, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(self.value, other, file: self.file, line: self.line)
+      expectNoDifference(self.value, other, fileID: self.file, line: self.line)
     }
   }
 
@@ -182,14 +182,14 @@ public struct StringExpectation {
   }
 
   public var not: Self {
-    Self(value: self.value, negated: true, file: #file, line: #line)
+    Self(value: self.value, negated: true, file: #fileID, line: #line)
   }
 
   public func toBe(_ other: String) {
     if self.negated {
       XCTAssertNotEqual(self.value, other, file: self.file, line: self.line)
     } else {
-      XCTAssertNoDifference(self.value, other, file: self.file, line: self.line)
+      expectNoDifference(self.value, other, fileID: self.file, line: self.line)
     }
   }
 
@@ -234,7 +234,7 @@ public struct BoolExpectation {
 
 public func expect(
   _ value: Bool,
-  file: StaticString = #filePath,
+  file: StaticString = #fileID,
   line: UInt = #line
 ) -> BoolExpectation {
   BoolExpectation(value: value, file: file, line: line)
@@ -242,7 +242,7 @@ public func expect(
 
 public func expect(
   _ value: String,
-  file: StaticString = #filePath,
+  file: StaticString = #fileID,
   line: UInt = #line
 ) -> StringExpectation {
   StringExpectation(value: value, file: file, line: line)
@@ -251,7 +251,7 @@ public func expect(
 @_disfavoredOverload
 public func expect<T: Equatable>(
   _ value: T,
-  file: StaticString = #filePath,
+  file: StaticString = #fileID,
   line: UInt = #line
 ) -> EquatableExpectation<T> {
   EquatableExpectation(value: value, file: file, line: line)
@@ -260,15 +260,15 @@ public func expect<T: Equatable>(
 @_disfavoredOverload
 public func expect<T: Equatable>(
   _ value: T?,
-  file: StaticString = #filePath,
+  file: StaticString = #fileID,
   line: UInt = #line
 ) -> EquatableOptionalExpectation<T> {
   EquatableOptionalExpectation(value: value, file: file, line: line)
 }
 
-public func expect<T>(
-  _ value: T?,
-  file: StaticString = #filePath,
+public func expect(
+  _ value: (some Any)?,
+  file: StaticString = #fileID,
   line: UInt = #line
 ) -> OptionalExpectation {
   OptionalExpectation(value: value, file: file, line: line)
@@ -276,7 +276,7 @@ public func expect<T>(
 
 public func expect<C: Collection>(
   _ collection: C,
-  file: StaticString = #filePath,
+  file: StaticString = #fileID,
   line: UInt = #line
 ) -> CollectionExpectation<C> {
   CollectionExpectation(collection: collection, file: file, line: line)
@@ -284,14 +284,14 @@ public func expect<C: Collection>(
 
 public func expect<S, F: Error>(
   _ result: Result<S, F>,
-  file: StaticString = #filePath,
+  file: StaticString = #fileID,
   line: UInt = #line
 ) -> ResultExpectation<S, F> {
   ResultExpectation(result: result, file: file, line: line)
 }
 
 public func expectErrorFrom<T>(
-  file: StaticString = #filePath,
+  file: StaticString = #fileID,
   line: UInt = #line,
   fn: @escaping () async throws -> T
 ) -> ErrorExpectation<T> {

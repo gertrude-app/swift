@@ -9,7 +9,7 @@ public enum BlockGroup: String {
   case appleWebsite
 }
 
-public extension Array where Element == BlockGroup {
+public extension [BlockGroup] {
   static var all: [BlockGroup] {
     [
       .gifs,

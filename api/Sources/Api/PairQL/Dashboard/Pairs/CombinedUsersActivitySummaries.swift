@@ -16,7 +16,7 @@ extension CombinedUsersActivitySummaries: Resolver {
   ) async throws -> Output {
     try await UserActivitySummaries.days(
       dateRanges: input,
-      userDeviceIds: try await context.userDevices().map(\.id),
+      userDeviceIds: context.userDevices().map(\.id),
       in: context.db
     )
   }

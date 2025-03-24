@@ -28,7 +28,7 @@ extension GetAdminKeychains: NoInputResolver {
     let models = try await context.admin.keychains(in: context.db)
     var keychains: [AdminKeychain] = []
     for model in models {
-      keychains.append(try await .init(from: model, in: context))
+      try await keychains.append(.init(from: model, in: context))
     }
     return keychains
   }
@@ -39,8 +39,8 @@ extension GetAdminKeychains: NoInputResolver {
 extension GetAdminKeychains.AdminKeychain {
   init(from model: Api.Keychain, in context: AdminContext) async throws {
     let keys = try await model.keys(in: context.db)
-    self.init(
-      summary: try await .init(from: model),
+    try await self.init(
+      summary: .init(from: model),
       keys: keys.map { .init(from: $0, keychainId: model.id) }
     )
   }

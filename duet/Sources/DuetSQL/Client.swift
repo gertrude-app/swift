@@ -51,10 +51,10 @@ public extension Client {
 
   @discardableResult
   func upsert<M: Model>(_ model: M) async throws -> M {
-    if (try? await self.find(M.self, byId: model.id)) == nil {
-      return try await self.create(model)
+    if await (try? self.find(M.self, byId: model.id)) == nil {
+      try await self.create(model)
     } else {
-      return try await self.update(model)
+      try await self.update(model)
     }
   }
 
@@ -89,7 +89,7 @@ public extension Client {
     guard !models.isEmpty else { return [] }
     return try await withThrowingTaskGroup(of: M.self) { group in
       for model in models {
-        group.addTask { try await update(model) }
+        group.addTask { try await self.update(model) }
       }
       var updated: [M] = []
       for try await updatedModel in group {

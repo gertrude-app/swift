@@ -26,14 +26,14 @@ import UserNotifications
   }
 }
 
+// swiftformat:disable all
 @Sendable func requestNotificationAuth() async {
-  {
     // sync closure to avoid warning about preferring async version
-    UNUserNotificationCenter
+  { UNUserNotificationCenter
       .current()
-      .requestAuthorization(options: [.alert]) { _, _ in }
-  }()
+      .requestAuthorization(options: [.alert]) { _, _ in } }()
 }
+// swiftformat:enable all
 
 extension DeviceClient {
   func notify(_ title: String, _ body: String = "") async {

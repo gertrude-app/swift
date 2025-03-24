@@ -21,13 +21,13 @@ struct MacOSVersion: Sendable {
 
   var name: Name {
     switch (self.major, self.minor) {
-    case (10, 15): return .catalina
-    case (11, _): return .bigSur
-    case (12, _): return .monterey
-    case (13, _): return .ventura
-    case (14, _): return .sonoma
-    case (15, _): return .sequoia
-    default: return .sequoia
+    case (10, 15): .catalina
+    case (11, _): .bigSur
+    case (12, _): .monterey
+    case (13, _): .ventura
+    case (14, _): .sonoma
+    case (15, _): .sequoia
+    default: .sequoia
     }
   }
 

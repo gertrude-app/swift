@@ -19,4 +19,4 @@ public struct BlockRules: Pair {
   public typealias Output = [BlockRule]
 }
 
-extension BlockRule: PairOutput {}
+extension BlockRule: @retroactive PairOutput {}

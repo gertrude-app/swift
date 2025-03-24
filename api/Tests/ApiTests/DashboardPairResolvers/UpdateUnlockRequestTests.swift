@@ -5,7 +5,7 @@ import XExpect
 
 @testable import Api
 
-final class UpdateUnlockRequestTests: ApiTestCase {
+final class UpdateUnlockRequestTests: ApiTestCase, @unchecked Sendable {
   func testUpdateUnlockRequest() async throws {
     let user = try await self.user().withDevice {
       $0.appVersion = "2.4.0"

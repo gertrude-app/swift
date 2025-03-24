@@ -11,25 +11,42 @@ public extension ProtectionMode {
   var normalRules: [BlockRule]? {
     switch self {
     case .normal(let rules):
-      return rules
+      rules
     case .onboarding, .emergencyLockdown:
-      return nil
+      nil
     }
   }
 
   var rules: [BlockRule]? {
     switch self {
     case .onboarding(let rules):
-      return rules
+      rules
     case .normal(let rules):
-      return rules
+      rules
     case .emergencyLockdown:
-      return nil
+      nil
     }
   }
 }
 
 extension ProtectionMode: Equatable, Sendable, Codable {}
+
+public extension ProtectionMode? {
+  var missingRules: Bool {
+    switch self {
+    case .none:
+      true
+    case .some(.emergencyLockdown):
+      true
+    case .some(.onboarding([])):
+      true
+    case .some(.normal([])):
+      true
+    default:
+      false
+    }
+  }
+}
 
 public extension UserDefaults {
   static let gertrude = UserDefaults(suiteName: "group.com.ftc.gertrude-ios.app")!

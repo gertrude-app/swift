@@ -50,7 +50,7 @@ final class CodableTests: XCTestCase {
       case c(String, Int)
     }
 
-    let conformance = (try EnumType(from: DupeNames.self)).codableConformance()
+    let conformance = try (EnumType(from: DupeNames.self)).codableConformance()
     expect(conformance).toContain("self = .a(a: value.a, b: value.b)")
     expect(conformance).toContain("self = .b(b: value.b)")
   }

@@ -32,7 +32,7 @@ extension IOSBlockRule: Model {
   }
 }
 
-extension BlockRule: PostgresJsonable {}
+extension BlockRule: @retroactive PostgresJsonable {}
 
 extension Admin: Model {
   public typealias ColumnName = CodingKeys
@@ -368,7 +368,7 @@ extension Keychain: Model {
   }
 }
 
-extension Gertie.Key: PostgresJsonable {}
+extension Gertie.Key: @retroactive PostgresJsonable {}
 
 extension Key: Model {
   public static let schemaName = "parent"
@@ -498,7 +498,7 @@ extension Screenshot: Model {
   }
 }
 
-extension AppScope: PostgresJsonable {}
+extension AppScope: @retroactive PostgresJsonable {}
 
 extension SuspendFilterRequest: Model {
   public static let schemaName = "macapp"
@@ -638,8 +638,8 @@ extension UserKeychain: Model {
   }
 }
 
-extension RuleSchedule: PostgresJsonable {}
-extension PlainTimeWindow: PostgresJsonable {}
+extension RuleSchedule: @retroactive PostgresJsonable {}
+extension PlainTimeWindow: @retroactive PostgresJsonable {}
 
 extension UserToken: Model {
   public static let schemaName = "child"
@@ -803,7 +803,7 @@ extension UnidentifiedApp: Model {
   }
 }
 
-extension BrowserMatch: PostgresJsonable {}
+extension BrowserMatch: @retroactive PostgresJsonable {}
 
 extension SecurityEvent: Model {
   public static let schemaName = "system"

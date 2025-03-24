@@ -83,7 +83,7 @@ struct WelcomeView: View {
       self.showBg = false
     }
 
-    self.lettersOffset.enumerated().forEach { i, _ in
+    for (i, _) in self.lettersOffset.enumerated() {
       delayed(by: .milliseconds(200)) {
         withAnimation(.smooth(duration: 0.5)) {
           self.lettersOffset[i].y = 50

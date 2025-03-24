@@ -36,10 +36,10 @@ extension GetIdentifiedApps: NoInputResolver {
     async let bundleIds = try await context.db.select(all: AppBundleId.self)
     async let categories = try await context.db.select(all: AppCategory.self)
 
-    let categoryMap: [AppCategory.Id: App.Category] = (try await categories)
+    let categoryMap: [AppCategory.Id: App.Category] = try await (categories)
       .reduce(into: [:]) { $0[$1.id] = .init(from: $1) }
 
-    var appMap: [IdentifiedApp.Id: App] = (try await apps)
+    var appMap: [IdentifiedApp.Id: App] = try await (apps)
       .reduce(into: [:]) { map, identifiedApp in
         map[identifiedApp.id] = .init(
           id: identifiedApp.id,

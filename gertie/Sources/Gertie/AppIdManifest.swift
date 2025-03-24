@@ -23,7 +23,7 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
   }
 
   public func appSlug(fromBundleId bundleId: String?) -> String? {
-    guard let bundleId = bundleId else {
+    guard let bundleId else {
       return nil
     }
 
@@ -41,7 +41,7 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
   }
 
   public func displayName(fromAppSlug appSlug: String?) -> String? {
-    guard let appSlug = appSlug else {
+    guard let appSlug else {
       return nil
     }
     return self.displayNames[appSlug]
@@ -52,7 +52,7 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
   }
 
   public func categorySlugs(fromAppSlug appSlug: String?) -> [String] {
-    guard let appSlug = appSlug else {
+    guard let appSlug else {
       return []
     }
 

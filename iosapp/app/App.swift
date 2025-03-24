@@ -293,7 +293,7 @@ struct AppView: View {
       )
       .sheet(isPresented: self.explainFamilyPresented) {
         ZStack {
-          Color(cs, light: .clear, dark: .black).ignoresSafeArea(edges: .all)
+          Color(self.cs, light: .clear, dark: .black).ignoresSafeArea(edges: .all)
           ButtonScreenView(
             text: "An Apple Family group allows sharing of apps and services. There’s no cost, and it’s easy to set one up. You would need someone else to start a group (if they didn’t already have one) and then invite you to join.",
             primary: .init(text: "Instructions", type: .link(.appleFamily), animate: false),
@@ -392,7 +392,7 @@ struct AppView: View {
         primary: self.btn(text: "Next", .primary)
       )
 
-    case .running(let showVendorId):
+    case .running(let showVendorId, timesShaken: _):
       RunningView(showVendorId: showVendorId)
         .onShake { self.store.send(.interactive(.receivedShake)) }
     }

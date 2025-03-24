@@ -120,8 +120,7 @@ extension SQLDatabase {
     """)
   }
 
-  func create<T>(enum Enum: T.Type) async throws
-    where T: PostgresEnum, T: RawRepresentable, T: CaseIterable {
+  func create(enum Enum: (some PostgresEnum & RawRepresentable & CaseIterable).Type) async throws {
     try await self.execute("""
       CREATE TYPE \(unsafeRaw: Enum.typeName) AS ENUM (
         '\(unsafeRaw: Enum.allCases.map(\.rawValue).joined(separator: "',\n    '"))'
@@ -129,8 +128,7 @@ extension SQLDatabase {
     """)
   }
 
-  func drop<T>(enum Enum: T.Type) async throws
-    where T: PostgresEnum, T: RawRepresentable, T: CaseIterable {
+  func drop(enum Enum: (some PostgresEnum & RawRepresentable & CaseIterable).Type) async throws {
     try await self.execute("DROP TYPE \(unsafeRaw: Enum.typeName)")
   }
 }

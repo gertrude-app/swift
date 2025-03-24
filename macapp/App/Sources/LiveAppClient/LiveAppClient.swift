@@ -7,7 +7,7 @@ import Foundation
 import LaunchAtLogin
 import os.log
 
-extension AppClient: DependencyKey {
+extension AppClient: @retroactive DependencyKey {
   public static var liveValue: Self {
     initializeColorScheme()
     let stopRelaunchWatcher: @Sendable () -> Void = {

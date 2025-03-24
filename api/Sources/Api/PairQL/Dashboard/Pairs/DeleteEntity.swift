@@ -37,7 +37,7 @@ extension DeleteEntity: Resolver {
       try await context.db.create(DeletedEntity(
         type: "Admin",
         reason: "self-deleted from use-case initial screen",
-        data: try JSON.encode(context.admin, [.isoDates])
+        data: JSON.encode(context.admin, [.isoDates])
       ))
       try await context.db.delete(context.admin)
 

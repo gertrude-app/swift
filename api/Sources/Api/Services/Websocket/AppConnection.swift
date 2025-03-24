@@ -63,15 +63,15 @@ extension FilterState.WithoutTimes {
   var status: ChildComputerStatus {
     switch self {
     case .off:
-      return .filterOff
+      .filterOff
     case .on:
-      return .filterOn
+      .filterOn
     case .suspended:
-      return .filterSuspended(resuming: nil)
+      .filterSuspended(resuming: nil)
     case .downtime:
-      return .downtime(ending: nil)
+      .downtime(ending: nil)
     case .downtimePaused:
-      return .downtimePaused(resuming: nil)
+      .downtimePaused(resuming: nil)
     }
   }
 }
@@ -80,15 +80,15 @@ extension FilterState.WithTimes {
   var status: ChildComputerStatus {
     switch self {
     case .off:
-      return .filterOff
+      .filterOff
     case .on:
-      return .filterOn
+      .filterOn
     case .suspended(let resuming):
-      return .filterSuspended(resuming: resuming)
+      .filterSuspended(resuming: resuming)
     case .downtime(let ending):
-      return .downtime(ending: ending)
+      .downtime(ending: ending)
     case .downtimePaused(let resuming):
-      return .downtimePaused(resuming: resuming)
+      .downtimePaused(resuming: resuming)
     }
   }
 }

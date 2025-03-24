@@ -60,15 +60,15 @@ public class WebSocketConnection: WebSocketDelegate {
   public func clientState() -> ClientInterfaces.WebSocketClient.State {
     switch self.currentState {
     case .connected:
-      return .connected
+      .connected
     case .disconnected:
-      return .notConnected
+      .notConnected
     case .idle:
-      return .notConnected
+      .notConnected
     case .connecting:
-      return .connecting
+      .connecting
     case .waitingForPong:
-      return .connected
+      .connected
     }
   }
 
@@ -127,7 +127,7 @@ public class WebSocketConnection: WebSocketDelegate {
     self.pingsSent += 1
     self.socket.write(ping: Data())
     self.transition(receiving: .sentPing)
-    self.schedule(after: PONG_CONFIRMATION_DELAY) {
+    self.schedule(after: .seconds(5)) {
       [weak self] in self?.checkPongResponse()
     }
   }
@@ -165,4 +165,3 @@ public class WebSocketConnection: WebSocketDelegate {
 }
 
 public typealias IntervalInSeconds = DispatchQueue.SchedulerTimeType.Stride
-public let PONG_CONFIRMATION_DELAY: IntervalInSeconds = 5

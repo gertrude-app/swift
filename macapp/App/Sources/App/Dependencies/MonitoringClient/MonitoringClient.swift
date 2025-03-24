@@ -37,7 +37,7 @@ extension MonitoringClient: DependencyKey {
     startLoggingKeystrokes: startKeylogging,
     stopLoggingKeystrokes: stopKeylogging,
     takePendingKeystrokes: takeKeystrokes,
-    takePendingScreenshots: { await screenshotBuffer.removeAll() },
+    takePendingScreenshots: { screenshotBuffer.removeAll() },
     takeScreenshot: takeScreenshot(width:)
   )
 }

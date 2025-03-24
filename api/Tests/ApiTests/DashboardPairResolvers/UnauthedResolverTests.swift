@@ -4,7 +4,7 @@ import XExpect
 
 @testable import Api
 
-final class DasboardUnauthedResolverTests: ApiTestCase {
+final class DasboardUnauthedResolverTests: ApiTestCase, @unchecked Sendable {
   let context = Context.mock
 
   func testLoginFromMagicLink() async throws {

@@ -7,18 +7,18 @@ public extension BrowserMatch {
   var name: String? {
     switch self {
     case .name(let name):
-      return name
+      name
     default:
-      return nil
+      nil
     }
   }
 
   var bundleId: String? {
     switch self {
     case .bundleId(let id):
-      return id
+      id
     default:
-      return nil
+      nil
     }
   }
 }
