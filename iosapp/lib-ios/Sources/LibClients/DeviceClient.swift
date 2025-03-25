@@ -7,18 +7,20 @@ import Foundation
 #endif
 
 public struct DeviceClient: Sendable {
-  public var type: DeviceType
-  public var iOSVersion: String
-  public var vendorId: UUID?
-  public var batteryLevel: @Sendable () async -> BatteryLevel
+  @MainActor public var type: @Sendable () async -> DeviceType
+  @MainActor public var iOSVersion: @Sendable () async -> String
+  @MainActor public var vendorId: @Sendable () async -> UUID?
+  @MainActor public var data: @Sendable () async -> Data
+  @MainActor public var batteryLevel: @Sendable () async -> BatteryLevel
   public var clearCache: @Sendable (Int?) -> AnyPublisher<ClearCacheUpdate, Never>
   public var deleteCacheFillDir: @Sendable () async -> Void
   public var availableDiskSpaceInBytes: @Sendable () async -> Int?
 
   public init(
-    type: DeviceType,
-    iOSVersion: String,
-    vendorId: UUID?,
+    type: @Sendable @escaping () async -> DeviceType,
+    iOSVersion: @Sendable @escaping () async -> String,
+    vendorId: @Sendable @escaping () async -> UUID?,
+    data: @Sendable @escaping () async -> Data,
     batteryLevel: @Sendable @escaping () async -> BatteryLevel,
     clearCache: @Sendable @escaping (Int?) -> AnyPublisher<ClearCacheUpdate, Never>,
     deleteCacheFillDir: @Sendable @escaping () async -> Void,
@@ -27,6 +29,7 @@ public struct DeviceClient: Sendable {
     self.type = type
     self.iOSVersion = iOSVersion
     self.vendorId = vendorId
+    self.data = data
     self.batteryLevel = batteryLevel
     self.clearCache = clearCache
     self.deleteCacheFillDir = deleteCacheFillDir
@@ -53,32 +56,58 @@ public extension DeviceClient {
     case finished
     case errorCouldNotCreateDir
   }
+
+  struct Data: Sendable {
+    public var type: DeviceType
+    public var iOSVersion: String
+    public var vendorId: UUID?
+
+    public init(type: DeviceType, iOSVersion: String, vendorId: UUID?) {
+      self.type = type
+      self.iOSVersion = iOSVersion
+      self.vendorId = vendorId
+    }
+  }
 }
 
 extension DeviceClient: DependencyKey {
   #if os(iOS)
-    public static let liveValue = DeviceClient(
-      type: UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone,
-      iOSVersion: UIDevice.current.systemVersion,
-      vendorId: UIDevice.current.identifierForVendor,
-      batteryLevel: {
-        UIDevice.current.isBatteryMonitoringEnabled = true
-        let level = await UIDevice.current.batteryLevel
-        UIDevice.current.isBatteryMonitoringEnabled = false
-        return switch level {
-        case 0.0 ... 1.0: .level(level)
-        default: .unknown
-        }
-      },
-      clearCache: doClearCache,
-      deleteCacheFillDir: { try? FileManager.default.removeItem(at: .fillDir) },
-      availableDiskSpaceInBytes: getAvailableDiskSpaceInBytes
-    )
+    public static var liveValue: DeviceClient {
+      DeviceClient(
+        type: { await MainActor.run {
+          UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone
+        }},
+        iOSVersion: { await MainActor.run {
+          UIDevice.current.systemVersion
+        }},
+        vendorId: { await MainActor.run {
+          UIDevice.current.identifierForVendor
+        }},
+        data: { await MainActor.run { .init(
+          type: UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone,
+          iOSVersion: UIDevice.current.systemVersion,
+          vendorId: UIDevice.current.identifierForVendor
+        ) }},
+        batteryLevel: { @MainActor in
+          UIDevice.current.isBatteryMonitoringEnabled = true
+          let level = UIDevice.current.batteryLevel
+          UIDevice.current.isBatteryMonitoringEnabled = false
+          return switch level {
+          case 0.0 ... 1.0: .level(level)
+          default: .unknown
+          }
+        },
+        clearCache: doClearCache,
+        deleteCacheFillDir: { try? FileManager.default.removeItem(at: .fillDir) },
+        availableDiskSpaceInBytes: getAvailableDiskSpaceInBytes
+      )
+    }
   #else
     public static let liveValue = DeviceClient(
-      type: .iPhone,
-      iOSVersion: "18.0.1",
-      vendorId: nil,
+      type: { .iPhone },
+      iOSVersion: { "18.0.1" },
+      vendorId: { .init() },
+      data: { .init(type: .iPhone, iOSVersion: "18.0.1", vendorId: .init()) },
       batteryLevel: { .level(0.9) },
       clearCache: { _ in AnyPublisher(Empty()) },
       deleteCacheFillDir: {},

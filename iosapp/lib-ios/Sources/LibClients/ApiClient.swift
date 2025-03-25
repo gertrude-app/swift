@@ -41,12 +41,13 @@ extension ApiClient: DependencyKey {
       },
       logEvent: { id, detail in
         @Dependency(\.device) var device
+        let deviceData = await device.data()
         let payload = LogIOSEvent.Input(
           eventId: id,
           kind: "ios",
-          deviceType: device.type.rawValue,
-          iOSVersion: device.iOSVersion,
-          vendorId: device.vendorId,
+          deviceType: deviceData.type.rawValue,
+          iOSVersion: deviceData.iOSVersion,
+          vendorId: deviceData.vendorId,
           detail: detail
         )
         do {
@@ -58,10 +59,11 @@ extension ApiClient: DependencyKey {
       recoveryDirective: {
         @Dependency(\.locale) var locale
         @Dependency(\.device) var device
+        let deviceData = await device.data()
         let payload = RecoveryDirective.Input(
-          vendorId: device.vendorId,
-          deviceType: device.type.rawValue,
-          iOSVersion: device.iOSVersion,
+          vendorId: deviceData.vendorId,
+          deviceType: deviceData.type.rawValue,
+          iOSVersion: deviceData.iOSVersion,
           locale: locale.region?.identifier,
           version: version
         )
