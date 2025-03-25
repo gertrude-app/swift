@@ -3,7 +3,6 @@ import SwiftUI
 
 struct RunningView: View {
   @Environment(\.colorScheme) var cs
-  @Dependency(\.device) var device
 
   @State private var iconOffset = Vector(x: 0, y: 20)
   @State private var titleOffset = Vector(x: 0, y: 20)
@@ -71,7 +70,7 @@ struct RunningView: View {
           for: .seconds(0.5)
         )
 
-        Text("\(self.device.vendorId?.uuidString.lowercased() ?? "unknown")")
+        Text("\(UIDevice.current.identifierForVendor?.uuidString.lowercased() ?? "unknown")")
           .font(.system(size: 11, design: .monospaced))
           .opacity(self.showVendorId ? 1 : 0)
           .padding(.top, 25)

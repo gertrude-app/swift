@@ -49,7 +49,9 @@ public extension ProtectionMode? {
 }
 
 public extension UserDefaults {
-  static let gertrude = UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
+  static var gertrude: UserDefaults {
+    UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
+  }
 }
 
 public extension String {
