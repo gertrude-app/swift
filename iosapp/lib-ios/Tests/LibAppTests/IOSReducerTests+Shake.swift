@@ -7,17 +7,18 @@ import XExpect
 @testable import LibApp
 
 final class IOSReducerTestsShake: XCTestCase {
+  @MainActor
   func testRunningShake() async throws {
     let fetchRulesInvocations = LockIsolated(0)
     let saveDataInvocations = LockIsolated<[ProtectionMode]>([])
     let notifyFilterInvocations = LockIsolated(0)
     let vendorId = UUID()
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .running(showVendorId: false))
     ) {
       IOSReducer()
     } withDependencies: {
-      $0.device.vendorId = vendorId
+      $0.device.vendorId = { vendorId }
       $0.storage.loadData = { @Sendable key in
         expect(key).toBe(.disabledBlockGroupsStorageKey)
         return try! JSONEncoder().encode([BlockGroup.whatsAppFeatures])
@@ -45,18 +46,19 @@ final class IOSReducerTestsShake: XCTestCase {
     expect(notifyFilterInvocations.value).toEqual(1)
   }
 
+  @MainActor
   func testRunningShakeRequestsRulesEvenWhenMissingData() async throws {
     let fetchRulesInvocations = LockIsolated(0)
     let saveDataInvocations = LockIsolated<[SavedCodable]>([])
     let notifyFilterInvocations = LockIsolated(0)
     let loadDataInvocations = LockIsolated(0)
     let vendorId = UUID()
-    let store = await TestStore(
+    let store = TestStore(
       initialState: IOSReducer.State(screen: .running(showVendorId: false))
     ) {
       IOSReducer()
     } withDependencies: {
-      $0.device.vendorId = vendorId
+      $0.device.vendorId = { vendorId }
       $0.storage.loadData = { @Sendable key in
         expect(key).toBe(.disabledBlockGroupsStorageKey)
         loadDataInvocations.withValue { $0 += 1 }
@@ -96,6 +98,7 @@ final class IOSReducerTestsShake: XCTestCase {
     expect(notifyFilterInvocations.value).toEqual(1)
   }
 
+  @MainActor
   func testRecoveryModeNoRetry() async throws {
     let saveDataInvocations = LockIsolated<[SavedCodable]>([])
     let notifyFilterInvocations = LockIsolated(0)
@@ -103,13 +106,13 @@ final class IOSReducerTestsShake: XCTestCase {
     let defaultBlocksInvocations = LockIsolated(0)
     let recoveryDirectiveInvocations = LockIsolated(0)
     let vendorId = UUID()
-    let store = await TestStore(
+    let store = TestStore(
       // we start in the mode where they have already shaken
       initialState: IOSReducer.State(screen: .running(showVendorId: true, timesShaken: 1))
     ) {
       IOSReducer()
     } withDependencies: {
-      $0.device.vendorId = vendorId
+      $0.device.vendorId = { vendorId }
       $0.storage.loadData = { @Sendable key in
         loadDataInvocations.withValue { $0.append(key) }
         return nil // <-- unexpected missing data...
@@ -161,16 +164,17 @@ final class IOSReducerTestsShake: XCTestCase {
     expect(recoveryDirectiveInvocations.value).toEqual(1)
   }
 
+  @MainActor
   func testRecoveryModeWithRetry() async throws {
     let recoveryDirectiveInvocations = LockIsolated(0)
     let retryInvocations = LockIsolated(0)
-    let store = await TestStore(
+    let store = TestStore(
       // we start in the mode where they have already shaken
       initialState: IOSReducer.State(screen: .running(showVendorId: true, timesShaken: 5))
     ) {
       IOSReducer()
     } withDependencies: {
-      $0.device.vendorId = UUID()
+      $0.device.vendorId = { UUID() }
       $0.storage.loadData = { @Sendable _ in nil }
       $0.storage.saveCodable = { @Sendable _, _ in }
       $0.filter.notifyRulesChanged = {}

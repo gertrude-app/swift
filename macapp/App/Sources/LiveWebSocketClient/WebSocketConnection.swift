@@ -14,7 +14,7 @@ public class WebSocketConnection: WebSocketDelegate {
 
   var socket: Starscream.WebSocketClient
   var scheduler: AnySchedulerOf<DispatchQueue>
-  var messageSubject: Mutex<PassthroughSubject<WebSocketMessage.FromApiToApp, Never>>
+  var messageSubject: Core.Mutex<PassthroughSubject<WebSocketMessage.FromApiToApp, Never>>
   var pingInterval: IntervalInSeconds
   var pingsSent = 0
   var state = Mutex(ConnectionState.idle)
@@ -31,7 +31,7 @@ public class WebSocketConnection: WebSocketDelegate {
     pingInterval: IntervalInSeconds = 90,
     log: @escaping @Sendable (String) -> Void = { _ in },
     logError: @escaping @Sendable (String) -> Void = { _ in },
-    messageSubject: Mutex<PassthroughSubject<WebSocketMessage.FromApiToApp, Never>>,
+    messageSubject: Core.Mutex<PassthroughSubject<WebSocketMessage.FromApiToApp, Never>>,
     createSocket: @escaping () -> Starscream.WebSocketClient
   ) {
     self.scheduler = scheduler
