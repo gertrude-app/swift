@@ -4,7 +4,7 @@ import Foundation
 typealias Pixel = (UInt8, UInt8, UInt8, UInt8)
 let BYTES_PER_PIXEL = 4
 
-extension CGImage {
+public extension CGImage {
   var bytes: Data? {
     guard let provider = dataProvider, let bytes = provider.data as Data? else {
       return nil

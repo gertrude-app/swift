@@ -38,6 +38,7 @@
 		7FE743D62C8F431500607876 /* FilterControlProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FE743D52C8F431500607876 /* FilterControlProvider.swift */; };
 		7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FE743D22C8F431500607876 /* controller.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7FE743DF2C8F4ED700607876 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
+		F47A86B32D943D4B0023EA85 /* Gertie in Frameworks */ = {isa = PBXBuildFile; productRef = F47A86B22D943D4B0023EA85 /* Gertie */; };
 		F4D05ACB2D81FD7F00BE6642 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4D05ACA2D81FD7F00BE6642 /* ReplayKit.framework */; };
 		F4D05AD22D81FD7F00BE6642 /* recorder.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F4D05AC92D81FD7F00BE6642 /* recorder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -174,6 +175,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F47A86B32D943D4B0023EA85 /* Gertie in Frameworks */,
 				F4D05ACB2D81FD7F00BE6642 /* ReplayKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -369,6 +371,7 @@
 			);
 			name = recorder;
 			packageProductDependencies = (
+				F47A86B22D943D4B0023EA85 /* Gertie */,
 			);
 			productName = recorder;
 			productReference = F4D05AC92D81FD7F00BE6642 /* recorder.appex */;
@@ -410,6 +413,7 @@
 			packageReferences = (
 				0FAAAEC02D4BCFDF008EF174 /* XCLocalSwiftPackageReference "lib-ios" */,
 				0FAD76452D4D158E009A6FA6 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
+				F47A86B12D943D4B0023EA85 /* XCLocalSwiftPackageReference "../gertie" */,
 			);
 			productRefGroup = 7FA7B8442AEB238700363B53 /* Products */;
 			projectDirPath = "";
@@ -417,8 +421,8 @@
 			targets = (
 				7FA7B8422AEB238700363B53 /* app */,
 				7FA7B8572AEB243400363B53 /* filter */,
-				7FE743D12C8F431500607876 /* controller */,
 				F4D05AC82D81FD7F00BE6642 /* recorder */,
+				7FE743D12C8F431500607876 /* controller */,
 			);
 		};
 /* End PBXProject section */
@@ -965,6 +969,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "lib-ios";
 		};
+		F47A86B12D943D4B0023EA85 /* XCLocalSwiftPackageReference "../gertie" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../gertie;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -1004,6 +1012,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0FAAAEC02D4BCFDF008EF174 /* XCLocalSwiftPackageReference "lib-ios" */;
 			productName = LibApp;
+		};
+		F47A86B22D943D4B0023EA85 /* Gertie */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Gertie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
