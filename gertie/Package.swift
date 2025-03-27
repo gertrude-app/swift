@@ -27,7 +27,8 @@ let package = Package(
       dependencies: [
         "Gertie",
         .product(name: "XExpect", package: "x-expect"),
-      ]
+      ],
+      resources: [.process("__fixtures__")]
     ),
     .target(
       name: "GertieIOS",
