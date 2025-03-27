@@ -1,3 +1,4 @@
+#if canImport(Accelerate)
 import Accelerate
 
 public extension CGImage {
@@ -29,3 +30,4 @@ public extension CGImage {
     return mean / 255.0
   }
 }
+#endif
