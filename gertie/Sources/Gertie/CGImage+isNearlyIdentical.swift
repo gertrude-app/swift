@@ -4,8 +4,6 @@ public extension CGImage {
   func isNearlyIdenticalTo(_ other: CGImage?) -> Bool {
     
     guard let other = other,
-          width == other.width,
-          height == other.height,
           let data = bytes,
           let otherData = other.bytes,
           data.count == otherData.count else {
