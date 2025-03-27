@@ -24,20 +24,12 @@ public extension CGImage {
     vDSP.convertElements(of: [UInt8](data1), to: &floatArray1)
     vDSP.convertElements(of: [UInt8](data2), to: &floatArray2)
     
-    // Allocate storage for the absolute differences
-    var differences = [Float](repeating: 0.0, count: length)
-    
-    // Calculate absolute differences using vDSP
-    vDSP_vsub(floatArray1, 1, floatArray2, 1, &differences, 1, vDSP_Length(length))
-    vDSP_vabs(differences, 1, &differences, 1, vDSP_Length(length))
-    // Calculate the mean of absolute differences
-    var mean: Float = 0.0
-    vDSP_meanv(differences, 1, &mean, vDSP_Length(length))
+    // Calculate the average difference of the two images
+    let mean = vDSP.mean(vDSP.absolute(vDSP.subtract(floatArray1, floatArray2)))
     
     // Normalize the output
     return mean / 255.0
   }
-  
   
 }
 
