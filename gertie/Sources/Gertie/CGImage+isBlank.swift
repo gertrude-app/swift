@@ -1,3 +1,4 @@
+#if canImport(CoreGraphics)
 import CoreGraphics
 import Foundation
 
@@ -44,3 +45,4 @@ private func pixels(in data: Data, equal reference: Pixel, striding distance: In
   }
   return true
 }
+#endif

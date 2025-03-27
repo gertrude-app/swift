@@ -1,3 +1,4 @@
+#if canImport(CoreGraphics)
 import Gertie
 import XCTest
 import XExpect
@@ -100,3 +101,4 @@ final class CGImageTests: XCTestCase {
     return image
   }
 }
+#endif
