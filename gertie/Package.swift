@@ -28,7 +28,7 @@ let package = Package(
         "Gertie",
         .product(name: "XExpect", package: "x-expect"),
       ],
-      exclude: ["__fixtures__/"]
+      resources: [.process("__fixtures__")]
     ),
     .target(
       name: "GertieIOS",
