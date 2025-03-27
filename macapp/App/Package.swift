@@ -105,7 +105,8 @@ let package = Package(
         "TestSupport",
         "x-expect" => "XExpect",
         "x-kit" => "XCore",
-      ]
+      ],
+      resources: [.process("__fixtures__")]
     ),
     .testTarget(
       name: "FilterTests",
