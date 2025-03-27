@@ -1,62 +1,114 @@
-import CoreGraphics
+import Gertie
 import XCTest
-
-@testable import App
+import XExpect
 
 final class CGImageTests: XCTestCase {
 
   func testIsNearlyIdenticalTo() {
-    let imageA = self.pngFixture("identical/1600x670_A.png")
-    let imageB = self.pngFixture("identical/1600x670_B.png")
-    let imageDiff = self.pngFixture("identical/1600x670_diff.png")
-    let largeImageA = self.pngFixture("identical/1920x1080_A.png")
-    let largeImageB = self.pngFixture("identical/1920x1080_B.png")
-    let hourSmallImageA = self.pngFixture("identical/1600x670_hour_A.png")
-    let hourSmallImageB = self.pngFixture("identical/1600x670_hour_B.png")
+    XCTAssertTrue(
+      self.imageFixture("1600x670_A.png")
+        .isNearlyIdenticalTo(self.imageFixture("1600x670_B.png"))
+    )
+    XCTAssertTrue(
+      self.imageFixture("1600x670_A.png")
+        .isNearlyIdenticalTo(self.imageFixture("1600x670_A.png"))
+    )
+    XCTAssertTrue(
+      self.imageFixture("1920x1080_A.png")
+        .isNearlyIdenticalTo(self.imageFixture("1920x1080_B.png"))
+    )
+    XCTAssertTrue(
+      self.imageFixture("1600x670_hour_A.png")
+        .isNearlyIdenticalTo(self.imageFixture("1600x670_hour_B.png"))
+    )
 
-    XCTAssertTrue(imageA.isNearlyIdenticalTo(imageB))
-    XCTAssertTrue(imageA.isNearlyIdenticalTo(imageA))
-    XCTAssertTrue(largeImageA.isNearlyIdenticalTo(largeImageB))
-    XCTAssertTrue(hourSmallImageA.isNearlyIdenticalTo(hourSmallImageB))
+    XCTAssertFalse(
+      self.imageFixture("1600x670_A.png")
+        .isNearlyIdenticalTo(self.imageFixture("1600x670_diff.png"))
+    )
+    XCTAssertFalse(
+      self.imageFixture("1600x670_B.png")
+        .isNearlyIdenticalTo(self.imageFixture("1600x670_diff.png"))
+    )
+    XCTAssertFalse(
+      self.imageFixture("1600x670_A.png")
+        .isNearlyIdenticalTo(self.imageFixture("1920x1080_B.png"))
+    )
+  }
 
-    XCTAssertFalse(imageA.isNearlyIdenticalTo(imageDiff))
-    XCTAssertFalse(imageB.isNearlyIdenticalTo(imageDiff))
-    XCTAssertFalse(imageA.isNearlyIdenticalTo(largeImageB))
+  func testiOSJpgIsNearlyIdenticalTo() {
+    XCTAssertTrue(
+      self.imageFixture("gerA.JPG")
+        .isNearlyIdenticalTo(self.imageFixture("gerB.JPG"))
+    )
+  }
+
+  func testiOSPngIsNearlyIdenticalTo() {
+    XCTAssertTrue(
+      self.imageFixture("ger1.PNG")
+        .isNearlyIdenticalTo(self.imageFixture("ger2.PNG"))
+    )
+    XCTAssertTrue(
+      self.imageFixture("ger2.PNG")
+        .isNearlyIdenticalTo(self.imageFixture("ger3.PNG"))
+    )
+
+    XCTAssertTrue(
+      self.imageFixture("home1.PNG")
+        .isNearlyIdenticalTo(self.imageFixture("home2.PNG"))
+    )
+    XCTAssertTrue(
+      self.imageFixture("home2.PNG")
+        .isNearlyIdenticalTo(self.imageFixture("home3.PNG"))
+    )
+
+    XCTAssertTrue(
+      self.imageFixture("apps1.PNG")
+        .isNearlyIdenticalTo(self.imageFixture("apps2.PNG"))
+    )
+    XCTAssertTrue(
+      self.imageFixture("apps2.PNG")
+        .isNearlyIdenticalTo(self.imageFixture("apps3.PNG"))
+    )
+  }
+
+  func testiOSisDifferent() {
+    XCTAssertFalse(
+      self.imageFixture("iPadA.JPG")
+        .isNearlyIdenticalTo(self.imageFixture("iPadB.JPG"))
+    )
+    XCTAssertFalse(
+      self.imageFixture("apps1.PNG")
+        .isNearlyIdenticalTo(self.imageFixture("ger1.PNG"))
+    )
+    XCTAssertFalse(
+      self.imageFixture("home1.PNG")
+        .isNearlyIdenticalTo(self.imageFixture("ger1.PNG"))
+    )
   }
 
   func testAntialiasingIdentical() {
-    let realA = self.jpegFixture("one.jpeg")
-    let realB = self.jpegFixture("two.jpeg")
-
-    // these are nearly identical, except for antialiasing
-    // ideally, this should be true, but it's not
-    // it might be better to stop just counting different pixels,
-    // but rather adding up the difference between rgb values
-    // this might allow us to detect antialiasing
-    XCTAssertFalse(realA.isNearlyIdenticalTo(realB))
+    XCTAssertTrue(
+      self.imageFixture("one.jpeg")
+        .isNearlyIdenticalTo(self.imageFixture("two.jpeg"))
+    )
   }
 
   func testIsBlank() {
-    XCTAssertTrue(self.pngFixture("white.png").isBlank)
-    XCTAssertTrue(self.pngFixture("black.png").isBlank)
-    XCTAssertFalse(self.pngFixture("mixed.png").isBlank)
+    XCTAssertTrue(self.imageFixture("white.png").isBlank)
+    XCTAssertTrue(self.imageFixture("black.png").isBlank)
+    XCTAssertFalse(self.imageFixture("mixed.png").isBlank)
   }
 
-  func pngFixture(_ filename: String) -> CGImage {
-    CGImage(
-      pngDataProviderSource: .init(filename: "./Tests/AppTests/__fixtures__/\(filename)")!,
-      decode: nil,
-      shouldInterpolate: true,
-      intent: .defaultIntent
-    )!
-  }
+  private func imageFixture(_ filename: String) -> CGImage {
+    let path = Bundle.module.pathForImageResource(filename)!
+    let url = URL(fileURLWithPath: path)
 
-  func jpegFixture(_ filename: String) -> CGImage {
-    CGImage(
-      jpegDataProviderSource: .init(filename: "./Tests/AppTests/__fixtures__/\(filename)")!,
-      decode: nil,
-      shouldInterpolate: true,
-      intent: .defaultIntent
-    )!
+    guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+          let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+      fatalError("Failed to load image: \(filename)")
+    }
+
+    return image
   }
 }
