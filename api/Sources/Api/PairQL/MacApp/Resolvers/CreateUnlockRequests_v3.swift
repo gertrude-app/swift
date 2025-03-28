@@ -1,7 +1,7 @@
 import MacAppRoute
 
 extension CreateUnlockRequests_v3: Resolver {
-  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
+  static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     let userDevice = try await context.userDevice()
 
     let requests = try await context.db.create(input.blockedRequests.map {

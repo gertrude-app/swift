@@ -42,6 +42,7 @@ extension Configure {
     app.migrations.add(RecreateTables())
     app.migrations.add(MarketingPrep())
     app.migrations.add(SearchPaths())
+    app.migrations.add(IOSConnection())
   }
 }
 

@@ -2,7 +2,7 @@ import DuetSQL
 import PairQL
 
 struct DeleteActivityItems_v2: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     let keystrokeLineIds: [KeystrokeLine.Id]

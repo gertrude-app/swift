@@ -3,7 +3,7 @@ import Gertie
 import MacAppRoute
 
 extension CheckIn_v2: Resolver {
-  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
+  static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     async let appManifest = getCachedAppIdManifest()
     async let admin = context.user.admin(in: context.db)
     async let browsers = Browser.query().all(in: context.db)
@@ -62,7 +62,7 @@ extension CheckIn_v2: Resolver {
 
     var resolvedFilterSuspension: CheckIn_v2.ResolvedFilterSuspension?
     if let suspensionReqId = input.pendingFilterSuspension,
-       let resolved = try? await SuspendFilterRequest.query()
+       let resolved = try? await MacApp.SuspendFilterRequest.query()
        .where(.id == suspensionReqId)
        .where(.computerUserId == userDevice.id)
        .where(.status != .enum(RequestStatus.pending))

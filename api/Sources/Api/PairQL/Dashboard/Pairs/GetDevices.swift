@@ -2,7 +2,7 @@ import Foundation
 import PairQL
 
 struct GetDevices: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
   typealias Output = [GetDevice.Output]
 }
 

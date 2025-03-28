@@ -1,0 +1,2 @@
+enum IOSApp {}
+enum MacApp {}

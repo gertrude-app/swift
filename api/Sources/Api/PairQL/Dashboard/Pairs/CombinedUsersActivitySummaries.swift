@@ -2,7 +2,7 @@ import DuetSQL
 import PairQL
 
 struct CombinedUsersActivitySummaries: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
   typealias Input = [DateRange]
   typealias Output = [UserActivitySummaries.Day]
 }
