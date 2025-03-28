@@ -25,8 +25,24 @@ struct UserWithDeviceEntities {
   var token: MacAppToken
   var admin: AdminEntities
 
-  var context: UserContext {
+  var context: MacApp.ChildContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
+  }
+
+  subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
+    self.model[keyPath: keyPath]
+  }
+}
+
+@dynamicMemberLookup
+struct ChildWithIOSDeviceEntities {
+  var model: User
+  var device: IOSApp.Device
+  var token: IOSApp.Token
+  var parent: AdminEntities
+
+  var context: IOSApp.ChildContext {
+    .init(requestId: "", dashboardUrl: "", child: self.model, device: self.device)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
@@ -114,6 +130,13 @@ extension ApiTestCase {
       $0.parentId = admin.id
     })
     return UserEntities(model: user, admin: admin)
+  }
+
+  func childWithIOSDevice() async throws -> ChildWithIOSDeviceEntities {
+    let child = try await self.user()
+    let iosDevice = try await self.db.create(IOSApp.Device.mock { $0.childId = child.id })
+    let token = try await self.db.create(IOSApp.Token(deviceId: iosDevice.id))
+    return .init(model: child.model, device: iosDevice, token: token, parent: child.admin)
   }
 
   func userWithDevice() async throws -> UserWithDeviceEntities {

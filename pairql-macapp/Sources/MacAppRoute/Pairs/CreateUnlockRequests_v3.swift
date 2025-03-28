@@ -3,7 +3,7 @@ import PairQL
 
 /// in use: v2.4.0 - present
 public struct CreateUnlockRequests_v3: Pair {
-  public static let auth: ClientAuth = .user
+  public static let auth: ClientAuth = .child
 
   public struct Input: PairInput {
     public struct BlockedRequest: PairNestable {

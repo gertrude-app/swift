@@ -4,7 +4,7 @@ import Vapor
 import XCore
 
 struct DeleteEntity_v2: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     enum EntityType: String, Codable {

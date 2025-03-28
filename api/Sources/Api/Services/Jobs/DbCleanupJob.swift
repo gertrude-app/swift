@@ -74,7 +74,7 @@ struct CleanupJob: AsyncScheduledJob {
 
     logs.append("Deleted \(deletedAnnouncements) dash announcements")
 
-    let suspendFilterRequests = try await SuspendFilterRequest.query()
+    let suspendFilterRequests = try await MacApp.SuspendFilterRequest.query()
       .where(.createdAt < 3.daysAgo)
       .delete(in: self.db)
 
@@ -85,6 +85,11 @@ struct CleanupJob: AsyncScheduledJob {
       .delete(in: self.db)
 
     logs.append("Deleted \(smokeAdmins) smoke test admin accounts")
+
+    await self.db.notifyDeprecationComplete(
+      if: "BlockRules(v1)",
+      notLoggedWithinLast: .days(90)
+    )
 
     return logs
   }

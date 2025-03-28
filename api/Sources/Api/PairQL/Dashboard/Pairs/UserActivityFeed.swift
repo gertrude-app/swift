@@ -58,7 +58,7 @@ public enum UserActivity {
 }
 
 struct UserActivityFeed: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     var userId: User.Id

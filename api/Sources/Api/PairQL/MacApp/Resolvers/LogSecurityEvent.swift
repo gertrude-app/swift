@@ -3,7 +3,7 @@ import Gertie
 import MacAppRoute
 
 extension LogSecurityEvent: Resolver {
-  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
+  static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     guard let computerUser = try? await context.db.find(ComputerUser.Id(input.deviceId)) else {
       await with(dependency: \.slack)
         .error("ComputerUser \(input.deviceId) not found, security event: \(input.event)")

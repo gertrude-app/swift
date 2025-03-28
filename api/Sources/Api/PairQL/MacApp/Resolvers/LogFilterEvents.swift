@@ -4,7 +4,7 @@ import MacAppRoute
 import PostgresKit
 
 extension LogFilterEvents: Resolver {
-  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
+  static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     let computerUserId = try await context.computerUser().id
     let events = try await context.db.create(input.events.map { event, count in
       InterestingEvent(

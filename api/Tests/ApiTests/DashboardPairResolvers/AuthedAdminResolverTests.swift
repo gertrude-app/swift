@@ -559,7 +559,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testGetSuspendFilterRequest() async throws {
     let user = try await self.userWithDevice()
-    var request = SuspendFilterRequest.random
+    var request = MacApp.SuspendFilterRequest.random
     request.computerUserId = user.device.id
     try await self.db.create(request)
 

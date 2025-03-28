@@ -3,7 +3,7 @@ import Gertie
 import MacAppRoute
 
 extension CheckIn: Resolver {
-  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
+  static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     let v2 = try await CheckIn_v2.resolve(with: input, in: context)
     return Output(
       adminAccountStatus: v2.adminAccountStatus,
