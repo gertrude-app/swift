@@ -8,7 +8,7 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase, @unchecked Sendable
     let user = try await self.user().withDevice {
       $0.appVersion = "2.4.0"
     }
-    let request = try await self.db.create(SuspendFilterRequest.random {
+    let request = try await self.db.create(MacApp.SuspendFilterRequest.random {
       $0.computerUserId = user.device.id
       $0.status = .pending
     })
