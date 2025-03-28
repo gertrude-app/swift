@@ -13,7 +13,7 @@ struct KeychainSummary: PairNestable {
 }
 
 struct GetSelectableKeychains: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Output: PairOutput {
     var own: [KeychainSummary]

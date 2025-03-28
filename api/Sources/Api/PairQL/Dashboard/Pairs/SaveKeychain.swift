@@ -1,7 +1,7 @@
 import PairQL
 
 struct SaveKeychain: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     let isNew: Bool

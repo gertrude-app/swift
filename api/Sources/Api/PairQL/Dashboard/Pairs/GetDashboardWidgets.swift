@@ -4,7 +4,7 @@ import Gertie
 import PairQL
 
 struct GetDashboardWidgets: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct User: PairNestable {
     var id: Api.User.Id
@@ -144,7 +144,8 @@ func recentScreenshots(
 ) -> [GetDashboardWidgets.RecentScreenshot] {
   users.compactMap { user in
     screenshots
-      .first { map[$0.computerUserId]?.id == user.id }
+      // TODO: show ios screenshots as well
+      .first { $0.computerUserId.map { map[$0]?.id == user.id } ?? false }
       .map { .init(id: $0.id, userName: user.name, url: $0.url, createdAt: $0.createdAt) }
   }
 }
@@ -156,7 +157,9 @@ func userActivitySummaries(
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.UserActivitySummary] {
   users.map { user in
-    let userScreenshots = screenshots.filter { map[$0.computerUserId]?.id == user.id }
+    // TODO: show ios screenshots as well
+    let userScreenshots = screenshots
+      .filter { $0.computerUserId.map { map[$0]?.id == user.id } ?? false }
     let userKeystrokes = keystrokes.filter { map[$0.computerUserId]?.id == user.id }
     return .init(
       id: user.id,

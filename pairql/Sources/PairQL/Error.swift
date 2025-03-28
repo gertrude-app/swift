@@ -66,5 +66,6 @@ public extension PqlError {
   enum AppTag: String, Codable, CaseIterable, Sendable {
     case userTokenNotFound
     case connectionCodeNotFound
+    case iosDeviceTokenNotFound
   }
 }

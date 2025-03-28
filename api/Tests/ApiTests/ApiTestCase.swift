@@ -82,7 +82,7 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
     .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model, ipAddress: nil)
   }
 
-  func context(_ user: UserWithDeviceEntities) async throws -> UserContext {
+  func context(_ user: UserWithDeviceEntities) async throws -> MacApp.ChildContext {
     .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
   }
 

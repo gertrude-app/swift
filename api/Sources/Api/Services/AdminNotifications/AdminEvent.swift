@@ -20,12 +20,22 @@ enum AdminEvent: Equatable {
   }
 
   struct SuspendFilterRequestSubmitted: Equatable {
+    enum Context: Equatable {
+      case macapp(
+        computerUserId: UserDevice.Id,
+        requestId: MacApp.SuspendFilterRequest.Id
+      )
+      case iosapp(
+        deviceId: IOSApp.Device.Id,
+        requestId: IOSApp.SuspendFilterRequest.Id
+      )
+    }
+
     var dashboardUrl: String
-    var userDeviceId: UserDevice.Id
-    var userId: User.Id
-    var userName: String
+    var childId: User.Id
+    var childName: String
     var duration: Seconds<Int>
-    var requestId: SuspendFilterRequest.Id
     var requestComment: String?
+    var context: Context
   }
 }

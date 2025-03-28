@@ -3,7 +3,7 @@ import Gertie
 import PairQL
 
 struct SaveUser: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     var id: User.Id
