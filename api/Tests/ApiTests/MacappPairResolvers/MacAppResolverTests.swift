@@ -16,7 +16,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
       in: self.context(user)
     )
 
-    let suspendRequests = try await SuspendFilterRequest.query()
+    let suspendRequests = try await MacApp.SuspendFilterRequest.query()
       .where(.computerUserId == user.device.id)
       .all(in: self.db)
 
@@ -30,12 +30,11 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
         adminId: user.parentId,
         event: .suspendFilterRequestSubmitted(.init(
           dashboardUrl: "",
-          userDeviceId: user.device.id,
-          userId: user.id,
-          userName: user.name,
+          childId: user.id,
+          childName: user.name,
           duration: 1111,
-          requestId: suspendRequests.first!.id,
-          requestComment: "test"
+          requestComment: "test",
+          context: .macapp(computerUserId: user.device.id, requestId: suspendRequests.first!.id)
         ))
       ),
     ])

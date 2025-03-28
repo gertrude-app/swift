@@ -3,7 +3,7 @@ import PairQL
 
 /// in use: v2.0.0 - present
 public struct CreateKeystrokeLines: Pair {
-  public static let auth: ClientAuth = .user
+  public static let auth: ClientAuth = .child
 
   public typealias Input = [KeystrokeLineInput]
 

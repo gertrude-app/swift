@@ -145,7 +145,7 @@ final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testIncludesResolvedFilterSuspension_v1() async throws {
     let user = try await self.userWithDevice()
-    let susp = try await self.db.create(SuspendFilterRequest.mock {
+    let susp = try await self.db.create(MacApp.SuspendFilterRequest.mock {
       $0.computerUserId = user.device.id
       $0.status = .accepted
       $0.duration = 777
@@ -180,7 +180,7 @@ final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testDoesNotIncludeUnresolvedSuspension_v1() async throws {
     let user = try await self.userWithDevice()
-    let susp = try await self.db.create(SuspendFilterRequest.mock {
+    let susp = try await self.db.create(MacApp.SuspendFilterRequest.mock {
       $0.computerUserId = user.device.id
       $0.status = .pending // <-- still pending!
     })

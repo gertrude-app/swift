@@ -81,9 +81,6 @@ watch-web-email template:
 db-sync:
   @node ../infra/db-sync.mjs
 
-sync-env:
-  @node ../infra/sync-env.mjs
-
 # root
 
 build:
@@ -92,31 +89,27 @@ build:
 test:
   @just nx-run-many test
 
+lint:
+  @swiftformat . --lint
+
+lint-fix:
+  @swiftformat .
+
 check:
   @just build
   @just test
-
-exclude:
-  @find . -path '**/.build/**/swift-nio*/**/hash.txt' -delete
-  @find . -path '**/.build/**/swift-nio*/**/*_nasm.inc' -delete
-  @find . -path '**/.build/**/swift-nio*/**/*_sha1.sh' -delete
-  @find . -path '**/.build/**/swift-nio*/**/*_llhttp.sh' -delete
-  @find . -path '**/.build/**/swift-nio*/**/LICENSE-MIT' -delete
+  @just lint
 
 nx-reset:
   @pnpm nx reset
 
 clean: nx-reset
   @rm -rf node_modules/.cache
-  @rm -rf api/.build
-  @rm -rf duet/.build
-  @rm -rf pairql/.build
-  @rm -rf pairql-macapp/.build
-  @rm -rf shared/.build
-  @rm -rf x-kit/.build
-
-clean-api-tests:
-  @cd api && find .build -name '*AppTests*' -delete
+  @rm -rf api/.build duet/.build gertie/.build
+  @rm -rf macapp/App/.build iosapp/lib-ios/.build
+  @rm -rf pairql/.build pairql-macapp/.build pairql-iosapp/.build
+  @rm -rf ts-interop/.build x-aws/.build x-http/.build
+  @rm -rf x-kit/.build x-postmark/.build x-slack/.build x-stripe/.build
 
 # helpers
 
