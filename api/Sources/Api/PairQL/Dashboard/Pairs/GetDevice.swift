@@ -5,7 +5,7 @@ import Gertie
 import PairQL
 
 struct GetDevice: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   typealias Input = UUID
 

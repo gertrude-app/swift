@@ -2,25 +2,27 @@ import Dependencies
 import MacAppRoute
 import Vapor
 
-struct UserContext: ResolverContext {
-  let requestId: String
-  let dashboardUrl: String
-  let user: User
-  let token: UserToken
+extension MacApp {
+  struct ChildContext: ResolverContext {
+    let requestId: String
+    let dashboardUrl: String
+    let user: User
+    let token: UserToken
 
-  @Dependency(\.uuid) var uuid
-  @Dependency(\.env) var env
-  @Dependency(\.db) var db
+    @Dependency(\.uuid) var uuid
+    @Dependency(\.env) var env
+    @Dependency(\.db) var db
 
-  func userDevice() async throws -> UserDevice {
-    try await self.token.userDevice(in: self.db)
+    func userDevice() async throws -> UserDevice {
+      try await self.token.userDevice(in: self.db)
+    }
   }
 }
 
 extension AuthedUserRoute: RouteResponder {
   static func respond(
     to route: Self,
-    in context: UserContext
+    in context: MacApp.ChildContext
   ) async throws -> Response {
     switch route {
     case .checkIn(let input):
