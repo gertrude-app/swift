@@ -10,7 +10,7 @@ struct UserActivitySummaries: Pair {
   static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
-    let userId: User.Id
+    let userId: Child.Id
     let dateRanges: [DateRange]
   }
 

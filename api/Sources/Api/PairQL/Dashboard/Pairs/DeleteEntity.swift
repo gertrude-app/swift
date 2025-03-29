@@ -89,7 +89,7 @@ extension DeleteEntity: Resolver {
 
     case .user:
       let deviceIds = try await context.userDevices().map(\.computerId)
-      let user = try await User.query()
+      let user = try await Child.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
         .first(in: context.db)
@@ -160,7 +160,7 @@ extension DeleteEntity.Input {
           | 'Device'
           | 'Key'
           | 'Keychain'
-          | 'User';
+          | 'Child';
       }
     """
   }

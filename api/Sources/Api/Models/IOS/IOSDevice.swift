@@ -4,7 +4,7 @@ import GertieIOS
 extension IOSApp {
   struct Device: Codable, Sendable {
     var id: Id
-    var childId: User.Id
+    var childId: Child.Id
     var vendorId: VendorId
     var deviceType: String
     var appVersion: String
@@ -14,7 +14,7 @@ extension IOSApp {
 
     init(
       id: Id? = nil,
-      childId: User.Id,
+      childId: Child.Id,
       vendorId: VendorId,
       deviceType: String,
       appVersion: String,
@@ -33,8 +33,8 @@ extension IOSApp {
 // loaders
 
 extension IOSApp.Device {
-  func child(in db: any DuetSQL.Client) async throws -> User {
-    try await User.query()
+  func child(in db: any DuetSQL.Client) async throws -> Child {
+    try await Child.query()
       .where(.id == self.childId)
       .first(in: db)
   }

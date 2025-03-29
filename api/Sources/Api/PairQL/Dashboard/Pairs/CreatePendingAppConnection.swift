@@ -5,7 +5,7 @@ struct CreatePendingAppConnection: Pair {
   static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
-    var userId: User.Id
+    var userId: Child.Id
   }
 
   struct Output: PairOutput {

@@ -6,7 +6,7 @@ extension IOSApp {
   struct ChildContext: ResolverContext {
     let requestId: String
     let dashboardUrl: String
-    let child: User
+    let child: Child
     let device: IOSApp.Device
 
     @Dependency(\.db) var db

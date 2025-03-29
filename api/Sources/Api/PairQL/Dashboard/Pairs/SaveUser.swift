@@ -6,7 +6,7 @@ struct SaveUser: Pair {
   static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
-    var id: User.Id
+    var id: Child.Id
     var isNew: Bool
     var name: String
     var keyloggingEnabled: Bool
@@ -29,9 +29,9 @@ struct SaveUser: Pair {
 
 extension SaveUser: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    var user: User
+    var user: Child
     if input.isNew {
-      user = try await context.db.create(User(
+      user = try await context.db.create(Child(
         id: input.id,
         parentId: context.admin.id,
         name: input.name,
@@ -111,7 +111,7 @@ extension SaveUser: Resolver {
 
 // helpers
 
-func monitoringDecreased(user: User, input: SaveUser.Input) -> String? {
+func monitoringDecreased(user: Child, input: SaveUser.Input) -> String? {
   var parts: [String] = []
   if user.keyloggingEnabled, !input.keyloggingEnabled {
     parts.append("keylogging disabled")

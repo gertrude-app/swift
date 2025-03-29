@@ -180,7 +180,7 @@ extension SecurityEventsFeed.FeedEvent {
   private struct _CaseChild: Codable {
     var `case` = "child"
     var id: Tagged<Api.SecurityEvent, UUID>
-    var childId: Tagged<Api.User, UUID>
+    var childId: Tagged<Api.Child, UUID>
     var childName: String
     var deviceId: Tagged<Api.Device, UUID>
     var deviceName: String

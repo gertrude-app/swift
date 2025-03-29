@@ -1,7 +1,7 @@
 import DuetSQL
 import Gertie
 
-struct User: Codable, Sendable {
+struct Child: Codable, Sendable {
   var id: Id
   var parentId: Admin.Id
   var name: String
@@ -39,7 +39,7 @@ struct User: Codable, Sendable {
 
 // loaders
 
-extension User {
+extension Child {
   func devices(in db: any DuetSQL.Client) async throws -> [UserDevice] {
     try await UserDevice.query()
       .where(.childId == self.id)

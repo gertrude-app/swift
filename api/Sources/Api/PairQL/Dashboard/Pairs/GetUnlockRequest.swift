@@ -7,7 +7,7 @@ struct GetUnlockRequest: Pair {
 
   struct Output: PairOutput {
     let id: Api.UnlockRequest.Id
-    let userId: Api.User.Id
+    let userId: Api.Child.Id
     let userName: String
     let status: RequestStatus
     let url: String?

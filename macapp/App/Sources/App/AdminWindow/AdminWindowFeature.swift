@@ -48,7 +48,7 @@ struct AdminWindowFeature: Feature {
       var screen: AdminWindowFeature.Screen
       var healthCheck: HealthCheck
       var filterState: FilterState.WithRelativeTimes
-      var user: User?
+      var user: Child?
       var availableAppUpdate: AvailableAppUpdate?
       var installedAppVersion: String
       var releaseChannel: ReleaseChannel

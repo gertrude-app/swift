@@ -14,7 +14,7 @@ enum AdminEvent: Equatable {
 
   struct UnlockRequestSubmitted: Equatable {
     var dashboardUrl: String
-    var userId: User.Id
+    var userId: Child.Id
     var userName: String
     var requestIds: [UnlockRequest.Id]
   }
@@ -32,7 +32,7 @@ enum AdminEvent: Equatable {
     }
 
     var dashboardUrl: String
-    var childId: User.Id
+    var childId: Child.Id
     var childName: String
     var duration: Seconds<Int>
     var requestComment: String?

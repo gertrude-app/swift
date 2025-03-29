@@ -668,7 +668,7 @@ extension UnlockRequest: Model {
   }
 }
 
-extension User: Model {
+extension Child: Model {
   public static let schemaName = "parent"
   public static let tableName = "children"
   public typealias ColumnName = CodingKeys

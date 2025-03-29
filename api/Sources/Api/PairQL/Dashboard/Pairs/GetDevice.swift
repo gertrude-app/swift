@@ -11,7 +11,7 @@ struct GetDevice: Pair {
 
   struct Output: PairOutput {
     struct User: PairNestable {
-      var id: Api.User.Id
+      var id: Api.Child.Id
       var name: String
       var status: ChildComputerStatus
     }

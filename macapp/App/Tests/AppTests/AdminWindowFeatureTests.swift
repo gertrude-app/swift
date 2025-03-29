@@ -80,7 +80,7 @@ final class AdminWindowFeatureTests: XCTestCase {
       resumeOnboarding: nil
     )])
     await expect(securityEvent.calls)
-      .toEqual([Both(.init(.childDisconnected, "name: Mock User"), nil)])
+      .toEqual([Both(.init(.childDisconnected, "name: Mock Child"), nil)])
   }
 
   @MainActor

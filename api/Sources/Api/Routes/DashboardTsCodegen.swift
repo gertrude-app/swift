@@ -37,7 +37,7 @@ enum DashboardTsCodegenRoute {
       ("RuleSchedule", RuleSchedule.self),
       ("BlockedApp", UserBlockedApp.DTO.self),
       ("UserKeychainSummary", UserKeychainSummary.self),
-      ("User", GetUser.User.self),
+      ("User", GetUser.Child.self),
       ("SuspendFilterRequest", GetSuspendFilterRequest.Output.self),
       ("AdminKeychain", GetAdminKeychains.AdminKeychain.self),
       ("UserActivityItem", UserActivity.Item.self),

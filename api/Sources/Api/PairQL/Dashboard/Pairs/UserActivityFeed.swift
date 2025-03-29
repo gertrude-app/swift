@@ -45,7 +45,7 @@ struct UserActivityFeed: Pair {
   static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
-    var userId: User.Id
+    var userId: Child.Id
     var range: DateRange
   }
 
