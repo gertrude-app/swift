@@ -9,11 +9,13 @@ import ReplayKit
 import Photos
 import os.log
 import Gertie
+import SensitiveContentAnalysis
 
 class SampleHandler: RPBroadcastSampleHandler {
   var lastSavedDate = Date.now
   var previousScreenThumbnail : CGImage?
   let ciContext = CIContext()
+  let analyzer = SCSensitivityAnalyzer()
   
   override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
     RecordingStatus.didRecordSample()
@@ -49,6 +51,16 @@ class SampleHandler: RPBroadcastSampleHandler {
       return
     }
     if !currentScreenThumbnail.isNearlyIdenticalTo(previousScreenThumbnail) {
+      
+      analyzer.analyzeImage(currentScreenThumbnail) { analysis, error in
+        if let error {
+          os_log("[G•] Error analyzing image: \(error.localizedDescription)")
+        }
+        if let analysis {
+          os_log("[G•] isSensitive: \(analysis.isSensitive)")
+        }
+      }
+      
       previousScreenThumbnail = currentScreenThumbnail.copy()
       NSLog("[G•] screen changed!")
       
