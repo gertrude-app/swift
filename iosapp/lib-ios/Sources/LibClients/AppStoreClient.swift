@@ -16,8 +16,8 @@ extension AppStoreClient: DependencyKey {
   #if os(iOS)
     public static let liveValue = AppStoreClient(
       requestRating: {
-        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-          SKStoreReviewController.requestReview(in: scene)
+        if let scene = await UIApplication.shared.connectedScenes.first as? UIWindowScene {
+          await SKStoreReviewController.requestReview(in: scene)
         }
       },
       requestReview: {
