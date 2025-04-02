@@ -8,7 +8,7 @@ import LibCore
 public struct StorageClient: Sendable {
   public var saveDate: @Sendable (Date, _ forKey: String) -> Void
   public var loadDate: @Sendable (_ forKey: String) -> Date?
-  public var saveCodable: @Sendable (_ value: any Codable, _ forKey: String) -> Void
+  public var saveCodable: @Sendable (_ value: any Codable & Sendable, _ forKey: String) -> Void
   public var loadData: @Sendable (_ forKey: String) -> Data?
   public var removeObject: @Sendable (_ forKey: String) -> Void
 }

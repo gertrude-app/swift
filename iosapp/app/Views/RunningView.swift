@@ -1,19 +1,14 @@
 import Dependencies
 import SwiftUI
-import ReplayKit
-import Photos
 
 struct RunningView: View {
   @Environment(\.colorScheme) var cs
-  @Dependency(\.device) var device
 
   @State private var iconOffset = Vector(x: 0, y: 20)
   @State private var titleOffset = Vector(x: 0, y: 20)
   @State private var subtitleOffset = Vector(x: 0, y: 20)
   @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
-  
-  private let broadcastPicker = RPSystemBroadcastPickerView()
 
   let showVendorId: Bool
 
@@ -49,7 +44,7 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
-        Text("You can pause filtering only when you choose to share your screen.")
+        Text("You can quit the app now, it will keep blocking even when not running.")
           .font(.system(size: 18, weight: .medium))
           .foregroundStyle(Color(self.cs, light: .black.opacity(0.6), dark: .white.opacity(0.6)))
           .swooshIn(
@@ -58,10 +53,6 @@ struct RunningView: View {
             after: .seconds(0.4),
             for: .seconds(0.5)
           )
-        
-        BigButton("Pause Filter",type: .button { buttonTapped() }, variant: .primary)
-          .frame(maxWidth: 500)
-          .padding(30)
 
         Link(destination: URL(string: "https://gertrude.app")!) {
           HStack {
@@ -71,7 +62,7 @@ struct RunningView: View {
               .offset(y: 1.5)
           }
         }
-        .padding(.bottom, 25)
+        .padding(.top, 25)
         .swooshIn(
           tracking: self.$linkOffset,
           to: .zero,
@@ -79,8 +70,7 @@ struct RunningView: View {
           for: .seconds(0.5)
         )
 
-
-        Text("\(self.device.vendorId?.uuidString.lowercased() ?? "unknown")")
+        Text("\(UIDevice.current.identifierForVendor?.uuidString.lowercased() ?? "unknown")")
           .font(.system(size: 11, design: .monospaced))
           .opacity(self.showVendorId ? 1 : 0)
           .padding(.top, 25)
@@ -90,17 +80,6 @@ struct RunningView: View {
       .frame(maxWidth: .infinity)
       .multilineTextAlignment(.center)
       .padding(30)
-    }
-  }
-  func buttonTapped() {
-    // Assumes user will cooperate for the demo. Prompt here while we still have the UI thread.
-    PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in }
-    
-    broadcastPicker.preferredExtension = "com.ftc.gertrude-ios.app.recorder"
-    broadcastPicker.showsMicrophoneButton = false
-    // This workaround displays the prompt while minimizing encumbrance with UIKit.
-    for subview in broadcastPicker.subviews where subview is UIButton {
-      (subview as? UIButton)?.sendActions(for: .touchUpInside)
     }
   }
 }

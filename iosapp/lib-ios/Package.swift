@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -14,15 +14,15 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-dependencies",
-      from: "1.0.0"
+      from: "1.8.1"
     ),
     .package(
       url: "https://github.com/pointfreeco/swift-concurrency-extras",
-      from: "1.0.0"
+      from: "1.3.1"
     ),
     .package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
-      from: "1.17.1"
+      from: "1.18.0"
     ),
     .package(path: "../../pairql-iosapp"),
     .package(path: "../../gertie"),
@@ -41,6 +41,7 @@ let package = Package(
       dependencies: [
         "LibCore",
         "LibClients",
+        .product(name: "XCore", package: "x-kit"),
         .product(name: "GertieIOS", package: "gertie"),
         .product(name: "Dependencies", package: "swift-dependencies"),
       ]

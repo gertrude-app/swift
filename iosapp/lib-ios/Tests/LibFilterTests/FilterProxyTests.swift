@@ -100,7 +100,7 @@ final class FilterProxyTests: XCTestCase {
     }
 
     // initializer loads protection rules from storage
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("foo")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("foo")]))
     expect(logs.value).toEqual(["read 1 (normal) rules"])
 
     await clock.advance(by: .seconds(59))
@@ -112,7 +112,7 @@ final class FilterProxyTests: XCTestCase {
     // heartbeat should happen here
     await clock.advance(by: .seconds(1))
     expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("bar"), .urlContains("baz")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("bar"), .urlContains("baz")]))
   }
 
   // simulate user defaults not being available on first boot, before unlock
@@ -140,7 +140,7 @@ final class FilterProxyTests: XCTestCase {
     }
 
     // initializer tries to load, but finds no rules, goes into lockdown
-    expect(proxy.protectionMode).toEqual(.emergencyLockdown)
+    expect(proxy.getProtectionMode).toEqual(.emergencyLockdown)
     expect(logs.value).toEqual(["no rules found"])
 
     await clock.advance(by: .seconds(9))
@@ -163,7 +163,7 @@ final class FilterProxyTests: XCTestCase {
       "no rules found",
       "read 1 (normal) rules",
     ])
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("foo")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("foo")]))
 
     // now, we are not checking so often
     await clock.advance(by: .seconds(10))
@@ -186,7 +186,7 @@ final class FilterProxyTests: XCTestCase {
       FilterProxy(protectionMode: .normal([]))
     }
 
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("lol")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("lol")]))
     expect(logs.value).toEqual(["read 1 (normal) rules"])
   }
 
@@ -205,14 +205,14 @@ final class FilterProxyTests: XCTestCase {
     }
 
     // init
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("foo")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("foo")]))
     expect(logs.value).toEqual(["read 1 (normal) rules"])
 
     rules.setValue(.normal([.urlContains("bar"), .urlContains("baz")]))
     proxy.handleRulesChanged()
 
     expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("bar"), .urlContains("baz")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("bar"), .urlContains("baz")]))
   }
 
   func testReadRulesNilLogsErrAndKeepsOldRules() {
@@ -226,12 +226,12 @@ final class FilterProxyTests: XCTestCase {
       FilterProxy(protectionMode: .normal([.urlContains("old")]))
     }
 
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("old")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
     expect(logs.value).toEqual(["no rules found"])
 
     proxy.receiveHeartbeat()
 
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("old")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
     expect(logs.value).toEqual(["no rules found", "no rules found"])
   }
 
@@ -253,6 +253,12 @@ final class FilterProxyTests: XCTestCase {
     expect(logs.value[0]).toContain("error decoding rules:")
 
     // we keep the rules
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains("old")]))
+    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
+  }
+}
+
+extension FilterProxy {
+  var getProtectionMode: ProtectionMode {
+    protectionMode.withLock { $0 }
   }
 }

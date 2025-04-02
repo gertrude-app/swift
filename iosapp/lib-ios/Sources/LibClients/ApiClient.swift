@@ -25,32 +25,33 @@ extension ApiClient: DependencyKey {
       .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
     return ApiClient(
       fetchBlockRules: { vendorId, disabledGroups in
-        let (data, _) = try await request(route: .blockRules_v2(.init(
+        let (data, _) = try await request(route: .unauthed(.blockRules_v2(.init(
           disabledGroups: disabledGroups,
           vendorId: vendorId,
           version: version
-        )))
+        ))))
         return try JSONDecoder().decode([BlockRule].self, from: data)
       },
       fetchDefaultBlockRules: { vendorId in
-        let (data, _) = try await request(route: .defaultBlockRules(.init(
+        let (data, _) = try await request(route: .unauthed(.defaultBlockRules(.init(
           vendorId: vendorId,
           version: version
-        )))
+        ))))
         return try JSONDecoder().decode([BlockRule].self, from: data)
       },
       logEvent: { id, detail in
         @Dependency(\.device) var device
+        let deviceData = await device.data()
         let payload = LogIOSEvent.Input(
           eventId: id,
           kind: "ios",
-          deviceType: device.type.rawValue,
-          iOSVersion: device.iOSVersion,
-          vendorId: device.vendorId,
+          deviceType: deviceData.type.rawValue,
+          iOSVersion: deviceData.iOSVersion,
+          vendorId: deviceData.vendorId,
           detail: detail
         )
         do {
-          try await request(route: .logIOSEvent(payload))
+          try await request(route: .unauthed(.logIOSEvent(payload)))
         } catch {
           os_log("[G•] error logging event: %{public}s", String(reflecting: error))
         }
@@ -58,14 +59,15 @@ extension ApiClient: DependencyKey {
       recoveryDirective: {
         @Dependency(\.locale) var locale
         @Dependency(\.device) var device
+        let deviceData = await device.data()
         let payload = RecoveryDirective.Input(
-          vendorId: device.vendorId,
-          deviceType: device.type.rawValue,
-          iOSVersion: device.iOSVersion,
+          vendorId: deviceData.vendorId,
+          deviceType: deviceData.type.rawValue,
+          iOSVersion: deviceData.iOSVersion,
           locale: locale.region?.identifier,
           version: version
         )
-        let (data, _) = try await request(route: .recoveryDirective(payload))
+        let (data, _) = try await request(route: .unauthed(.recoveryDirective(payload)))
         let result = try JSONDecoder().decode(RecoveryDirective.Output.self, from: data)
         return result.directive
       }

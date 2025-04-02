@@ -1,4 +1,4 @@
-import Combine
+@preconcurrency import Combine
 import ComposableArchitecture
 import GertieIOS
 import LibClients
@@ -14,6 +14,7 @@ enum SavedCodable: Equatable {
 }
 
 final class IOSReducerTests: XCTestCase {
+  @MainActor
   func testHappyPath() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let requestAuthInvocations = LockIsolated(0)
@@ -28,7 +29,7 @@ final class IOSReducerTests: XCTestCase {
     let cacheClearSubject = PassthroughSubject<DeviceClient.ClearCacheUpdate, Never>()
     let vendorId = UUID()
 
-    let store = await TestStore(initialState: IOSReducer.State()) {
+    let store = TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
     } withDependencies: {
       $0.date = .constant(.reference)
@@ -56,7 +57,7 @@ final class IOSReducerTests: XCTestCase {
         installInvocations.withValue { $0 += 1 }
         return .success(())
       }
-      $0.device.vendorId = vendorId
+      $0.device.vendorId = { vendorId }
       $0.device.deleteCacheFillDir = {
         deleteCacheFillDirInvocations.withValue { $0 += 1 }
       }
@@ -497,8 +498,9 @@ final class IOSReducerTests: XCTestCase {
     }
   }
 
+  @MainActor
   func testCantAdvanceWithZeroBlockGroups() async throws {
-    let store = await TestStore(initialState: IOSReducer.State(
+    let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.optOutBlockGroups)),
       disabledBlockGroups: .all // <-- deselected all
     )) {
@@ -506,7 +508,7 @@ final class IOSReducerTests: XCTestCase {
     }
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
-    await expect(store.state.screen).toEqual(.onboarding(.happyPath(.optOutBlockGroups)))
+    expect(store.state.screen).toEqual(.onboarding(.happyPath(.optOutBlockGroups)))
   }
 
   @MainActor
@@ -532,6 +534,7 @@ final class IOSReducerTests: XCTestCase {
   }
 }
 
+@MainActor
 func store(starting screen: IOSReducer.Screen) -> TestStore<IOSReducer.State, IOSReducer.Action> {
   TestStore(initialState: IOSReducer.State(screen: screen)) {
     IOSReducer()

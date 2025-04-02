@@ -2,7 +2,7 @@ import DuetSQL
 import MacAppRoute
 
 extension ReportBrowsers: Resolver {
-  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
+  static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     let existing = try await Browser.query().all(in: context.db)
     let existingBundleIds = existing.map(\.match).compactMap(\.bundleId)
     let new = input.filter { !existingBundleIds.contains($0.bundleId) }
