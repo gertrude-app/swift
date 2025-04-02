@@ -49,7 +49,7 @@ public extension ProtectionMode? {
 }
 
 public extension UserDefaults {
-  static let gertrude = UserDefaults(suiteName: "group.com.ftc.gertrude-ios.app")!
+  nonisolated(unsafe) static let gertrude = UserDefaults(suiteName: "group.com.ftc.gertrude-ios.app")!
 }
 
 public extension String {
