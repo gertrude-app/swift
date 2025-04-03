@@ -16,7 +16,10 @@ final class SaveConferenceEmailResolverTests: ApiTestCase, @unchecked Sendable {
     let expected = "SaveConferenceEmail: a@b.com, source: booth"
     expect(events).toHaveCount(1)
     expect(events[0].detail).toEqual(expected)
-    expect(sent.slacks).toHaveCount(1)
+    guard sent.slacks.count == 1 else {
+        XCTFail("sent.slacks isn't the expected size.")
+        return
+    }
     expect(sent.slacks[0].message.content).toEqual(.text(expected))
   }
 }
