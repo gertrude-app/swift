@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import LibApp
 import SwiftUI
+import ManagedSettings
 
 struct AppView: View {
   let store: StoreOf<IOSReducer>
@@ -100,7 +101,10 @@ struct AppView: View {
       ChooseWhatToBlockView(
         deselectedGroups: self.store.state.disabledBlockGroups,
         onGroupToggle: { self.store.send(.interactive(.blockGroupToggled($0))) },
-        onDone: { self.store.send(.interactive(.onboardingBtnTapped(.primary, "Done"))) }
+        onDone: {
+          //blockAllExcept("typingclub.com") // Demo
+          self.store.send(.interactive(.onboardingBtnTapped(.primary, "Done")))
+        }
       )
 
     case .onboarding(.happyPath(.promptClearCache)):
@@ -396,6 +400,12 @@ struct AppView: View {
       RunningView(showVendorId: showVendorId)
         .onShake { self.store.send(.interactive(.receivedShake)) }
     }
+  }
+  // Demo usage.
+  func blockAllExcept(_ domainName: String) {
+    let blockAllExceptPolicy = ManagedSettings.WebContentSettings.FilterPolicy
+      .all(except: Set(arrayLiteral: WebDomain(domain: domainName)))
+    ManagedSettingsStore().webContent.blockedByFilter = blockAllExceptPolicy
   }
 
   var explainFamilyPresented: Binding<Bool> {
