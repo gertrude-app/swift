@@ -56,7 +56,9 @@ class SampleHandler: RPBroadcastSampleHandler {
     
     if !currentScreenThumbnail.isNearlyIdenticalTo(previousScreenThumbnail) {
       
-      guard let currentScreenJpegUrl = saveAsJPEG(currentScreen, name:"currentScreen.jpg") else { return }
+      guard let currentScreenJpegUrl = saveAsJPEG(currentScreen, name:"currentScreen.jpg")
+        else { return }
+      
       sensitivityAnalyzer.analyzeImage(at: currentScreenJpegUrl) { analysis, error in
         if let error {
           os_log("[G•] Error analyzing image: \(error.localizedDescription)")
@@ -66,14 +68,16 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
       }
       
-      let textAnayzer = VNImageRequestHandler(url: currentScreenJpegUrl)
-      let analysis = VNRecognizeTextRequest(completionHandler: recognizeTextHandler)
-      do {
-        try textAnayzer.perform([analysis])
-      } catch {
-        os_log("[G•] Unable to perform the requests: \(error).")
+      Task {
+        let textAnayzer = VNImageRequestHandler(url: currentScreenJpegUrl)
+        let analysis = VNRecognizeTextRequest(completionHandler: recognizeTextHandler)
+        do {
+          try textAnayzer.perform([analysis])
+        } catch {
+          os_log("[G•] Unable to perform the requests: \(error).")
+        }
       }
-      
+
       previousScreenThumbnail = currentScreenThumbnail.copy()
       
       // Assumes permission was granted for the demo. Future work is to send these images to the cloud.
@@ -117,7 +121,6 @@ class SampleHandler: RPBroadcastSampleHandler {
   private func getThumbnailCGImageFrom(_ ciImage: CIImage) -> CGImage? {
     let scaledImage = ciImage.transformed(by: CGAffineTransform(scaleX: 0.25, y: 0.25))
     let cgImage = ciContext.createCGImage(scaledImage, from: scaledImage.extent)
-    ciContext.clearCaches()
     return cgImage
   }
   
@@ -136,6 +139,7 @@ class SampleHandler: RPBroadcastSampleHandler {
                                             to: destinationURL,
                                             colorSpace: colorSpace,
                                             options: options)
+      ciContext.clearCaches()
       return destinationURL
     } catch {
       return nil
