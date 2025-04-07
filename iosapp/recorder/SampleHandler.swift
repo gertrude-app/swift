@@ -11,12 +11,14 @@ import os.log
 import Gertie
 import SensitiveContentAnalysis
 import Vision
+import Darwin
 
 class SampleHandler: RPBroadcastSampleHandler {
   var lastSavedDate = Date.now
   var previousScreenThumbnail : CGImage?
   let ciContext = CIContext()
   let sensitivityAnalyzer = SCSensitivityAnalyzer()
+  let halfSize = CGAffineTransform(scaleX: 0.5, y: 0.5)
   
   override func broadcastStarted(withSetupInfo setupInfo: [String : NSObject]?) {
     RecordingStatus.didRecordSample()
@@ -37,16 +39,17 @@ class SampleHandler: RPBroadcastSampleHandler {
   override func processSampleBuffer(_ sampleBuffer: CMSampleBuffer, with sampleBufferType: RPSampleBufferType) {
     if sampleBufferType == .video && isTime() {
       lastSavedDate = Date.now
-      saveScreenToPhotos(sampleBuffer)
+      processBuffer(sampleBuffer)
     }
   }
   
   private func isTime() -> Bool{
+    // Doing abs here guards against attempted bypass via manually changing system time.
     abs(lastSavedDate.timeIntervalSinceNow) > RecordingStatus.PERIOD_SECONDS
   }
   
-  private func saveScreenToPhotos(_ sampleBuffer: CMSampleBuffer) {
-    os_log("[G•] saveScreenToPhotos")
+  private func processBuffer(_ sampleBuffer: CMSampleBuffer) {
+    os_log("[G•] processBuffer")
     
     guard let currentScreen = getCIImageFrom(sampleBuffer),
           let currentScreenThumbnail = getThumbnailCGImageFrom(currentScreen) else {
@@ -55,41 +58,17 @@ class SampleHandler: RPBroadcastSampleHandler {
     }
     
     if !currentScreenThumbnail.isNearlyIdenticalTo(previousScreenThumbnail) {
+      previousScreenThumbnail = currentScreenThumbnail
       
       guard let currentScreenJpegUrl = saveAsJPEG(currentScreen, name:"currentScreen.jpg")
-        else { return }
+      else { return }
       
-      sensitivityAnalyzer.analyzeImage(at: currentScreenJpegUrl) { analysis, error in
-        if let error {
-          os_log("[G•] Error analyzing image: \(error.localizedDescription)")
-        }
-        if let analysis {
-          os_log("[G•] isSensitive: \(analysis.isSensitive)")
-        }
-      }
-      
-      Task {
-        let textAnayzer = VNImageRequestHandler(url: currentScreenJpegUrl)
-        let analysis = VNRecognizeTextRequest(completionHandler: recognizeTextHandler)
-        do {
-          try textAnayzer.perform([analysis])
-        } catch {
-          os_log("[G•] Unable to perform the requests: \(error).")
-        }
-      }
-
-      previousScreenThumbnail = currentScreenThumbnail.copy()
-      
-      // Assumes permission was granted for the demo. Future work is to send these images to the cloud.
-      PHPhotoLibrary.shared().performChanges({
-        let options = PHAssetResourceCreationOptions()
-        let creationRequest = PHAssetCreationRequest.forAsset()
-        creationRequest.addResource(with: .photo, fileURL: currentScreenJpegUrl, options: options)
-      }) { success, error in
-        if success {
-          RecordingStatus.didRecordSample()
-        } else {
-          os_log("[G•] Error saving image to Photos app: \(String(describing: error))")
+      self.analyzeForSensitivity(currentScreenJpegUrl) { isSensitive in
+        os_log("[G•] isSensitive: \(isSensitive)")
+        self.analyzeForText(currentScreenJpegUrl) { textContent in
+          os_log("[G•] Found text: \(textContent.description, privacy: .public)")
+          self.logMemoryFootprint()
+          self.saveToPhotos(currentScreenJpegUrl)
         }
       }
     } else {
@@ -97,16 +76,50 @@ class SampleHandler: RPBroadcastSampleHandler {
     }
   }
   
-  func recognizeTextHandler(request: VNRequest, error: Error?) {
-    guard let observations = request.results as? [VNRecognizedTextObservation] else {
-      return
+  private func analyzeForSensitivity(_ imageUrl: URL, completion: @escaping (Bool) -> Void) {
+    sensitivityAnalyzer.analyzeImage(at: imageUrl) { analysis, error in
+      var isSensitive = false
+      if let error {
+        os_log("[G•] Error analyzing image: \(error.localizedDescription)")
+      }
+      if let analysis {
+        isSensitive = analysis.isSensitive
+      }
+      completion(isSensitive)
     }
-    let recognizedStrings = observations.compactMap { observation in
-      return observation.topCandidates(1).first?.string
+  }
+  
+  private func analyzeForText(_ imageUrl: URL, completion: @escaping ([String]) -> Void) {
+    let analysis = VNRecognizeTextRequest { request, error in
+      guard let observations = request.results as? [VNRecognizedTextObservation] else {
+        return
+      }
+      let recognizedStrings = observations.compactMap { observation in
+        return observation.topCandidates(1).first?.string
+      }
+      completion(recognizedStrings)
     }
-    
-    os_log("[G•] Found text: \(recognizedStrings.description, privacy: .public)")
-    
+    do {
+      try VNImageRequestHandler(url: imageUrl).perform([analysis])
+    } catch {
+      os_log("[G•] text analysis failed: \(error).")
+    }
+  }
+  
+  private func saveToPhotos(_ imageUrl: URL, completion: @escaping (Bool) -> Void = {_ in }) {
+    // Assumes permission was granted for the demo. Future work is to send these images to the cloud.
+    PHPhotoLibrary.shared().performChanges({
+      let options = PHAssetResourceCreationOptions()
+      let creationRequest = PHAssetCreationRequest.forAsset()
+      creationRequest.addResource(with: .photo, fileURL: imageUrl, options: options)
+    }) { success, error in
+      if success {
+        RecordingStatus.didRecordSample()
+      } else {
+        os_log("[G•] Error saving image to Photos app: \(String(describing: error))")
+      }
+      completion(success)
+    }
   }
   
   private func getCIImageFrom(_ sampleBuffer: CMSampleBuffer) -> CIImage? {
@@ -114,12 +127,12 @@ class SampleHandler: RPBroadcastSampleHandler {
       os_log("[G•] CMSampleBufferGetImageBuffer failed.")
       return nil
     }
-    return CIImage(cvImageBuffer: imageBuffer)
+    return CIImage(cvImageBuffer: imageBuffer).transformed(by: halfSize)
   }
   
   // Otherwise the extension runs out of memory.
   private func getThumbnailCGImageFrom(_ ciImage: CIImage) -> CGImage? {
-    let scaledImage = ciImage.transformed(by: CGAffineTransform(scaleX: 0.25, y: 0.25))
+    let scaledImage = ciImage.transformed(by: halfSize)
     let cgImage = ciContext.createCGImage(scaledImage, from: scaledImage.extent)
     return cgImage
   }
@@ -134,7 +147,7 @@ class SampleHandler: RPBroadcastSampleHandler {
     else { return nil }
     
     do {
-      let options = [kCGImageDestinationLossyCompressionQuality as CIImageRepresentationOption : 1.0]
+      let options = [kCGImageDestinationLossyCompressionQuality as CIImageRepresentationOption : 0.5]
       try ciContext.writeJPEGRepresentation(of: image,
                                             to: destinationURL,
                                             colorSpace: colorSpace,
@@ -145,6 +158,23 @@ class SampleHandler: RPBroadcastSampleHandler {
       return nil
     }
   }
+  
+  // For troubleshooting memory pressure.
+  private func logMemoryFootprint() {
+    var info = mach_task_basic_info()
+    var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size) / mach_msg_type_number_t(MemoryLayout<integer_t>.size)
+    let kerr = withUnsafeMutablePointer(to: &info) {
+      $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+        task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
+      }
+    }
+    guard kerr == KERN_SUCCESS else {
+      print("Error getting task_info: \(kerr)")
+      return
+    }
+    os_log("[G•] Recorder is using: \(info.resident_size / 1024 / 1024) MB")
+  }
+  
 }
 
 

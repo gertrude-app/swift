@@ -7,7 +7,11 @@ import Foundation
 import os.log
 
 class RecordingStatus {
-  static let PERIOD_SECONDS: TimeInterval = 4
+  
+  // Any lower than this and it is possible that analyzeForText is
+  // called before the previous analyzeForText finishes, thus causing the
+  // extension to run out of memory and crash.
+  static let PERIOD_SECONDS: TimeInterval = 5
   
   static func didRecordSample() {
     writeTime(Date.now)
