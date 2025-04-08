@@ -1,7 +1,7 @@
 import Dependencies
-import SwiftUI
-import ReplayKit
 import Photos
+import ReplayKit
+import SwiftUI
 
 struct RunningView: View {
   @Environment(\.colorScheme) var cs
@@ -11,7 +11,7 @@ struct RunningView: View {
   @State private var subtitleOffset = Vector(x: 0, y: 20)
   @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
-  
+
   private let broadcastPicker = RPSystemBroadcastPickerView()
 
   let showVendorId: Bool
@@ -57,8 +57,8 @@ struct RunningView: View {
             after: .seconds(0.4),
             for: .seconds(0.5)
           )
-        
-        BigButton("Pause Filter",type: .button { buttonTapped() }, variant: .primary)
+
+        BigButton("Pause Filter", type: .button { self.buttonTapped() }, variant: .primary)
           .frame(maxWidth: 500)
           .padding(30)
 
@@ -90,14 +90,15 @@ struct RunningView: View {
       .padding(30)
     }
   }
+
   func buttonTapped() {
     // Assumes user will cooperate for the demo. Prompt here while we still have the UI thread.
     PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in }
-    
-    broadcastPicker.preferredExtension = "com.ftc.gertrude-ios.app.recorder"
-    broadcastPicker.showsMicrophoneButton = false
+
+    self.broadcastPicker.preferredExtension = "com.ftc.gertrude-ios.app.recorder"
+    self.broadcastPicker.showsMicrophoneButton = false
     // This workaround displays the prompt while minimizing encumbrance with UIKit.
-    for subview in broadcastPicker.subviews where subview is UIButton {
+    for subview in self.broadcastPicker.subviews where subview is UIButton {
       (subview as? UIButton)?.sendActions(for: .touchUpInside)
     }
   }

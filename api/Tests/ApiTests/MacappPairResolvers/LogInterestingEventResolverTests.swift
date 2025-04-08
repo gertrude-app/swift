@@ -19,8 +19,8 @@ final class LogInterestingEventResolverTests: ApiTestCase, @unchecked Sendable {
     _ = try await LogInterestingEvent.resolve(with: input, in: .mock)
 
     guard sent.slacks.count == 1 else {
-        XCTFail("sent.slacks is empty")
-        return
+      XCTFail("sent.slacks is empty")
+      return
     }
     expect(sent.slacks[0].message.text).not.toContain("github.com/search")
   }
@@ -36,8 +36,8 @@ final class LogInterestingEventResolverTests: ApiTestCase, @unchecked Sendable {
     _ = try await LogInterestingEvent.resolve(with: input, in: .mock)
 
     guard sent.slacks.count == 1 else {
-        XCTFail("sent.slacks is empty")
-        return
+      XCTFail("sent.slacks is empty")
+      return
     }
     expect(sent.slacks[0].message.text).toContain("github.com/search")
   }
@@ -63,9 +63,9 @@ final class LogInterestingEventResolverTests: ApiTestCase, @unchecked Sendable {
 
       _ = try await LogInterestingEvent.resolve(with: input, in: .mock)
 
-      guard sent.slacks.count == i+1 else {
-          XCTFail("sent.slacks isn't the expected size.")
-          return
+      guard sent.slacks.count == i + 1 else {
+        XCTFail("sent.slacks isn't the expected size.")
+        return
       }
       expect(sent.slacks[i].message.text).not.toContain(detail)
       expect(sent.slacks[i].message.text).toContain(expected)

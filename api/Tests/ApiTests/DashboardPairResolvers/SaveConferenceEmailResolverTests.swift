@@ -17,8 +17,8 @@ final class SaveConferenceEmailResolverTests: ApiTestCase, @unchecked Sendable {
     expect(events).toHaveCount(1)
     expect(events[0].detail).toEqual(expected)
     guard sent.slacks.count == 1 else {
-        XCTFail("sent.slacks isn't the expected size.")
-        return
+      XCTFail("sent.slacks isn't the expected size.")
+      return
     }
     expect(sent.slacks[0].message.content).toEqual(.text(expected))
   }
