@@ -1,6 +1,7 @@
 import Foundation
 import LibCore
 import LibFilter
+import ManagedSettings
 import NetworkExtension
 import os.log
 
@@ -37,12 +38,26 @@ class FilterDataProvider: NEFilterDataProvider {
     completionHandler()
   }
 
+  func blockAllExcept(_ domainName: String) {
+    ManagedSettingsStore().webContent.blockedByFilter =
+      .all(except: [WebDomain(domain: domainName)])
+  }
+
+  func allowAllExceptAdult() {
+    ManagedSettingsStore().webContent.blockedByFilter =
+      .auto([], except: [])
+  }
+
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
-    
+
     if RecordingStatus.isRecording() {
-      return .allow()
+      self.allowAllExceptAdult()
+    } else {
+      self.blockAllExcept("biblegateway.com")
     }
-    
+    // Means the Content Filter is letting the above settings make the call about whether to block.
+    return .allow() // In order to demo the above logic only.
+
     var hostname: String?
     var url: String?
     let bundleId: String? = flow.sourceAppIdentifier
