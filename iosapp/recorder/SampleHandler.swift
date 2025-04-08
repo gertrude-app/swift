@@ -14,7 +14,7 @@ import SensitiveContentAnalysis
 import Vision
 
 class SampleHandler: RPBroadcastSampleHandler {
-  var lastSavedDate = Date.now
+  var lastSavedDate: Date?
   var previousScreenThumbnail: CGImage?
   let ciContext = CIContext()
   let sensitivityAnalyzer = SCSensitivityAnalyzer()
@@ -40,15 +40,18 @@ class SampleHandler: RPBroadcastSampleHandler {
     _ sampleBuffer: CMSampleBuffer,
     with sampleBufferType: RPSampleBufferType
   ) {
-    if sampleBufferType == .video, self.isTime() {
+    if sampleBufferType == .video, self.isTime {
       self.lastSavedDate = Date.now
       self.processBuffer(sampleBuffer)
     }
   }
 
-  private func isTime() -> Bool {
+  private var isTime: Bool {
+    guard let lastSavedDate = self.lastSavedDate else {
+      return true // Initial condition. Take first screenshot ASAP.
+    }
     // Doing abs here guards against attempted bypass via manually changing system time.
-    abs(self.lastSavedDate.timeIntervalSinceNow) > RecordingStatus.PERIOD_SECONDS
+    return abs(lastSavedDate.timeIntervalSinceNow) > RecordingStatus.PERIOD_SECONDS
   }
 
   private func processBuffer(_ sampleBuffer: CMSampleBuffer) {
