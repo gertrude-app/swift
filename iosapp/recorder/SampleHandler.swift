@@ -2,9 +2,7 @@
 //  SampleHandler.swift
 //  recorder
 //
-//  Created by Chris Woolfe on 2/19/25.
-//  Copyright © 2025 Fire Tongue Communications. All rights reserved.
-//
+//  Copyright © 2025 Chris Woolfe. All rights reserved.
 //  This software is licensed under the Apache License, Version 2.0
 //  with the Commons Clause Restriction on Commercial Sales.
 //  See the LICENSE file for details.

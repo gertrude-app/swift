@@ -386,6 +386,7 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1430;
+				ORGANIZATIONNAME = Gertrude;
 				TargetAttributes = {
 					7FA7B8422AEB238700363B53 = {
 						CreatedOnToolsVersion = 14.3.1;

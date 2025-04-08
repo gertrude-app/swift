@@ -1,7 +1,12 @@
+//
 //  RecordingStatus.swift
 //  Gertrude-iOS
 //
-//  Created by home on 2/19/25.
+//  Copyright © 2025 Chris Woolfe. All rights reserved.
+//  This software is licensed under the Apache License, Version 2.0
+//  with the Commons Clause Restriction on Commercial Sales.
+//  See the LICENSE file for details.
+//
 
 import Foundation
 import os.log
