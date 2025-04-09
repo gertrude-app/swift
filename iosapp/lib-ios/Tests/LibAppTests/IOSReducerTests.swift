@@ -281,9 +281,9 @@ final class IOSReducerTests: XCTestCase {
       $0.storage.loadDate = { @Sendable _ in .reference } // <-- v1.1.0 launch date
       $0.storage.loadData = { @Sendable key in
         if key == .legacyStorageKey {
-          return "[]".data(using: .utf8) // <-- has V1 legacy data
+          "[]".data(using: .utf8) // <-- has V1 legacy data
         } else {
-          return nil
+          nil
         }
       }
       $0.storage.saveCodable = { @Sendable value, key in

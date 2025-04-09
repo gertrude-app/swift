@@ -39,12 +39,18 @@ final class LogInterestingEventResolverTests: ApiTestCase, @unchecked Sendable {
   func testShortensVerboseNSUrlErrors() async throws {
     let errors =
       [
-        "Error Domain=NSURLErrorDomain Code=-1200 \"An SSL error has occurred and a secure connection to the server cannot be made.\" UserInfo={NSErrorFailingURLStringKey=https://gertrude.nyc3.foo": "SSL Error =-1200 (spaces)",
-        "Error Domain=NSURLErrorDomain Code=-1200 \"An SSL error has occurred and a secure connection to the server cannot be made.\" UserInfo={NSErrorFailingURLStringKey=https://api.gertrude.app/fake": "SSL Error =-1200 (API)",
-        "Error Domain=NSURLErrorDomain Code=-1004 \"Could not connect to the server.\" UserInfo={_kCFStreamErrorCodeKey=61, NSUnderlyingError=0x6000037052c0StringKey=https://gertrude.nyc3.digita": "Failed to Connect Error =-1004 (spaces)",
-        "Error Domain=NSURLErrorDomain Code=-1004 \"Could not connect to the server.\" UserInfo={_kCFStreamErrorCodeKey=61, NSUnderlyingError=0x6000037052c0StringKey=https://api.gertrude.app/foo": "Failed to Connect Error =-1004 (API)",
-        "Error Domain=NSURLErrorDomain Code=-1017 \"cannot parse response\" UserInfo={_kCFStreamErrorCodeKey=-1, NSUnderlyingError=0x600001afa910StringKey=https://gertrude.nyc3.digita": "Parse Response Error =-1017 (spaces)",
-        "Error Domain=NSURLErrorDomain Code=-1017 \"cannot parse response\" UserInfo={_kCFStreamErrorCodeKey=-1, NSUnderlyingError=0x600001afa91StringKey=https://api.gertrude.app/foo": "Parse Response Error =-1017 (API)",
+        "Error Domain=NSURLErrorDomain Code=-1200 \"An SSL error has occurred and a secure connection to the server cannot be made.\" UserInfo={NSErrorFailingURLStringKey=https://gertrude.nyc3.foo":
+          "SSL Error =-1200 (spaces)",
+        "Error Domain=NSURLErrorDomain Code=-1200 \"An SSL error has occurred and a secure connection to the server cannot be made.\" UserInfo={NSErrorFailingURLStringKey=https://api.gertrude.app/fake":
+          "SSL Error =-1200 (API)",
+        "Error Domain=NSURLErrorDomain Code=-1004 \"Could not connect to the server.\" UserInfo={_kCFStreamErrorCodeKey=61, NSUnderlyingError=0x6000037052c0StringKey=https://gertrude.nyc3.digita":
+          "Failed to Connect Error =-1004 (spaces)",
+        "Error Domain=NSURLErrorDomain Code=-1004 \"Could not connect to the server.\" UserInfo={_kCFStreamErrorCodeKey=61, NSUnderlyingError=0x6000037052c0StringKey=https://api.gertrude.app/foo":
+          "Failed to Connect Error =-1004 (API)",
+        "Error Domain=NSURLErrorDomain Code=-1017 \"cannot parse response\" UserInfo={_kCFStreamErrorCodeKey=-1, NSUnderlyingError=0x600001afa910StringKey=https://gertrude.nyc3.digita":
+          "Parse Response Error =-1017 (spaces)",
+        "Error Domain=NSURLErrorDomain Code=-1017 \"cannot parse response\" UserInfo={_kCFStreamErrorCodeKey=-1, NSUnderlyingError=0x600001afa91StringKey=https://api.gertrude.app/foo":
+          "Parse Response Error =-1017 (API)",
       ]
 
     for (i, (detail, expected)) in errors.enumerated() {
