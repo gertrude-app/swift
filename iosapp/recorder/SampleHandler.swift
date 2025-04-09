@@ -43,10 +43,10 @@ class SampleHandler: RPBroadcastSampleHandler {
     _ sampleBuffer: CMSampleBuffer,
     with sampleBufferType: RPSampleBufferType
   ) {
-    if sampleBufferType == .video, self.isTime {
-      self.lastSavedDate = Date.now
-      self.processBuffer(sampleBuffer)
-    }
+    guard sampleBufferType == .video, self.isTime else { return }
+
+    self.lastSavedDate = Date.now
+    self.processBuffer(sampleBuffer)
   }
 
   private var isTime: Bool {
