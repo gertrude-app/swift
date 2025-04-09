@@ -36,6 +36,7 @@ enum AuthedAdminRoute: PairRoute {
   case saveKeychain(SaveKeychain.Input)
   case saveNotification(SaveNotification.Input)
   case saveUser(SaveUser.Input)
+  case toggleChildKeychain(ToggleChildKeychain.Input)
   case stripeUrl
   case securityEventsFeed
   case updateUnlockRequest(UpdateUnlockRequest.Input)
@@ -170,6 +171,10 @@ extension AuthedAdminRoute {
       Route(.case(Self.securityEventsFeed)) {
         Operation(SecurityEventsFeed.self)
       }
+      Route(.case(Self.toggleChildKeychain)) {
+        Operation(ToggleChildKeychain.self)
+        Body(.dashboardInput(ToggleChildKeychain.self))
+      }
       Route(.case(Self.updateUnlockRequest)) {
         Operation(UpdateUnlockRequest.self)
         Body(.dashboardInput(UpdateUnlockRequest.self))
@@ -293,6 +298,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .securityEventsFeed:
       let output = try await SecurityEventsFeed.resolve(in: context)
+      return try await self.respond(with: output)
+    case .toggleChildKeychain(let input):
+      let output = try await ToggleChildKeychain.resolve(with: input, in: context)
       return try await self.respond(with: output)
     case .deleteActivityItems_v2(let input):
       let output = try await DeleteActivityItems_v2.resolve(with: input, in: context)
