@@ -26,7 +26,7 @@ class RecordingStatus {
     self.writeTime(Date.now.addingTimeInterval(-self.PERIOD_SECONDS))
   }
 
-  static func isRecording() -> Bool {
+  static var isRecording: Bool {
     guard let lastRecordedSampleTime = readTime() else { return false }
     let secondsElasped = Date.now.timeIntervalSince(lastRecordedSampleTime)
     return secondsElasped > 0 && secondsElasped < (self.PERIOD_SECONDS + 2)

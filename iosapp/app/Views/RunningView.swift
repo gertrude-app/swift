@@ -11,6 +11,7 @@ struct RunningView: View {
   @State private var subtitleOffset = Vector(x: 0, y: 20)
   @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
+  @State private var isRecording = UIScreen.main.isCaptured
 
   private let broadcastPicker = RPSystemBroadcastPickerView()
 
@@ -58,7 +59,8 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
-        BigButton("Pause Filter", type: .button { self.buttonTapped() }, variant: .primary)
+        let buttonTitle = self.isRecording ? "Resume Filter" : "Pause Filter"
+        BigButton(buttonTitle, type: .button { self.buttonTapped() }, variant: .primary)
           .frame(maxWidth: 500)
           .padding(30)
 
@@ -88,6 +90,13 @@ struct RunningView: View {
       .frame(maxWidth: .infinity)
       .multilineTextAlignment(.center)
       .padding(30)
+    }
+    .onReceive(
+      NotificationCenter.default
+        .publisher(for: UIScreen.capturedDidChangeNotification)
+    ) { _ in
+      // RecordingStatus.swift doesn't know about the change yet, so consult the UIScreen.
+      self.isRecording = UIScreen.main.isCaptured
     }
   }
 

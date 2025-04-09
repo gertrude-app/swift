@@ -50,7 +50,7 @@ class FilterDataProvider: NEFilterDataProvider {
 
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
 
-    if RecordingStatus.isRecording() {
+    if RecordingStatus.isRecording {
       self.allowAllExceptAdult()
     } else {
       self.blockAllExcept("biblegateway.com")
