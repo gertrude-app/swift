@@ -55,8 +55,6 @@ class FilterDataProvider: NEFilterDataProvider {
     } else {
       self.blockAllExcept("biblegateway.com")
     }
-    // Means the Content Filter is letting the above settings make the call about whether to block.
-    return .allow() // In order to demo the above logic only.
 
     var hostname: String?
     var url: String?
