@@ -1,6 +1,5 @@
 import ComposableArchitecture
 import LibApp
-import ManagedSettings
 import SwiftUI
 
 struct AppView: View {

@@ -49,7 +49,7 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
-        Text("You can pause filtering only when you choose to share your screen.")
+        Text("You can suspend filtering only when you choose to share your screen.")
           .font(.system(size: 18, weight: .medium))
           .foregroundStyle(Color(self.cs, light: .black.opacity(0.6), dark: .white.opacity(0.6)))
           .swooshIn(
@@ -59,7 +59,7 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
-        let buttonTitle = self.isRecording ? "Resume Filter" : "Pause Filter"
+        let buttonTitle = self.isRecording ? "Resume Filter" : "Suspend Filter"
         BigButton(buttonTitle, type: .button { self.buttonTapped() }, variant: .primary)
           .frame(maxWidth: 500)
           .padding(30)
