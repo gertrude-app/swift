@@ -15,6 +15,7 @@ import Photos
 import ReplayKit
 import SensitiveContentAnalysis
 import Vision
+import LibRecorder
 
 class SampleHandler: RPBroadcastSampleHandler {
   var lastSavedDate: Date?
@@ -50,11 +51,7 @@ class SampleHandler: RPBroadcastSampleHandler {
   }
 
   private var isTime: Bool {
-    guard let lastSavedDate = self.lastSavedDate else {
-      return true // Initial condition. Take first screenshot ASAP.
-    }
-    // Doing abs here guards against attempted bypass via manually changing system time.
-    return abs(lastSavedDate.timeIntervalSinceNow) > RecordingStatus.PERIOD_SECONDS
+    RecordingStatus.shouldSample(lastSavedDate: lastSavedDate)
   }
 
   private func processBuffer(_ sampleBuffer: CMSampleBuffer) {

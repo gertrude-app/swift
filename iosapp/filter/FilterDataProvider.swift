@@ -4,6 +4,7 @@ import LibFilter
 import ManagedSettings
 import NetworkExtension
 import os.log
+import LibRecorder
 
 class FilterDataProvider: NEFilterDataProvider {
   #if !DEBUG

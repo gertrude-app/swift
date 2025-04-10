@@ -10,6 +10,7 @@ let package = Package(
     .library(name: "LibController", targets: ["LibController"]),
     .library(name: "LibClients", targets: ["LibClients"]),
     .library(name: "LibApp", targets: ["LibApp"]),
+    .library(name: "LibRecorder", targets: ["LibRecorder"])
   ],
   dependencies: [
     .package(
@@ -73,6 +74,10 @@ let package = Package(
         .product(name: "DependenciesMacros", package: "swift-dependencies"),
       ]
     ),
+    .target(
+      name: "LibRecorder",
+      dependencies: []
+    ),
     .testTarget(
       name: "LibFilterTests",
       dependencies: [
@@ -96,6 +101,13 @@ let package = Package(
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
         .product(name: "GertieIOS", package: "gertie"),
+        .product(name: "XExpect", package: "x-expect"),
+      ]
+    ),
+    .testTarget(
+      name: "LibRecorderTests",
+      dependencies: [
+        "LibRecorder",
         .product(name: "XExpect", package: "x-expect"),
       ]
     ),
