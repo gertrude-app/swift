@@ -10,12 +10,12 @@
 
 import Darwin
 import Gertie
+import LibRecorder
 import os.log
 import Photos
 import ReplayKit
 import SensitiveContentAnalysis
 import Vision
-import LibRecorder
 
 class SampleHandler: RPBroadcastSampleHandler {
   var lastSavedDate: Date?
@@ -51,7 +51,7 @@ class SampleHandler: RPBroadcastSampleHandler {
   }
 
   private var isTime: Bool {
-    RecordingStatus.shouldSample(lastSavedDate: lastSavedDate)
+    RecordingStatus.shouldSample(lastSavedDate: self.lastSavedDate)
   }
 
   private func processBuffer(_ sampleBuffer: CMSampleBuffer) {

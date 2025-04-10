@@ -10,7 +10,7 @@ let package = Package(
     .library(name: "LibController", targets: ["LibController"]),
     .library(name: "LibClients", targets: ["LibClients"]),
     .library(name: "LibApp", targets: ["LibApp"]),
-    .library(name: "LibRecorder", targets: ["LibRecorder"])
+    .library(name: "LibRecorder", targets: ["LibRecorder"]),
   ],
   dependencies: [
     .package(

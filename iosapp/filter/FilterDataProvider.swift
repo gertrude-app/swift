@@ -1,10 +1,10 @@
 import Foundation
 import LibCore
 import LibFilter
+import LibRecorder
 import ManagedSettings
 import NetworkExtension
 import os.log
-import LibRecorder
 
 class FilterDataProvider: NEFilterDataProvider {
   #if !DEBUG
@@ -18,6 +18,9 @@ class FilterDataProvider: NEFilterDataProvider {
       normalHeartbeatInterval: .seconds(45)
     )
   #endif
+
+  let settings = ManagedSettingsStore()
+  var previousRecordingStatus = RecordingStatus.isRecording
 
   override init() {
     super.init()
@@ -40,21 +43,25 @@ class FilterDataProvider: NEFilterDataProvider {
   }
 
   func blockAllExcept(_ domainName: String) {
-    ManagedSettingsStore().webContent.blockedByFilter =
+    self.settings.webContent.blockedByFilter =
       .all(except: [WebDomain(domain: domainName)])
   }
 
   func allowAllExceptAdult() {
-    ManagedSettingsStore().webContent.blockedByFilter =
+    self.settings.webContent.blockedByFilter =
       .auto([], except: [])
   }
 
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
 
-    if RecordingStatus.isRecording {
-      self.allowAllExceptAdult()
-    } else {
-      self.blockAllExcept("biblegateway.com")
+    let currentRecordingStatus = RecordingStatus.isRecording
+    if currentRecordingStatus != self.previousRecordingStatus {
+      if currentRecordingStatus {
+        self.allowAllExceptAdult()
+      } else {
+        self.blockAllExcept("biblegateway.com")
+      }
+      self.previousRecordingStatus = currentRecordingStatus
     }
 
     var hostname: String?
