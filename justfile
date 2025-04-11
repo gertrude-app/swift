@@ -89,11 +89,25 @@ build:
 test:
   @just nx-run-many test
 
-lint:
+lint-swift:
   @swiftformat . --lint
 
-lint-fix:
+lint-swift-fix:
   @swiftformat .
+
+lint-xml:
+  @xml-lint {{xmlfiles}}
+
+lint-xml-fix:
+  @xml-lint --fix {{xmlfiles}}
+
+lint:
+  @just lint-swift
+  @just lint-xml
+
+lint-fix:
+  @just lint-swift-fix
+  @just lint-xml-fix
 
 check:
   @just build
@@ -134,3 +148,19 @@ watch-test dir isolate="":
   @just watch-swift {{dir}} '"cd {{dir}} && \
   SWIFT_DETERMINISTIC_HASHING=1 swift test \
   {{ if isolate != "" { "--filter " + isolate } else { "" } }} "'
+
+# variables
+
+xmlfiles := """
+./iosapp/app/app.entitlements \
+./iosapp/app/Info.plist \
+./iosapp/controller/controller.entitlements \
+./iosapp/controller/Info.plist \
+./iosapp/filter/filter.entitlements \
+./iosapp/filter/Info.plist \
+./macapp/Xcode/GertrudeFilterExtension/GertrudeFilterExtension.entitlements \
+./macapp/Xcode/GertrudeFilterExtension/Info.plist \
+./macapp/Xcode/Gertrude/Gertrude.entitlements \
+./macapp/Xcode/Gertrude/Info.plist \
+./macapp/Xcode/GertrudeRelauncher/GertrudeRelauncher.entitlements
+"""
