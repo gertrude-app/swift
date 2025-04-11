@@ -278,6 +278,7 @@ extension AdminWindowFeature.RootReducer {
 
       case .webview(.healthCheck(.fixNotificationPermissionClicked)):
         return .exec { _ in
+          await self.device.requestNotificationAuthorization()
           await self.device.openSystemPrefs(.notifications)
         }
 

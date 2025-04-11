@@ -43,6 +43,26 @@ final class AdminWindowFeatureTests: XCTestCase {
   }
 
   @MainActor
+  func testFixNotificationSettingsFromHealthCheck() async {
+    let (store, _) = AppReducer.testStore(mockDeps: false) {
+      $0.adminWindow.windowOpen = true
+      $0.user = .init(data: .mock)
+      $0.history.userConnection = .established(welcomeDismissed: true)
+    }
+    let reqAuth = mock(once: ())
+    store.deps.device.requestNotificationAuthorization = reqAuth.fn
+    let openSysPrefs = spy(on: SystemPrefsLocation.self, returning: ())
+    store.deps.device.openSystemPrefs = openSysPrefs.fn
+    store.deps.date = .constant(.reference)
+
+    await store
+      .send(.adminWindow(.webview(.healthCheck(action: .fixNotificationPermissionClicked))))
+
+    await expect(reqAuth.called).toEqual(true)
+    await expect(openSysPrefs.calls).toEqual([.notifications])
+  }
+
+  @MainActor
   func testDisconnectUserClicked() async {
     let (store, _) = AppReducer.testStore(mockDeps: false) {
       $0.adminWindow.windowOpen = true
