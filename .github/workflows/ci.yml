@@ -164,7 +164,7 @@ jobs:
 
   files-changed:
     if: github.event_name == 'pull_request'
-    runs-on: namespace-profile-default
+    runs-on: ubuntu-latest
     outputs:
       macapp: ${{ steps.changes.outputs.macapp }}
       iosapp: ${{ steps.changes.outputs.iosapp }}
@@ -231,7 +231,7 @@ jobs:
 
   swift-lint:
     if: github.event_name == 'pull_request'
-    runs-on: namespace-profile-default
+    runs-on: ubuntu-latest
     container: swift:6.0.3-focal
     steps:
       - name: checkout
