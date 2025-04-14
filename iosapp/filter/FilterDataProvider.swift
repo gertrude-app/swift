@@ -20,7 +20,7 @@ class FilterDataProvider: NEFilterDataProvider {
   #endif
 
   let settings = ManagedSettingsStore()
-  var previousRecordingStatus = RecordingStatus.isRecording
+  var previousRecordingStatus : Bool?
 
   override init() {
     super.init()
@@ -55,6 +55,7 @@ class FilterDataProvider: NEFilterDataProvider {
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
 
     let currentRecordingStatus = RecordingStatus.isRecording
+    // Also would need to check auth status toggle. 
     if currentRecordingStatus != self.previousRecordingStatus {
       if currentRecordingStatus {
         self.allowAllExceptAdult()
