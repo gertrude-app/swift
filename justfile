@@ -81,9 +81,6 @@ watch-web-email template:
 db-sync:
   @node ../infra/db-sync.mjs
 
-sync-env:
-  @node ../infra/sync-env.mjs
-
 # root
 
 build:
@@ -92,31 +89,41 @@ build:
 test:
   @just nx-run-many test
 
+lint-swift:
+  @swiftformat . --lint
+
+lint-swift-fix:
+  @swiftformat .
+
+lint-xml:
+  @xml-lint {{xmlfiles}}
+
+lint-xml-fix:
+  @xml-lint --fix {{xmlfiles}}
+
+lint:
+  @just lint-swift
+  @just lint-xml
+
+lint-fix:
+  @just lint-swift-fix
+  @just lint-xml-fix
+
 check:
   @just build
   @just test
-
-exclude:
-  @find . -path '**/.build/**/swift-nio*/**/hash.txt' -delete
-  @find . -path '**/.build/**/swift-nio*/**/*_nasm.inc' -delete
-  @find . -path '**/.build/**/swift-nio*/**/*_sha1.sh' -delete
-  @find . -path '**/.build/**/swift-nio*/**/*_llhttp.sh' -delete
-  @find . -path '**/.build/**/swift-nio*/**/LICENSE-MIT' -delete
+  @just lint
 
 nx-reset:
   @pnpm nx reset
 
 clean: nx-reset
   @rm -rf node_modules/.cache
-  @rm -rf api/.build
-  @rm -rf duet/.build
-  @rm -rf pairql/.build
-  @rm -rf pairql-macapp/.build
-  @rm -rf shared/.build
-  @rm -rf x-kit/.build
-
-clean-api-tests:
-  @cd api && find .build -name '*AppTests*' -delete
+  @rm -rf api/.build duet/.build gertie/.build
+  @rm -rf macapp/App/.build iosapp/lib-ios/.build
+  @rm -rf pairql/.build pairql-macapp/.build pairql-iosapp/.build
+  @rm -rf ts-interop/.build x-aws/.build x-http/.build
+  @rm -rf x-kit/.build x-postmark/.build x-slack/.build x-stripe/.build
 
 # helpers
 
@@ -141,3 +148,19 @@ watch-test dir isolate="":
   @just watch-swift {{dir}} '"cd {{dir}} && \
   SWIFT_DETERMINISTIC_HASHING=1 swift test \
   {{ if isolate != "" { "--filter " + isolate } else { "" } }} "'
+
+# variables
+
+xmlfiles := """
+./iosapp/app/app.entitlements \
+./iosapp/app/Info.plist \
+./iosapp/controller/controller.entitlements \
+./iosapp/controller/Info.plist \
+./iosapp/filter/filter.entitlements \
+./iosapp/filter/Info.plist \
+./macapp/Xcode/GertrudeFilterExtension/GertrudeFilterExtension.entitlements \
+./macapp/Xcode/GertrudeFilterExtension/Info.plist \
+./macapp/Xcode/Gertrude/Gertrude.entitlements \
+./macapp/Xcode/Gertrude/Info.plist \
+./macapp/Xcode/GertrudeRelauncher/GertrudeRelauncher.entitlements
+"""

@@ -3,11 +3,11 @@ import Gertie
 import PairQL
 
 struct GetSuspendFilterRequest: Pair {
-  static let auth: ClientAuth = .admin
-  typealias Input = SuspendFilterRequest.Id
+  static let auth: ClientAuth = .parent
+  typealias Input = MacApp.SuspendFilterRequest.Id
 
   struct Output: PairOutput {
-    var id: Api.SuspendFilterRequest.Id
+    var id: MacApp.SuspendFilterRequest.Id
     var deviceId: Api.UserDevice.Id
     var status: RequestStatus
     var userName: String

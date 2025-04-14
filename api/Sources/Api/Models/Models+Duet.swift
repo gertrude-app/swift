@@ -41,14 +41,65 @@ extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
   }
 }
 
-extension IOSBlockRule: Duet.Identifiable {
-  typealias Id = Tagged<IOSBlockRule, UUID>
-  typealias VendorId = Tagged<(t: IOSBlockRule, vendorId: ()), UUID>
+extension IOSApp.SuspendFilterRequest {
+  typealias Id = Tagged<IOSApp.SuspendFilterRequest, UUID>
 }
 
-extension IOSBlockRule {
+extension IOSApp.SuspendFilterRequest {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
+    case deviceId
+    case status
+    case duration
+    case requestComment
+    case responseComment
+    case createdAt
+    case updatedAt
+  }
+}
+
+extension IOSApp.Token {
+  typealias Id = Tagged<IOSApp.Token, UUID>
+  typealias Value = Tagged<(IOSApp.Token, value: ()), UUID>
+}
+
+extension IOSApp.Token {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case deviceId
+    case value
+    case createdAt
+    case updatedAt
+  }
+}
+
+extension IOSApp.Device: Duet.Identifiable {
+  typealias Id = Tagged<IOSApp.Device, UUID>
+  typealias VendorId = Tagged<(t: IOSApp.Device, vendorId: ()), UUID>
+}
+
+extension IOSApp.Device {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case childId
+    case vendorId
+    case deviceType
+    case appVersion
+    case iosVersion
+    case createdAt
+    case updatedAt
+  }
+}
+
+extension IOSApp.BlockRule: Duet.Identifiable {
+  typealias Id = Tagged<IOSApp.BlockRule, UUID>
+  typealias VendorId = Tagged<(t: IOSApp.BlockRule, vendorId: ()), UUID>
+}
+
+extension IOSApp.BlockRule {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case deviceId
     case vendorId
     case rule
     case group
@@ -318,6 +369,7 @@ extension Screenshot {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case computerUserId
+    case iosDeviceId
     case url
     case width
     case height
@@ -327,11 +379,11 @@ extension Screenshot {
   }
 }
 
-extension SuspendFilterRequest: Duet.Identifiable {
-  typealias Id = Tagged<SuspendFilterRequest, UUID>
+extension MacApp.SuspendFilterRequest: Duet.Identifiable {
+  typealias Id = Tagged<MacApp.SuspendFilterRequest, UUID>
 }
 
-extension SuspendFilterRequest {
+extension MacApp.SuspendFilterRequest {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case computerUserId

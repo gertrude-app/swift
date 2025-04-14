@@ -3,7 +3,7 @@ import Gertie
 import PairQL
 
 struct SecurityEventsFeed: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct ChildSecurityEvent: PairNestable {
     var id: SecurityEvent.Id

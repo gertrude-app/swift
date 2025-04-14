@@ -2,7 +2,7 @@ import Gertie
 import PairQL
 
 struct DecideFilterSuspensionRequest: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   enum Decision: PairNestable {
     case rejected
@@ -10,7 +10,7 @@ struct DecideFilterSuspensionRequest: Pair {
   }
 
   struct Input: PairInput {
-    var id: SuspendFilterRequest.Id
+    var id: MacApp.SuspendFilterRequest.Id
     var decision: Decision
     var responseComment: String?
   }

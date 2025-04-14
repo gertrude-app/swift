@@ -31,8 +31,8 @@ public extension Pair {
 
 public enum ClientAuth: String, Sendable {
   case none
-  case user
-  case admin
+  case child
+  case parent
   case superAdmin
 }
 

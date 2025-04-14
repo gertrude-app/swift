@@ -5,7 +5,7 @@ import PairQL
 /// deprecated: v2.0.4 - v2.4.0
 /// remove when MSV is 2.5.0
 public struct CheckIn: Pair {
-  public static let auth: ClientAuth = .user
+  public static let auth: ClientAuth = .child
   public typealias Input = CheckIn_v2.Input
 
   public struct Output: PairOutput {

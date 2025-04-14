@@ -2,7 +2,7 @@ import DuetSQL
 import Gertie
 import GertieIOS
 
-extension IOSBlockRule: Model {
+extension IOSApp.BlockRule: Model {
   public static let schemaName = "iosapp"
   public static let tableName = "block_rules"
   public typealias ColumnName = CodingKeys
@@ -10,6 +10,7 @@ extension IOSBlockRule: Model {
   public func postgresData(for column: ColumnName) -> Postgres.Data {
     switch column {
     case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
     case .vendorId: .uuid(self.vendorId)
     case .rule: .json(self.rule.toPostgresJson)
     case .group: .string(self.group)
@@ -22,6 +23,7 @@ extension IOSBlockRule: Model {
   public var insertValues: [ColumnName: Postgres.Data] {
     [
       .id: .id(self),
+      .deviceId: .uuid(self.deviceId),
       .vendorId: .uuid(self.vendorId),
       .rule: .json(self.rule.toPostgresJson),
       .group: .string(self.group),
@@ -32,7 +34,97 @@ extension IOSBlockRule: Model {
   }
 }
 
-extension BlockRule: @retroactive PostgresJsonable {}
+extension IOSApp.SuspendFilterRequest: Model {
+  public static let schemaName = "iosapp"
+  public static let tableName = "suspend_filter_requests"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
+    case .status: .enum(self.status)
+    case .duration: .int(self.duration.rawValue)
+    case .requestComment: .string(self.requestComment)
+    case .responseComment: .string(self.responseComment)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(self.deviceId),
+      .status: .enum(self.status),
+      .duration: .int(self.duration.rawValue),
+      .requestComment: .string(self.requestComment),
+      .responseComment: .string(self.responseComment),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension IOSApp.Token: Model {
+  public static let schemaName = "child"
+  public static let tableName = "iosapp_tokens"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
+    case .value: .uuid(self.value)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(self.deviceId),
+      .value: .uuid(self.value),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension IOSApp.Device: Model {
+  public static let schemaName = "child"
+  public static let tableName = "ios_devices"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .childId: .uuid(self.childId)
+    case .vendorId: .uuid(self.vendorId)
+    case .deviceType: .string(self.deviceType)
+    case .appVersion: .string(self.appVersion)
+    case .iosVersion: .string(self.iosVersion)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .childId: .uuid(self.childId),
+      .vendorId: .uuid(self.vendorId),
+      .deviceType: .string(self.deviceType),
+      .appVersion: .string(self.appVersion),
+      .iosVersion: .string(self.iosVersion),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension GertieIOS.BlockRule: @retroactive PostgresJsonable {}
 
 extension Admin: Model {
   public typealias ColumnName = CodingKeys
@@ -467,7 +559,7 @@ extension Release: Model {
 }
 
 extension Screenshot: Model {
-  public static let schemaName = "macapp"
+  public static let schemaName = "child"
   public static let tableName = "screenshots"
   public typealias ColumnName = CodingKeys
 
@@ -475,6 +567,7 @@ extension Screenshot: Model {
     switch column {
     case .id: .id(self)
     case .computerUserId: .uuid(self.computerUserId)
+    case .iosDeviceId: .uuid(self.iosDeviceId)
     case .url: .string(self.url)
     case .width: .int(self.width)
     case .height: .int(self.height)
@@ -488,6 +581,7 @@ extension Screenshot: Model {
     [
       .id: .id(self),
       .computerUserId: .uuid(self.computerUserId),
+      .iosDeviceId: .uuid(self.iosDeviceId),
       .url: .string(self.url),
       .width: .int(self.width),
       .height: .int(self.height),
@@ -500,7 +594,7 @@ extension Screenshot: Model {
 
 extension AppScope: @retroactive PostgresJsonable {}
 
-extension SuspendFilterRequest: Model {
+extension MacApp.SuspendFilterRequest: Model {
   public static let schemaName = "macapp"
   public static let tableName = "suspend_filter_requests"
   public typealias ColumnName = CodingKeys

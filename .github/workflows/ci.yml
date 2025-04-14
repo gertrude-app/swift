@@ -164,7 +164,7 @@ jobs:
 
   files-changed:
     if: github.event_name == 'pull_request'
-    runs-on: namespace-profile-default
+    runs-on: ubuntu-latest
     outputs:
       macapp: ${{ steps.changes.outputs.macapp }}
       iosapp: ${{ steps.changes.outputs.iosapp }}
@@ -229,9 +229,9 @@ jobs:
       - name: test
         run: cd iosapp/lib-ios && swift test
 
-  swiftformat:
+  swift-lint:
     if: github.event_name == 'pull_request'
-    runs-on: namespace-profile-default
+    runs-on: ubuntu-latest
     container: swift:6.0.3-focal
     steps:
       - name: checkout
@@ -242,8 +242,21 @@ jobs:
           cd SwiftFormat && swift build -c debug
           cp ./.build/debug/swiftformat /usr/local/bin
           cd ../ && rm -rf SwiftFormat/
-      - name: lint
+      - name: swiftlint
         run: swiftformat . --lint
+
+  xml-lint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup just
+        uses: extractions/setup-just@v2
+      - name: install
+        run: cargo install xml-lint
+      - name: xml-lint
+        run: just lint-xml
 
 # env
 
