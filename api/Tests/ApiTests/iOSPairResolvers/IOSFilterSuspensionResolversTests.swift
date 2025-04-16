@@ -50,6 +50,6 @@ final class IOSFilterSuspensionResolversTests: ApiTestCase, @unchecked Sendable 
       with: request.id.rawValue,
       in: child.context
     )
-    expect(status).toEqual(.accepted)
+    expect(status).toEqual(.accepted(duration: 99, parentComment: nil))
   }
 }

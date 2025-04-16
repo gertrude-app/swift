@@ -28,15 +28,24 @@ public struct IOSReducer {
 
   public init() {}
 
-  public var body: some Reducer<State, Action> {
+  public var body: some ReducerOf<Self> {
     Reduce { state, action in
       switch action {
       case .interactive(let interactiveAction):
-        self.interactive(state: &state, action: interactiveAction)
+        return self.interactive(state: &state, action: interactiveAction)
       case .programmatic(let programmaticAction):
-        self.programmatic(state: &state, action: programmaticAction)
+        return self.programmatic(state: &state, action: programmaticAction)
+      case .destination(.presented(.connectAccount(.connectionSucceeded(childData: let data)))):
+        state.screen = .running(showVendorId: false, timesShaken: 0, connected: true)
+        return .run { [deps = self.deps] send in
+          await deps.api.setAuthToken(data.token)
+          deps.storage.saveConnection(data: data)
+        }
+      case .destination:
+        return .none
       }
     }
+    .ifLet(\.$destination, action: \.destination)
   }
 
   func interactive(state: inout State, action: Action.Interactive) -> Effect<Action> {
@@ -105,6 +114,14 @@ public struct IOSReducer {
         deps.storage.saveProtectionMode(.normal(rules))
         try await deps.filter.notifyRulesChanged()
       }
+
+    case .runningBtnTapped where !state.screen.isConnected:
+      state.destination = .connectAccount(.init(screen: .enteringCode))
+      return .none
+
+    case .runningBtnTapped:
+      // TODO: request filter suspension
+      return .none
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
       #if DEBUG
@@ -566,10 +583,14 @@ public struct IOSReducer {
         .run { [deps = self.deps] send in
           let filterRunning = await deps.systemExtension.filterRunning()
           let disabledBlockGroups = deps.storage.loadDisabledBlockGroups()
+          let connection = deps.storage.loadConnection()
           let hasLegacyData = deps.storage.loadData(forKey: .legacyStorageKey) != nil
           switch (filterRunning, disabledBlockGroups, hasLegacyData) {
           case (true, .some, _):
-            await send(.programmatic(.setScreen(.running(showVendorId: false))))
+            await send(.programmatic(.setScreen(.running(connected: connection != nil))))
+            if let token = connection?.token {
+              await deps.api.setAuthToken(token)
+            }
           case (false, .some, _):
             // NB: if they remove the filter via Settings then launch app, we'll get here
             deps.log("non-running filter w/ stored groups", "23c207e2")

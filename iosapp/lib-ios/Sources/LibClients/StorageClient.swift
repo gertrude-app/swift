@@ -2,6 +2,7 @@ import Dependencies
 import DependenciesMacros
 import Foundation
 import GertieIOS
+import IOSRoute
 import LibCore
 
 @DependencyClient
@@ -36,6 +37,16 @@ extension StorageClient: DependencyKey {
 }
 
 public extension StorageClient {
+  func saveConnection(data: ChildIOSDeviceData) {
+    self.saveCodable(value: data, forKey: .connectionStorageKey)
+  }
+
+  func loadConnection() -> ChildIOSDeviceData? {
+    self.loadData(forKey: .connectionStorageKey).flatMap { data in
+      try? JSONDecoder().decode(ChildIOSDeviceData.self, from: data)
+    }
+  }
+
   func saveProtectionMode(_ protectionMode: ProtectionMode) {
     self.saveCodable(value: protectionMode, forKey: .protectionModeStorageKey)
   }

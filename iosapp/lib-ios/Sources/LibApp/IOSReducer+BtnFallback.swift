@@ -9,8 +9,8 @@ extension IOSReducer.Screen {
       onboarding.fallbackDestination(from: btn)
     case .supervisionSuccessFirstLaunch:
       .onboarding(.happyPath(.optOutBlockGroups))
-    case .running(showVendorId: let showing, timesShaken: let timesShaken):
-      .running(showVendorId: showing, timesShaken: timesShaken)
+    case .running(showVendorId: let showing, timesShaken: let timesShaken, let connected):
+      .running(showVendorId: showing, timesShaken: timesShaken, connected: connected)
     }
   }
 }

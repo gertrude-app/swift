@@ -1,4 +1,6 @@
+import ComposableArchitecture
 import Dependencies
+import LibApp
 import SwiftUI
 
 struct RunningView: View {
@@ -10,7 +12,11 @@ struct RunningView: View {
   @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
 
+  @Bindable var store: StoreOf<IOSReducer>
+
   let showVendorId: Bool
+  let connected: Bool
+  let onBtnTap: () -> Void
 
   var body: some View {
     ZStack {
@@ -43,6 +49,12 @@ struct RunningView: View {
             after: .seconds(0.3),
             for: .seconds(0.5)
           )
+
+        BigButton(
+          self.connected ? "Request filter suspension" : "Connect to parent account",
+          type: .button(self.onBtnTap)
+        )
+        .padding(.bottom, 20)
 
         Text("You can quit the app now, it will keep blocking even when not running.")
           .font(.system(size: 18, weight: .medium))
@@ -81,13 +93,29 @@ struct RunningView: View {
       .multilineTextAlignment(.center)
       .padding(30)
     }
+    .sheet(item: self.$store.scope(
+      state: \.destination?.connectAccount,
+      action: \.destination.connectAccount
+    )) {
+      ConnectingView(store: $0)
+    }
   }
 }
 
 #Preview {
-  RunningView(showVendorId: false)
+  RunningView(
+    store: .init(initialState: .init()) { IOSReducer() },
+    showVendorId: false,
+    connected: false,
+    onBtnTap: {}
+  )
 }
 
 #Preview("with vendor id") {
-  RunningView(showVendorId: true)
+  RunningView(
+    store: .init(initialState: .init()) { IOSReducer() },
+    showVendorId: true,
+    connected: false,
+    onBtnTap: {}
+  )
 }

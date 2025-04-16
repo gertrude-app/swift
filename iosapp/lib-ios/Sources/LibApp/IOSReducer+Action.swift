@@ -1,7 +1,13 @@
+import ComposableArchitecture
 import LibClients
 
 public extension IOSReducer {
+  @CasePathable
   enum Action: Equatable {
+    case interactive(Interactive)
+    case programmatic(Programmatic)
+    case destination(PresentationAction<Destination.Action>)
+
     public enum Interactive: Equatable {
       public enum OnboardingBtn: Equatable {
         case primary
@@ -12,6 +18,7 @@ public extension IOSReducer {
       case onboardingBtnTapped(OnboardingBtn, String)
       case blockGroupToggled(BlockGroup)
       case sheetDismissed
+      case runningBtnTapped
       case receivedShake
     }
 
@@ -27,8 +34,5 @@ public extension IOSReducer {
       case setAvailableDiskSpaceInBytes(Int)
       case receiveClearCacheUpdate(DeviceClient.ClearCacheUpdate)
     }
-
-    case interactive(Interactive)
-    case programmatic(Programmatic)
   }
 }
