@@ -14,7 +14,6 @@ struct RunningView: View {
 
   @Bindable var store: StoreOf<IOSReducer>
 
-  let showVendorId: Bool
   let connected: Bool
   let onBtnTap: () -> Void
 
@@ -82,11 +81,6 @@ struct RunningView: View {
           for: .seconds(0.5)
         )
 
-        Text("\(UIDevice.current.identifierForVendor?.uuidString.lowercased() ?? "unknown")")
-          .font(.system(size: 11, design: .monospaced))
-          .opacity(self.showVendorId ? 1 : 0)
-          .padding(.top, 25)
-
         Spacer()
       }
       .frame(maxWidth: .infinity)
@@ -99,22 +93,18 @@ struct RunningView: View {
     )) {
       ConnectingView(store: $0)
     }
+    .sheet(item: self.$store.scope(
+      state: \.destination?.requestSuspension,
+      action: \.destination.requestSuspension
+    )) {
+      RequestSuspensionView(store: $0)
+    }
   }
 }
 
 #Preview {
   RunningView(
     store: .init(initialState: .init()) { IOSReducer() },
-    showVendorId: false,
-    connected: false,
-    onBtnTap: {}
-  )
-}
-
-#Preview("with vendor id") {
-  RunningView(
-    store: .init(initialState: .init()) { IOSReducer() },
-    showVendorId: true,
     connected: false,
     onBtnTap: {}
   )

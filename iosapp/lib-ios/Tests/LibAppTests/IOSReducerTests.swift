@@ -307,8 +307,8 @@ final class IOSReducerTests: XCTestCase {
       $0.onboarding.firstLaunch = .reference
     }
 
-    await store.receive(.programmatic(.setScreen(.running(showVendorId: false)))) {
-      $0.screen = .running(showVendorId: false)
+    await store.receive(.programmatic(.setScreen(.running(state: .notConnected)))) {
+      $0.screen = .running(state: .notConnected)
     }
 
     expect(removeObjectInvocations.value).toEqual([.legacyStorageKey])
@@ -453,8 +453,8 @@ final class IOSReducerTests: XCTestCase {
     await store.receive(.programmatic(.setFirstLaunch(.distantPast))) {
       $0.onboarding.firstLaunch = .distantPast
     }
-    await store.receive(.programmatic(.setScreen(.running(showVendorId: false)))) {
-      $0.screen = .running(showVendorId: false)
+    await store.receive(.programmatic(.setScreen(.running(state: .notConnected)))) {
+      $0.screen = .running(state: .notConnected)
     }
   }
 

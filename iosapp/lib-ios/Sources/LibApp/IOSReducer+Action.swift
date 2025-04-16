@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import IOSRoute
 import LibClients
 
 public extension IOSReducer {
@@ -33,6 +34,8 @@ public extension IOSReducer {
       case setBatteryLevel(DeviceClient.BatteryLevel)
       case setAvailableDiskSpaceInBytes(Int)
       case receiveClearCacheUpdate(DeviceClient.ClearCacheUpdate)
+      case receivedSuspensionUpdate(PollFilterSuspensionDecision.Output)
+      case suspensionRequestExpired
     }
   }
 }

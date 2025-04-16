@@ -19,6 +19,8 @@ public struct ApiClient: Sendable {
     async throws -> [BlockRule]
   public var fetchDefaultBlockRules: @Sendable (_ vendorId: UUID?) async throws -> [BlockRule]
   public var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
+  public var pollSuspensionDecision: @Sendable (_ id: UUID) async throws
+    -> PollFilterSuspensionDecision.Output
   public var recoveryDirective: @Sendable () async throws -> String?
   public var setAuthToken: @Sendable (UUID?) async -> Void
   public var uploadScreenshot: @Sendable (UploadScreenshotData) async throws -> Void
@@ -84,6 +86,12 @@ extension ApiClient: DependencyKey {
         } catch {
           os_log("[G•] error logging event: %{public}s", String(reflecting: error))
         }
+      },
+      pollSuspensionDecision: { id in
+        try await output(
+          from: PollFilterSuspensionDecision.self,
+          with: .pollFilterSuspensionDecision(id)
+        )
       },
       recoveryDirective: {
         @Dependency(\.locale) var locale

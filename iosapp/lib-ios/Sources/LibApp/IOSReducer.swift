@@ -10,6 +10,7 @@ public struct IOSReducer {
   struct Deps: Sendable {
     @Dependency(\.api) var api
     @Dependency(\.appStore) var appStore
+    @Dependency(\.continuousClock) var clock
     @Dependency(\.device) var device
     @Dependency(\.filter) var filter
     @Dependency(\.systemExtension) var systemExtension
@@ -32,17 +33,13 @@ public struct IOSReducer {
     Reduce { state, action in
       switch action {
       case .interactive(let interactiveAction):
-        return self.interactive(state: &state, action: interactiveAction)
+        self.interactive(state: &state, action: interactiveAction)
       case .programmatic(let programmaticAction):
-        return self.programmatic(state: &state, action: programmaticAction)
-      case .destination(.presented(.connectAccount(.connectionSucceeded(childData: let data)))):
-        state.screen = .running(showVendorId: false, timesShaken: 0, connected: true)
-        return .run { [deps = self.deps] send in
-          await deps.api.setAuthToken(data.token)
-          deps.storage.saveConnection(data: data)
-        }
+        self.programmatic(state: &state, action: programmaticAction)
+      case .destination(.presented(let destinationAction)):
+        self.destination(state: &state, action: destinationAction)
       case .destination:
-        return .none
+        .none
       }
     }
     .ifLet(\.$destination, action: \.destination)
@@ -66,61 +63,74 @@ public struct IOSReducer {
     case .sheetDismissed:
       return .none
 
-    case .receivedShake where state.screen == .running(showVendorId: true, timesShaken: 5):
-      state.screen = .running(showVendorId: false)
-      return .run { [deps = self.deps] send in
-        deps.log("entering recovery mode", "a8998540")
-        if deps.storage.loadDisabledBlockGroups() == nil {
-          deps.storage.saveDisabledBlockGroups([])
-        }
-        let rules = deps.storage.loadProtectionMode()
-        if rules.missingRules {
-          deps.log("rules missing in recovery mode", "bcca235f")
-          let defaultRules = try? await deps.api
-            .fetchDefaultBlockRules(deps.device.vendorId())
-          if let defaultRules, !defaultRules.isEmpty {
-            deps.storage.saveProtectionMode(.normal(defaultRules))
-          } else {
-            deps.log("failed to fetch defaults in recovery mode", "2c3a4481")
-            deps.storage.saveProtectionMode(.normal(BlockRule.defaults))
-          }
-        }
-        try await deps.filter.notifyRulesChanged()
-        let directive = try? await deps.api.recoveryDirective()
-        if directive == "retry" {
-          await deps.systemExtension.cleanupForRetry()
-          deps.log("received retry directive", "aeaa467d")
-        }
-      }
+      // 👍 todo: move me into debug reducer
+    // case .receivedShake where state.screen == .running(showVendorId: true, timesShaken: 5):
+    //   state.screen = .running(showVendorId: false)
+    //   return .run { [deps = self.deps] send in
+    //     deps.log("entering recovery mode", "a8998540")
+    //     if deps.storage.loadDisabledBlockGroups() == nil {
+    //       deps.storage.saveDisabledBlockGroups([])
+    //     }
+    //     let rules = deps.storage.loadProtectionMode()
+    //     if rules.missingRules {
+    //       deps.log("rules missing in recovery mode", "bcca235f")
+    //       let defaultRules = try? await deps.api
+    //         .fetchDefaultBlockRules(deps.device.vendorId())
+    //       if let defaultRules, !defaultRules.isEmpty {
+    //         deps.storage.saveProtectionMode(.normal(defaultRules))
+    //       } else {
+    //         deps.log("failed to fetch defaults in recovery mode", "2c3a4481")
+    //         deps.storage.saveProtectionMode(.normal(BlockRule.defaults))
+    //       }
+    //     }
+    //     try await deps.filter.notifyRulesChanged()
+    //     let directive = try? await deps.api.recoveryDirective()
+    //     if directive == "retry" {
+    //       await deps.systemExtension.cleanupForRetry()
+    //       deps.log("received retry directive", "aeaa467d")
+    //     }
+    //   }
 
     case .receivedShake where state.screen.isRunning:
-      let timesShaken = (state.screen.timesShaken ?? 0) + 1
-      state.screen = .running(showVendorId: true, timesShaken: timesShaken)
-      return .run { [deps = self.deps] send in
-        guard timesShaken == 1 else { return }
-        guard let vendorId = await deps.device.vendorId() else {
-          deps.log("UNEXPECTED no vendor id on shake", "caec76fe")
-          return
-        }
-        let disabled = deps.storage.loadDisabledBlockGroups()
-        if disabled == nil {
-          deps.log("UNEXPECTED no stored disabled block groups on shake", "de5592c2")
-          deps.storage.saveDisabledBlockGroups([])
-        }
-        let rules = try await deps.api.fetchBlockRules(
-          vendorId: vendorId,
-          disabledGroups: disabled ?? []
-        )
-        deps.storage.saveProtectionMode(.normal(rules))
-        try await deps.filter.notifyRulesChanged()
-      }
+      // let timesShaken = (state.screen.timesShaken ?? 0) + 1
+      // state.screen = .running(showVendorId: true, timesShaken: timesShaken)
+      // return .run { [deps = self.deps] send in
+      //   guard timesShaken == 1 else { return }
+      //   guard let vendorId = await deps.device.vendorId() else {
+      //     deps.log("UNEXPECTED no vendor id on shake", "caec76fe")
+      //     return
+      //   }
+      //   let disabled = deps.storage.loadDisabledBlockGroups()
+      //   if disabled == nil {
+      //     deps.log("UNEXPECTED no stored disabled block groups on shake", "de5592c2")
+      //     deps.storage.saveDisabledBlockGroups([])
+      //   }
+      //   let rules = try await deps.api.fetchBlockRules(
+      //     vendorId: vendorId,
+      //     disabledGroups: disabled ?? []
+      //   )
+      //   deps.storage.saveProtectionMode(.normal(rules))
+      //   try await deps.filter.notifyRulesChanged()
+      // }
+      // 👍 todo: restore
+      return .none
 
-    case .runningBtnTapped where !state.screen.isConnected:
+    case .runningBtnTapped where state.screen == .running(state: .notConnected):
       state.destination = .connectAccount(.init(screen: .enteringCode))
       return .none
 
+    case .runningBtnTapped
+      where state.screen == .running(state: .connected(waitingForSuspension: false)):
+      state.destination = .requestSuspension(.customizing)
+      return .none
+
+    case .runningBtnTapped
+      where state.screen == .running(state: .connected(waitingForSuspension: true)):
+      // TODO:
+      return .none
+
     case .runningBtnTapped:
-      // TODO: request filter suspension
+      // unreachable
       return .none
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
@@ -587,7 +597,9 @@ public struct IOSReducer {
           let hasLegacyData = deps.storage.loadData(forKey: .legacyStorageKey) != nil
           switch (filterRunning, disabledBlockGroups, hasLegacyData) {
           case (true, .some, _):
-            await send(.programmatic(.setScreen(.running(connected: connection != nil))))
+            await send(.programmatic(.setScreen(.running(
+              state: connection != nil ? .connected() : .notConnected
+            ))))
             if let token = connection?.token {
               await deps.api.setAuthToken(token)
             }
@@ -736,11 +748,61 @@ public struct IOSReducer {
       state.onboarding.endClearCache = self.deps.now
       state.screen = .onboarding(.happyPath(.cacheCleared))
       return .cancel(id: CancelId.cacheClearUpdates)
+
+    case .receivedSuspensionUpdate(.pending):
+      return .none
+
+    case .receivedSuspensionUpdate(.denied(let comment)):
+      state.destination = .requestSuspension(.denied(comment: comment))
+      return .none
+
+    case .receivedSuspensionUpdate(.notFound):
+      self.deps.log("filter suspension id not found", "ceec0d93")
+      return .none
+
+    case .receivedSuspensionUpdate(.accepted(let duration, let comment)):
+      state.destination = .requestSuspension(.granted(duration: duration, comment: comment))
+      return .none
+
+    case .suspensionRequestExpired:
+      state.pendingSuspensionId = nil
+      return .none
+    }
+  }
+
+  func destination(state: inout State, action: Destination.Action) -> Effect<Action> {
+    switch action {
+    case .connectAccount(.connectionSucceeded(childData: let data)):
+      state.screen = .running(state: .connected())
+      return .run { [deps = self.deps] send in
+        await deps.api.setAuthToken(data.token)
+        deps.storage.saveConnection(data: data)
+      }
+    case .requestSuspension(.requestSucceeded(let id)):
+      state.pendingSuspensionId = id
+      state.screen = .running(state: .connected(waitingForSuspension: true))
+      return .run { [deps = self.deps] send in
+        // TODO: add backoff, better expiration, etc.
+        var count = 0
+        for await _ in deps.clock.timer(interval: .seconds(5)) {
+          if count > 60 { // 5 minutes
+            await send(.programmatic(.suspensionRequestExpired))
+            return
+          }
+          let decision = try await deps.api.pollSuspensionDecision(id: id)
+          await send(.programmatic(.receivedSuspensionUpdate(decision)))
+          if decision != .pending { return }
+          count += 1
+        }
+      }
+    default:
+      return .none
     }
   }
 }
 
 extension IOSReducer.Deps {
+  // TODO: need to handle two upgrades, > 1.3.x, and > 1.5.x
   func handleUpgrade(send: Send<IOSReducer.Action>) async throws {
     self.log("handling upgrade", "180e2347")
     self.storage.saveDisabledBlockGroups([])
@@ -752,7 +814,7 @@ extension IOSReducer.Deps {
       self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
     }
     self.storage.removeObject(forKey: .legacyStorageKey)
-    await send(.programmatic(.setScreen(.running(showVendorId: false))))
+    await send(.programmatic(.setScreen(.running(state: .notConnected))))
     try await self.filter.notifyRulesChanged()
   }
 }

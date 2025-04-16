@@ -9,7 +9,7 @@ struct IOSAppEntry: App {
   init() {
     self.store = Store(
       initialState: IOSReducer.State(),
-      reducer: { IOSReducer() }
+      reducer: { IOSReducer()._printChanges() }
     )
   }
 
