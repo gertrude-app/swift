@@ -3,7 +3,7 @@ import LibApp
 import SwiftUI
 
 struct AppView: View {
-  let store: StoreOf<IOSReducer>
+  @Bindable var store: StoreOf<IOSReducer>
 
   @Environment(\.colorScheme) var cs
   @Environment(\.openURL) var openLink
@@ -392,9 +392,12 @@ struct AppView: View {
         primary: self.btn(text: "Next", .primary)
       )
 
-    case .running(let showVendorId, timesShaken: _):
-      RunningView(showVendorId: showVendorId)
-        .onShake { self.store.send(.interactive(.receivedShake)) }
+    case .running(let showVendorId, timesShaken: _, let connected):
+      RunningView(store: self.store, showVendorId: showVendorId, connected: connected) {
+        self.store.send(.interactive(.runningBtnTapped))
+      }.onShake {
+        self.store.send(.interactive(.receivedShake))
+      }
     }
   }
 

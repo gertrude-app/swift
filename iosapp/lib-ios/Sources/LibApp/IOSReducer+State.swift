@@ -1,12 +1,21 @@
+// swiftformat:disable extensionAccessControl
 import ComposableArchitecture
 import LibClients
 
-public extension IOSReducer {
+extension IOSReducer {
+  @Reducer(state: .equatable, action: .equatable)
+  public enum Destination {
+    case connectAccount(ConnectAccount)
+  }
+
   @ObservableState
-  struct State: Equatable {
+  public struct State: Equatable {
     public var screen: Screen = .launching
     public var disabledBlockGroups: [BlockGroup] = []
     public var onboarding: OnboardingState = .init()
+
+    @Presents
+    public var destination: Destination.State?
 
     public init(
       screen: IOSReducer.Screen = .launching,
@@ -56,7 +65,7 @@ public extension IOSReducer {
     }
   }
 
-  enum Onboarding: Equatable {
+  public enum Onboarding: Equatable {
     case happyPath(HappyPath)
     case appleFamily(AppleFamily)
     case major(Major)
@@ -139,11 +148,11 @@ public extension IOSReducer {
     }
   }
 
-  enum Screen: Equatable {
+  public enum Screen: Equatable {
     case launching
     case onboarding(Onboarding)
     case supervisionSuccessFirstLaunch
-    case running(showVendorId: Bool, timesShaken: Int = 0)
+    case running(showVendorId: Bool = false, timesShaken: Int = 0, connected: Bool = false)
 
     var isRunning: Bool {
       if case .running = self { return true }
@@ -151,12 +160,24 @@ public extension IOSReducer {
     }
 
     var timesShaken: Int? {
-      if case .running(_, let timesShaken) = self { return timesShaken }
+      if case .running(_, let timesShaken, _) = self { return timesShaken }
       return nil
+    }
+
+    var isConnected: Bool {
+      if case .running(_, _, let connected) = self { return connected }
+      return false
     }
   }
 
-  enum MajorOnboarder: Equatable {
+  public enum Connecting: Equatable {
+    case enteringCode(String)
+    case connecting
+    case failedToConnect
+    case connectSuccess
+  }
+
+  public enum MajorOnboarder: Equatable {
     case `self`
     case other
   }
