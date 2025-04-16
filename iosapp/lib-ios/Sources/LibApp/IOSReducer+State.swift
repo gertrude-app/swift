@@ -6,6 +6,8 @@ extension IOSReducer {
   @Reducer(state: .equatable, action: .equatable)
   public enum Destination {
     case connectAccount(ConnectAccount)
+    case requestSuspension(RequestSuspension)
+    case debug(Debug)
   }
 
   @ObservableState
@@ -13,6 +15,7 @@ extension IOSReducer {
     public var screen: Screen = .launching
     public var disabledBlockGroups: [BlockGroup] = []
     public var onboarding: OnboardingState = .init()
+    public var pendingSuspensionId: UUID?
 
     @Presents
     public var destination: Destination.State?
@@ -148,24 +151,19 @@ extension IOSReducer {
     }
   }
 
+  public enum RunningState: Equatable {
+    case notConnected
+    case connected(waitingForSuspension: Bool = false)
+  }
+
   public enum Screen: Equatable {
     case launching
     case onboarding(Onboarding)
     case supervisionSuccessFirstLaunch
-    case running(showVendorId: Bool = false, timesShaken: Int = 0, connected: Bool = false)
+    case running(state: RunningState = .notConnected)
 
     var isRunning: Bool {
       if case .running = self { return true }
-      return false
-    }
-
-    var timesShaken: Int? {
-      if case .running(_, let timesShaken, _) = self { return timesShaken }
-      return nil
-    }
-
-    var isConnected: Bool {
-      if case .running(_, _, let connected) = self { return connected }
       return false
     }
   }
