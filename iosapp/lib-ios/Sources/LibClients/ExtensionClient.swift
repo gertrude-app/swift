@@ -13,13 +13,16 @@ public struct ExtensionClient: Sendable {
 extension ExtensionClient: DependencyKey {
   public static let liveValue = ExtensionClient(
     requestAuthorization: {
-      #if os(iOS)
+      #if targetEnvironment(simulator)
+        return .success(())
+      #elseif os(iOS)
         do {
           #if DEBUG
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
           #else
             try await AuthorizationCenter.shared.requestAuthorization(for: .child)
           #endif
+          return .success(())
         } catch let familyError as FamilyControlsError {
           switch familyError {
           case .invalidAccountType:
@@ -44,59 +47,69 @@ extension ExtensionClient: DependencyKey {
         } catch {
           return .failure(.other(String(reflecting: error)))
         }
+      #else
+        return .failure(.other("unexpected OS"))
       #endif
-      return .success(())
     },
     installFilter: {
-      // not sure this is necessary, but doesn't seem to hurt and might ensure clean slate
-      try? await NEFilterManager.shared().removeFromPreferences()
-
-      if NEFilterManager.shared().providerConfiguration == nil {
-        let newConfiguration = NEFilterProviderConfiguration()
-        newConfiguration.username = "Gertrude"
-        newConfiguration.organization = "Gertrude"
-        #if os(iOS)
-          newConfiguration.filterBrowsers = true
-        #endif
-        newConfiguration.filterSockets = true
-        NEFilterManager.shared().providerConfiguration = newConfiguration
-      }
-      NEFilterManager.shared().isEnabled = true
-      do {
-        try await NEFilterManager.shared().saveToPreferences()
+      #if targetEnvironment(simulator)
+        UserDefaults.gertrude.setValue(true, forKey: "simulatorFilterInstalled")
         return .success(())
-      } catch {
-        switch NEFilterManagerError(rawValue: (error as NSError).code) {
-        case .some(.configurationInvalid):
-          return .failure(.configurationInvalid)
-        case .some(.configurationDisabled):
-          return .failure(.configurationDisabled)
-        case .some(.configurationStale):
-          return .failure(.configurationStale)
-        case .some(.configurationCannotBeRemoved):
-          return .failure(.configurationCannotBeRemoved)
-        case .some(.configurationPermissionDenied):
-          return .failure(.configurationPermissionDenied)
-        case .some(.configurationInternalError):
-          return .failure(.configurationInternalError)
-        case .none:
-          return .failure(.unexpected(String(reflecting: error)))
-        @unknown default:
-          return .failure(.unexpected(String(reflecting: error)))
+      #else
+        // not sure this is necessary, but doesn't seem to hurt and might ensure clean slate
+        try? await NEFilterManager.shared().removeFromPreferences()
+
+        if NEFilterManager.shared().providerConfiguration == nil {
+          let newConfiguration = NEFilterProviderConfiguration()
+          newConfiguration.username = "Gertrude"
+          newConfiguration.organization = "Gertrude"
+          #if os(iOS)
+            newConfiguration.filterBrowsers = true
+          #endif
+          newConfiguration.filterSockets = true
+          NEFilterManager.shared().providerConfiguration = newConfiguration
         }
-      }
+        NEFilterManager.shared().isEnabled = true
+        do {
+          try await NEFilterManager.shared().saveToPreferences()
+          return .success(())
+        } catch {
+          switch NEFilterManagerError(rawValue: (error as NSError).code) {
+          case .some(.configurationInvalid):
+            return .failure(.configurationInvalid)
+          case .some(.configurationDisabled):
+            return .failure(.configurationDisabled)
+          case .some(.configurationStale):
+            return .failure(.configurationStale)
+          case .some(.configurationCannotBeRemoved):
+            return .failure(.configurationCannotBeRemoved)
+          case .some(.configurationPermissionDenied):
+            return .failure(.configurationPermissionDenied)
+          case .some(.configurationInternalError):
+            return .failure(.configurationInternalError)
+          case .none:
+            return .failure(.unexpected(String(reflecting: error)))
+          @unknown default:
+            return .failure(.unexpected(String(reflecting: error)))
+          }
+        }
+      #endif
     },
     filterRunning: {
-      do {
-        try await NEFilterManager.shared().loadFromPreferences()
-        return NEFilterManager.shared().isEnabled
-      } catch {
-        os_log(
-          "[G•] error loading preferences: %{public}s",
-          String(reflecting: error)
-        )
-        return false
-      }
+      #if targetEnvironment(simulator)
+        return UserDefaults.gertrude.bool(forKey: "simulatorFilterInstalled")
+      #else
+        do {
+          try await NEFilterManager.shared().loadFromPreferences()
+          return NEFilterManager.shared().isEnabled
+        } catch {
+          os_log(
+            "[G•] error loading preferences: %{public}s",
+            String(reflecting: error)
+          )
+          return false
+        }
+      #endif
     },
     cleanupForRetry: {
       NEFilterManager.shared().providerConfiguration = nil

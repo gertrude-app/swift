@@ -9,8 +9,8 @@ extension IOSReducer.Screen {
       onboarding.fallbackDestination(from: btn)
     case .supervisionSuccessFirstLaunch:
       .onboarding(.happyPath(.optOutBlockGroups))
-    case .running(showVendorId: let showing, timesShaken: let timesShaken, let connected):
-      .running(showVendorId: showing, timesShaken: timesShaken, connected: connected)
+    case .running(state: let state):
+      .running(state: state)
     }
   }
 }
@@ -178,7 +178,7 @@ extension IOSReducer.Onboarding.HappyPath {
     case (.confirmParentIsOnboarding, _):
       .onboarding(.childIsOnboardingFail)
     case (.doneQuit, _):
-      .running(showVendorId: false)
+      .running(state: .notConnected)
     case (.dontGetTrickedPreAuth, _):
       .onboarding(.happyPath(.explainAuthWithParentAppleAccount))
     case (.dontGetTrickedPreInstall, _):
