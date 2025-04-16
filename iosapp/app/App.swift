@@ -392,8 +392,8 @@ struct AppView: View {
         primary: self.btn(text: "Next", .primary)
       )
 
-    case .running(let showVendorId, timesShaken: _, let connected):
-      RunningView(store: self.store, showVendorId: showVendorId, connected: connected) {
+    case .running(state: let state):
+      RunningView(store: self.store, connected: state != .notConnected) {
         self.store.send(.interactive(.runningBtnTapped))
       }.onShake {
         self.store.send(.interactive(.receivedShake))
