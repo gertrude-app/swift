@@ -127,9 +127,9 @@ final class FilterProxyTests: XCTestCase {
       $0.suspendingClock = clock
       $0.storage.loadData = { @Sendable _ in
         if !userDefaultsReady.value {
-          return nil
+          nil
         } else {
-          return try! JSONEncoder().encode(ProtectionMode.normal([.urlContains("foo")]))
+          try! JSONEncoder().encode(ProtectionMode.normal([.urlContains("foo")]))
         }
       }
     } operation: {
