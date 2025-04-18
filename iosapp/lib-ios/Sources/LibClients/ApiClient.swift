@@ -167,14 +167,21 @@ func output<T: Pair>(
   return try JSON.decode(data, as: T.Output.self, [.isoDates])
 }
 
-public extension ApiClient {
-  struct UploadScreenshotData: Sendable {
-    var data: Data
-    var width: Int
-    var height: Int
-    var createdAt: Date
-  }
+public struct UploadScreenshotData: Sendable {
+  public var data: Data
+  public var width: Int
+  public var height: Int
+  public var createdAt: Date
 
+  public init(data: Data, width: Int, height: Int, createdAt: Date) {
+    self.data = data
+    self.width = width
+    self.height = height
+    self.createdAt = createdAt
+  }
+}
+
+public extension ApiClient {
   enum Error: Swift.Error {
     case missingAuthToken
     case missingDataOrResponse

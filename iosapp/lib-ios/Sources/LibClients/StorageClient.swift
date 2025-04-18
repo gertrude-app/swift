@@ -11,6 +11,7 @@ public struct StorageClient: Sendable {
   public var loadDate: @Sendable (_ forKey: String) -> Date?
   public var saveCodable: @Sendable (_ value: any Codable & Sendable, _ forKey: String) -> Void
   public var loadData: @Sendable (_ forKey: String) -> Data?
+  public var saveData: @Sendable (_ data: Data, _ forKey: String) -> Void
   public var removeObject: @Sendable (_ forKey: String) -> Void
 }
 
@@ -29,6 +30,9 @@ extension StorageClient: DependencyKey {
     },
     loadData: { key in
       UserDefaults.gertrude.data(forKey: key)
+    },
+    saveData: { data, key in
+      UserDefaults.gertrude.set(data, forKey: key)
     },
     removeObject: { key in
       UserDefaults.gertrude.removeObject(forKey: key)
@@ -54,6 +58,12 @@ public extension StorageClient {
   func loadProtectionMode() -> ProtectionMode? {
     self.loadData(forKey: .protectionModeStorageKey).flatMap { data in
       try? JSONDecoder().decode(ProtectionMode.self, from: data)
+    }
+  }
+
+  func load<T: Decodable>(decoding: T.Type, forKey key: String) -> T? {
+    self.loadData(forKey: key).flatMap { data in
+      try? JSONDecoder().decode(T.self, from: data)
     }
   }
 
