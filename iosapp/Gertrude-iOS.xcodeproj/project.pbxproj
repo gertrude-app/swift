@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -30,6 +30,9 @@
 		7F8B15022CCED8D6002E3C14 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F8B15012CCED8D6002E3C14 /* Launch Screen.storyboard */; };
 		7F9AD4192DAFF20300CA079B /* ConnectingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F9AD4182DAFF1FC00CA079B /* ConnectingView.swift */; };
 		7F9AD41B2DB026FF00CA079B /* RequestSuspensionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F9AD41A2DB026F600CA079B /* RequestSuspensionView.swift */; };
+		7FA736052DB1494F009397FC /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA736042DB1494F009397FC /* ReplayKit.framework */; };
+		7FA7360C2DB1494F009397FC /* recorder.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FA736032DB1494F009397FC /* recorder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7FA736122DB15D3B009397FC /* LibRecorder in Frameworks */ = {isa = PBXBuildFile; productRef = 7FA736112DB15D3B009397FC /* LibRecorder */; };
 		7FA7B8472AEB238700363B53 /* IOSAppEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */; };
 		7FA7B84B2AEB238800363B53 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84A2AEB238800363B53 /* Assets.xcassets */; };
 		7FA7B84E2AEB238800363B53 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7FA7B84D2AEB238800363B53 /* Preview Assets.xcassets */; };
@@ -43,6 +46,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		7FA7360A2DB1494F009397FC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7FA7B83B2AEB238700363B53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7FA736022DB1494F009397FC;
+			remoteInfo = recorder;
+		};
 		7FA7B8612AEB243400363B53 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7FA7B83B2AEB238700363B53 /* Project object */;
@@ -67,6 +77,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */,
+				7FA7360C2DB1494F009397FC /* recorder.appex in Embed Foundation Extensions */,
 				7FA7B8632AEB243400363B53 /* filter.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -93,6 +104,8 @@
 		7F8B15012CCED8D6002E3C14 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		7F9AD4182DAFF1FC00CA079B /* ConnectingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectingView.swift; sourceTree = "<group>"; };
 		7F9AD41A2DB026F600CA079B /* RequestSuspensionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestSuspensionView.swift; sourceTree = "<group>"; };
+		7FA736032DB1494F009397FC /* recorder.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = recorder.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7FA736042DB1494F009397FC /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		7FA7B8432AEB238700363B53 /* app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = app.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSAppEntry.swift; sourceTree = "<group>"; };
 		7FA7B84A2AEB238800363B53 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -110,7 +123,30 @@
 		7FFB548E2CB4768600EBFA3B /* lib-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = "lib-ios"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7FA7360F2DB1494F009397FC /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7FA736022DB1494F009397FC /* recorder */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		7FA736062DB1494F009397FC /* recorder */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (7FA7360F2DB1494F009397FC /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = recorder; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		7FA736002DB1494F009397FC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7FA736122DB15D3B009397FC /* LibRecorder in Frameworks */,
+				7FA736052DB1494F009397FC /* ReplayKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7FA7B8402AEB238700363B53 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -178,6 +214,7 @@
 				7FA7B8452AEB238700363B53 /* app */,
 				7FA7B85C2AEB243400363B53 /* filter */,
 				7FE743D42C8F431500607876 /* controller */,
+				7FA736062DB1494F009397FC /* recorder */,
 				7FA7B8592AEB243400363B53 /* Frameworks */,
 				7FA7B8442AEB238700363B53 /* Products */,
 			);
@@ -189,6 +226,7 @@
 				7FA7B8432AEB238700363B53 /* app.app */,
 				7FA7B8582AEB243400363B53 /* filter.appex */,
 				7FE743D22C8F431500607876 /* controller.appex */,
+				7FA736032DB1494F009397FC /* recorder.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -223,6 +261,7 @@
 			isa = PBXGroup;
 			children = (
 				7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */,
+				7FA736042DB1494F009397FC /* ReplayKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -250,6 +289,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7FA736022DB1494F009397FC /* recorder */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7FA736102DB1494F009397FC /* Build configuration list for PBXNativeTarget "recorder" */;
+			buildPhases = (
+				7FA735FF2DB1494F009397FC /* Sources */,
+				7FA736002DB1494F009397FC /* Frameworks */,
+				7FA736012DB1494F009397FC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				7FA736062DB1494F009397FC /* recorder */,
+			);
+			name = recorder;
+			packageProductDependencies = (
+				7FA736112DB15D3B009397FC /* LibRecorder */,
+			);
+			productName = recorder;
+			productReference = 7FA736032DB1494F009397FC /* recorder.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		7FA7B8422AEB238700363B53 /* app */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7FA7B8512AEB238800363B53 /* Build configuration list for PBXNativeTarget "app" */;
@@ -264,6 +326,7 @@
 			dependencies = (
 				7FA7B8622AEB243400363B53 /* PBXTargetDependency */,
 				7FE743DA2C8F431500607876 /* PBXTargetDependency */,
+				7FA7360B2DB1494F009397FC /* PBXTargetDependency */,
 			);
 			name = app;
 			packageProductDependencies = (
@@ -320,9 +383,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1530;
+				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					7FA736022DB1494F009397FC = {
+						CreatedOnToolsVersion = 16.2;
+					};
 					7FA7B8422AEB238700363B53 = {
 						CreatedOnToolsVersion = 14.3.1;
 					};
@@ -354,11 +420,19 @@
 				7FA7B8422AEB238700363B53 /* app */,
 				7FA7B8572AEB243400363B53 /* filter */,
 				7FE743D12C8F431500607876 /* controller */,
+				7FA736022DB1494F009397FC /* recorder */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		7FA736012DB1494F009397FC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7FA7B8412AEB238700363B53 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -386,6 +460,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7FA735FF2DB1494F009397FC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7FA7B83F2AEB238700363B53 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -429,6 +510,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		7FA7360B2DB1494F009397FC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7FA736022DB1494F009397FC /* recorder */;
+			targetProxy = 7FA7360A2DB1494F009397FC /* PBXContainerItemProxy */;
+		};
 		7FA7B8622AEB243400363B53 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 7FA7B8572AEB243400363B53 /* filter */;
@@ -442,6 +528,69 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		7FA7360D2DB1494F009397FC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = recorder/recorder.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WFN83LM943;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = recorder/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Gertrude Screen Recorder";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.recorder";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7FA7360E2DB1494F009397FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = recorder/recorder.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WFN83LM943;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = recorder/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Gertrude Screen Recorder";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.recorder";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		7FA7B84F2AEB238800363B53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -768,6 +917,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7FA736102DB1494F009397FC /* Build configuration list for PBXNativeTarget "recorder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7FA7360D2DB1494F009397FC /* Debug */,
+				7FA7360E2DB1494F009397FC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		7FA7B83E2AEB238700363B53 /* Build configuration list for PBXProject "Gertrude-iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -850,6 +1008,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0FAAAEC02D4BCFDF008EF174 /* XCLocalSwiftPackageReference "lib-ios" */;
 			productName = LibApp;
+		};
+		7FA736112DB15D3B009397FC /* LibRecorder */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LibRecorder;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
