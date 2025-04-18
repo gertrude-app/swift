@@ -18,6 +18,7 @@ public struct IOSReducer {
     @Dependency(\.date.now) var now
     @Dependency(\.locale) var locale
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.recorder) var recorder
   }
 
   @ObservationIgnored
@@ -615,6 +616,9 @@ public struct IOSReducer {
             deps.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
           }
+          if !deps.recorder.ensureScreenshotsDir() {
+            // TODO: log
+          }
         },
         // handle first launch
         .run { [deps = self.deps] send in
@@ -793,6 +797,17 @@ public struct IOSReducer {
           await send(.programmatic(.receivedSuspensionUpdate(decision)))
           if decision != .pending { return }
           count += 1
+        }
+      }
+    case .requestSuspension(.startSuspensionTapped(let seconds)):
+      return .run { [deps = self.deps] send in
+        for await _ in deps.clock.timer(interval: .seconds(15)) { // TODO: time
+          while let screenshot = deps.recorder.unprocessedScreenshot() {
+            try await deps.api.uploadScreenshot(screenshot.image)
+            screenshot.cleanup()
+            // without sleep, filesystem sometimes still sees last deleted file
+            try? await deps.clock.sleep(for: .milliseconds(5))
+          }
         }
       }
     default:
