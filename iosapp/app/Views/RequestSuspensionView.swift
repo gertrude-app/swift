@@ -1,10 +1,13 @@
 import ComposableArchitecture
 import LibApp
+import ReplayKit
 import SwiftUI
 
 struct RequestSuspensionView: View {
   @Bindable var store: StoreOf<RequestSuspension>
   @State private var _comment: String = ""
+
+  private let broadcastPicker = RPSystemBroadcastPickerView()
 
   var comment: String? {
     guard !self._comment.isEmpty else { return nil }
@@ -46,7 +49,14 @@ struct RequestSuspensionView: View {
           Text("Suspension granted for \(duration) seconds")
         }
         BigButton("Start suspension", type: .button {
+          // TODO: need to hook into start of broadcast, not tap
           self.store.send(.startSuspensionTapped(duration))
+          self.broadcastPicker.preferredExtension = "com.netrivet.gertrude-ios.app.recorder"
+          self.broadcastPicker.showsMicrophoneButton = false
+          // This workaround displays the prompt while minimizing encumbrance with UIKit.
+          for subview in self.broadcastPicker.subviews where subview is UIButton {
+            (subview as? UIButton)?.sendActions(for: .touchUpInside)
+          }
         })
       }
     case .suspended:
