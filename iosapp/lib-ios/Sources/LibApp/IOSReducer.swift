@@ -644,6 +644,11 @@ public struct IOSReducer {
         // safeguard in case app crashed trying to fill the disk
         .run { [deps = self.deps] send in
           await deps.device.deleteCacheFillDir()
+        },
+        .run { [deps = self.deps] send in
+          for await event in deps.recorder.events() {
+            await send(.programmatic(.receivedScreenRecordingEvent(event)))
+          }
         }
       )
 
@@ -771,6 +776,9 @@ public struct IOSReducer {
     case .suspensionRequestExpired:
       state.pendingSuspensionId = nil
       return .none
+
+    case .receivedScreenRecordingEvent:
+      return .none
     }
   }
 
@@ -805,7 +813,7 @@ public struct IOSReducer {
           while let screenshot = deps.recorder.unprocessedScreenshot() {
             try await deps.api.uploadScreenshot(screenshot.image)
             screenshot.cleanup()
-            // without sleep, filesystem sometimes still sees last deleted file
+            // prevent filesystem from seeing cleaned up file
             try? await deps.clock.sleep(for: .milliseconds(5))
           }
         }

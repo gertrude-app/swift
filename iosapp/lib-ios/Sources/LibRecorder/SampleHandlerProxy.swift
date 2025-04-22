@@ -15,20 +15,24 @@ public struct SampleHandlerProxy {
 
   public init() {}
 
+  // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
   public func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
-    // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
+    self.recorder.emit(.broadcastStarted)
   }
 
+  // User has requested to pause the broadcast. Samples will stop being delivered.
   public func broadcastPaused() {
-    // User has requested to pause the broadcast. Samples will stop being delivered.
+    self.recorder.emit(.broadcastPaused)
   }
 
+  // User has requested to resume the broadcast. Samples delivery will resume.
   public func broadcastResumed() {
-    // User has requested to resume the broadcast. Samples delivery will resume.
+    self.recorder.emit(.broadcastResumed)
   }
 
+  // User has requested to finish the broadcast.
   public func broadcastFinished() {
-    // User has requested to finish the broadcast.
+    self.recorder.emit(.broadcastFinished)
   }
 
   public mutating func shouldUploadBuffer() -> Bool {
