@@ -109,19 +109,23 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await GetAdmin.resolve(in: context(admin))
 
-    expect(output).toEqual(.init(
-      id: admin.id,
-      email: admin.email.rawValue,
-      subscriptionStatus: .paid,
-      notifications: [.init(
-        id: notification.id,
-        trigger: notification.trigger,
-        methodId: notification.methodId
-      )],
-      verifiedNotificationMethods: [.init(id: method.id, config: method.config)],
-      hasAdminChild: false,
-      monthlyPriceInDollars: 15
-    ))
+    expect(output).toEqual(
+      .init(
+        id: admin.id,
+        email: admin.email.rawValue,
+        subscriptionStatus: .paid,
+        notifications: [
+          .init(
+            id: notification.id,
+            trigger: notification.trigger,
+            methodId: notification.methodId
+          ),
+        ],
+        verifiedNotificationMethods: [.init(id: method.id, config: method.config)],
+        hasAdminChild: false,
+        monthlyPriceInDollars: 15
+      )
+    )
   }
 
   func testCreatePendingMethod_Text() async throws {
@@ -146,10 +150,12 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     expect(preConfirm).toBeNil()
 
     // check that text was sent
-    expect(sent.texts).toEqual([.init(
-      to: "+12345678901",
-      message: "Your verification code is 987654"
-    )])
+    expect(sent.texts).toEqual([
+      .init(
+        to: "+12345678901",
+        message: "Your verification code is 987654"
+      ),
+    ])
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
@@ -254,10 +260,12 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testCreateNewAdminNotification() async throws {
     let admin = try await self.admin()
-    let method = try await self.db.create(AdminVerifiedNotificationMethod(
-      parentId: admin.model.id,
-      config: .email(email: "foo@bar.com")
-    ))
+    let method = try await self.db.create(
+      AdminVerifiedNotificationMethod(
+        parentId: admin.model.id,
+        config: .email(email: "foo@bar.com")
+      )
+    )
 
     let output = try await SaveNotification.resolve(
       with: .init(id: .init(), isNew: true, methodId: method.id, trigger: .unlockRequestSubmitted),
@@ -347,19 +355,25 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testUpdateAdminNotification() async throws {
     let admin = try await self.admin()
-    let email = try await self.db.create(AdminVerifiedNotificationMethod(
-      parentId: admin.model.id,
-      config: .email(email: "foo@bar.com")
-    ))
-    let text = try await self.db.create(AdminVerifiedNotificationMethod(
-      parentId: admin.model.id,
-      config: .text(phoneNumber: "1234567890")
-    ))
-    let notification = try await self.db.create(AdminNotification(
-      parentId: admin.model.id,
-      methodId: email.id,
-      trigger: .unlockRequestSubmitted
-    ))
+    let email = try await self.db.create(
+      AdminVerifiedNotificationMethod(
+        parentId: admin.model.id,
+        config: .email(email: "foo@bar.com")
+      )
+    )
+    let text = try await self.db.create(
+      AdminVerifiedNotificationMethod(
+        parentId: admin.model.id,
+        config: .text(phoneNumber: "1234567890")
+      )
+    )
+    let notification = try await self.db.create(
+      AdminNotification(
+        parentId: admin.model.id,
+        methodId: email.id,
+        trigger: .unlockRequestSubmitted
+      )
+    )
 
     let output = try await SaveNotification.resolve(
       with: .init(
@@ -405,15 +419,13 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     ])
   }
 
-  func testGetAdminKeychains() async throws {
+  func testGetAdminKeychain() async throws {
     let admin = try await self.admin().withKeychain()
-    let listOutput = try await GetAdminKeychains.resolve(in: context(admin))
-    let singleOutput = try await GetAdminKeychain.resolve(
+    let output = try await GetAdminKeychain.resolve(
       with: admin.keychain.id,
       in: context(admin)
     )
-
-    let expected = GetAdminKeychains.AdminKeychain(
+    let expected = GetAdminKeychain.Output(
       summary: KeychainSummary(
         id: admin.keychain.id,
         parentId: admin.id,
@@ -425,8 +437,55 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
       keys: [.init(from: admin.key, keychainId: admin.keychain.id)]
     )
 
-    expect(listOutput).toEqual([expected])
-    expect(singleOutput).toEqual(expected)
+    expect(output).toEqual(expected)
+  }
+
+  func testGetAdminKeychains() async throws {
+    let admin = try await self.admin().withKeychain()
+
+    // child with keychain assigned
+    let littleJimmy = try await self.db.create(
+      User(parentId: admin.model.id, name: "Little Jimmy")
+    )
+    try await self.db.create(
+      UserKeychain(childId: littleJimmy.id, keychainId: admin.keychain.id)
+    )
+
+    // child without keychain assigned
+    let sally = try await self.db.create(
+      User(parentId: admin.model.id, name: "Sally")
+    )
+
+    let output = try await GetAdminKeychains.resolve(in: context(admin))
+
+    let expectedUsers = [
+      GetAdminKeychains.Child(
+        id: littleJimmy.id, name: littleJimmy.name
+      ),
+      GetAdminKeychains.Child(
+        id: sally.id, name: sally.name
+      ),
+    ]
+
+    let expectedKeychain = GetAdminKeychains.AdminKeychain(
+      summary: KeychainSummary(
+        id: admin.keychain.id,
+        parentId: admin.id,
+        name: admin.keychain.name,
+        description: admin.keychain.description,
+        isPublic: admin.keychain.isPublic,
+        numKeys: 1
+      ),
+      children: [littleJimmy.id], // only littleJimmy, because sally doesn't have the keychain
+      keys: [.init(from: admin.key, keychainId: admin.keychain.id)]
+    )
+
+    expect(output).toEqual(
+      GetAdminKeychains.Output(
+        keychains: [expectedKeychain],
+        children: expectedUsers
+      )
+    )
   }
 
   func skip_testGetSelectableKeychains() async throws {
@@ -445,10 +504,12 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await GetSelectableKeychains.resolve(in: context(admin))
 
-    await expect(output).toEqual(try .init(
-      own: [.init(from: admin.keychain)],
-      public: [.init(from: publicKeychain)]
-    ))
+    await expect(output).toEqual(
+      try .init(
+        own: [.init(from: admin.keychain)],
+        public: [.init(from: publicKeychain)]
+      )
+    )
   }
 
   func testSaveExistingKeychain() async throws {
@@ -538,8 +599,9 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let list = try await GetUnlockRequests.resolve(in: context(user.admin))
     expect(list).toEqual([output])
 
-    let userList = try await GetUserUnlockRequests
-      .resolve(with: user.id, in: context(user.admin))
+    let userList =
+      try await GetUserUnlockRequests
+        .resolve(with: user.id, in: context(user.admin))
     expect(userList).toEqual([output])
   }
 
@@ -568,8 +630,9 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
       },
     ])
 
-    let output = try await LatestAppVersions
-      .resolve(in: context(self.admin()))
+    let output =
+      try await LatestAppVersions
+        .resolve(in: context(self.admin()))
 
     expect(output).toEqual(.init(stable: "2.2.0", beta: "2.5.2", canary: "3.0.0"))
   }
