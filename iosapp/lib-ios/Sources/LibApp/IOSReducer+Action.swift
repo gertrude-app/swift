@@ -25,6 +25,7 @@ public extension IOSReducer {
 
     public enum Programmatic: Equatable {
       case appDidLaunch
+      case appWillTerminate
       case setFirstLaunch(Date)
       case setScreen(Screen)
       case authorizationSucceeded

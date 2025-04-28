@@ -208,7 +208,6 @@ public final class FilterProxy: Sendable {
   }
 
   func readRules() {
-    self.deps.logger.log("read rules")
     // defensively set to check again quickly...
     self.heartbeatDurations.withLock { $0.current = .seconds(10) }
     guard let loadedMode = self.loadRules() else {

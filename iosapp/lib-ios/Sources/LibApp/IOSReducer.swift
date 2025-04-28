@@ -27,6 +27,7 @@ public struct IOSReducer {
   enum CancelId {
     case cacheClearUpdates
     case screenshotUploads
+    case recorderEvents
   }
 
   public init() {}
@@ -650,7 +651,14 @@ public struct IOSReducer {
           for await event in deps.recorder.events() {
             await send(.programmatic(.receivedScreenRecordingEvent(event)))
           }
-        }
+        }.cancellable(id: CancelId.recorderEvents, cancelInFlight: true)
+      )
+
+    case .appWillTerminate:
+      return .merge(
+        .cancel(id: CancelId.recorderEvents),
+        .cancel(id: CancelId.cacheClearUpdates),
+        .cancel(id: CancelId.screenshotUploads)
       )
 
     case .setFirstLaunch(let date):

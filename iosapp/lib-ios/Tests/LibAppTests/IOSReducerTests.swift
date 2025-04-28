@@ -256,6 +256,7 @@ final class IOSReducerTests: XCTestCase {
     }
 
     expect(ratingRequestInvocations.value).toEqual(1)
+    await store.send(.programmatic(.appWillTerminate))
   }
 
   @MainActor
@@ -318,6 +319,8 @@ final class IOSReducerTests: XCTestCase {
       .disabledBlockGroups([]),
       .protectionMode(.normal([.urlContains("GIFs")])),
     ])
+
+    await store.send(.programmatic(.appWillTerminate))
   }
 
   @MainActor
@@ -456,6 +459,7 @@ final class IOSReducerTests: XCTestCase {
     await store.receive(.programmatic(.setScreen(.running(state: .notConnected)))) {
       $0.screen = .running(state: .notConnected)
     }
+    await store.send(.programmatic(.appWillTerminate))
   }
 
   func testFirstLaunchSupervisedSuccess() async throws {
@@ -487,6 +491,8 @@ final class IOSReducerTests: XCTestCase {
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
     }
+
+    await store.send(.programmatic(.appWillTerminate))
   }
 
   @MainActor
