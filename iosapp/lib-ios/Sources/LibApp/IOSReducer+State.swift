@@ -1,6 +1,7 @@
 // swiftformat:disable extensionAccessControl
 import ComposableArchitecture
 import LibClients
+import TaggedTime
 
 extension IOSReducer {
   @Reducer(state: .equatable, action: .equatable)
@@ -15,7 +16,13 @@ extension IOSReducer {
     public var screen: Screen = .launching
     public var disabledBlockGroups: [BlockGroup] = []
     public var onboarding: OnboardingState = .init()
-    public var pendingSuspensionId: UUID?
+    public var suspension: SuspensionState = .none
+
+    public enum SuspensionState: Equatable {
+      case none
+      case pendingBroadcastStart(duration: Seconds<Int>)
+      case active(until: Date)
+    }
 
     @Presents
     public var destination: Destination.State?
