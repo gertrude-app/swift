@@ -26,6 +26,7 @@ public struct IOSReducer {
 
   enum CancelId {
     case cacheClearUpdates
+    case screenshotUploads
   }
 
   public init() {}
@@ -774,8 +775,42 @@ public struct IOSReducer {
       return .none
 
     case .suspensionRequestExpired:
-      state.pendingSuspensionId = nil
       return .none
+
+    case .receivedScreenRecordingEvent(.broadcastStarted):
+      guard case .pendingBroadcastStart(let duration) = state.suspension else {
+        return .none
+      }
+      let expiration = self.deps.now + .seconds(duration.rawValue)
+      state.suspension = .active(until: expiration)
+      return .merge(
+        .run { [deps = self.deps] send in
+          await deps.filter.suspend(expiration)
+        },
+        .run { [deps = self.deps] send in
+          for await _ in deps.clock.timer(interval: .seconds(15)) { // TODO: time
+            var numProcessed = 0
+            while let screenshot = deps.recorder.unprocessedScreenshot() {
+              try await deps.api.uploadScreenshot(screenshot.image)
+              screenshot.cleanup()
+              numProcessed += 1
+              // prevent filesystem from seeing the same cleaned up file
+              try? await deps.clock.sleep(for: .milliseconds(5))
+            }
+            if numProcessed == 0 {
+              await send(.programmatic(.endSuspension))
+            }
+          }
+        }.cancellable(id: CancelId.screenshotUploads, cancelInFlight: true)
+      )
+
+    case .endSuspension, .receivedScreenRecordingEvent(.broadcastFinished):
+      return .merge(
+        .run { [deps = self.deps] send in
+          await deps.filter.resume()
+        },
+        .cancel(id: CancelId.screenshotUploads)
+      )
 
     case .receivedScreenRecordingEvent:
       return .none
@@ -791,7 +826,6 @@ public struct IOSReducer {
         deps.storage.saveConnection(data: data)
       }
     case .requestSuspension(.requestSucceeded(let id)):
-      state.pendingSuspensionId = id
       state.screen = .running(state: .connected(waitingForSuspension: true))
       return .run { [deps = self.deps] send in
         // TODO: add backoff, better expiration, etc.
@@ -808,16 +842,8 @@ public struct IOSReducer {
         }
       }
     case .requestSuspension(.startSuspensionTapped(let seconds)):
-      return .run { [deps = self.deps] send in
-        for await _ in deps.clock.timer(interval: .seconds(15)) { // TODO: time
-          while let screenshot = deps.recorder.unprocessedScreenshot() {
-            try await deps.api.uploadScreenshot(screenshot.image)
-            screenshot.cleanup()
-            // prevent filesystem from seeing cleaned up file
-            try? await deps.clock.sleep(for: .milliseconds(5))
-          }
-        }
-      }
+      state.suspension = .pendingBroadcastStart(duration: seconds)
+      return .none
     default:
       return .none
     }
