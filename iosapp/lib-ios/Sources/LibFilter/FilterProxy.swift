@@ -69,6 +69,8 @@ public final class FilterProxy: Sendable {
         self.deps.logger.log("read \(rules.count) (onboarding) rules")
       case .emergencyLockdown:
         self.deps.logger.log("unexpected stored emergencyLockdown mode")
+      case .suspended(until: let expiration, restoring: _):
+        self.deps.logger.log("read filter suspended, resuming: \(expiration)")
       }
       return mode
     } catch {
@@ -83,9 +85,35 @@ public final class FilterProxy: Sendable {
     bundleId: String? = nil,
     flowType: FlowType? = nil
   ) -> FlowVerdict {
-    if hostname == "read-rules.gertrude.app" {
+    if hostname == "read-rules.xpc.gertrude.app" {
       self.readRules()
       return .drop
+    }
+
+    #if DEBUG
+      let desc = self.protectionMode.withLock { $0.shortDesc }
+      self.deps.logger.log("Decide flow, rules: \(desc)")
+    #endif
+
+    if hostname == "suspend-filter.xpc.gertrude.app",
+       let expiration = self.deps.storage.loadDate(forKey: .filterSuspensionExpirationKey),
+       expiration > self.deps.now,
+       isGertrude(bundleId) {
+      self.deps.logger.log("suspending filter until \(expiration)")
+      self.protectionMode.withLock { protectionMode in
+        if !protectionMode.isSuspended {
+          protectionMode = .suspended(until: expiration, restoring: protectionMode)
+        }
+      }
+      return .drop
+    }
+
+    if hostname == "resume-filter.xpc.gertrude.app", isGertrude(bundleId),
+       case .suspended(until: _, restoring: let previous) = self.protectionMode.withLock({ $0 }) {
+      self.deps.logger.log("resuming filter")
+      self.deps.storage.removeObject(forKey: .filterSuspensionExpirationKey)
+      self.protectionMode.withLock { $0 = previous }
+      return self.decideFlow(hostname: hostname, url: url, bundleId: bundleId, flowType: flowType)
     }
 
     // NB: this _should_ be extremely fast, because
@@ -95,6 +123,20 @@ public final class FilterProxy: Sendable {
     let protectionMode = self.protectionMode.withLock { $0 }
 
     guard let rules = protectionMode.rules else {
+      if case .suspended(until: let expiration, restoring: let previous) = protectionMode {
+        if expiration < self.deps.now {
+          self.deps.storage.removeObject(forKey: .filterSuspensionExpirationKey)
+          self.protectionMode.withLock { $0 = previous }
+          return self.decideFlow(
+            hostname: hostname,
+            url: url,
+            bundleId: bundleId,
+            flowType: flowType
+          )
+        }
+        return .allow
+      }
+
       return self.decideLockdownFlow(
         hostname: hostname,
         url: url,
@@ -166,12 +208,19 @@ public final class FilterProxy: Sendable {
   }
 
   func readRules() {
+    self.deps.logger.log("read rules")
     // defensively set to check again quickly...
     self.heartbeatDurations.withLock { $0.current = .seconds(10) }
     guard let loadedMode = self.loadRules() else {
       return
     }
-    self.protectionMode.withLock { $0 = loadedMode }
+    self.protectionMode.withLock { currentMode in
+      if case .suspended(let expiration, _) = currentMode {
+        currentMode = .suspended(until: expiration, restoring: loadedMode)
+      } else {
+        currentMode = loadedMode
+      }
+    }
     if loadedMode != .emergencyLockdown {
       // ...only setting normal if we get valid rules
       self.heartbeatDurations.withLock { $0.current = $0.normal }
@@ -200,6 +249,11 @@ public extension FilterProxy {
 }
 
 // helpers
+
+private func isGertrude(_ bundleId: String?) -> Bool {
+  guard let bundleId else { return false }
+  return bundleId == .gertrudeBundleIdLong || bundleId == .gertrudeBundleIdShort
+}
 
 public extension String {
   static let gertrudeBundleIdLong = "WFN83LM943.com.netrivet.gertrude-ios.app"
