@@ -37,6 +37,7 @@ public extension IOSReducer {
       case receivedSuspensionUpdate(PollFilterSuspensionDecision.Output)
       case receivedScreenRecordingEvent(RecorderEvent)
       case suspensionRequestExpired
+      case endSuspension
     }
   }
 }

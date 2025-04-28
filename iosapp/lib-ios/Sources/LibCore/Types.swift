@@ -1,10 +1,12 @@
 import Foundation
 import GertieIOS
 
-public enum ProtectionMode {
+// TODO: will the json represation be stable across versions?
+public indirect enum ProtectionMode {
   case onboarding([BlockRule])
   case normal([BlockRule])
   case emergencyLockdown
+  case suspended(until: Date, restoring: ProtectionMode)
 }
 
 public extension ProtectionMode {
@@ -12,7 +14,7 @@ public extension ProtectionMode {
     switch self {
     case .normal(let rules):
       rules
-    case .onboarding, .emergencyLockdown:
+    case .onboarding, .emergencyLockdown, .suspended:
       nil
     }
   }
@@ -23,8 +25,30 @@ public extension ProtectionMode {
       rules
     case .normal(let rules):
       rules
-    case .emergencyLockdown:
+    case .emergencyLockdown, .suspended:
       nil
+    }
+  }
+
+  var isSuspended: Bool {
+    switch self {
+    case .suspended:
+      true
+    default:
+      false
+    }
+  }
+
+  var shortDesc: String {
+    switch self {
+    case .onboarding(let rules):
+      ".onboarding(\(rules.count))"
+    case .normal(let rules):
+      ".normal(\(rules.count))"
+    case .emergencyLockdown:
+      ".emergencyLockdown"
+    case .suspended(let expiration, restoring: let rules):
+      ".suspended(\(expiration), restoring: \(rules.shortDesc))"
     }
   }
 }
@@ -70,6 +94,10 @@ public extension String {
 
   static var protectionModeStorageKey: String {
     "ProtectionMode.v1.3.0"
+  }
+
+  static var filterSuspensionExpirationKey: String {
+    "FilterSuspensionExpiration.v1.5.0"
   }
 
   static var connectionStorageKey: String {
