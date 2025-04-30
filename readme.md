@@ -1,5 +1,6 @@
 ## Gertrude Swift Monorepo
-
+### Sub Projects
+For project-specific information, see the readme.md in the `api`, `iosapp`, and `macapp` project directories.
 ### Contributing
 The source code will make a lot more sense after you learn the [Composable Architecture](https://www.pointfree.co/collections/composable-architecture/composable-architecture-1-0). 
 #### Tools
