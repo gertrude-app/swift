@@ -54,9 +54,11 @@ struct Admin: Codable, Sendable {
 extension Admin {
   var stripePriceId: String {
     switch self.monthlyPrice.rawValue {
-    case 1500:
+    case 1500: // new vinci-price, Feb 2025
       "price_1QooP1GKRdhETuKAcVawow7B"
-    default:
+    case 1000: // GHC conf special
+      "price_1RJbTrGKRdhETuKAkI5OO1NB"
+    default: // legacy price
       "price_1M9xZYGKRdhETuKA22aYJ4fI"
     }
   }
