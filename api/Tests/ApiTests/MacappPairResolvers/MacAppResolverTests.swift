@@ -9,7 +9,7 @@ import XExpect
 
 final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   func testCreateSuspendFilterRequest() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let id = try await CreateSuspendFilterRequest_v2.resolve(
       with: .init(duration: 1111, comment: "test"),
@@ -41,7 +41,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testOneFailedNotificationDoesntBlockRest() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     // admin gets two notifications on suspend filter request
     let slack = try await self.db.create(AdminVerifiedNotificationMethod(
@@ -83,7 +83,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreateKeystrokeLines() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let (uuid, output) = try await withUUID {
       try await CreateKeystrokeLines.resolve(
@@ -105,7 +105,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testInsertKeystrokeLineWithNullByte() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let (uuid, output) = try await withUUID {
       try await CreateKeystrokeLines.resolve(
@@ -126,7 +126,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testCreateSignedScreenshotUpload() async throws {
     let beforeCount = try await self.db.count(Screenshot.self)
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let output = try await withDependencies {
       $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
@@ -144,7 +144,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreateSignedScreenshotUploadWithDate() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let uuids = MockUUIDs()
 
     try await withDependencies {

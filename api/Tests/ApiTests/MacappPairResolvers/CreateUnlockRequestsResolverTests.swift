@@ -7,7 +7,7 @@ import XExpect
 
 final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable {
   func testCreateUnlockRequests_v3() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let blocked = CreateUnlockRequests_v3.Input.BlockedRequest(
       bundleId: "com.example.app",
       url: "https://example.com"

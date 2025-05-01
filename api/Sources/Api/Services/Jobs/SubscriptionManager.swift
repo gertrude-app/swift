@@ -175,7 +175,7 @@ private extension Admin {
   func completedOnboarding(_ db: any DuetSQL.Client) async throws -> Bool {
     let children = try await users(in: db)
     let childDevices = try await children.concurrentMap {
-      try await $0.devices(in: db)
+      try await $0.computerUsers(in: db)
     }.flatMap(\.self)
     return !childDevices.isEmpty
   }
