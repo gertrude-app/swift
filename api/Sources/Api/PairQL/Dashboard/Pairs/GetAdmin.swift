@@ -43,7 +43,7 @@ extension GetAdmin: NoInputResolver {
     async let notifications = admin.notifications(in: context.db)
     async let methods = admin.verifiedNotificationMethods(in: context.db)
     async let hasAdminChild = try await admin.users(in: context.db)
-      .concurrentMap { try await $0.devices(in: context.db) }
+      .concurrentMap { try await $0.computerUsers(in: context.db) }
       .flatMap(\.self)
       .contains { $0.isAdmin == true }
 

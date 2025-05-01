@@ -117,7 +117,7 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testChildContextCreated() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let response = try await PairQLRoute.respond(
       to: .macApp(.userAuthed(

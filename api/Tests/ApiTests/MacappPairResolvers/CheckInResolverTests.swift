@@ -111,7 +111,7 @@ final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
     id.identifiedAppId = app.id
     try await self.db.create(id)
 
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let output = try await CheckIn.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
       in: user.context
@@ -120,7 +120,7 @@ final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testUserWithNoKeychainsDoesNotGetAutoIncluded_v1() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     try await self.createAutoIncludeKeychain()
 
     let output = try await CheckIn.resolve(
@@ -131,7 +131,7 @@ final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testUserWithAtLeastOneKeyGetsAutoIncluded_v1() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let admin = try await self.admin().withKeychain()
     try await self.db.create(UserKeychain(childId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
@@ -144,7 +144,7 @@ final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testIncludesResolvedFilterSuspension_v1() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let susp = try await self.db.create(MacApp.SuspendFilterRequest.mock {
       $0.computerUserId = user.device.id
       $0.status = .accepted
@@ -179,7 +179,7 @@ final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDoesNotIncludeUnresolvedSuspension_v1() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let susp = try await self.db.create(MacApp.SuspendFilterRequest.mock {
       $0.computerUserId = user.device.id
       $0.status = .pending // <-- still pending!
@@ -198,7 +198,7 @@ final class CheckInResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testIncludesResolvedUnlockRequests_v1() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let unlock1 = UnlockRequest.mock {
       $0.computerUserId = user.device.id
       $0.status = .pending // <-- pending, will not be returned
