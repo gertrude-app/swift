@@ -1,4 +1,6 @@
 import Dependencies
+import FamilyControls
+import ManagedSettings
 import Photos
 import ReplayKit
 import SwiftUI
@@ -12,6 +14,10 @@ struct RunningView: View {
   @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
   @State private var isRecording = UIScreen.main.isCaptured
+
+  let settings = ManagedSettingsStore(named: ManagedSettingsStore.Name("com.ftc.gertrude-ios.app"))
+  @State var selection = FamilyActivitySelection()
+  @State var isAppPickerPresented = false
 
   private let broadcastPicker = RPSystemBroadcastPickerView()
 
@@ -63,6 +69,13 @@ struct RunningView: View {
         BigButton(buttonTitle, type: .button { self.buttonTapped() }, variant: .primary)
           .frame(maxWidth: 500)
           .padding(30)
+        BigButton(
+          "Choose Apps to Always Allow",
+          type: .button { self.isAppPickerPresented = true },
+          variant: .primary
+        )
+        .frame(maxWidth: 500)
+        .padding(30)
 
         Link(destination: URL(string: "https://gertrude.app")!) {
           HStack {
@@ -91,12 +104,31 @@ struct RunningView: View {
       .multilineTextAlignment(.center)
       .padding(30)
     }
+    .onAppear(perform: self.loadSelection)
     .onReceive(
       NotificationCenter.default
         .publisher(for: UIScreen.capturedDidChangeNotification)
     ) { _ in
       // RecordingStatus.swift doesn't know about the change yet, so consult the UIScreen.
       self.isRecording = UIScreen.main.isCaptured
+    }
+    // TODO: Add slower paced onboarding UI guidance on what is happening and to be sure to allow
+    // streaming apps since because of DRM the content cannot be visually monitored.
+    // YouTube CAN be monitored and should never be always-allowed.
+    // And link guidance on how to setup child accounts for those apps. and PIN for adult accounts.
+    .familyActivityPicker(
+      headerText: "Always Allowed Apps",
+      isPresented: self.$isAppPickerPresented,
+      selection: self.$selection
+    )
+    .onChange(of: self.selection) {
+      self.settings.shield.applicationCategories = .all(except: self.selection.applicationTokens)
+    }
+  }
+
+  private func loadSelection() {
+    if case .all(except: let tokens) = settings.shield.applicationCategories {
+      self.selection.applicationTokens = tokens
     }
   }
 
