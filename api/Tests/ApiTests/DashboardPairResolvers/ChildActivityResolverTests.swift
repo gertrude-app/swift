@@ -5,7 +5,7 @@ import XExpect
 
 final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
   func testFlagActivityItems() async throws {
-    let child = try await self.userWithDevice()
+    let child = try await self.childWithComputer()
     var screenshot = Screenshot.random
     screenshot.computerUserId = child.device.id
     screenshot.flagged = nil
@@ -48,7 +48,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testGetActivityDay() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     var screenshot = Screenshot.random
     screenshot.computerUserId = user.device.id
     screenshot.createdAt = .reference - 1
@@ -100,7 +100,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
   func testCombinedUserActivity() async throws {
     let twoDaysAgo = Date.reference - .days(2)
 
-    let child1 = try await self.userWithDevice()
+    let child1 = try await self.childWithComputer()
     var screenshot = Screenshot.mock
     screenshot.computerUserId = child1.device.id
     screenshot.createdAt = .reference - 5
@@ -115,7 +115,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
     keystrokeLine.createdAt = .reference - 4
     try await self.db.create(keystrokeLine)
 
-    var child2 = try await self.userWithDevice()
+    var child2 = try await self.childWithComputer()
     child2.model.parentId = child1.parentId
     try await self.db.update(child2.model)
     var screenshot2 = Screenshot.mock
@@ -213,7 +213,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDeleteActivityItems_v2() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     var screenshot = Screenshot.mock
     screenshot.computerUserId = user.device.id
     var flagged = Screenshot.mock

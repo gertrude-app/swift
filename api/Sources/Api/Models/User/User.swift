@@ -46,6 +46,12 @@ extension User {
       .all(in: db)
   }
 
+  func iosDevices(in db: any DuetSQL.Client) async throws -> [IOSApp.Device] {
+    try await IOSApp.Device.query()
+      .where(.childId == self.id)
+      .all(in: db)
+  }
+
   func keychains(in db: any DuetSQL.Client) async throws -> [Keychain] {
     let pivots = try await UserKeychain.query()
       .where(.childId == self.id)
