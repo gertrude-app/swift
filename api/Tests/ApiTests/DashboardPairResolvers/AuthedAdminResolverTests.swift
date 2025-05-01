@@ -280,7 +280,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDeletingLastUserDeviceDeletesDevice() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     _ = try await DeleteEntity.resolve(
       with: .init(id: user.device.id.rawValue, type: .userDevice),
       in: context(user.admin)
@@ -290,7 +290,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDeletingUserDeletesOrphanedDevice() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     _ = try await DeleteEntity.resolve(
       with: .init(id: user.id.rawValue, type: .user),
       in: context(user.admin)
@@ -497,7 +497,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testGetSuspendFilterRequest() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     var request = MacApp.SuspendFilterRequest.random
     request.computerUserId = user.device.id
     try await self.db.create(request)
@@ -515,7 +515,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testGetUnlockRequests() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     var request = UnlockRequest.mock
     request.computerUserId = user.device.id

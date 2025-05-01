@@ -5,31 +5,43 @@ import XExpect
 
 final class UserActivityResolverTests: ApiTestCase, @unchecked Sendable {
   func testGetActivityDay() async throws {
-    let user = try await self.userWithDevice()
-    var screenshot = Screenshot.random
-    screenshot.computerUserId = user.device.id
-    screenshot.createdAt = .reference - 1
-    try await self.db.create(screenshot)
+    let child = try await self.childWithComputer()
+    let iosDevice = try await self.db.create(IOSApp.Device.mock {
+      $0.childId = child.model.id
+    })
+
+    var macScreenshot = Screenshot.random
+    macScreenshot.computerUserId = child.device.id
+    macScreenshot.createdAt = .reference - 2
+
+    var iosScreenshot = Screenshot.random
+    iosScreenshot.iosDeviceId = iosDevice.id
+    iosScreenshot.createdAt = .reference - 1
+    iosScreenshot.computerUserId = nil
+    iosScreenshot.filterSuspended = true
+    try await self.db.create([macScreenshot, iosScreenshot])
+
     var keystrokeLine = KeystrokeLine.random
-    keystrokeLine.computerUserId = user.device.id
+    keystrokeLine.computerUserId = child.device.id
     keystrokeLine.createdAt = .reference
     try await self.db.create(keystrokeLine)
+
     let twoDaysAgo = Date.reference - .days(2)
 
     let output = try await UserActivityFeed.resolve(
       with: .init(
-        userId: user.id,
+        userId: child.id,
         range: .init(
           start: twoDaysAgo.isoString,
           end: Date.reference.isoString
         )
       ),
-      in: context(user.admin)
+      in: context(child.admin)
     )
 
-    expect(output.userName).toEqual(user.name)
+    expect(output.userName).toEqual(child.name)
     expect(output.numDeleted).toEqual(0)
-    expect(output.items).toHaveCount(2)
+    expect(output.items).toHaveCount(3)
 
     expect(output.items.first?.keystrokeLine).toEqual(.init(
       id: keystrokeLine.id,
@@ -40,14 +52,24 @@ final class UserActivityResolverTests: ApiTestCase, @unchecked Sendable {
       createdAt: keystrokeLine.createdAt
     ))
 
+    expect(output.items[1].screenshot).toEqual(.init(
+      id: iosScreenshot.id,
+      ids: [iosScreenshot.id],
+      url: iosScreenshot.url,
+      width: iosScreenshot.width,
+      height: iosScreenshot.height,
+      duringSuspension: true,
+      createdAt: iosScreenshot.createdAt
+    ))
+
     expect(output.items.last?.screenshot).toEqual(.init(
-      id: screenshot.id,
-      ids: [screenshot.id],
-      url: screenshot.url,
-      width: screenshot.width,
-      height: screenshot.height,
-      duringSuspension: screenshot.filterSuspended,
-      createdAt: screenshot.createdAt
+      id: macScreenshot.id,
+      ids: [macScreenshot.id],
+      url: macScreenshot.url,
+      width: macScreenshot.width,
+      height: macScreenshot.height,
+      duringSuspension: macScreenshot.filterSuspended,
+      createdAt: macScreenshot.createdAt
     ))
   }
 
@@ -55,7 +77,7 @@ final class UserActivityResolverTests: ApiTestCase, @unchecked Sendable {
   func testCombinedUserActivity() async throws {
     let twoDaysAgo = Date.reference - .days(2)
 
-    let user1 = try await self.userWithDevice()
+    let user1 = try await self.childWithComputer()
     var screenshot = Screenshot.random
     screenshot.computerUserId = user1.device.id
     screenshot.createdAt = .reference - 5
@@ -65,7 +87,7 @@ final class UserActivityResolverTests: ApiTestCase, @unchecked Sendable {
     keystrokeLine.createdAt = .reference - 4
     try await self.db.create(keystrokeLine)
 
-    var user2 = try await self.userWithDevice()
+    var user2 = try await self.childWithComputer()
     user2.model.parentId = user1.parentId
     try await self.db.update(user2.model)
     var screenshot2 = Screenshot.random
@@ -142,7 +164,7 @@ final class UserActivityResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDeleteActivityItems_v2() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     var screenshot = Screenshot.random
     screenshot.computerUserId = user.device.id
     try await self.db.create(screenshot)
