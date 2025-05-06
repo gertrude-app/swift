@@ -139,25 +139,25 @@ extension ApiTestCase {
     return .init(model: child.model, device: iosDevice, token: token, parent: child.admin)
   }
 
-  func userWithDevice() async throws -> UserWithDeviceEntities {
-    let user = try await self.user()
-    let device = try await self.db.create(Device.random {
-      $0.parentId = user.admin.model.id
+  func childWithComputer() async throws -> UserWithDeviceEntities {
+    let child = try await self.user()
+    let computer = try await self.db.create(Device.random {
+      $0.parentId = child.admin.model.id
     })
-    let userDevice = try await self.db.create(UserDevice.random {
-      $0.childId = user.model.id
-      $0.computerId = device.id
+    let computerUser = try await self.db.create(UserDevice.random {
+      $0.childId = child.model.id
+      $0.computerId = computer.id
     })
     let token = try await self.db.create(UserToken(
-      childId: user.id,
-      computerUserId: userDevice.id
+      childId: child.id,
+      computerUserId: computerUser.id
     ))
     return .init(
-      model: user.model,
-      adminDevice: device,
-      device: userDevice,
+      model: child.model,
+      adminDevice: computer,
+      device: computerUser,
       token: token,
-      admin: user.admin
+      admin: child.admin
     )
   }
 }

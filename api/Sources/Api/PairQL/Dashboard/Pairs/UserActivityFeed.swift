@@ -65,11 +65,12 @@ extension UserActivityFeed: Resolver {
       throw Abort(.badRequest)
     }
 
-    let user = try await context.verifiedUser(from: input.userId)
-    let userDeviceIds = try await user.devices(in: context.db).map(\.id)
+    let child = try await context.verifiedUser(from: input.userId)
+    let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)
+    let iosDeviceIds = try await child.iosDevices(in: context.db).map(\.id)
 
     async let keystrokes = KeystrokeLine.query()
-      .where(.computerUserId |=| userDeviceIds)
+      .where(.computerUserId |=| computerUserIds)
       .where(.createdAt <= .date(before))
       .where(.createdAt > .date(after))
       .orderBy(.createdAt, .desc)
@@ -77,7 +78,7 @@ extension UserActivityFeed: Resolver {
       .all(in: context.db)
 
     async let screenshots = Screenshot.query()
-      .where(.computerUserId |=| userDeviceIds)
+      .where(.or(.computerUserId |=| computerUserIds, .iosDeviceId |=| iosDeviceIds))
       .where(.createdAt <= .date(before))
       .where(.createdAt > .date(after))
       .orderBy(.createdAt, .desc)
@@ -87,8 +88,8 @@ extension UserActivityFeed: Resolver {
     let coalesced = try await coalesce(screenshots, keystrokes)
 
     return Output(
-      userName: user.name,
-      showSuspensionActivity: user.showSuspensionActivity,
+      userName: child.name,
+      showSuspensionActivity: child.showSuspensionActivity,
       numDeleted: coalesced.lazy.filter(\.isDeleted).count,
       items: coalesced.lazy.filter(\.notDeleted)
     )

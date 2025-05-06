@@ -34,7 +34,7 @@ extension UserActivitySummaries: Resolver {
     in context: AdminContext
   ) async throws -> Output {
     let user = try await context.verifiedUser(from: input.userId)
-    let userDeviceIds = try await user.devices(in: context.db).map(\.id)
+    let userDeviceIds = try await user.computerUsers(in: context.db).map(\.id)
     let days = try await UserActivitySummaries.days(
       dateRanges: input.dateRanges,
       userDeviceIds: userDeviceIds,
