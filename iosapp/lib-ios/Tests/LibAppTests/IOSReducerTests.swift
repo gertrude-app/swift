@@ -252,7 +252,7 @@ final class IOSReducerTests: XCTestCase {
     }
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.screen = .onboarding(.happyPath(.doneQuit))
+      $0.screen = .running(state: .notConnected)
     }
 
     expect(ratingRequestInvocations.value).toEqual(1)
@@ -371,7 +371,7 @@ final class IOSReducerTests: XCTestCase {
     }
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) {
-      $0.screen = .onboarding(.happyPath(.doneQuit))
+      $0.screen = .running(state: .notConnected)
     }
 
     expect(writeReviewInvocations.value).toEqual(1)
@@ -381,7 +381,7 @@ final class IOSReducerTests: XCTestCase {
   func testSkipReviewAndRating() async throws {
     let store = store(starting: .onboarding(.happyPath(.requestAppStoreRating)))
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) {
-      $0.screen = .onboarding(.happyPath(.doneQuit))
+      $0.screen = .running(state: .notConnected)
     }
   }
 
