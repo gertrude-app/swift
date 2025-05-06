@@ -10,7 +10,6 @@
 		0F4609EE2D4BCA510038C617 /* Shake.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609E52D4BCA510038C617 /* Shake.swift */; };
 		0F4609F22D4BCA510038C617 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609EC2D4BCA510038C617 /* App.swift */; };
 		0F4609F32D4BCA510038C617 /* Animation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D32D4BCA510038C617 /* Animation.swift */; };
-		0F4609F52D4BCA510038C617 /* ExtensionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609EB2D4BCA510038C617 /* ExtensionClient.swift */; };
 		0F4609FA2D4BCA510038C617 /* ButtonScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D92D4BCA510038C617 /* ButtonScreenView.swift */; };
 		0F4609FC2D4BCA510038C617 /* App+Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609E92D4BCA510038C617 /* App+Types.swift */; };
 		0F4609FD2D4BCA510038C617 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4609D42D4BCA510038C617 /* Colors.swift */; };
@@ -93,7 +92,6 @@
 		0F4609D92D4BCA510038C617 /* ButtonScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonScreenView.swift; sourceTree = "<group>"; };
 		0F4609E52D4BCA510038C617 /* Shake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shake.swift; sourceTree = "<group>"; };
 		0F4609E92D4BCA510038C617 /* App+Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "App+Types.swift"; sourceTree = "<group>"; };
-		0F4609EB2D4BCA510038C617 /* ExtensionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionClient.swift; sourceTree = "<group>"; };
 		0F4609EC2D4BCA510038C617 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		0F5DCFD32D5425BA003E2361 /* RunningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningView.swift; sourceTree = "<group>"; };
 		0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FairiesView.swift; sourceTree = "<group>"; };
@@ -238,7 +236,6 @@
 				0F4609DA2D4BCA510038C617 /* Views */,
 				0F4609EC2D4BCA510038C617 /* App.swift */,
 				0F4609E92D4BCA510038C617 /* App+Types.swift */,
-				0F4609EB2D4BCA510038C617 /* ExtensionClient.swift */,
 				7FA7B8462AEB238700363B53 /* IOSAppEntry.swift */,
 				7F4A14502CB5843500FD6ABE /* Info.plist */,
 				7FA7B8682AEB271800363B53 /* app.entitlements */,
@@ -477,7 +474,6 @@
 				0FA657FD2D5288B700BA1254 /* ClearingCacheView.swift in Sources */,
 				0F4609F22D4BCA510038C617 /* App.swift in Sources */,
 				0F4609F32D4BCA510038C617 /* Animation.swift in Sources */,
-				0F4609F52D4BCA510038C617 /* ExtensionClient.swift in Sources */,
 				0F4609FA2D4BCA510038C617 /* ButtonScreenView.swift in Sources */,
 				0F5DCFD42D5425BF003E2361 /* RunningView.swift in Sources */,
 				0F4609FC2D4BCA510038C617 /* App+Types.swift in Sources */,

@@ -18,7 +18,7 @@ extension ExtensionClient: DependencyKey {
       #elseif os(iOS)
         do {
           #if DEBUG
-            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+            try await AuthorizationCenter.shared.requestAuthorization(for: .child)
           #else
             try await AuthorizationCenter.shared.requestAuthorization(for: .child)
           #endif

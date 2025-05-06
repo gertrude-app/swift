@@ -138,7 +138,14 @@ struct AppView: View {
       )
 
     case .onboarding(.happyPath(.doneQuit)):
-      FinishedView()
+      // Once we do account connection during onboarding, connected will be a dynamic value.
+      RunningView(store: self.store, connected: false, onBtnTap: {
+        self.store.send(.interactive(.runningBtnTapped))
+      }, onAppForeground: {
+        self.store.send(.programmatic(.requestScreenTimeAuthorization))
+      }).onShake {
+        self.store.send(.interactive(.receivedShake))
+      }
 
     case .onboarding(.authFail(.invalidAccount(.letsFigureThisOut))):
       ButtonScreenView(
@@ -393,9 +400,11 @@ struct AppView: View {
       )
 
     case .running(state: let state):
-      RunningView(store: self.store, connected: state != .notConnected) {
+      RunningView(store: self.store, connected: state != .notConnected, onBtnTap: {
         self.store.send(.interactive(.runningBtnTapped))
-      }.onShake {
+      }, onAppForeground: {
+        self.store.send(.programmatic(.requestScreenTimeAuthorization))
+      }).onShake {
         self.store.send(.interactive(.receivedShake))
       }
     }

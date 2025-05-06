@@ -39,6 +39,7 @@ public extension IOSReducer {
       case receivedScreenRecordingEvent(RecorderEvent)
       case suspensionRequestExpired
       case endSuspension
+      case requestScreenTimeAuthorization
     }
   }
 }

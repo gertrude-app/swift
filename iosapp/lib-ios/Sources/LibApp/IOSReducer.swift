@@ -822,6 +822,16 @@ public struct IOSReducer {
 
     case .receivedScreenRecordingEvent:
       return .none
+
+    case .requestScreenTimeAuthorization:
+      return .run { [sysExtension = self.deps.systemExtension] send in
+        if case .success = await (sysExtension.requestAuthorization()),
+           await !(sysExtension.filterRunning()) {
+          // If the app had previously lost Screen Time permission, that
+          // disables the Content Filter, so prompt the user to re-enable it.
+          await send(.programmatic(.authorizationSucceeded))
+        }
+      }
     }
   }
 
