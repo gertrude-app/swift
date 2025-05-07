@@ -137,16 +137,6 @@ struct AppView: View {
         screenType: .info
       )
 
-    case .onboarding(.happyPath(.doneQuit)):
-      // Once we do account connection during onboarding, connected will be a dynamic value.
-      RunningView(store: self.store, connected: false, onBtnTap: {
-        self.store.send(.interactive(.runningBtnTapped))
-      }, onAppForeground: {
-        self.store.send(.programmatic(.requestScreenTimeAuthorization))
-      }).onShake {
-        self.store.send(.interactive(.receivedShake))
-      }
-
     case .onboarding(.authFail(.invalidAccount(.letsFigureThisOut))):
       ButtonScreenView(
         text: "Hmmm... Something didn’t work right, let’s get to the bottom of it.",

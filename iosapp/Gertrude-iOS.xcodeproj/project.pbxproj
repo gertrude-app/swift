@@ -19,7 +19,6 @@
 		0F5DCFD62D54DBDE003E2361 /* FairiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */; };
 		0F68E4EA2D4ECD1900B7134C /* ChooseWhatToBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */; };
 		0FA657FD2D5288B700BA1254 /* ClearingCacheView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA657FC2D5288B200BA1254 /* ClearingCacheView.swift */; };
-		0FA657FF2D538A5E00BA1254 /* FinishedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA657FE2D538A5A00BA1254 /* FinishedView.swift */; };
 		0FAD76472D4D158E009A6FA6 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD76462D4D158E009A6FA6 /* ComposableArchitecture */; };
 		0FAD764B2D4D2916009A6FA6 /* LibCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD764A2D4D2916009A6FA6 /* LibCore */; };
 		0FAD764D2D4D291D009A6FA6 /* LibController in Frameworks */ = {isa = PBXBuildFile; productRef = 0FAD764C2D4D291D009A6FA6 /* LibController */; };
@@ -97,7 +96,6 @@
 		0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FairiesView.swift; sourceTree = "<group>"; };
 		0F68E4E92D4ECD1200B7134C /* ChooseWhatToBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseWhatToBlockView.swift; sourceTree = "<group>"; };
 		0FA657FC2D5288B200BA1254 /* ClearingCacheView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearingCacheView.swift; sourceTree = "<group>"; };
-		0FA657FE2D538A5A00BA1254 /* FinishedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinishedView.swift; sourceTree = "<group>"; };
 		7F4A14502CB5843500FD6ABE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7F8B15012CCED8D6002E3C14 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		7F9AD4182DAFF1FC00CA079B /* ConnectingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectingView.swift; sourceTree = "<group>"; };
@@ -198,7 +196,6 @@
 				0FA657FC2D5288B200BA1254 /* ClearingCacheView.swift */,
 				0F5DCFD32D5425BA003E2361 /* RunningView.swift */,
 				0F5DCFD52D54DBD9003E2361 /* FairiesView.swift */,
-				0FA657FE2D538A5A00BA1254 /* FinishedView.swift */,
 				0F4609D82D4BCA510038C617 /* WelcomeView.swift */,
 				0F4609D92D4BCA510038C617 /* ButtonScreenView.swift */,
 			);
@@ -480,7 +477,6 @@
 				7F9AD41B2DB026FF00CA079B /* RequestSuspensionView.swift in Sources */,
 				0F4609FD2D4BCA510038C617 /* Colors.swift in Sources */,
 				0F460A002D4BCA510038C617 /* BigButton.swift in Sources */,
-				0FA657FF2D538A5E00BA1254 /* FinishedView.swift in Sources */,
 				0F5DCFD62D54DBDE003E2361 /* FairiesView.swift in Sources */,
 				0F460A022D4BCA510038C617 /* WelcomeView.swift in Sources */,
 				7FA7B8472AEB238700363B53 /* IOSAppEntry.swift in Sources */,

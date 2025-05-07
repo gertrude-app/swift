@@ -330,21 +330,21 @@ public struct IOSReducer {
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .primary):
       self.deps.log(state.screen, action, "4fc0b1bf")
-      state.screen = .onboarding(.happyPath(.doneQuit))
+      state.screen = .running(state: .notConnected)
       return .run { [deps = self.deps] _ in
         await deps.appStore.requestRating()
       }
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .secondary):
       self.deps.log(state.screen, action, "a9480aa2")
-      state.screen = .onboarding(.happyPath(.doneQuit))
+      state.screen = .running(state: .notConnected)
       return .run { [deps = self.deps] _ in
         await deps.appStore.requestReview()
       }
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .tertiary):
       self.deps.log(state.screen, action, "0dddc87c")
-      state.screen = .onboarding(.happyPath(.doneQuit))
+      state.screen = .running(state: .notConnected)
       return .none
 
       // MARK: - major (18+) path

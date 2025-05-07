@@ -105,7 +105,6 @@ extension IOSReducer {
       case clearingCache(Int)
       case cacheCleared
       case requestAppStoreRating
-      case doneQuit
     }
 
     public enum AppleFamily: Equatable {

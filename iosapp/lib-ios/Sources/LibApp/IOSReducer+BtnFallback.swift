@@ -177,8 +177,6 @@ extension IOSReducer.Onboarding.HappyPath {
       .onboarding(.happyPath(.confirmInAppleFamily))
     case (.confirmParentIsOnboarding, _):
       .onboarding(.childIsOnboardingFail)
-    case (.doneQuit, _):
-      .running(state: .notConnected)
     case (.dontGetTrickedPreAuth, _):
       .onboarding(.happyPath(.explainAuthWithParentAppleAccount))
     case (.dontGetTrickedPreInstall, _):
@@ -198,7 +196,7 @@ extension IOSReducer.Onboarding.HappyPath {
     case (.promptClearCache, _):
       .onboarding(.happyPath(.requestAppStoreRating))
     case (.requestAppStoreRating, _):
-      .onboarding(.happyPath(.doneQuit))
+      .running(state: .notConnected)
     case (.timeExpectation, _):
       .onboarding(.happyPath(.confirmChildsDevice))
     }
