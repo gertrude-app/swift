@@ -113,7 +113,6 @@ extension DeviceClient: DependencyKey {
       deleteCacheFillDir: {},
       availableDiskSpaceInBytes: { 1_000_000_000 }
     )
-    public static let testValue = liveValue // For Unit Tests
   #endif
 }
 
