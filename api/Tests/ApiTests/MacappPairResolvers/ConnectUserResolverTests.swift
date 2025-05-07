@@ -80,7 +80,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
     try await withDependencies {
       $0.date = .init { Date() } // for token expiration
     } operation: {
-      let existingUser = try await self.userWithDevice()
+      let existingUser = try await self.childWithComputer()
       let existingUserToken = try await self.db.create(UserToken(
         childId: existingUser.id,
         computerUserId: existingUser.device.id
@@ -114,7 +114,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
 
   // test sanity check, computer/user registered to a different admin
   func testConnectUser_ExistingDeviceToDifferentUser_FailsIfDifferentAdmin() async throws {
-    let existingUser = try await self.userWithDevice()
+    let existingUser = try await self.childWithComputer()
     let existingUserToken = try await self.db.create(UserToken(
       childId: existingUser.model.id,
       computerUserId: existingUser.device.id

@@ -2,7 +2,7 @@ import Gertie
 import PairQL
 
 struct UpdateUnlockRequest: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     let id: UnlockRequest.Id

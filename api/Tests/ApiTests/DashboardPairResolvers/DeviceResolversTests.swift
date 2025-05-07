@@ -62,7 +62,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testSaveDevice() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     var device = user.adminDevice
     device.appReleaseChannel = .stable
     device.customName = nil

@@ -111,7 +111,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
     id.identifiedAppId = app.id
     try await self.db.create(id)
 
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
       in: user.context
@@ -120,7 +120,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testUserWithNoKeychainsDoesNotGetAutoIncluded() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     try await self.createAutoIncludeKeychain()
 
     let output = try await CheckIn_v2.resolve(
@@ -131,7 +131,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testUserWithAtLeastOneKeyGetsAutoIncluded() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let admin = try await self.admin().withKeychain()
     try await self.db.create(UserKeychain(childId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
@@ -144,8 +144,8 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testIncludesResolvedFilterSuspension() async throws {
-    let user = try await self.userWithDevice()
-    let susp = try await self.db.create(SuspendFilterRequest.mock {
+    let user = try await self.childWithComputer()
+    let susp = try await self.db.create(MacApp.SuspendFilterRequest.mock {
       $0.computerUserId = user.device.id
       $0.status = .accepted
       $0.duration = 777
@@ -179,8 +179,8 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDoesNotIncludeUnresolvedSuspension() async throws {
-    let user = try await self.userWithDevice()
-    let susp = try await self.db.create(SuspendFilterRequest.mock {
+    let user = try await self.childWithComputer()
+    let susp = try await self.db.create(MacApp.SuspendFilterRequest.mock {
       $0.computerUserId = user.device.id
       $0.status = .pending // <-- still pending!
     })
@@ -198,7 +198,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testIncludesResolvedUnlockRequests() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let unlock1 = UnlockRequest.mock {
       $0.computerUserId = user.device.id
       $0.status = .pending // <-- pending, will not be returned

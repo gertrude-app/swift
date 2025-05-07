@@ -2,7 +2,7 @@ import Foundation
 import PairQL
 
 struct CreatePendingAppConnection: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     var userId: User.Id

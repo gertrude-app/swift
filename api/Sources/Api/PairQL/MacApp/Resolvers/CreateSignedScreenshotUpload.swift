@@ -9,7 +9,7 @@ import Vapor
 #endif
 
 extension CreateSignedScreenshotUpload: Resolver {
-  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
+  static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     let userDevice = try await context.userDevice()
     let unixTime = Int(Date().timeIntervalSince1970)
     let filename = "\(unixTime)--\(context.uuid().lowercased).jpg"

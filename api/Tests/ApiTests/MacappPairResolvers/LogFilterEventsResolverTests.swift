@@ -11,7 +11,7 @@ final class LogFilterEventsResolverTests: ApiTestCase, @unchecked Sendable {
     try await self.db.delete(all: IdentifiedApp.self)
     try await self.db.delete(all: UnidentifiedApp.self)
     try await self.db.create(UnidentifiedApp(bundleId: "com.widget", count: 3))
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let xcode = try await self.db
       .create(IdentifiedApp(name: "Xcode", slug: "", launchable: true))
     try await self.db.create(AppBundleId(identifiedAppId: xcode.id, bundleId: "com.xcode"))

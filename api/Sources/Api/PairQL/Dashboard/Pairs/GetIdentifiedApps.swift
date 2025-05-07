@@ -2,7 +2,7 @@ import Foundation
 import PairQL
 
 struct GetIdentifiedApps: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct App: PairOutput {
     struct BundleId: PairNestable {

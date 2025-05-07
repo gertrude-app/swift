@@ -73,7 +73,7 @@ struct BigButton: View {
   init(
     _ text: String,
     type: ButtonType,
-    variant: Variant,
+    variant: Variant = .primary,
     icon: String? = nil,
     disabled: Bool = false
   ) {

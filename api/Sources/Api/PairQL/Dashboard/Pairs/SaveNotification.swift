@@ -3,7 +3,7 @@ import Foundation
 import PairQL
 
 struct SaveNotification: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     let id: AdminNotification.Id

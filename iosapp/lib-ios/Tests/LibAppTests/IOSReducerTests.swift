@@ -252,10 +252,11 @@ final class IOSReducerTests: XCTestCase {
     }
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.screen = .onboarding(.happyPath(.doneQuit))
+      $0.screen = .running(state: .notConnected)
     }
 
     expect(ratingRequestInvocations.value).toEqual(1)
+    await store.send(.programmatic(.appWillTerminate))
   }
 
   @MainActor
@@ -307,8 +308,8 @@ final class IOSReducerTests: XCTestCase {
       $0.onboarding.firstLaunch = .reference
     }
 
-    await store.receive(.programmatic(.setScreen(.running(showVendorId: false)))) {
-      $0.screen = .running(showVendorId: false)
+    await store.receive(.programmatic(.setScreen(.running(state: .notConnected)))) {
+      $0.screen = .running(state: .notConnected)
     }
 
     expect(removeObjectInvocations.value).toEqual([.legacyStorageKey])
@@ -318,6 +319,8 @@ final class IOSReducerTests: XCTestCase {
       .disabledBlockGroups([]),
       .protectionMode(.normal([.urlContains("GIFs")])),
     ])
+
+    await store.send(.programmatic(.appWillTerminate))
   }
 
   @MainActor
@@ -368,7 +371,7 @@ final class IOSReducerTests: XCTestCase {
     }
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) {
-      $0.screen = .onboarding(.happyPath(.doneQuit))
+      $0.screen = .running(state: .notConnected)
     }
 
     expect(writeReviewInvocations.value).toEqual(1)
@@ -378,7 +381,7 @@ final class IOSReducerTests: XCTestCase {
   func testSkipReviewAndRating() async throws {
     let store = store(starting: .onboarding(.happyPath(.requestAppStoreRating)))
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) {
-      $0.screen = .onboarding(.happyPath(.doneQuit))
+      $0.screen = .running(state: .notConnected)
     }
   }
 
@@ -453,9 +456,10 @@ final class IOSReducerTests: XCTestCase {
     await store.receive(.programmatic(.setFirstLaunch(.distantPast))) {
       $0.onboarding.firstLaunch = .distantPast
     }
-    await store.receive(.programmatic(.setScreen(.running(showVendorId: false)))) {
-      $0.screen = .running(showVendorId: false)
+    await store.receive(.programmatic(.setScreen(.running(state: .notConnected)))) {
+      $0.screen = .running(state: .notConnected)
     }
+    await store.send(.programmatic(.appWillTerminate))
   }
 
   func testFirstLaunchSupervisedSuccess() async throws {
@@ -487,6 +491,8 @@ final class IOSReducerTests: XCTestCase {
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
     }
+
+    await store.send(.programmatic(.appWillTerminate))
   }
 
   @MainActor

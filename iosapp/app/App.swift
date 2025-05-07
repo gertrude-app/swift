@@ -3,7 +3,7 @@ import LibApp
 import SwiftUI
 
 struct AppView: View {
-  let store: StoreOf<IOSReducer>
+  @Bindable var store: StoreOf<IOSReducer>
 
   @Environment(\.colorScheme) var cs
   @Environment(\.openURL) var openLink
@@ -136,9 +136,6 @@ struct AppView: View {
         tertiary: self.btn(text: "No thanks", .tertiary),
         screenType: .info
       )
-
-    case .onboarding(.happyPath(.doneQuit)):
-      FinishedView()
 
     case .onboarding(.authFail(.invalidAccount(.letsFigureThisOut))):
       ButtonScreenView(
@@ -392,9 +389,12 @@ struct AppView: View {
         primary: self.btn(text: "Next", .primary)
       )
 
-    case .running(let showVendorId, timesShaken: _):
-      RunningView(showVendorId: showVendorId)
-        .onShake { self.store.send(.interactive(.receivedShake)) }
+    case .running(state: let state):
+      RunningView(store: self.store, connected: state != .notConnected) {
+        self.store.send(.interactive(.runningBtnTapped))
+      }.onShake {
+        self.store.send(.interactive(.receivedShake))
+      }
     }
   }
 

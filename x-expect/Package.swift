@@ -9,7 +9,6 @@ let package = Package(
   ],
   dependencies: [
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", exact: "1.3.2"),
-    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", exact: "1.2.2"),
   ],
   targets: [
     .target(
