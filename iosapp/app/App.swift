@@ -137,9 +137,6 @@ struct AppView: View {
         screenType: .info
       )
 
-    case .onboarding(.happyPath(.doneQuit)):
-      FinishedView()
-
     case .onboarding(.authFail(.invalidAccount(.letsFigureThisOut))):
       ButtonScreenView(
         text: "Hmmm... Something didn’t work right, let’s get to the bottom of it.",
