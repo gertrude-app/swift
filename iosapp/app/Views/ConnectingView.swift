@@ -37,6 +37,9 @@ struct EnterCodeView: View {
 }
 
 struct ConnectingView: View {
+  @Environment(\.openURL) var openURL
+  @Environment(\.dismiss) var dismiss
+  
   @Bindable var store: StoreOf<ConnectAccount>
 
   var body: some View {
@@ -51,7 +54,22 @@ struct ConnectingView: View {
       ProgressView()
     case .connectionFailed(error: let error):
       Text("Failed to connect, \(error)")
+    case .pleaseDisableScreenTime:
+      Text("Connect your Gertrude Account")
+        .font(.title)
+      Text("Tap the button below and disable Screen Time. Then come back here to continue.")
+        .padding(20)
+      BigButton(
+        "Open Settings",
+        type: .button { openAppSettings() }
+      ).padding(20)
     }
+  }
+  
+  func openAppSettings() {
+    guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else { return }
+    openURL(settingsUrl)
+    dismiss()
   }
 }
 

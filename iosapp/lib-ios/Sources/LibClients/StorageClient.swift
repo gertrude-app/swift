@@ -50,6 +50,10 @@ public extension StorageClient {
       try? JSONDecoder().decode(ChildIOSDeviceData.self, from: data)
     }
   }
+  
+  func isAccountConnected() -> Bool {
+    return loadConnection() != nil
+  }
 
   func saveProtectionMode(_ protectionMode: ProtectionMode) {
     self.saveCodable(value: protectionMode, forKey: .protectionModeStorageKey)
