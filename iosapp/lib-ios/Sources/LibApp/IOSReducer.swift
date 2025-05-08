@@ -832,7 +832,7 @@ public struct IOSReducer {
       return .run { [sysExtension = self.deps.systemExtension] send in
         if case .success = await (sysExtension.requestAuthorization()),
            await !(sysExtension.filterRunning()) {
-          // If the app had previously lost Screen Time permission, that
+          // If the app had .child Screen Time permission and loses it, that
           // disables the Content Filter, so prompt the user to re-enable it.
           await send(.programmatic(.authorizationSucceeded))
         }
@@ -843,7 +843,7 @@ public struct IOSReducer {
   func destination(state: inout State, action: Destination.Action) -> Effect<Action> {
     switch action {
     case .connectAccount(.connectionSucceeded(childData: let data)):
-      if state.screen == .onboarding(.happyPath(.connectAccount)){
+      if state.screen == .onboarding(.happyPath(.connectAccount)) {
         state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
       } else {
         state.screen = .running(state: .connected())

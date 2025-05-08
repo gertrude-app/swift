@@ -85,7 +85,7 @@ struct ButtonScreenView: View {
         .ignoresSafeArea()
         .opacity(self.showBg ? 1 : 0)
         .onAppear {
-          withAnimation(.smooth(duration: 0.3)) {
+          withAnimation(.smooth(duration: 0.7)) {
             self.showBg = true
           }
         }
@@ -94,7 +94,7 @@ struct ButtonScreenView: View {
         Image(systemName: self.icon)
           .font(.system(size: 40, weight: .regular))
           .foregroundStyle(Color(self.cs, light: .violet500, dark: .violet400))
-          .swooshIn(tracking: self.$iconOffset, to: .zero, after: .zero, for: .milliseconds(300))
+          .swooshIn(tracking: self.$iconOffset, to: .zero, after: .zero, for: .milliseconds(800))
           .frame(maxWidth: .infinity, alignment: .center)
 
         Spacer()
@@ -103,12 +103,12 @@ struct ButtonScreenView: View {
           Image(image)
             .frame(maxWidth: .infinity)
             .padding(.bottom, 20)
-            .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(300))
+            .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
         }
 
         Text(self.text)
           .font(.system(size: 18, weight: .medium))
-          .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(300))
+          .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
 
         if let listItems = self.listItems {
           VStack(alignment: .leading) {
@@ -128,7 +128,7 @@ struct ButtonScreenView: View {
             }
           }
           .padding(.bottom, 20)
-          .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(300))
+          .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
         }
 
         if let config = self.primaryButtonConfig {
@@ -172,8 +172,8 @@ struct ButtonScreenView: View {
             .swooshIn(
               tracking: self.$secondaryButtonStatus.offset,
               to: .zero,
-              after: .milliseconds(150),
-              for: .milliseconds(300)
+              after: .milliseconds(300),
+              for: .milliseconds(800)
             )
           }
         }
@@ -195,8 +195,8 @@ struct ButtonScreenView: View {
             .swooshIn(
               tracking: self.$tertiaryButtonStatus.offset,
               to: .zero,
-              after: .milliseconds(150),
-              for: .milliseconds(300)
+              after: .milliseconds(450),
+              for: .milliseconds(800)
             )
           }
         }
@@ -229,7 +229,7 @@ struct ButtonScreenView: View {
       .button {
         if animate {
           self.vanishingAnimations()
-          delayed(by: .milliseconds(300)) {
+          delayed(by: .milliseconds(800)) {
             onTap()
           }
         } else if asyncAction {
@@ -248,20 +248,20 @@ struct ButtonScreenView: View {
       self.tertiaryButtonStatus.offset.y = 20
     }
 
-    delayed(by: .milliseconds(50)) {
+    delayed(by: .milliseconds(100)) {
       withAnimation {
         self.secondaryButtonStatus.offset.y = 20
         self.showBg = false
       }
     }
 
-    delayed(by: .milliseconds(100)) {
+    delayed(by: .milliseconds(200)) {
       withAnimation {
         self.primaryButtonStatus.offset.y = 20
       }
     }
 
-    delayed(by: .milliseconds(150)) {
+    delayed(by: .milliseconds(300)) {
       withAnimation {
         self.textOffset.y = 20
       }

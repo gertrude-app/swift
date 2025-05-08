@@ -86,7 +86,7 @@ public extension String {
   static var gertrudeApi: String {
     #if DEBUG
       // just run-api-ip
-      "http://192.168.50.106:8080"
+      "http://192.168.10.227:8080"
     #else
       "https://api.gertrude.app"
     #endif

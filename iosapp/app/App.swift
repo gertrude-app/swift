@@ -397,6 +397,7 @@ struct AppView: View {
       }).onShake {
         self.store.send(.interactive(.receivedShake))
       }
+
     case .onboarding(.happyPath(.connectAccount)):
       ButtonScreenView(
         text: "Great! You connected Gertrude with Screen Time. Next, connect your Gertrude account",

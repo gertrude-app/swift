@@ -17,11 +17,7 @@ extension ExtensionClient: DependencyKey {
         return .success(())
       #elseif os(iOS)
         do {
-          #if DEBUG
-            try await AuthorizationCenter.shared.requestAuthorization(for: .child)
-          #else
-            try await AuthorizationCenter.shared.requestAuthorization(for: .child)
-          #endif
+          try await AuthorizationCenter.shared.requestAuthorization(for: .child)
           return .success(())
         } catch let familyError as FamilyControlsError {
           switch familyError {

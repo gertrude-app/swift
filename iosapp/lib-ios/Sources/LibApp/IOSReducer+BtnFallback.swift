@@ -182,7 +182,7 @@ extension IOSReducer.Onboarding.HappyPath {
     case (.dontGetTrickedPreInstall, _):
       .onboarding(.happyPath(.explainInstallWithDevicePasscode))
     case (.connectAccount, _):
-        .onboarding(.happyPath(.dontGetTrickedPreAuth))
+      .onboarding(.happyPath(.dontGetTrickedPreAuth))
     case (.explainAuthWithParentAppleAccount, _):
       .onboarding(.happyPath(.dontGetTrickedPreAuth))
     case (.explainInstallWithDevicePasscode, _):

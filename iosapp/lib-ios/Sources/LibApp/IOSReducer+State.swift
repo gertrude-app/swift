@@ -161,9 +161,9 @@ extension IOSReducer {
   public enum RunningState: Equatable {
     case notConnected
     case connected(waitingForSuspension: Bool = false)
-    
+
     public static func from(_ isConnected: Bool) -> RunningState {
-      return isConnected ? .connected(waitingForSuspension: false) : .notConnected
+      isConnected ? .connected(waitingForSuspension: false) : .notConnected
     }
   }
 

@@ -50,9 +50,9 @@ public extension StorageClient {
       try? JSONDecoder().decode(ChildIOSDeviceData.self, from: data)
     }
   }
-  
+
   func isAccountConnected() -> Bool {
-    return loadConnection() != nil
+    self.loadConnection() != nil
   }
 
   func saveProtectionMode(_ protectionMode: ProtectionMode) {
