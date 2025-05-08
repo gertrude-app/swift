@@ -683,12 +683,15 @@ public struct IOSReducer {
       return .none
 
     case .authorizationSucceeded:
-      if state.screen == .onboarding(.happyPath(.dontGetTrickedPreAuth)) {
+      if state.screen == .onboarding(.happyPath(.dontGetTrickedPreAuth))
+        || state.screen.isRunning {
         self.deps.log(action, "021834f6")
       } else {
         self.deps.unexpected(state.screen, action, "e30624c6")
       }
-      state.screen = .onboarding(.happyPath(.connectAccount))
+      state.screen = self.deps.storage
+        .isAccountConnected() ? .onboarding(.happyPath(.explainInstallWithDevicePasscode)) :
+        .onboarding(.happyPath(.connectAccount))
       return .none
 
     case .authorizationFailed(let err):
