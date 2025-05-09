@@ -81,10 +81,10 @@ extension RecorderClient: DependencyKey {
 }
 
 public enum RecorderEvent: String, Sendable, Equatable, Codable {
-  case broadcastStarted = "com.ftc.gertrude-ios.app.broadcastStarted"
-  case broadcastPaused = "com.ftc.gertrude-ios.app.broadcastPaused"
-  case broadcastResumed = "com.ftc.gertrude-ios.app.broadcastResumed"
-  case broadcastFinished = "com.ftc.gertrude-ios.app.broadcastFinished"
+  case broadcastStarted = "com.netrivet.gertrude-ios.app.broadcastStarted"
+  case broadcastPaused = "com.netrivet.gertrude-ios.app.broadcastPaused"
+  case broadcastResumed = "com.netrivet.gertrude-ios.app.broadcastResumed"
+  case broadcastFinished = "com.netrivet.gertrude-ios.app.broadcastFinished"
 }
 
 @Sendable
@@ -166,7 +166,7 @@ public extension DependencyValues {
 extension URL {
   static var screenshotsDir: URL? {
     FileManager.default
-      .containerURL(forSecurityApplicationGroupIdentifier: "group.com.ftc.gertrude-ios.app")?
+      .containerURL(forSecurityApplicationGroupIdentifier: "group.com.netrivet.gertrude-ios.app")?
       .appendingPathComponent("screenshots")
   }
 }

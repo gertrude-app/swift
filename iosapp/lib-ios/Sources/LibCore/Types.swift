@@ -74,7 +74,7 @@ public extension ProtectionMode? {
 
 public extension UserDefaults {
   static var gertrude: UserDefaults {
-    UserDefaults(suiteName: "group.com.ftc.gertrude-ios.app")!
+    UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
   }
 }
 
