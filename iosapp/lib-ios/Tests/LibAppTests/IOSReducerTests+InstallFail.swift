@@ -8,7 +8,8 @@ import XExpect
 final class IOSReducerTestsInstallFail: XCTestCase {
   func testInstallErrPermissionDeniedFlow() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
-    let cleanupInvocations = LockIsolated(0)
+    let cleanupContentFilterInvocations = LockIsolated(0)
+    let cleanupScreenTimeInvocations = LockIsolated(0)
     let store = await TestStore(
       initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreInstall)))
     ) {
@@ -21,10 +22,10 @@ final class IOSReducerTestsInstallFail: XCTestCase {
         .failure(.configurationPermissionDenied)
       }
       $0.systemExtension.cleanupContentFilterForRetry = {
-        cleanupInvocations.withValue { $0 += 1 }
+        cleanupContentFilterInvocations.withValue { $0 += 1 }
       }
       $0.systemExtension.cleanupScreenTimeAuthForRetry = {
-        cleanupInvocations.withValue { $0 += 1 }
+        cleanupScreenTimeInvocations.withValue { $0 += 1 }
       }
     }
 
@@ -36,7 +37,7 @@ final class IOSReducerTestsInstallFail: XCTestCase {
 
     expect(apiLoggedDetails.value)
       .toEqual(["[onboarding] filter install failed: configurationPermissionDenied"])
-    expect(cleanupInvocations.value).toEqual(1)
+    expect(cleanupContentFilterInvocations.value).toEqual(1)
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) { // <-- "try again"
       $0.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
