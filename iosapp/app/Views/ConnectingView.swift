@@ -50,10 +50,12 @@ struct ConnectingView: View {
       }
     case .connected(childName: let childName):
       Text("Connected to child: \(childName)")
+      BigButton("OK", type: .button { self.dismiss() }).padding(20)
     case .connecting:
       ProgressView()
     case .connectionFailed(error: let error):
       Text("Failed to connect, \(error)")
+      BigButton("OK", type: .button { self.dismiss() }).padding(20)
     case .pleaseDisableScreenTime:
       Text("Connect your Gertrude Account")
         .font(.title)

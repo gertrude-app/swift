@@ -20,7 +20,10 @@ final class IOSReducerTestsInstallFail: XCTestCase {
       $0.systemExtension.installFilter = {
         .failure(.configurationPermissionDenied)
       }
-      $0.systemExtension.cleanupForRetry = {
+      $0.systemExtension.cleanupContentFilterForRetry = {
+        cleanupInvocations.withValue { $0 += 1 }
+      }
+      $0.systemExtension.cleanupScreenTimeAuthForRetry = {
         cleanupInvocations.withValue { $0 += 1 }
       }
     }

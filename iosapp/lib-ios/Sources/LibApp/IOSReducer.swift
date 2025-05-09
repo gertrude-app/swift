@@ -232,7 +232,7 @@ public struct IOSReducer {
           await deps.api.logEvent("4a0c585f", "[onboarding] authorization succeeded")
         case .failure(let reason):
           await send(.programmatic(.authorizationFailed(reason)))
-          await deps.systemExtension.cleanupForRetry()
+          await deps.systemExtension.cleanupScreenTimeAuthForRetry()
           await deps.api.logEvent("e2e02460", "[onboarding] authorization failed: \(reason)")
         }
       }
@@ -256,7 +256,7 @@ public struct IOSReducer {
           await deps.api.logEvent("adced334", "[onboarding] filter install success")
         case .failure(let error):
           await send(.programmatic(.installFailed(error)))
-          await deps.systemExtension.cleanupForRetry()
+          await deps.systemExtension.cleanupContentFilterForRetry()
           await deps.api.logEvent("004d0d89", "[onboarding] filter install failed: \(error)")
         }
       }
