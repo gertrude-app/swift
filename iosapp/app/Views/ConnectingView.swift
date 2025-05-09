@@ -20,11 +20,23 @@ struct EnterCodeView: View {
 
   var body: some View {
     VStack {
+      HStack {
+        Text("To get a code, add your child/device on")
+        Link(destination: URL(string: "https://parents.gertrude.app")!) {
+          HStack {
+            Text("parents.gertrude.app")
+            Image(systemName: "arrow.up.right")
+              .font(.system(size: 14, weight: .semibold))
+              .offset(y: 1.5)
+          }
+        }
+      }
       TextField("Enter code", text: self.$input)
         .keyboardType(.numberPad)
         .focused(self.$isFocused)
         .padding(20)
         .border(Color.gray)
+        .padding(20)
       BigButton(
         "Submit",
         type: .button { self.submit(self.code ?? 111_111) },
@@ -59,8 +71,10 @@ struct ConnectingView: View {
     case .pleaseDisableScreenTime:
       Text("Connect your Gertrude Account")
         .font(.title)
-      Text("Tap the button below and disable Screen Time. Then come back here to continue.")
-        .padding(20)
+      Text(
+        "Tap the button below and turn off Screen Time Restrictions. Then come back here to continue."
+      )
+      .padding(20)
       BigButton(
         "Open Settings",
         type: .button { self.openAppSettings() }
