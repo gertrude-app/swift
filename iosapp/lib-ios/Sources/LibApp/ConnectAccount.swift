@@ -7,9 +7,9 @@ import LibClients
 public struct ConnectAccount {
   @ObservableState
   public struct State: Equatable {
-    public var screen: SubScreen = .enteringCode
+    public var screen: SubScreen = .pleaseDisableScreenTime
 
-    public init(screen: SubScreen = .enteringCode) {
+    public init(screen: SubScreen = .pleaseDisableScreenTime) {
       self.screen = screen
     }
   }
@@ -64,6 +64,7 @@ public struct ConnectAccount {
 
 public extension ConnectAccount.State {
   enum SubScreen: Equatable {
+    case pleaseDisableScreenTime
     case enteringCode
     case connecting
     case connectionFailed(error: String)

@@ -96,6 +96,7 @@ extension IOSReducer {
       case confirmInAppleFamily
       case explainTwoInstallSteps
       case explainAuthWithParentAppleAccount
+      case connectAccount
       case dontGetTrickedPreAuth
       case explainInstallWithDevicePasscode
       case dontGetTrickedPreInstall
@@ -160,6 +161,10 @@ extension IOSReducer {
   public enum RunningState: Equatable {
     case notConnected
     case connected(waitingForSuspension: Bool = false)
+
+    public static func from(_ isConnected: Bool) -> RunningState {
+      isConnected ? .connected(waitingForSuspension: false) : .notConnected
+    }
   }
 
   public enum Screen: Equatable {

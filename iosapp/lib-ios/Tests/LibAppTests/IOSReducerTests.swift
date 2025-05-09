@@ -1,6 +1,7 @@
 @preconcurrency import Combine
 import ComposableArchitecture
 import GertieIOS
+import IOSRoute
 import LibClients
 import LibCore
 import XCTest
@@ -11,6 +12,7 @@ import XExpect
 enum SavedCodable: Equatable {
   case protectionMode(ProtectionMode)
   case disabledBlockGroups([BlockGroup])
+  case connection(ChildIOSDeviceData)
 }
 
 final class IOSReducerTests: XCTestCase {
@@ -28,6 +30,12 @@ final class IOSReducerTests: XCTestCase {
     let storedCodables = LockIsolated<[SavedCodable]>([])
     let cacheClearSubject = PassthroughSubject<DeviceClient.ClearCacheUpdate, Never>()
     let vendorId = UUID()
+    let childData = ChildIOSDeviceData(
+      childId: UUID(),
+      token: UUID(),
+      deviceId: UUID(),
+      childName: "Tester"
+    )
 
     let store = TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
@@ -48,6 +56,10 @@ final class IOSReducerTests: XCTestCase {
         fetchBlockRulesInvocations.withValue { $0 += 1 }
         return [.urlContains("GIFs")]
       }
+      $0.api.connectDevice = { @Sendable code, vid in
+        childData
+      }
+      $0.api.setAuthToken = { _ in }
       $0.systemExtension.requestAuthorization = {
         requestAuthInvocations.withValue { $0 += 1 }
         return .success(())
@@ -87,6 +99,8 @@ final class IOSReducerTests: XCTestCase {
           storedCodables.withValue { $0.append(.disabledBlockGroups(value as! [BlockGroup])) }
         case .protectionModeStorageKey:
           storedCodables.withValue { $0.append(.protectionMode(value as! ProtectionMode)) }
+        case .connectionStorageKey:
+          storedCodables.withValue { $0.append(.connection(value as! ChildIOSDeviceData)) }
         default:
           fatalError("unexpected key: \(key)")
         }
@@ -157,9 +171,24 @@ final class IOSReducerTests: XCTestCase {
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
 
+    // MARK: Connect Account
+
     await store.receive(.programmatic(.authorizationSucceeded)) {
-      $0.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+      $0.screen = .onboarding(.happyPath(.connectAccount))
     }
+    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
+      $0.destination = .connectAccount(.init(screen: .enteringCode))
+    }
+    await store.send(.destination(.presented(.connectAccount(.codeSubmitted(123_456))))) {
+      $0.destination = .connectAccount(.init(screen: .connecting))
+    }
+    await store
+      .receive(
+        .destination(.presented(.connectAccount(.connectionSucceeded(childData: childData))))
+      ) {
+        $0.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+        $0.destination = .connectAccount(.init(screen: .connected(childName: childData.childName)))
+      }
 
     expect(requestAuthInvocations.value).toEqual(1)
     expect(apiLoggedDetails.value).toEqual([
@@ -171,7 +200,7 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .onboarding(.happyPath(.dontGetTrickedPreInstall))
     }
 
-    expect(storedCodables.value.count).toEqual(1)
+    expect(storedCodables.value.count).toEqual(2)
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
 
     await store.receive(.programmatic(.installSucceeded)) {
@@ -187,6 +216,7 @@ final class IOSReducerTests: XCTestCase {
 
     expect(storedCodables.value).toEqual([
       .protectionMode(.onboarding([.urlContains("default-rule")])),
+      .connection(childData),
       // we save empty on first load of screen, in case they quit before clicking next
       // if they did, it would confuse the app to think they were in supervised mode
       .disabledBlockGroups([]),
@@ -204,7 +234,7 @@ final class IOSReducerTests: XCTestCase {
       $0.disabledBlockGroups = [.appleMapsImages]
     }
 
-    expect(storedCodables.value.count).toEqual(2)
+    expect(storedCodables.value.count).toEqual(3)
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) { // <-- "Done" from groups
       $0.screen = .onboarding(.happyPath(.promptClearCache))
@@ -214,6 +244,7 @@ final class IOSReducerTests: XCTestCase {
 
     expect(storedCodables.value).toEqual([
       .protectionMode(.onboarding([.urlContains("default-rule")])),
+      .connection(childData),
       .disabledBlockGroups([]), // <-- on opt-out groups screen load, failsafe
       .disabledBlockGroups([.appleMapsImages]), // <-- persist user choice after "Done"
       .protectionMode(.normal([.urlContains("GIFs")])), // <-- got customized rules from api
@@ -368,6 +399,7 @@ final class IOSReducerTests: XCTestCase {
       $0.appStore.requestReview = {
         writeReviewInvocations.withValue { $0 += 1 }
       }
+      $0.storage.loadData = { @Sendable _ in nil }
     }
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) {
@@ -379,7 +411,12 @@ final class IOSReducerTests: XCTestCase {
 
   @MainActor
   func testSkipReviewAndRating() async throws {
-    let store = store(starting: .onboarding(.happyPath(.requestAppStoreRating)))
+    let initial: IOSReducer.Screen = .onboarding(.happyPath(.requestAppStoreRating))
+    let store = TestStore(initialState: IOSReducer.State(screen: initial)) {
+      IOSReducer()
+    } withDependencies: {
+      $0.storage.loadData = { @Sendable _ in nil }
+    }
     await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) {
       $0.screen = .running(state: .notConnected)
     }
@@ -403,6 +440,7 @@ final class IOSReducerTests: XCTestCase {
         clearCacheInvocations.withValue { $0 += 1 }
         return AnyPublisher(Empty())
       }
+      $0.storage.loadData = { @Sendable _ in nil }
     }
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.onboarding.startClearCache = .reference

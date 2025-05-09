@@ -5,6 +5,7 @@ import SwiftUI
 
 struct RunningView: View {
   @Environment(\.colorScheme) var cs
+  @Environment(\.scenePhase) var scenePhase
 
   @State private var iconOffset = Vector(x: 0, y: 20)
   @State private var titleOffset = Vector(x: 0, y: 20)
@@ -16,6 +17,7 @@ struct RunningView: View {
 
   let connected: Bool
   let onBtnTap: () -> Void
+  let onAppForeground: () -> Void
 
   var body: some View {
     ZStack {
@@ -99,6 +101,11 @@ struct RunningView: View {
     )) {
       RequestSuspensionView(store: $0)
     }
+    .onChange(of: self.scenePhase) { oldPhase, newPhase in
+      if oldPhase != .active, newPhase == .active {
+        self.onAppForeground()
+      }
+    }
   }
 }
 
@@ -106,6 +113,7 @@ struct RunningView: View {
   RunningView(
     store: .init(initialState: .init()) { IOSReducer() },
     connected: false,
-    onBtnTap: {}
+    onBtnTap: {},
+    onAppForeground: {}
   )
 }
