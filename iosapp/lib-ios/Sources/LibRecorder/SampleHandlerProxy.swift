@@ -4,16 +4,27 @@ import LibClients
 import os.log
 import ReplayKit
 
-// import UIKit
+public protocol FinishableBroadcast {
+  func finishWithError(_ error: any Error)
+}
+
+let failedToSave: Error = NSError(
+  domain: "com.ftc.gertrude-ios.app.finishWithError",
+  code: 1111,
+  userInfo: [NSLocalizedDescriptionKey: "Failed to save screenshot to device."]
+)
 
 public struct SampleHandlerProxy {
   private var lastSavedDate = Date()
   private let ciContext = CIContext()
+  private let finisher: FinishableBroadcast
 
   @Dependency(\.date) private var date
   @Dependency(\.recorder) private var recorder
 
-  public init() {}
+  public init(finisher: FinishableBroadcast) {
+    self.finisher = finisher
+  }
 
   // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
   public func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
@@ -82,7 +93,7 @@ public struct SampleHandlerProxy {
       height: cgImage.height,
       createdAt: self.date.now
     )) {
-      // TODO: bail/end suspension if won't save
+      self.finisher.finishWithError(failedToSave)
     }
   }
 }
