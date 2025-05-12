@@ -154,12 +154,14 @@ func processEnv(_ key: String) -> String {
   return envVar
 }
 
+extension Env {
+  func getUUID(_ key: String) -> UUID? {
+    self.get(key).flatMap(UUID.init(uuidString:))
+  }
+}
+
 extension Env: TestDependencyKey {
   public static var testValue: Env {
     .fromProcess(mode: .testing)
-  }
-
-  func getUUID(_ key: String) -> UUID? {
-    self.get(key).flatMap(UUID.init(uuidString:))
   }
 }
