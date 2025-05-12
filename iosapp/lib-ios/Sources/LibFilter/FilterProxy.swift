@@ -169,7 +169,7 @@ public final class FilterProxy: Sendable {
     }
 
     let allowedSuffixes = ["gertrude.app", "apple.com", "icloud.com", "icloud.net"]
-    if bundleId?.contains("com.ftc.gertrude-ios.app") == true {
+    if bundleId?.contains("com.netrivet.gertrude-ios.app") == true {
       return .allow
     } else if bundleId?.contains("com.apple.mDNSResponder") == true {
       return .allow
@@ -255,8 +255,8 @@ private func isGertrude(_ bundleId: String?) -> Bool {
 }
 
 public extension String {
-  static let gertrudeBundleIdLong = "J83773RWC3.com.ftc.gertrude-ios.app"
-  static let gertrudeBundleIdShort = "com.ftc.gertrude-ios.app"
+  static let gertrudeBundleIdLong = "WFN83LM943.com.netrivet.gertrude-ios.app"
+  static let gertrudeBundleIdShort = "com.netrivet.gertrude-ios.app"
 }
 
 // conformances
