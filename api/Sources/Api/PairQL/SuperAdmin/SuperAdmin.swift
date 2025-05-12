@@ -8,6 +8,7 @@ enum SuperAdminRoute: PairRoute {
 enum AuthedSuperAdminRoute: PairRoute {
   case createRelease(CreateRelease.Input)
   case queryAdmins
+  case analyticsOverview
 
   nonisolated(unsafe) static let router = OneOf {
     Route(.case(Self.createRelease)) {
@@ -16,6 +17,9 @@ enum AuthedSuperAdminRoute: PairRoute {
     }
     Route(.case(Self.queryAdmins)) {
       Operation(QueryAdmins.self)
+    }
+    Route(.case(Self.analyticsOverview)) {
+      Operation(AnalyticsOverview.self)
     }
   }
 }
@@ -43,6 +47,9 @@ extension SuperAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .queryAdmins:
       let output = try await QueryAdmins.resolve(in: context)
+      return try await self.respond(with: output)
+    case .analyticsOverview:
+      let output = try await AnalyticsOverview.resolve(in: context)
       return try await self.respond(with: output)
     }
   }

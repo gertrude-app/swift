@@ -1,3 +1,4 @@
+import FluentSQL
 import Vapor
 
 public enum Configure {
@@ -21,6 +22,14 @@ public enum Configure {
 // helpers
 
 private struct ApiLifecyle: LifecycleHandler {
+  func didBootAsync(_ app: Application) async throws {
+    #if DEBUG
+      // syncing db from prod/staging does not keep search paths
+      let db: SQLDatabase = app.db(.psql) as! SQLDatabase
+      try await SearchPaths().up(sql: db)
+    #endif
+  }
+
   func shutdownAsync(_ app: Application) async {
     app.logger.info("Shutting down")
     await with(dependency: \.websockets).disconnectAll()

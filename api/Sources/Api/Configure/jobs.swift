@@ -11,6 +11,10 @@ public extension Configure {
     app.queues.schedule(DiskSpaceJob()).hourly().at(0)
     app.queues.schedule(CrashReporterJob()).hourly().at(25)
 
+    for offset in stride(from: 0, to: 60, by: 10) {
+      app.queues.schedule(AnalyticsJob()).hourly().at(.init(integerLiteral: offset))
+    }
+
     try app.queues.startScheduledJobs()
 
     app.asyncCommands.use(ResetCommand(), as: "reset")
