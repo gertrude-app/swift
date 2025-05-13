@@ -270,6 +270,7 @@ extension KeystrokeLine {
     case appName
     case line
     case filterSuspended
+    case flagged
     case createdAt
     case deletedAt
   }
@@ -322,6 +323,7 @@ extension Screenshot {
     case width
     case height
     case filterSuspended
+    case flagged
     case createdAt
     case deletedAt
   }

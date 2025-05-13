@@ -1,3 +1,4 @@
+import Dependencies
 import DuetSQL
 import PairQL
 
@@ -8,21 +9,18 @@ struct DateRange: PairNestable, PairInput {
 
 struct UserActivitySummaries: Pair {
   static let auth: ClientAuth = .admin
-
-  struct Input: PairInput {
-    let userId: User.Id
-    let dateRanges: [DateRange]
-  }
+  typealias Input = User.Id
 
   struct Output: PairOutput {
-    let userName: String
-    let days: [Day]
+    var userName: String
+    var days: [Day]
   }
 
   struct Day: PairOutput, PairNestable {
-    let date: Date
-    let numApproved: Int
-    let totalItems: Int
+    var date: Date
+    var numApproved: Int
+    var numFlagged: Int
+    var numTotal: Int
   }
 }
 
@@ -30,70 +28,79 @@ struct UserActivitySummaries: Pair {
 
 extension UserActivitySummaries: Resolver {
   static func resolve(
-    with input: Input,
+    with childId: User.Id,
     in context: AdminContext
   ) async throws -> Output {
-    let user = try await context.verifiedUser(from: input.userId)
-    let userDeviceIds = try await user.devices(in: context.db).map(\.id)
-    let days = try await UserActivitySummaries.days(
-      dateRanges: input.dateRanges,
-      userDeviceIds: userDeviceIds,
-      in: context.db
-    )
-    return .init(userName: user.name, days: days)
+    let child = try await context.verifiedUser(from: childId)
+    let computerUserIds = try await child.devices(in: context.db).map(\.id)
+    let days = try await UserActivitySummaries.days(computerUserIds, in: context.db)
+    return .init(userName: child.name, days: days)
   }
 
   static func days(
-    dateRanges: [DateRange],
-    userDeviceIds: [UserDevice.Id],
+    _ computerUserIds: [UserDevice.Id],
     in db: any Client
   ) async throws -> [Day] {
-    let dates = dateRanges.compactMap(\.dates)
-    let earliestStart = dates.map(\.0).min() ?? .distantFuture
-    let latestEnd = dates.map(\.1).max() ?? .distantPast
+    @Dependency(\.date) var date
+
+    let twoWeeksAgo = date.now - .days(14)
 
     let screenshots = try await Screenshot.query()
-      .where(.computerUserId |=| userDeviceIds)
-      .where(.createdAt <= .date(latestEnd))
-      .where(.createdAt > .date(earliestStart))
+      .where(.computerUserId |=| computerUserIds)
+      .where(.or(
+        .createdAt > .date(twoWeeksAgo),
+        .isNull(.deletedAt) .&& .not(.isNull(.flagged))
+      ))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
       .all(in: db)
 
     let keystrokes = try await KeystrokeLine.query()
-      .where(.computerUserId |=| userDeviceIds)
-      .where(.createdAt <= .date(latestEnd))
-      .where(.createdAt > .date(earliestStart))
+      .where(.computerUserId |=| computerUserIds)
+      .where(.or(
+        .createdAt > .date(twoWeeksAgo),
+        .isNull(.deletedAt) .&& .not(.isNull(.flagged))
+      ))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
       .all(in: db)
 
-    return dates.map {
-      let (start, end) = $0
-      let screenshots = screenshots.filter {
-        $0.createdAt > start && $0.createdAt <= end
+    var dayMap: [Date: ([Screenshot], [KeystrokeLine])] = [:]
+
+    for screenshot in screenshots {
+      let key = Calendar.current.startOfDay(for: screenshot.createdAt)
+      if var value = dayMap[key] {
+        value.0.append(screenshot)
+        dayMap[key] = value
+      } else {
+        dayMap[key] = ([screenshot], [])
       }
-      let keystrokeLines = keystrokes.filter {
-        $0.createdAt > start && $0.createdAt <= end
+    }
+
+    for keystroke in keystrokes {
+      let key = Calendar.current.startOfDay(for: keystroke.createdAt)
+      if var value = dayMap[key] {
+        value.1.append(keystroke)
+        dayMap[key] = value
+      } else {
+        dayMap[key] = ([], [keystroke])
       }
-      let coalesced = coalesce(screenshots, keystrokeLines)
+    }
+
+    var days = dayMap.map { key, value in
+      let (screenshots, keystrokes) = value
+      let coalesced = coalesce(screenshots, keystrokes)
       let deletedCount = coalesced.lazy.filter(\.isDeleted).count
+      let flaggedCount = coalesced.lazy.filter(\.isFlagged).count
 
       return UserActivitySummaries.Day(
-        date: start + .hours(12),
+        date: key,
         numApproved: deletedCount,
-        totalItems: coalesced.count
+        numFlagged: flaggedCount,
+        numTotal: coalesced.count
       )
     }
-  }
-}
-
-extension DateRange {
-  var dates: (Date, Date)? {
-    guard let start = try? Date(fromIsoString: start),
-          let end = try? Date(fromIsoString: end) else {
-      return nil
-    }
-    return (start, end)
+    days.sort { $0.date > $1.date }
+    return days
   }
 }

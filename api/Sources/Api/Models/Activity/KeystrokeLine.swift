@@ -6,6 +6,7 @@ struct KeystrokeLine: Codable, Sendable {
   var appName: String
   var line: String
   var filterSuspended: Bool
+  var flagged: Date?
   var createdAt: Date
   var deletedAt: Date?
 
@@ -15,6 +16,7 @@ struct KeystrokeLine: Codable, Sendable {
     appName: String,
     line: String,
     filterSuspended: Bool = false,
+    flagged: Date? = nil,
     createdAt: Date = Date()
   ) {
     self.id = id
@@ -22,6 +24,7 @@ struct KeystrokeLine: Codable, Sendable {
     self.appName = appName
     self.line = line
     self.filterSuspended = filterSuspended
+    self.flagged = flagged
     self.createdAt = createdAt
   }
 }

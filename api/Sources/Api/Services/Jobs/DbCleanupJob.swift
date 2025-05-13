@@ -25,13 +25,28 @@ struct CleanupJob: AsyncScheduledJob {
     var logs: [String] = []
 
     let deletedScreenshots = try await Screenshot.query()
-      .where(.or(
-        .not(.isNull(.deletedAt)) .&& .deletedAt <= now,
-        .createdAt <= 21.daysAgo
+      .where(.and(
+        .or(
+          .not(.isNull(.deletedAt)) .&& .deletedAt <= now,
+          .createdAt <= 21.daysAgo
+        ),
+        .or(.isNull(.flagged), .flagged <= 60.daysAgo)
       ))
       .delete(in: self.db, force: true)
 
     logs.append("Deleted \(deletedScreenshots) screenshots")
+
+    let deletedKeystrokes = try await KeystrokeLine.query()
+      .where(.and(
+        .or(
+          .not(.isNull(.deletedAt)) .&& .deletedAt <= now,
+          .createdAt <= 21.daysAgo
+        ),
+        .or(.isNull(.flagged), .flagged <= 60.daysAgo)
+      ))
+      .delete(in: self.db, force: true)
+
+    logs.append("Deleted \(deletedKeystrokes) keystroke lines")
 
     let deletedNonPendingUnlockRequests = try await UnlockRequest.query()
       .where(.not(.equals(.status, .enum(RequestStatus.pending))))
@@ -58,12 +73,6 @@ struct CleanupJob: AsyncScheduledJob {
       .delete(in: self.db)
 
     logs.append("Deleted \(suspendFilterRequests) suspend filter requests")
-
-    let keystrokeslines = try await KeystrokeLine.query()
-      .where(.createdAt < 21.daysAgo)
-      .delete(in: self.db, force: true)
-
-    logs.append("Deleted \(keystrokeslines) keystroke lines")
 
     let smokeAdmins = try await Admin.query()
       .where(.like(.email, "%.smoke-test-%"))

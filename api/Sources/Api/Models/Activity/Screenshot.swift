@@ -7,6 +7,7 @@ struct Screenshot: Codable, Sendable {
   var width: Int
   var height: Int
   var filterSuspended: Bool
+  var flagged: Date?
   var createdAt: Date
   var deletedAt: Date?
 
@@ -17,6 +18,7 @@ struct Screenshot: Codable, Sendable {
     width: Int,
     height: Int,
     filterSuspended: Bool = false,
+    flagged: Date? = nil,
     createdAt: Date = Date()
   ) {
     self.id = id
@@ -25,6 +27,7 @@ struct Screenshot: Codable, Sendable {
     self.width = width
     self.height = height
     self.filterSuspended = filterSuspended
+    self.flagged = flagged
     self.createdAt = createdAt
   }
 }

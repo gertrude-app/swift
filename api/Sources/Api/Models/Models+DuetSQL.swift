@@ -412,6 +412,7 @@ extension KeystrokeLine: Model {
     case .appName: .string(self.appName)
     case .line: .string(self.line)
     case .filterSuspended: .bool(self.filterSuspended)
+    case .flagged: .date(self.flagged)
     case .createdAt: .date(self.createdAt)
     case .deletedAt: .date(self.deletedAt)
     }
@@ -424,6 +425,7 @@ extension KeystrokeLine: Model {
       .appName: .string(self.appName),
       .line: .string(self.line),
       .filterSuspended: .bool(self.filterSuspended),
+      .flagged: .date(self.flagged),
       .createdAt: .date(self.createdAt),
       .deletedAt: .date(self.deletedAt),
     ]
@@ -479,6 +481,7 @@ extension Screenshot: Model {
     case .width: .int(self.width)
     case .height: .int(self.height)
     case .filterSuspended: .bool(self.filterSuspended)
+    case .flagged: .date(self.flagged)
     case .createdAt: .date(self.createdAt)
     case .deletedAt: .date(self.deletedAt)
     }
@@ -492,6 +495,7 @@ extension Screenshot: Model {
       .width: .int(self.width),
       .height: .int(self.height),
       .filterSuspended: .bool(self.filterSuspended),
+      .flagged: .date(self.flagged),
       .createdAt: .date(self.createdAt),
       .deletedAt: .date(self.deletedAt),
     ]

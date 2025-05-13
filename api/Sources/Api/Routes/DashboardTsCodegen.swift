@@ -98,6 +98,7 @@ enum DashboardTsCodegenRoute {
       SaveConferenceEmail.self,
       SecurityEventsFeed.self,
       RequestPublicKeychain.self,
+      FlagActivityItems.self,
     ]
   }
 

@@ -3,21 +3,14 @@ import PairQL
 
 struct CombinedUsersActivitySummaries: Pair {
   static let auth: ClientAuth = .admin
-  typealias Input = [DateRange]
   typealias Output = [UserActivitySummaries.Day]
 }
 
 // resolver
 
-extension CombinedUsersActivitySummaries: Resolver {
-  static func resolve(
-    with input: Input,
-    in context: AdminContext
-  ) async throws -> Output {
-    try await UserActivitySummaries.days(
-      dateRanges: input,
-      userDeviceIds: context.userDevices().map(\.id),
-      in: context.db
-    )
+extension CombinedUsersActivitySummaries: NoInputResolver {
+  static func resolve(in ctx: AdminContext) async throws -> Output {
+    let computerUserIds = try await ctx.userDevices().map(\.id)
+    return try await UserActivitySummaries.days(computerUserIds, in: ctx.db)
   }
 }
