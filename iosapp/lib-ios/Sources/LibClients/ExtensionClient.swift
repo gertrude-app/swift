@@ -7,7 +7,8 @@ public struct ExtensionClient: Sendable {
   public var requestAuthorization: @Sendable () async -> Result<Void, AuthFailureReason>
   public var installFilter: @Sendable () async -> Result<Void, FilterInstallError>
   public var filterRunning: @Sendable () async -> Bool
-  public var cleanupForRetry: @Sendable () async -> Void
+  public var cleanupScreenTimeAuthForRetry: @Sendable () async -> Void
+  public var cleanupContentFilterForRetry: @Sendable () async -> Void
 }
 
 extension ExtensionClient: DependencyKey {
@@ -17,11 +18,7 @@ extension ExtensionClient: DependencyKey {
         return .success(())
       #elseif os(iOS)
         do {
-          #if DEBUG
-            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-          #else
-            try await AuthorizationCenter.shared.requestAuthorization(for: .child)
-          #endif
+          try await AuthorizationCenter.shared.requestAuthorization(for: .child)
           return .success(())
         } catch let familyError as FamilyControlsError {
           switch familyError {
@@ -111,12 +108,14 @@ extension ExtensionClient: DependencyKey {
         }
       #endif
     },
-    cleanupForRetry: {
-      NEFilterManager.shared().providerConfiguration = nil
-      try? await NEFilterManager.shared().removeFromPreferences()
+    cleanupScreenTimeAuthForRetry: {
       #if os(iOS)
         AuthorizationCenter.shared.revokeAuthorization { _ in }
       #endif
+    },
+    cleanupContentFilterForRetry: {
+      NEFilterManager.shared().providerConfiguration = nil
+      try? await NEFilterManager.shared().removeFromPreferences()
     }
   )
 }
@@ -126,7 +125,8 @@ extension ExtensionClient: TestDependencyKey {
     requestAuthorization: { .success(()) },
     installFilter: { .success(()) },
     filterRunning: { false },
-    cleanupForRetry: {}
+    cleanupScreenTimeAuthForRetry: {},
+    cleanupContentFilterForRetry: {}
   )
 }
 
