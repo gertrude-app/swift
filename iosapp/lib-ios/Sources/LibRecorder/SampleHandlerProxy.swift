@@ -85,19 +85,18 @@ public struct SampleHandlerProxy {
   }
 
   private func upright(_ orientation: CGImagePropertyOrientation?) -> CGImagePropertyOrientation {
-    if case .left = orientation {
-      return .right
+    switch orientation {
+    case .left:
+      .right
+    case .right:
+      .left
+    case .rightMirrored:
+      .leftMirrored
+    case .leftMirrored:
+      .rightMirrored
+    default:
+      orientation ?? .up
     }
-    if case .right = orientation {
-      return .left
-    }
-    if case .rightMirrored = orientation {
-      return .leftMirrored
-    }
-    if case .leftMirrored = orientation {
-      return .rightMirrored
-    }
-    return orientation ?? .up
   }
 
   func getOrientationOf(_ buffer: CMSampleBuffer) -> CGImagePropertyOrientation? {
