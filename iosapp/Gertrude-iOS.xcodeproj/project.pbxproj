@@ -531,7 +531,7 @@
 				CODE_SIGN_ENTITLEMENTS = recorder/recorder.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -546,7 +546,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.recorder";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.recorder";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -563,7 +563,7 @@
 				CODE_SIGN_ENTITLEMENTS = recorder/recorder.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -578,7 +578,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.recorder";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.recorder";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -712,7 +712,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = app/Info.plist;
@@ -728,7 +728,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.3.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -751,7 +751,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_ASSET_PATHS = "\"app/Preview Content\"";
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = app/Info.plist;
@@ -767,7 +767,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.3.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -785,7 +785,7 @@
 				CODE_SIGN_ENTITLEMENTS = filter/filter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = filter/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = filter;
@@ -797,7 +797,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.3.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.filter";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.filter";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -815,7 +815,7 @@
 				CODE_SIGN_ENTITLEMENTS = filter/filter.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = filter/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = filter;
@@ -827,7 +827,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.3.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.filter";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.filter";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -846,7 +846,7 @@
 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -861,7 +861,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.3.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.controller";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.controller";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -882,7 +882,7 @@
 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
-				DEVELOPMENT_TEAM = WFN83LM943;
+				DEVELOPMENT_TEAM = J83773RWC3;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -897,7 +897,7 @@
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.3.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.netrivet.gertrude-ios.app.controller";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ftc.gertrude-ios.app.controller";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
