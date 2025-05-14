@@ -4,11 +4,11 @@ import LibClients
 import os.log
 import ReplayKit
 
-// import UIKit
-
 public struct SampleHandlerProxy {
-  private var lastSavedDate = Date()
+  private var lastSavedDate = Date.now
   private let ciContext = CIContext()
+  private var previousScreenThumbnail: CGImage?
+  let halfSize = CGAffineTransform(scaleX: 0.5, y: 0.5)
 
   @Dependency(\.date) private var date
   @Dependency(\.recorder) private var recorder
@@ -37,59 +37,93 @@ public struct SampleHandlerProxy {
 
   public mutating func shouldUploadBuffer() -> Bool {
     if abs(self.lastSavedDate.timeIntervalSinceNow) > 5 {
-      self.lastSavedDate = Date()
+      self.lastSavedDate = self.date.now
       return true
     } else {
       return false
     }
   }
 
-  private func getCGImage(from sampleBuffer: CMSampleBuffer, maxWidth: CGFloat) -> CGImage? {
+  public mutating func processVideoBufferForUpload(_ buffer: CMSampleBuffer) {
+
+    guard let currentScreen = getCIImageFrom(buffer),
+          let currentScreenThumbnail = getThumbnailCGImageFrom(currentScreen) else {
+      os_log("[G•] Failed to create cgImage.")
+      return
+    }
+    let width = Int(currentScreen.extent.width)
+    let height = Int(currentScreen.extent.height)
+
+    if !currentScreenThumbnail.isNearlyIdenticalTo(self.previousScreenThumbnail) {
+      self.previousScreenThumbnail = currentScreenThumbnail
+
+      guard let currentScreenJpeg = jpegData(from: currentScreen) else { return }
+      self.ciContext.clearCaches()
+
+      if !self.recorder.saveScreenshotForUpload(.init(
+        data: currentScreenJpeg,
+        width: width,
+        height: height,
+        createdAt: self.date.now
+      )) {
+        // TODO: bail/end suspension if won't save
+      }
+      os_log("[G•] Saving screenshot for upload: %{public}s", "\(width)x\(height)")
+    } else {
+      os_log("[G•] Ignoring unchanged screen")
+    }
+  }
+
+  private func getCIImageFrom(_ sampleBuffer: CMSampleBuffer) -> CIImage? {
     guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
       os_log("[G•] CMSampleBufferGetImageBuffer failed.")
       return nil
     }
-    let scaled = scale(CIImage(cvImageBuffer: imageBuffer), maxWidth: maxWidth)
-    return self.ciContext.createCGImage(scaled, from: scaled.extent)
+    return CIImage(cvImageBuffer: imageBuffer)
+      .transformed(by: self.halfSize)
+      .oriented(self.upright(self.getOrientationOf(sampleBuffer)))
   }
 
-  public func processVideoBufferForUpload(_ buffer: CMSampleBuffer) {
-    guard let cgImage = getCGImage(from: buffer, maxWidth: 800) else {
-      os_log("[G•] Failed to create CGImage from CMSampleBuffer")
-      return
-    }
-
-    #if os(iOS)
-      let uiImage = UIImage(cgImage: cgImage)
-      guard let jpegData = uiImage.jpegData(compressionQuality: 0.7) else {
-        os_log("[G•] Failed to create jpeg Data from CGImage")
-        return
-      }
-    #else
-      let bitmap = NSBitmapImageRep(cgImage: cgImage)
-      let props: [NSBitmapImageRep.PropertyKey: Any] = [.compressionFactor: 0.7]
-      guard let jpegData = bitmap.representation(using: .jpeg, properties: props) else {
-        os_log("[G•] Failed to create jpeg Data from CGImage")
-        return
-      }
-    #endif
-
-    os_log("[G•] Saving screenshot for upload: %{public}s", "\(cgImage.width)x\(cgImage.height)")
-
-    if !self.recorder.saveScreenshotForUpload(.init(
-      data: jpegData,
-      width: cgImage.width,
-      height: cgImage.height,
-      createdAt: self.date.now
-    )) {
-      // TODO: bail/end suspension if won't save
+  private func upright(_ orientation: CGImagePropertyOrientation?) -> CGImagePropertyOrientation {
+    switch orientation {
+    case .left:
+      .right
+    case .right:
+      .left
+    case .rightMirrored:
+      .leftMirrored
+    case .leftMirrored:
+      .rightMirrored
+    default:
+      orientation ?? .up
     }
   }
-}
 
-func scale(_ image: CIImage, maxWidth: CGFloat) -> CIImage {
-  let width = image.extent.width
-  guard width > maxWidth else { return image }
-  let scale = maxWidth / width
-  return image.transformed(by: .init(scaleX: scale, y: scale))
+  func getOrientationOf(_ buffer: CMSampleBuffer) -> CGImagePropertyOrientation? {
+    (CMGetAttachment(
+      buffer,
+      key: RPVideoSampleOrientationKey as CFString,
+      attachmentModeOut: nil
+    ) as? NSNumber)
+      .flatMap { CGImagePropertyOrientation(rawValue: $0.uint32Value) }
+  }
+
+  // Otherwise the extension runs out of memory.
+  private func getThumbnailCGImageFrom(_ ciImage: CIImage) -> CGImage? {
+    let scaledImage = ciImage.transformed(by: self.halfSize)
+    let cgImage = self.ciContext.createCGImage(scaledImage, from: scaledImage.extent)
+    return cgImage
+  }
+
+  private func jpegData(from ciImage: CIImage) -> Data? {
+    guard let colorSpace = ciImage.colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB) else {
+      os_log("[G•] Error: suitable color space for jpeg screenshot not found.")
+      return nil
+    }
+    return self.ciContext.jpegRepresentation(
+      of: ciImage,
+      colorSpace: colorSpace,
+      options: [kCGImageDestinationLossyCompressionQuality as CIImageRepresentationOption: 0.7]
+    )
+  }
 }
