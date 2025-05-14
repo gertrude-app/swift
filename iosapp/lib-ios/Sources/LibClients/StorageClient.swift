@@ -51,6 +51,10 @@ public extension StorageClient {
     }
   }
 
+  func isAccountConnected() -> Bool {
+    self.loadConnection() != nil
+  }
+
   func saveProtectionMode(_ protectionMode: ProtectionMode) {
     self.saveCodable(value: protectionMode, forKey: .protectionModeStorageKey)
   }

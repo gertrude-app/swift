@@ -119,7 +119,7 @@ public struct IOSReducer {
       return .none
 
     case .runningBtnTapped where state.screen == .running(state: .notConnected):
-      state.destination = .connectAccount(.init(screen: .enteringCode))
+      state.destination = .connectAccount(.init(screen: .pleaseDisableScreenTime))
       return .none
 
     case .runningBtnTapped
@@ -232,11 +232,16 @@ public struct IOSReducer {
           await deps.api.logEvent("4a0c585f", "[onboarding] authorization succeeded")
         case .failure(let reason):
           await send(.programmatic(.authorizationFailed(reason)))
-          await deps.systemExtension.cleanupForRetry()
+          await deps.systemExtension.cleanupScreenTimeAuthForRetry()
           await deps.api.logEvent("e2e02460", "[onboarding] authorization failed: \(reason)")
         }
       }
-
+    case (.onboarding(.happyPath(.connectAccount)), .primary):
+      state.destination = .connectAccount(.init(screen: .enteringCode))
+      return .none
+    case (.onboarding(.happyPath(.connectAccount)), .tertiary):
+      state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+      return .none
     case (.onboarding(.happyPath(.explainInstallWithDevicePasscode)), .primary):
       self.deps.log(state.screen, action, "5dcaa641")
       state.screen = .onboarding(.happyPath(.dontGetTrickedPreInstall))
@@ -251,7 +256,7 @@ public struct IOSReducer {
           await deps.api.logEvent("adced334", "[onboarding] filter install success")
         case .failure(let error):
           await send(.programmatic(.installFailed(error)))
-          await deps.systemExtension.cleanupForRetry()
+          await deps.systemExtension.cleanupContentFilterForRetry()
           await deps.api.logEvent("004d0d89", "[onboarding] filter install failed: \(error)")
         }
       }
@@ -330,21 +335,21 @@ public struct IOSReducer {
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .primary):
       self.deps.log(state.screen, action, "4fc0b1bf")
-      state.screen = .running(state: .notConnected)
+      state.screen = .running(state: RunningState.from(self.deps.storage.isAccountConnected()))
       return .run { [deps = self.deps] _ in
         await deps.appStore.requestRating()
       }
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .secondary):
       self.deps.log(state.screen, action, "a9480aa2")
-      state.screen = .running(state: .notConnected)
+      state.screen = .running(state: RunningState.from(self.deps.storage.isAccountConnected()))
       return .run { [deps = self.deps] _ in
         await deps.appStore.requestReview()
       }
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .tertiary):
       self.deps.log(state.screen, action, "0dddc87c")
-      state.screen = .running(state: .notConnected)
+      state.screen = .running(state: RunningState.from(self.deps.storage.isAccountConnected()))
       return .none
 
       // MARK: - major (18+) path
@@ -678,12 +683,15 @@ public struct IOSReducer {
       return .none
 
     case .authorizationSucceeded:
-      if state.screen == .onboarding(.happyPath(.dontGetTrickedPreAuth)) {
+      if state.screen == .onboarding(.happyPath(.dontGetTrickedPreAuth))
+        || state.screen.isRunning {
         self.deps.log(action, "021834f6")
       } else {
         self.deps.unexpected(state.screen, action, "e30624c6")
       }
-      state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+      state.screen = self.deps.storage
+        .isAccountConnected() ? .onboarding(.happyPath(.explainInstallWithDevicePasscode)) :
+        .onboarding(.happyPath(.connectAccount))
       return .none
 
     case .authorizationFailed(let err):
@@ -822,13 +830,27 @@ public struct IOSReducer {
 
     case .receivedScreenRecordingEvent:
       return .none
+
+    case .requestScreenTimeAuthorization:
+      return .run { [sysExtension = self.deps.systemExtension] send in
+        if case .success = await (sysExtension.requestAuthorization()),
+           await !(sysExtension.filterRunning()) {
+          // If the app had .child Screen Time permission and loses it, that
+          // disables the Content Filter, so prompt the user to re-enable it.
+          await send(.programmatic(.authorizationSucceeded))
+        }
+      }
     }
   }
 
   func destination(state: inout State, action: Destination.Action) -> Effect<Action> {
     switch action {
     case .connectAccount(.connectionSucceeded(childData: let data)):
-      state.screen = .running(state: .connected())
+      if state.screen == .onboarding(.happyPath(.connectAccount)) {
+        state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+      } else {
+        state.screen = .running(state: .connected())
+      }
       return .run { [deps = self.deps] send in
         await deps.api.setAuthToken(data.token)
         deps.storage.saveConnection(data: data)
@@ -871,7 +893,9 @@ extension IOSReducer.Deps {
       self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
     }
     self.storage.removeObject(forKey: .legacyStorageKey)
-    await send(.programmatic(.setScreen(.running(state: .notConnected))))
+
+    let isConnected = IOSReducer.RunningState.from(self.storage.isAccountConnected())
+    await send(.programmatic(.setScreen(.running(state: isConnected))))
     try await self.filter.notifyRulesChanged()
   }
 }

@@ -390,10 +390,26 @@ struct AppView: View {
       )
 
     case .running(state: let state):
-      RunningView(store: self.store, connected: state != .notConnected) {
+      RunningView(store: self.store, connected: state != .notConnected, onBtnTap: {
         self.store.send(.interactive(.runningBtnTapped))
-      }.onShake {
+      }, onAppForeground: {
+        self.store.send(.programmatic(.requestScreenTimeAuthorization))
+      }).onShake {
         self.store.send(.interactive(.receivedShake))
+      }
+
+    case .onboarding(.happyPath(.connectAccount)):
+      ButtonScreenView(
+        text: "Great! You connected Gertrude with Screen Time. Next, connect your Gertrude account",
+        primary: self.btn(text: "Connect", .primary, animate: false),
+        secondary: .init(text: "Learn more", type: .link(.homePage), animate: false),
+        tertiary: self.btn(text: "No thanks", .tertiary, animate: false)
+      )
+      .sheet(item: self.$store.scope(
+        state: \.destination?.connectAccount,
+        action: \.destination.connectAccount
+      )) {
+        ConnectingView(store: $0)
       }
     }
   }
@@ -435,6 +451,7 @@ extension URL {
   static let supervisionTutorial =
     URL(string: "https://gertrude.app/blog/gertrude-ios-supervised-mode")!
   static let appleFamily = URL(string: "https://support.apple.com/en-us/108380")!
+  static let homePage = URL(string: "https://gertrude.app")!
 }
 
 #Preview {
