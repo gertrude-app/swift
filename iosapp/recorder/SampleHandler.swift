@@ -1,8 +1,9 @@
 import LibRecorder
 import ReplayKit
 
-class SampleHandler: RPBroadcastSampleHandler {
-  var proxy = SampleHandlerProxy()
+class SampleHandler: RPBroadcastSampleHandler, FinishableBroadcast {
+
+  lazy var proxy = SampleHandlerProxy(finisher: self)
 
   override func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
     self.proxy.broadcastStarted(withSetupInfo: setupInfo)
@@ -32,5 +33,15 @@ class SampleHandler: RPBroadcastSampleHandler {
     default:
       break
     }
+  }
+
+  // FinishableBroadcast Protocol conformance
+  func finishWithError(_ error: any Error) {
+    self.finishBroadcastWithError(error)
+  }
+
+  // Hook into RPBroadcastSampleHandler's handling of the error.
+  override func finishBroadcastWithError(_ error: any Error) {
+    super.finishBroadcastWithError(error)
   }
 }
