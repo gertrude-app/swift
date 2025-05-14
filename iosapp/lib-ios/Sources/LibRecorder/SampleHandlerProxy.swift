@@ -79,7 +79,33 @@ public struct SampleHandlerProxy {
       os_log("[G•] CMSampleBufferGetImageBuffer failed.")
       return nil
     }
-    return CIImage(cvImageBuffer: imageBuffer).transformed(by: self.halfSize)
+    return CIImage(cvImageBuffer: imageBuffer)
+      .transformed(by: self.halfSize)
+      .oriented(self.upright(self.getOrientationOf(sampleBuffer)))
+  }
+
+  private func upright(_ orientation: CGImagePropertyOrientation?) -> CGImagePropertyOrientation {
+    switch orientation {
+    case .left:
+      .right
+    case .right:
+      .left
+    case .rightMirrored:
+      .leftMirrored
+    case .leftMirrored:
+      .rightMirrored
+    default:
+      orientation ?? .up
+    }
+  }
+
+  func getOrientationOf(_ buffer: CMSampleBuffer) -> CGImagePropertyOrientation? {
+    (CMGetAttachment(
+      buffer,
+      key: RPVideoSampleOrientationKey as CFString,
+      attachmentModeOut: nil
+    ) as? NSNumber)
+      .flatMap { CGImagePropertyOrientation(rawValue: $0.uint32Value) }
   }
 
   // Otherwise the extension runs out of memory.
