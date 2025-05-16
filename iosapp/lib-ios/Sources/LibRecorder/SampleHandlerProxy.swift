@@ -15,10 +15,11 @@ let failedToSave: Error = NSError(
 )
 
 public struct SampleHandlerProxy {
-  private var lastSavedDate = Date.now
+  private var lastSavedDate: Date?
   private let ciContext = CIContext()
   private let finisher: FinishableBroadcast
   private var previousScreenThumbnail: CGImage?
+  private var uploadTask: Task<Void, Never>?
   let halfSize = CGAffineTransform(scaleX: 0.5, y: 0.5)
 
   @Dependency(\.date) private var date
@@ -28,28 +29,28 @@ public struct SampleHandlerProxy {
     self.finisher = finisher
   }
 
-  // User has requested to start the broadcast. Setup info from the UI extension can be supplied but optional.
-  public func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
-    self.recorder.emit(.broadcastStarted)
+  public mutating func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
+    self.uploadTask = self.recorder.startUploadTask()
   }
 
-  // User has requested to pause the broadcast. Samples will stop being delivered.
   public func broadcastPaused() {
-    self.recorder.emit(.broadcastPaused)
+    self.uploadTask?.cancel()
   }
 
-  // User has requested to resume the broadcast. Samples delivery will resume.
-  public func broadcastResumed() {
-    self.recorder.emit(.broadcastResumed)
+  public mutating func broadcastResumed() {
+    self.uploadTask = self.recorder.startUploadTask()
   }
 
-  // User has requested to finish the broadcast.
   public func broadcastFinished() {
-    self.recorder.emit(.broadcastFinished)
+    self.uploadTask?.cancel()
   }
 
   public mutating func shouldUploadBuffer() -> Bool {
-    if abs(self.lastSavedDate.timeIntervalSinceNow) > 5 {
+    guard let lastSavedDate = self.lastSavedDate else {
+      self.lastSavedDate = self.date.now
+      return true // Initial condition. Take first screenshot ASAP.
+    }
+    if abs(lastSavedDate.timeIntervalSinceNow) > 5 {
       self.lastSavedDate = self.date.now
       return true
     } else {
@@ -73,6 +74,11 @@ public struct SampleHandlerProxy {
       guard let currentScreenJpeg = jpegData(from: currentScreen) else { return }
       self.ciContext.clearCaches()
 
+      os_log(
+        "[G•] CCW screenshot at: %{public}s",
+        "\(self.date.now.timeIntervalSinceReferenceDate)"
+      )
+
       if !self.recorder.saveScreenshotForUpload(.init(
         data: currentScreenJpeg,
         width: width,
@@ -84,6 +90,7 @@ public struct SampleHandlerProxy {
       os_log("[G•] Saving screenshot for upload: %{public}s", "\(width)x\(height)")
     } else {
       os_log("[G•] Ignoring unchanged screen")
+      self.ciContext.clearCaches()
     }
   }
 

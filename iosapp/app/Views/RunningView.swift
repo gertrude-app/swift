@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Dependencies
 import LibApp
+import ReplayKit
 import SwiftUI
 
 struct RunningView: View {
@@ -12,6 +13,8 @@ struct RunningView: View {
   @State private var subtitleOffset = Vector(x: 0, y: 20)
   @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
+
+  private let broadcastPicker = RPSystemBroadcastPickerView()
 
   @Bindable var store: StoreOf<IOSReducer>
 
@@ -51,21 +54,21 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
-        BigButton(
-          self.connected ? "Request filter suspension" : "Connect to parent account",
-          type: .button(self.onBtnTap)
-        )
-        .padding(.bottom, 20)
-
-        Text("You can quit the app now, it will keep blocking even when not running.")
-          .font(.system(size: 18, weight: .medium))
-          .foregroundStyle(Color(self.cs, light: .black.opacity(0.6), dark: .white.opacity(0.6)))
-          .swooshIn(
-            tracking: self.$subtitleOffset,
-            to: .zero,
-            after: .seconds(0.4),
-            for: .seconds(0.5)
-          )
+        if self.connected {
+          BigButton("Access Internet", type: .button {
+            self.broadcastPicker.preferredExtension = "com.ftc.gertrude-ios.app.recorder"
+            self.broadcastPicker.showsMicrophoneButton = false
+            // This workaround displays the prompt while minimizing encumbrance with UIKit.
+            for subview in self.broadcastPicker.subviews where subview is UIButton {
+              (subview as? UIButton)?.sendActions(for: .touchUpInside)
+            }
+          }).frame(maxWidth: 500)
+        } else {
+          BigButton(
+            "Connect to parent account",
+            type: .button(self.onBtnTap)
+          ).padding(.bottom, 20)
+        }
 
         Link(destination: URL(string: "https://gertrude.app")!) {
           HStack {

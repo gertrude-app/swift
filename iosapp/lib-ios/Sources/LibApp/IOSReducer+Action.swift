@@ -36,9 +36,7 @@ public extension IOSReducer {
       case setAvailableDiskSpaceInBytes(Int)
       case receiveClearCacheUpdate(DeviceClient.ClearCacheUpdate)
       case receivedSuspensionUpdate(PollFilterSuspensionDecision.Output)
-      case receivedScreenRecordingEvent(RecorderEvent)
       case suspensionRequestExpired
-      case endSuspension
       case requestScreenTimeAuthorization
     }
   }

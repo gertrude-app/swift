@@ -25,14 +25,8 @@ class SampleHandler: RPBroadcastSampleHandler, FinishableBroadcast {
     _ sampleBuffer: CMSampleBuffer,
     with sampleBufferType: RPSampleBufferType
   ) {
-    switch sampleBufferType {
-    case .video:
-      if self.proxy.shouldUploadBuffer() {
-        self.proxy.processVideoBufferForUpload(sampleBuffer)
-      }
-    default:
-      break
-    }
+    guard sampleBufferType == .video, self.proxy.shouldUploadBuffer() else { return }
+    self.proxy.processVideoBufferForUpload(sampleBuffer)
   }
 
   // FinishableBroadcast Protocol conformance
