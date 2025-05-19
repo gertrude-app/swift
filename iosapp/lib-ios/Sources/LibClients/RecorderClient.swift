@@ -66,12 +66,12 @@ extension RecorderClient: DependencyKey {
           // Using this approach so that the recording process promptly has
           // one last chance to upload after recording is completed.
           while !Task.isCancelled {
+            count += 1
+            if count == 40 { // Every ~20 seconds
+              await uploadAvailableScreenshots(api, clock)
+              count = 0
+            }
             do {
-              count += 1
-              if count == 40 { // Every 20 seconds
-                await uploadAvailableScreenshots(api, clock)
-                count = 0
-              }
               try await clock.sleep(for: .seconds(0.5))
             } catch {
               break
@@ -96,7 +96,7 @@ private func uploadAvailableScreenshots(_ api: ApiClient, _ clock: any Clock<Dur
       try? await clock.sleep(for: .milliseconds(5))
     } catch {
       os_log("[G•] Failed to upload screenshot: %{public}@", error.localizedDescription)
-      break
+      break // Will try again on the next 20s interval.
     }
   }
 }
