@@ -11,16 +11,8 @@ public struct RecorderClient: Sendable {
   public var saveScreenshotForUpload: @Sendable (UploadScreenshotData) -> Bool = { _ in true }
   public var startUploadTask: @Sendable () -> Task<Void, Never> = { Task {} }
 }
-struct Deps: Sendable {
-  @Dependency(\.continuousClock) var clock
-  @Dependency(\.storage) var storage
-  @Dependency(\.api) var api
-}
-@ObservationIgnored
-let deps = Deps()
 
 extension RecorderClient: DependencyKey {
-  
   public static var liveValue: RecorderClient {
     .init(
       ensureScreenshotsDir: {
@@ -57,32 +49,36 @@ extension RecorderClient: DependencyKey {
           return false
         }
 
-        deps.storage.saveCodable(value: metaData, forKey: filename)
+        @Dependency(\.storage) var storage
+        storage.saveCodable(value: metaData, forKey: filename)
         return true
       },
       startUploadTask: {
-        Task { // TODO: Test this. Perhaps find a cleaner implementation. Perhaps by finishing up the upload in the filter process (or something)
-          let connection = deps.storage.loadConnection()
+        Task {
+          @Dependency(\.suspendingClock) var clock
+          @Dependency(\.storage) var storage
+          @Dependency(\.api) var api
+          let connection = storage.loadConnection()
           if let token = connection?.token {
-            await deps.api.setAuthToken(token)
+            await api.setAuthToken(token)
           }
-          await withTaskGroup(of: Void.self) { group in
-            group.addTask {
-              for await _ in deps.clock.timer(interval: .milliseconds(500)) {
-                if Task.isCancelled {
-                  await uploadAvailableScreenshots(deps.api, deps.clock)
-                  break
-                }
+          var count = 0
+          // Using this approach so that the recording process promptly has
+          // one last chance to upload after recording is completed.
+          while !Task.isCancelled {
+            do {
+              count += 1
+              if count == 40 { // Every 20 seconds
+                await uploadAvailableScreenshots(api, clock)
+                count = 0
               }
+              try await clock.sleep(for: .seconds(0.5))
+            } catch {
+              break
             }
-            group.addTask {
-              for await _ in deps.clock.timer(interval: .seconds(20)) {
-                if Task.isCancelled {
-                  break
-                }
-                await uploadAvailableScreenshots(deps.api, deps.clock)
-              }
-            }
+          }
+          Task.detached {
+            await uploadAvailableScreenshots(api, clock) // Final upload.
           }
         }
       }
@@ -127,14 +123,15 @@ private func getNextUnprocessedScreenshot(depth: Int = 0)
     return nil
   }
 
+  @Dependency(\.storage) var storage
   guard let imageData = try? Data(contentsOf: file) else {
     os_log("[G•] Failed to load screenshot data from file: %{public}s", file.path)
     try? fm.removeItem(at: file)
-    deps.storage.removeObject(forKey: file.lastPathComponent)
+    storage.removeObject(forKey: file.lastPathComponent)
     return getNextUnprocessedScreenshot(depth: depth + 1)
   }
 
-    guard let metaData = deps.storage.load(
+  guard let metaData = storage.load(
     decoding: ScreenshotMetaData.self,
     forKey: file.lastPathComponent
   )
@@ -144,7 +141,7 @@ private func getNextUnprocessedScreenshot(depth: Int = 0)
       file.lastPathComponent
     )
     try? fm.removeItem(at: file)
-      deps.storage.removeObject(forKey: file.lastPathComponent)
+    storage.removeObject(forKey: file.lastPathComponent)
     return getNextUnprocessedScreenshot(depth: depth + 1)
   }
 
@@ -156,7 +153,7 @@ private func getNextUnprocessedScreenshot(depth: Int = 0)
       createdAt: metaData.createdAt
     ),
     cleanup: {
-      deps.storage.removeObject(forKey: file.lastPathComponent)
+      storage.removeObject(forKey: file.lastPathComponent)
       try? fm.removeItem(at: file)
     }
   )
