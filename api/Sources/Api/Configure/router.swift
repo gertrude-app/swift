@@ -18,6 +18,11 @@ public extension Configure {
       use: DashboardTsCodegenRoute.handler(_:)
     )
 
+    app.get(
+      "admin-ts-codegen",
+      use: AdminTsCodegenRoute.handler(_:)
+    )
+
     app.post(
       "site-forms",
       use: SiteFormsRoute.handler(_:)
