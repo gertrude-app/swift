@@ -10,6 +10,7 @@ public struct RecorderClient: Sendable {
   public var ensureScreenshotsDir: @Sendable () -> Bool = { true }
   public var saveScreenshotForUpload: @Sendable (UploadScreenshotData) -> Bool = { _ in true }
   public var startUploadTask: @Sendable () -> Task<Void, Never> = { Task {} }
+  public var uploadAvailableScreenshots: @Sendable () -> Void
 }
 
 extension RecorderClient: DependencyKey {
@@ -68,7 +69,7 @@ extension RecorderClient: DependencyKey {
           while !Task.isCancelled {
             count += 1
             if count == 40 { // Every ~20 seconds
-              await uploadAvailableScreenshots(api, clock)
+              await self.uploadAvailableScreenshots(api, clock)
               count = 0
             }
             do {
@@ -78,8 +79,19 @@ extension RecorderClient: DependencyKey {
             }
           }
           Task.detached {
-            await uploadAvailableScreenshots(api, clock) // Final upload.
+            await self.uploadAvailableScreenshots(api, clock) // Final upload.
           }
+        }
+      }, uploadAvailableScreenshots: {
+        Task {
+          // How to keep this from interfering with the other one? Ans: check state is not suspended.
+          @Dependency(\.suspendingClock) var clock
+          @Dependency(\.storage) var storage
+          @Dependency(\.api) var api
+          if let token = storage.loadConnection()?.token {
+            await api.setAuthToken(token)
+          }
+          await self.uploadAvailableScreenshots(api, clock)
         }
       }
     )

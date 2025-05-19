@@ -24,14 +24,20 @@ import NetworkExtension
     deps.logger.log("unexpected empty rules from api")
     return
   }
+  let protectionMode = deps.storage.loadProtectionMode()
+  if let protectionMode, !protectionMode.isSuspended {
+    deps.recorder.uploadAvailableScreenshots()
+  }
 
-  let savedRules = deps.storage.loadProtectionMode()?.normalRules
-  if apiRules != savedRules {
+  // TODO: CCW: recorder needs to connect to filter to update protection mode
+  // See deps filter.suspend(until: date)
+  let savedRules = protectionMode?.normalRules
+  if apiRules != savedRules || (protectionMode != nil && !protectionMode!.isSuspended) {
     deps.logger.log("saving changed rules")
     deps.storage.saveProtectionMode(.normal(apiRules))
     notify.withValue { $0() }
   } else {
-    deps.logger.log("rules unchanged")
+    deps.logger.log("rules unchanged or filter is currently suspended.")
   }
 }
 
@@ -42,6 +48,7 @@ public class ControllerProxy {
     @Dependency(\.suspendingClock) var clock
     @Dependency(\.device) var device
     @Dependency(\.storage) var storage
+    @Dependency(\.recorder) var recorder
   }
 
   private let deps = Deps()
