@@ -25,14 +25,13 @@ import NetworkExtension
     return
   }
   let protectionMode = deps.storage.loadProtectionMode()
-  if let protectionMode, !protectionMode.isSuspended {
-    deps.recorder.uploadAvailableScreenshots()
+  let isSuspended = protectionMode?.isSuspended ?? false
+  if !isSuspended {
+    deps.recorder.uploadRemainingScreenshots()
   }
 
-  // TODO: CCW: recorder needs to connect to filter to update protection mode
-  // See deps filter.suspend(until: date)
   let savedRules = protectionMode?.normalRules
-  if apiRules != savedRules || (protectionMode != nil && !protectionMode!.isSuspended) {
+  if apiRules != savedRules, !isSuspended {
     deps.logger.log("saving changed rules")
     deps.storage.saveProtectionMode(.normal(apiRules))
     notify.withValue { $0() }

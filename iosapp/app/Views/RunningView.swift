@@ -13,6 +13,7 @@ struct RunningView: View {
   @State private var subtitleOffset = Vector(x: 0, y: 20)
   @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
+  @State private var isRecording = UIScreen.main.isCaptured
 
   private let broadcastPicker = RPSystemBroadcastPickerView()
 
@@ -43,7 +44,10 @@ struct RunningView: View {
           .cornerRadius(24)
           .swooshIn(tracking: self.$iconOffset, to: .zero, after: .seconds(0.2), for: .seconds(0.5))
 
-        Text("Gertude is blocking unwanted content")
+        let status = self
+          .isRecording ? "Gertrude is not blocking during screen recording." :
+          "Gertrude is blocking unwanted content"
+        Text(status)
           .font(.system(size: 24, weight: .medium))
           .padding(.bottom, 12)
           .padding(.top, 28)
@@ -54,9 +58,10 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
+        let buttonTitle = self.isRecording ? "Stop Recording" : "Access Internet"
         if self.connected {
-          BigButton("Access Internet", type: .button {
-            self.broadcastPicker.preferredExtension = "com.ftc.gertrude-ios.app.recorder"
+          BigButton(buttonTitle, type: .button {
+            self.broadcastPicker.preferredExtension = .recorderExtensionBundleId
             self.broadcastPicker.showsMicrophoneButton = false
             // This workaround displays the prompt while minimizing encumbrance with UIKit.
             for subview in self.broadcastPicker.subviews where subview is UIButton {
@@ -108,6 +113,12 @@ struct RunningView: View {
       if oldPhase != .active, newPhase == .active {
         self.onAppForeground()
       }
+    }
+    .onReceive(
+      NotificationCenter.default
+        .publisher(for: UIScreen.capturedDidChangeNotification)
+    ) { _ in
+      self.isRecording = UIScreen.main.isCaptured
     }
   }
 }

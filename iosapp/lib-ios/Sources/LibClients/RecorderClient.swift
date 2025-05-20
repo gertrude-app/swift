@@ -10,7 +10,7 @@ public struct RecorderClient: Sendable {
   public var ensureScreenshotsDir: @Sendable () -> Bool = { true }
   public var saveScreenshotForUpload: @Sendable (UploadScreenshotData) -> Bool = { _ in true }
   public var startUploadTask: @Sendable () -> Task<Void, Never> = { Task {} }
-  public var uploadAvailableScreenshots: @Sendable () -> Void
+  public var uploadRemainingScreenshots: @Sendable () -> Void
 }
 
 extension RecorderClient: DependencyKey {
@@ -59,17 +59,16 @@ extension RecorderClient: DependencyKey {
           @Dependency(\.suspendingClock) var clock
           @Dependency(\.storage) var storage
           @Dependency(\.api) var api
-          let connection = storage.loadConnection()
-          if let token = connection?.token {
-            await api.setAuthToken(token)
-          }
+          guard let token = storage.loadConnection()?.token else { return }
+          await api.setAuthToken(token)
+
           var count = 0
           // Using this approach so that the recording process promptly has
           // one last chance to upload after recording is completed.
           while !Task.isCancelled {
             count += 1
             if count == 40 { // Every ~20 seconds
-              await self.uploadAvailableScreenshots(api, clock)
+              await uploadAvailableScreenshots(api, clock)
               count = 0
             }
             do {
@@ -79,19 +78,17 @@ extension RecorderClient: DependencyKey {
             }
           }
           Task.detached {
-            await self.uploadAvailableScreenshots(api, clock) // Final upload.
+            await uploadAvailableScreenshots(api, clock) // Final upload.
           }
         }
-      }, uploadAvailableScreenshots: {
+      }, uploadRemainingScreenshots: {
         Task {
-          // How to keep this from interfering with the other one? Ans: check state is not suspended.
           @Dependency(\.suspendingClock) var clock
           @Dependency(\.storage) var storage
           @Dependency(\.api) var api
-          if let token = storage.loadConnection()?.token {
-            await api.setAuthToken(token)
-          }
-          await self.uploadAvailableScreenshots(api, clock)
+          guard let token = storage.loadConnection()?.token else { return }
+          await api.setAuthToken(token)
+          await uploadAvailableScreenshots(api, clock)
         }
       }
     )

@@ -51,7 +51,7 @@ struct RequestSuspensionView: View {
         BigButton("Start suspension", type: .button {
           // TODO: need to hook into start of broadcast, not tap
           self.store.send(.startSuspensionTapped(duration))
-          self.broadcastPicker.preferredExtension = "com.ftc.gertrude-ios.app.recorder"
+          self.broadcastPicker.preferredExtension = .recorderExtensionBundleId
           self.broadcastPicker.showsMicrophoneButton = false
           // This workaround displays the prompt while minimizing encumbrance with UIKit.
           for subview in self.broadcastPicker.subviews where subview is UIButton {

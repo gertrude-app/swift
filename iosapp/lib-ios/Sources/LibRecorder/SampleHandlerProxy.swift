@@ -1,7 +1,6 @@
 import Combine
 import Dependencies
 import LibClients
-import os.log
 import ReplayKit
 
 public protocol FinishableBroadcast {
@@ -15,7 +14,7 @@ let failedToSave: Error = NSError(
 )
 
 public struct SampleHandlerProxy {
-  private var lastSavedDate: Date?
+  private var lastTime: Date?
   private let ciContext = CIContext()
   private let finisher: FinishableBroadcast
   private var previousScreenThumbnail: CGImage?
@@ -24,6 +23,8 @@ public struct SampleHandlerProxy {
 
   @Dependency(\.date) private var date
   @Dependency(\.recorder) private var recorder
+  @Dependency(\.storage) private var storage
+  @Dependency(\.osLog) private var logger
 
   public init(finisher: FinishableBroadcast) {
     self.finisher = finisher
@@ -31,6 +32,7 @@ public struct SampleHandlerProxy {
 
   public mutating func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
     self.uploadTask = self.recorder.startUploadTask()
+    self.suspendFilter()
   }
 
   public func broadcastPaused() {
@@ -45,13 +47,21 @@ public struct SampleHandlerProxy {
     self.uploadTask?.cancel()
   }
 
+  private func suspendFilter() {
+    Task {
+      @Dependency(\.filter) var filter
+      @Dependency(\.date) var date
+      await filter.suspend(until: date.now.addingTimeInterval(.tomorrow))
+    }
+  }
+
   public mutating func shouldUploadBuffer() -> Bool {
-    guard let lastSavedDate = self.lastSavedDate else {
-      self.lastSavedDate = self.date.now
+    guard let lastTime = self.lastTime else {
+      self.lastTime = self.date.now
       return true // Initial condition. Take first screenshot ASAP.
     }
-    if abs(lastSavedDate.timeIntervalSinceNow) > 5 {
-      self.lastSavedDate = self.date.now
+    if abs(lastTime.timeIntervalSinceNow) > .screenshotIntervalSeconds {
+      self.lastTime = self.date.now
       return true
     } else {
       return false
@@ -62,7 +72,7 @@ public struct SampleHandlerProxy {
 
     guard let currentScreen = getCIImageFrom(buffer),
           let currentScreenThumbnail = getThumbnailCGImageFrom(currentScreen) else {
-      os_log("[G•] Failed to create cgImage.")
+      self.logger.log("[G•] Failed to create cgImage.")
       return
     }
     let width = Int(currentScreen.extent.width)
@@ -74,29 +84,27 @@ public struct SampleHandlerProxy {
       guard let currentScreenJpeg = jpegData(from: currentScreen) else { return }
       self.ciContext.clearCaches()
 
-      os_log(
-        "[G•] CCW screenshot at: %{public}s",
-        "\(self.date.now.timeIntervalSinceReferenceDate)"
-      )
-
-      if !self.recorder.saveScreenshotForUpload(.init(
+      if self.recorder.saveScreenshotForUpload(.init(
         data: currentScreenJpeg,
         width: width,
         height: height,
         createdAt: self.date.now
       )) {
-        self.finisher.finishWithError(failedToSave)
+        self.storage.saveDate(self.date.now, .screenshotLastSavedKey)
+      } else {
+        self.finisher.finishWithError(failedToSave) // TODO: Test
       }
-      os_log("[G•] Saving screenshot for upload: %{public}s", "\(width)x\(height)")
+      self.logger.log("[G•] Saving screenshot for upload: \(width)x\(height)")
     } else {
-      os_log("[G•] Ignoring unchanged screen")
+      self.logger.debug("[G•] Ignoring unchanged screen")
+      self.storage.saveDate(self.date.now, .screenshotLastSavedKey)
       self.ciContext.clearCaches()
     }
   }
 
   private func getCIImageFrom(_ sampleBuffer: CMSampleBuffer) -> CIImage? {
     guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-      os_log("[G•] CMSampleBufferGetImageBuffer failed.")
+      self.logger.log("[G•] CMSampleBufferGetImageBuffer failed.")
       return nil
     }
     return CIImage(cvImageBuffer: imageBuffer)
@@ -137,7 +145,7 @@ public struct SampleHandlerProxy {
 
   private func jpegData(from ciImage: CIImage) -> Data? {
     guard let colorSpace = ciImage.colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB) else {
-      os_log("[G•] Error: suitable color space for jpeg screenshot not found.")
+      self.logger.log("[G•] Error: suitable color space for jpeg screenshot not found.")
       return nil
     }
     return self.ciContext.jpegRepresentation(

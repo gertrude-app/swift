@@ -99,7 +99,8 @@ public final class FilterProxy: Sendable {
        let expiration = self.deps.storage.loadDate(forKey: .filterSuspensionExpirationKey),
        expiration > self.deps.now,
        isGertrude(bundleId) {
-      self.deps.logger.log("suspending filter until \(expiration)")
+      self.deps.logger
+        .log("suspending filter until \(expiration)")
       self.protectionMode.withLock { protectionMode in
         if !protectionMode.isSuspended {
           protectionMode = .suspended(until: expiration, restoring: protectionMode)
@@ -110,7 +111,7 @@ public final class FilterProxy: Sendable {
 
     if hostname == "resume-filter.xpc.gertrude.app", isGertrude(bundleId),
        case .suspended(until: _, restoring: let previous) = self.protectionMode.withLock({ $0 }) {
-      self.deps.logger.log("resuming filter")
+      self.deps.logger.log("resuming filter by request")
       self.deps.storage.removeObject(forKey: .filterSuspensionExpirationKey)
       self.protectionMode.withLock { $0 = previous }
       return self.decideFlow(hostname: hostname, url: url, bundleId: bundleId, flowType: flowType)
@@ -124,7 +125,8 @@ public final class FilterProxy: Sendable {
 
     guard let rules = protectionMode.rules else {
       if case .suspended(until: let expiration, restoring: let previous) = protectionMode {
-        if expiration < self.deps.now {
+        if expiration < self.deps.now || !self.isRecording {
+          self.deps.logger.log("resuming filter due to expiration or lack of recording")
           self.deps.storage.removeObject(forKey: .filterSuspensionExpirationKey)
           self.protectionMode.withLock { $0 = previous }
           return self.decideFlow(
@@ -199,6 +201,14 @@ public final class FilterProxy: Sendable {
     }
   }
 
+  // Ensure there is never a case where filter is suspended without screenshots flowing.
+  var isRecording: Bool {
+    guard let lastRecordedSampleTime = self.deps.storage.loadDate(forKey: .screenshotLastSavedKey)
+    else { return false }
+    let secondsElasped = self.deps.now.timeIntervalSince(lastRecordedSampleTime)
+    return secondsElasped > 0 && secondsElasped < (.screenshotIntervalSeconds + .wiggleSeconds)
+  }
+
   public func handleRulesChanged() {
     self.readRules()
   }
@@ -251,12 +261,15 @@ public extension FilterProxy {
 
 private func isGertrude(_ bundleId: String?) -> Bool {
   guard let bundleId else { return false }
-  return bundleId == .gertrudeBundleIdLong || bundleId == .gertrudeBundleIdShort
+  return bundleId == .gertrudeBundleIdLong || bundleId == .gertrudeBundleIdShort ||
+    bundleId == .gertrudeRecorderIdShort || bundleId == .gertrudeRecorderIdLong
 }
 
 public extension String {
   static let gertrudeBundleIdLong = "J83773RWC3.com.ftc.gertrude-ios.app"
   static let gertrudeBundleIdShort = "com.ftc.gertrude-ios.app"
+  static let gertrudeRecorderIdShort = ".\(String.recorderExtensionBundleId)"
+  static let gertrudeRecorderIdLong = "J83773RWC3.\(String.recorderExtensionBundleId)"
 }
 
 // conformances

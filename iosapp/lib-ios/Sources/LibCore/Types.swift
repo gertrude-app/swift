@@ -100,6 +100,10 @@ public extension String {
     "FilterSuspensionExpiration.v1.5.0"
   }
 
+  static var screenshotLastSavedKey: String {
+    "ScreenshotLastSaved.v1.5.0"
+  }
+
   static var connectionStorageKey: String {
     "ChildIOSDeviceData.v1.5.0"
   }
@@ -107,4 +111,14 @@ public extension String {
   static var disabledBlockGroupsStorageKey: String {
     "disabledBlockGroups.v1.3.0"
   }
+
+  static var recorderExtensionBundleId: String {
+    "com.ftc.gertrude-ios.app.recorder"
+  }
+}
+
+public extension TimeInterval {
+  static var screenshotIntervalSeconds: TimeInterval { 5 }
+  static var wiggleSeconds: TimeInterval { 1 }
+  static var tomorrow: TimeInterval { 86400 }
 }
