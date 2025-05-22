@@ -11,6 +11,7 @@ public enum UserActivity {
     var width: Int
     var height: Int
     var duringSuspension: Bool
+    var flagged: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -21,6 +22,7 @@ public enum UserActivity {
     var appName: String
     var line: String
     var duringSuspension: Bool
+    var flagged: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -37,6 +39,15 @@ public enum UserActivity {
     public var keystrokeLine: CoalescedKeystrokeLine? {
       guard case .keystrokeLine(let keystrokeLine) = self else { return nil }
       return keystrokeLine
+    }
+
+    public var isFlagged: Bool {
+      switch self {
+      case .screenshot(let screenshot):
+        screenshot.flagged
+      case .keystrokeLine(let keystrokeLine):
+        keystrokeLine.flagged
+      }
     }
   }
 }
@@ -139,25 +150,27 @@ extension UserActivity.Item: HasOptionalDeletedAt {
 
 extension UserActivity.Screenshot {
   init(from screenshot: Screenshot) {
-    id = screenshot.id
-    ids = [screenshot.id]
-    url = screenshot.url
-    width = screenshot.width
-    height = screenshot.height
-    duringSuspension = screenshot.filterSuspended
-    createdAt = screenshot.createdAt
+    self.id = screenshot.id
+    self.ids = [screenshot.id]
+    self.url = screenshot.url
+    self.width = screenshot.width
+    self.height = screenshot.height
+    self.duringSuspension = screenshot.filterSuspended
+    self.createdAt = screenshot.createdAt
+    self.flagged = screenshot.flagged != nil
     self.deletedAt = screenshot.deletedAt
   }
 }
 
 extension UserActivity.CoalescedKeystrokeLine {
   init(from keystroke: KeystrokeLine) {
-    id = keystroke.id
-    ids = [keystroke.id]
-    appName = keystroke.appName
-    line = keystroke.line
-    duringSuspension = keystroke.filterSuspended
-    createdAt = keystroke.createdAt
+    self.id = keystroke.id
+    self.ids = [keystroke.id]
+    self.appName = keystroke.appName
+    self.line = keystroke.line
+    self.duringSuspension = keystroke.filterSuspended
+    self.createdAt = keystroke.createdAt
+    self.flagged = keystroke.flagged != nil
     self.deletedAt = keystroke.deletedAt
   }
 }

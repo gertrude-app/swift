@@ -27,6 +27,7 @@ extension KeystrokeLine: RandomMocked {
       computerUserId: .init(),
       appName: "@random".random,
       line: "@random".random,
+      flagged: Bool.random() ? Date() : nil,
       createdAt: Date()
     )
   }

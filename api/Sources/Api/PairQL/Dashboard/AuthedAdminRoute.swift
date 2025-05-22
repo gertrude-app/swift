@@ -9,6 +9,7 @@ enum AuthedAdminRoute: PairRoute {
   case decideFilterSuspensionRequest(DecideFilterSuspensionRequest.Input)
   case deleteActivityItems_v2(DeleteActivityItems_v2.Input)
   case deleteEntity(DeleteEntity.Input)
+  case flagActivityItems(FlagActivityItems.Input)
   case getAdmin
   case getAdminKeychain(GetAdminKeychain.Input)
   case getAdminKeychains
@@ -28,7 +29,7 @@ enum AuthedAdminRoute: PairRoute {
   case userActivityFeed(UserActivityFeed.Input)
   case userActivitySummaries(UserActivitySummaries.Input)
   case combinedUsersActivityFeed(CombinedUsersActivityFeed.Input)
-  case combinedUsersActivitySummaries(CombinedUsersActivitySummaries.Input)
+  case combinedUsersActivitySummaries
   case getUsers
   case getUserUnlockRequests(GetUserUnlockRequests.Input)
   case saveDevice(SaveDevice.Input)
@@ -69,6 +70,10 @@ extension AuthedAdminRoute {
       Route(.case(Self.deleteEntity)) {
         Operation(DeleteEntity.self)
         Body(.dashboardInput(DeleteEntity.self))
+      }
+      Route(.case(Self.flagActivityItems)) {
+        Operation(FlagActivityItems.self)
+        Body(.dashboardInput(FlagActivityItems.self))
       }
       Route(.case(Self.getAdmin)) {
         Operation(GetAdmin.self)
@@ -181,7 +186,6 @@ extension AuthedAdminRoute {
       }
       Route(.case(Self.combinedUsersActivitySummaries)) {
         Operation(CombinedUsersActivitySummaries.self)
-        Body(.dashboardInput(CombinedUsersActivitySummaries.self))
       }
       Route(.case(Self.requestPublicKeychain)) {
         Operation(RequestPublicKeychain.self)
@@ -221,8 +225,8 @@ extension AuthedAdminRoute: RouteResponder {
     case .combinedUsersActivityFeed(let input):
       let output = try await CombinedUsersActivityFeed.resolve(with: input, in: context)
       return try await self.respond(with: output)
-    case .combinedUsersActivitySummaries(let input):
-      let output = try await CombinedUsersActivitySummaries.resolve(with: input, in: context)
+    case .combinedUsersActivitySummaries:
+      let output = try await CombinedUsersActivitySummaries.resolve(in: context)
       return try await self.respond(with: output)
     case .getAdmin:
       let output = try await GetAdmin.resolve(in: context)
@@ -307,6 +311,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .requestPublicKeychain(let input):
       let output = try await RequestPublicKeychain.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .flagActivityItems(let input):
+      let output = try await FlagActivityItems.resolve(with: input, in: context)
       return try await self.respond(with: output)
     }
   }

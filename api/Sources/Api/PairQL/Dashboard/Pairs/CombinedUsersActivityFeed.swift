@@ -58,3 +58,13 @@ extension CombinedUsersActivityFeed: Resolver {
     }
   }
 }
+
+extension DateRange {
+  var dates: (Date, Date)? {
+    guard let start = try? Date(fromIsoString: start),
+          let end = try? Date(fromIsoString: end) else {
+      return nil
+    }
+    return (start, end)
+  }
+}

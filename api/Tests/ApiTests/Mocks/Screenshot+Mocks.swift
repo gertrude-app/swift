@@ -1,3 +1,4 @@
+import Foundation
 import Gertie
 
 @testable import Api
@@ -16,7 +17,8 @@ extension Screenshot: RandomMocked {
       computerUserId: .init(),
       url: "@random".random,
       width: Int.random,
-      height: Int.random
+      height: Int.random,
+      flagged: Bool.random() ? Date() : nil
     )
   }
 }

@@ -21,10 +21,12 @@ extension DeleteActivityItems_v2: Resolver {
     async let keystrokes = try await KeystrokeLine.query()
       .where(.computerUserId |=| userDeviceIds)
       .where(.id |=| input.keystrokeLineIds)
+      .where(.isNull(.flagged))
       .delete(in: context.db)
     async let screenshots = Screenshot.query()
       .where(.computerUserId |=| userDeviceIds)
       .where(.id |=| input.screenshotIds)
+      .where(.isNull(.flagged))
       .delete(in: context.db)
     _ = try await (keystrokes, screenshots)
     return .success

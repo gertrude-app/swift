@@ -280,6 +280,7 @@ public extension UserActivity.Item {
     var width: Int
     var height: Int
     var duringSuspension: Bool
+    var flagged: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -291,6 +292,7 @@ public extension UserActivity.Item {
     var appName: String
     var line: String
     var duringSuspension: Bool
+    var flagged: Bool
     var createdAt: Date
     var deletedAt: Date?
   }
@@ -305,6 +307,7 @@ public extension UserActivity.Item {
         width: unflat.width,
         height: unflat.height,
         duringSuspension: unflat.duringSuspension,
+        flagged: unflat.flagged,
         createdAt: unflat.createdAt,
         deletedAt: unflat.deletedAt
       ).encode(to: encoder)
@@ -315,6 +318,7 @@ public extension UserActivity.Item {
         appName: unflat.appName,
         line: unflat.line,
         duringSuspension: unflat.duringSuspension,
+        flagged: unflat.flagged,
         createdAt: unflat.createdAt,
         deletedAt: unflat.deletedAt
       ).encode(to: encoder)
@@ -334,6 +338,7 @@ public extension UserActivity.Item {
         width: value.width,
         height: value.height,
         duringSuspension: value.duringSuspension,
+        flagged: value.flagged,
         createdAt: value.createdAt,
         deletedAt: value.deletedAt
       ))
@@ -345,6 +350,7 @@ public extension UserActivity.Item {
         appName: value.appName,
         line: value.line,
         duringSuspension: value.duringSuspension,
+        flagged: value.flagged,
         createdAt: value.createdAt,
         deletedAt: value.deletedAt
       ))
