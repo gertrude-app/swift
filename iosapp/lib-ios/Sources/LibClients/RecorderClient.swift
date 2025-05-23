@@ -10,7 +10,7 @@ public struct RecorderClient: Sendable {
   public var ensureScreenshotsDir: @Sendable () -> Bool = { true }
   public var saveScreenshotForUpload: @Sendable (UploadScreenshotData) -> Bool = { _ in true }
   public var startUploadTask: @Sendable () -> Task<Void, Never> = { Task {} }
-  public var uploadRemainingScreenshots: @Sendable () -> Void
+  public var uploadRemainingScreenshots: @Sendable () -> Void = { }
 }
 
 extension RecorderClient: DependencyKey {
