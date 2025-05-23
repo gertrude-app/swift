@@ -27,7 +27,6 @@ public struct IOSReducer {
   enum CancelId {
     case cacheClearUpdates
     case screenshotUploads
-    case recorderEvents
   }
 
   public init() {}
@@ -119,7 +118,7 @@ public struct IOSReducer {
       return .none
 
     case .runningBtnTapped where state.screen == .running(state: .notConnected):
-      state.destination = .connectAccount(.init(screen: .enteringCode))
+      state.destination = .connectAccount(.init(screen: .pleaseDisableScreenTime))
       return .none
 
     case .runningBtnTapped
@@ -232,11 +231,16 @@ public struct IOSReducer {
           await deps.api.logEvent("4a0c585f", "[onboarding] authorization succeeded")
         case .failure(let reason):
           await send(.programmatic(.authorizationFailed(reason)))
-          await deps.systemExtension.cleanupForRetry()
+          await deps.systemExtension.cleanupScreenTimeAuthForRetry()
           await deps.api.logEvent("e2e02460", "[onboarding] authorization failed: \(reason)")
         }
       }
-
+    case (.onboarding(.happyPath(.connectAccount)), .primary):
+      state.destination = .connectAccount(.init(screen: .enteringCode))
+      return .none
+    case (.onboarding(.happyPath(.connectAccount)), .tertiary):
+      state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+      return .none
     case (.onboarding(.happyPath(.explainInstallWithDevicePasscode)), .primary):
       self.deps.log(state.screen, action, "5dcaa641")
       state.screen = .onboarding(.happyPath(.dontGetTrickedPreInstall))
@@ -251,7 +255,7 @@ public struct IOSReducer {
           await deps.api.logEvent("adced334", "[onboarding] filter install success")
         case .failure(let error):
           await send(.programmatic(.installFailed(error)))
-          await deps.systemExtension.cleanupForRetry()
+          await deps.systemExtension.cleanupContentFilterForRetry()
           await deps.api.logEvent("004d0d89", "[onboarding] filter install failed: \(error)")
         }
       }
@@ -330,21 +334,21 @@ public struct IOSReducer {
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .primary):
       self.deps.log(state.screen, action, "4fc0b1bf")
-      state.screen = .running(state: .notConnected)
+      state.screen = .running(state: RunningState.from(self.deps.storage.isAccountConnected()))
       return .run { [deps = self.deps] _ in
         await deps.appStore.requestRating()
       }
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .secondary):
       self.deps.log(state.screen, action, "a9480aa2")
-      state.screen = .running(state: .notConnected)
+      state.screen = .running(state: RunningState.from(self.deps.storage.isAccountConnected()))
       return .run { [deps = self.deps] _ in
         await deps.appStore.requestReview()
       }
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .tertiary):
       self.deps.log(state.screen, action, "0dddc87c")
-      state.screen = .running(state: .notConnected)
+      state.screen = .running(state: RunningState.from(self.deps.storage.isAccountConnected()))
       return .none
 
       // MARK: - major (18+) path
@@ -620,6 +624,7 @@ public struct IOSReducer {
           }
           if !deps.recorder.ensureScreenshotsDir() {
             // TODO: log
+            // TODO: Initiate upload here as well.
           }
         },
         // handle first launch
@@ -646,17 +651,11 @@ public struct IOSReducer {
         // safeguard in case app crashed trying to fill the disk
         .run { [deps = self.deps] send in
           await deps.device.deleteCacheFillDir()
-        },
-        .run { [deps = self.deps] send in
-          for await event in deps.recorder.events() {
-            await send(.programmatic(.receivedScreenRecordingEvent(event)))
-          }
-        }.cancellable(id: CancelId.recorderEvents, cancelInFlight: true)
+        }
       )
 
     case .appWillTerminate:
       return .merge(
-        .cancel(id: CancelId.recorderEvents),
         .cancel(id: CancelId.cacheClearUpdates),
         .cancel(id: CancelId.screenshotUploads)
       )
@@ -678,12 +677,15 @@ public struct IOSReducer {
       return .none
 
     case .authorizationSucceeded:
-      if state.screen == .onboarding(.happyPath(.dontGetTrickedPreAuth)) {
+      if state.screen == .onboarding(.happyPath(.dontGetTrickedPreAuth))
+        || state.screen.isRunning {
         self.deps.log(action, "021834f6")
       } else {
         self.deps.unexpected(state.screen, action, "e30624c6")
       }
-      state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+      state.screen = self.deps.storage
+        .isAccountConnected() ? .onboarding(.happyPath(.explainInstallWithDevicePasscode)) :
+        .onboarding(.happyPath(.connectAccount))
       return .none
 
     case .authorizationFailed(let err):
@@ -785,50 +787,26 @@ public struct IOSReducer {
     case .suspensionRequestExpired:
       return .none
 
-    case .receivedScreenRecordingEvent(.broadcastStarted):
-      guard case .pendingBroadcastStart(let duration) = state.suspension else {
-        return .none
+    case .requestScreenTimeAuthorization:
+      return .run { [sysExtension = self.deps.systemExtension] send in
+        if case .success = await (sysExtension.requestAuthorization()),
+           await !(sysExtension.filterRunning()) {
+          // If the app had .child Screen Time permission and loses it, that
+          // disables the Content Filter, so prompt the user to re-enable it.
+          await send(.programmatic(.authorizationSucceeded))
+        }
       }
-      let expiration = self.deps.now + .seconds(duration.rawValue)
-      state.suspension = .active(until: expiration)
-      return .merge(
-        .run { [deps = self.deps] send in
-          await deps.filter.suspend(expiration)
-        },
-        .run { [deps = self.deps] send in
-          for await _ in deps.clock.timer(interval: .seconds(15)) { // TODO: time
-            var numProcessed = 0
-            while let screenshot = deps.recorder.unprocessedScreenshot() {
-              try await deps.api.uploadScreenshot(screenshot.image)
-              screenshot.cleanup()
-              numProcessed += 1
-              // prevent filesystem from seeing the same cleaned up file
-              try? await deps.clock.sleep(for: .milliseconds(5))
-            }
-            if numProcessed == 0 {
-              await send(.programmatic(.endSuspension))
-            }
-          }
-        }.cancellable(id: CancelId.screenshotUploads, cancelInFlight: true)
-      )
-
-    case .endSuspension, .receivedScreenRecordingEvent(.broadcastFinished):
-      return .merge(
-        .run { [deps = self.deps] send in
-          await deps.filter.resume()
-        },
-        .cancel(id: CancelId.screenshotUploads)
-      )
-
-    case .receivedScreenRecordingEvent:
-      return .none
     }
   }
 
   func destination(state: inout State, action: Destination.Action) -> Effect<Action> {
     switch action {
     case .connectAccount(.connectionSucceeded(childData: let data)):
-      state.screen = .running(state: .connected())
+      if state.screen == .onboarding(.happyPath(.connectAccount)) {
+        state.screen = .onboarding(.happyPath(.explainInstallWithDevicePasscode))
+      } else {
+        state.screen = .running(state: .connected())
+      }
       return .run { [deps = self.deps] send in
         await deps.api.setAuthToken(data.token)
         deps.storage.saveConnection(data: data)
@@ -849,9 +827,6 @@ public struct IOSReducer {
           count += 1
         }
       }
-    case .requestSuspension(.startSuspensionTapped(let seconds)):
-      state.suspension = .pendingBroadcastStart(duration: seconds)
-      return .none
     default:
       return .none
     }
@@ -871,7 +846,9 @@ extension IOSReducer.Deps {
       self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
     }
     self.storage.removeObject(forKey: .legacyStorageKey)
-    await send(.programmatic(.setScreen(.running(state: .notConnected))))
+
+    let isConnected = IOSReducer.RunningState.from(self.storage.isAccountConnected())
+    await send(.programmatic(.setScreen(.running(state: isConnected))))
     try await self.filter.notifyRulesChanged()
   }
 }

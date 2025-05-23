@@ -74,7 +74,7 @@ public extension ProtectionMode? {
 
 public extension UserDefaults {
   static var gertrude: UserDefaults {
-    UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
+    UserDefaults(suiteName: "group.com.ftc.gertrude-ios.app")!
   }
 }
 
@@ -86,7 +86,7 @@ public extension String {
   static var gertrudeApi: String {
     #if DEBUG
       // just run-api-ip
-      "http://192.168.10.227:8080"
+      "http://192.168.50.106:8080"
     #else
       "https://api.gertrude.app"
     #endif
@@ -100,6 +100,10 @@ public extension String {
     "FilterSuspensionExpiration.v1.5.0"
   }
 
+  static var screenshotLastSavedKey: String {
+    "ScreenshotLastSaved.v1.5.0"
+  }
+
   static var connectionStorageKey: String {
     "ChildIOSDeviceData.v1.5.0"
   }
@@ -107,4 +111,14 @@ public extension String {
   static var disabledBlockGroupsStorageKey: String {
     "disabledBlockGroups.v1.3.0"
   }
+
+  static var recorderExtensionBundleId: String {
+    "com.ftc.gertrude-ios.app.recorder"
+  }
+}
+
+public extension TimeInterval {
+  static var screenshotIntervalSeconds: TimeInterval { 5 }
+  static var wiggleSeconds: TimeInterval { 1 }
+  static var tomorrow: TimeInterval { 86400 }
 }

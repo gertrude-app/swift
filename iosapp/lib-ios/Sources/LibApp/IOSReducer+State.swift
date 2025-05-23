@@ -16,13 +16,6 @@ extension IOSReducer {
     public var screen: Screen = .launching
     public var disabledBlockGroups: [BlockGroup] = []
     public var onboarding: OnboardingState = .init()
-    public var suspension: SuspensionState = .none
-
-    public enum SuspensionState: Equatable {
-      case none
-      case pendingBroadcastStart(duration: Seconds<Int>)
-      case active(until: Date)
-    }
 
     @Presents
     public var destination: Destination.State?
@@ -96,6 +89,7 @@ extension IOSReducer {
       case confirmInAppleFamily
       case explainTwoInstallSteps
       case explainAuthWithParentAppleAccount
+      case connectAccount
       case dontGetTrickedPreAuth
       case explainInstallWithDevicePasscode
       case dontGetTrickedPreInstall
@@ -160,6 +154,10 @@ extension IOSReducer {
   public enum RunningState: Equatable {
     case notConnected
     case connected(waitingForSuspension: Bool = false)
+
+    public static func from(_ isConnected: Bool) -> RunningState {
+      isConnected ? .connected(waitingForSuspension: false) : .notConnected
+    }
   }
 
   public enum Screen: Equatable {

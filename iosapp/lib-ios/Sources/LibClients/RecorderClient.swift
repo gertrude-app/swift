@@ -9,12 +9,8 @@ import XCore
 public struct RecorderClient: Sendable {
   public var ensureScreenshotsDir: @Sendable () -> Bool = { true }
   public var saveScreenshotForUpload: @Sendable (UploadScreenshotData) -> Bool = { _ in true }
-  public var unprocessedScreenshot: @Sendable () -> (
-    image: UploadScreenshotData,
-    cleanup: () -> Void
-  )?
-  public var events: @Sendable () -> AsyncStream<RecorderEvent> = { AsyncStream { _ in } }
-  public var emit: @Sendable (RecorderEvent) -> Void = { _ in }
+  public var startUploadTask: @Sendable () -> Task<Void, Never> = { Task {} }
+  public var uploadRemainingScreenshots: @Sendable () -> Void = {}
 }
 
 extension RecorderClient: DependencyKey {
@@ -40,8 +36,12 @@ extension RecorderClient: DependencyKey {
           return false
         }
 
-        let data = ScreenshotData(width: img.width, height: img.height, createdAt: img.createdAt)
-        let filename = data.filename
+        let metaData = ScreenshotMetaData(
+          width: img.width,
+          height: img.height,
+          createdAt: img.createdAt
+        )
+        let filename = metaData.filename
         os_log("[G•] storing screenshot to disk for later upload: %{public}s", filename)
 
         do {
@@ -51,40 +51,63 @@ extension RecorderClient: DependencyKey {
         }
 
         @Dependency(\.storage) var storage
-        storage.saveCodable(value: data, forKey: filename)
+        storage.saveCodable(value: metaData, forKey: filename)
         return true
       },
-      unprocessedScreenshot: { getNextUnprocessedScreenshot() },
-      events: {
-        AsyncStream<RecorderEvent> { continuation in
-          notifier.withValue { notifier in
-            notifier.startObserving(name: RecorderEvent.broadcastStarted.rawValue) {
-              continuation.yield(.broadcastStarted)
+      startUploadTask: {
+        Task {
+          @Dependency(\.suspendingClock) var clock
+          @Dependency(\.storage) var storage
+          @Dependency(\.api) var api
+          guard let token = storage.loadConnection()?.token else { return }
+          await api.setAuthToken(token)
+
+          var count = 0
+          // Using this approach so that the recording process promptly has
+          // one last chance to upload after recording is completed.
+          while !Task.isCancelled {
+            count += 1
+            if count == 40 { // Every ~20 seconds
+              await uploadAvailableScreenshots(api, clock)
+              count = 0
             }
-            notifier.startObserving(name: RecorderEvent.broadcastPaused.rawValue) {
-              continuation.yield(.broadcastPaused)
-            }
-            notifier.startObserving(name: RecorderEvent.broadcastResumed.rawValue) {
-              continuation.yield(.broadcastResumed)
-            }
-            notifier.startObserving(name: RecorderEvent.broadcastFinished.rawValue) {
-              continuation.yield(.broadcastFinished)
+            do {
+              try await clock.sleep(for: .seconds(0.5))
+            } catch {
+              break
             }
           }
+          Task.detached {
+            await uploadAvailableScreenshots(api, clock) // Final upload.
+          }
         }
-      },
-      emit: { event in
-        notifier.withValue { $0.postNotification(name: event.rawValue) }
+      }, uploadRemainingScreenshots: {
+        Task {
+          @Dependency(\.suspendingClock) var clock
+          @Dependency(\.storage) var storage
+          @Dependency(\.api) var api
+          guard let token = storage.loadConnection()?.token else { return }
+          await api.setAuthToken(token)
+          await uploadAvailableScreenshots(api, clock)
+        }
       }
     )
   }
 }
 
-public enum RecorderEvent: String, Sendable, Equatable, Codable {
-  case broadcastStarted = "com.netrivet.gertrude-ios.app.broadcastStarted"
-  case broadcastPaused = "com.netrivet.gertrude-ios.app.broadcastPaused"
-  case broadcastResumed = "com.netrivet.gertrude-ios.app.broadcastResumed"
-  case broadcastFinished = "com.netrivet.gertrude-ios.app.broadcastFinished"
+@Sendable
+private func uploadAvailableScreenshots(_ api: ApiClient, _ clock: any Clock<Duration>) async {
+  while let s = getNextUnprocessedScreenshot() {
+    do {
+      try await api.uploadScreenshot(s.image)
+      s.cleanup()
+      // prevent filesystem from seeing the same cleaned up file
+      try? await clock.sleep(for: .milliseconds(5))
+    } catch {
+      os_log("[G•] Failed to upload screenshot: %{public}@", error.localizedDescription)
+      break // Will try again on the next 20s interval.
+    }
+  }
 }
 
 @Sendable
@@ -117,7 +140,10 @@ private func getNextUnprocessedScreenshot(depth: Int = 0)
     return getNextUnprocessedScreenshot(depth: depth + 1)
   }
 
-  guard let image = storage.load(decoding: ScreenshotData.self, forKey: file.lastPathComponent)
+  guard let metaData = storage.load(
+    decoding: ScreenshotMetaData.self,
+    forKey: file.lastPathComponent
+  )
   else {
     os_log(
       "[G•] Failed to load screenshot data from storage for key: %{public}s",
@@ -131,9 +157,9 @@ private func getNextUnprocessedScreenshot(depth: Int = 0)
   return (
     image: UploadScreenshotData(
       data: imageData,
-      width: image.width,
-      height: image.height,
-      createdAt: image.createdAt
+      width: metaData.width,
+      height: metaData.height,
+      createdAt: metaData.createdAt
     ),
     cleanup: {
       storage.removeObject(forKey: file.lastPathComponent)
@@ -142,7 +168,7 @@ private func getNextUnprocessedScreenshot(depth: Int = 0)
   )
 }
 
-struct ScreenshotData: Sendable, Codable {
+struct ScreenshotMetaData: Sendable, Codable {
   let width: Int
   let height: Int
   let createdAt: Date
@@ -166,61 +192,7 @@ public extension DependencyValues {
 extension URL {
   static var screenshotsDir: URL? {
     FileManager.default
-      .containerURL(forSecurityApplicationGroupIdentifier: "group.com.netrivet.gertrude-ios.app")?
+      .containerURL(forSecurityApplicationGroupIdentifier: "group.com.ftc.gertrude-ios.app")?
       .appendingPathComponent("screenshots")
   }
 }
-
-// @see https://ohmyswift.com/blog/2024/08/27/send-data-between-ios-apps-and-extensions-using-darwin-notifications/
-private final class DarwinNotificationManager {
-  private var callbacks: [String: () -> Void] = [:]
-
-  init() {}
-
-  func postNotification(name: String) {
-    let notificationCenter = CFNotificationCenterGetDarwinNotifyCenter()
-    CFNotificationCenterPostNotification(
-      notificationCenter,
-      CFNotificationName(name as CFString),
-      nil,
-      nil,
-      true
-    )
-  }
-
-  func startObserving(name: String, callback: @escaping () -> Void) {
-    self.callbacks[name] = callback
-    let notificationCenter = CFNotificationCenterGetDarwinNotifyCenter()
-    CFNotificationCenterAddObserver(
-      notificationCenter,
-      Unmanaged.passUnretained(self).toOpaque(),
-      DarwinNotificationManager.notificationCallback,
-      name as CFString,
-      nil,
-      .deliverImmediately
-    )
-  }
-
-  func stopObserving(name: String) {
-    let notificationCenter = CFNotificationCenterGetDarwinNotifyCenter()
-    CFNotificationCenterRemoveObserver(
-      notificationCenter,
-      Unmanaged.passUnretained(self).toOpaque(),
-      CFNotificationName(name as CFString),
-      nil
-    )
-    self.callbacks.removeValue(forKey: name)
-  }
-
-  private static let notificationCallback: CFNotificationCallback =
-    { center, observer, name, _, _ in
-      guard let observer else { return }
-      let manager = Unmanaged<DarwinNotificationManager>.fromOpaque(observer).takeUnretainedValue()
-      if let name = name?.rawValue as String?,
-         let callback = manager.callbacks[name] {
-        callback()
-      }
-    }
-}
-
-private let notifier = LockIsolated(DarwinNotificationManager())

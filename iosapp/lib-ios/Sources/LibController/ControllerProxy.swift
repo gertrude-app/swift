@@ -24,14 +24,19 @@ import NetworkExtension
     deps.logger.log("unexpected empty rules from api")
     return
   }
+  let protectionMode = deps.storage.loadProtectionMode()
+  let isSuspended = protectionMode?.isSuspended ?? false
+  if !isSuspended {
+    deps.recorder.uploadRemainingScreenshots()
+  }
 
-  let savedRules = deps.storage.loadProtectionMode()?.normalRules
-  if apiRules != savedRules {
+  let savedRules = protectionMode?.normalRules
+  if apiRules != savedRules, !isSuspended {
     deps.logger.log("saving changed rules")
     deps.storage.saveProtectionMode(.normal(apiRules))
     notify.withValue { $0() }
   } else {
-    deps.logger.log("rules unchanged")
+    deps.logger.log("rules unchanged or filter is currently suspended.")
   }
 }
 
@@ -42,6 +47,7 @@ public class ControllerProxy {
     @Dependency(\.suspendingClock) var clock
     @Dependency(\.device) var device
     @Dependency(\.storage) var storage
+    @Dependency(\.recorder) var recorder
   }
 
   private let deps = Deps()
