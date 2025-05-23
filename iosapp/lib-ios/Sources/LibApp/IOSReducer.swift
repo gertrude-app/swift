@@ -651,7 +651,7 @@ public struct IOSReducer {
         // safeguard in case app crashed trying to fill the disk
         .run { [deps = self.deps] send in
           await deps.device.deleteCacheFillDir()
-        },
+        }
       )
 
     case .appWillTerminate:
