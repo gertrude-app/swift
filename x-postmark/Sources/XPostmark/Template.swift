@@ -4,6 +4,7 @@ import XHttp
 public struct TemplateEmail: Equatable, Sendable {
   public var to: String
   public var from: String
+  public var replyTo: String
   public var templateAlias: String
   public var templateModel: [String: String] = [:]
   public var messageStream: String?
@@ -11,12 +12,14 @@ public struct TemplateEmail: Equatable, Sendable {
   public init(
     to: String,
     from: String,
+    replyTo: String,
     templateAlias: String,
     templateModel: [String: String] = [:],
     messageStream: String? = nil
   ) {
     self.to = to
     self.from = from
+    self.replyTo = replyTo
     self.templateAlias = templateAlias
     self.templateModel = templateModel
     self.messageStream = messageStream
@@ -93,6 +96,7 @@ struct BatchEmailResponse: Decodable {
 struct ApiTemplateEmail: Encodable {
   let To: String
   let From: String
+  let ReplyTo: String?
   let TemplateAlias: String
   let TemplateModel: [String: String]
   let MessageStream: String?
@@ -102,6 +106,7 @@ extension ApiTemplateEmail {
   init(email: TemplateEmail) {
     self.To = email.to
     self.From = email.from
+    self.ReplyTo = email.replyTo
     self.TemplateAlias = email.templateAlias
     self.TemplateModel = email.templateModel
     self.MessageStream = email.messageStream
