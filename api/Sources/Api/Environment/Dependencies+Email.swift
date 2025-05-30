@@ -50,6 +50,7 @@ extension PostmarkClient {
     var templateEmail = XPostmark.TemplateEmail(
       to: "",
       from: "Gertrude App <noreply@gertrude.app>",
+      replyTo: get(dependency: \.env.primarySupportEmail),
       templateAlias: email.model.templateAlias,
       templateModel: templateModel,
       messageStream: nil
