@@ -6,9 +6,11 @@ enum AuthedAdminRoute: PairRoute {
   case confirmPendingNotificationMethod(ConfirmPendingNotificationMethod.Input)
   case createPendingAppConnection(CreatePendingAppConnection.Input)
   case createPendingNotificationMethod(CreatePendingNotificationMethod.Input)
+  case dashboardWidgets
   case decideFilterSuspensionRequest(DecideFilterSuspensionRequest.Input)
   case deleteActivityItems_v2(DeleteActivityItems_v2.Input)
   case deleteEntity(DeleteEntity.Input)
+  case deleteEntity_v2(DeleteEntity_v2.Input)
   case flagActivityItems(FlagActivityItems.Input)
   case getAdmin
   case getAdminKeychain(GetAdminKeychain.Input)
@@ -59,6 +61,9 @@ extension AuthedAdminRoute {
         Operation(CreatePendingNotificationMethod.self)
         Body(.dashboardInput(CreatePendingNotificationMethod.self))
       }
+      Route(.case(Self.dashboardWidgets)) {
+        Operation(DashboardWidgets.self)
+      }
       Route(.case(Self.decideFilterSuspensionRequest)) {
         Operation(DecideFilterSuspensionRequest.self)
         Body(.dashboardInput(DecideFilterSuspensionRequest.self))
@@ -70,6 +75,10 @@ extension AuthedAdminRoute {
       Route(.case(Self.deleteEntity)) {
         Operation(DeleteEntity.self)
         Body(.dashboardInput(DeleteEntity.self))
+      }
+      Route(.case(Self.deleteEntity_v2)) {
+        Operation(DeleteEntity_v2.self)
+        Body(.dashboardInput(DeleteEntity_v2.self))
       }
       Route(.case(Self.flagActivityItems)) {
         Operation(FlagActivityItems.self)
@@ -207,8 +216,14 @@ extension AuthedAdminRoute: RouteResponder {
     case .saveUser(let input):
       let output = try await SaveUser.resolve(with: input, in: context)
       return try await self.respond(with: output)
+    case .dashboardWidgets:
+      let output = try await DashboardWidgets.resolve(in: context)
+      return try await self.respond(with: output)
     case .deleteEntity(let input):
       let output = try await DeleteEntity.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .deleteEntity_v2(let input):
+      let output = try await DeleteEntity_v2.resolve(with: input, in: context)
       return try await self.respond(with: output)
     case .userActivitySummaries(let input):
       let output = try await UserActivitySummaries.resolve(with: input, in: context)

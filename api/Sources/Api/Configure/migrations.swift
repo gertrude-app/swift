@@ -43,6 +43,7 @@ extension Configure {
     app.migrations.add(MarketingPrep())
     app.migrations.add(SearchPaths())
     app.migrations.add(FlaggedActivity())
+    app.migrations.add(DashAnnouncements())
   }
 }
 
