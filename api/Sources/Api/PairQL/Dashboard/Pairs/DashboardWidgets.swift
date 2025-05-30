@@ -3,18 +3,17 @@ import Foundation
 import Gertie
 import PairQL
 
-// deprecated: remove after 6/14/25
-struct GetDashboardWidgets: Pair {
+struct DashboardWidgets: Pair {
   static let auth: ClientAuth = .admin
 
-  struct User: PairNestable {
-    var id: Api.User.Id
+  struct Child: PairNestable {
+    var id: User.Id
     var name: String
     var status: ChildComputerStatus
     var numDevices: Int
   }
 
-  struct UserActivitySummary: PairNestable {
+  struct ChildActivitySummary: PairNestable {
     var id: Api.User.Id
     var name: String
     var numUnreviewed: Int
@@ -23,8 +22,8 @@ struct GetDashboardWidgets: Pair {
 
   struct UnlockRequest: PairNestable {
     var id: Api.UnlockRequest.Id
-    var userId: Api.User.Id
-    var userName: String
+    var childId: User.Id
+    var childName: String
     var target: String
     var comment: String?
     var createdAt: Date
@@ -32,60 +31,70 @@ struct GetDashboardWidgets: Pair {
 
   struct RecentScreenshot: PairNestable {
     var id: Screenshot.Id
-    var userName: String
+    var childName: String
     var url: String
     var createdAt: Date
   }
 
+  struct Announcement: PairNestable {
+    var id: DashAnnouncement.Id
+    var icon: String?
+    var html: String
+    var learnMoreUrl: String?
+  }
+
   struct Output: PairOutput {
-    var users: [User]
-    var userActivitySummaries: [UserActivitySummary]
+    var children: [Child]
+    var childActivitySummaries: [ChildActivitySummary]
     var unlockRequests: [UnlockRequest]
     var recentScreenshots: [RecentScreenshot]
-    var numAdminNotifications: Int
+    var numParentNotifications: Int
+    var announcement: Announcement?
   }
 }
 
 // resolver
 
-extension GetDashboardWidgets: NoInputResolver {
+extension DashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let users = try await Api.User.query()
+    let children = try await Api.User.query()
       .where(.parentId == context.admin.id)
       .all(in: context.db)
 
-    guard !users.isEmpty else {
+    guard !children.isEmpty else {
       return Output(
-        users: [],
-        userActivitySummaries: [],
+        children: [],
+        childActivitySummaries: [],
         unlockRequests: [],
         recentScreenshots: [],
-        numAdminNotifications: 0
+        numParentNotifications: 0,
+        announcement: nil
       )
     }
 
-    let userDevices = try await UserDevice.query()
-      .where(.childId |=| users.map(\.id))
+    let computerUsers = try await UserDevice.query()
+      .where(.childId |=| children.map(\.id))
       .all(in: context.db)
 
     let unlockRequests = try await Api.UnlockRequest.query()
-      .where(.computerUserId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| computerUsers.map(\.id))
       .where(.status == .enum(RequestStatus.pending))
       .all(in: context.db)
 
-    let deviceToUserMap: [UserDevice.Id: Api.User] = userDevices.reduce(into: [:]) { map, device in
-      map[device.id] = users.first(where: { $0.id == device.childId })
-    }
+    let computerToChildMap: [UserDevice.Id: Api.User] = computerUsers
+      .reduce(into: [:]) { map, device in
+        map[device.id] = children.first(where: { $0.id == device.childId })
+      }
 
     async let keystrokes = KeystrokeLine.query()
-      .where(.computerUserId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| computerUsers.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
       .all(in: context.db)
 
     async let screenshots = Screenshot.query()
-      .where(.computerUserId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| computerUsers.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
@@ -93,44 +102,55 @@ extension GetDashboardWidgets: NoInputResolver {
 
     async let notifications = context.admin.notifications(in: context.db)
 
+    async let announcement = try? await DashAnnouncement.query()
+      .where(.parentId == context.admin.id)
+      .orderBy(.createdAt, .asc)
+      .first(in: context.db)
+
     return try await .init(
-      users: users.concurrentMap { user in try await .init(
+      children: children.concurrentMap { user in try await .init(
         id: user.id,
         name: user.name,
-        status: consolidatedChildComputerStatus(user.id, userDevices),
-        numDevices: userDevices.filter { $0.childId == user.id }.count
+        status: consolidatedChildComputerStatus(user.id, computerUsers),
+        numDevices: computerUsers.filter { $0.childId == user.id }.count
       ) },
-      userActivitySummaries: userActivitySummaries(
-        users: users,
-        map: deviceToUserMap,
+      childActivitySummaries: userActivitySummaries(
+        children: children,
+        map: computerToChildMap,
         keystrokes: keystrokes,
         screenshots: screenshots
       ),
       unlockRequests: mapUnlockRequests(
         unlockRequests: unlockRequests,
-        map: deviceToUserMap
+        map: computerToChildMap
       ),
       recentScreenshots: recentScreenshots(
-        users: users,
-        map: deviceToUserMap,
+        children: children,
+        map: computerToChildMap,
         screenshots: screenshots
       ),
-      numAdminNotifications: notifications.count
+      numParentNotifications: notifications.count,
+      announcement: announcement.map { .init(
+        id: $0.id,
+        icon: $0.icon,
+        html: $0.html,
+        learnMoreUrl: $0.learnMoreUrl
+      ) }
     )
   }
 }
 
 // helpers
 
-func mapUnlockRequests(
+private func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],
   map: [UserDevice.Id: User]
-) -> [GetDashboardWidgets.UnlockRequest] {
+) -> [DashboardWidgets.UnlockRequest] {
   unlockRequests.map { unlockRequest in
     .init(
       id: unlockRequest.id,
-      userId: map[unlockRequest.computerUserId]?.id ?? .init(),
-      userName: map[unlockRequest.computerUserId]?.name ?? "",
+      childId: map[unlockRequest.computerUserId]?.id ?? .init(),
+      childName: map[unlockRequest.computerUserId]?.name ?? "",
       target: unlockRequest.target ?? "",
       comment: unlockRequest.requestComment,
       createdAt: unlockRequest.createdAt
@@ -138,25 +158,25 @@ func mapUnlockRequests(
   }
 }
 
-func recentScreenshots(
-  users: [User],
+private func recentScreenshots(
+  children: [User],
   map: [UserDevice.Id: User],
   screenshots: [Screenshot]
-) -> [GetDashboardWidgets.RecentScreenshot] {
-  users.compactMap { user in
+) -> [DashboardWidgets.RecentScreenshot] {
+  children.compactMap { user in
     screenshots
       .first { map[$0.computerUserId]?.id == user.id }
-      .map { .init(id: $0.id, userName: user.name, url: $0.url, createdAt: $0.createdAt) }
+      .map { .init(id: $0.id, childName: user.name, url: $0.url, createdAt: $0.createdAt) }
   }
 }
 
-func userActivitySummaries(
-  users: [User],
+private func userActivitySummaries(
+  children: [User],
   map: [UserDevice.Id: User],
   keystrokes: [KeystrokeLine],
   screenshots: [Screenshot]
-) -> [GetDashboardWidgets.UserActivitySummary] {
-  users.map { user in
+) -> [DashboardWidgets.ChildActivitySummary] {
+  children.map { user in
     let userScreenshots = screenshots.filter { map[$0.computerUserId]?.id == user.id }
     let userKeystrokes = keystrokes.filter { map[$0.computerUserId]?.id == user.id }
     return .init(
