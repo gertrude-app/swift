@@ -10,7 +10,8 @@ enum AdminBetsy {
     static let jimmysId = User.Id.from("00000000-1111-4444-0000-000000000000")
     static let jimmysDevice = UserDevice.Id.from("DD000000-1111-0000-0000-000000000000")
     static let sallysDevice = UserDevice.Id.from("DD000000-2222-0000-0000-000000000000")
-    static let suspendFilter = SuspendFilterRequest.Id.from("AA000000-1111-0000-0000-000000000000")
+    static let suspendFilter = MacApp.SuspendFilterRequest.Id
+      .from("AA000000-1111-0000-0000-000000000000")
   }
 
   static func create() async throws {
@@ -236,7 +237,7 @@ enum AdminBetsy {
       status: .pending
     ))
 
-    try await db.create(SuspendFilterRequest(
+    try await db.create(MacApp.SuspendFilterRequest(
       id: Ids.suspendFilter,
       computerUserId: userDevice.id,
       status: .pending,

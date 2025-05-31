@@ -4,7 +4,7 @@ import PairQL
 import Vapor
 
 struct CreatePendingNotificationMethod: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   typealias Input = AdminVerifiedNotificationMethod.Config
 

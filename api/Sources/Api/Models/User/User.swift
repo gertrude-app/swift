@@ -40,8 +40,14 @@ struct User: Codable, Sendable {
 // loaders
 
 extension User {
-  func devices(in db: any DuetSQL.Client) async throws -> [UserDevice] {
+  func computerUsers(in db: any DuetSQL.Client) async throws -> [UserDevice] {
     try await UserDevice.query()
+      .where(.childId == self.id)
+      .all(in: db)
+  }
+
+  func iosDevices(in db: any DuetSQL.Client) async throws -> [IOSApp.Device] {
+    try await IOSApp.Device.query()
       .where(.childId == self.id)
       .all(in: db)
   }

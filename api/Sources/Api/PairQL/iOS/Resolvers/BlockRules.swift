@@ -8,6 +8,9 @@ extension BlockRules: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     @Dependency(\.logger) var logger
 
+    // remove `BlockRules` pair when deprecation complete
+    await context.db.logDeprecated("BlockRules(v1)")
+
     if let vendorId = input.vendorId {
       logger.info("Vendor ID: \(vendorId)")
     }
@@ -15,7 +18,7 @@ extension BlockRules: Resolver {
     if let version = input.version.flatMap({ Semver($0) }),
        version >= Semver(major: 1, minor: 2, patch: 0) {
       logger.info("1.2.x app")
-      return try await IOSBlockRule.query()
+      return try await IOSApp.BlockRule.query()
         .where(.isNull(.vendorId) .|| input.vendorId.map { .vendorId == $0 } ?? .never)
         .all(in: context.db)
         .map(\.rule)

@@ -5,12 +5,16 @@ import SwiftUI
 @main
 struct IOSAppEntry: App {
   let store: StoreOf<IOSReducer>
+  @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
   init() {
     self.store = Store(
       initialState: IOSReducer.State(),
-      reducer: { IOSReducer() }
+      reducer: { IOSReducer()._printChanges() }
     )
+    self.appDelegate.onTerminate = { [weak store = self.store] in
+      store?.send(.programmatic(.appWillTerminate))
+    }
   }
 
   var body: some Scene {
@@ -20,5 +24,12 @@ struct IOSAppEntry: App {
           self.store.send(.programmatic(.appDidLaunch))
         }
     }
+  }
+}
+
+private class AppDelegate: NSObject, UIApplicationDelegate {
+  var onTerminate: (() -> Void)?
+  func applicationWillTerminate(_ application: UIApplication) {
+    self.onTerminate?()
   }
 }

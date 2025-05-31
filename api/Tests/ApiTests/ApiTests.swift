@@ -116,8 +116,8 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
     expect(matched).toEqual(route)
   }
 
-  func testUserContextCreated() async throws {
-    let user = try await self.userWithDevice()
+  func testChildContextCreated() async throws {
+    let user = try await self.childWithComputer()
 
     let response = try await PairQLRoute.respond(
       to: .macApp(.userAuthed(
@@ -129,7 +129,7 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
 
     expect(response.status).toEqual(.ok)
     let uuid = try JSONDecoder().decode(UUID.self, from: response.body.data!)
-    let req = try await self.db.find(SuspendFilterRequest.Id(uuid))
+    let req = try await self.db.find(MacApp.SuspendFilterRequest.Id(uuid))
     let userDevice = try await req.userDevice(in: self.db)
     expect(userDevice.childId).toEqual(user.id)
   }
