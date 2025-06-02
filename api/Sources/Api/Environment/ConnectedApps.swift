@@ -5,7 +5,7 @@ struct ConnectedApps: Sendable {
   var add: @Sendable (AppConnection) async -> Void
   var disconnectAll: @Sendable () async -> Void
   var remove: @Sendable (AppConnection) async -> Void
-  var status: @Sendable (UserDevice.Id) async -> ChildComputerStatus
+  var status: @Sendable (ComputerUser.Id) async -> ChildComputerStatus
   var sendEvent: @Sendable (AppEvent) async throws -> Void
 }
 

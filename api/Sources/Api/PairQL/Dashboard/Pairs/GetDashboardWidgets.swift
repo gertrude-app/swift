@@ -64,28 +64,29 @@ extension GetDashboardWidgets: NoInputResolver {
       )
     }
 
-    let userDevices = try await UserDevice.query()
+    let computerUsers = try await ComputerUser.query()
       .where(.childId |=| users.map(\.id))
       .all(in: context.db)
 
     let unlockRequests = try await Api.UnlockRequest.query()
-      .where(.computerUserId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| computerUsers.map(\.id))
       .where(.status == .enum(RequestStatus.pending))
       .all(in: context.db)
 
-    let deviceToUserMap: [UserDevice.Id: Api.User] = userDevices.reduce(into: [:]) { map, device in
-      map[device.id] = users.first(where: { $0.id == device.childId })
-    }
+    let deviceToUserMap: [ComputerUser.Id: Api.User] = computerUsers
+      .reduce(into: [:]) { map, device in
+        map[device.id] = users.first(where: { $0.id == device.childId })
+      }
 
     async let keystrokes = KeystrokeLine.query()
-      .where(.computerUserId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| computerUsers.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
       .all(in: context.db)
 
     async let screenshots = Screenshot.query()
-      .where(.computerUserId |=| userDevices.map(\.id))
+      .where(.computerUserId |=| computerUsers.map(\.id))
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
@@ -97,8 +98,8 @@ extension GetDashboardWidgets: NoInputResolver {
       users: users.concurrentMap { user in try await .init(
         id: user.id,
         name: user.name,
-        status: consolidatedChildComputerStatus(user.id, userDevices),
-        numDevices: userDevices.filter { $0.childId == user.id }.count
+        status: consolidatedChildComputerStatus(user.id, computerUsers),
+        numDevices: computerUsers.filter { $0.childId == user.id }.count
       ) },
       userActivitySummaries: userActivitySummaries(
         users: users,
@@ -124,7 +125,7 @@ extension GetDashboardWidgets: NoInputResolver {
 
 func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],
-  map: [UserDevice.Id: User]
+  map: [ComputerUser.Id: User]
 ) -> [GetDashboardWidgets.UnlockRequest] {
   unlockRequests.map { unlockRequest in
     .init(
@@ -140,7 +141,7 @@ func mapUnlockRequests(
 
 func recentScreenshots(
   users: [User],
-  map: [UserDevice.Id: User],
+  map: [ComputerUser.Id: User],
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.RecentScreenshot] {
   users.compactMap { user in
@@ -152,7 +153,7 @@ func recentScreenshots(
 
 func userActivitySummaries(
   users: [User],
-  map: [UserDevice.Id: User],
+  map: [ComputerUser.Id: User],
   keystrokes: [KeystrokeLine],
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.UserActivitySummary] {

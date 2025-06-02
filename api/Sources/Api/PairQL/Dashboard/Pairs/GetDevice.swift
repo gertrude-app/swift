@@ -37,12 +37,12 @@ extension GetDevice: Resolver {
       .where(.parentId == context.admin.id)
       .first(in: context.db)
 
-    let userDevices = try await device.userDevices(in: context.db)
+    let computerUsers = try await device.computerUsers(in: context.db)
 
     // this is a little hinky, should simplify when we handle
     // https://github.com/gertrude-app/project/issues/164
     var appVersion = Semver("0.0.0")
-    for userDevice in userDevices {
+    for userDevice in computerUsers {
       if let version = Semver(userDevice.appVersion), version > appVersion {
         appVersion = version
       }
@@ -54,7 +54,7 @@ extension GetDevice: Resolver {
       id: device.id,
       name: device.customName,
       releaseChannel: device.appReleaseChannel,
-      users: userDevices.concurrentMap { userDevice in
+      users: computerUsers.concurrentMap { userDevice in
         try await .init(
           id: userDevice.childId,
           name: (userDevice.user(in: context.db)).name,

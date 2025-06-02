@@ -5,8 +5,8 @@ extension LogInterestingEvent: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
     let task = Task {
       // prevent FK error if device id deleted, or invalid
-      let userDevice: UserDevice? = if let deviceId = input.deviceId {
-        try? await context.db.find(UserDevice.Id(deviceId))
+      let computerUser: ComputerUser? = if let deviceId = input.deviceId {
+        try? await context.db.find(ComputerUser.Id(deviceId))
       } else {
         nil
       }
@@ -15,12 +15,12 @@ extension LogInterestingEvent: Resolver {
         eventId: input.eventId,
         kind: input.kind,
         context: "macapp",
-        computerUserId: userDevice?.id,
+        computerUserId: computerUser?.id,
         parentId: nil,
         detail: input.detail
       ))
 
-      let adminLink = await getAdminLink(from: userDevice, in: context)
+      let adminLink = await getAdminLink(from: computerUser, in: context)
       let detail = input.detail.map { ", detail: _\(shorten($0))_" } ?? ""
       let searchLink = input.eventId.count == 8
         ? githubSearch(input.eventId)
@@ -98,9 +98,9 @@ func githubSearch(_ eventId: String) -> String {
   )
 }
 
-func getAdminLink(from userDevice: UserDevice?, in context: Context) async -> String {
-  guard let userDevice,
-        let user = try? await userDevice.user(in: context.db),
+func getAdminLink(from computerUser: ComputerUser?, in context: Context) async -> String {
+  guard let computerUser,
+        let user = try? await computerUser.user(in: context.db),
         let admin = try? await user.admin(in: context.db) else {
     return ""
   }

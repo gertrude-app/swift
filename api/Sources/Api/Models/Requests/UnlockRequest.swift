@@ -3,7 +3,7 @@ import Gertie
 
 struct UnlockRequest: Codable, Sendable {
   var id: Id
-  var computerUserId: UserDevice.Id
+  var computerUserId: ComputerUser.Id
   var status: RequestStatus
   var appBundleId: String
   var requestComment: String?
@@ -20,7 +20,7 @@ struct UnlockRequest: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    computerUserId: UserDevice.Id,
+    computerUserId: ComputerUser.Id,
     appBundleId: String,
     url: String? = nil,
     hostname: String? = nil,
@@ -44,8 +44,8 @@ struct UnlockRequest: Codable, Sendable {
 // loaders
 
 extension UnlockRequest {
-  func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice {
-    try await UserDevice.query()
+  func userDevice(in db: any DuetSQL.Client) async throws -> ComputerUser {
+    try await ComputerUser.query()
       .where(.id == self.computerUserId)
       .first(in: db)
   }

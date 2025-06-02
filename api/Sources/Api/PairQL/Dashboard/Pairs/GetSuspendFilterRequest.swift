@@ -8,7 +8,7 @@ struct GetSuspendFilterRequest: Pair {
 
   struct Output: PairOutput {
     var id: Api.SuspendFilterRequest.Id
-    var deviceId: Api.UserDevice.Id
+    var deviceId: Api.ComputerUser.Id
     var status: RequestStatus
     var userName: String
     var requestedDurationInSeconds: Int

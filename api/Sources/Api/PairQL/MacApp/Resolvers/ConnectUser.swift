@@ -17,7 +17,7 @@ extension ConnectUser: Resolver {
       )
     }
 
-    let userDevice: UserDevice
+    let computerUser: ComputerUser
     let user = try await context.db.find(userId)
 
     var adminDevice = try? await Device.query()
@@ -26,21 +26,21 @@ extension ConnectUser: Resolver {
 
     // there should only ever be a single gertrude user
     // per computer + macOS user (represented by os user numeric id)
-    var existingUserDevice: UserDevice?
+    var existingComputerUser: ComputerUser?
     if let adminDevice {
-      existingUserDevice = try? await UserDevice.query()
+      existingComputerUser = try? await ComputerUser.query()
         .where(.computerId == adminDevice.id)
         .where(.numericId == .int(input.numericId))
         .first(in: context.db)
     }
 
-    if var existingUserDevice {
+    if var existingComputerUser {
       // we get in here if the gertrude app was already installed for this macOS user
-      // at some point in the past, so we will update the UserDevice to be attached to this
+      // at some point in the past, so we will update the ComputerUser to be attached to this
       // user, after double-checking below that the user belongs to the same admin acct
 
       // sanity check - we only "transfer" a device, if the admin accounts match
-      let existingUser = try await existingUserDevice.user(in: context.db)
+      let existingUser = try await existingComputerUser.user(in: context.db)
       if existingUser.parentId != user.parentId {
         throw context.error(
           id: "41a43089",
@@ -50,17 +50,17 @@ extension ConnectUser: Resolver {
         )
       }
 
-      let oldUserId = existingUserDevice.childId
-      existingUserDevice.username = input.username
-      existingUserDevice.fullUsername = input.fullUsername
-      existingUserDevice.childId = user.id
-      existingUserDevice.isAdmin = input.isAdmin
+      let oldUserId = existingComputerUser.childId
+      existingComputerUser.username = input.username
+      existingComputerUser.fullUsername = input.fullUsername
+      existingComputerUser.childId = user.id
+      existingComputerUser.isAdmin = input.isAdmin
 
       // update the device to be attached to the user issuing this request
-      userDevice = try await context.db.update(existingUserDevice)
+      computerUser = try await context.db.update(existingComputerUser)
 
       let oldTokens = try await MacAppToken.query()
-        .where(.computerUserId == userDevice.id)
+        .where(.computerUserId == computerUser.id)
         .where(.childId == oldUserId)
         .all(in: context.db)
 
@@ -83,7 +83,7 @@ extension ConnectUser: Resolver {
       }
 
       // ...and create the user device
-      userDevice = try await context.db.create(UserDevice(
+      computerUser = try await context.db.create(ComputerUser(
         childId: user.id,
         computerId: adminDevice?.id ?? .init(),
         isAdmin: input.isAdmin,
@@ -96,7 +96,7 @@ extension ConnectUser: Resolver {
 
     let token = try await context.db.create(MacAppToken(
       childId: user.id,
-      computerUserId: userDevice.id
+      computerUserId: computerUser.id
     ))
 
     await notifyAdConversion(child: user, db: context.db)
@@ -104,7 +104,7 @@ extension ConnectUser: Resolver {
     return Output(
       id: user.id.rawValue,
       token: token.value.rawValue,
-      deviceId: userDevice.id.rawValue,
+      deviceId: computerUser.id.rawValue,
       name: user.name,
       keyloggingEnabled: user.keyloggingEnabled,
       screenshotsEnabled: user.screenshotsEnabled,

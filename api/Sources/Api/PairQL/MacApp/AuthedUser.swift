@@ -12,8 +12,8 @@ struct UserContext: ResolverContext {
   @Dependency(\.env) var env
   @Dependency(\.db) var db
 
-  func userDevice() async throws -> UserDevice {
-    try await self.token.userDevice(in: self.db)
+  func computerUser() async throws -> ComputerUser {
+    try await self.token.computerUser(in: self.db)
   }
 }
 

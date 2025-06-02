@@ -50,18 +50,18 @@ extension SecurityEventsFeed: NoInputResolver {
       }
 
     let devices = try await context.admin.devices(in: context.db)
-    let userDevices = try await UserDevice.query()
+    let computerUsers = try await ComputerUser.query()
       .where(.computerId |=| devices.map(\.id))
       .all(in: context.db)
-      .reduce(into: [UserDevice.Id: UserDevice]()) { result, userDevice in
-        result[userDevice.id] = userDevice
+      .reduce(into: [ComputerUser.Id: ComputerUser]()) { result, computerUser in
+        result[computerUser.id] = computerUser
       }
 
     return models.compactMap { model in
       if let userDeviceId = model.computerUserId {
-        guard let userDevice = userDevices[userDeviceId],
-              let child = children[userDevice.childId],
-              let device = devices.first(where: { $0.id == userDevice.computerId }),
+        guard let computerUser = computerUsers[userDeviceId],
+              let child = children[computerUser.childId],
+              let device = devices.first(where: { $0.id == computerUser.computerId }),
               let event = Gertie.SecurityEvent.MacApp(rawValue: model.event) else {
           return nil
         }
@@ -69,7 +69,7 @@ extension SecurityEventsFeed: NoInputResolver {
           id: model.id,
           childId: child.id,
           childName: child.name,
-          deviceId: userDevice.computerId,
+          deviceId: computerUser.computerId,
           deviceName: device.customName ?? device.model.shortDescription,
           event: event.toWords,
           detail: model.detail,

@@ -24,9 +24,9 @@ struct AdminContext: ResolverContext {
       .all(in: self.db)
   }
 
-  func userDevices() async throws -> [UserDevice] {
+  func computerUsers() async throws -> [ComputerUser] {
     let users = try await self.users()
-    return try await UserDevice.query()
+    return try await ComputerUser.query()
       .where(.childId |=| users.map(\.id))
       .all(in: self.db)
   }

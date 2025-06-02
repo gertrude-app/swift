@@ -264,7 +264,7 @@ extension UserBlockedApp: Model {
   }
 }
 
-extension UserDevice: Model {
+extension ComputerUser: Model {
   public static let schemaName = "child"
   public static let tableName = "computer_users"
   public typealias ColumnName = CodingKeys

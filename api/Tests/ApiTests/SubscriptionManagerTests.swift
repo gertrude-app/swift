@@ -240,12 +240,12 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
 
 private extension AdminEntities {
   func withOnboardedChild(
-    config: (inout User, inout UserDevice, inout Device) -> Void = { _, _, _ in }
+    config: (inout User, inout ComputerUser, inout Device) -> Void = { _, _, _ in }
   ) async throws -> AdminWithOnboardedChildEntities {
     @Dependency(\.db) var db
     var child = User.random { $0.parentId = model.id }
     var adminDevice = Device.random { $0.parentId = model.id }
-    var userDevice = UserDevice.random {
+    var userDevice = ComputerUser.random {
       $0.childId = child.id
       $0.computerId = adminDevice.id
     }

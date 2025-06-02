@@ -4,15 +4,15 @@ import MacAppRoute
 
 extension LogSecurityEvent: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
-    guard let userDevice = try? await context.db.find(UserDevice.Id(input.deviceId)) else {
+    guard let computerUser = try? await context.db.find(ComputerUser.Id(input.deviceId)) else {
       await with(dependency: \.slack)
-        .error("UserDevice \(input.deviceId) not found, security event: \(input.event)")
+        .error("ComputerUser \(input.deviceId) not found, security event: \(input.event)")
       return .success
     }
 
     try await context.db.create(Api.SecurityEvent(
       parentId: context.user.parentId,
-      computerUserId: userDevice.id,
+      computerUserId: computerUser.id,
       event: input.event,
       detail: input.detail
     ))
@@ -25,7 +25,7 @@ extension LogSecurityEvent: Resolver {
       return .success
     }
 
-    if userDevice.isAdmin != true {
+    if computerUser.isAdmin != true {
       return .success
     }
 

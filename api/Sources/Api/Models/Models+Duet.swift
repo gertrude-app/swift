@@ -207,11 +207,11 @@ extension Device {
   }
 }
 
-extension UserDevice: Duet.Identifiable {
-  typealias Id = Tagged<UserDevice, UUID>
+extension ComputerUser: Duet.Identifiable {
+  typealias Id = Tagged<ComputerUser, UUID>
 }
 
-extension UserDevice {
+extension ComputerUser {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case childId

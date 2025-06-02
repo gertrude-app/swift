@@ -33,7 +33,7 @@ struct GetUser: Pair {
   }
 
   struct Device: PairNestable {
-    var id: UserDevice.Id
+    var id: ComputerUser.Id
     var deviceId: Api.Device.Id
     var status: ChildComputerStatus
     var modelFamily: DeviceModelFamily
@@ -90,10 +90,10 @@ func userKeychainSummaries(
 extension GetUser.User {
   init(from user: Api.User, in db: any DuetSQL.Client) async throws {
     async let userKeychains = userKeychainSummaries(for: user.id, in: db)
-    let pairs = try await UserDevice.query()
+    let pairs = try await ComputerUser.query()
       .where(.childId == user.id)
       .all(in: db)
-      .concurrentMap { (userDevice: UserDevice) -> (GetUser.Device, Semver) in
+      .concurrentMap { (userDevice: ComputerUser) -> (GetUser.Device, Semver) in
         let adminDevice = try await userDevice.adminDevice(in: db)
         return await (GetUser.Device(
           id: userDevice.id,

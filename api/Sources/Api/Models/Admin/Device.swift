@@ -43,8 +43,8 @@ extension Device {
       .first(in: db)
   }
 
-  func userDevices(in db: any DuetSQL.Client) async throws -> [UserDevice] {
-    try await UserDevice.query()
+  func computerUsers(in db: any DuetSQL.Client) async throws -> [ComputerUser] {
+    try await ComputerUser.query()
       .where(.computerId == self.id)
       .all(in: db)
   }

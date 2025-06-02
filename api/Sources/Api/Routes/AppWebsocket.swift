@@ -22,7 +22,7 @@ enum AppWebsocket {
     _ ws: WebSocket
   ) async throws {
     guard let token = try? await request.macAppToken(),
-          let userDevice = try? await token.userDevice(in: request.context.db) else {
+          let computerUser = try? await token.computerUser(in: request.context.db) else {
       throw UserTokenNotFound()
     }
 
@@ -30,7 +30,7 @@ enum AppWebsocket {
     let keychains = try await user.keychains(in: request.context.db)
 
     let entityIds = AppConnection.Ids(
-      userDevice: userDevice.id,
+      userDevice: computerUser.id,
       user: user.id,
       keychains: keychains.map(\.id)
     )

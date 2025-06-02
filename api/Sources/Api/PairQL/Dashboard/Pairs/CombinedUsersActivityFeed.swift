@@ -27,12 +27,12 @@ extension CombinedUsersActivityFeed: Resolver {
       throw Abort(.badRequest)
     }
 
-    let users = try await context.users()
+    let children = try await context.users()
 
-    return try await users.concurrentMap { user in
-      let userDeviceIds = try await user.devices(in: context.db).map(\.id)
+    return try await children.concurrentMap { child in
+      let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)
       async let keystrokes = KeystrokeLine.query()
-        .where(.computerUserId |=| userDeviceIds)
+        .where(.computerUserId |=| computerUserIds)
         .where(.createdAt <= .date(before))
         .where(.createdAt > .date(after))
         .orderBy(.createdAt, .desc)
@@ -40,7 +40,7 @@ extension CombinedUsersActivityFeed: Resolver {
         .all(in: context.db)
 
       async let screenshots = Screenshot.query()
-        .where(.computerUserId |=| userDeviceIds)
+        .where(.computerUserId |=| computerUserIds)
         .where(.createdAt <= .date(before))
         .where(.createdAt > .date(after))
         .orderBy(.createdAt, .desc)
@@ -50,8 +50,8 @@ extension CombinedUsersActivityFeed: Resolver {
       let coalesced = try await coalesce(screenshots, keystrokes)
 
       return UserDay(
-        userName: user.name,
-        showSuspensionActivity: user.showSuspensionActivity,
+        userName: child.name,
+        showSuspensionActivity: child.showSuspensionActivity,
         numDeleted: coalesced.lazy.filter(\.isDeleted).count,
         items: coalesced.lazy.filter(\.notDeleted)
       )

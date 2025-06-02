@@ -10,10 +10,10 @@ import Vapor
 
 extension CreateSignedScreenshotUpload: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
-    let userDevice = try await context.userDevice()
+    let computerUser = try await context.computerUser()
     let unixTime = Int(Date().timeIntervalSince1970)
     let filename = "\(unixTime)--\(context.uuid().lowercased).jpg"
-    let filepath = "\(userDevice.id.lowercased)/\(filename)"
+    let filepath = "\(computerUser.id.lowercased)/\(filename)"
     let dir = "\(context.env.mode == .prod ? "" : "\(context.env.mode)-")screenshots"
     let objectName = "\(dir)/\(filepath)"
     let webUrlString = "\(context.env.s3.bucketUrl)/\(objectName)"
@@ -28,7 +28,7 @@ extension CreateSignedScreenshotUpload: Resolver {
     let signedUrl = try with(dependency: \.aws).signedS3UploadUrl(objectName)
 
     try await context.db.create(Screenshot(
-      computerUserId: userDevice.id,
+      computerUserId: computerUser.id,
       url: webUrlString,
       width: input.width,
       height: input.height,

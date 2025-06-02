@@ -28,7 +28,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
     expect(userData.id).toEqual(user.id.rawValue)
     expect(userData.name).toEqual(user.name)
 
-    let userDevice = try await self.db.find(UserDevice.Id(userData.deviceId))
+    let userDevice = try await self.db.find(ComputerUser.Id(userData.deviceId))
     let device = try await self.db.find(userDevice.computerId)
 
     expect(userDevice.username).toEqual(input.username)

@@ -21,7 +21,7 @@ enum AdminEvent: Equatable {
 
   struct SuspendFilterRequestSubmitted: Equatable {
     var dashboardUrl: String
-    var userDeviceId: UserDevice.Id
+    var userDeviceId: ComputerUser.Id
     var userId: User.Id
     var userName: String
     var duration: Seconds<Int>

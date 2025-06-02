@@ -72,7 +72,7 @@ extension DashboardWidgets: NoInputResolver {
       )
     }
 
-    let computerUsers = try await UserDevice.query()
+    let computerUsers = try await ComputerUser.query()
       .where(.childId |=| children.map(\.id))
       .all(in: context.db)
 
@@ -81,7 +81,7 @@ extension DashboardWidgets: NoInputResolver {
       .where(.status == .enum(RequestStatus.pending))
       .all(in: context.db)
 
-    let computerToChildMap: [UserDevice.Id: Api.User] = computerUsers
+    let computerToChildMap: [ComputerUser.Id: Api.User] = computerUsers
       .reduce(into: [:]) { map, device in
         map[device.id] = children.first(where: { $0.id == device.childId })
       }
@@ -144,7 +144,7 @@ extension DashboardWidgets: NoInputResolver {
 
 private func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],
-  map: [UserDevice.Id: User]
+  map: [ComputerUser.Id: User]
 ) -> [DashboardWidgets.UnlockRequest] {
   unlockRequests.map { unlockRequest in
     .init(
@@ -160,7 +160,7 @@ private func mapUnlockRequests(
 
 private func recentScreenshots(
   children: [User],
-  map: [UserDevice.Id: User],
+  map: [ComputerUser.Id: User],
   screenshots: [Screenshot]
 ) -> [DashboardWidgets.RecentScreenshot] {
   children.compactMap { user in
@@ -172,7 +172,7 @@ private func recentScreenshots(
 
 private func userActivitySummaries(
   children: [User],
-  map: [UserDevice.Id: User],
+  map: [ComputerUser.Id: User],
   keystrokes: [KeystrokeLine],
   screenshots: [Screenshot]
 ) -> [DashboardWidgets.ChildActivitySummary] {

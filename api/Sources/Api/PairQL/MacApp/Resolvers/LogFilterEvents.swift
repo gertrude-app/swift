@@ -5,13 +5,13 @@ import PostgresKit
 
 extension LogFilterEvents: Resolver {
   static func resolve(with input: Input, in context: UserContext) async throws -> Output {
-    let deviceId = try await context.userDevice().id
+    let computerUserId = try await context.computerUser().id
     let events = try await context.db.create(input.events.map { event, count in
       InterestingEvent(
         eventId: event.id,
         kind: "event",
         context: "macapp-filter",
-        computerUserId: deviceId,
+        computerUserId: computerUserId,
         parentId: nil,
         detail: [event.detail, count > 1 ? "(\(count)x)" : nil]
           .compactMap(\.self)

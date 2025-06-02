@@ -44,7 +44,7 @@ import Gertie
     }
   }
 
-  func status(for userDeviceId: UserDevice.Id) async -> ChildComputerStatus {
+  func status(for userDeviceId: ComputerUser.Id) async -> ChildComputerStatus {
     for connection in self.connections.values {
       if connection.ids.userDevice == userDeviceId {
         let state = await connection.filterState

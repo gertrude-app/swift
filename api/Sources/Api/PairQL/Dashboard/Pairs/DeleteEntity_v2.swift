@@ -62,14 +62,14 @@ extension DeleteEntity_v2: Resolver {
         .delete(in: context.db)
 
     case .computerUser:
-      let computerUser = try await context.db.find(UserDevice.Id(input.id))
+      let computerUser = try await context.db.find(ComputerUser.Id(input.id))
       let computer = try await context.db.find(computerUser.computerId)
       let child = try await context.verifiedUser(from: computerUser.childId)
       try await context.db.delete(computerUser)
-      let remainingUserDevices = try await UserDevice.query()
+      let remainingComputerUsers = try await ComputerUser.query()
         .where(.computerId == computerUser.computerId)
         .all(in: context.db)
-      if remainingUserDevices.isEmpty {
+      if remainingComputerUsers.isEmpty {
         try await context.db.delete(computerUser.computerId)
       }
       dashSecurityEvent(
@@ -95,7 +95,7 @@ extension DeleteEntity_v2: Resolver {
         .delete(in: context.db)
 
     case .child:
-      let computerIds = try await context.userDevices().map(\.computerId)
+      let computerIds = try await context.computerUsers().map(\.computerId)
       let child = try await User.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
@@ -115,7 +115,7 @@ extension DeleteEntity_v2: Resolver {
         .where(.id |=| computerIds)
         .all(in: context.db)
       for computer in computers {
-        if try await computer.userDevices(in: context.db).isEmpty {
+        if try await computer.computerUsers(in: context.db).isEmpty {
           try await context.db.delete(computer)
         }
       }

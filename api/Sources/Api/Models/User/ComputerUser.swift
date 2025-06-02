@@ -1,7 +1,7 @@
 import DuetSQL
 import Gertie
 
-struct UserDevice: Codable, Sendable, Equatable {
+struct ComputerUser: Codable, Sendable, Equatable {
   var id: Id
   var childId: User.Id
   var computerId: Device.Id
@@ -36,7 +36,7 @@ struct UserDevice: Codable, Sendable, Equatable {
 
 // extensions
 
-extension UserDevice {
+extension ComputerUser {
   var appSemver: Semver {
     Semver(self.appVersion)!
   }
@@ -54,7 +54,7 @@ extension UserDevice {
   }
 }
 
-extension UserDevice {
+extension ComputerUser {
   func status() async -> ChildComputerStatus {
     await with(dependency: \.websockets).status(self.id)
   }

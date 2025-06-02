@@ -25,13 +25,13 @@ extension CheckIn_v2: Resolver {
     }
 
     // update the app version if it changed
-    var userDevice = try await context.userDevice()
-    if !input.appVersion.isEmpty, input.appVersion != userDevice.appVersion {
-      userDevice.appVersion = input.appVersion
-      try await context.db.update(userDevice)
+    var computerUser = try await context.computerUser()
+    if !input.appVersion.isEmpty, input.appVersion != computerUser.appVersion {
+      computerUser.appVersion = input.appVersion
+      try await context.db.update(computerUser)
     }
 
-    var adminDevice = try await userDevice.adminDevice(in: context.db)
+    var adminDevice = try await computerUser.adminDevice(in: context.db)
     let channel = adminDevice.appReleaseChannel
 
     async let latestRelease = resolveLatestRelease(
@@ -55,16 +55,16 @@ extension CheckIn_v2: Resolver {
     }
 
     if let userIsAdmin = input.userIsAdmin,
-       userDevice.isAdmin != userIsAdmin {
-      userDevice.isAdmin = userIsAdmin
-      try await context.db.update(userDevice)
+       computerUser.isAdmin != userIsAdmin {
+      computerUser.isAdmin = userIsAdmin
+      try await context.db.update(computerUser)
     }
 
     var resolvedFilterSuspension: CheckIn_v2.ResolvedFilterSuspension?
     if let suspensionReqId = input.pendingFilterSuspension,
        let resolved = try? await SuspendFilterRequest.query()
        .where(.id == suspensionReqId)
-       .where(.computerUserId == userDevice.id)
+       .where(.computerUserId == computerUser.id)
        .where(.status != .enum(RequestStatus.pending))
        .first(in: context.db) {
       resolvedFilterSuspension = .init(
@@ -79,7 +79,7 @@ extension CheckIn_v2: Resolver {
        !unlockIds.isEmpty {
       let resolved = try await UnlockRequest.query()
         .where(.id |=| unlockIds)
-        .where(.computerUserId == userDevice.id)
+        .where(.computerUserId == computerUser.id)
         .where(.status != .enum(RequestStatus.pending))
         .all(in: context.db)
       if !resolved.isEmpty {
@@ -118,7 +118,7 @@ extension CheckIn_v2: Resolver {
       userData: .init(
         id: context.user.id.rawValue,
         token: context.token.value.rawValue,
-        deviceId: userDevice.id.rawValue,
+        deviceId: computerUser.id.rawValue,
         name: context.user.name,
         keyloggingEnabled: context.user.keyloggingEnabled,
         screenshotsEnabled: context.user.screenshotsEnabled,
@@ -126,7 +126,7 @@ extension CheckIn_v2: Resolver {
         screenshotSize: context.user.screenshotsResolution,
         downtime: context.user.downtime,
         blockedApps: blockedApps.map(\.blockedApp),
-        connectedAt: userDevice.createdAt
+        connectedAt: computerUser.createdAt
       ),
       browsers: browsers.map(\.match),
       resolvedFilterSuspension: resolvedFilterSuspension,

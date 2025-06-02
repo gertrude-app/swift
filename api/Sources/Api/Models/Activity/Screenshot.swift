@@ -2,7 +2,7 @@ import Duet
 
 struct Screenshot: Codable, Sendable {
   var id: Id
-  var computerUserId: UserDevice.Id
+  var computerUserId: ComputerUser.Id
   var url: String
   var width: Int
   var height: Int
@@ -13,7 +13,7 @@ struct Screenshot: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    computerUserId: UserDevice.Id,
+    computerUserId: ComputerUser.Id,
     url: String,
     width: Int,
     height: Int,

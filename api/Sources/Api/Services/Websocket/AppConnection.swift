@@ -7,7 +7,7 @@ import XCore
 
 actor AppConnection {
   struct Ids {
-    let userDevice: UserDevice.Id
+    let userDevice: ComputerUser.Id
     let user: User.Id
     let keychains: [Keychain.Id]
   }
