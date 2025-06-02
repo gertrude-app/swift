@@ -13,5 +13,6 @@ extension HTTPHeaders.Name {
   static let xDashboardUrl = HTTPHeaders.Name("X-DashboardUrl")
   static let xAdminToken = HTTPHeaders.Name("X-AdminToken")
   static let xSuperAdminToken = HTTPHeaders.Name("X-SuperAdminToken")
-  static let xUserToken = HTTPHeaders.Name("X-UserToken")
+  // actual header not renamed, pending careful long-term deprecation
+  static let xMacAppToken = HTTPHeaders.Name("X-UserToken")
 }

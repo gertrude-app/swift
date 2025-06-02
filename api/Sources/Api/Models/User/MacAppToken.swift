@@ -2,10 +2,10 @@ import Dependencies
 import DuetSQL
 import Tagged
 
-struct UserToken: Codable, Sendable {
+struct MacAppToken: Codable, Sendable {
   var id: Id
   var childId: User.Id
-  var computerUserId: UserDevice.Id
+  var computerUserId: ComputerUser.Id
   var value: Value
   var createdAt = Date()
   var updatedAt = Date()
@@ -14,7 +14,7 @@ struct UserToken: Codable, Sendable {
   init(
     id: Id = .init(),
     childId: User.Id,
-    computerUserId: UserDevice.Id,
+    computerUserId: ComputerUser.Id,
     value: Value? = nil
   ) {
     @Dependency(\.uuid) var uuid
@@ -27,21 +27,21 @@ struct UserToken: Codable, Sendable {
 
 // extensions
 
-extension UserToken {
-  typealias Value = Tagged<(UserToken, value: ()), UUID>
+extension MacAppToken {
+  typealias Value = Tagged<(MacAppToken, value: ()), UUID>
 }
 
 // loaders
 
-extension UserToken {
+extension MacAppToken {
   func user(in db: any DuetSQL.Client) async throws -> User {
     try await User.query()
       .where(.id == self.childId)
       .first(in: db)
   }
 
-  func userDevice(in db: any DuetSQL.Client) async throws -> UserDevice {
-    try await UserDevice.query()
+  func computerUser(in db: any DuetSQL.Client) async throws -> ComputerUser {
+    try await ComputerUser.query()
       .where(.id == self.computerUserId)
       .first(in: db)
   }

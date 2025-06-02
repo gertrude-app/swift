@@ -123,7 +123,7 @@ struct AnalyticsData: Sendable {
         childrenOfActiveParents: 0,
         allTimeSignups: parentModels.count,
         allTimeChildren: User.query().count(in: self.db),
-        allTimeAppInstallations: UserDevice.query().count(in: self.db)
+        allTimeAppInstallations: ComputerUser.query().count(in: self.db)
       )
     )
     var totalAnnualCents = Cents(0)

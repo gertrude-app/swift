@@ -18,7 +18,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
     let user2 = try await self.db.create(User(parentId: user.parentId, name: "Bob"))
 
     // proves that we take the highest app version
-    try await self.db.create(UserDevice(
+    try await self.db.create(ComputerUser(
       childId: user2.id,
       computerId: device.id,
       isAdmin: false,

@@ -21,8 +21,8 @@ class UserEntities {
 struct UserWithDeviceEntities {
   var model: User
   var adminDevice: Device
-  var device: UserDevice
-  var token: UserToken
+  var device: ComputerUser
+  var token: MacAppToken
   var admin: AdminEntities
 
   var context: UserContext {
@@ -69,7 +69,7 @@ struct AdminWithOnboardedChildEntities {
   var model: Admin
   var token: AdminToken
   var child: User
-  var userDevice: UserDevice
+  var userDevice: ComputerUser
   var adminDevice: Device
 
   var context: AdminContext {
@@ -121,11 +121,11 @@ extension ApiTestCase {
     let device = try await self.db.create(Device.random {
       $0.parentId = user.admin.model.id
     })
-    let userDevice = try await self.db.create(UserDevice.random {
+    let userDevice = try await self.db.create(ComputerUser.random {
       $0.childId = user.model.id
       $0.computerId = device.id
     })
-    let token = try await self.db.create(UserToken(
+    let token = try await self.db.create(MacAppToken(
       childId: user.id,
       computerUserId: userDevice.id
     ))
@@ -157,7 +157,7 @@ extension AdminEntities {
 
 extension UserEntities {
   func withDevice(
-    config: (inout UserDevice) -> Void = { _ in },
+    config: (inout ComputerUser) -> Void = { _ in },
     adminDevice: (inout Device) -> Void = { _ in }
   ) async throws -> UserWithDeviceEntities {
     @Dependency(\.db) var db
@@ -165,12 +165,12 @@ extension UserEntities {
       adminDevice(&$0)
       $0.parentId = self.admin.id
     })
-    let userDevice = try await db.create(UserDevice.random {
+    let userDevice = try await db.create(ComputerUser.random {
       config(&$0)
       $0.childId = self.model.id
       $0.computerId = device.id
     })
-    let token = try await db.create(UserToken(
+    let token = try await db.create(MacAppToken(
       childId: self.model.id,
       computerUserId: userDevice.id
     ))

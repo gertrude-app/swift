@@ -70,7 +70,7 @@ enum Reset {
 
   static func createActivityItems(
     _ num: Int = Int.random(in: 15 ... 30),
-    _ deviceId: UserDevice.Id,
+    _ deviceId: ComputerUser.Id,
     subtractingDays: Int = 0,
     percentDeleted: Int = 0
   ) async throws {
@@ -110,7 +110,7 @@ enum Reset {
   }
 
   private static func createActivityItem(
-    _ userDeviceId: UserDevice.Id,
+    _ userDeviceId: ComputerUser.Id,
     subtractingDays: Int = 0
   ) -> Either<Screenshot, KeystrokeLine> {
     if [1, 2, 3].shuffled().first! != 1 {

@@ -5,10 +5,10 @@ extension CreateKeystrokeLines: Resolver {
     with inputs: [KeystrokeLineInput],
     in context: UserContext
   ) async throws -> Output {
-    let userDevice = try await context.userDevice()
+    let computerUser = try await context.computerUser()
     let keystrokeLines = inputs.map { input in
       KeystrokeLine(
-        computerUserId: userDevice.id,
+        computerUserId: computerUser.id,
         appName: input.appName,
         line: input.line.replacingOccurrences(of: "\0", with: "\u{FFFD}"),
         filterSuspended: input.filterSuspended ?? false,

@@ -35,9 +35,9 @@ extension ChildComputerStatus {
 
 func consolidatedChildComputerStatus(
   _ userId: User.Id,
-  _ userDevices: [UserDevice]
+  _ computerUsers: [ComputerUser]
 ) async throws -> ChildComputerStatus {
-  let statuses = try await userDevices
+  let statuses = try await computerUsers
     .filter { $0.childId == userId }
     .concurrentMap { await $0.status() }
   if statuses.isEmpty {

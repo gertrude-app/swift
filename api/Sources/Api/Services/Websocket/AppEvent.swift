@@ -6,7 +6,7 @@ struct AppEvent: Equatable {
   enum Matcher: Equatable {
     case user(User.Id)
     case usersWith(keychain: Keychain.Id)
-    case userDevice(UserDevice.Id)
+    case userDevice(ComputerUser.Id)
   }
 
   var matcher: Matcher

@@ -61,7 +61,7 @@ extension QueryAdmins: NoInputResolver {
 
     let rows = try await context.db.customQuery(AdminQuery.self)
 
-    var installations: [UserDevice.Id: (AdminData.Child.Installation, User.Id)] = [:]
+    var installations: [ComputerUser.Id: (AdminData.Child.Installation, User.Id)] = [:]
     for row in rows where row.userDeviceId != nil {
       let userDeviceId = try expect(row.userDeviceId)
       guard installations[userDeviceId] == nil else { continue }
@@ -258,7 +258,7 @@ struct AdminQuery: CustomQueryable {
   let userCreatedAt: Date?
 
   // installation
-  let userDeviceId: UserDevice.Id?
+  let userDeviceId: ComputerUser.Id?
   let numericId: Int?
   let appVersion: String?
   let filterVersion: String?
