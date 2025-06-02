@@ -3,6 +3,11 @@ import Foundation
 import PairQL
 import Vapor
 
+struct DateRange: PairNestable, PairInput {
+  let start: String
+  let end: String
+}
+
 public enum UserActivity {
   public struct Screenshot: PairNestable {
     var id: Api.Screenshot.Id

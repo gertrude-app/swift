@@ -128,21 +128,25 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
     keystrokeLine2.deletedAt = .reference - 1 // <-- soft-deleted
     try await self.db.create(keystrokeLine2)
 
+    var calendar = Calendar.current
+    calendar.timeZone = TimeZone(secondsFromGMT: TimeZone.current.secondsFromGMT())!
+
     // test getting the activity overview summaries
-    let summary = try await CombinedUsersActivitySummaries.resolve(
+    let summary = try await FamilyActivitySummaries.resolve(
+      with: .init(jsTimezoneOffsetMinutes: -(TimeZone.current.secondsFromGMT() / 60)),
       in: context(child1.admin)
     )
 
     expect(summary).toEqual(
       [
         .init(
-          date: Calendar.current.startOfDay(for: keystrokeLine2.createdAt),
+          date: calendar.startOfDay(for: keystrokeLine2.createdAt),
           numApproved: 1,
           numFlagged: 0,
           numTotal: 4
         ),
         .init(
-          date: Calendar.current.startOfDay(for: flaggedOldScreenshot.createdAt),
+          date: calendar.startOfDay(for: flaggedOldScreenshot.createdAt),
           numApproved: 0,
           numFlagged: 1,
           numTotal: 1
