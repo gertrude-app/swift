@@ -68,6 +68,12 @@ struct CleanupJob: AsyncScheduledJob {
 
     logs.append("Deleted \(deletedAdminTokens) admin tokens")
 
+    let deletedAnnouncements = try await DashAnnouncement.query()
+      .where(.deletedAt < now)
+      .delete(in: self.db, force: true)
+
+    logs.append("Deleted \(deletedAnnouncements) dash announcements")
+
     let suspendFilterRequests = try await SuspendFilterRequest.query()
       .where(.createdAt < 3.daysAgo)
       .delete(in: self.db)

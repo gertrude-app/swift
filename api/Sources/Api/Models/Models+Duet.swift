@@ -41,6 +41,22 @@ extension Either where Left: HasCreatedAt, Right: HasCreatedAt {
   }
 }
 
+extension DashAnnouncement: Duet.Identifiable {
+  typealias Id = Tagged<DashAnnouncement, UUID>
+}
+
+extension DashAnnouncement {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case parentId
+    case icon
+    case html
+    case learnMoreUrl
+    case createdAt
+    case deletedAt
+  }
+}
+
 extension IOSBlockRule: Duet.Identifiable {
   typealias Id = Tagged<IOSBlockRule, UUID>
   typealias VendorId = Tagged<(t: IOSBlockRule, vendorId: ()), UUID>

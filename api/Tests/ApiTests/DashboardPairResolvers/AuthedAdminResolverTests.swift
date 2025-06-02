@@ -277,7 +277,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testDeleteKeyNotifiesConnectedApps() async throws {
     let admin = try await self.admin().withKeychain()
-    let output = try await DeleteEntity.resolve(
+    let output = try await DeleteEntity_v2.resolve(
       with: .init(id: admin.key.id.rawValue, type: .key),
       in: context(admin)
     )
@@ -288,50 +288,50 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDeletingLastUserDeviceDeletesDevice() async throws {
-    let user = try await self.userWithDevice()
-    _ = try await DeleteEntity.resolve(
-      with: .init(id: user.device.id.rawValue, type: .userDevice),
-      in: context(user.admin)
+    let child = try await self.userWithDevice()
+    _ = try await DeleteEntity_v2.resolve(
+      with: .init(id: child.device.id.rawValue, type: .computerUser),
+      in: context(child.admin)
     )
-    let retrieved = try? await self.db.find(user.adminDevice.id)
+    let retrieved = try? await self.db.find(child.adminDevice.id)
     expect(retrieved).toBeNil()
   }
 
   func testDeletingUserDeletesOrphanedDevice() async throws {
-    let user = try await self.userWithDevice()
-    _ = try await DeleteEntity.resolve(
-      with: .init(id: user.id.rawValue, type: .user),
-      in: context(user.admin)
+    let child = try await self.userWithDevice()
+    _ = try await DeleteEntity_v2.resolve(
+      with: .init(id: child.id.rawValue, type: .child),
+      in: context(child.admin)
     )
-    let retrieved = try? await self.db.find(user.adminDevice.id)
+    let retrieved = try? await self.db.find(child.adminDevice.id)
     expect(retrieved).toBeNil()
   }
 
   func testDeletingAdminDeletesAdminAndCreatesDeletedEntity() async throws {
     try await self.db.delete(all: DeletedEntity.self)
-    let admin = try await self.admin()
+    let parent = try await self.admin()
 
-    _ = try await DeleteEntity.resolve(
-      with: .init(id: admin.id.rawValue, type: .admin),
-      in: context(admin)
+    _ = try await DeleteEntity_v2.resolve(
+      with: .init(id: parent.id.rawValue, type: .parent),
+      in: context(parent)
     )
 
     let deleted = try await self.db.select(all: DeletedEntity.self)
     expect(deleted).toHaveCount(1)
     expect(deleted.first?.type).toEqual("Admin")
     expect(deleted.first?.reason).toEqual("self-deleted from use-case initial screen")
-    expect(deleted.first!.data).toContain(admin.id.lowercased)
-    await expect(try? self.db.find(admin.id)).toBeNil()
+    expect(deleted.first!.data).toContain(parent.id.lowercased)
+    await expect(try? self.db.find(parent.id)).toBeNil()
   }
 
   func testAdminCantDeleteOtherAdmin() async throws {
-    let admin1 = try await self.admin()
-    let admin2 = try await self.admin()
+    let parent1 = try await self.admin()
+    let parent2 = try await self.admin()
 
     try await expectErrorFrom { [weak self] in
-      _ = try await DeleteEntity.resolve(
-        with: .init(id: admin2.id.rawValue, type: .admin),
-        in: self!.context(admin1)
+      _ = try await DeleteEntity_v2.resolve(
+        with: .init(id: parent2.id.rawValue, type: .parent),
+        in: self!.context(parent1)
       )
     }.toContain("Unauthorized")
   }

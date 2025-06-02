@@ -6,12 +6,17 @@ enum SuperAdminRoute: PairRoute {
 }
 
 enum AuthedSuperAdminRoute: PairRoute {
+  case createDashAnnouncement(CreateDashAnnouncement.Input)
   case createRelease(CreateRelease.Input)
   case queryAdmins
   case analyticsOverview
   case parentOverviews
 
   nonisolated(unsafe) static let router = OneOf {
+    Route(.case(Self.createDashAnnouncement)) {
+      Operation(CreateDashAnnouncement.self)
+      Body(.input(CreateDashAnnouncement.self))
+    }
     Route(.case(Self.createRelease)) {
       Operation(CreateRelease.self)
       Body(.input(CreateRelease.self))
@@ -46,6 +51,9 @@ extension SuperAdminRoute: RouteResponder {
     }
 
     switch authedRoute {
+    case .createDashAnnouncement(let input):
+      let output = try await CreateDashAnnouncement.resolve(with: input, in: context)
+      return try await self.respond(with: output)
     case .createRelease(let input):
       let output = try await CreateRelease.resolve(with: input, in: context)
       return try await self.respond(with: output)

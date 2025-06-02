@@ -2,6 +2,36 @@ import DuetSQL
 import Gertie
 import GertieIOS
 
+extension DashAnnouncement: Model {
+  public static let schemaName = "parent"
+  public static let tableName = "dash_announcements"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .parentId: .uuid(self.parentId)
+    case .icon: .varchar(self.icon)
+    case .html: .string(self.html)
+    case .learnMoreUrl: .varchar(self.learnMoreUrl)
+    case .createdAt: .date(self.createdAt)
+    case .deletedAt: .date(self.deletedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .parentId: .uuid(self.parentId),
+      .icon: .varchar(self.icon),
+      .html: .string(self.html),
+      .learnMoreUrl: .varchar(self.learnMoreUrl),
+      .createdAt: .currentTimestamp,
+      .deletedAt: .date(self.deletedAt),
+    ]
+  }
+}
+
 extension IOSBlockRule: Model {
   public static let schemaName = "iosapp"
   public static let tableName = "block_rules"

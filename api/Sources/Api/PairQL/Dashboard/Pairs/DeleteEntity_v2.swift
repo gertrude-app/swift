@@ -3,19 +3,19 @@ import PairQL
 import Vapor
 import XCore
 
-// deprecated: delete after 6/14/25
-struct DeleteEntity: Pair {
+struct DeleteEntity_v2: Pair {
   static let auth: ClientAuth = .admin
 
   struct Input: PairInput {
     enum EntityType: String, Codable {
-      case admin
-      case adminNotification
-      case adminVerifiedNotificationMethod
-      case userDevice
+      case announcement
+      case child
+      case computerUser
+      case parent
+      case parentNotification
+      case parentVerifiedNotificationMethod
       case key
       case keychain
-      case user
     }
 
     let id: UUID
@@ -25,13 +25,19 @@ struct DeleteEntity: Pair {
 
 // resolver
 
-extension DeleteEntity: Resolver {
+extension DeleteEntity_v2: Resolver {
   static func resolve(
     with input: Input,
     in context: AdminContext
   ) async throws -> Output {
     switch input.type {
-    case .admin:
+    case .announcement:
+      try await DashAnnouncement.query()
+        .where(.id == input.id)
+        .where(.parentId == context.admin.id)
+        .delete(in: context.db, force: true)
+
+    case .parent:
       guard input.id == context.admin.id else {
         throw Abort(.unauthorized)
       }
@@ -42,33 +48,33 @@ extension DeleteEntity: Resolver {
       ))
       try await context.db.delete(context.admin)
 
-    case .adminNotification:
+    case .parentNotification:
       try await AdminNotification.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
         .delete(in: context.db)
       dashSecurityEvent(.notificationDeleted, in: context)
 
-    case .adminVerifiedNotificationMethod:
+    case .parentVerifiedNotificationMethod:
       try await AdminVerifiedNotificationMethod.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
         .delete(in: context.db)
 
-    case .userDevice:
-      let userDevice = try await context.db.find(UserDevice.Id(input.id))
-      let device = try await context.db.find(userDevice.computerId)
-      let user = try await context.verifiedUser(from: userDevice.childId)
-      try await context.db.delete(userDevice)
+    case .computerUser:
+      let computerUser = try await context.db.find(UserDevice.Id(input.id))
+      let computer = try await context.db.find(computerUser.computerId)
+      let child = try await context.verifiedUser(from: computerUser.childId)
+      try await context.db.delete(computerUser)
       let remainingUserDevices = try await UserDevice.query()
-        .where(.computerId == userDevice.computerId)
+        .where(.computerId == computerUser.computerId)
         .all(in: context.db)
       if remainingUserDevices.isEmpty {
-        try await context.db.delete(userDevice.computerId)
+        try await context.db.delete(computerUser.computerId)
       }
       dashSecurityEvent(
         .childComputerDeleted,
-        "child: \(user.name), computer serial: \(device.serialNumber)",
+        "child: \(child.name), computer serial: \(computer.serialNumber)",
         in: context
       )
 
@@ -88,33 +94,33 @@ extension DeleteEntity: Resolver {
         .where(.parentId == context.admin.id)
         .delete(in: context.db)
 
-    case .user:
-      let deviceIds = try await context.userDevices().map(\.computerId)
-      let user = try await User.query()
+    case .child:
+      let computerIds = try await context.userDevices().map(\.computerId)
+      let child = try await User.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
         .first(in: context.db)
-      dashSecurityEvent(.childDeleted, "name: \(user.name)", in: context)
+      dashSecurityEvent(.childDeleted, "name: \(child.name)", in: context)
 
-      let userKeychainIds = try await UserKeychain.query()
-        .where(.childId == user.id)
+      let childKeychainIds = try await UserKeychain.query()
+        .where(.childId == child.id)
         .all(in: context.db)
         .map(\.keychainId)
 
-      try await context.db.delete(user)
+      try await context.db.delete(child)
 
-      await deleteUnusedEmptyAutogenKeychain(userKeychainIds, context.db)
+      await deleteUnusedEmptyAutogenKeychain(childKeychainIds, context.db)
 
-      let devices = try await Device.query()
-        .where(.id |=| deviceIds)
+      let computers = try await Device.query()
+        .where(.id |=| computerIds)
         .all(in: context.db)
-      for device in devices {
-        if try await device.userDevices(in: context.db).isEmpty {
-          try await context.db.delete(device)
+      for computer in computers {
+        if try await computer.userDevices(in: context.db).isEmpty {
+          try await context.db.delete(computer)
         }
       }
       try await with(dependency: \.websockets)
-        .send(.userDeleted, to: .user(user.id))
+        .send(.userDeleted, to: .user(child.id))
     }
 
     return .success
@@ -122,22 +128,22 @@ extension DeleteEntity: Resolver {
 }
 
 private func deleteUnusedEmptyAutogenKeychain(
-  _ userKeychainIds: [Keychain.Id],
+  _ childKeychainIds: [Keychain.Id],
   _ db: any DuetSQL.Client
 ) async {
   do {
     let keychains = try await Keychain.query()
-      .where(.id |=| userKeychainIds)
+      .where(.id |=| childKeychainIds)
       .where(.like(.description, "%created automatically%"))
       .all(in: db)
 
     for keychain in keychains {
       let keys = try await keychain.keys(in: db)
       if keys.isEmpty {
-        let otherUsers = try await UserKeychain.query()
+        let otherChildren = try await UserKeychain.query()
           .where(.keychainId == keychain.id)
           .all(in: db)
-        if otherUsers.isEmpty {
+        if otherChildren.isEmpty {
           try await db.delete(keychain)
         }
       }
@@ -145,24 +151,5 @@ private func deleteUnusedEmptyAutogenKeychain(
   } catch {
     // we don't care about errors, we're just cleaning up
     // after ourselves, there's no harm if this operation fails
-  }
-}
-
-// extensions
-
-extension DeleteEntity.Input {
-  static var customTs: String? {
-    """
-      export interface __self__ {
-        id: UUID;
-        type:
-          | 'AdminNotification'
-          | 'AdminVerifiedNotificationMethod'
-          | 'Device'
-          | 'Key'
-          | 'Keychain'
-          | 'User';
-      }
-    """
   }
 }

@@ -133,7 +133,8 @@ jobs:
             cd ~/builds/production && ls -r api_* | grep -v $(basename $(readlink -f current)) | tail -n +11 | xargs rm
             cd ~/builds/staging && ls -r api_* | tail -n  +6 | xargs rm
             pm2 reset staging > /dev/null
-            pm2 restart staging > /dev/null
+            pm2 stop staging > /dev/null
+            pm2 start staging > /dev/null
 
   linux-api-test:
     if: github.event_name == 'pull_request'
