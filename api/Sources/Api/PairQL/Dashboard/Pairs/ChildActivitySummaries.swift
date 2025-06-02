@@ -2,13 +2,15 @@ import Dependencies
 import DuetSQL
 import PairQL
 
-// deprecated, remove 6/14/25
-struct UserActivitySummaries: Pair {
+struct ChildActivitySummaries: Pair {
   static let auth: ClientAuth = .admin
-  typealias Input = User.Id
+  struct Input: PairInput {
+    var childId: User.Id
+    var jsTimezoneOffsetMinutes: Int
+  }
 
   struct Output: PairOutput {
-    var userName: String
+    var childName: String
     var days: [Day]
   }
 
@@ -22,24 +24,34 @@ struct UserActivitySummaries: Pair {
 
 // resolver
 
-extension UserActivitySummaries: Resolver {
+extension ChildActivitySummaries: Resolver {
   static func resolve(
-    with childId: User.Id,
+    with input: Input,
     in context: AdminContext
   ) async throws -> Output {
-    let child = try await context.verifiedUser(from: childId)
+    let child = try await context.verifiedUser(from: input.childId)
     let computerUserIds = try await child.devices(in: context.db).map(\.id)
-    let days = try await UserActivitySummaries.days(computerUserIds, in: context.db)
-    return .init(userName: child.name, days: days)
+    let days = try await ChildActivitySummaries.days(
+      computerUserIds,
+      input.jsTimezoneOffsetMinutes,
+      in: context.db
+    )
+    return .init(childName: child.name, days: days)
   }
 
   static func days(
     _ computerUserIds: [UserDevice.Id],
+    _ jsTimezoneOffsetMinutes: Int,
     in db: any Client
   ) async throws -> [Day] {
     @Dependency(\.date) var date
 
     let twoWeeksAgo = date.now - .days(14)
+    var calendar = Calendar.current
+    // NB: js returns timezone offsets as minutes BEHIND UTC, hence negative
+    if let jsTz = TimeZone(secondsFromGMT: -jsTimezoneOffsetMinutes * 60) {
+      calendar.timeZone = jsTz
+    }
 
     let screenshots = try await Screenshot.query()
       .where(.computerUserId |=| computerUserIds)
@@ -64,7 +76,7 @@ extension UserActivitySummaries: Resolver {
     var dayMap: [Date: ([Screenshot], [KeystrokeLine])] = [:]
 
     for screenshot in screenshots {
-      let key = Calendar.current.startOfDay(for: screenshot.createdAt)
+      let key = calendar.startOfDay(for: screenshot.createdAt)
       if var value = dayMap[key] {
         value.0.append(screenshot)
         dayMap[key] = value
@@ -74,7 +86,7 @@ extension UserActivitySummaries: Resolver {
     }
 
     for keystroke in keystrokes {
-      let key = Calendar.current.startOfDay(for: keystroke.createdAt)
+      let key = calendar.startOfDay(for: keystroke.createdAt)
       if var value = dayMap[key] {
         value.1.append(keystroke)
         dayMap[key] = value
@@ -89,7 +101,7 @@ extension UserActivitySummaries: Resolver {
       let deletedCount = coalesced.lazy.filter(\.isDeleted).count
       let flaggedCount = coalesced.lazy.filter(\.isFlagged).count
 
-      return UserActivitySummaries.Day(
+      return ChildActivitySummaries.Day(
         date: key,
         numApproved: deletedCount,
         numFlagged: flaggedCount,

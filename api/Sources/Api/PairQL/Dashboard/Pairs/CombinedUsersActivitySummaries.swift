@@ -1,6 +1,7 @@
 import DuetSQL
 import PairQL
 
+// deprecated, remove 6/14/25
 struct CombinedUsersActivitySummaries: Pair {
   static let auth: ClientAuth = .admin
   typealias Output = [UserActivitySummaries.Day]

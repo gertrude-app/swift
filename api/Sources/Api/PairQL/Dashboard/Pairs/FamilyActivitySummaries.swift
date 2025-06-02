@@ -1,0 +1,24 @@
+import DuetSQL
+import PairQL
+
+struct FamilyActivitySummaries: Pair {
+  static let auth: ClientAuth = .admin
+  struct Input: PairInput {
+    var jsTimezoneOffsetMinutes: Int
+  }
+
+  typealias Output = [ChildActivitySummaries.Day]
+}
+
+// resolver
+
+extension FamilyActivitySummaries: Resolver {
+  static func resolve(with input: Input, in ctx: AdminContext) async throws -> Output {
+    let computerUserIds = try await ctx.userDevices().map(\.id)
+    return try await ChildActivitySummaries.days(
+      computerUserIds,
+      input.jsTimezoneOffsetMinutes,
+      in: ctx.db
+    )
+  }
+}

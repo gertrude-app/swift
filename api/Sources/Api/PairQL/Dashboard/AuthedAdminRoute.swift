@@ -9,13 +9,13 @@ enum AuthedAdminRoute: PairRoute {
   case dashboardWidgets
   case decideFilterSuspensionRequest(DecideFilterSuspensionRequest.Input)
   case deleteActivityItems_v2(DeleteActivityItems_v2.Input)
-  case deleteEntity(DeleteEntity.Input)
+  case deleteEntity(DeleteEntity.Input) // deprecated
   case deleteEntity_v2(DeleteEntity_v2.Input)
   case flagActivityItems(FlagActivityItems.Input)
   case getAdmin
   case getAdminKeychain(GetAdminKeychain.Input)
   case getAdminKeychains
-  case getDashboardWidgets
+  case getDashboardWidgets // deprecated
   case getDevice(GetDevice.Input)
   case getDevices
   case getIdentifiedApps
@@ -29,9 +29,11 @@ enum AuthedAdminRoute: PairRoute {
   case latestAppVersions
   case logEvent(LogEvent.Input)
   case userActivityFeed(UserActivityFeed.Input)
-  case userActivitySummaries(UserActivitySummaries.Input)
+  case userActivitySummaries(UserActivitySummaries.Input) // deprecated
+  case childActivitySummaries(ChildActivitySummaries.Input)
   case combinedUsersActivityFeed(CombinedUsersActivityFeed.Input)
-  case combinedUsersActivitySummaries
+  case familyActivitySummaries(FamilyActivitySummaries.Input)
+  case combinedUsersActivitySummaries // deprecated
   case getUsers
   case getUserUnlockRequests(GetUserUnlockRequests.Input)
   case saveDevice(SaveDevice.Input)
@@ -61,6 +63,10 @@ extension AuthedAdminRoute {
         Operation(CreatePendingNotificationMethod.self)
         Body(.dashboardInput(CreatePendingNotificationMethod.self))
       }
+      Route(.case(Self.childActivitySummaries)) {
+        Operation(ChildActivitySummaries.self)
+        Body(.dashboardInput(ChildActivitySummaries.self))
+      }
       Route(.case(Self.dashboardWidgets)) {
         Operation(DashboardWidgets.self)
       }
@@ -79,6 +85,10 @@ extension AuthedAdminRoute {
       Route(.case(Self.deleteEntity_v2)) {
         Operation(DeleteEntity_v2.self)
         Body(.dashboardInput(DeleteEntity_v2.self))
+      }
+      Route(.case(Self.familyActivitySummaries)) {
+        Operation(FamilyActivitySummaries.self)
+        Body(.dashboardInput(FamilyActivitySummaries.self))
       }
       Route(.case(Self.flagActivityItems)) {
         Operation(FlagActivityItems.self)
@@ -216,6 +226,9 @@ extension AuthedAdminRoute: RouteResponder {
     case .saveUser(let input):
       let output = try await SaveUser.resolve(with: input, in: context)
       return try await self.respond(with: output)
+    case .childActivitySummaries(let input):
+      let output = try await ChildActivitySummaries.resolve(with: input, in: context)
+      return try await self.respond(with: output)
     case .dashboardWidgets:
       let output = try await DashboardWidgets.resolve(in: context)
       return try await self.respond(with: output)
@@ -224,6 +237,9 @@ extension AuthedAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .deleteEntity_v2(let input):
       let output = try await DeleteEntity_v2.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .familyActivitySummaries(let input):
+      let output = try await FamilyActivitySummaries.resolve(with: input, in: context)
       return try await self.respond(with: output)
     case .userActivitySummaries(let input):
       let output = try await UserActivitySummaries.resolve(with: input, in: context)
