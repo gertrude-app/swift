@@ -62,22 +62,22 @@ extension Request {
     return String(data: Data(buffer: buffer), encoding: .utf8)
   }
 
-  func userToken() async throws -> UserToken {
+  func macAppToken() async throws -> MacAppToken {
     guard let header = headers.first(name: .authorization),
           let uuid = UUID(authorizationHeader: header) else {
       throw Abort(.badRequest, reason: "invalid user auth token")
     }
 
-    let userToken = try? await UserToken.query()
+    let token = try? await MacAppToken.query()
       .where(.value == uuid)
       .first(in: self.context.db)
 
-    guard let userToken else {
+    guard let token else {
       // the mac app looks for this specific error message (for now, at least)
       throw Abort(.unauthorized, reason: "user auth token not found")
     }
 
-    return userToken
+    return token
   }
 
   var dashboardUrl: String { headers.dashboardUrl }

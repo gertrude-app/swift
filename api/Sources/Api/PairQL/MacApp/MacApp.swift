@@ -21,7 +21,7 @@ extension MacAppRoute: RouteResponder {
       }
 
     case .userAuthed(let uuid, let userRoute):
-      let token = try await UserToken.query()
+      let token = try await MacAppToken.query()
         .where(.value == uuid)
         .first(in: context.db, orThrow: context.error(
           id: "6e88d0de",

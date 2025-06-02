@@ -6,7 +6,7 @@ struct UserContext: ResolverContext {
   let requestId: String
   let dashboardUrl: String
   let user: User
-  let token: UserToken
+  let token: MacAppToken
 
   @Dependency(\.uuid) var uuid
   @Dependency(\.env) var env

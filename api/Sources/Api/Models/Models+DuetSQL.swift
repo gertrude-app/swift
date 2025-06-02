@@ -675,7 +675,7 @@ extension UserKeychain: Model {
 extension RuleSchedule: @retroactive PostgresJsonable {}
 extension PlainTimeWindow: @retroactive PostgresJsonable {}
 
-extension UserToken: Model {
+extension MacAppToken: Model {
   public static let schemaName = "child"
   public static let tableName = "macapp_tokens"
   public typealias ColumnName = CodingKeys

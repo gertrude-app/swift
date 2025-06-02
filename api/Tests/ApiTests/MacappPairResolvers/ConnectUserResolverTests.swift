@@ -40,7 +40,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
     expect(device.modelIdentifier).toEqual(input.modelIdentifier)
     expect(device.osVersion).toEqual(Semver("14.2.0"))
 
-    let token = try await UserToken.query()
+    let token = try await MacAppToken.query()
       .where(.value == userData.token)
       .first(in: self.db)
 
@@ -81,7 +81,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
       $0.date = .init { Date() } // for token expiration
     } operation: {
       let existingUser = try await self.userWithDevice()
-      let existingUserToken = try await self.db.create(UserToken(
+      let existingMacAppToken = try await self.db.create(MacAppToken(
         childId: existingUser.id,
         computerUserId: existingUser.device.id
       ))
@@ -107,7 +107,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
       let retrievedDevice = try await self.db.find(existingUser.device.id)
       expect(retrievedDevice.childId).toEqual(newUser.model.id)
 
-      let retrievedOldToken = try await self.db.find(existingUserToken.id)
+      let retrievedOldToken = try await self.db.find(existingMacAppToken.id)
       expect(retrievedOldToken.deletedAt).not.toBeNil()
     }
   }
@@ -115,7 +115,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
   // test sanity check, computer/user registered to a different admin
   func testConnectUser_ExistingDeviceToDifferentUser_FailsIfDifferentAdmin() async throws {
     let existingUser = try await self.userWithDevice()
-    let existingUserToken = try await self.db.create(UserToken(
+    let existingMacAppToken = try await self.db.create(MacAppToken(
       childId: existingUser.model.id,
       computerUserId: existingUser.device.id
     ))
@@ -134,7 +134,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
     }.toContain("associated with another Gertrude parent account")
 
     // old token is not deleted
-    let retrievedOldToken = try? await self.db.find(existingUserToken.id)
+    let retrievedOldToken = try? await self.db.find(existingMacAppToken.id)
     expect(retrievedOldToken?.id).not.toBeNil()
   }
 

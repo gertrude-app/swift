@@ -22,7 +22,7 @@ struct UserWithDeviceEntities {
   var model: User
   var adminDevice: Device
   var device: UserDevice
-  var token: UserToken
+  var token: MacAppToken
   var admin: AdminEntities
 
   var context: UserContext {
@@ -125,7 +125,7 @@ extension ApiTestCase {
       $0.childId = user.model.id
       $0.computerId = device.id
     })
-    let token = try await self.db.create(UserToken(
+    let token = try await self.db.create(MacAppToken(
       childId: user.id,
       computerUserId: userDevice.id
     ))
@@ -170,7 +170,7 @@ extension UserEntities {
       $0.childId = self.model.id
       $0.computerId = device.id
     })
-    let token = try await db.create(UserToken(
+    let token = try await db.create(MacAppToken(
       childId: self.model.id,
       computerUserId: userDevice.id
     ))

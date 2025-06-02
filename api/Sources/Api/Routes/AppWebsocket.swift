@@ -21,7 +21,7 @@ enum AppWebsocket {
     _ request: Request,
     _ ws: WebSocket
   ) async throws {
-    guard let token = try? await request.userToken(),
+    guard let token = try? await request.macAppToken(),
           let userDevice = try? await token.userDevice(in: request.context.db) else {
       throw UserTokenNotFound()
     }

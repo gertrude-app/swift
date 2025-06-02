@@ -59,7 +59,7 @@ extension ConnectUser: Resolver {
       // update the device to be attached to the user issuing this request
       userDevice = try await context.db.update(existingUserDevice)
 
-      let oldTokens = try await UserToken.query()
+      let oldTokens = try await MacAppToken.query()
         .where(.computerUserId == userDevice.id)
         .where(.childId == oldUserId)
         .all(in: context.db)
@@ -94,7 +94,7 @@ extension ConnectUser: Resolver {
       ))
     }
 
-    let token = try await context.db.create(UserToken(
+    let token = try await context.db.create(MacAppToken(
       childId: user.id,
       computerUserId: userDevice.id
     ))

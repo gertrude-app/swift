@@ -418,11 +418,11 @@ extension UserKeychain {
   }
 }
 
-extension UserToken: Duet.Identifiable {
-  typealias Id = Tagged<UserToken, UUID>
+extension MacAppToken: Duet.Identifiable {
+  typealias Id = Tagged<MacAppToken, UUID>
 }
 
-extension UserToken {
+extension MacAppToken {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case childId
