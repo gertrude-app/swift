@@ -31,7 +31,6 @@ extension CombinedUsersActivityFeed: Resolver {
 
     return try await children.concurrentMap { child in
       let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)
-      let iosDeviceIds = try await child.iosDevices(in: context.db).map(\.id)
 
       async let keystrokes = KeystrokeLine.query()
         .where(.computerUserId |=| computerUserIds)
@@ -42,7 +41,7 @@ extension CombinedUsersActivityFeed: Resolver {
         .all(in: context.db)
 
       async let screenshots = Screenshot.query()
-        .where(.or(.computerUserId |=| computerUserIds, .iosDeviceId |=| iosDeviceIds))
+        .where(.computerUserId |=| computerUserIds)
         .where(.createdAt <= .date(before))
         .where(.createdAt > .date(after))
         .orderBy(.createdAt, .desc)
