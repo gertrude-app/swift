@@ -5,7 +5,7 @@ import XCore
 
 // deprecated: delete after 6/14/25
 struct DeleteEntity: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     enum EntityType: String, Codable {

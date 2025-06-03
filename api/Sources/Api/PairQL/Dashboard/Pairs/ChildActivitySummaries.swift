@@ -3,7 +3,7 @@ import DuetSQL
 import PairQL
 
 struct ChildActivitySummaries: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
   struct Input: PairInput {
     var childId: User.Id
     var jsTimezoneOffsetMinutes: Int

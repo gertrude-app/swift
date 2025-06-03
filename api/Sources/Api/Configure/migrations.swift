@@ -44,6 +44,7 @@ extension Configure {
     app.migrations.add(SearchPaths())
     app.migrations.add(FlaggedActivity())
     app.migrations.add(DashAnnouncements())
+    app.migrations.add(IOSConnection())
   }
 }
 

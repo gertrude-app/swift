@@ -80,7 +80,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
     try await withDependencies {
       $0.date = .init { Date() } // for token expiration
     } operation: {
-      let existingUser = try await self.userWithDevice()
+      let existingUser = try await self.childWithComputer()
       let existingMacAppToken = try await self.db.create(MacAppToken(
         childId: existingUser.id,
         computerUserId: existingUser.device.id
@@ -114,13 +114,13 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
 
   // test sanity check, computer/user registered to a different admin
   func testConnectUser_ExistingDeviceToDifferentUser_FailsIfDifferentAdmin() async throws {
-    let existingUser = try await self.userWithDevice()
+    let existingUser = try await self.childWithComputer()
     let existingMacAppToken = try await self.db.create(MacAppToken(
       childId: existingUser.model.id,
       computerUserId: existingUser.device.id
     ))
 
-    // // this user is from a DIFFERENT admin, so it should fail
+    // this user is from a DIFFERENT admin, so it should fail
     let newUser = try await self.user()
     let code = await with(dependency: \.ephemeral)
       .createPendingAppConnection(newUser.model.id)

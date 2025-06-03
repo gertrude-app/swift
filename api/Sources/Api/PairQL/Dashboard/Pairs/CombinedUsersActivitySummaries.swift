@@ -3,7 +3,7 @@ import PairQL
 
 // deprecated, remove 6/14/25
 struct CombinedUsersActivitySummaries: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
   typealias Output = [UserActivitySummaries.Day]
 }
 

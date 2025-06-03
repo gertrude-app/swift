@@ -2,9 +2,9 @@ import MacAppRoute
 import Vapor
 
 extension CreateSuspendFilterRequest_v2: Resolver {
-  static func resolve(with input: Input, in context: UserContext) async throws -> Output {
+  static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     let computerUser = try await context.computerUser()
-    let request = try await context.db.create(SuspendFilterRequest(
+    let request = try await context.db.create(MacApp.SuspendFilterRequest(
       computerUserId: computerUser.id,
       status: .pending,
       scope: .unrestricted,
@@ -16,12 +16,11 @@ extension CreateSuspendFilterRequest_v2: Resolver {
       context.user.parentId,
       .suspendFilterRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,
-        userDeviceId: computerUser.id,
-        userId: context.user.id,
-        userName: context.user.name,
+        childId: context.user.id,
+        childName: context.user.name,
         duration: .init(input.duration),
-        requestId: request.id,
-        requestComment: input.comment
+        requestComment: input.comment,
+        context: .macapp(computerUserId: computerUser.id, requestId: request.id)
       ))
     )
 

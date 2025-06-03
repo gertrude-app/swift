@@ -3,7 +3,7 @@ import PairQL
 import Vapor
 
 struct CombinedUsersActivityFeed: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
     var range: DateRange
@@ -31,6 +31,7 @@ extension CombinedUsersActivityFeed: Resolver {
 
     return try await children.concurrentMap { child in
       let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)
+
       async let keystrokes = KeystrokeLine.query()
         .where(.computerUserId |=| computerUserIds)
         .where(.createdAt <= .date(before))

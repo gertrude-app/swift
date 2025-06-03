@@ -3,7 +3,7 @@ import MacAppRoute
 extension CreateKeystrokeLines: Resolver {
   static func resolve(
     with inputs: [KeystrokeLineInput],
-    in context: UserContext
+    in context: MacApp.ChildContext
   ) async throws -> Output {
     let computerUser = try await context.computerUser()
     let keystrokeLines = inputs.map { input in

@@ -1,4 +1,6 @@
+import ComposableArchitecture
 import Dependencies
+import LibApp
 import SwiftUI
 
 struct RunningView: View {
@@ -10,7 +12,10 @@ struct RunningView: View {
   @State private var linkOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
 
-  let showVendorId: Bool
+  @Bindable var store: StoreOf<IOSReducer>
+
+  let connected: Bool
+  let onBtnTap: () -> Void
 
   var body: some View {
     ZStack {
@@ -44,6 +49,12 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
+        BigButton(
+          self.connected ? "Request filter suspension" : "Connect to parent account",
+          type: .button(self.onBtnTap)
+        )
+        .padding(.bottom, 20)
+
         Text("You can quit the app now, it will keep blocking even when not running.")
           .font(.system(size: 18, weight: .medium))
           .foregroundStyle(Color(self.cs, light: .black.opacity(0.6), dark: .white.opacity(0.6)))
@@ -70,24 +81,31 @@ struct RunningView: View {
           for: .seconds(0.5)
         )
 
-        Text("\(UIDevice.current.identifierForVendor?.uuidString.lowercased() ?? "unknown")")
-          .font(.system(size: 11, design: .monospaced))
-          .opacity(self.showVendorId ? 1 : 0)
-          .padding(.top, 25)
-
         Spacer()
       }
       .frame(maxWidth: .infinity)
       .multilineTextAlignment(.center)
       .padding(30)
     }
+    .sheet(item: self.$store.scope(
+      state: \.destination?.connectAccount,
+      action: \.destination.connectAccount
+    )) {
+      ConnectingView(store: $0)
+    }
+    .sheet(item: self.$store.scope(
+      state: \.destination?.requestSuspension,
+      action: \.destination.requestSuspension
+    )) {
+      RequestSuspensionView(store: $0)
+    }
   }
 }
 
 #Preview {
-  RunningView(showVendorId: false)
-}
-
-#Preview("with vendor id") {
-  RunningView(showVendorId: true)
+  RunningView(
+    store: .init(initialState: .init()) { IOSReducer() },
+    connected: false,
+    onBtnTap: {}
+  )
 }

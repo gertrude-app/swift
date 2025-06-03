@@ -2,7 +2,7 @@ import DuetSQL
 import PairQL
 
 struct GetAdminKeychain: Pair {
-  static let auth: ClientAuth = .admin
+  static let auth: ClientAuth = .parent
   typealias Input = Keychain.Id
 
   struct Output: PairNestable, PairOutput {

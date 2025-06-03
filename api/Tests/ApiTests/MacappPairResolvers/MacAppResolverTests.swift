@@ -9,14 +9,14 @@ import XExpect
 
 final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   func testCreateSuspendFilterRequest() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let id = try await CreateSuspendFilterRequest_v2.resolve(
       with: .init(duration: 1111, comment: "test"),
       in: self.context(user)
     )
 
-    let suspendRequests = try await SuspendFilterRequest.query()
+    let suspendRequests = try await MacApp.SuspendFilterRequest.query()
       .where(.computerUserId == user.device.id)
       .all(in: self.db)
 
@@ -30,19 +30,18 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
         adminId: user.parentId,
         event: .suspendFilterRequestSubmitted(.init(
           dashboardUrl: "",
-          userDeviceId: user.device.id,
-          userId: user.id,
-          userName: user.name,
+          childId: user.id,
+          childName: user.name,
           duration: 1111,
-          requestId: suspendRequests.first!.id,
-          requestComment: "test"
+          requestComment: "test",
+          context: .macapp(computerUserId: user.device.id, requestId: suspendRequests.first!.id)
         ))
       ),
     ])
   }
 
   func testOneFailedNotificationDoesntBlockRest() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     // admin gets two notifications on suspend filter request
     let slack = try await self.db.create(AdminVerifiedNotificationMethod(
@@ -84,7 +83,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreateKeystrokeLines() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let (uuid, output) = try await withUUID {
       try await CreateKeystrokeLines.resolve(
@@ -106,7 +105,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testInsertKeystrokeLineWithNullByte() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let (uuid, output) = try await withUUID {
       try await CreateKeystrokeLines.resolve(
@@ -127,7 +126,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testCreateSignedScreenshotUpload() async throws {
     let beforeCount = try await self.db.count(Screenshot.self)
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
 
     let output = try await withDependencies {
       $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
@@ -145,7 +144,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreateSignedScreenshotUploadWithDate() async throws {
-    let user = try await self.userWithDevice()
+    let user = try await self.childWithComputer()
     let uuids = MockUUIDs()
 
     try await withDependencies {

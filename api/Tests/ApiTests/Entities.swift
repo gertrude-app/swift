@@ -25,8 +25,24 @@ struct UserWithDeviceEntities {
   var token: MacAppToken
   var admin: AdminEntities
 
-  var context: UserContext {
+  var context: MacApp.ChildContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
+  }
+
+  subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
+    self.model[keyPath: keyPath]
+  }
+}
+
+@dynamicMemberLookup
+struct ChildWithIOSDeviceEntities {
+  var model: User
+  var device: IOSApp.Device
+  var token: IOSApp.Token
+  var parent: AdminEntities
+
+  var context: IOSApp.ChildContext {
+    .init(requestId: "", dashboardUrl: "", child: self.model, device: self.device)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
@@ -116,25 +132,32 @@ extension ApiTestCase {
     return UserEntities(model: user, admin: admin)
   }
 
-  func userWithDevice() async throws -> UserWithDeviceEntities {
-    let user = try await self.user()
-    let device = try await self.db.create(Device.random {
-      $0.parentId = user.admin.model.id
+  func childWithIOSDevice() async throws -> ChildWithIOSDeviceEntities {
+    let child = try await self.user()
+    let iosDevice = try await self.db.create(IOSApp.Device.mock { $0.childId = child.id })
+    let token = try await self.db.create(IOSApp.Token(deviceId: iosDevice.id))
+    return .init(model: child.model, device: iosDevice, token: token, parent: child.admin)
+  }
+
+  func childWithComputer() async throws -> UserWithDeviceEntities {
+    let child = try await self.user()
+    let computer = try await self.db.create(Device.random {
+      $0.parentId = child.admin.model.id
     })
-    let userDevice = try await self.db.create(ComputerUser.random {
-      $0.childId = user.model.id
-      $0.computerId = device.id
+    let computerUser = try await self.db.create(ComputerUser.random {
+      $0.childId = child.model.id
+      $0.computerId = computer.id
     })
     let token = try await self.db.create(MacAppToken(
-      childId: user.id,
-      computerUserId: userDevice.id
+      childId: child.model.id,
+      computerUserId: computerUser.id
     ))
     return .init(
-      model: user.model,
-      adminDevice: device,
-      device: userDevice,
+      model: child.model,
+      adminDevice: computer,
+      device: computerUser,
       token: token,
-      admin: user.admin
+      admin: child.admin
     )
   }
 }
