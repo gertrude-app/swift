@@ -74,16 +74,16 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
     .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin, ipAddress: nil)
   }
 
-  func context(_ admin: AdminEntities) -> AdminContext {
+  func context(_ admin: ParentEntities) -> AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model, ipAddress: nil)
   }
 
-  func context(_ admin: AdminWithKeychainEntities) -> AdminContext {
+  func context(_ admin: ParentWithKeychainEntities) -> AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model, ipAddress: nil)
   }
 
-  func context(_ user: UserWithDeviceEntities) async throws -> MacApp.ChildContext {
-    .init(requestId: "", dashboardUrl: "", user: user.model, token: user.token)
+  func context(_ child: ChildWithComputerEntities) async throws -> MacApp.ChildContext {
+    .init(requestId: "", dashboardUrl: "", user: child.model, token: child.token)
   }
 
   @discardableResult
@@ -92,7 +92,7 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
           let autoId = UUID(uuidString: autoIdStr) else {
       fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")
     }
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     try await Keychain.query()
       .where(.id == autoId)
       .delete(in: self.db)

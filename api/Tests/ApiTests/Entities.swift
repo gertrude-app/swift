@@ -3,27 +3,27 @@ import Dependencies
 @testable import Api
 
 @dynamicMemberLookup
-class UserEntities {
+class ChildEntities {
   var model: Child
-  var admin: AdminEntities
+  var parent: ParentEntities
 
   subscript<T>(dynamicMember keyPath: KeyPath<Child, T>) -> T {
     self.model[keyPath: keyPath]
   }
 
-  init(model: Child, admin: AdminEntities) {
+  init(model: Child, parent: ParentEntities) {
     self.model = model
-    self.admin = admin
+    self.parent = parent
   }
 }
 
 @dynamicMemberLookup
-struct UserWithDeviceEntities {
+struct ChildWithComputerEntities {
   var model: Child
-  var adminDevice: Device
-  var device: ComputerUser
+  var computer: Device
+  var computerUser: ComputerUser
   var token: MacAppToken
-  var admin: AdminEntities
+  var parent: ParentEntities
 
   var context: MacApp.ChildContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
@@ -39,7 +39,7 @@ struct ChildWithIOSDeviceEntities {
   var model: Child
   var device: IOSApp.Device
   var token: IOSApp.Token
-  var parent: AdminEntities
+  var parent: ParentEntities
 
   var context: IOSApp.ChildContext {
     .init(requestId: "", dashboardUrl: "", child: self.model, device: self.device)
@@ -51,7 +51,7 @@ struct ChildWithIOSDeviceEntities {
 }
 
 @dynamicMemberLookup
-struct AdminEntities {
+struct ParentEntities {
   var model: Admin
   var token: AdminToken
 
@@ -65,7 +65,7 @@ struct AdminEntities {
 }
 
 @dynamicMemberLookup
-struct AdminWithKeychainEntities {
+struct ParentWithKeychainEntities {
   var model: Admin
   var token: AdminToken
   var keychain: Keychain
@@ -81,12 +81,12 @@ struct AdminWithKeychainEntities {
 }
 
 @dynamicMemberLookup
-struct AdminWithOnboardedChildEntities {
+struct ParentWithOnboardedChildEntities {
   var model: Admin
   var token: AdminToken
   var child: Child
-  var userDevice: ComputerUser
-  var adminDevice: Device
+  var computerUser: ComputerUser
+  var computer: Device
 
   var context: AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", admin: self.model, ipAddress: nil)
@@ -98,51 +98,51 @@ struct AdminWithOnboardedChildEntities {
 }
 
 extension ApiTestCase {
-  func admin(
+  func parent(
     with config: (inout Admin) -> Void = { _ in }
-  ) async throws -> AdminEntities {
-    let admin = try await self.db.create(Admin.random(with: config))
-    let token = try await self.db.create(AdminToken(parentId: admin.id))
-    return AdminEntities(model: admin, token: token)
+  ) async throws -> ParentEntities {
+    let parent = try await self.db.create(Admin.random(with: config))
+    let token = try await self.db.create(AdminToken(parentId: parent.id))
+    return ParentEntities(model: parent, token: token)
   }
 
-  func admin<T>(
+  func parent<T>(
     with kp: WritableKeyPath<Admin, T>,
     of value: T
-  ) async throws -> AdminEntities {
-    try await self.admin(with: { $0[keyPath: kp] = value })
+  ) async throws -> ParentEntities {
+    try await self.parent(with: { $0[keyPath: kp] = value })
   }
 
-  func user<T>(
+  func child<T>(
     with kp: WritableKeyPath<Child, T>,
     of value: T
-  ) async throws -> UserEntities {
-    try await self.user(with: { $0[keyPath: kp] = value })
+  ) async throws -> ChildEntities {
+    try await self.child(with: { $0[keyPath: kp] = value })
   }
 
-  func user(
-    with userConfig: (inout Child) -> Void = { _ in },
-    withAdmin adminConfig: (inout Admin) -> Void = { _ in }
-  ) async throws -> UserEntities {
-    let admin = try await self.admin(with: adminConfig)
-    let user = try await self.db.create(Child.random {
-      userConfig(&$0)
-      $0.parentId = admin.id
+  func child(
+    with childConfig: (inout Child) -> Void = { _ in },
+    withParent parentConfig: (inout Admin) -> Void = { _ in }
+  ) async throws -> ChildEntities {
+    let parent = try await self.parent(with: parentConfig)
+    let child = try await self.db.create(Child.random {
+      childConfig(&$0)
+      $0.parentId = parent.id
     })
-    return UserEntities(model: user, admin: admin)
+    return ChildEntities(model: child, parent: parent)
   }
 
   func childWithIOSDevice() async throws -> ChildWithIOSDeviceEntities {
-    let child = try await self.user()
+    let child = try await self.child()
     let iosDevice = try await self.db.create(IOSApp.Device.mock { $0.childId = child.id })
     let token = try await self.db.create(IOSApp.Token(deviceId: iosDevice.id))
-    return .init(model: child.model, device: iosDevice, token: token, parent: child.admin)
+    return .init(model: child.model, device: iosDevice, token: token, parent: child.parent)
   }
 
-  func childWithComputer() async throws -> UserWithDeviceEntities {
-    let child = try await self.user()
+  func childWithComputer() async throws -> ChildWithComputerEntities {
+    let child = try await self.child()
     let computer = try await self.db.create(Device.random {
-      $0.parentId = child.admin.model.id
+      $0.parentId = child.parent.model.id
     })
     let computerUser = try await self.db.create(ComputerUser.random {
       $0.childId = child.model.id
@@ -154,18 +154,18 @@ extension ApiTestCase {
     ))
     return .init(
       model: child.model,
-      adminDevice: computer,
-      device: computerUser,
+      computer: computer,
+      computerUser: computerUser,
       token: token,
-      admin: child.admin
+      parent: child.parent
     )
   }
 }
 
-extension AdminEntities {
+extension ParentEntities {
   func withKeychain(
     config: (inout Keychain, inout Key) -> Void = { _, _ in }
-  ) async throws -> AdminWithKeychainEntities {
+  ) async throws -> ParentWithKeychainEntities {
     @Dependency(\.db) var db
     var keychain = Keychain.random
     keychain.parentId = self.model.id
@@ -178,31 +178,31 @@ extension AdminEntities {
   }
 }
 
-extension UserEntities {
+extension ChildEntities {
   func withDevice(
     config: (inout ComputerUser) -> Void = { _ in },
-    adminDevice: (inout Device) -> Void = { _ in }
-  ) async throws -> UserWithDeviceEntities {
+    computer: (inout Device) -> Void = { _ in }
+  ) async throws -> ChildWithComputerEntities {
     @Dependency(\.db) var db
     let device = try await db.create(Device.random {
-      adminDevice(&$0)
-      $0.parentId = self.admin.id
+      computer(&$0)
+      $0.parentId = self.parent.id
     })
-    let userDevice = try await db.create(ComputerUser.random {
+    let computerUser = try await db.create(ComputerUser.random {
       config(&$0)
       $0.childId = self.model.id
       $0.computerId = device.id
     })
     let token = try await db.create(MacAppToken(
       childId: self.model.id,
-      computerUserId: userDevice.id
+      computerUserId: computerUser.id
     ))
     return .init(
       model: self.model,
-      adminDevice: device,
-      device: userDevice,
+      computer: device,
+      computerUser: computerUser,
       token: token,
-      admin: self.admin
+      parent: self.parent
     )
   }
 }

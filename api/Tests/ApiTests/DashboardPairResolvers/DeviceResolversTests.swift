@@ -7,19 +7,19 @@ import XExpect
 final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
   func testGetDevices() async throws {
     try await self.db.delete(all: Device.self)
-    let user = try await self.user().withDevice { $0.appVersion = "2.2.2" }
-    var device = user.adminDevice
+    let child = try await self.child().withDevice { $0.appVersion = "2.2.2" }
+    var device = child.computer
     device.appReleaseChannel = .canary
     device.customName = "Pinky"
     device.serialNumber = "1234567890"
     device.modelIdentifier = "MacBookPro16,1"
     try await self.db.update(device)
 
-    let user2 = try await self.db.create(Child(parentId: user.parentId, name: "Bob"))
+    let child2 = try await self.db.create(Child(parentId: child.parentId, name: "Bob"))
 
     // proves that we take the highest app version
     try await self.db.create(ComputerUser(
-      childId: user2.id,
+      childId: child2.id,
       computerId: device.id,
       isAdmin: false,
       appVersion: "2.0.1", // <-- lower app version
@@ -33,7 +33,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       var singleOutput = try await GetDevice.resolve(
         with: device.id.rawValue,
-        in: context(user.admin)
+        in: context(child.parent)
       )
 
       var expectedDeviceOutput = GetDevice.Output(
@@ -41,8 +41,8 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
         name: "Pinky",
         releaseChannel: .canary,
         users: [
-          .init(id: user.id, name: user.name, status: .filterOn),
-          .init(id: user2.id, name: user2.name, status: .filterOn),
+          .init(id: child.id, name: child.name, status: .filterOn),
+          .init(id: child2.id, name: child2.name, status: .filterOn),
         ],
         appVersion: "2.2.2",
         serialNumber: "1234567890",
@@ -55,22 +55,22 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
       sortUsers(in: &expectedDeviceOutput, atPath: \.users)
       expect(singleOutput).toEqual(expectedDeviceOutput)
 
-      var allDevicesOutput = try await GetDevices.resolve(in: context(user.admin))
+      var allDevicesOutput = try await GetDevices.resolve(in: context(child.parent))
       sortUsers(in: &allDevicesOutput, atPath: \.[0].users)
       expect(allDevicesOutput).toEqual([expectedDeviceOutput])
     }
   }
 
   func testSaveDevice() async throws {
-    let user = try await self.childWithComputer()
-    var device = user.adminDevice
+    let child = try await self.childWithComputer()
+    var device = child.computer
     device.appReleaseChannel = .stable
     device.customName = nil
     try await self.db.update(device)
 
     var output = try await SaveDevice.resolve(
       with: .init(id: device.id, name: "Pinky", releaseChannel: .beta),
-      in: context(user.admin)
+      in: context(child.parent)
     )
 
     expect(output).toEqual(.success)
@@ -85,7 +85,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
         name: nil, // <-- remove name
         releaseChannel: .beta
       ),
-      in: context(user.admin)
+      in: context(child.parent)
     )
 
     let retrievedAgain = try await self.db.find(device.id)

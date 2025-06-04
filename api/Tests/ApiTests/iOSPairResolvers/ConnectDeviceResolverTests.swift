@@ -7,7 +7,7 @@ import XExpect
 
 final class ConnectDeviceResolverTests: ApiTestCase, @unchecked Sendable {
   func testConnectIOSDeviceHappyPath() async throws {
-    let child = try await self.user()
+    let child = try await self.child()
     let data = try await withDependencies {
       $0.verificationCode = .liveValue
       $0.uuid = .incrementing

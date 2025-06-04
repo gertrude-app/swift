@@ -65,7 +65,7 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
 
   func testSigningUpWhenAlreadyVerifiedReturnsAuthCreds() async throws {
     let uuids = MockUUIDs()
-    let existing = try await self.admin {
+    let existing = try await self.parent {
       $0.subscriptionStatus = .trialing
       $0.password = "pass"
     }

@@ -9,15 +9,15 @@ import XExpect
 
 final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   func testCreateSuspendFilterRequest() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
 
     let id = try await CreateSuspendFilterRequest_v2.resolve(
       with: .init(duration: 1111, comment: "test"),
-      in: self.context(user)
+      in: self.context(child)
     )
 
     let suspendRequests = try await MacApp.SuspendFilterRequest.query()
-      .where(.computerUserId == user.device.id)
+      .where(.computerUserId == child.computerUser.id)
       .all(in: self.db)
 
     expect(suspendRequests).toHaveCount(1)
@@ -27,25 +27,28 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
 
     expect(sent.adminNotifications).toEqual([
       .init(
-        adminId: user.parentId,
+        adminId: child.parentId,
         event: .suspendFilterRequestSubmitted(.init(
           dashboardUrl: "",
-          childId: user.id,
-          childName: user.name,
+          childId: child.id,
+          childName: child.name,
           duration: 1111,
           requestComment: "test",
-          context: .macapp(computerUserId: user.device.id, requestId: suspendRequests.first!.id)
+          context: .macapp(
+            computerUserId: child.computerUser.id,
+            requestId: suspendRequests.first!.id
+          )
         ))
       ),
     ])
   }
 
   func testOneFailedNotificationDoesntBlockRest() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
 
     // admin gets two notifications on suspend filter request
     let slack = try await self.db.create(AdminVerifiedNotificationMethod(
-      parentId: user.parentId,
+      parentId: child.parentId,
       config: .slack(
         channelId: "#gertie",
         channelName: "Gertie",
@@ -53,16 +56,16 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
       )
     ))
     let text = try await self.db.create(AdminVerifiedNotificationMethod(
-      parentId: user.parentId,
+      parentId: child.parentId,
       config: .text(phoneNumber: "1234567890")
     ))
     try await self.db.create(AdminNotification(
-      parentId: user.parentId,
+      parentId: child.parentId,
       methodId: slack.id,
       trigger: .suspendFilterRequestSubmitted
     ))
     try await self.db.create(AdminNotification(
-      parentId: user.parentId,
+      parentId: child.parentId,
       methodId: text.id,
       trigger: .suspendFilterRequestSubmitted
     ))
@@ -74,7 +77,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await CreateSuspendFilterRequest_v2.resolve(
         with: .init(duration: 1111, comment: "test"),
-        in: self.context(user)
+        in: self.context(child)
       )
     }
 
@@ -83,7 +86,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreateKeystrokeLines() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
 
     let (uuid, output) = try await withUUID {
       try await CreateKeystrokeLines.resolve(
@@ -93,7 +96,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
           filterSuspended: false,
           time: .epoch
         )],
-        in: self.context(user)
+        in: self.context(child)
       )
     }
 
@@ -105,7 +108,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testInsertKeystrokeLineWithNullByte() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
 
     let (uuid, output) = try await withUUID {
       try await CreateKeystrokeLines.resolve(
@@ -115,7 +118,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
           filterSuspended: false,
           time: .epoch
         )],
-        in: self.context(user)
+        in: self.context(child)
       )
     }
 
@@ -126,14 +129,14 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testCreateSignedScreenshotUpload() async throws {
     let beforeCount = try await self.db.count(Screenshot.self)
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
 
     let output = try await withDependencies {
       $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
     } operation: {
       try await CreateSignedScreenshotUpload.resolve(
         with: .init(width: 111, height: 222),
-        in: self.context(user)
+        in: self.context(child)
       )
     }
 
@@ -144,7 +147,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreateSignedScreenshotUploadWithDate() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
     let uuids = MockUUIDs()
 
     try await withDependencies {
@@ -153,7 +156,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       _ = try await CreateSignedScreenshotUpload.resolve(
         with: .init(width: 1116, height: 222, createdAt: .epoch),
-        in: self.context(user)
+        in: self.context(child)
       )
       let screenshot = try await self.db.find(Screenshot.Id(uuids[1]))
       expect(screenshot.width).toEqual(1116)
@@ -184,26 +187,26 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testLogsAndNotifiesSecurityEvent() async throws {
-    let user = try await self.user().withDevice {
+    let child = try await self.child().withDevice {
       $0.isAdmin = true
     }
 
     let output = try await LogSecurityEvent.resolve(
-      with: .init(deviceId: user.device.id.rawValue, event: "appQuit", detail: "foo"),
-      in: context(user)
+      with: .init(deviceId: child.computerUser.id.rawValue, event: "appQuit", detail: "foo"),
+      in: context(child)
     )
 
     let retrieved = try await SecurityEvent.query()
-      .where(.computerUserId == user.device.id)
+      .where(.computerUserId == child.computerUser.id)
       .first(in: self.db)
 
     expect(output).toEqual(.success)
     expect(retrieved.event).toEqual("appQuit")
 
     expect(sent.adminNotifications).toEqual([.init(
-      adminId: user.parentId,
+      adminId: child.parentId,
       event: .adminChildSecurityEvent(.init(
-        userName: user.name,
+        userName: child.name,
         event: .appQuit,
         detail: "foo"
       ))

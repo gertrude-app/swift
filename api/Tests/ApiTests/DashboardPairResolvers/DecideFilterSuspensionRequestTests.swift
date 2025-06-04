@@ -5,11 +5,11 @@ import XExpect
 
 final class DecideFilterSuspensionRequestTests: ApiTestCase, @unchecked Sendable {
   func testDecideSuspendFilterRequest_Accepted() async throws {
-    let user = try await self.user().withDevice {
+    let child = try await self.child().withDevice {
       $0.appVersion = "2.4.0"
     }
     let request = try await self.db.create(MacApp.SuspendFilterRequest.random {
-      $0.computerUserId = user.device.id
+      $0.computerUserId = child.computerUser.id
       $0.status = .pending
     })
 
@@ -20,7 +20,7 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase, @unchecked Sendable
 
     let output = try await DecideFilterSuspensionRequest.resolve(
       with: .init(id: request.id, decision: decision, responseComment: "ok"),
-      in: context(user.admin)
+      in: context(child.parent)
     )
 
     expect(output).toEqual(.success)
@@ -38,7 +38,7 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase, @unchecked Sendable
           decision: updated.decision!,
           comment: "ok"
         ),
-        to: .userDevice(user.device.id)
+        to: .userDevice(child.computerUser.id)
       ),
     ])
   }

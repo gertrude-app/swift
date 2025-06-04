@@ -12,12 +12,12 @@ final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
     releaseChannel: ReleaseChannel,
     currentVersion: String
   ) async throws -> CheckIn_v2.LatestRelease {
-    let user = try await self.user().withDevice(adminDevice: {
+    let child = try await self.child().withDevice(computer: {
       $0.appReleaseChannel = releaseChannel
     })
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: currentVersion, filterVersion: currentVersion),
-      in: user.context
+      in: child.context
     )
     return output.latestRelease
   }
@@ -92,13 +92,13 @@ final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
       Release("2.0.0", channel: .beta, pace: 10, createdAt: .epoch.advanced(by: .days(20))),
     ])
 
-    let user = try await self.user().withDevice(adminDevice: {
+    let child = try await self.child().withDevice(computer: {
       $0.appReleaseChannel = .stable // set to stable, but they're on beta
     })
 
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "2.0.0", filterVersion: nil),
-      in: user.context
+      in: child.context
     )
 
     expect(output.updateReleaseChannel).toEqual(.stable)
@@ -112,13 +112,13 @@ final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
       Release("2.1.1", channel: .stable, pace: nil, createdAt: .epoch.advanced(by: .days(20))),
     ])
 
-    let user = try await self.user().withDevice(adminDevice: {
+    let child = try await self.child().withDevice(computer: {
       $0.appReleaseChannel = .canary
     })
 
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "2.1.0", filterVersion: nil),
-      in: user.context
+      in: child.context
     )
 
     expect(output.updateReleaseChannel).toEqual(.canary) // they still are on canary...

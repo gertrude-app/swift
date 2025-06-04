@@ -50,10 +50,10 @@ final class CheckInNameAppsTests: ApiTestCase, @unchecked Sendable {
   }
 
   func nameApps(_ namedApps: [RunningApp]) async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
     _ = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: "3.3.3", namedApps: namedApps),
-      in: user.context
+      in: child.context
     )
   }
 }

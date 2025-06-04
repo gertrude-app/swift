@@ -10,7 +10,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
   let context = Context.mock
 
   func testVerifySignupEmailSetsSubscriptionStatusAndCreatesNotificationMethod() async throws {
-    let admin = try await self.admin(with: \.subscriptionStatus, of: .pendingEmailVerification)
+    let admin = try await self.parent(with: \.subscriptionStatus, of: .pendingEmailVerification)
     let token = await with(dependency: \.ephemeral).createAdminIdToken(admin.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
@@ -27,7 +27,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testVerifyingWithExpiredTokenErrorsButSendsNewVerification() async throws {
-    let admin = try await self.admin(with: \.subscriptionStatus, of: .pendingEmailVerification)
+    let admin = try await self.parent(with: \.subscriptionStatus, of: .pendingEmailVerification)
     let token = await with(dependency: \.ephemeral).createAdminIdToken(
       admin.id,
       expiration: Date.reference - .days(1)
@@ -46,7 +46,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
       $0.date = .init { Date() }
     } operation: {
       let admin = try await self
-        .admin(with: \.subscriptionStatus, of: .trialing) // <- already verified
+        .parent(with: \.subscriptionStatus, of: .trialing) // <- already verified
       let token = await with(dependency: \.ephemeral).createAdminIdToken(
         admin.id,
         expiration: Date() - .days(1)
@@ -59,7 +59,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
     let admin = try await self
-      .admin(with: \.subscriptionStatus, of: .trialing) // <- not pending
+      .parent(with: \.subscriptionStatus, of: .trialing) // <- not pending
     let token = await with(dependency: \.ephemeral)
       .createAdminIdToken(admin.id)
 
@@ -72,7 +72,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testAttemptToLoginWhenEmailNotVerifiedBlocksAndSendsEmail() async throws {
-    let admin = try await self.admin {
+    let admin = try await self.parent {
       $0.subscriptionStatus = .pendingEmailVerification
       $0.password = "lol-lol-lol"
     }
