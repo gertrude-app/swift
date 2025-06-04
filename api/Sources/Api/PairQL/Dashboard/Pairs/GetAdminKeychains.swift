@@ -86,14 +86,14 @@ extension [GetAdminKeychains.Child] {
 extension [User.Id] {
   init(from model: Api.Keychain, parentId: Admin.Id) async throws {
     @Dependency(\.db) var db
-    let userKeychains = try await UserKeychain.query()
+    let childKeychains = try await ChildKeychain.query()
       .where(.keychainId == model.id)
       .all(in: db)
-    let users = try await User.query()
-      .where(.id |=| userKeychains.map(\.childId))
+    let children = try await User.query()
+      .where(.id |=| childKeychains.map(\.childId))
       .where(.parentId == parentId)
       .all(in: db)
-    self = users.map(\.id)
+    self = children.map(\.id)
   }
 }
 

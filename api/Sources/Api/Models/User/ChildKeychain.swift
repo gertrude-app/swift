@@ -1,7 +1,7 @@
 import Duet
 import Gertie
 
-struct UserKeychain: Codable, Sendable {
+struct ChildKeychain: Codable, Sendable {
   var id: Id
   var childId: User.Id
   var keychainId: Keychain.Id

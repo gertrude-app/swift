@@ -133,7 +133,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
   func testUserWithAtLeastOneKeyGetsAutoIncluded() async throws {
     let user = try await self.childWithComputer()
     let admin = try await self.admin().withKeychain()
-    try await self.db.create(UserKeychain(childId: user.id, keychainId: admin.keychain.id))
+    try await self.db.create(ChildKeychain(childId: user.id, keychainId: admin.keychain.id))
     let (_, autoKey) = try await createAutoIncludeKeychain()
 
     let output = try await CheckIn_v2.resolve(

@@ -141,20 +141,20 @@ extension CheckIn_v2: Resolver {
 // TODO: this is major N+1 territory, write a custom query w/ join for perf
 // @see also userKeychainSummaries(for:in:)
 func ruleKeychains(
-  for userId: User.Id,
+  for childId: User.Id,
   in db: any DuetSQL.Client
 ) async throws -> [RuleKeychain] {
-  let userKeychains = try await UserKeychain.query()
-    .where(.childId == userId)
+  let childKeychains = try await ChildKeychain.query()
+    .where(.childId == childId)
     .all(in: db)
   let keychains = try await Keychain.query()
-    .where(.id |=| userKeychains.map(\.keychainId))
+    .where(.id |=| childKeychains.map(\.keychainId))
     .all(in: db)
   return try await keychains.concurrentMap { keychain in
     let keys = try await keychain.keys(in: db)
     return .init(
       id: keychain.id.rawValue,
-      schedule: userKeychains.first { $0.keychainId == keychain.id }?.schedule,
+      schedule: childKeychains.first { $0.keychainId == keychain.id }?.schedule,
       keys: keys.map { .init(id: $0.id.rawValue, key: $0.key) }
     )
   }

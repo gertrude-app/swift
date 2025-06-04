@@ -64,15 +64,15 @@ enum AdminBetsy {
       .where(.isPublic == true)
       .first(in: db) {
       try await db.create([
-        UserKeychain(childId: jimmy.id, keychainId: firstPublicKeychain.id),
-        UserKeychain(childId: sally.id, keychainId: firstPublicKeychain.id),
+        ChildKeychain(childId: jimmy.id, keychainId: firstPublicKeychain.id),
+        ChildKeychain(childId: sally.id, keychainId: firstPublicKeychain.id),
       ])
     }
 
     try await db.create([
-      UserKeychain(childId: jimmy.id, keychainId: musicTheory.id),
-      UserKeychain(childId: jimmy.id, keychainId: misc.id),
-      UserKeychain(childId: sally.id, keychainId: misc.id),
+      ChildKeychain(childId: jimmy.id, keychainId: musicTheory.id),
+      ChildKeychain(childId: jimmy.id, keychainId: misc.id),
+      ChildKeychain(childId: sally.id, keychainId: misc.id),
     ])
 
     try await self.createUserActivity()

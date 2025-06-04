@@ -53,7 +53,7 @@ extension User {
   }
 
   func keychains(in db: any DuetSQL.Client) async throws -> [Keychain] {
-    let pivots = try await UserKeychain.query()
+    let pivots = try await ChildKeychain.query()
       .where(.childId == self.id)
       .all(in: db)
     return try await Keychain.query()

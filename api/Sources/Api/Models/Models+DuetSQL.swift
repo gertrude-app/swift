@@ -740,7 +740,7 @@ extension User: Model {
   }
 }
 
-extension UserKeychain: Model {
+extension ChildKeychain: Model {
   public static let schemaName = "child"
   public static let tableName = "keychains"
   public typealias ColumnName = CodingKeys

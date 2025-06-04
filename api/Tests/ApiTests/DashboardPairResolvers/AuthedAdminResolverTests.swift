@@ -448,7 +448,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
       User(parentId: admin.model.id, name: "Little Jimmy")
     )
     try await self.db.create(
-      UserKeychain(childId: littleJimmy.id, keychainId: admin.keychain.id)
+      ChildKeychain(childId: littleJimmy.id, keychainId: admin.keychain.id)
     )
 
     // child without keychain assigned

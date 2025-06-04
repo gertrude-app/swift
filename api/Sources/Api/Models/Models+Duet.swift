@@ -456,11 +456,11 @@ extension User {
   }
 }
 
-extension UserKeychain: Duet.Identifiable {
-  typealias Id = Tagged<UserKeychain, UUID>
+extension ChildKeychain: Duet.Identifiable {
+  typealias Id = Tagged<ChildKeychain, UUID>
 }
 
-extension UserKeychain {
+extension ChildKeychain {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case childId

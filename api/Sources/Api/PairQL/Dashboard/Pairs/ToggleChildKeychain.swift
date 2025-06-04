@@ -15,7 +15,7 @@ struct ToggleChildKeychain: Pair {
 
 extension ToggleChildKeychain: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    let existingChildKeychain = try? await UserKeychain.query()
+    let existingChildKeychain = try? await ChildKeychain.query()
       .where(.keychainId == input.keychainId)
       .where(.childId == input.childId)
       .first(in: context.db)
@@ -25,7 +25,7 @@ extension ToggleChildKeychain: Resolver {
       try await context.db.delete(existingChildKeychain.id)
     } else {
       // if the child does not have the keychain assigned, assign it
-      let newChildKeychain = UserKeychain(
+      let newChildKeychain = ChildKeychain(
         childId: input.childId,
         keychainId: input.keychainId
       )
