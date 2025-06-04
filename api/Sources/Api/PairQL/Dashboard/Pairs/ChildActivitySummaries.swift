@@ -5,7 +5,7 @@ import PairQL
 struct ChildActivitySummaries: Pair {
   static let auth: ClientAuth = .parent
   struct Input: PairInput {
-    var childId: User.Id
+    var childId: Child.Id
     var jsTimezoneOffsetMinutes: Int
   }
 

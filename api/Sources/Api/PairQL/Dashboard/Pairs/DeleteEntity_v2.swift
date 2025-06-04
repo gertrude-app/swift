@@ -96,7 +96,7 @@ extension DeleteEntity_v2: Resolver {
 
     case .child:
       let computerIds = try await context.computerUsers().map(\.computerId)
-      let child = try await User.query()
+      let child = try await Child.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
         .first(in: context.db)

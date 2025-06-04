@@ -16,13 +16,13 @@ struct GetAdminKeychains: Pair {
   }
 
   struct Child: PairNestable {
-    let id: Api.User.Id
+    let id: Api.Child.Id
     let name: String
   }
 
   struct AdminKeychain: PairNestable, PairOutput {
     let summary: KeychainSummary
-    let children: [User.Id]
+    let children: [Api.Child.Id]
     let keys: [Key]
   }
 
@@ -74,7 +74,7 @@ extension GetAdminKeychains.Key {
 extension [GetAdminKeychains.Child] {
   init(parentId: Admin.Id) async throws {
     @Dependency(\.db) var db
-    let children = try await User.query()
+    let children = try await Child.query()
       .where(.parentId == parentId)
       .all(in: db)
     self = children.map {
@@ -83,13 +83,13 @@ extension [GetAdminKeychains.Child] {
   }
 }
 
-extension [User.Id] {
+extension [Child.Id] {
   init(from model: Api.Keychain, parentId: Admin.Id) async throws {
     @Dependency(\.db) var db
     let childKeychains = try await ChildKeychain.query()
       .where(.keychainId == model.id)
       .all(in: db)
-    let children = try await User.query()
+    let children = try await Child.query()
       .where(.id |=| childKeychains.map(\.childId))
       .where(.parentId == parentId)
       .all(in: db)
@@ -98,7 +98,7 @@ extension [User.Id] {
 }
 
 extension GetAdminKeychains.Child {
-  init(from model: User) {
+  init(from model: Child) {
     id = model.id
     name = model.name
   }

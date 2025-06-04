@@ -445,7 +445,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     // child with keychain assigned
     let littleJimmy = try await self.db.create(
-      User(parentId: admin.model.id, name: "Little Jimmy")
+      Child(parentId: admin.model.id, name: "Little Jimmy")
     )
     try await self.db.create(
       ChildKeychain(childId: littleJimmy.id, keychainId: admin.keychain.id)
@@ -453,7 +453,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     // child without keychain assigned
     let sally = try await self.db.create(
-      User(parentId: admin.model.id, name: "Sally")
+      Child(parentId: admin.model.id, name: "Sally")
     )
 
     let output = try await GetAdminKeychains.resolve(in: context(admin))

@@ -11,15 +11,15 @@ struct AdminContext: ResolverContext {
   @Dependency(\.env) var env
 
   @discardableResult
-  func verifiedUser(from id: User.Id) async throws -> User {
-    try await User.query()
+  func verifiedUser(from id: Child.Id) async throws -> Child {
+    try await Child.query()
       .where(.id == id)
       .where(.parentId == self.admin.id)
       .first(in: self.db)
   }
 
-  func users() async throws -> [User] {
-    try await User.query()
+  func users() async throws -> [Child] {
+    try await Child.query()
       .where(.parentId == self.admin.id)
       .all(in: self.db)
   }

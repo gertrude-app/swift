@@ -4,7 +4,7 @@ import Tagged
 
 struct MacAppToken: Codable, Sendable {
   var id: Id
-  var childId: User.Id
+  var childId: Child.Id
   var computerUserId: ComputerUser.Id
   var value: Value
   var createdAt = Date()
@@ -13,7 +13,7 @@ struct MacAppToken: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    childId: User.Id,
+    childId: Child.Id,
     computerUserId: ComputerUser.Id,
     value: Value? = nil
   ) {
@@ -34,8 +34,8 @@ extension MacAppToken {
 // loaders
 
 extension MacAppToken {
-  func user(in db: any DuetSQL.Client) async throws -> User {
-    try await User.query()
+  func user(in db: any DuetSQL.Client) async throws -> Child {
+    try await Child.query()
       .where(.id == self.childId)
       .first(in: db)
   }

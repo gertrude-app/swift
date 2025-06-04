@@ -7,7 +7,7 @@ struct ToggleChildKeychain: Pair {
 
   struct Input: PairInput {
     var keychainId: Keychain.Id
-    var childId: User.Id
+    var childId: Child.Id
   }
 }
 

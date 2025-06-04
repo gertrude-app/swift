@@ -92,10 +92,10 @@ actor Ephemeral {
     return model
   }
 
-  private var pendingAppConnections: [Int: (userId: User.Id, expiration: Date)] = [:]
+  private var pendingAppConnections: [Int: (userId: Child.Id, expiration: Date)] = [:]
 
   func createPendingAppConnection(
-    _ userId: User.Id,
+    _ userId: Child.Id,
     expiration: Date? = nil
   ) -> Int {
     let code = self.verificationCode.generate()
@@ -109,7 +109,7 @@ actor Ephemeral {
     return code
   }
 
-  func getPendingAppConnection(_ code: Int) -> User.Id? {
+  func getPendingAppConnection(_ code: Int) -> Child.Id? {
     #if DEBUG
       if code == 999_999 { return AdminBetsy.Ids.jimmysId }
     #endif

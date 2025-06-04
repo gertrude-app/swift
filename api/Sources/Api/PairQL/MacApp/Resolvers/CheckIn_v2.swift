@@ -141,7 +141,7 @@ extension CheckIn_v2: Resolver {
 // TODO: this is major N+1 territory, write a custom query w/ join for perf
 // @see also userKeychainSummaries(for:in:)
 func ruleKeychains(
-  for childId: User.Id,
+  for childId: Child.Id,
   in db: any DuetSQL.Client
 ) async throws -> [RuleKeychain] {
   let childKeychains = try await ChildKeychain.query()

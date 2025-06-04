@@ -8,14 +8,14 @@ struct GetDashboardWidgets: Pair {
   static let auth: ClientAuth = .parent
 
   struct User: PairNestable {
-    var id: Api.User.Id
+    var id: Api.Child.Id
     var name: String
     var status: ChildComputerStatus
     var numDevices: Int
   }
 
   struct UserActivitySummary: PairNestable {
-    var id: Api.User.Id
+    var id: Api.Child.Id
     var name: String
     var numUnreviewed: Int
     var numReviewed: Int
@@ -23,7 +23,7 @@ struct GetDashboardWidgets: Pair {
 
   struct UnlockRequest: PairNestable {
     var id: Api.UnlockRequest.Id
-    var userId: Api.User.Id
+    var userId: Api.Child.Id
     var userName: String
     var target: String
     var comment: String?
@@ -50,7 +50,7 @@ struct GetDashboardWidgets: Pair {
 
 extension GetDashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let users = try await Api.User.query()
+    let users = try await Api.Child.query()
       .where(.parentId == context.admin.id)
       .all(in: context.db)
 
@@ -73,7 +73,7 @@ extension GetDashboardWidgets: NoInputResolver {
       .where(.status == .enum(RequestStatus.pending))
       .all(in: context.db)
 
-    let deviceToUserMap: [ComputerUser.Id: Api.User] = computerUsers
+    let deviceToUserMap: [ComputerUser.Id: Api.Child] = computerUsers
       .reduce(into: [:]) { map, device in
         map[device.id] = users.first(where: { $0.id == device.childId })
       }
@@ -125,7 +125,7 @@ extension GetDashboardWidgets: NoInputResolver {
 
 func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],
-  map: [ComputerUser.Id: User]
+  map: [ComputerUser.Id: Child]
 ) -> [GetDashboardWidgets.UnlockRequest] {
   unlockRequests.map { unlockRequest in
     .init(
@@ -140,8 +140,8 @@ func mapUnlockRequests(
 }
 
 func recentScreenshots(
-  users: [User],
-  map: [ComputerUser.Id: User],
+  users: [Child],
+  map: [ComputerUser.Id: Child],
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.RecentScreenshot] {
   users.compactMap { user in
@@ -153,8 +153,8 @@ func recentScreenshots(
 }
 
 func userActivitySummaries(
-  users: [User],
-  map: [ComputerUser.Id: User],
+  users: [Child],
+  map: [ComputerUser.Id: Child],
   keystrokes: [KeystrokeLine],
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.UserActivitySummary] {

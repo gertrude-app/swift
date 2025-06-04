@@ -3,14 +3,14 @@ import Gertie
 
 struct ChildKeychain: Codable, Sendable {
   var id: Id
-  var childId: User.Id
+  var childId: Child.Id
   var keychainId: Keychain.Id
   var schedule: RuleSchedule?
   var createdAt = Date()
 
   init(
     id: Id = .init(),
-    childId: User.Id,
+    childId: Child.Id,
     keychainId: Keychain.Id,
     schedule: RuleSchedule? = nil
   ) {

@@ -18,7 +18,7 @@ struct GetUser: Pair {
   static let auth: ClientAuth = .parent
 
   struct User: PairOutput {
-    var id: Api.User.Id
+    var id: Api.Child.Id
     var name: String
     var keyloggingEnabled: Bool
     var screenshotsEnabled: Bool
@@ -42,7 +42,7 @@ struct GetUser: Pair {
     var customName: String?
   }
 
-  typealias Input = Api.User.Id
+  typealias Input = Api.Child.Id
   typealias Output = User
 }
 
@@ -50,7 +50,7 @@ struct GetUser: Pair {
 
 extension GetUser: Resolver {
   static func resolve(
-    with id: Api.User.Id,
+    with id: Api.Child.Id,
     in context: AdminContext
   ) async throws -> Output {
     try await Output(from: context.verifiedUser(from: id), in: context.db)
@@ -60,7 +60,7 @@ extension GetUser: Resolver {
 // TODO: this is major N+1 territory, write a custom query w/ join for perf
 // @see also ruleKeychains(for:in:)
 func userKeychainSummaries(
-  for childId: User.Id,
+  for childId: Child.Id,
   in db: any DuetSQL.Client
 ) async throws -> [UserKeychainSummary] {
   let childKeychains = try await ChildKeychain.query()
@@ -88,7 +88,7 @@ func userKeychainSummaries(
 }
 
 extension GetUser.User {
-  init(from child: Api.User, in db: any DuetSQL.Client) async throws {
+  init(from child: Api.Child, in db: any DuetSQL.Client) async throws {
     async let childKeychains = userKeychainSummaries(for: child.id, in: db)
     let pairs = try await ComputerUser.query()
       .where(.childId == child.id)

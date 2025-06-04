@@ -116,7 +116,7 @@ extension ConnectUser: Resolver {
 
 // helpers
 
-private func notifyAdConversion(child: User, db: any DuetSQL.Client) async {
+private func notifyAdConversion(child: Child, db: any DuetSQL.Client) async {
   guard let parent = try? await db.find(child.parentId),
         let gclid = parent.gclid else {
     return

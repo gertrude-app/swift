@@ -436,11 +436,11 @@ extension UnlockRequest {
   }
 }
 
-extension User: Duet.Identifiable {
-  typealias Id = Tagged<User, UUID>
+extension Child: Duet.Identifiable {
+  typealias Id = Tagged<Child, UUID>
 }
 
-extension User {
+extension Child {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case parentId

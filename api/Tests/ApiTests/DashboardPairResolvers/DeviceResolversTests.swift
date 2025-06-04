@@ -15,7 +15,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
     device.modelIdentifier = "MacBookPro16,1"
     try await self.db.update(device)
 
-    let user2 = try await self.db.create(User(parentId: user.parentId, name: "Bob"))
+    let user2 = try await self.db.create(Child(parentId: user.parentId, name: "Bob"))
 
     // proves that we take the highest app version
     try await self.db.create(ComputerUser(

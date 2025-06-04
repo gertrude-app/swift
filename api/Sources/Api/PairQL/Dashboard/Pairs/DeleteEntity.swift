@@ -90,7 +90,7 @@ extension DeleteEntity: Resolver {
 
     case .user:
       let deviceIds = try await context.computerUsers().map(\.computerId)
-      let child = try await User.query()
+      let child = try await Child.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
         .first(in: context.db)
@@ -145,24 +145,5 @@ private func deleteUnusedEmptyAutogenKeychain(
   } catch {
     // we don't care about errors, we're just cleaning up
     // after ourselves, there's no harm if this operation fails
-  }
-}
-
-// extensions
-
-extension DeleteEntity.Input {
-  static var customTs: String? {
-    """
-      export interface __self__ {
-        id: UUID;
-        type:
-          | 'AdminNotification'
-          | 'AdminVerifiedNotificationMethod'
-          | 'Device'
-          | 'Key'
-          | 'Keychain'
-          | 'User';
-      }
-    """
   }
 }
