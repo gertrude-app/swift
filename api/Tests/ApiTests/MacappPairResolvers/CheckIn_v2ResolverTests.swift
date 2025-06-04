@@ -27,8 +27,8 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
     expect(output.userData.screenshotSize).toEqual(1081)
     expect(output.userData.downtime).toEqual("22:00-08:00")
 
-    let device = try await self.db.find(child.computer.id)
-    expect(device.filterVersion).toEqual("3.3.3")
+    let computer = try await self.db.find(child.computer.id)
+    expect(computer.filterVersion).toEqual("3.3.3")
   }
 
   func testCheckIn_OtherProps() async throws {
@@ -71,8 +71,8 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
       in: child.context
     )
 
-    let device = try await self.db.find(child.computer.id)
-    expect(device.osVersion).toEqual(Semver("14.5.0"))
+    let computer = try await self.db.find(child.computer.id)
+    expect(computer.osVersion).toEqual(Semver("14.5.0"))
     let computerUser = try await self.db.find(child.computerUser.id)
     expect(computerUser.isAdmin).toEqual(true)
   }
@@ -94,8 +94,8 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
       in: child.context
     )
 
-    let device = try await self.db.find(child.computer.id)
-    expect(device.osVersion).toEqual(Semver("14.5.0"))
+    let computer = try await self.db.find(child.computer.id)
+    expect(computer.osVersion).toEqual(Semver("14.5.0"))
     let computerUser = try await self.db.find(child.computerUser.id)
     expect(computerUser.isAdmin).toEqual(false)
   }

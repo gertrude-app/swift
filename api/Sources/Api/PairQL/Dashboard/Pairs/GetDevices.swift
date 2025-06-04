@@ -10,7 +10,7 @@ struct GetDevices: Pair {
 
 extension GetDevices: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let devices = try await context.parent.devices(in: context.db)
+    let devices = try await context.parent.computers(in: context.db)
     return try await devices.concurrentMap { device in
       try await GetDevice.resolve(with: device.id.rawValue, in: context)
     }

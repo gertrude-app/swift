@@ -9,7 +9,7 @@ struct SecurityEventsFeed: Pair {
     var id: SecurityEvent.Id
     var childId: Child.Id
     var childName: String
-    var deviceId: Device.Id
+    var deviceId: Computer.Id
     var deviceName: String
     var event: String
     var detail: String?
@@ -49,19 +49,19 @@ extension SecurityEventsFeed: NoInputResolver {
         result[user.id] = user
       }
 
-    let devices = try await context.parent.devices(in: context.db)
+    let computers = try await context.parent.computers(in: context.db)
     let computerUsers = try await ComputerUser.query()
-      .where(.computerId |=| devices.map(\.id))
+      .where(.computerId |=| computers.map(\.id))
       .all(in: context.db)
       .reduce(into: [ComputerUser.Id: ComputerUser]()) { result, computerUser in
         result[computerUser.id] = computerUser
       }
 
     return models.compactMap { model in
-      if let userDeviceId = model.computerUserId {
-        guard let computerUser = computerUsers[userDeviceId],
+      if let computerUserId = model.computerUserId {
+        guard let computerUser = computerUsers[computerUserId],
               let child = children[computerUser.childId],
-              let device = devices.first(where: { $0.id == computerUser.computerId }),
+              let computer = computers.first(where: { $0.id == computerUser.computerId }),
               let event = Gertie.SecurityEvent.MacApp(rawValue: model.event) else {
           return nil
         }
@@ -70,7 +70,7 @@ extension SecurityEventsFeed: NoInputResolver {
           childId: child.id,
           childName: child.name,
           deviceId: computerUser.computerId,
-          deviceName: device.customName ?? device.model.shortDescription,
+          deviceName: computer.customName ?? computer.model.shortDescription,
           event: event.toWords,
           detail: model.detail,
           explanation: event.explanation,

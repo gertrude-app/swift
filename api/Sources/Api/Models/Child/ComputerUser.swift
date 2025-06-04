@@ -4,7 +4,7 @@ import Gertie
 struct ComputerUser: Codable, Sendable, Equatable {
   var id: Id
   var childId: Child.Id
-  var computerId: Device.Id
+  var computerId: Computer.Id
   var isAdmin: Bool?
   var appVersion: String
   var username: String
@@ -16,7 +16,7 @@ struct ComputerUser: Codable, Sendable, Equatable {
   init(
     id: Id = .init(),
     childId: Child.Id,
-    computerId: Device.Id,
+    computerId: Computer.Id,
     isAdmin: Bool?,
     appVersion: String,
     username: String,
@@ -47,8 +47,8 @@ extension ComputerUser {
       .first(in: db)
   }
 
-  func computer(in db: any DuetSQL.Client) async throws -> Device {
-    try await Device.query()
+  func computer(in db: any DuetSQL.Client) async throws -> Computer {
+    try await Computer.query()
       .where(.id == self.computerId)
       .first(in: db)
   }

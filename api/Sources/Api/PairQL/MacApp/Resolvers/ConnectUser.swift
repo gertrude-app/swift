@@ -20,7 +20,7 @@ extension ConnectUser: Resolver {
     let computerUser: ComputerUser
     let user = try await context.db.find(userId)
 
-    var adminDevice = try? await Device.query()
+    var adminDevice = try? await Computer.query()
       .where(.serialNumber == input.serialNumber)
       .first(in: context.db)
 
@@ -74,7 +74,7 @@ extension ConnectUser: Resolver {
     } else {
       if adminDevice == nil {
         // create new admin device if we don't have one
-        adminDevice = try await context.db.create(Device(
+        adminDevice = try await context.db.create(Computer(
           parentId: user.parentId,
           osVersion: input.osVersion.flatMap(Semver.init),
           modelIdentifier: input.modelIdentifier,

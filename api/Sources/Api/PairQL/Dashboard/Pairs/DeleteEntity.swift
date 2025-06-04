@@ -105,7 +105,7 @@ extension DeleteEntity: Resolver {
 
       await deleteUnusedEmptyAutogenKeychain(childKeychainIds, context.db)
 
-      let devices = try await Device.query()
+      let devices = try await Computer.query()
         .where(.id |=| deviceIds)
         .all(in: context.db)
       for device in devices {

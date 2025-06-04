@@ -20,7 +20,7 @@ class ChildEntities {
 @dynamicMemberLookup
 struct ChildWithComputerEntities {
   var model: Child
-  var computer: Device
+  var computer: Computer
   var computerUser: ComputerUser
   var token: MacAppToken
   var parent: ParentEntities
@@ -86,7 +86,7 @@ struct ParentWithOnboardedChildEntities {
   var token: AdminToken
   var child: Child
   var computerUser: ComputerUser
-  var computer: Device
+  var computer: Computer
 
   var context: AdminContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", parent: self.model, ipAddress: nil)
@@ -141,7 +141,7 @@ extension ApiTestCase {
 
   func childWithComputer() async throws -> ChildWithComputerEntities {
     let child = try await self.child()
-    let computer = try await self.db.create(Device.random {
+    let computer = try await self.db.create(Computer.random {
       $0.parentId = child.parent.model.id
     })
     let computerUser = try await self.db.create(ComputerUser.random {
@@ -181,17 +181,17 @@ extension ParentEntities {
 extension ChildEntities {
   func withDevice(
     config: (inout ComputerUser) -> Void = { _ in },
-    computer: (inout Device) -> Void = { _ in }
+    computer: (inout Computer) -> Void = { _ in }
   ) async throws -> ChildWithComputerEntities {
     @Dependency(\.db) var db
-    let device = try await db.create(Device.random {
+    let computer = try await db.create(Computer.random {
       computer(&$0)
       $0.parentId = self.parent.id
     })
     let computerUser = try await db.create(ComputerUser.random {
       config(&$0)
       $0.childId = self.model.id
-      $0.computerId = device.id
+      $0.computerId = computer.id
     })
     let token = try await db.create(MacAppToken(
       childId: self.model.id,
@@ -199,7 +199,7 @@ extension ChildEntities {
     ))
     return .init(
       model: self.model,
-      computer: device,
+      computer: computer,
       computerUser: computerUser,
       token: token,
       parent: self.parent

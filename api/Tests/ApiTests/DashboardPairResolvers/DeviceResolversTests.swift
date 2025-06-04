@@ -6,7 +6,7 @@ import XExpect
 
 final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
   func testGetDevices() async throws {
-    try await self.db.delete(all: Device.self)
+    try await self.db.delete(all: Computer.self)
     let child = try await self.child().withDevice { $0.appVersion = "2.2.2" }
     var device = child.computer
     device.appReleaseChannel = .canary

@@ -182,7 +182,7 @@ extension SecurityEventsFeed.FeedEvent {
     var id: Tagged<Api.SecurityEvent, UUID>
     var childId: Tagged<Api.Child, UUID>
     var childName: String
-    var deviceId: Tagged<Api.Device, UUID>
+    var deviceId: Tagged<Api.Computer, UUID>
     var deviceName: String
     var event: String
     var detail: String?

@@ -34,7 +34,7 @@ struct GetUser: Pair {
 
   struct Device: PairNestable {
     var id: ComputerUser.Id
-    var deviceId: Api.Device.Id
+    var deviceId: Api.Computer.Id
     var status: ChildComputerStatus
     var modelFamily: DeviceModelFamily
     var modelTitle: String

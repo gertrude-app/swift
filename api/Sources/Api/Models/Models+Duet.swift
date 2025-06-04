@@ -239,11 +239,11 @@ extension AppBundleId {
   }
 }
 
-extension Device: Duet.Identifiable {
-  typealias Id = Tagged<Device, UUID>
+extension Computer: Duet.Identifiable {
+  typealias Id = Tagged<Computer, UUID>
 }
 
-extension Device {
+extension Computer {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case parentId
