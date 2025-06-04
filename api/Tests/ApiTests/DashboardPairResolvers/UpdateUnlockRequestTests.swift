@@ -7,12 +7,12 @@ import XExpect
 
 final class UpdateUnlockRequestTests: ApiTestCase, @unchecked Sendable {
   func testUpdateUnlockRequest() async throws {
-    let user = try await self.user().withDevice {
+    let child = try await self.child().withDevice {
       $0.appVersion = "2.4.0"
     }
 
     var request = UnlockRequest.mock
-    request.computerUserId = user.device.id
+    request.computerUserId = child.computerUser.id
     request.status = .pending
     try await self.db.create(request)
 
@@ -22,7 +22,7 @@ final class UpdateUnlockRequestTests: ApiTestCase, @unchecked Sendable {
         responseComment: "looks good",
         status: .accepted
       ),
-      in: context(user.admin)
+      in: context(child.parent)
     )
 
     expect(output).toEqual(.success)
@@ -39,7 +39,7 @@ final class UpdateUnlockRequestTests: ApiTestCase, @unchecked Sendable {
           target: request.target ?? "",
           comment: "looks good"
         ),
-        to: .userDevice(user.device.id)
+        to: .userDevice(child.computerUser.id)
       ),
     ])
   }

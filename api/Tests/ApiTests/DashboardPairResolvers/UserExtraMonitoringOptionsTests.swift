@@ -78,7 +78,7 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
     ]
 
     for (keylogging, screenshotsFrequency, expected) in cases {
-      let user = Child.empty {
+      let child = Child.empty {
         $0.keyloggingEnabled = keylogging
         if let screenshotsFrequency {
           $0.screenshotsEnabled = true
@@ -87,7 +87,7 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
           $0.screenshotsEnabled = false
         }
       }
-      expect(user.extraMonitoringOptions).toEqual(expected)
+      expect(child.extraMonitoringOptions).toEqual(expected)
     }
   }
 

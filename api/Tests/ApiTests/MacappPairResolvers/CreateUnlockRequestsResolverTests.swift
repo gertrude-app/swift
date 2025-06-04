@@ -7,7 +7,7 @@ import XExpect
 
 final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable {
   func testCreateUnlockRequests_v3() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
     let blocked = CreateUnlockRequests_v3.Input.BlockedRequest(
       bundleId: "com.example.app",
       url: "https://example.com"
@@ -23,7 +23,7 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable 
     } operation: {
       try await CreateUnlockRequests_v3.resolve(
         with: .init(blockedRequests: [blocked, blocked2], comment: nil),
-        in: self.context(user)
+        in: self.context(child)
       )
     }
 
@@ -33,22 +33,22 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable 
     expect(unlockReq1.requestComment).toEqual(nil)
     expect(unlockReq1.appBundleId).toEqual("com.example.app")
     expect(unlockReq1.url).toEqual("https://example.com")
-    expect(unlockReq1.computerUserId).toEqual(user.device.id)
+    expect(unlockReq1.computerUserId).toEqual(child.computerUser.id)
     expect(unlockReq1.status).toEqual(.pending)
 
     let unlockReq2 = try await self.db.find(UnlockRequest.Id(uuids[1]))
     expect(unlockReq2.requestComment).toEqual(nil)
     expect(unlockReq2.appBundleId).toEqual("com.other.thing")
     expect(unlockReq2.url).toEqual("https://foo.com")
-    expect(unlockReq2.computerUserId).toEqual(user.device.id)
+    expect(unlockReq2.computerUserId).toEqual(child.computerUser.id)
     expect(unlockReq2.status).toEqual(.pending)
 
     expect(sent.adminNotifications).toEqual([.init(
-      adminId: user.parentId,
+      adminId: child.parentId,
       event: .unlockRequestSubmitted(.init(
         dashboardUrl: "",
-        userId: user.id,
-        userName: user.name,
+        userId: child.id,
+        userName: child.name,
         requestIds: [unlockReq1.id, unlockReq2.id]
       ))
     )])

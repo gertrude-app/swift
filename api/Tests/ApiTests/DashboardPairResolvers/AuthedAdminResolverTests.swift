@@ -8,7 +8,7 @@ import XExpect
 
 final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   func testStripeUrlForBillingPortalSession() async throws {
-    let admin = try await self.admin {
+    let admin = try await self.parent {
       $0.subscriptionId = .init(rawValue: "sub_123")
       $0.subscriptionStatus = .paid
     }
@@ -30,7 +30,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testStripeUrlForCheckoutSession() async throws {
-    let admin = try await self.admin {
+    let admin = try await self.parent {
       $0.subscriptionId = nil
       $0.subscriptionStatus = .trialing
     }
@@ -81,14 +81,14 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreatePendingAppConnection() async throws {
-    let user = try await self.user()
+    let child = try await self.child()
 
     let output = try await withDependencies {
       $0.verificationCode.generate = { 1234 }
     } operation: {
       try await CreatePendingAppConnection.resolve(
-        with: .init(userId: user.id),
-        in: context(user.admin)
+        with: .init(userId: child.id),
+        in: context(child.parent)
       )
     }
 
@@ -96,7 +96,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testGetAdminWithNotifications() async throws {
-    let admin = try await self.admin(with: \.subscriptionStatus, of: .paid)
+    let admin = try await self.parent(with: \.subscriptionStatus, of: .paid)
     let method = AdminVerifiedNotificationMethod(
       parentId: admin.id,
       config: .email(email: "blob@blob.com")
@@ -129,7 +129,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreatePendingMethod_Text() async throws {
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     let uuids = MockUUIDs()
     let id = uuids[0]
 
@@ -173,7 +173,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreatePendingMethod_Slack() async throws {
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     let uuids = MockUUIDs()
     let id = uuids[0]
 
@@ -216,7 +216,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreatePendingMethod_Email() async throws {
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     let uuids = MockUUIDs()
     let id = uuids[0]
 
@@ -259,7 +259,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testCreateNewAdminNotification() async throws {
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     let method = try await self.db.create(
       AdminVerifiedNotificationMethod(
         parentId: admin.model.id,
@@ -276,7 +276,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDeleteKeyNotifiesConnectedApps() async throws {
-    let admin = try await self.admin().withKeychain()
+    let admin = try await self.parent().withKeychain()
     let output = try await DeleteEntity_v2.resolve(
       with: .init(id: admin.key.id.rawValue, type: .key),
       in: context(admin)
@@ -290,10 +290,10 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   func testDeletingLastUserDeviceDeletesDevice() async throws {
     let child = try await self.childWithComputer()
     _ = try await DeleteEntity_v2.resolve(
-      with: .init(id: child.device.id.rawValue, type: .computerUser),
-      in: context(child.admin)
+      with: .init(id: child.computerUser.id.rawValue, type: .computerUser),
+      in: context(child.parent)
     )
-    let retrieved = try? await self.db.find(child.adminDevice.id)
+    let retrieved = try? await self.db.find(child.computer.id)
     expect(retrieved).toBeNil()
   }
 
@@ -301,15 +301,15 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let child = try await self.childWithComputer()
     _ = try await DeleteEntity_v2.resolve(
       with: .init(id: child.id.rawValue, type: .child),
-      in: context(child.admin)
+      in: context(child.parent)
     )
-    let retrieved = try? await self.db.find(child.adminDevice.id)
+    let retrieved = try? await self.db.find(child.computer.id)
     expect(retrieved).toBeNil()
   }
 
   func testDeletingAdminDeletesAdminAndCreatesDeletedEntity() async throws {
     try await self.db.delete(all: DeletedEntity.self)
-    let parent = try await self.admin()
+    let parent = try await self.parent()
 
     _ = try await DeleteEntity_v2.resolve(
       with: .init(id: parent.id.rawValue, type: .parent),
@@ -325,8 +325,8 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testAdminCantDeleteOtherAdmin() async throws {
-    let parent1 = try await self.admin()
-    let parent2 = try await self.admin()
+    let parent1 = try await self.parent()
+    let parent2 = try await self.parent()
 
     try await expectErrorFrom { [weak self] in
       _ = try await DeleteEntity_v2.resolve(
@@ -338,7 +338,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testLogDashboardEvent() async throws {
     try await self.db.delete(all: InterestingEvent.self)
-    let admin = try await self.admin()
+    let admin = try await self.parent()
 
     let output = try await LogEvent.resolve(
       with: .init(eventId: "123", detail: "detail"),
@@ -354,7 +354,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testUpdateAdminNotification() async throws {
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     let email = try await self.db.create(
       AdminVerifiedNotificationMethod(
         parentId: admin.model.id,
@@ -420,7 +420,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testGetAdminKeychain() async throws {
-    let admin = try await self.admin().withKeychain()
+    let admin = try await self.parent().withKeychain()
     let output = try await GetAdminKeychain.resolve(
       with: admin.keychain.id,
       in: context(admin)
@@ -441,7 +441,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testGetAdminKeychains() async throws {
-    let admin = try await self.admin().withKeychain()
+    let admin = try await self.parent().withKeychain()
 
     // child with keychain assigned
     let littleJimmy = try await self.db.create(
@@ -492,11 +492,11 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     try await self.db.delete(all: Key.self)
     try await self.db.delete(all: Keychain.self)
 
-    let admin = try await self.admin().withKeychain { keychain, _ in
+    let admin = try await self.parent().withKeychain { keychain, _ in
       keychain.isPublic = false
     }
 
-    let otherAdmin = try await self.admin()
+    let otherAdmin = try await self.parent()
     var publicKeychain = Keychain.random
     publicKeychain.parentId = otherAdmin.id
     publicKeychain.isPublic = true
@@ -513,7 +513,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testSaveExistingKeychain() async throws {
-    let admin = try await self.admin().withKeychain { keychain, _ in
+    let admin = try await self.parent().withKeychain { keychain, _ in
       keychain.isPublic = false
     }
 
@@ -536,7 +536,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testSaveNewKeychain() async throws {
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     let id = Keychain.Id()
 
     let output = try await SaveKeychain.resolve(
@@ -558,28 +558,28 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testGetSuspendFilterRequest() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
     var request = MacApp.SuspendFilterRequest.random
-    request.computerUserId = user.device.id
+    request.computerUserId = child.computerUser.id
     try await self.db.create(request)
 
     let output = try await GetSuspendFilterRequest.resolve(
       with: request.id,
-      in: context(user.admin)
+      in: context(child.parent)
     )
 
     expect(output.id).toEqual(request.id)
-    expect(output.deviceId).toEqual(user.device.id)
-    expect(output.userName).toEqual(user.name)
+    expect(output.deviceId).toEqual(child.computerUser.id)
+    expect(output.userName).toEqual(child.name)
     expect(output.requestedDurationInSeconds).toEqual(request.duration.rawValue)
     expect(output.status).toEqual(request.status)
   }
 
   func testGetUnlockRequests() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
 
     var request = UnlockRequest.mock
-    request.computerUserId = user.device.id
+    request.computerUserId = child.computerUser.id
     request.status = .pending
     request.requestComment = "please dad"
     request.appBundleId = "com.rofl.biz"
@@ -587,22 +587,22 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await GetUnlockRequest.resolve(
       with: request.id,
-      in: context(user.admin)
+      in: context(child.parent)
     )
 
     expect(output.id).toEqual(request.id)
-    expect(output.userId).toEqual(user.id)
-    expect(output.userName).toEqual(user.name)
+    expect(output.userId).toEqual(child.id)
+    expect(output.userName).toEqual(child.name)
     expect(output.requestComment).toEqual("please dad")
     expect(output.appBundleId).toEqual("com.rofl.biz")
 
-    let list = try await GetUnlockRequests.resolve(in: context(user.admin))
+    let list = try await GetUnlockRequests.resolve(in: context(child.parent))
     expect(list).toEqual([output])
 
-    let userList =
+    let childList =
       try await GetUserUnlockRequests
-        .resolve(with: user.id, in: context(user.admin))
-    expect(userList).toEqual([output])
+        .resolve(with: child.id, in: context(child.parent))
+    expect(childList).toEqual([output])
   }
 
   func testLatestAppVersions() async throws {
@@ -632,7 +632,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output =
       try await LatestAppVersions
-        .resolve(in: context(self.admin()))
+        .resolve(in: context(self.parent()))
 
     expect(output).toEqual(.init(stable: "2.2.0", beta: "2.5.2", canary: "3.0.0"))
   }

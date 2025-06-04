@@ -7,17 +7,17 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
   func testFlagActivityItems() async throws {
     let child = try await self.childWithComputer()
     var screenshot = Screenshot.random
-    screenshot.computerUserId = child.device.id
+    screenshot.computerUserId = child.computerUser.id
     screenshot.flagged = nil
     var keystrokeLine = KeystrokeLine.random
-    keystrokeLine.computerUserId = child.device.id
+    keystrokeLine.computerUserId = child.computerUser.id
     keystrokeLine.flagged = nil
     try await self.db.create(screenshot)
     try await self.db.create(keystrokeLine)
 
     var output = try await FlagActivityItems.resolve(
       with: [keystrokeLine.id.rawValue],
-      in: context(child.admin)
+      in: context(child.parent)
     )
 
     let retrievedScreenshot = try await self.db.find(screenshot.id)
@@ -28,7 +28,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
 
     output = try await FlagActivityItems.resolve(
       with: [screenshot.id.rawValue],
-      in: context(child.admin)
+      in: context(child.parent)
     )
 
     let retrievedScreenshot2 = try await self.db.find(screenshot.id)
@@ -39,7 +39,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
 
     output = try await FlagActivityItems.resolve(
       with: [screenshot.id.rawValue],
-      in: context(child.admin)
+      in: context(child.parent)
     )
 
     // toggles if already flagged
@@ -48,29 +48,29 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testGetActivityDay() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
     var screenshot = Screenshot.random
-    screenshot.computerUserId = user.device.id
+    screenshot.computerUserId = child.computerUser.id
     screenshot.createdAt = .reference - 1
     try await self.db.create(screenshot)
     var keystrokeLine = KeystrokeLine.random
-    keystrokeLine.computerUserId = user.device.id
+    keystrokeLine.computerUserId = child.computerUser.id
     keystrokeLine.createdAt = .reference
     try await self.db.create(keystrokeLine)
     let twoDaysAgo = Date.reference - .days(2)
 
     let output = try await UserActivityFeed.resolve(
       with: .init(
-        userId: user.id,
+        userId: child.id,
         range: .init(
           start: twoDaysAgo.isoString,
           end: Date.reference.isoString
         )
       ),
-      in: context(user.admin)
+      in: context(child.parent)
     )
 
-    expect(output.userName).toEqual(user.name)
+    expect(output.userName).toEqual(child.name)
     expect(output.numDeleted).toEqual(0)
     expect(output.items).toHaveCount(2)
 
@@ -102,16 +102,16 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
 
     let child1 = try await self.childWithComputer()
     var screenshot = Screenshot.mock
-    screenshot.computerUserId = child1.device.id
+    screenshot.computerUserId = child1.computerUser.id
     screenshot.createdAt = .reference - 5
     var flaggedOldScreenshot = Screenshot.mock
-    flaggedOldScreenshot.computerUserId = child1.device.id
+    flaggedOldScreenshot.computerUserId = child1.computerUser.id
     flaggedOldScreenshot.flagged = .reference - .days(20)
     // too old to be included, but should be returned because flagged
     flaggedOldScreenshot.createdAt = .reference - .days(30)
     try await self.db.create([screenshot, flaggedOldScreenshot])
     var keystrokeLine = KeystrokeLine.mock
-    keystrokeLine.computerUserId = child1.device.id
+    keystrokeLine.computerUserId = child1.computerUser.id
     keystrokeLine.createdAt = .reference - 4
     try await self.db.create(keystrokeLine)
 
@@ -119,11 +119,11 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
     child2.model.parentId = child1.parentId
     try await self.db.update(child2.model)
     var screenshot2 = Screenshot.mock
-    screenshot2.computerUserId = child2.device.id
+    screenshot2.computerUserId = child2.computerUser.id
     screenshot2.createdAt = .reference - 3
     try await self.db.create(screenshot2)
     var keystrokeLine2 = KeystrokeLine.mock
-    keystrokeLine2.computerUserId = child2.device.id
+    keystrokeLine2.computerUserId = child2.computerUser.id
     keystrokeLine2.createdAt = .reference - 2
     keystrokeLine2.deletedAt = .reference - 1 // <-- soft-deleted
     try await self.db.create(keystrokeLine2)
@@ -134,7 +134,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
     // test getting the activity overview summaries
     let summary = try await FamilyActivitySummaries.resolve(
       with: .init(jsTimezoneOffsetMinutes: -(TimeZone.current.secondsFromGMT() / 60)),
-      in: context(child1.admin)
+      in: context(child1.parent)
     )
 
     expect(summary).toEqual(
@@ -162,7 +162,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
     // test getting the activity day detail (screenshots and keystrokes)
     let dayOutput = try await CombinedUsersActivityFeed.resolve(
       with: .init(range: dateRange),
-      in: context(child1.admin)
+      in: context(child1.parent)
     )
 
     expect(dayOutput).toHaveCount(2)
@@ -213,15 +213,15 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDeleteActivityItems_v2() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
     var screenshot = Screenshot.mock
-    screenshot.computerUserId = user.device.id
+    screenshot.computerUserId = child.computerUser.id
     var flagged = Screenshot.mock
-    flagged.computerUserId = user.device.id
+    flagged.computerUserId = child.computerUser.id
     flagged.flagged = Date()
     try await self.db.create([screenshot, flagged])
     var keystrokeLine = KeystrokeLine.mock
-    keystrokeLine.computerUserId = user.device.id
+    keystrokeLine.computerUserId = child.computerUser.id
     try await self.db.create(keystrokeLine)
 
     let output = try await DeleteActivityItems_v2.resolve(
@@ -229,7 +229,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
         keystrokeLineIds: [keystrokeLine.id],
         screenshotIds: [screenshot.id, flagged.id]
       ),
-      in: context(user.admin)
+      in: context(child.parent)
     )
 
     expect(output).toEqual(.success)

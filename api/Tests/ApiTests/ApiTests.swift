@@ -16,7 +16,7 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
   func testDashboardRoute() async throws {
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     let token = admin.token.value
     var request = URLRequest(url: URL(string: "dashboard/GetIdentifiedApps")!)
     request.httpMethod = "POST"
@@ -50,7 +50,7 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
       comment: nil,
       expiration: Date(timeIntervalSince1970: 0)
     )
-    let admin = try await self.admin()
+    let admin = try await self.parent()
     let token = admin.token.value
     var request = URLRequest(url: URL(string: "dashboard/SaveKey")!)
     request.httpMethod = "POST"
@@ -117,11 +117,11 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testChildContextCreated() async throws {
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
 
     let response = try await PairQLRoute.respond(
       to: .macApp(.userAuthed(
-        user.token.value.rawValue,
+        child.token.value.rawValue,
         .createSuspendFilterRequest_v2(.init(duration: 1, comment: nil))
       )),
       in: .mock
@@ -130,8 +130,8 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
     expect(response.status).toEqual(.ok)
     let uuid = try JSONDecoder().decode(UUID.self, from: response.body.data!)
     let req = try await self.db.find(MacApp.SuspendFilterRequest.Id(uuid))
-    let userDevice = try await req.userDevice(in: self.db)
-    expect(userDevice.childId).toEqual(user.id)
+    let computerUser = try await req.userDevice(in: self.db)
+    expect(computerUser.childId).toEqual(child.id)
   }
 }
 

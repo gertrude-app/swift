@@ -11,7 +11,7 @@ final class LogFilterEventsResolverTests: ApiTestCase, @unchecked Sendable {
     try await self.db.delete(all: IdentifiedApp.self)
     try await self.db.delete(all: UnidentifiedApp.self)
     try await self.db.create(UnidentifiedApp(bundleId: "com.widget", count: 3))
-    let user = try await self.childWithComputer()
+    let child = try await self.childWithComputer()
     let xcode = try await self.db
       .create(IdentifiedApp(name: "Xcode", slug: "", launchable: true))
     try await self.db.create(AppBundleId(identifiedAppId: xcode.id, bundleId: "com.xcode"))
@@ -31,7 +31,7 @@ final class LogFilterEventsResolverTests: ApiTestCase, @unchecked Sendable {
       ]
     )
 
-    _ = try await LogFilterEvents.resolve(with: input, in: user.context)
+    _ = try await LogFilterEvents.resolve(with: input, in: child.context)
 
     let event1 = try await InterestingEvent.query()
       .where(.eventId == eventId1)
@@ -43,8 +43,8 @@ final class LogFilterEventsResolverTests: ApiTestCase, @unchecked Sendable {
 
     expect(event1.detail).toEqual("ev 1")
     expect(event2.detail).toEqual("ev 2 (4x)") // <-- appends non-1 count
-    expect(event1.computerUserId).toEqual(user.device.id)
-    expect(event2.computerUserId).toEqual(user.device.id)
+    expect(event1.computerUserId).toEqual(child.computerUser.id)
+    expect(event2.computerUserId).toEqual(child.computerUser.id)
     expect(event1.kind).toEqual("event")
     expect(event2.kind).toEqual("event")
     expect(event1.context).toEqual("macapp-filter")
@@ -61,7 +61,7 @@ final class LogFilterEventsResolverTests: ApiTestCase, @unchecked Sendable {
 
     // ensure no crash if all bundle ids already identified
     let input2 = FilterLogs(bundleIds: ["com.xcode": 1], events: [:])
-    let output = try await LogFilterEvents.resolve(with: input2, in: user.context)
+    let output = try await LogFilterEvents.resolve(with: input2, in: child.context)
     expect(output).toEqual(.success)
   }
 }

@@ -18,44 +18,44 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testConnectUser_createNewDevice() async throws {
-    let user = try await self.user()
+    let child = try await self.child()
     let code = await with(dependency: \.ephemeral)
-      .createPendingAppConnection(user.id)
+      .createPendingAppConnection(child.id)
 
     let input = input(code)
-    let userData = try await ConnectUser.resolve(with: input, in: self.context)
+    let childData = try await ConnectUser.resolve(with: input, in: self.context)
 
-    expect(userData.id).toEqual(user.id.rawValue)
-    expect(userData.name).toEqual(user.name)
+    expect(childData.id).toEqual(child.id.rawValue)
+    expect(childData.name).toEqual(child.name)
 
-    let userDevice = try await self.db.find(ComputerUser.Id(userData.deviceId))
-    let device = try await self.db.find(userDevice.computerId)
+    let computerUser = try await self.db.find(ComputerUser.Id(childData.deviceId))
+    let device = try await self.db.find(computerUser.computerId)
 
-    expect(userDevice.username).toEqual(input.username)
-    expect(userDevice.fullUsername).toEqual(input.fullUsername)
-    expect(userDevice.numericId).toEqual(input.numericId)
-    expect(userDevice.appVersion).toEqual(input.appVersion)
-    expect(userDevice.isAdmin).toEqual(input.isAdmin)
+    expect(computerUser.username).toEqual(input.username)
+    expect(computerUser.fullUsername).toEqual(input.fullUsername)
+    expect(computerUser.numericId).toEqual(input.numericId)
+    expect(computerUser.appVersion).toEqual(input.appVersion)
+    expect(computerUser.isAdmin).toEqual(input.isAdmin)
     expect(device.serialNumber).toEqual(input.serialNumber)
     expect(device.modelIdentifier).toEqual(input.modelIdentifier)
     expect(device.osVersion).toEqual(Semver("14.2.0"))
 
     let token = try await MacAppToken.query()
-      .where(.value == userData.token)
+      .where(.value == childData.token)
       .first(in: self.db)
 
-    expect(token.childId).toEqual(user.id)
+    expect(token.childId).toEqual(child.id)
   }
 
   func testConnectUser_twoUsersSameComputer() async throws {
     try await self.db.delete(all: Device.self)
-    let user1 = try await self.user()
+    let child1 = try await self.child()
     let code1 = await with(dependency: \.ephemeral)
-      .createPendingAppConnection(user1.id)
+      .createPendingAppConnection(child1.id)
 
-    let user2 = try await self.user { $0.parentId = user1.admin.id }
+    let child2 = try await self.child { $0.parentId = child1.parent.id }
     let code2 = await with(dependency: \.ephemeral)
-      .createPendingAppConnection(user2.id)
+      .createPendingAppConnection(child2.id)
 
     var input1 = self.input(code1)
     input1.numericId = 501
@@ -83,28 +83,28 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
       let existingUser = try await self.childWithComputer()
       let existingMacAppToken = try await self.db.create(MacAppToken(
         childId: existingUser.id,
-        computerUserId: existingUser.device.id
+        computerUserId: existingUser.computerUser.id
       ))
 
       // different user, owned by same admin
-      let newUser = try await self.user(with: \.parentId, of: existingUser.admin.id)
+      let newUser = try await self.child(with: \.parentId, of: existingUser.parent.id)
       let code = await with(dependency: \.ephemeral)
         .createPendingAppConnection(newUser.model.id)
 
       // happy path, the device exists, registered to another user, but that's OK
       // because the same admin owns both users, so switch it over
-      newUser.model.parentId = existingUser.admin.model.id
+      newUser.model.parentId = existingUser.parent.model.id
       try await self.db.update(newUser.model)
 
       var input = input(code)
-      input.numericId = existingUser.device.numericId
-      input.serialNumber = existingUser.adminDevice.serialNumber
-      let userData = try await ConnectUser.resolve(with: input, in: self.context)
+      input.numericId = existingUser.computerUser.numericId
+      input.serialNumber = existingUser.computer.serialNumber
+      let childData = try await ConnectUser.resolve(with: input, in: self.context)
 
-      expect(userData.id).toEqual(newUser.id.rawValue)
-      expect(userData.name).toEqual(newUser.name)
+      expect(childData.id).toEqual(newUser.id.rawValue)
+      expect(childData.name).toEqual(newUser.name)
 
-      let retrievedDevice = try await self.db.find(existingUser.device.id)
+      let retrievedDevice = try await self.db.find(existingUser.computerUser.id)
       expect(retrievedDevice.childId).toEqual(newUser.model.id)
 
       let retrievedOldToken = try await self.db.find(existingMacAppToken.id)
@@ -117,17 +117,17 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
     let existingUser = try await self.childWithComputer()
     let existingMacAppToken = try await self.db.create(MacAppToken(
       childId: existingUser.model.id,
-      computerUserId: existingUser.device.id
+      computerUserId: existingUser.computerUser.id
     ))
 
     // this user is from a DIFFERENT admin, so it should fail
-    let newUser = try await self.user()
+    let newUser = try await self.child()
     let code = await with(dependency: \.ephemeral)
       .createPendingAppConnection(newUser.model.id)
 
     var input = input(code)
-    input.numericId = existingUser.device.numericId
-    input.serialNumber = existingUser.adminDevice.serialNumber
+    input.numericId = existingUser.computerUser.numericId
+    input.serialNumber = existingUser.computer.serialNumber
 
     try await expectErrorFrom { [self] in
       _ = try await ConnectUser.resolve(with: input, in: self.context)
