@@ -702,7 +702,7 @@ extension UnlockRequest: Model {
   }
 }
 
-extension User: Model {
+extension Child: Model {
   public static let schemaName = "parent"
   public static let tableName = "children"
   public typealias ColumnName = CodingKeys
@@ -740,7 +740,7 @@ extension User: Model {
   }
 }
 
-extension UserKeychain: Model {
+extension ChildKeychain: Model {
   public static let schemaName = "child"
   public static let tableName = "keychains"
   public typealias ColumnName = CodingKeys

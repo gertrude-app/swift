@@ -122,7 +122,7 @@ struct AnalyticsData: Sendable {
         activeParents: 0,
         childrenOfActiveParents: 0,
         allTimeSignups: parentModels.count,
-        allTimeChildren: User.query().count(in: self.db),
+        allTimeChildren: Child.query().count(in: self.db),
         allTimeAppInstallations: ComputerUser.query().count(in: self.db)
       )
     )
@@ -146,7 +146,7 @@ struct AnalyticsData: Sendable {
     }
     data.overview.annualRevenue = Dollars(totalAnnualCents.rawValue / 100)
 
-    let children = try await User.query().all(in: self.db)
+    let children = try await Child.query().all(in: self.db)
     for child in children {
       guard var parent = parents[child.parentId] else { continue }
       parent.numChildren += 1

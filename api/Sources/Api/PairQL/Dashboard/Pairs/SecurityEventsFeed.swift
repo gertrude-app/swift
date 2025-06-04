@@ -7,7 +7,7 @@ struct SecurityEventsFeed: Pair {
 
   struct ChildSecurityEvent: PairNestable {
     var id: SecurityEvent.Id
-    var childId: User.Id
+    var childId: Child.Id
     var childName: String
     var deviceId: Device.Id
     var deviceName: String
@@ -45,7 +45,7 @@ extension SecurityEventsFeed: NoInputResolver {
       .all(in: context.db)
 
     let children = try await context.admin.users(in: context.db)
-      .reduce(into: [User.Id: User]()) { result, user in
+      .reduce(into: [Child.Id: Child]()) { result, user in
         result[user.id] = user
       }
 

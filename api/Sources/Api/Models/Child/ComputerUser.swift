@@ -3,7 +3,7 @@ import Gertie
 
 struct ComputerUser: Codable, Sendable, Equatable {
   var id: Id
-  var childId: User.Id
+  var childId: Child.Id
   var computerId: Device.Id
   var isAdmin: Bool?
   var appVersion: String
@@ -15,7 +15,7 @@ struct ComputerUser: Codable, Sendable, Equatable {
 
   init(
     id: Id = .init(),
-    childId: User.Id,
+    childId: Child.Id,
     computerId: Device.Id,
     isAdmin: Bool?,
     appVersion: String,
@@ -41,8 +41,8 @@ extension ComputerUser {
     Semver(self.appVersion)!
   }
 
-  func user(in db: any DuetSQL.Client) async throws -> User {
-    try await User.query()
+  func user(in db: any DuetSQL.Client) async throws -> Child {
+    try await Child.query()
       .where(.id == self.childId)
       .first(in: db)
   }

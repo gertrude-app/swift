@@ -18,7 +18,7 @@ struct GetUser: Pair {
   static let auth: ClientAuth = .parent
 
   struct User: PairOutput {
-    var id: Api.User.Id
+    var id: Api.Child.Id
     var name: String
     var keyloggingEnabled: Bool
     var screenshotsEnabled: Bool
@@ -42,7 +42,7 @@ struct GetUser: Pair {
     var customName: String?
   }
 
-  typealias Input = Api.User.Id
+  typealias Input = Api.Child.Id
   typealias Output = User
 }
 
@@ -50,7 +50,7 @@ struct GetUser: Pair {
 
 extension GetUser: Resolver {
   static func resolve(
-    with id: Api.User.Id,
+    with id: Api.Child.Id,
     in context: AdminContext
   ) async throws -> Output {
     try await Output(from: context.verifiedUser(from: id), in: context.db)
@@ -60,14 +60,14 @@ extension GetUser: Resolver {
 // TODO: this is major N+1 territory, write a custom query w/ join for perf
 // @see also ruleKeychains(for:in:)
 func userKeychainSummaries(
-  for userId: User.Id,
+  for childId: Child.Id,
   in db: any DuetSQL.Client
 ) async throws -> [UserKeychainSummary] {
-  let userKeychains = try await UserKeychain.query()
-    .where(.childId == userId)
+  let childKeychains = try await ChildKeychain.query()
+    .where(.childId == childId)
     .all(in: db)
   let keychains = try await Keychain.query()
-    .where(.id |=| userKeychains.map(\.keychainId))
+    .where(.id |=| childKeychains.map(\.keychainId))
     .all(in: db)
   return try await keychains.concurrentMap { keychain in
     let numKeys = try await db.count(
@@ -82,16 +82,16 @@ func userKeychainSummaries(
       description: keychain.description,
       isPublic: keychain.isPublic,
       numKeys: numKeys,
-      schedule: userKeychains.first { $0.keychainId == keychain.id }?.schedule
+      schedule: childKeychains.first { $0.keychainId == keychain.id }?.schedule
     )
   }
 }
 
 extension GetUser.User {
-  init(from user: Api.User, in db: any DuetSQL.Client) async throws {
-    async let userKeychains = userKeychainSummaries(for: user.id, in: db)
+  init(from child: Api.Child, in db: any DuetSQL.Client) async throws {
+    async let childKeychains = userKeychainSummaries(for: child.id, in: db)
     let pairs = try await ComputerUser.query()
-      .where(.childId == user.id)
+      .where(.childId == child.id)
       .all(in: db)
       .concurrentMap { (userDevice: ComputerUser) -> (GetUser.Device, Semver) in
         let adminDevice = try await userDevice.adminDevice(in: db)
@@ -110,22 +110,22 @@ extension GetUser.User {
 
     var blockedApps: [UserBlockedApp.DTO]?
     if versions.contains(where: { $0 >= .init("2.6.0")! }) {
-      blockedApps = try await (user.blockedApps(in: db)).map(\.dto)
+      blockedApps = try await (child.blockedApps(in: db)).map(\.dto)
     }
 
     try await self.init(
-      id: user.id,
-      name: user.name,
-      keyloggingEnabled: user.keyloggingEnabled,
-      screenshotsEnabled: user.screenshotsEnabled,
-      screenshotsResolution: user.screenshotsResolution,
-      screenshotsFrequency: user.screenshotsFrequency,
-      showSuspensionActivity: user.showSuspensionActivity,
-      keychains: userKeychains,
-      downtime: user.downtime,
+      id: child.id,
+      name: child.name,
+      keyloggingEnabled: child.keyloggingEnabled,
+      screenshotsEnabled: child.screenshotsEnabled,
+      screenshotsResolution: child.screenshotsResolution,
+      screenshotsFrequency: child.screenshotsFrequency,
+      showSuspensionActivity: child.showSuspensionActivity,
+      keychains: childKeychains,
+      downtime: child.downtime,
       devices: devices.uniqued(on: \.id),
       blockedApps: blockedApps,
-      createdAt: user.createdAt
+      createdAt: child.createdAt
     )
   }
 }

@@ -1,7 +1,7 @@
 import DuetSQL
 import Gertie
 
-struct User: Codable, Sendable {
+struct Child: Codable, Sendable {
   var id: Id
   var parentId: Admin.Id
   var name: String
@@ -39,7 +39,7 @@ struct User: Codable, Sendable {
 
 // loaders
 
-extension User {
+extension Child {
   func computerUsers(in db: any DuetSQL.Client) async throws -> [ComputerUser] {
     try await ComputerUser.query()
       .where(.childId == self.id)
@@ -53,7 +53,7 @@ extension User {
   }
 
   func keychains(in db: any DuetSQL.Client) async throws -> [Keychain] {
-    let pivots = try await UserKeychain.query()
+    let pivots = try await ChildKeychain.query()
       .where(.childId == self.id)
       .all(in: db)
     return try await Keychain.query()

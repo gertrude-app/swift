@@ -90,20 +90,20 @@ extension DeleteEntity: Resolver {
 
     case .user:
       let deviceIds = try await context.computerUsers().map(\.computerId)
-      let user = try await User.query()
+      let child = try await Child.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
         .first(in: context.db)
-      dashSecurityEvent(.childDeleted, "name: \(user.name)", in: context)
+      dashSecurityEvent(.childDeleted, "name: \(child.name)", in: context)
 
-      let userKeychainIds = try await UserKeychain.query()
-        .where(.childId == user.id)
+      let childKeychainIds = try await ChildKeychain.query()
+        .where(.childId == child.id)
         .all(in: context.db)
         .map(\.keychainId)
 
-      try await context.db.delete(user)
+      try await context.db.delete(child)
 
-      await deleteUnusedEmptyAutogenKeychain(userKeychainIds, context.db)
+      await deleteUnusedEmptyAutogenKeychain(childKeychainIds, context.db)
 
       let devices = try await Device.query()
         .where(.id |=| deviceIds)
@@ -114,7 +114,7 @@ extension DeleteEntity: Resolver {
         }
       }
       try await with(dependency: \.websockets)
-        .send(.userDeleted, to: .user(user.id))
+        .send(.userDeleted, to: .user(child.id))
     }
 
     return .success
@@ -134,7 +134,7 @@ private func deleteUnusedEmptyAutogenKeychain(
     for keychain in keychains {
       let keys = try await keychain.keys(in: db)
       if keys.isEmpty {
-        let otherUsers = try await UserKeychain.query()
+        let otherUsers = try await ChildKeychain.query()
           .where(.keychainId == keychain.id)
           .all(in: db)
         if otherUsers.isEmpty {
@@ -145,24 +145,5 @@ private func deleteUnusedEmptyAutogenKeychain(
   } catch {
     // we don't care about errors, we're just cleaning up
     // after ourselves, there's no harm if this operation fails
-  }
-}
-
-// extensions
-
-extension DeleteEntity.Input {
-  static var customTs: String? {
-    """
-      export interface __self__ {
-        id: UUID;
-        type:
-          | 'AdminNotification'
-          | 'AdminVerifiedNotificationMethod'
-          | 'Device'
-          | 'Key'
-          | 'Keychain'
-          | 'User';
-      }
-    """
   }
 }

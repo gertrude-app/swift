@@ -34,7 +34,7 @@ extension ChildComputerStatus {
 }
 
 func consolidatedChildComputerStatus(
-  _ userId: User.Id,
+  _ userId: Child.Id,
   _ computerUsers: [ComputerUser]
 ) async throws -> ChildComputerStatus {
   let statuses = try await computerUsers

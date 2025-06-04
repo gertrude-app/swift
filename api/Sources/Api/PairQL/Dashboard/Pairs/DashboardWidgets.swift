@@ -7,14 +7,14 @@ struct DashboardWidgets: Pair {
   static let auth: ClientAuth = .parent
 
   struct Child: PairNestable {
-    var id: User.Id
+    var id: Api.Child.Id
     var name: String
     var status: ChildComputerStatus
     var numDevices: Int
   }
 
   struct ChildActivitySummary: PairNestable {
-    var id: Api.User.Id
+    var id: Api.Child.Id
     var name: String
     var numUnreviewed: Int
     var numReviewed: Int
@@ -22,7 +22,7 @@ struct DashboardWidgets: Pair {
 
   struct UnlockRequest: PairNestable {
     var id: Api.UnlockRequest.Id
-    var childId: User.Id
+    var childId: Api.Child.Id
     var childName: String
     var target: String
     var comment: String?
@@ -57,7 +57,7 @@ struct DashboardWidgets: Pair {
 
 extension DashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let children = try await Api.User.query()
+    let children = try await Api.Child.query()
       .where(.parentId == context.admin.id)
       .all(in: context.db)
 
@@ -81,7 +81,7 @@ extension DashboardWidgets: NoInputResolver {
       .where(.status == .enum(RequestStatus.pending))
       .all(in: context.db)
 
-    let computerToChildMap: [ComputerUser.Id: Api.User] = computerUsers
+    let computerToChildMap: [ComputerUser.Id: Api.Child] = computerUsers
       .reduce(into: [:]) { map, device in
         map[device.id] = children.first(where: { $0.id == device.childId })
       }
@@ -144,7 +144,7 @@ extension DashboardWidgets: NoInputResolver {
 
 private func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],
-  map: [ComputerUser.Id: User]
+  map: [ComputerUser.Id: Child]
 ) -> [DashboardWidgets.UnlockRequest] {
   unlockRequests.map { unlockRequest in
     .init(
@@ -159,8 +159,8 @@ private func mapUnlockRequests(
 }
 
 private func recentScreenshots(
-  children: [User],
-  map: [ComputerUser.Id: User],
+  children: [Child],
+  map: [ComputerUser.Id: Child],
   screenshots: [Screenshot]
 ) -> [DashboardWidgets.RecentScreenshot] {
   children.compactMap { user in
@@ -171,8 +171,8 @@ private func recentScreenshots(
 }
 
 private func userActivitySummaries(
-  children: [User],
-  map: [ComputerUser.Id: User],
+  children: [Child],
+  map: [ComputerUser.Id: Child],
   keystrokes: [KeystrokeLine],
   screenshots: [Screenshot]
 ) -> [DashboardWidgets.ChildActivitySummary] {

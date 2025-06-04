@@ -96,13 +96,13 @@ extension DeleteEntity_v2: Resolver {
 
     case .child:
       let computerIds = try await context.computerUsers().map(\.computerId)
-      let child = try await User.query()
+      let child = try await Child.query()
         .where(.id == input.id)
         .where(.parentId == context.admin.id)
         .first(in: context.db)
       dashSecurityEvent(.childDeleted, "name: \(child.name)", in: context)
 
-      let childKeychainIds = try await UserKeychain.query()
+      let childKeychainIds = try await ChildKeychain.query()
         .where(.childId == child.id)
         .all(in: context.db)
         .map(\.keychainId)
@@ -140,7 +140,7 @@ private func deleteUnusedEmptyAutogenKeychain(
     for keychain in keychains {
       let keys = try await keychain.keys(in: db)
       if keys.isEmpty {
-        let otherChildren = try await UserKeychain.query()
+        let otherChildren = try await ChildKeychain.query()
           .where(.keychainId == keychain.id)
           .all(in: db)
         if otherChildren.isEmpty {

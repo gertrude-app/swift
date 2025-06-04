@@ -7,7 +7,7 @@ import XCore
 enum AdminBetsy {
   enum Ids {
     static let betsy = Admin.Id.from("BE000000-0000-0000-0000-000000000000")
-    static let jimmysId = User.Id.from("00000000-1111-4444-0000-000000000000")
+    static let jimmysId = Child.Id.from("00000000-1111-4444-0000-000000000000")
     static let jimmysDevice = ComputerUser.Id.from("DD000000-1111-0000-0000-000000000000")
     static let sallysDevice = ComputerUser.Id.from("DD000000-2222-0000-0000-000000000000")
     static let suspendFilter = MacApp.SuspendFilterRequest.Id
@@ -64,23 +64,23 @@ enum AdminBetsy {
       .where(.isPublic == true)
       .first(in: db) {
       try await db.create([
-        UserKeychain(childId: jimmy.id, keychainId: firstPublicKeychain.id),
-        UserKeychain(childId: sally.id, keychainId: firstPublicKeychain.id),
+        ChildKeychain(childId: jimmy.id, keychainId: firstPublicKeychain.id),
+        ChildKeychain(childId: sally.id, keychainId: firstPublicKeychain.id),
       ])
     }
 
     try await db.create([
-      UserKeychain(childId: jimmy.id, keychainId: musicTheory.id),
-      UserKeychain(childId: jimmy.id, keychainId: misc.id),
-      UserKeychain(childId: sally.id, keychainId: misc.id),
+      ChildKeychain(childId: jimmy.id, keychainId: musicTheory.id),
+      ChildKeychain(childId: jimmy.id, keychainId: misc.id),
+      ChildKeychain(childId: sally.id, keychainId: misc.id),
     ])
 
     try await self.createUserActivity()
   }
 
-  private static func createUsers(_ betsy: Admin) async throws -> (User, User, User) {
+  private static func createUsers(_ betsy: Admin) async throws -> (Child, Child, Child) {
     @Dependency(\.db) var db
-    let jimmy = try await db.create(User(
+    let jimmy = try await db.create(Child(
       id: Ids.jimmysId,
       parentId: betsy.id,
       name: "Little Jimmy",
@@ -127,7 +127,7 @@ enum AdminBetsy {
       numericId: 504
     ))
 
-    let sally = try await db.create(User(
+    let sally = try await db.create(Child(
       parentId: betsy.id,
       name: "Sally",
       keyloggingEnabled: false,
@@ -154,7 +154,7 @@ enum AdminBetsy {
     ))
 
     // henry has no devices
-    let henry = try await db.create(User(
+    let henry = try await db.create(Child(
       parentId: betsy.id,
       name: "Henry",
       keyloggingEnabled: true,

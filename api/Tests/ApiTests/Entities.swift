@@ -4,14 +4,14 @@ import Dependencies
 
 @dynamicMemberLookup
 class UserEntities {
-  var model: User
+  var model: Child
   var admin: AdminEntities
 
-  subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
+  subscript<T>(dynamicMember keyPath: KeyPath<Child, T>) -> T {
     self.model[keyPath: keyPath]
   }
 
-  init(model: User, admin: AdminEntities) {
+  init(model: Child, admin: AdminEntities) {
     self.model = model
     self.admin = admin
   }
@@ -19,7 +19,7 @@ class UserEntities {
 
 @dynamicMemberLookup
 struct UserWithDeviceEntities {
-  var model: User
+  var model: Child
   var adminDevice: Device
   var device: ComputerUser
   var token: MacAppToken
@@ -29,14 +29,14 @@ struct UserWithDeviceEntities {
     .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
   }
 
-  subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
+  subscript<T>(dynamicMember keyPath: KeyPath<Child, T>) -> T {
     self.model[keyPath: keyPath]
   }
 }
 
 @dynamicMemberLookup
 struct ChildWithIOSDeviceEntities {
-  var model: User
+  var model: Child
   var device: IOSApp.Device
   var token: IOSApp.Token
   var parent: AdminEntities
@@ -45,7 +45,7 @@ struct ChildWithIOSDeviceEntities {
     .init(requestId: "", dashboardUrl: "", child: self.model, device: self.device)
   }
 
-  subscript<T>(dynamicMember keyPath: KeyPath<User, T>) -> T {
+  subscript<T>(dynamicMember keyPath: KeyPath<Child, T>) -> T {
     self.model[keyPath: keyPath]
   }
 }
@@ -84,7 +84,7 @@ struct AdminWithKeychainEntities {
 struct AdminWithOnboardedChildEntities {
   var model: Admin
   var token: AdminToken
-  var child: User
+  var child: Child
   var userDevice: ComputerUser
   var adminDevice: Device
 
@@ -114,18 +114,18 @@ extension ApiTestCase {
   }
 
   func user<T>(
-    with kp: WritableKeyPath<User, T>,
+    with kp: WritableKeyPath<Child, T>,
     of value: T
   ) async throws -> UserEntities {
     try await self.user(with: { $0[keyPath: kp] = value })
   }
 
   func user(
-    with userConfig: (inout User) -> Void = { _ in },
+    with userConfig: (inout Child) -> Void = { _ in },
     withAdmin adminConfig: (inout Admin) -> Void = { _ in }
   ) async throws -> UserEntities {
     let admin = try await self.admin(with: adminConfig)
-    let user = try await self.db.create(User.random {
+    let user = try await self.db.create(Child.random {
       userConfig(&$0)
       $0.parentId = admin.id
     })

@@ -6,7 +6,7 @@ struct SaveUser: Pair {
   static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
-    var id: User.Id
+    var id: Child.Id
     var isNew: Bool
     var name: String
     var keyloggingEnabled: Bool
@@ -15,10 +15,10 @@ struct SaveUser: Pair {
     var screenshotsFrequency: Int
     var showSuspensionActivity: Bool
     var downtime: PlainTimeWindow?
-    var keychains: [UserKeychain]
+    var keychains: [ChildKeychain]
     var blockedApps: [UserBlockedApp.DTO]?
 
-    struct UserKeychain: PairNestable {
+    struct ChildKeychain: PairNestable {
       var id: Keychain.Id
       var schedule: RuleSchedule?
     }
@@ -29,9 +29,9 @@ struct SaveUser: Pair {
 
 extension SaveUser: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    var user: User
+    var user: Child
     if input.isNew {
-      user = try await context.db.create(User(
+      user = try await context.db.create(Child(
         id: input.id,
         parentId: context.admin.id,
         name: input.name,
@@ -53,7 +53,7 @@ extension SaveUser: Resolver {
         delete it, or create as many other keychains as you like.
         """
       ))
-      try await context.db.create(UserKeychain(childId: user.id, keychainId: keychain.id))
+      try await context.db.create(ChildKeychain(childId: user.id, keychainId: keychain.id))
       dashSecurityEvent(.childAdded, "name: \(user.name)", in: context)
     } else {
       user = try await context.db.find(input.id)
@@ -87,12 +87,12 @@ extension SaveUser: Resolver {
       if !existing.elementsEqual(input.keychains) {
         dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)
 
-        try await UserKeychain.query()
+        try await ChildKeychain.query()
           .where(.childId == user.id)
           .delete(in: context.db)
 
         let pivots = input.keychains.map { keychain in
-          UserKeychain(
+          ChildKeychain(
             childId: user.id,
             keychainId: keychain.id,
             schedule: keychain.schedule
@@ -111,7 +111,7 @@ extension SaveUser: Resolver {
 
 // helpers
 
-func monitoringDecreased(user: User, input: SaveUser.Input) -> String? {
+func monitoringDecreased(user: Child, input: SaveUser.Input) -> String? {
   var parts: [String] = []
   if user.keyloggingEnabled, !input.keyloggingEnabled {
     parts.append("keylogging disabled")
@@ -132,7 +132,7 @@ func monitoringDecreased(user: User, input: SaveUser.Input) -> String? {
 }
 
 extension UserKeychainSummary {
-  var userKeychain: SaveUser.Input.UserKeychain {
+  var userKeychain: SaveUser.Input.ChildKeychain {
     .init(id: id, schedule: schedule)
   }
 }

@@ -37,7 +37,7 @@ extension FilterSuspensionDecision.ExtraMonitoring {
   }
 }
 
-extension User {
+extension Child {
   var extraMonitoringOptions: [FilterSuspensionDecision.ExtraMonitoring: String] {
     var opts: [FilterSuspensionDecision.ExtraMonitoring: String] = [:]
     if !keyloggingEnabled {

@@ -23,42 +23,42 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await SaveUser.resolve(with: input, in: admin.context)
 
-    let user = try await self.db.find(input.id)
+    let child = try await self.db.find(input.id)
     expect(output).toEqual(.success)
-    expect(user.name).toEqual("Franny")
+    expect(child.name).toEqual("Franny")
     // vvv--- these are our recommended defaults
-    expect(user.keyloggingEnabled).toEqual(true)
-    expect(user.screenshotsEnabled).toEqual(true)
-    expect(user.screenshotsResolution).toEqual(1000)
-    expect(user.screenshotsFrequency).toEqual(180)
-    expect(user.showSuspensionActivity).toEqual(true)
-    expect(user.downtime).toEqual("22:00-06:00")
+    expect(child.keyloggingEnabled).toEqual(true)
+    expect(child.screenshotsEnabled).toEqual(true)
+    expect(child.screenshotsResolution).toEqual(1000)
+    expect(child.screenshotsFrequency).toEqual(180)
+    expect(child.showSuspensionActivity).toEqual(true)
+    expect(child.downtime).toEqual("22:00-06:00")
 
-    let keychains = try await user.keychains(in: self.db)
+    let keychains = try await child.keychains(in: self.db)
     expect(keychains.count).toEqual(1)
     let keychainId = keychains[0].id
     expect(keychains[0].name).toEqual("Franny’s Keychain")
     expect(keychains[0].description!).toContain("created automatically")
-    expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(user.id))])
+    expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(child.id))])
 
     // now delete...
     let deleteOutput = try await DeleteEntity.resolve(
-      with: .init(id: user.id.rawValue, type: .user),
+      with: .init(id: child.id.rawValue, type: .user),
       in: admin.context
     )
     expect(deleteOutput).toEqual(.success)
-    let retrieved = try? await self.db.find(user.id)
+    let retrieved = try? await self.db.find(child.id)
     expect(retrieved).toBeNil()
     expect(sent.websocketMessages).toEqual([
-      .init(.userUpdated, to: .user(user.id)),
-      .init(.userDeleted, to: .user(user.id)),
+      .init(.userUpdated, to: .user(child.id)),
+      .init(.userDeleted, to: .user(child.id)),
     ])
 
     // and the empty keychain should be deleted
-    let userKeychains = try await UserKeychain.query()
-      .where(.childId == user.id)
+    let childKeychains = try await ChildKeychain.query()
+      .where(.childId == child.id)
       .all(in: self.db)
-    expect(userKeychains.isEmpty).toBeTrue()
+    expect(childKeychains.isEmpty).toBeTrue()
     let retrievedKeychain = try? await self.db.find(keychainId)
     expect(retrievedKeychain).toBeNil()
   }
@@ -127,7 +127,7 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
     let input = SaveUser.Input(from: user, keychains: [.init(id: keychain.id, schedule: nil)])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychainIds = try await UserKeychain.query()
+    let keychainIds = try await ChildKeychain.query()
       .where(.childId == user.id)
       .all(in: self.db)
       .map(\.keychainId)
@@ -141,18 +141,18 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
     var keychain = Keychain.random
     keychain.parentId = user.admin.id
     try await self.db.create(keychain)
-    let pivot = try await self.db.create(UserKeychain(childId: user.id, keychainId: keychain.id))
+    let pivot = try await self.db.create(ChildKeychain(childId: user.id, keychainId: keychain.id))
 
     let input = SaveUser.Input(from: user, keychains: [])
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychains = try await UserKeychain.query()
+    let keychains = try await ChildKeychain.query()
       .where(.childId == user.id)
       .all(in: self.db)
 
     expect(keychains.isEmpty).toBeTrue()
-    let userKeychain = try? await self.db.find(pivot.id)
-    expect(userKeychain).toBeNil()
+    let childKeychain = try? await self.db.find(pivot.id)
+    expect(childKeychain).toBeNil()
   }
 
   func testReplacesExistingKeychains() async throws {
@@ -164,7 +164,7 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
     keychain2.parentId = user.admin.id
     try await self.db.create([keychain1, keychain2])
 
-    let pivot = try await self.db.create(UserKeychain(childId: user.id, keychainId: keychain1.id))
+    let pivot = try await self.db.create(ChildKeychain(childId: user.id, keychainId: keychain1.id))
 
     let input = SaveUser.Input(
       from: user,
@@ -175,7 +175,7 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
     )
     _ = try await SaveUser.resolve(with: input, in: user.admin.context)
 
-    let keychainIds = try await UserKeychain.query()
+    let keychainIds = try await ChildKeychain.query()
       .where(.childId == user.id)
       .all(in: self.db)
       .map(\.keychainId)
@@ -184,7 +184,7 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
     let retrievedOldPivot = try? await self.db.find(pivot.id)
     expect(retrievedOldPivot).toBeNil()
 
-    let newPivot = try? await UserKeychain.query()
+    let newPivot = try? await ChildKeychain.query()
       .where(.childId == user.id)
       .first(in: self.db)
     expect(newPivot?.schedule)
@@ -248,7 +248,7 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
 }
 
 extension SaveUser.Input {
-  init(from user: UserEntities, keychains: [UserKeychain] = []) {
+  init(from user: UserEntities, keychains: [ChildKeychain] = []) {
     self.init(
       id: user.id,
       isNew: false,

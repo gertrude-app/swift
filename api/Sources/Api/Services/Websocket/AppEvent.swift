@@ -4,7 +4,7 @@ import TaggedTime
 
 struct AppEvent: Equatable {
   enum Matcher: Equatable {
-    case user(User.Id)
+    case user(Child.Id)
     case usersWith(keychain: Keychain.Id)
     case userDevice(ComputerUser.Id)
   }

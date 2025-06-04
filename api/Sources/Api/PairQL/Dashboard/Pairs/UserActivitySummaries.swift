@@ -5,7 +5,7 @@ import PairQL
 // deprecated, remove 6/14/25
 struct UserActivitySummaries: Pair {
   static let auth: ClientAuth = .parent
-  typealias Input = User.Id
+  typealias Input = Child.Id
 
   struct Output: PairOutput {
     var userName: String
@@ -24,7 +24,7 @@ struct UserActivitySummaries: Pair {
 
 extension UserActivitySummaries: Resolver {
   static func resolve(
-    with childId: User.Id,
+    with childId: Child.Id,
     in context: AdminContext
   ) async throws -> Output {
     let child = try await context.verifiedUser(from: childId)
