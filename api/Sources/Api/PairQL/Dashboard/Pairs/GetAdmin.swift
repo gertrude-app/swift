@@ -39,10 +39,10 @@ struct GetAdmin: Pair {
 
 extension GetAdmin: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    let admin = context.admin
+    let admin = context.parent
     async let notifications = admin.notifications(in: context.db)
     async let methods = admin.verifiedNotificationMethods(in: context.db)
-    async let hasAdminChild = try await admin.users(in: context.db)
+    async let hasAdminChild = try await admin.children(in: context.db)
       .concurrentMap { try await $0.computerUsers(in: context.db) }
       .flatMap(\.self)
       .contains { $0.isAdmin == true }

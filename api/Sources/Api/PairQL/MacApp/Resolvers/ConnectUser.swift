@@ -40,7 +40,7 @@ extension ConnectUser: Resolver {
       // user, after double-checking below that the user belongs to the same admin acct
 
       // sanity check - we only "transfer" a device, if the admin accounts match
-      let existingUser = try await existingComputerUser.user(in: context.db)
+      let existingUser = try await existingComputerUser.child(in: context.db)
       if existingUser.parentId != user.parentId {
         throw context.error(
           id: "41a43089",

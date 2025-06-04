@@ -33,7 +33,7 @@ extension MacAppRoute: RouteResponder {
       let childContext = try await MacApp.ChildContext(
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,
-        user: token.user(in: context.db),
+        user: token.child(in: context.db),
         token: token
       )
       return try await AuthedUserRoute.respond(to: userRoute, in: childContext)

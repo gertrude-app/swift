@@ -58,7 +58,7 @@ struct DashboardWidgets: Pair {
 extension DashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let children = try await Api.Child.query()
-      .where(.parentId == context.admin.id)
+      .where(.parentId == context.parent.id)
       .all(in: context.db)
 
     guard !children.isEmpty else {
@@ -100,10 +100,10 @@ extension DashboardWidgets: NoInputResolver {
       .withSoftDeleted()
       .all(in: context.db)
 
-    async let notifications = context.admin.notifications(in: context.db)
+    async let notifications = context.parent.notifications(in: context.db)
 
     async let announcement = try? await DashAnnouncement.query()
-      .where(.parentId == context.admin.id)
+      .where(.parentId == context.parent.id)
       .orderBy(.createdAt, .asc)
       .first(in: context.db)
 
@@ -114,7 +114,7 @@ extension DashboardWidgets: NoInputResolver {
         status: consolidatedChildComputerStatus(user.id, computerUsers),
         numDevices: computerUsers.filter { $0.childId == user.id }.count
       ) },
-      childActivitySummaries: userActivitySummaries(
+      childActivitySummaries: childActivitySummaries(
         children: children,
         map: computerToChildMap,
         keystrokes: keystrokes,
@@ -170,7 +170,7 @@ private func recentScreenshots(
   }
 }
 
-private func userActivitySummaries(
+private func childActivitySummaries(
   children: [Child],
   map: [ComputerUser.Id: Child],
   keystrokes: [KeystrokeLine],

@@ -100,7 +100,7 @@ func githubSearch(_ eventId: String) -> String {
 
 func getAdminLink(from computerUser: ComputerUser?, in context: Context) async -> String {
   guard let computerUser,
-        let user = try? await computerUser.user(in: context.db),
+        let user = try? await computerUser.child(in: context.db),
         let admin = try? await user.admin(in: context.db) else {
     return ""
   }

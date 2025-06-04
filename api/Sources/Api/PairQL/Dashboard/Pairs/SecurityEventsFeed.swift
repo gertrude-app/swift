@@ -39,17 +39,17 @@ struct SecurityEventsFeed: Pair {
 extension SecurityEventsFeed: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let models = try await SecurityEvent.query()
-      .where(.parentId == context.admin.id)
+      .where(.parentId == context.parent.id)
       .where(.createdAt >= Date(subtractingDays: 14))
       .orderBy(.createdAt, .desc)
       .all(in: context.db)
 
-    let children = try await context.admin.users(in: context.db)
+    let children = try await context.parent.children(in: context.db)
       .reduce(into: [Child.Id: Child]()) { result, user in
         result[user.id] = user
       }
 
-    let devices = try await context.admin.devices(in: context.db)
+    let devices = try await context.parent.devices(in: context.db)
     let computerUsers = try await ComputerUser.query()
       .where(.computerId |=| devices.map(\.id))
       .all(in: context.db)

@@ -18,7 +18,7 @@ extension SaveKeychain: Resolver {
     if input.isNew {
       let keychain = try await context.db.create(Keychain(
         id: input.id,
-        parentId: context.admin.id,
+        parentId: context.parent.id,
         name: input.name,
         isPublic: false,
         description: input.description,

@@ -11,7 +11,7 @@ struct GetUserUnlockRequests: Pair {
 
 extension GetUserUnlockRequests: Resolver {
   static func resolve(with id: Child.Id, in context: AdminContext) async throws -> Output {
-    let user = try await context.verifiedUser(from: id)
+    let user = try await context.verifiedChild(from: id)
     let computerUsers = try await user.computerUsers(in: context.db)
     let requests = try await UnlockRequest.query()
       .where(.computerUserId |=| computerUsers.map { .id($0) })

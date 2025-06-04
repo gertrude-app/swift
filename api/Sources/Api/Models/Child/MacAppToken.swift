@@ -34,7 +34,7 @@ extension MacAppToken {
 // loaders
 
 extension MacAppToken {
-  func user(in db: any DuetSQL.Client) async throws -> Child {
+  func child(in db: any DuetSQL.Client) async throws -> Child {
     try await Child.query()
       .where(.id == self.childId)
       .first(in: db)

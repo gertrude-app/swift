@@ -29,7 +29,7 @@ extension ChildActivitySummaries: Resolver {
     with input: Input,
     in context: AdminContext
   ) async throws -> Output {
-    let child = try await context.verifiedUser(from: input.childId)
+    let child = try await context.verifiedChild(from: input.childId)
     let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)
     let days = try await ChildActivitySummaries.days(
       computerUserIds,

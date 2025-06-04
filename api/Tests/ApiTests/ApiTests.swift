@@ -130,7 +130,7 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
     expect(response.status).toEqual(.ok)
     let uuid = try JSONDecoder().decode(UUID.self, from: response.body.data!)
     let req = try await self.db.find(MacApp.SuspendFilterRequest.Id(uuid))
-    let computerUser = try await req.userDevice(in: self.db)
+    let computerUser = try await req.computerUser(in: self.db)
     expect(computerUser.childId).toEqual(child.id)
   }
 }

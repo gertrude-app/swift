@@ -27,7 +27,7 @@ extension CombinedUsersActivityFeed: Resolver {
       throw Abort(.badRequest)
     }
 
-    let children = try await context.users()
+    let children = try await context.children()
 
     return try await children.concurrentMap { child in
       let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)

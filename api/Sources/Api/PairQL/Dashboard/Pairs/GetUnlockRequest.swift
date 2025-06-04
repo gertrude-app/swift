@@ -35,8 +35,8 @@ extension GetUnlockRequest: Resolver {
 
 extension GetUnlockRequest.Output {
   init(from request: UnlockRequest, in context: AdminContext) async throws {
-    let userDevice = try await request.userDevice(in: context.db)
-    let user = try await context.verifiedUser(from: userDevice.childId)
+    let userDevice = try await request.computerUser(in: context.db)
+    let user = try await context.verifiedChild(from: userDevice.childId)
 
     let idManifest = try await getCachedAppIdManifest()
     let factory = AppDescriptorFactory(appIdManifest: idManifest)

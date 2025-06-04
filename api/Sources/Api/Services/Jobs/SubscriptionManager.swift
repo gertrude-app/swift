@@ -173,7 +173,7 @@ struct SubscriptionManager: AsyncScheduledJob {
 
 private extension Admin {
   func completedOnboarding(_ db: any DuetSQL.Client) async throws -> Bool {
-    let children = try await users(in: db)
+    let children = try await children(in: db)
     let childDevices = try await children.concurrentMap {
       try await $0.computerUsers(in: db)
     }.flatMap(\.self)

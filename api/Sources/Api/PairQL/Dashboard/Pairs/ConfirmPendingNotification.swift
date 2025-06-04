@@ -20,7 +20,7 @@ extension ConfirmPendingNotificationMethod: Resolver {
     guard let method else {
       throw Abort(.unauthorized, reason: "[@client:incorrectConfirmationCode]")
     }
-    guard method.parentId == context.admin.id else {
+    guard method.parentId == context.parent.id else {
       throw Abort(.unauthorized)
     }
     try await context.db.create(method)

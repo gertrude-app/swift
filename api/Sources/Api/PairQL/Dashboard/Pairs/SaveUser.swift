@@ -33,7 +33,7 @@ extension SaveUser: Resolver {
     if input.isNew {
       user = try await context.db.create(Child(
         id: input.id,
-        parentId: context.admin.id,
+        parentId: context.parent.id,
         name: input.name,
         // vvv--- these are our recommended defaults
         keyloggingEnabled: true,
@@ -44,7 +44,7 @@ extension SaveUser: Resolver {
         downtime: input.downtime
       ))
       let keychain = try await context.db.create(Keychain(
-        parentId: context.admin.id,
+        parentId: context.parent.id,
         name: "\(input.name)’s Keychain",
         isPublic: false,
         description: """
@@ -82,7 +82,7 @@ extension SaveUser: Resolver {
         }
       }
 
-      let existing = try await userKeychainSummaries(for: user.id, in: context.db)
+      let existing = try await childKeychainSummaries(for: user.id, in: context.db)
         .map(\.userKeychain)
       if !existing.elementsEqual(input.keychains) {
         dashSecurityEvent(.keychainsChanged, "child: \(user.name)", in: context)

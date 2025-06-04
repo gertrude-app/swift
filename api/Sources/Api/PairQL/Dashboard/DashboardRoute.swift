@@ -38,7 +38,7 @@ extension DashboardRoute: RouteResponder {
       let adminContext = AdminContext(
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,
-        admin: admin,
+        parent: admin,
         ipAddress: context.ipAddress
       )
 

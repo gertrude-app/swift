@@ -16,9 +16,9 @@ extension RequestPublicKeychain: Resolver {
 
     let html = """
     <p>From admin <b>\(
-      context.admin.email
+      context.parent.email
     )</b> (<a href="https://gertrude-analytics.vercel.app/admins/\(
-      context.admin
+      context.parent
         .id
     )">view in analytics site</a>).</p>
     <p>They searched for "<b>\(input.searchQuery)</b>". This is what they want:</p>

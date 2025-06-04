@@ -25,10 +25,10 @@ struct GetSelectableKeychains: Pair {
 
 extension GetSelectableKeychains: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    async let own = context.admin.keychains(in: context.db)
+    async let own = context.parent.keychains(in: context.db)
     async let `public` = Keychain.query()
       .where(.isPublic == true)
-      .where(.parentId != context.admin.id)
+      .where(.parentId != context.parent.id)
       .all(in: context.db)
     return try await .init(
       own: own.concurrentMap { try await .init(from: $0) },

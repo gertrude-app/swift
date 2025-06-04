@@ -51,7 +51,7 @@ struct GetDashboardWidgets: Pair {
 extension GetDashboardWidgets: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
     let users = try await Api.Child.query()
-      .where(.parentId == context.admin.id)
+      .where(.parentId == context.parent.id)
       .all(in: context.db)
 
     guard !users.isEmpty else {
@@ -92,7 +92,7 @@ extension GetDashboardWidgets: NoInputResolver {
       .withSoftDeleted()
       .all(in: context.db)
 
-    async let notifications = context.admin.notifications(in: context.db)
+    async let notifications = context.parent.notifications(in: context.db)
 
     return try await .init(
       users: users.concurrentMap { user in try await .init(
@@ -102,7 +102,7 @@ extension GetDashboardWidgets: NoInputResolver {
         numDevices: computerUsers.filter { $0.childId == user.id }.count
       ) },
       userActivitySummaries: userActivitySummaries(
-        users: users,
+        children: users,
         map: deviceToUserMap,
         keystrokes: keystrokes,
         screenshots: screenshots
@@ -153,12 +153,12 @@ func recentScreenshots(
 }
 
 func userActivitySummaries(
-  users: [Child],
+  children: [Child],
   map: [ComputerUser.Id: Child],
   keystrokes: [KeystrokeLine],
   screenshots: [Screenshot]
 ) -> [GetDashboardWidgets.UserActivitySummary] {
-  users.map { user in
+  children.map { user in
     // TODO: show ios screenshots as well
     let userScreenshots = screenshots
       .filter { $0.computerUserId.map { map[$0]?.id == user.id } ?? false }

@@ -31,7 +31,7 @@ extension CheckIn_v2: Resolver {
       try await context.db.update(computerUser)
     }
 
-    var adminDevice = try await computerUser.adminDevice(in: context.db)
+    var adminDevice = try await computerUser.computer(in: context.db)
     let channel = adminDevice.appReleaseChannel
 
     async let latestRelease = resolveLatestRelease(

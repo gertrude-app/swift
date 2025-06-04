@@ -26,7 +26,7 @@ enum AppWebsocket {
       throw UserTokenNotFound()
     }
 
-    let user = try await token.user(in: request.context.db)
+    let user = try await token.child(in: request.context.db)
     let keychains = try await user.keychains(in: request.context.db)
 
     let entityIds = AppConnection.Ids(

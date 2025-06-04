@@ -38,7 +38,7 @@ func unexpected(_ id: String, _ context: some ResolverContext, _ detail: String 
   var detail = detail
   let adminId: Admin.Id?
   if let adminContext = context as? AdminContext {
-    adminId = adminContext.admin.id
+    adminId = adminContext.parent.id
     detail += ", admin id: \(adminId!.lowercased)"
   } else {
     adminId = nil

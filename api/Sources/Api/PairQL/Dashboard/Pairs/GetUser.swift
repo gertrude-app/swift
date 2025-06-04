@@ -53,13 +53,13 @@ extension GetUser: Resolver {
     with id: Api.Child.Id,
     in context: AdminContext
   ) async throws -> Output {
-    try await Output(from: context.verifiedUser(from: id), in: context.db)
+    try await Output(from: context.verifiedChild(from: id), in: context.db)
   }
 }
 
 // TODO: this is major N+1 territory, write a custom query w/ join for perf
 // @see also ruleKeychains(for:in:)
-func userKeychainSummaries(
+func childKeychainSummaries(
   for childId: Child.Id,
   in db: any DuetSQL.Client
 ) async throws -> [UserKeychainSummary] {
@@ -89,12 +89,12 @@ func userKeychainSummaries(
 
 extension GetUser.User {
   init(from child: Api.Child, in db: any DuetSQL.Client) async throws {
-    async let childKeychains = userKeychainSummaries(for: child.id, in: db)
+    async let childKeychains = childKeychainSummaries(for: child.id, in: db)
     let pairs = try await ComputerUser.query()
       .where(.childId == child.id)
       .all(in: db)
       .concurrentMap { (userDevice: ComputerUser) -> (GetUser.Device, Semver) in
-        let adminDevice = try await userDevice.adminDevice(in: db)
+        let adminDevice = try await userDevice.computer(in: db)
         return await (GetUser.Device(
           id: userDevice.id,
           deviceId: adminDevice.id,

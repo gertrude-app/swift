@@ -81,7 +81,7 @@ extension UserActivityFeed: Resolver {
       throw Abort(.badRequest)
     }
 
-    let child = try await context.verifiedUser(from: input.userId)
+    let child = try await context.verifiedChild(from: input.userId)
     let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)
 
     async let keystrokes = KeystrokeLine.query()

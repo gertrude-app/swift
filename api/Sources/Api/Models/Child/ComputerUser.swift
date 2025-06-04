@@ -41,13 +41,13 @@ extension ComputerUser {
     Semver(self.appVersion)!
   }
 
-  func user(in db: any DuetSQL.Client) async throws -> Child {
+  func child(in db: any DuetSQL.Client) async throws -> Child {
     try await Child.query()
       .where(.id == self.childId)
       .first(in: db)
   }
 
-  func adminDevice(in db: any DuetSQL.Client) async throws -> Device {
+  func computer(in db: any DuetSQL.Client) async throws -> Device {
     try await Device.query()
       .where(.id == self.computerId)
       .first(in: db)

@@ -24,7 +24,7 @@ func dashSecurityEvent(
 ) {
   dashSecurityEvent(
     event,
-    context.admin.id,
+    context.parent.id,
     context.ipAddress,
     detail,
     with: context.db
