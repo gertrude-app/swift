@@ -17,7 +17,7 @@ enum SubscriptionEmail: Equatable {
 
 struct SubscriptionUpdate: Equatable {
   enum Action: Equatable {
-    case update(status: Admin.SubscriptionStatus, expiration: Date)
+    case update(status: Parent.SubscriptionStatus, expiration: Date)
     case delete(reason: String)
   }
 
@@ -39,33 +39,33 @@ struct SubscriptionManager: AsyncScheduledJob {
 
   func advanceExpired() async throws {
     var logs: [String] = []
-    let admins = try await Admin.query().all(in: self.db)
-    for var admin in admins {
-      guard let update = try await self.subscriptionUpdate(for: admin) else {
+    let parents = try await Parent.query().all(in: self.db)
+    for var parent in parents {
+      guard let update = try await self.subscriptionUpdate(for: parent) else {
         continue
       }
 
       switch update.action {
 
       case .update(let status, let expiration):
-        admin.subscriptionStatus = status
-        admin.subscriptionStatusExpiration = expiration
-        try await self.db.update(admin)
-        logs.append("Updated admin \(admin.email) to `.\(status)` until \(expiration)")
+        parent.subscriptionStatus = status
+        parent.subscriptionStatusExpiration = expiration
+        try await self.db.update(parent)
+        logs.append("Updated admin \(parent.email) to `.\(status)` until \(expiration)")
 
       case .delete(let reason):
         try await self.db.create(DeletedEntity(
           type: "Admin",
           reason: reason,
-          data: JSON.encode(admin, [.isoDates])
+          data: JSON.encode(parent, [.isoDates])
         ))
-        try await self.db.delete(admin)
-        logs.append("Deleted admin \(admin.email) reason: \(reason)")
+        try await self.db.delete(parent)
+        logs.append("Deleted admin \(parent.email) reason: \(reason)")
       }
 
       if let event = update.email {
-        try await self.postmark.send(template: email(event, to: admin.email))
-        logs.append("Sent `.\(event)` email to admin \(admin.email)")
+        try await self.postmark.send(template: email(event, to: parent.email))
+        logs.append("Sent `.\(event)` email to admin \(parent.email)")
       }
     }
 
@@ -77,13 +77,13 @@ struct SubscriptionManager: AsyncScheduledJob {
     }
   }
 
-  func subscriptionUpdate(for admin: Admin) async throws -> SubscriptionUpdate? {
-    if admin.subscriptionStatusExpiration > self.now {
+  func subscriptionUpdate(for parent: Parent) async throws -> SubscriptionUpdate? {
+    if parent.subscriptionStatusExpiration > self.now {
       return nil
     }
 
-    let completedOnboarding = try await admin.completedOnboarding(self.db)
-    switch admin.subscriptionStatus {
+    let completedOnboarding = try await parent.completedOnboarding(self.db)
+    switch parent.subscriptionStatus {
 
     case .pendingEmailVerification:
       return .init(
@@ -91,13 +91,13 @@ struct SubscriptionManager: AsyncScheduledJob {
         email: .deleteEmailUnverified
       )
 
-    case .trialing where admin.trialPeriodDays == 60: // <-- legacy 60-day trial
+    case .trialing where parent.trialPeriodDays == 60: // <-- legacy 60-day trial
       return .init(
         action: .update(
           status: .trialExpiringSoon,
           expiration: self.now + .days(7)
         ),
-        email: .trialEndingSoon(length: admin.trialPeriodDays, remaining: 7)
+        email: .trialEndingSoon(length: parent.trialPeriodDays, remaining: 7)
       )
 
     case .trialing:
@@ -106,17 +106,17 @@ struct SubscriptionManager: AsyncScheduledJob {
           status: .trialExpiringSoon,
           expiration: self.now + .days(3)
         ),
-        email: .trialEndingSoon(length: admin.trialPeriodDays, remaining: 3)
+        email: .trialEndingSoon(length: parent.trialPeriodDays, remaining: 3)
       )
 
     case .trialExpiringSoon:
       return .init(
         action: .update(status: .overdue, expiration: self.now + .days(7)),
-        email: completedOnboarding ? .trialEndedToOverdue(length: admin.trialPeriodDays) : nil
+        email: completedOnboarding ? .trialEndedToOverdue(length: parent.trialPeriodDays) : nil
       )
 
     case .overdue:
-      return try await self.updateIfPaid(admin.subscriptionId) ?? .init(
+      return try await self.updateIfPaid(parent.subscriptionId) ?? .init(
         action: .update(status: .unpaid, expiration: self.now + .days(365)),
         email: completedOnboarding ? .overdueToUnpaid : nil
       )
@@ -137,13 +137,13 @@ struct SubscriptionManager: AsyncScheduledJob {
       )
 
     case .paid:
-      return try await self.updateIfPaid(admin.subscriptionId) ?? .init(
+      return try await self.updateIfPaid(parent.subscriptionId) ?? .init(
         action: .update(status: .overdue, expiration: self.now + .days(14)),
         email: .paidToOverdue
       )
 
     case .complimentary:
-      unexpected("2d1710c2", admin.id)
+      unexpected("2d1710c2", parent.id)
       return nil
     }
   }
@@ -151,7 +151,7 @@ struct SubscriptionManager: AsyncScheduledJob {
   // failsafe in case webhook missed the `invoice.paid` event
   // theoretically, we should never find a subscription active
   private func updateIfPaid(
-    _ subscriptionId: Admin.SubscriptionId?
+    _ subscriptionId: Parent.SubscriptionId?
   ) async throws -> SubscriptionUpdate? {
     if let subsId = subscriptionId?.rawValue,
        let subscription = try? await self.stripe.getSubscription(subsId),
@@ -171,7 +171,7 @@ struct SubscriptionManager: AsyncScheduledJob {
 
 // helpers
 
-private extension Admin {
+private extension Parent {
   func completedOnboarding(_ db: any DuetSQL.Client) async throws -> Bool {
     let children = try await children(in: db)
     let childDevices = try await children.concurrentMap {

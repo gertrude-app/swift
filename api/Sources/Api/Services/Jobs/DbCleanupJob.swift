@@ -62,11 +62,11 @@ struct CleanupJob: AsyncScheduledJob {
 
     logs.append("Deleted \(deletedPendingUnlockRequests) pending unlock requests")
 
-    let deletedAdminTokens = try await AdminToken.query()
+    let deletedDashTokens = try await Parent.DashToken.query()
       .where(.deletedAt < now .&& .not(.isNull(.deletedAt)))
       .delete(in: self.db, force: true)
 
-    logs.append("Deleted \(deletedAdminTokens) admin tokens")
+    logs.append("Deleted \(deletedDashTokens) parent dash tokens")
 
     let deletedAnnouncements = try await DashAnnouncement.query()
       .where(.deletedAt < now)
@@ -80,7 +80,7 @@ struct CleanupJob: AsyncScheduledJob {
 
     logs.append("Deleted \(suspendFilterRequests) suspend filter requests")
 
-    let smokeAdmins = try await Admin.query()
+    let smokeAdmins = try await Parent.query()
       .where(.like(.email, "%.smoke-test-%"))
       .delete(in: self.db)
 

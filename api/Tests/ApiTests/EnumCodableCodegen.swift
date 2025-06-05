@@ -22,7 +22,7 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
     EnumCodableGen.EnumsGenerator(
       path: "/Users/jared/gertie/swift/api/Sources/Api/Extend/Enums+Codable.swift",
       types: [
-        (AdminVerifiedNotificationMethod.Config.self, false),
+        (Parent.NotificationMethod.Config.self, false),
         (DecideFilterSuspensionRequest.Decision.self, false),
         (GetAdmin.SubscriptionStatus.self, false),
         (SecurityEventsFeed.FeedEvent.self, false),

@@ -45,6 +45,7 @@ extension Configure {
     app.migrations.add(FlaggedActivity())
     app.migrations.add(DashAnnouncements())
     app.migrations.add(IOSConnection())
+    app.migrations.add(RenameParentNotifMethods())
   }
 }
 

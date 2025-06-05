@@ -32,7 +32,7 @@ extension Signup: Resolver {
       throw Abort(.badRequest)
     }
 
-    let existing = try? await Admin.query()
+    let existing = try? await Parent.query()
       .where(.email == email)
       .first(in: context.db)
 
@@ -60,7 +60,7 @@ extension Signup: Resolver {
       return .init(admin: nil)
     }
 
-    let admin = try await context.db.create(Admin(
+    let parent = try await context.db.create(Parent(
       email: .init(rawValue: email),
       password: context.env.mode == .test ? input.password : Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
@@ -72,22 +72,22 @@ extension Signup: Resolver {
     if context.env.mode == .prod, !isTestAddress(email) {
       await slack.internal(.signups, """
         *New signup:*
-        id: `\(admin.id.lowercased)`
+        id: `\(parent.id.lowercased)`
         email: `\(email)`
         g-ad: `\(input.gclid != nil)`
       """)
     }
 
-    try await sendVerificationEmail(to: admin, in: context)
+    try await sendVerificationEmail(to: parent, in: context)
     return .init(admin: nil)
   }
 }
 
 // helpers
 
-func sendVerificationEmail(to admin: Admin, in context: Context) async throws {
+func sendVerificationEmail(to admin: Parent, in context: Context) async throws {
   let token = await with(dependency: \.ephemeral)
-    .createAdminIdToken(
+    .createParentIdToken(
       admin.id,
       expiration: get(dependency: \.date.now) + .hours(24)
     )

@@ -2,7 +2,7 @@ import Duet
 
 struct SecurityEvent: Codable, Sendable {
   var id: Id
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var computerUserId: ComputerUser.Id?
   var event: String
   var detail: String?
@@ -11,7 +11,7 @@ struct SecurityEvent: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    parentId: Admin.Id,
+    parentId: Parent.Id,
     computerUserId: ComputerUser.Id? = nil,
     event: String,
     detail: String? = nil,

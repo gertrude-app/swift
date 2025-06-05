@@ -13,11 +13,11 @@ extension CreateSuspendFilterRequest_v2: Resolver {
     ))
 
     await with(dependency: \.adminNotifier).notify(
-      context.user.parentId,
+      context.child.parentId,
       .suspendFilterRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,
-        childId: context.user.id,
-        childName: context.user.name,
+        childId: context.child.id,
+        childName: context.child.name,
         duration: .init(input.duration),
         requestComment: input.comment,
         context: .macapp(computerUserId: computerUser.id, requestId: request.id)

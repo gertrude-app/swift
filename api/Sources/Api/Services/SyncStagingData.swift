@@ -115,7 +115,7 @@ struct SyncStagingData: Content {
   var identifiedApps: [IdentifiedApp]
 }
 
-extension Admin.Id {
+extension Parent.Id {
   static let stagingPublicKeychainOwner =
     Self(UUID(uuidString: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")!)
 }

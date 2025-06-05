@@ -13,31 +13,31 @@ struct HandleCheckoutSuccess: Pair {
 // resolver
 
 extension HandleCheckoutSuccess: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     @Dependency(\.date.now) var now
     @Dependency(\.stripe) var stripe
 
     let session = try await stripe.getCheckoutSession(input.stripeCheckoutSessionId)
-    var admin = try await context.db.find(session.adminId)
-    let subscriptionId = try session.adminUserSubscriptionId
+    var parent = try await context.db.find(session.parentId)
+    let subscriptionId = try session.parentSubscriptionId
     let subscription = try await stripe.getSubscription(subscriptionId.rawValue)
-    switch (admin.subscriptionStatus, subscription.status) {
+    switch (parent.subscriptionStatus, subscription.status) {
 
     case (.trialing, .active),
          (.trialExpiringSoon, .active),
          (.overdue, .active),
          (.paid, .active), // <-- happens when stripe webhook received before
          (.unpaid, .active):
-      admin.subscriptionStatus = .paid
-      admin.subscriptionId = subscriptionId
-      admin.subscriptionStatusExpiration = now + .days(33)
-      try await context.db.update(admin)
+      parent.subscriptionStatus = .paid
+      parent.subscriptionId = subscriptionId
+      parent.subscriptionStatusExpiration = now + .days(33)
+      try await context.db.update(parent)
 
-    case (let adminStatus, let stripeStatus):
+    case (let parentStatus, let stripeStatus):
       unexpected(
         "1146b93f",
         context,
-        "admin: .\(adminStatus), stripe: .\(stripeStatus), subs: \(subscriptionId)"
+        "admin: .\(parentStatus), stripe: .\(stripeStatus), subs: \(subscriptionId)"
       )
     }
 

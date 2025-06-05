@@ -15,7 +15,7 @@ struct LatestAppVersions: Pair {
 // resolver
 
 extension LatestAppVersions: NoInputResolver {
-  static func resolve(in context: AdminContext) async throws -> Output {
+  static func resolve(in context: ParentContext) async throws -> Output {
     let releases = try await Release.query()
       .orderBy(.semver, .asc)
       .all(in: context.db)

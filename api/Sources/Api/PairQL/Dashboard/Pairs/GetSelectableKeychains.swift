@@ -4,7 +4,7 @@ import PairQL
 
 struct KeychainSummary: PairNestable {
   var id: Api.Keychain.Id
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var name: String
   var description: String?
   var warning: String?
@@ -24,7 +24,7 @@ struct GetSelectableKeychains: Pair {
 // resolver
 
 extension GetSelectableKeychains: NoInputResolver {
-  static func resolve(in context: AdminContext) async throws -> Output {
+  static func resolve(in context: ParentContext) async throws -> Output {
     async let own = context.parent.keychains(in: context.db)
     async let `public` = Keychain.query()
       .where(.isPublic == true)

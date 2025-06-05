@@ -1,10 +1,10 @@
 import Dependencies
 import DuetSQL
 
-struct AdminContext: ResolverContext {
+struct ParentContext: ResolverContext {
   let requestId: String
   let dashboardUrl: String
-  let parent: Admin
+  let parent: Parent
   let ipAddress: String?
 
   @Dependency(\.db) var db
@@ -25,9 +25,9 @@ struct AdminContext: ResolverContext {
   }
 
   func computerUsers() async throws -> [ComputerUser] {
-    let users = try await self.children()
+    let children = try await self.children()
     return try await ComputerUser.query()
-      .where(.childId |=| users.map(\.id))
+      .where(.childId |=| children.map(\.id))
       .all(in: self.db)
   }
 }

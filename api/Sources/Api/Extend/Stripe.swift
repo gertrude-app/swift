@@ -2,7 +2,7 @@ import Vapor
 import XStripe
 
 extension Stripe.Api.CheckoutSession {
-  var adminId: Admin.Id {
+  var parentId: Parent.Id {
     get throws {
       guard let clientReferenceId else {
         with(dependency: \.logger)
@@ -20,7 +20,7 @@ extension Stripe.Api.CheckoutSession {
     }
   }
 
-  var adminUserSubscriptionId: Admin.SubscriptionId {
+  var parentSubscriptionId: Parent.SubscriptionId {
     get throws {
       guard let id = subscription else {
         with(dependency: \.logger)

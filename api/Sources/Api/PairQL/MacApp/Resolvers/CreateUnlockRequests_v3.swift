@@ -17,11 +17,11 @@ extension CreateUnlockRequests_v3: Resolver {
     })
 
     await with(dependency: \.adminNotifier).notify(
-      context.user.parentId,
+      context.child.parentId,
       .unlockRequestSubmitted(.init(
         dashboardUrl: context.dashboardUrl,
-        userId: context.user.id,
-        userName: context.user.name,
+        userId: context.child.id,
+        userName: context.child.name,
         requestIds: requests.map(\.id)
       ))
     )

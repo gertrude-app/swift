@@ -14,7 +14,7 @@ struct StripeUrl: Pair {
 // resolver
 
 extension StripeUrl: NoInputResolver {
-  static func resolve(in context: AdminContext) async throws -> Output {
+  static func resolve(in context: ParentContext) async throws -> Output {
     switch (context.parent.subscriptionStatus, context.parent.subscriptionId) {
 
     case (.trialing, nil),
@@ -42,7 +42,7 @@ extension StripeUrl: NoInputResolver {
 
 // helpers
 
-private func checkoutSessionUrl(for context: AdminContext) async throws -> String {
+private func checkoutSessionUrl(for context: ParentContext) async throws -> String {
   let sessionData = Stripe.CheckoutSessionData(
     successUrl: "\(context.dashboardUrl)/checkout-success?session_id={CHECKOUT_SESSION_ID}",
     cancelUrl: "\(context.dashboardUrl)/checkout-cancel?session_id={CHECKOUT_SESSION_ID}",
@@ -69,8 +69,8 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
 }
 
 private func billingPortalSessionUrl(
-  for subscriptionId: Admin.SubscriptionId,
-  in context: AdminContext
+  for subscriptionId: Parent.SubscriptionId,
+  in context: ParentContext
 ) async throws -> String {
   @Dependency(\.stripe) var stripe
   let subscription = try await stripe.getSubscription(subscriptionId.rawValue)

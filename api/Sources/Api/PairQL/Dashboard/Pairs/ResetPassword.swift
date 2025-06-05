@@ -15,12 +15,12 @@ struct ResetPassword: Pair {
 
 extension ResetPassword: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    if let adminId = await with(dependency: \.ephemeral)
-      .unexpiredAdminIdFromToken(input.token) {
-      var admin = try await context.db.find(adminId)
-      admin.password = try Bcrypt.hash(input.password)
-      try await context.db.update(admin)
-      dashSecurityEvent(.passwordChanged, admin: admin.id, in: context)
+    if let parentId = await with(dependency: \.ephemeral)
+      .unexpiredParentIdFromToken(input.token) {
+      var parent = try await context.db.find(parentId)
+      parent.password = try Bcrypt.hash(input.password)
+      try await context.db.update(parent)
+      dashSecurityEvent(.passwordChanged, parent: parent.id, in: context)
       return .success
     } else {
       return .failure

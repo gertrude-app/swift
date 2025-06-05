@@ -14,7 +14,7 @@ struct UpdateUnlockRequest: Pair {
 // resolver
 
 extension UpdateUnlockRequest: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     var unlockRequest = try await context.db.find(input.id)
     let userDevice = try await unlockRequest.computerUser(in: context.db)
     try await context.verifiedChild(from: userDevice.childId)

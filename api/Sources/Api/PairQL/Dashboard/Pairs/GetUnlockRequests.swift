@@ -9,7 +9,7 @@ struct GetUnlockRequests: Pair {
 // resolver
 
 extension GetUnlockRequests: NoInputResolver {
-  static func resolve(in context: AdminContext) async throws -> Output {
+  static func resolve(in context: ParentContext) async throws -> Output {
     let users = try await Child.query()
       .where(.parentId == context.parent.id)
       .all(in: context.db)

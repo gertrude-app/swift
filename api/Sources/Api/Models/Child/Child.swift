@@ -3,7 +3,7 @@ import Gertie
 
 struct Child: Codable, Sendable {
   var id: Id
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var name: String
   var keyloggingEnabled: Bool
   var screenshotsEnabled: Bool
@@ -16,7 +16,7 @@ struct Child: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    parentId: Admin.Id,
+    parentId: Parent.Id,
     name: String,
     keyloggingEnabled: Bool = false,
     screenshotsEnabled: Bool = false,
@@ -61,8 +61,8 @@ extension Child {
       .all(in: db)
   }
 
-  func admin(in db: any DuetSQL.Client) async throws -> Admin {
-    try await Admin.query()
+  func parent(in db: any DuetSQL.Client) async throws -> Parent {
+    try await Parent.query()
       .where(.id == self.parentId)
       .first(in: db)
   }

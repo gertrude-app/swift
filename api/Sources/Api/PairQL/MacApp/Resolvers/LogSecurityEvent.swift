@@ -11,7 +11,7 @@ extension LogSecurityEvent: Resolver {
     }
 
     try await context.db.create(Api.SecurityEvent(
-      parentId: context.user.parentId,
+      parentId: context.child.parentId,
       computerUserId: computerUser.id,
       event: input.event,
       detail: input.detail
@@ -30,9 +30,9 @@ extension LogSecurityEvent: Resolver {
     }
 
     await with(dependency: \.adminNotifier).notify(
-      context.user.parentId,
+      context.child.parentId,
       .adminChildSecurityEvent(.init(
-        userName: context.user.name,
+        userName: context.child.name,
         event: event,
         detail: input.detail
       ))

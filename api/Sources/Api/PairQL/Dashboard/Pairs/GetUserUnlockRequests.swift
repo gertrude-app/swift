@@ -10,7 +10,7 @@ struct GetUserUnlockRequests: Pair {
 // resolver
 
 extension GetUserUnlockRequests: Resolver {
-  static func resolve(with id: Child.Id, in context: AdminContext) async throws -> Output {
+  static func resolve(with id: Child.Id, in context: ParentContext) async throws -> Output {
     let user = try await context.verifiedChild(from: id)
     let computerUsers = try await user.computerUsers(in: context.db)
     let requests = try await UnlockRequest.query()

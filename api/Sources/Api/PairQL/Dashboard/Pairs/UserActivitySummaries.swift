@@ -25,7 +25,7 @@ struct UserActivitySummaries: Pair {
 extension UserActivitySummaries: Resolver {
   static func resolve(
     with childId: Child.Id,
-    in context: AdminContext
+    in context: ParentContext
   ) async throws -> Output {
     let child = try await context.verifiedChild(from: childId)
     let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)

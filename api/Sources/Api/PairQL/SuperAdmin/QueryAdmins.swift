@@ -6,7 +6,7 @@ import PostgresKit
 struct QueryAdmins: Pair {
   static let auth: ClientAuth = .superAdmin
 
-  struct AdminData: PairOutput {
+  struct ParentData: PairOutput {
     struct Child: PairNestable {
       struct Installation: PairNestable {
         var userId: Int
@@ -29,11 +29,11 @@ struct QueryAdmins: Pair {
       var createdAt: Date
     }
 
-    var id: Admin.Id
+    var id: Parent.Id
     var hasGclid: Bool
     var email: EmailAddress
-    var subscriptionId: Admin.SubscriptionId?
-    var subscriptionStatus: Admin.SubscriptionStatus
+    var subscriptionId: Parent.SubscriptionId?
+    var subscriptionStatus: Parent.SubscriptionStatus
     var abTestVariant: String?
     var numNotifications: Int
     var numKeychains: Int
@@ -41,7 +41,7 @@ struct QueryAdmins: Pair {
     var createdAt: Date
   }
 
-  typealias Output = [AdminData]
+  typealias Output = [ParentData]
 }
 
 // resolver
@@ -61,11 +61,11 @@ extension QueryAdmins: NoInputResolver {
 
     let rows = try await context.db.customQuery(AdminQuery.self)
 
-    var installations: [ComputerUser.Id: (AdminData.Child.Installation, Child.Id)] = [:]
+    var installations: [ComputerUser.Id: (ParentData.Child.Installation, Child.Id)] = [:]
     for row in rows where row.userDeviceId != nil {
       let userDeviceId = try expect(row.userDeviceId)
       guard installations[userDeviceId] == nil else { continue }
-      let installation = try AdminData.Child.Installation(
+      let installation = try ParentData.Child.Installation(
         userId: expect(row.numericId),
         appVersion: expect(row.appVersion),
         filterVersion: row.filterVersion ?? "unknown",
@@ -78,11 +78,11 @@ extension QueryAdmins: NoInputResolver {
       installations[userDeviceId] = try (installation, expect(row.userId))
     }
 
-    var children: [Child.Id: (AdminData.Child, Admin.Id)] = [:]
+    var children: [Child.Id: (ParentData.Child, Parent.Id)] = [:]
     for row in rows where row.userId != nil {
       let userId = try expect(row.userId)
       guard children[userId] == nil else { continue }
-      let child = try AdminData.Child(
+      let child = try ParentData.Child(
         name: expect(row.userName),
         keyloggingEnabled: expect(row.keyloggingEnabled),
         screenshotsEnabled: expect(row.screenshotsEnabled),
@@ -100,11 +100,11 @@ extension QueryAdmins: NoInputResolver {
       children[userId]!.0.installations.append(installation)
     }
 
-    var admins: [Admin.Id: AdminData] = [:]
+    var parents: [Parent.Id: ParentData] = [:]
     for row in rows {
-      guard admins[row.adminId] == nil else { continue }
+      guard parents[row.adminId] == nil else { continue }
       guard !isTestAddress(row.email.rawValue) else { continue }
-      admins[row.adminId] = .init(
+      parents[row.adminId] = .init(
         id: row.adminId,
         hasGclid: row.hasGclid,
         email: row.email,
@@ -119,11 +119,11 @@ extension QueryAdmins: NoInputResolver {
     }
 
     for (child, adminId) in children.values {
-      let _ = try expect(admins[adminId])
-      admins[adminId]!.children.append(child)
+      let _ = try expect(parents[adminId])
+      parents[adminId]!.children.append(child)
     }
 
-    return Array(admins.values)
+    return Array(parents.values)
   }
 }
 
@@ -236,11 +236,11 @@ struct AdminQuery: CustomQueryable {
   }
 
   // admin
-  let adminId: Admin.Id
+  let adminId: Parent.Id
   let hasGclid: Bool
   let email: EmailAddress
-  let subscriptionId: Admin.SubscriptionId?
-  let subscriptionStatus: Admin.SubscriptionStatus
+  let subscriptionId: Parent.SubscriptionId?
+  let subscriptionStatus: Parent.SubscriptionStatus
   let abTestVariant: String?
   let numNotifications: Int
   let numKeychains: Int

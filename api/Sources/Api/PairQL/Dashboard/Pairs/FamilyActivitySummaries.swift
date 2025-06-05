@@ -13,7 +13,7 @@ struct FamilyActivitySummaries: Pair {
 // resolver
 
 extension FamilyActivitySummaries: Resolver {
-  static func resolve(with input: Input, in ctx: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in ctx: ParentContext) async throws -> Output {
     let computerUserIds = try await ctx.computerUsers().map(\.id)
     return try await ChildActivitySummaries.days(
       computerUserIds,

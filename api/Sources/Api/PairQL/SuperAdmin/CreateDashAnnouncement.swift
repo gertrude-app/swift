@@ -16,7 +16,7 @@ struct CreateDashAnnouncement: Pair {
 
 extension CreateDashAnnouncement: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    let parents = try await Admin.query()
+    let parents = try await Parent.query()
       .where(.createdAt < Date() - .days(2))
       .all(in: context.db)
 

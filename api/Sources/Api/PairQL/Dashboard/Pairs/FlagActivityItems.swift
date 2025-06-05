@@ -10,7 +10,7 @@ struct FlagActivityItems: Pair {
 }
 
 extension FlagActivityItems: Resolver {
-  static func resolve(with ids: [UUID], in ctx: AdminContext) async throws -> Output {
+  static func resolve(with ids: [UUID], in ctx: ParentContext) async throws -> Output {
     @Dependency(\.date.now) var now
 
     var screenshots = try await Screenshot.query()

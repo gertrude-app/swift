@@ -10,7 +10,7 @@ struct CombinedUsersActivitySummaries: Pair {
 // resolver
 
 extension CombinedUsersActivitySummaries: NoInputResolver {
-  static func resolve(in ctx: AdminContext) async throws -> Output {
+  static func resolve(in ctx: ParentContext) async throws -> Output {
     let computerUserIds = try await ctx.computerUsers().map(\.id)
     return try await UserActivitySummaries.days(computerUserIds, in: ctx.db)
   }

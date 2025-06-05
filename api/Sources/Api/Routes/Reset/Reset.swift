@@ -7,17 +7,17 @@ import XCore
 enum Reset {
   static func run() async throws {
     @Dependency(\.db) var db
-    try await Admin.query()
-      .where(.id != Admin.Id.stagingPublicKeychainOwner)
+    try await Parent.query()
+      .where(.id != Parent.Id.stagingPublicKeychainOwner)
       .delete(in: db)
     try await AdminBetsy.create()
   }
 
   static func ensurePublicKeychainOwner() async throws {
     @Dependency(\.db) var db
-    let existing = try? await db.find(Admin.Id.stagingPublicKeychainOwner)
+    let existing = try? await db.find(Parent.Id.stagingPublicKeychainOwner)
     if existing == nil {
-      try await db.create(Admin(
+      try await db.create(Parent(
         id: .stagingPublicKeychainOwner,
         email: "public-keychain-owner" |> self.testEmail,
         password: Bcrypt.hash("\(UUID())")
@@ -27,11 +27,11 @@ enum Reset {
 
   @discardableResult
   static func createNotification(
-    _ admin: Admin,
-    _ config: AdminVerifiedNotificationMethod.Config
-  ) async throws -> AdminVerifiedNotificationMethod {
+    _ admin: Parent,
+    _ config: Parent.NotificationMethod.Config
+  ) async throws -> Parent.NotificationMethod {
     @Dependency(\.db) var db
-    return try await db.create(AdminVerifiedNotificationMethod(parentId: admin.id, config: config))
+    return try await db.create(Parent.NotificationMethod(parentId: admin.id, config: config))
   }
 
   static func testEmail(_ tag: String) -> EmailAddress {
@@ -41,7 +41,7 @@ enum Reset {
   @discardableResult
   static func createKeychain(
     id: Keychain.Id = .init(),
-    adminId: Admin.Id,
+    adminId: Parent.Id,
     name: String,
     isPublic: Bool = false,
     description: String? = nil,

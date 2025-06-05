@@ -215,7 +215,7 @@ extension AuthedAdminRoute {
 }
 
 extension AuthedAdminRoute: RouteResponder {
-  static func respond(to route: Self, in context: AdminContext) async throws -> Response {
+  static func respond(to route: Self, in context: ParentContext) async throws -> Response {
     switch route {
     case .getUser(let uuid):
       let output = try await GetUser.resolve(with: uuid, in: context)

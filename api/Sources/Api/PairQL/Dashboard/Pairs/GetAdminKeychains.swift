@@ -35,7 +35,7 @@ struct GetAdminKeychains: Pair {
 // resolver
 
 extension GetAdminKeychains: NoInputResolver {
-  static func resolve(in context: AdminContext) async throws -> Output {
+  static func resolve(in context: ParentContext) async throws -> Output {
     let models = try await context.parent.keychains(in: context.db)
     var keychains: [AdminKeychain] = []
     for model in models {
@@ -51,7 +51,7 @@ extension GetAdminKeychains: NoInputResolver {
 // extensions
 
 extension GetAdminKeychains.AdminKeychain {
-  init(from model: Api.Keychain, in context: AdminContext) async throws {
+  init(from model: Api.Keychain, in context: ParentContext) async throws {
     let keys = try await model.keys(in: context.db)
     try await self.init(
       summary: .init(from: model),
@@ -72,7 +72,7 @@ extension GetAdminKeychains.Key {
 }
 
 extension [GetAdminKeychains.Child] {
-  init(parentId: Admin.Id) async throws {
+  init(parentId: Parent.Id) async throws {
     @Dependency(\.db) var db
     let children = try await Child.query()
       .where(.parentId == parentId)
@@ -84,7 +84,7 @@ extension [GetAdminKeychains.Child] {
 }
 
 extension [Child.Id] {
-  init(from model: Api.Keychain, parentId: Admin.Id) async throws {
+  init(from model: Api.Keychain, parentId: Parent.Id) async throws {
     @Dependency(\.db) var db
     let childKeychains = try await ChildKeychain.query()
       .where(.keychainId == model.id)

@@ -2,21 +2,21 @@ import Gertie
 
 @testable import Api
 
-extension AdminVerifiedNotificationMethod: RandomMocked {
-  public static var mock: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(parentId: .init(), config: .mock)
+extension Parent.NotificationMethod: RandomMocked {
+  public static var mock: Parent.NotificationMethod {
+    Parent.NotificationMethod(parentId: .init(), config: .mock)
   }
 
-  public static var empty: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(parentId: .init(), config: .empty)
+  public static var empty: Parent.NotificationMethod {
+    Parent.NotificationMethod(parentId: .init(), config: .empty)
   }
 
-  public static var random: AdminVerifiedNotificationMethod {
-    AdminVerifiedNotificationMethod(parentId: .init(), config: .random)
+  public static var random: Parent.NotificationMethod {
+    Parent.NotificationMethod(parentId: .init(), config: .random)
   }
 }
 
-extension AdminVerifiedNotificationMethod.Config: RandomMocked {
+extension Parent.NotificationMethod.Config: RandomMocked {
   public static var mock: Self {
     .email(email: "bob".random + "@example.com")
   }

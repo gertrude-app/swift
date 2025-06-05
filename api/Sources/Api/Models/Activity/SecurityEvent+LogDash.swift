@@ -5,12 +5,12 @@ import Gertie
 func dashSecurityEvent(
   _ event: Gertie.SecurityEvent.Dashboard,
   _ detail: String? = nil,
-  admin adminId: Admin.Id,
+  parent parentId: Parent.Id,
   in context: Context
 ) {
   dashSecurityEvent(
     event,
-    adminId,
+    parentId,
     context.ipAddress,
     detail,
     with: context.db
@@ -20,7 +20,7 @@ func dashSecurityEvent(
 func dashSecurityEvent(
   _ event: Gertie.SecurityEvent.Dashboard,
   _ detail: String? = nil,
-  in context: AdminContext
+  in context: ParentContext
 ) {
   dashSecurityEvent(
     event,
@@ -33,7 +33,7 @@ func dashSecurityEvent(
 
 private func dashSecurityEvent(
   _ event: Gertie.SecurityEvent.Dashboard,
-  _ adminId: Admin.Id,
+  _ parentId: Parent.Id,
   _ ipAddress: String? = nil,
   _ detail: String? = nil,
   with db: any DuetSQL.Client
@@ -43,7 +43,7 @@ private func dashSecurityEvent(
       // opt out of using the controlled uuid dependency
       // as the unstructured task causes test flakiness
       id: .init(UUID()),
-      parentId: adminId,
+      parentId: parentId,
       event: event.rawValue,
       detail: detail,
       ipAddress: ipAddress

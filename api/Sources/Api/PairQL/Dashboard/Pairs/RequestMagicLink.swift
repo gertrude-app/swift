@@ -21,17 +21,17 @@ extension RequestMagicLink: Resolver {
       throw Abort(.badRequest)
     }
 
-    let admin = try? await Admin.query()
+    let parent = try? await Parent.query()
       .where(.email == .string(email))
       .first(in: context.db)
 
-    guard let admin else {
+    guard let parent else {
       try await postmark.send(template: .magicLinkNoAccount(to: email, model: .init()))
       return .success
     }
 
     let token = await with(dependency: \.ephemeral)
-      .createAdminIdToken(admin.id)
+      .createParentIdToken(parent.id)
     var url = "\(context.dashboardUrl)/otp/\(token.lowercased)"
     if let redirect = input.redirect,
        let encoded = redirect.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {

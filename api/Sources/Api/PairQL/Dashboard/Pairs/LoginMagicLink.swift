@@ -15,8 +15,8 @@ struct LoginMagicLink: Pair {
 
 extension LoginMagicLink: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    guard let adminId = await with(dependency: \.ephemeral)
-      .unexpiredAdminIdFromToken(input.token) else {
+    guard let parentId = await with(dependency: \.ephemeral)
+      .unexpiredParentIdFromToken(input.token) else {
       throw context.error(
         "9a314d21",
         .unauthorized,
@@ -25,8 +25,8 @@ extension LoginMagicLink: Resolver {
       )
     }
 
-    dashSecurityEvent(.login, "using magic link", admin: adminId, in: context)
-    let token = try await context.db.create(AdminToken(parentId: adminId))
-    return Output(token: token.value, adminId: adminId)
+    dashSecurityEvent(.login, "using magic link", parent: parentId, in: context)
+    let token = try await context.db.create(Parent.DashToken(parentId: parentId))
+    return Output(token: token.value, adminId: parentId)
   }
 }

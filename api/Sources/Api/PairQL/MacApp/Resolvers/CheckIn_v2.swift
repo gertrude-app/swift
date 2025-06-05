@@ -5,10 +5,10 @@ import MacAppRoute
 extension CheckIn_v2: Resolver {
   static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {
     async let appManifest = getCachedAppIdManifest()
-    async let admin = context.user.admin(in: context.db)
+    async let parent = context.child.parent(in: context.db)
     async let browsers = Browser.query().all(in: context.db)
-    async let blockedApps = context.user.blockedApps(in: context.db)
-    var keychains = try await ruleKeychains(for: context.user.id, in: context.db)
+    async let blockedApps = context.child.blockedApps(in: context.db)
+    var keychains = try await ruleKeychains(for: context.child.id, in: context.db)
 
     // merge in the AUTO-INCLUDED Keychain
     if !keychains.isEmpty, keychains.allSatisfy(\.keys.isEmpty) == false {
@@ -31,8 +31,8 @@ extension CheckIn_v2: Resolver {
       try await context.db.update(computerUser)
     }
 
-    var adminDevice = try await computerUser.computer(in: context.db)
-    let channel = adminDevice.appReleaseChannel
+    var computer = try await computerUser.computer(in: context.db)
+    let channel = computer.appReleaseChannel
 
     async let latestRelease = resolveLatestRelease(
       channel: channel,
@@ -42,16 +42,16 @@ extension CheckIn_v2: Resolver {
 
     if let filterVersionSemver = input.filterVersion,
        let filterVersion = Semver(filterVersionSemver),
-       filterVersion != adminDevice.filterVersion {
-      adminDevice.filterVersion = filterVersion
-      try await context.db.update(adminDevice)
+       filterVersion != computer.filterVersion {
+      computer.filterVersion = filterVersion
+      try await context.db.update(computer)
     }
 
     if let osVersionSemver = input.osVersion,
        let osVersion = Semver(osVersionSemver),
-       osVersion != adminDevice.osVersion {
-      adminDevice.osVersion = osVersion
-      try await context.db.update(adminDevice)
+       osVersion != computer.osVersion {
+      computer.osVersion = osVersion
+      try await context.db.update(computer)
     }
 
     if let userIsAdmin = input.userIsAdmin,
@@ -110,21 +110,21 @@ extension CheckIn_v2: Resolver {
     }
 
     return try await Output(
-      adminAccountStatus: admin.accountStatus,
+      adminAccountStatus: parent.accountStatus,
       appManifest: appManifest,
       keychains: keychains,
       latestRelease: latestRelease,
       updateReleaseChannel: channel,
       userData: .init(
-        id: context.user.id.rawValue,
+        id: context.child.id.rawValue,
         token: context.token.value.rawValue,
         deviceId: computerUser.id.rawValue,
-        name: context.user.name,
-        keyloggingEnabled: context.user.keyloggingEnabled,
-        screenshotsEnabled: context.user.screenshotsEnabled,
-        screenshotFrequency: context.user.screenshotsFrequency,
-        screenshotSize: context.user.screenshotsResolution,
-        downtime: context.user.downtime,
+        name: context.child.name,
+        keyloggingEnabled: context.child.keyloggingEnabled,
+        screenshotsEnabled: context.child.screenshotsEnabled,
+        screenshotFrequency: context.child.screenshotsFrequency,
+        screenshotSize: context.child.screenshotsResolution,
+        downtime: context.child.downtime,
         blockedApps: blockedApps.map(\.blockedApp),
         connectedAt: computerUser.createdAt
       ),

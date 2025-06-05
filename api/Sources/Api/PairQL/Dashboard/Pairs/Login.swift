@@ -13,8 +13,8 @@ struct Login: Pair {
   }
 
   struct Output: PairOutput {
-    let adminId: Admin.Id
-    let token: AdminToken.Value
+    let adminId: Parent.Id
+    let token: Parent.DashToken.Value
   }
 }
 
@@ -22,12 +22,12 @@ struct Login: Pair {
 
 extension Login: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    let admin = try await Admin.query()
+    let parent = try await Parent.query()
       .where(.email == .string(input.email.lowercased()))
       .first(in: context.db, orThrow: context |> loginError)
 
-    if admin.subscriptionStatus == .pendingEmailVerification {
-      try await sendVerificationEmail(to: admin, in: context)
+    if parent.subscriptionStatus == .pendingEmailVerification {
+      try await sendVerificationEmail(to: parent, in: context)
       throw context.error(
         "4b5bbea0",
         .unauthorized,
@@ -38,26 +38,26 @@ extension Login: Resolver {
     let match: Bool = switch context.env.mode {
     case .test:
       // for test speed, bcrypt verification is slow, by design
-      input.password == admin.password
+      input.password == parent.password
     case .dev:
       if input.password == "good" {
         true
       } else {
-        try Bcrypt.verify(input.password, created: admin.password)
+        try Bcrypt.verify(input.password, created: parent.password)
       }
     case .prod, .staging:
-      try Bcrypt.verify(input.password, created: admin.password)
+      try Bcrypt.verify(input.password, created: parent.password)
     }
 
     if match {
-      dashSecurityEvent(.login, "using email/password", admin: admin.id, in: context)
+      dashSecurityEvent(.login, "using email/password", parent: parent.id, in: context)
     } else {
-      dashSecurityEvent(.loginFailed, "incorrect password", admin: admin.id, in: context)
+      dashSecurityEvent(.loginFailed, "incorrect password", parent: parent.id, in: context)
       throw context |> loginError
     }
 
-    let token = try await context.db.create(AdminToken(parentId: admin.id))
-    return .init(adminId: admin.id, token: token.value)
+    let token = try await context.db.create(Parent.DashToken(parentId: parent.id))
+    return .init(adminId: parent.id, token: token.value)
   }
 }
 

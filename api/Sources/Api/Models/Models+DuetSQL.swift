@@ -156,7 +156,7 @@ extension IOSApp.Device: Model {
 
 extension GertieIOS.BlockRule: @retroactive PostgresJsonable {}
 
-extension Admin: Model {
+extension Parent: Model {
   public typealias ColumnName = CodingKeys
   public static let schemaName = "parent"
   public static let tableName = "parents"
@@ -196,7 +196,7 @@ extension Admin: Model {
   }
 }
 
-extension AdminNotification: Model {
+extension Parent.Notification: Model {
   public static let schemaName = "parent"
   public static let tableName = "notifications"
   public typealias ColumnName = CodingKeys
@@ -222,7 +222,7 @@ extension AdminNotification: Model {
   }
 }
 
-extension AdminToken: Model {
+extension Parent.DashToken: Model {
   public static let tableName = "dash_tokens"
   public static let schemaName = "parent"
   public typealias ColumnName = CodingKeys
@@ -248,11 +248,11 @@ extension AdminToken: Model {
   }
 }
 
-extension AdminVerifiedNotificationMethod.Config: PostgresJsonable {}
+extension Parent.NotificationMethod.Config: PostgresJsonable {}
 
-extension AdminVerifiedNotificationMethod: Model {
+extension Parent.NotificationMethod: Model {
   public static let schemaName = "parent"
-  public static let tableName = "verified_notification_methods"
+  public static let tableName = "notification_methods"
   public typealias ColumnName = CodingKeys
 
   public func postgresData(for column: ColumnName) -> Postgres.Data {

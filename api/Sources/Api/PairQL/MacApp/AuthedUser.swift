@@ -6,7 +6,7 @@ extension MacApp {
   struct ChildContext: ResolverContext {
     let requestId: String
     let dashboardUrl: String
-    let user: Child
+    let child: Child
     let token: MacAppToken
 
     @Dependency(\.uuid) var uuid

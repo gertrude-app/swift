@@ -15,9 +15,9 @@ final class IOSFilterSuspensionResolversTests: ApiTestCase, @unchecked Sendable 
     let retrieved = try await self.db.find(IOSApp.SuspendFilterRequest.Id(reqId))
     expect(retrieved.duration).toEqual(.init(33))
 
-    expect(self.sent.adminNotifications).toEqual([
+    expect(self.sent.parentNotifications).toEqual([
       .init(
-        adminId: child.parentId,
+        parentId: child.parentId,
         event: .suspendFilterRequestSubmitted(.init(
           dashboardUrl: "",
           childId: child.id,

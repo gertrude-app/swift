@@ -22,7 +22,7 @@ struct CombinedUsersActivityFeed: Pair {
 // resolver
 
 extension CombinedUsersActivityFeed: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     guard let (after, before) = input.range.dates else {
       throw Abort(.badRequest)
     }

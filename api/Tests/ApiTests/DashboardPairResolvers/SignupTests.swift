@@ -14,7 +14,7 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testInitiateSignupWithExistingVerifiedEmailButBadPasswordSendsEmail() async throws {
-    let existing = try await self.db.create(Admin.random {
+    let existing = try await self.db.create(Parent.random {
       $0.password = "nope"
       $0.subscriptionStatus = .trialing
     })
@@ -32,13 +32,13 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
     let input = Signup.Input(email: email, password: "pass")
     let output = try await Signup.resolve(with: input, in: self.context)
 
-    let admin = try await Admin.query()
+    let parent = try await Parent.query()
       .where(.email == email)
       .first(in: self.db)
 
     expect(output).toEqual(.init(admin: nil))
-    expect(admin.subscriptionStatus).toEqual(.pendingEmailVerification)
-    expect(admin.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(7)))
+    expect(parent.subscriptionStatus).toEqual(.pendingEmailVerification)
+    expect(parent.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(7)))
     expect(sent.emails.count).toEqual(1)
     expect(sent.emails[0].to).toEqual(email)
     expect(sent.emails[0].template).toBe("initial-signup")
@@ -55,12 +55,12 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
 
     _ = try await Signup.resolve(with: input, in: self.context)
 
-    let admin = try await Admin.query()
+    let parent = try await Parent.query()
       .where(.email == email)
       .first(in: self.db)
 
-    expect(admin.gclid).toEqual("gclid-123")
-    expect(admin.abTestVariant).toEqual("old_site")
+    expect(parent.gclid).toEqual("gclid-123")
+    expect(parent.abTestVariant).toEqual("old_site")
   }
 
   func testSigningUpWhenAlreadyVerifiedReturnsAuthCreds() async throws {

@@ -10,26 +10,26 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
   let context = Context.mock
 
   func testVerifySignupEmailSetsSubscriptionStatusAndCreatesNotificationMethod() async throws {
-    let admin = try await self.parent(with: \.subscriptionStatus, of: .pendingEmailVerification)
-    let token = await with(dependency: \.ephemeral).createAdminIdToken(admin.id)
+    let parent = try await self.parent(with: \.subscriptionStatus, of: .pendingEmailVerification)
+    let token = await with(dependency: \.ephemeral).createParentIdToken(parent.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
-    let retrieved = try await self.db.find(admin.id)
-    let method = try await AdminVerifiedNotificationMethod.query()
-      .where(.parentId == admin.id)
+    let retrieved = try await self.db.find(parent.id)
+    let method = try await Parent.NotificationMethod.query()
+      .where(.parentId == parent.id)
       .first(in: self.db)
 
-    expect(output.adminId).toEqual(admin.id)
+    expect(output.adminId).toEqual(parent.id)
     expect(retrieved.subscriptionStatus).toEqual(.trialing)
     expect(retrieved.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(18)))
-    expect(method.config).toEqual(.email(email: admin.email.rawValue))
+    expect(method.config).toEqual(.email(email: parent.email.rawValue))
   }
 
   func testVerifyingWithExpiredTokenErrorsButSendsNewVerification() async throws {
-    let admin = try await self.parent(with: \.subscriptionStatus, of: .pendingEmailVerification)
-    let token = await with(dependency: \.ephemeral).createAdminIdToken(
-      admin.id,
+    let parent = try await self.parent(with: \.subscriptionStatus, of: .pendingEmailVerification)
+    let token = await with(dependency: \.ephemeral).createParentIdToken(
+      parent.id,
       expiration: Date.reference - .days(1)
     )
 
@@ -37,7 +37,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
 
     expect(result).toBeError(containing: "expired, but we sent a new verification email")
     expect(sent.emails).toHaveCount(1)
-    expect(sent.emails[0].to).toEqual(admin.email.rawValue)
+    expect(sent.emails[0].to).toEqual(parent.email.rawValue)
     expect(sent.emails[0].template).toBe("initial-signup")
   }
 
@@ -45,10 +45,10 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
     try await withDependencies {
       $0.date = .init { Date() }
     } operation: {
-      let admin = try await self
+      let parent = try await self
         .parent(with: \.subscriptionStatus, of: .trialing) // <- already verified
-      let token = await with(dependency: \.ephemeral).createAdminIdToken(
-        admin.id,
+      let token = await with(dependency: \.ephemeral).createParentIdToken(
+        parent.id,
         expiration: Date() - .days(1)
       )
 
@@ -58,33 +58,33 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testVerifySignupEmailDoesntChangeAdminUserSubscriptionStatusWhenNotPending() async throws {
-    let admin = try await self
+    let parent = try await self
       .parent(with: \.subscriptionStatus, of: .trialing) // <- not pending
     let token = await with(dependency: \.ephemeral)
-      .createAdminIdToken(admin.id)
+      .createParentIdToken(parent.id)
 
     let output = try await VerifySignupEmail.resolve(with: .init(token: token), in: self.context)
 
-    let retrieved = try await self.db.find(admin.id)
+    let retrieved = try await self.db.find(parent.id)
 
-    expect(output.adminId).toEqual(admin.id)
+    expect(output.adminId).toEqual(parent.id)
     expect(retrieved.subscriptionStatus).toEqual(.trialing) // <-- not changed
   }
 
   func testAttemptToLoginWhenEmailNotVerifiedBlocksAndSendsEmail() async throws {
-    let admin = try await self.parent {
+    let parent = try await self.parent {
       $0.subscriptionStatus = .pendingEmailVerification
       $0.password = "lol-lol-lol"
     }
 
     let result = await Login.result(
-      with: .init(email: admin.email.rawValue, password: "lol-lol-lol"),
+      with: .init(email: parent.email.rawValue, password: "lol-lol-lol"),
       in: self.context
     )
 
     expect(result).toBeError(containing: "until your email is verified")
     expect(sent.emails).toHaveCount(1)
-    expect(sent.emails[0].to).toEqual(admin.email.rawValue)
+    expect(sent.emails[0].to).toEqual(parent.email.rawValue)
     expect(sent.emails[0].template).toBe("initial-signup")
   }
 }

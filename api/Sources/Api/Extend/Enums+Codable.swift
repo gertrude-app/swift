@@ -2,7 +2,7 @@
 import Foundation
 import Tagged
 
-extension AdminVerifiedNotificationMethod.Config {
+extension Parent.NotificationMethod.Config {
   private struct _NamedCase: Codable {
     var `case`: String
     static func extract(from decoder: Decoder) throws -> String {

@@ -27,14 +27,14 @@ struct GetUnlockRequest: Pair {
 // resolver
 
 extension GetUnlockRequest: Resolver {
-  static func resolve(with id: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with id: Input, in context: ParentContext) async throws -> Output {
     let request = try await context.db.find(id)
     return try await Output(from: request, in: context)
   }
 }
 
 extension GetUnlockRequest.Output {
-  init(from request: UnlockRequest, in context: AdminContext) async throws {
+  init(from request: UnlockRequest, in context: ParentContext) async throws {
     let userDevice = try await request.computerUser(in: context.db)
     let user = try await context.verifiedChild(from: userDevice.childId)
 

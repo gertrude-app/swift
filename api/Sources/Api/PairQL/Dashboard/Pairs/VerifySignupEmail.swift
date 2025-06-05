@@ -4,8 +4,8 @@ import PairQL
 import Vapor
 
 struct AdminAuth: PairOutput {
-  var token: AdminToken.Value
-  var adminId: Admin.Id
+  var token: Parent.DashToken.Value
+  var adminId: Parent.Id
 }
 
 struct VerifySignupEmail: Pair {
@@ -22,43 +22,43 @@ struct VerifySignupEmail: Pair {
 
 extension VerifySignupEmail: Resolver {
   static func resolve(with input: Input, in context: Context) async throws -> Output {
-    switch await with(dependency: \.ephemeral).adminIdFromToken(input.token) {
+    switch await with(dependency: \.ephemeral).parentIdFromToken(input.token) {
 
     // happy path: verification is successful
-    case .notExpired(let adminId):
-      var admin = try await context.db.find(adminId)
-      let token = try await context.db.create(AdminToken(parentId: admin.id))
-      if admin.subscriptionStatus != .pendingEmailVerification {
-        return .init(token: token.value, adminId: admin.id)
+    case .notExpired(let parentId):
+      var parent = try await context.db.find(parentId)
+      let token = try await context.db.create(Parent.DashToken(parentId: parent.id))
+      if parent.subscriptionStatus != .pendingEmailVerification {
+        return .init(token: token.value, adminId: parent.id)
       }
 
-      admin.subscriptionStatusExpiration = get(dependency: \.date.now) + .days(21 - 3)
-      admin.subscriptionStatus = .trialing
+      parent.subscriptionStatusExpiration = get(dependency: \.date.now) + .days(21 - 3)
+      parent.subscriptionStatus = .trialing
 
-      try await context.db.update(admin)
+      try await context.db.update(parent)
 
       // they get a default "verified" notification method, since they verified email
-      try await context.db.create(AdminVerifiedNotificationMethod(
-        parentId: admin.id,
-        config: .email(email: admin.email.rawValue)
+      try await context.db.create(Parent.NotificationMethod(
+        parentId: parent.id,
+        config: .email(email: parent.email.rawValue)
       ))
 
-      if context.env.mode == .prod, !isTestAddress(admin.email.rawValue) {
+      if context.env.mode == .prod, !isTestAddress(parent.email.rawValue) {
         with(dependency: \.postmark)
-          .toSuperAdmin("signup completed", admin.email.rawValue)
+          .toSuperAdmin("signup completed", parent.email.rawValue)
         await with(dependency: \.slack)
-          .internal(.signups, "email verified: `\(admin.email.rawValue)`")
+          .internal(.signups, "email verified: `\(parent.email.rawValue)`")
       }
 
-      return Output(token: token.value, adminId: admin.id)
+      return Output(token: token.value, adminId: parent.id)
 
     case .notFound:
       throw Abort(.notFound)
 
-    case .expired(let adminId):
-      let admin = try await context.db.find(adminId)
-      if admin.subscriptionStatus == .pendingEmailVerification {
-        try await sendVerificationEmail(to: admin, in: context)
+    case .expired(let parentId):
+      let parent = try await context.db.find(parentId)
+      if parent.subscriptionStatus == .pendingEmailVerification {
+        try await sendVerificationEmail(to: parent, in: context)
         throw context.error("84a6c609", .badRequest, user: EXPIRED_TOKEN_MSG)
       } else {
         throw context.error(
@@ -69,10 +69,10 @@ extension VerifySignupEmail: Resolver {
         )
       }
 
-    case .previouslyRetrieved(let adminId):
-      let admin = try await context.db.find(adminId)
-      if admin.subscriptionStatus == .pendingEmailVerification {
-        try await sendVerificationEmail(to: admin, in: context)
+    case .previouslyRetrieved(let parentId):
+      let parent = try await context.db.find(parentId)
+      if parent.subscriptionStatus == .pendingEmailVerification {
+        try await sendVerificationEmail(to: parent, in: context)
         throw context.error("6257bfb9", .badRequest, user: UNEXPECTED_RESEND_MSG)
       } else {
         throw context.error(

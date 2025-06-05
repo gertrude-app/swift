@@ -31,7 +31,7 @@ struct GetDevice: Pair {
 // resolver
 
 extension GetDevice: Resolver {
-  static func resolve(with id: UUID, in context: AdminContext) async throws -> Output {
+  static func resolve(with id: UUID, in context: ParentContext) async throws -> Output {
     let computer = try await Computer.query()
       .where(.id == id)
       .where(.parentId == context.parent.id)

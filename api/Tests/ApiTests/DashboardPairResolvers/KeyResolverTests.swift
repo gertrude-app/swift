@@ -6,16 +6,16 @@ import XExpect
 
 final class KeyResolverTests: ApiTestCase, @unchecked Sendable {
   func prepare() async throws -> (SaveKey.Input, ParentWithKeychainEntities) {
-    let admin = try await self.parent().withKeychain()
+    let parent = try await self.parent().withKeychain()
     let input = SaveKey.Input(
       isNew: true,
       id: .init(),
-      keychainId: admin.keychain.id,
+      keychainId: parent.keychain.id,
       key: .skeleton(scope: .bundleId("com.example.app")),
       comment: "a comment",
       expiration: nil
     )
-    return (input, admin)
+    return (input, parent)
   }
 
   func testCreateKeyRecord() async throws {

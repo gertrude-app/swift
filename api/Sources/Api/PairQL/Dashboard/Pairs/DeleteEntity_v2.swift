@@ -28,7 +28,7 @@ struct DeleteEntity_v2: Pair {
 extension DeleteEntity_v2: Resolver {
   static func resolve(
     with input: Input,
-    in context: AdminContext
+    in context: ParentContext
   ) async throws -> Output {
     switch input.type {
     case .announcement:
@@ -49,14 +49,14 @@ extension DeleteEntity_v2: Resolver {
       try await context.db.delete(context.parent)
 
     case .parentNotification:
-      try await AdminNotification.query()
+      try await Parent.Notification.query()
         .where(.id == input.id)
         .where(.parentId == context.parent.id)
         .delete(in: context.db)
       dashSecurityEvent(.notificationDeleted, in: context)
 
     case .parentVerifiedNotificationMethod:
-      try await AdminVerifiedNotificationMethod.query()
+      try await Parent.NotificationMethod.query()
         .where(.id == input.id)
         .where(.parentId == context.parent.id)
         .delete(in: context.db)
