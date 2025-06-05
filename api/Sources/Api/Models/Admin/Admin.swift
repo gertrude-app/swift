@@ -80,14 +80,14 @@ extension Admin {
       .first(in: db)
   }
 
-  func users(in db: any DuetSQL.Client) async throws -> [Child] {
+  func children(in db: any DuetSQL.Client) async throws -> [Child] {
     try await Child.query()
       .where(.parentId == self.id)
       .all(in: db)
   }
 
-  func devices(in db: any DuetSQL.Client) async throws -> [Device] {
-    try await Device.query()
+  func computers(in db: any DuetSQL.Client) async throws -> [Computer] {
+    try await Computer.query()
       .where(.parentId == self.id)
       .all(in: db)
   }

@@ -15,7 +15,7 @@ struct StripeUrl: Pair {
 
 extension StripeUrl: NoInputResolver {
   static func resolve(in context: AdminContext) async throws -> Output {
-    switch (context.admin.subscriptionStatus, context.admin.subscriptionId) {
+    switch (context.parent.subscriptionStatus, context.parent.subscriptionId) {
 
     case (.trialing, nil),
          (.trialExpiringSoon, nil),
@@ -46,10 +46,10 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
   let sessionData = Stripe.CheckoutSessionData(
     successUrl: "\(context.dashboardUrl)/checkout-success?session_id={CHECKOUT_SESSION_ID}",
     cancelUrl: "\(context.dashboardUrl)/checkout-cancel?session_id={CHECKOUT_SESSION_ID}",
-    lineItems: [.init(quantity: 1, priceId: context.admin.stripePriceId)],
+    lineItems: [.init(quantity: 1, priceId: context.parent.stripePriceId)],
     mode: .subscription,
-    clientReferenceId: context.admin.id.lowercased,
-    customerEmail: context.admin.email.rawValue,
+    clientReferenceId: context.parent.id.lowercased,
+    customerEmail: context.parent.email.rawValue,
     // below params are for no-credit card trials, which we don't do any more
     // since we don't send them to stripe at all when they sign up
     trialPeriodDays: nil,
@@ -62,7 +62,7 @@ private func checkoutSessionUrl(for context: AdminContext) async throws -> Strin
 
   guard let url = session.url else {
     with(dependency: \.postmark)
-      .unexpected("b66e1eaf", "admin: \(context.admin.id)")
+      .unexpected("b66e1eaf", "admin: \(context.parent.id)")
     throw Abort(.internalServerError)
   }
   return url

@@ -20,7 +20,7 @@ extension ConnectUser: Resolver {
     let computerUser: ComputerUser
     let user = try await context.db.find(userId)
 
-    var adminDevice = try? await Device.query()
+    var adminDevice = try? await Computer.query()
       .where(.serialNumber == input.serialNumber)
       .first(in: context.db)
 
@@ -40,7 +40,7 @@ extension ConnectUser: Resolver {
       // user, after double-checking below that the user belongs to the same admin acct
 
       // sanity check - we only "transfer" a device, if the admin accounts match
-      let existingUser = try await existingComputerUser.user(in: context.db)
+      let existingUser = try await existingComputerUser.child(in: context.db)
       if existingUser.parentId != user.parentId {
         throw context.error(
           id: "41a43089",
@@ -74,7 +74,7 @@ extension ConnectUser: Resolver {
     } else {
       if adminDevice == nil {
         // create new admin device if we don't have one
-        adminDevice = try await context.db.create(Device(
+        adminDevice = try await context.db.create(Computer(
           parentId: user.parentId,
           osVersion: input.osVersion.flatMap(Semver.init),
           modelIdentifier: input.modelIdentifier,

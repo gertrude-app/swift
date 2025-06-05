@@ -2,9 +2,9 @@ import Gertie
 
 @testable import Api
 
-extension Device: RandomMocked {
-  public static var mock: Device {
-    Device(
+extension Computer: RandomMocked {
+  public static var mock: Computer {
+    Computer(
       parentId: .init(),
       customName: "@mock customName",
       modelIdentifier: "@mock modelIdentifier",
@@ -12,8 +12,8 @@ extension Device: RandomMocked {
     )
   }
 
-  public static var empty: Device {
-    Device(
+  public static var empty: Computer {
+    Computer(
       parentId: .init(),
       customName: nil,
       modelIdentifier: "",
@@ -21,8 +21,8 @@ extension Device: RandomMocked {
     )
   }
 
-  public static var random: Device {
-    Device(
+  public static var random: Computer {
+    Computer(
       parentId: .init(),
       customName: "@random".random,
       modelIdentifier: "@random".random,

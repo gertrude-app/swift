@@ -6,7 +6,7 @@ struct SaveDevice: Pair {
   static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
-    var id: Device.Id
+    var id: Computer.Id
     var name: String?
     var releaseChannel: ReleaseChannel
   }

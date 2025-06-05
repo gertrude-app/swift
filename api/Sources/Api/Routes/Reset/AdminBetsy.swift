@@ -88,7 +88,7 @@ enum AdminBetsy {
       screenshotsEnabled: true
     ))
 
-    let macAir = try await db.create(Device(
+    let macAir = try await db.create(Computer(
       parentId: betsy.id,
       customName: nil,
       filterVersion: "2.6.0",
@@ -108,7 +108,7 @@ enum AdminBetsy {
 
     try await self.createTransientRequests(computerUser)
 
-    let imac = try await db.create(Device(
+    let imac = try await db.create(Computer(
       parentId: betsy.id,
       customName: nil,
       filterVersion: "2.6.0",
@@ -134,7 +134,7 @@ enum AdminBetsy {
       screenshotsEnabled: false
     ))
 
-    let macbookPro = try await db.create(Device(
+    let macbookPro = try await db.create(Computer(
       parentId: betsy.id,
       customName: "dads mbp",
       filterVersion: "2.6.0",

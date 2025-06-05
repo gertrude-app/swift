@@ -32,33 +32,33 @@ extension DeleteEntity: Resolver {
   ) async throws -> Output {
     switch input.type {
     case .admin:
-      guard input.id == context.admin.id else {
+      guard input.id == context.parent.id else {
         throw Abort(.unauthorized)
       }
       try await context.db.create(DeletedEntity(
         type: "Admin",
         reason: "self-deleted from use-case initial screen",
-        data: JSON.encode(context.admin, [.isoDates])
+        data: JSON.encode(context.parent, [.isoDates])
       ))
-      try await context.db.delete(context.admin)
+      try await context.db.delete(context.parent)
 
     case .adminNotification:
       try await AdminNotification.query()
         .where(.id == input.id)
-        .where(.parentId == context.admin.id)
+        .where(.parentId == context.parent.id)
         .delete(in: context.db)
       dashSecurityEvent(.notificationDeleted, in: context)
 
     case .adminVerifiedNotificationMethod:
       try await AdminVerifiedNotificationMethod.query()
         .where(.id == input.id)
-        .where(.parentId == context.admin.id)
+        .where(.parentId == context.parent.id)
         .delete(in: context.db)
 
     case .userDevice:
       let userDevice = try await context.db.find(ComputerUser.Id(input.id))
       let device = try await context.db.find(userDevice.computerId)
-      let user = try await context.verifiedUser(from: userDevice.childId)
+      let user = try await context.verifiedChild(from: userDevice.childId)
       try await context.db.delete(userDevice)
       let remainingComputerUsers = try await ComputerUser.query()
         .where(.computerId == userDevice.computerId)
@@ -75,7 +75,7 @@ extension DeleteEntity: Resolver {
     case .key:
       let key = try await context.db.find(Key.Id(input.id))
       let keychain = try await key.keychain(in: context.db)
-      guard keychain.parentId == context.admin.id else {
+      guard keychain.parentId == context.parent.id else {
         throw Abort(.unauthorized)
       }
       try await context.db.delete(key, force: true)
@@ -85,14 +85,14 @@ extension DeleteEntity: Resolver {
     case .keychain:
       try await Keychain.query()
         .where(.id == input.id)
-        .where(.parentId == context.admin.id)
+        .where(.parentId == context.parent.id)
         .delete(in: context.db)
 
     case .user:
       let deviceIds = try await context.computerUsers().map(\.computerId)
       let child = try await Child.query()
         .where(.id == input.id)
-        .where(.parentId == context.admin.id)
+        .where(.parentId == context.parent.id)
         .first(in: context.db)
       dashSecurityEvent(.childDeleted, "name: \(child.name)", in: context)
 
@@ -105,7 +105,7 @@ extension DeleteEntity: Resolver {
 
       await deleteUnusedEmptyAutogenKeychain(childKeychainIds, context.db)
 
-      let devices = try await Device.query()
+      let devices = try await Computer.query()
         .where(.id |=| deviceIds)
         .all(in: context.db)
       for device in devices {

@@ -392,7 +392,7 @@ extension ComputerUser: Model {
   }
 }
 
-extension Device: Model {
+extension Computer: Model {
   public static let schemaName = "parent"
   public static let tableName = "computers"
   public typealias ColumnName = CodingKeys

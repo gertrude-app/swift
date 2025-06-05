@@ -29,16 +29,16 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
     expect(childData.name).toEqual(child.name)
 
     let computerUser = try await self.db.find(ComputerUser.Id(childData.deviceId))
-    let device = try await self.db.find(computerUser.computerId)
+    let computer = try await self.db.find(computerUser.computerId)
 
     expect(computerUser.username).toEqual(input.username)
     expect(computerUser.fullUsername).toEqual(input.fullUsername)
     expect(computerUser.numericId).toEqual(input.numericId)
     expect(computerUser.appVersion).toEqual(input.appVersion)
     expect(computerUser.isAdmin).toEqual(input.isAdmin)
-    expect(device.serialNumber).toEqual(input.serialNumber)
-    expect(device.modelIdentifier).toEqual(input.modelIdentifier)
-    expect(device.osVersion).toEqual(Semver("14.2.0"))
+    expect(computer.serialNumber).toEqual(input.serialNumber)
+    expect(computer.modelIdentifier).toEqual(input.modelIdentifier)
+    expect(computer.osVersion).toEqual(Semver("14.2.0"))
 
     let token = try await MacAppToken.query()
       .where(.value == childData.token)
@@ -48,7 +48,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testConnectUser_twoUsersSameComputer() async throws {
-    try await self.db.delete(all: Device.self)
+    try await self.db.delete(all: Computer.self)
     let child1 = try await self.child()
     let code1 = await with(dependency: \.ephemeral)
       .createPendingAppConnection(child1.id)

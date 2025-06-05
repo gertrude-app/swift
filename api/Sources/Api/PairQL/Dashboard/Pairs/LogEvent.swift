@@ -14,7 +14,7 @@ struct LogEvent: Pair {
 
 extension LogEvent: Resolver {
   static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
-    if isTestAddress(context.admin.email.rawValue) {
+    if isTestAddress(context.parent.email.rawValue) {
       return .success
     }
     try await context.db.create(InterestingEvent(
@@ -22,7 +22,7 @@ extension LogEvent: Resolver {
       kind: "event",
       context: "dash",
       computerUserId: nil,
-      parentId: context.admin.id,
+      parentId: context.parent.id,
       detail: input.detail
     ))
 
@@ -30,7 +30,7 @@ extension LogEvent: Resolver {
     if input.detail.contains("use-case survey") {
       await slack.internal(.signups, """
         *Signup use-case survey:*
-        id: `\(context.admin.id.lowercased)`
+        id: `\(context.parent.id.lowercased)`
         \(input.detail)
       """)
     } else {

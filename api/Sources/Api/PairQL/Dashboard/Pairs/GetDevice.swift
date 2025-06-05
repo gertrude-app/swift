@@ -16,7 +16,7 @@ struct GetDevice: Pair {
       var status: ChildComputerStatus
     }
 
-    var id: Device.Id
+    var id: Computer.Id
     var name: String?
     var releaseChannel: ReleaseChannel
     var users: [User]
@@ -32,12 +32,12 @@ struct GetDevice: Pair {
 
 extension GetDevice: Resolver {
   static func resolve(with id: UUID, in context: AdminContext) async throws -> Output {
-    let device = try await Device.query()
+    let computer = try await Computer.query()
       .where(.id == id)
-      .where(.parentId == context.admin.id)
+      .where(.parentId == context.parent.id)
       .first(in: context.db)
 
-    let computerUsers = try await device.computerUsers(in: context.db)
+    let computerUsers = try await computer.computerUsers(in: context.db)
 
     // this is a little hinky, should simplify when we handle
     // https://github.com/gertrude-app/project/issues/164
@@ -51,21 +51,21 @@ extension GetDevice: Resolver {
     @Dependency(\.websockets) var websockets
 
     return try await .init(
-      id: device.id,
-      name: device.customName,
-      releaseChannel: device.appReleaseChannel,
+      id: computer.id,
+      name: computer.customName,
+      releaseChannel: computer.appReleaseChannel,
       users: computerUsers.concurrentMap { userDevice in
         try await .init(
           id: userDevice.childId,
-          name: (userDevice.user(in: context.db)).name,
+          name: (userDevice.child(in: context.db)).name,
           status: websockets.status(userDevice.id)
         )
       },
       appVersion: appVersion.description,
-      serialNumber: device.serialNumber,
-      modelIdentifier: device.modelIdentifier,
-      modelFamily: device.model.family,
-      modelTitle: device.model.shortDescription
+      serialNumber: computer.serialNumber,
+      modelIdentifier: computer.modelIdentifier,
+      modelFamily: computer.model.family,
+      modelTitle: computer.model.shortDescription
     )
   }
 }

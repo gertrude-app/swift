@@ -191,7 +191,7 @@ struct AdminQuery: CustomQueryable {
     LEFT JOIN parent.children ON parent.parents.id = parent.children.parent_id
     LEFT JOIN (
       SELECT ud.child_id, COUNT(DISTINCT s.id) AS screenshot_count
-      FROM macapp.screenshots s
+      FROM child.screenshots s
       JOIN child.computer_users ud ON s.computer_user_id = ud.id
       WHERE s.deleted_at IS NULL
       GROUP BY ud.child_id

@@ -70,16 +70,16 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
     self.app.shutdown()
   }
 
-  func context(_ admin: Admin) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin, ipAddress: nil)
+  func context(_ parent: Admin) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", parent: parent, ipAddress: nil)
   }
 
-  func context(_ admin: ParentEntities) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model, ipAddress: nil)
+  func context(_ parent: ParentEntities) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", parent: parent.model, ipAddress: nil)
   }
 
-  func context(_ admin: ParentWithKeychainEntities) -> AdminContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "", admin: admin.model, ipAddress: nil)
+  func context(_ parent: ParentWithKeychainEntities) -> AdminContext {
+    .init(requestId: "mock-req-id", dashboardUrl: "", parent: parent.model, ipAddress: nil)
   }
 
   func context(_ child: ChildWithComputerEntities) async throws -> MacApp.ChildContext {

@@ -40,7 +40,7 @@ extension MacApp {
 // loaders
 
 extension MacApp.SuspendFilterRequest {
-  func userDevice(in db: any DuetSQL.Client) async throws -> ComputerUser {
+  func computerUser(in db: any DuetSQL.Client) async throws -> ComputerUser {
     try await ComputerUser.query()
       .where(.id == self.computerUserId)
       .first(in: db)

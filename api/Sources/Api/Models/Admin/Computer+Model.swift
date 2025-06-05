@@ -1,6 +1,6 @@
 import Gertie
 
-extension Device {
+extension Computer {
   struct Model: Encodable, Equatable {
     var type: Kind
     var identifier: String
@@ -12,8 +12,8 @@ extension Device {
     init(
       type: Kind,
       identifier: String,
-      chip: Device.Model.Chip,
-      manufactureDates: Set<Device.Model.ManufactureDate> = [],
+      chip: Computer.Model.Chip,
+      manufactureDates: Set<Computer.Model.ManufactureDate> = [],
       screenSizeInInches: Float? = nil,
       newestCompatibleOS: MacOS? = nil
     ) {
@@ -27,7 +27,7 @@ extension Device {
   }
 }
 
-extension Device.Model {
+extension Computer.Model {
   enum Kind: String, Encodable, CaseIterable {
     case macBook = "MacBook"
     case macBookAir = "MacBook Air"
@@ -41,7 +41,7 @@ extension Device.Model {
   }
 }
 
-extension Device.Model {
+extension Computer.Model {
   var shortDescription: String {
     var desc = type.rawValue
     let chipDesc = chip.madeByApple ? "\(chip.rawValue) " : ""
@@ -58,7 +58,7 @@ extension Device.Model {
   }
 }
 
-extension Device.Model {
+extension Computer.Model {
   var family: DeviceModelFamily {
     switch type {
     case .macBook:
@@ -81,7 +81,7 @@ extension Device.Model {
   }
 }
 
-extension Device.Model {
+extension Computer.Model {
   enum Chip: String, Encodable {
     case m3 = "M3"
     case m2 = "M2"
@@ -90,7 +90,7 @@ extension Device.Model {
   }
 }
 
-extension Device.Model.Chip {
+extension Computer.Model.Chip {
   var madeByApple: Bool {
     switch self {
     case .intel:
@@ -110,7 +110,7 @@ enum MacOS: Encodable {
   case catalina
 }
 
-extension Device.Model {
+extension Computer.Model {
   struct ManufactureDate: Hashable, Encodable {
     enum Modifier: Encodable {
       case early
@@ -128,17 +128,17 @@ extension Device.Model {
   }
 }
 
-extension Device.Model {
+extension Computer.Model {
   static let unknown = Self(type: .unknown, identifier: "unknown", chip: .m1)
 }
 
-extension Device.Model.ManufactureDate: ExpressibleByIntegerLiteral {
+extension Computer.Model.ManufactureDate: ExpressibleByIntegerLiteral {
   init(integerLiteral value: Int) {
     self.init(year: value)
   }
 }
 
-extension Device.Model.ManufactureDate {
+extension Computer.Model.ManufactureDate {
   static func early(_ year: Int) -> Self {
     .init(year: year, modifier: .early)
   }
@@ -154,7 +154,7 @@ extension Device.Model.ManufactureDate {
 
 // derive the model from the identifier
 
-extension Device {
+extension Computer {
   var model: Model {
     switch modelIdentifier {
     // MacBook Air @link https://support.apple.com/en-us/HT201862
