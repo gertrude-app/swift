@@ -28,7 +28,7 @@ struct SaveUser: Pair {
 // resolver
 
 extension SaveUser: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     var user: Child
     if input.isNew {
       user = try await context.db.create(Child(

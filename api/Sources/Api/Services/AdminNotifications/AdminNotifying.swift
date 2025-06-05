@@ -9,7 +9,7 @@ protocol AdminNotifying {
 }
 
 extension AdminNotifying {
-  func send(with config: AdminVerifiedNotificationMethod.Config) async throws {
+  func send(with config: Parent.NotificationMethod.Config) async throws {
     switch config {
     case .text(let phoneNumber):
       try await sendText(to: phoneNumber)

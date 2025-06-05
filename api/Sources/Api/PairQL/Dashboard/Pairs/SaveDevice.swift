@@ -15,7 +15,7 @@ struct SaveDevice: Pair {
 // resolver
 
 extension SaveDevice: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     var device = try await context.db.find(input.id)
     device.customName = input.name
     device.appReleaseChannel = input.releaseChannel

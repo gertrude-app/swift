@@ -41,7 +41,7 @@ enum DashboardTsCodegenRoute {
       ("SuspendFilterRequest", GetSuspendFilterRequest.Output.self),
       ("AdminKeychain", GetAdminKeychains.AdminKeychain.self),
       ("UserActivityItem", UserActivity.Item.self),
-      ("AdminNotificationTrigger", AdminNotification.Trigger.self),
+      ("AdminNotificationTrigger", Parent.Notification.Trigger.self),
       ("AdminSubscriptionStatus", GetAdmin.SubscriptionStatus.self),
       ("VerifiedNotificationMethod", GetAdmin.VerifiedNotificationMethod.self),
       ("AdminNotification", GetAdmin.Notification.self),

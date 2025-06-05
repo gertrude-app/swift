@@ -6,7 +6,7 @@ import XExpect
 
 final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
   func testSaveAndDeleteNewUser() async throws {
-    let admin = try await self.parent()
+    let parent = try await self.parent()
 
     let input = SaveUser.Input(
       id: .init(),
@@ -21,7 +21,7 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
       keychains: []
     )
 
-    let output = try await SaveUser.resolve(with: input, in: admin.context)
+    let output = try await SaveUser.resolve(with: input, in: parent.context)
 
     let child = try await self.db.find(input.id)
     expect(output).toEqual(.success)
@@ -44,7 +44,7 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
     // now delete...
     let deleteOutput = try await DeleteEntity.resolve(
       with: .init(id: child.id.rawValue, type: .user),
-      in: admin.context
+      in: parent.context
     )
     expect(deleteOutput).toEqual(.success)
     let retrieved = try? await self.db.find(child.id)

@@ -20,7 +20,7 @@ extension LogInterestingEvent: Resolver {
         detail: input.detail
       ))
 
-      let adminLink = await getAdminLink(from: computerUser, in: context)
+      let parentLink = await getParentLink(from: computerUser, in: context)
       let detail = input.detail.map { ", detail: _\(shorten($0))_" } ?? ""
       let searchLink = input.eventId.count == 8
         ? githubSearch(input.eventId)
@@ -30,13 +30,13 @@ extension LogInterestingEvent: Resolver {
 
       let slack = get(dependency: \.slack)
       if input.detail?.contains("[onboarding]") == true {
-        await slack.internal(.macosOnboarding, "\(searchLink)\(detail)\(adminLink)")
+        await slack.internal(.macosOnboarding, "\(searchLink)\(detail)\(parentLink)")
       } else if input.detail?.contains("unexpected error") == true {
-        await slack.internal(.unexpectedErrors, "macapp: \(searchLink)\(detail)\(adminLink)")
+        await slack.internal(.unexpectedErrors, "macapp: \(searchLink)\(detail)\(parentLink)")
       } else if isUninterestingError(input.detail) {
-        await slack.internal(.expectedErrors, "macapp: \(searchLink)\(detail)\(adminLink)")
+        await slack.internal(.expectedErrors, "macapp: \(searchLink)\(detail)\(parentLink)")
       } else {
-        await slack.internal(.macosLogs, "macapp: \(searchLink)\(detail)\(adminLink)")
+        await slack.internal(.macosLogs, "macapp: \(searchLink)\(detail)\(parentLink)")
       }
     }
 
@@ -98,14 +98,14 @@ func githubSearch(_ eventId: String) -> String {
   )
 }
 
-func getAdminLink(from computerUser: ComputerUser?, in context: Context) async -> String {
+func getParentLink(from computerUser: ComputerUser?, in context: Context) async -> String {
   guard let computerUser,
-        let user = try? await computerUser.child(in: context.db),
-        let admin = try? await user.admin(in: context.db) else {
+        let child = try? await computerUser.child(in: context.db),
+        let parent = try? await child.parent(in: context.db) else {
     return ""
   }
   return "\n  -> " + Slack.link(
-    to: "\(context.env.analyticsSiteUrl)/admins/\(admin.id.lowercased)",
-    withText: "\(admin.email), \(user.name)"
+    to: "\(context.env.analyticsSiteUrl)/admins/\(parent.id.lowercased)",
+    withText: "\(parent.email), \(child.name)"
   )
 }

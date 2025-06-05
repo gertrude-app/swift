@@ -43,8 +43,8 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable 
     expect(unlockReq2.computerUserId).toEqual(child.computerUser.id)
     expect(unlockReq2.status).toEqual(.pending)
 
-    expect(sent.adminNotifications).toEqual([.init(
-      adminId: child.parentId,
+    expect(sent.parentNotifications).toEqual([.init(
+      parentId: child.parentId,
       event: .unlockRequestSubmitted(.init(
         dashboardUrl: "",
         userId: child.id,

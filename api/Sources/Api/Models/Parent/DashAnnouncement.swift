@@ -3,7 +3,7 @@ import Duet
 
 struct DashAnnouncement: Codable, Sendable {
   var id: Id
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var icon: String?
   var html: String
   var learnMoreUrl: String?
@@ -12,7 +12,7 @@ struct DashAnnouncement: Codable, Sendable {
 
   init(
     id: Id? = nil,
-    parentId: Admin.Id,
+    parentId: Parent.Id,
     icon: String? = nil,
     html: String,
     learnMoreUrl: String? = nil,

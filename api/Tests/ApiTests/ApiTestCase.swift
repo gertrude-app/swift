@@ -43,7 +43,7 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
         self.sent.websocketMessages.append($0)
       }
       $0.adminNotifier.notify = {
-        self.sent.adminNotifications.append(.init(adminId: $0, event: $1))
+        self.sent.parentNotifications.append(.init(parentId: $0, event: $1))
       }
       $0.logger = .null
     } operation: {
@@ -70,20 +70,20 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
     self.app.shutdown()
   }
 
-  func context(_ parent: Admin) -> AdminContext {
+  func context(_ parent: Parent) -> ParentContext {
     .init(requestId: "mock-req-id", dashboardUrl: "", parent: parent, ipAddress: nil)
   }
 
-  func context(_ parent: ParentEntities) -> AdminContext {
+  func context(_ parent: ParentEntities) -> ParentContext {
     .init(requestId: "mock-req-id", dashboardUrl: "", parent: parent.model, ipAddress: nil)
   }
 
-  func context(_ parent: ParentWithKeychainEntities) -> AdminContext {
+  func context(_ parent: ParentWithKeychainEntities) -> ParentContext {
     .init(requestId: "mock-req-id", dashboardUrl: "", parent: parent.model, ipAddress: nil)
   }
 
   func context(_ child: ChildWithComputerEntities) async throws -> MacApp.ChildContext {
-    .init(requestId: "", dashboardUrl: "", user: child.model, token: child.token)
+    .init(requestId: "", dashboardUrl: "", child: child.model, token: child.token)
   }
 
   @discardableResult
@@ -92,14 +92,14 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
           let autoId = UUID(uuidString: autoIdStr) else {
       fatalError("need to set AUTO_INCLUDED_KEYCHAIN_ID in api/.env for tests")
     }
-    let admin = try await self.parent()
+    let parent = try await self.parent()
     try await Keychain.query()
       .where(.id == autoId)
       .delete(in: self.db)
 
     let keychain = try await self.db.create(Keychain(
       id: .init(autoId),
-      parentId: admin.model.id,
+      parentId: parent.model.id,
       name: "Auto Included (test)"
     ))
 
@@ -113,8 +113,8 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
 
 extension ApiTestCase {
   struct Sent: Sendable {
-    struct AdminNotification: Equatable {
-      let adminId: Admin.Id
+    struct ParentNotification: Equatable {
+      let parentId: Parent.Id
       let event: AdminEvent
     }
 
@@ -126,7 +126,7 @@ extension ApiTestCase {
     var emails: [XPostmark.TemplateEmail] = []
     var slacks: [Slack] = []
     var texts: [Text] = []
-    var adminNotifications: [AdminNotification] = []
+    var parentNotifications: [ParentNotification] = []
     var websocketMessages: [AppEvent] = []
   }
 }

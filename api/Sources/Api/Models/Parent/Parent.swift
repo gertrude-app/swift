@@ -2,7 +2,7 @@ import DuetSQL
 import Gertie
 import TaggedMoney
 
-struct Admin: Codable, Sendable {
+struct Parent: Codable, Sendable {
   var id: Id
   var email: EmailAddress
   var password: String
@@ -51,7 +51,7 @@ struct Admin: Codable, Sendable {
 
 // extensions
 
-extension Admin {
+extension Parent {
   var stripePriceId: String {
     switch self.monthlyPrice.rawValue {
     case 1500: // new vinci-price, Feb 2025
@@ -66,7 +66,7 @@ extension Admin {
 
 // loaders
 
-extension Admin {
+extension Parent {
   func keychains(in db: any DuetSQL.Client) async throws -> [Keychain] {
     try await Keychain.query()
       .where(.parentId == self.id)
@@ -92,16 +92,16 @@ extension Admin {
       .all(in: db)
   }
 
-  func notifications(in db: any DuetSQL.Client) async throws -> [AdminNotification] {
-    try await AdminNotification.query()
+  func notifications(in db: any DuetSQL.Client) async throws -> [Parent.Notification] {
+    try await Parent.Notification.query()
       .where(.parentId == self.id)
       .all(in: db)
   }
 
   func verifiedNotificationMethods(
     in db: any DuetSQL.Client
-  ) async throws -> [AdminVerifiedNotificationMethod] {
-    try await AdminVerifiedNotificationMethod.query()
+  ) async throws -> [Parent.NotificationMethod] {
+    try await Parent.NotificationMethod.query()
       .where(.parentId == self.id)
       .all(in: db)
   }
@@ -109,8 +109,8 @@ extension Admin {
 
 // extensions
 
-extension Admin {
-  typealias SubscriptionId = Tagged<Admin, String>
+extension Parent {
+  typealias SubscriptionId = Tagged<Parent, String>
 
   enum SubscriptionStatus: String, Codable, Equatable, CaseIterable, Sendable {
     case pendingEmailVerification

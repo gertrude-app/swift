@@ -140,11 +140,11 @@ extension UserBlockedApp {
   }
 }
 
-extension Admin: Duet.Identifiable {
-  typealias Id = Tagged<Admin, UUID>
+extension Parent: Duet.Identifiable {
+  typealias Id = Tagged<Parent, UUID>
 }
 
-extension Admin {
+extension Parent {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case email
@@ -161,15 +161,15 @@ extension Admin {
   }
 }
 
-extension Admin.SubscriptionStatus: PostgresEnum {
+extension Parent.SubscriptionStatus: PostgresEnum {
   var typeName: String { "enum_parent_subscription_status" }
 }
 
-extension AdminNotification: Duet.Identifiable {
-  typealias Id = Tagged<AdminNotification, UUID>
+extension Parent.Notification: Duet.Identifiable {
+  typealias Id = Tagged<Parent.Notification, UUID>
 }
 
-extension AdminNotification {
+extension Parent.Notification {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case parentId
@@ -179,15 +179,15 @@ extension AdminNotification {
   }
 }
 
-extension AdminNotification.Trigger: PostgresEnum {
+extension Parent.Notification.Trigger: PostgresEnum {
   var typeName: String { "enum_parent_notification_trigger" }
 }
 
-extension AdminToken: Duet.Identifiable {
-  typealias Id = Tagged<AdminToken, UUID>
+extension Parent.DashToken: Duet.Identifiable {
+  typealias Id = Tagged<Parent.DashToken, UUID>
 }
 
-extension AdminToken {
+extension Parent.DashToken {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case parentId
@@ -197,11 +197,11 @@ extension AdminToken {
   }
 }
 
-extension AdminVerifiedNotificationMethod: Duet.Identifiable {
-  typealias Id = Tagged<AdminVerifiedNotificationMethod, UUID>
+extension Parent.NotificationMethod: Duet.Identifiable {
+  typealias Id = Tagged<Parent.NotificationMethod, UUID>
 }
 
-extension AdminVerifiedNotificationMethod {
+extension Parent.NotificationMethod {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case parentId

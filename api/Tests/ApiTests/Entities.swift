@@ -26,7 +26,7 @@ struct ChildWithComputerEntities {
   var parent: ParentEntities
 
   var context: MacApp.ChildContext {
-    .init(requestId: "mock-req-id", dashboardUrl: "/", user: self.model, token: self.token)
+    .init(requestId: "mock-req-id", dashboardUrl: "/", child: self.model, token: self.token)
   }
 
   subscript<T>(dynamicMember keyPath: KeyPath<Child, T>) -> T {
@@ -52,62 +52,62 @@ struct ChildWithIOSDeviceEntities {
 
 @dynamicMemberLookup
 struct ParentEntities {
-  var model: Admin
-  var token: AdminToken
+  var model: Parent
+  var token: Parent.DashToken
 
-  var context: AdminContext {
+  var context: ParentContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", parent: self.model, ipAddress: nil)
   }
 
-  subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
+  subscript<T>(dynamicMember keyPath: KeyPath<Parent, T>) -> T {
     self.model[keyPath: keyPath]
   }
 }
 
 @dynamicMemberLookup
 struct ParentWithKeychainEntities {
-  var model: Admin
-  var token: AdminToken
+  var model: Parent
+  var token: Parent.DashToken
   var keychain: Keychain
   var key: Key
 
-  var context: AdminContext {
+  var context: ParentContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", parent: self.model, ipAddress: nil)
   }
 
-  subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
+  subscript<T>(dynamicMember keyPath: KeyPath<Parent, T>) -> T {
     self.model[keyPath: keyPath]
   }
 }
 
 @dynamicMemberLookup
 struct ParentWithOnboardedChildEntities {
-  var model: Admin
-  var token: AdminToken
+  var model: Parent
+  var token: Parent.DashToken
   var child: Child
   var computerUser: ComputerUser
   var computer: Computer
 
-  var context: AdminContext {
+  var context: ParentContext {
     .init(requestId: "mock-req-id", dashboardUrl: "/", parent: self.model, ipAddress: nil)
   }
 
-  subscript<T>(dynamicMember keyPath: KeyPath<Admin, T>) -> T {
+  subscript<T>(dynamicMember keyPath: KeyPath<Parent, T>) -> T {
     self.model[keyPath: keyPath]
   }
 }
 
 extension ApiTestCase {
   func parent(
-    with config: (inout Admin) -> Void = { _ in }
+    with config: (inout Parent) -> Void = { _ in }
   ) async throws -> ParentEntities {
-    let parent = try await self.db.create(Admin.random(with: config))
-    let token = try await self.db.create(AdminToken(parentId: parent.id))
+    let parent = try await self.db.create(Parent.random(with: config))
+    let token = try await self.db.create(Parent.DashToken(parentId: parent.id))
     return ParentEntities(model: parent, token: token)
   }
 
   func parent<T>(
-    with kp: WritableKeyPath<Admin, T>,
+    with kp: WritableKeyPath<Parent, T>,
     of value: T
   ) async throws -> ParentEntities {
     try await self.parent(with: { $0[keyPath: kp] = value })
@@ -122,7 +122,7 @@ extension ApiTestCase {
 
   func child(
     with childConfig: (inout Child) -> Void = { _ in },
-    withParent parentConfig: (inout Admin) -> Void = { _ in }
+    withParent parentConfig: (inout Parent) -> Void = { _ in }
   ) async throws -> ChildEntities {
     let parent = try await self.parent(with: parentConfig)
     let child = try await self.db.create(Child.random {

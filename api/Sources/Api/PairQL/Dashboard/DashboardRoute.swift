@@ -23,26 +23,26 @@ extension DashboardRoute {
 extension DashboardRoute: RouteResponder {
   static func respond(to route: Self, in context: Context) async throws -> Response {
     switch route {
-    case .adminAuthed(let uuid, let adminRoute):
-      let token = try await AdminToken.query()
+    case .adminAuthed(let uuid, let parentRoute):
+      let token = try await Parent.DashToken.query()
         .where(.value == uuid)
         .first(
           in: context.db,
           orThrow: context.error("8df93d61", .loggedOut, "Admin token not found")
         )
 
-      let admin = try await Admin.query()
+      let parent = try await Parent.query()
         .where(.id == token.parentId)
         .first(in: context.db)
 
-      let adminContext = AdminContext(
+      let parentContext = ParentContext(
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,
-        parent: admin,
+        parent: parent,
         ipAddress: context.ipAddress
       )
 
-      return try await AuthedAdminRoute.respond(to: adminRoute, in: adminContext)
+      return try await AuthedAdminRoute.respond(to: parentRoute, in: parentContext)
     case .unauthed(let route):
       return try await UnauthedRoute.respond(to: route, in: context)
     }

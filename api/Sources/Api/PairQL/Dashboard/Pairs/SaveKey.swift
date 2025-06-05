@@ -18,7 +18,7 @@ struct SaveKey: Pair {
 // resolver
 
 extension SaveKey: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     let keychain = try await context.parent.keychain(input.keychainId, in: context.db)
     if input.isNew {
       try await context.db.create(Key(

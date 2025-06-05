@@ -6,7 +6,7 @@ struct ConfirmPendingNotificationMethod: Pair {
   static let auth: ClientAuth = .parent
 
   struct Input: PairInput {
-    let id: AdminVerifiedNotificationMethod.Id
+    let id: Parent.NotificationMethod.Id
     let code: Int
   }
 }
@@ -14,7 +14,7 @@ struct ConfirmPendingNotificationMethod: Pair {
 // extensions
 
 extension ConfirmPendingNotificationMethod: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     let method = await with(dependency: \.ephemeral)
       .confirmPendingNotificationMethod(input.id, input.code)
     guard let method else {

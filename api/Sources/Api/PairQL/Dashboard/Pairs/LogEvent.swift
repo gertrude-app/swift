@@ -13,7 +13,7 @@ struct LogEvent: Pair {
 // resolver
 
 extension LogEvent: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     if isTestAddress(context.parent.email.rawValue) {
       return .success
     }

@@ -16,8 +16,8 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
   let token = UUID(uuidString: "deadbeef-dead-beef-dead-beefdeadbeef")!
 
   func testDashboardRoute() async throws {
-    let admin = try await self.parent()
-    let token = admin.token.value
+    let parent = try await self.parent()
+    let token = parent.token.value
     var request = URLRequest(url: URL(string: "dashboard/GetIdentifiedApps")!)
     request.httpMethod = "POST"
     request.addValue(token.lowercased, forHTTPHeaderField: "X-AdminToken")
@@ -35,8 +35,8 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDuetEscapesStringsProperly() async throws {
-    let admin = try await self.db.create(Admin.random)
-    let m = try await self.db.create(Api.SecurityEvent(parentId: admin.id, event: "foo'bar"))
+    let parent = try await self.db.create(Parent.random)
+    let m = try await self.db.create(Api.SecurityEvent(parentId: parent.id, event: "foo'bar"))
     let retrieved = try await self.db.find(m.id)
     expect(retrieved.event).toEqual("foo'bar")
   }
@@ -50,8 +50,8 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
       comment: nil,
       expiration: Date(timeIntervalSince1970: 0)
     )
-    let admin = try await self.parent()
-    let token = admin.token.value
+    let parent = try await self.parent()
+    let token = parent.token.value
     var request = URLRequest(url: URL(string: "dashboard/SaveKey")!)
     request.httpMethod = "POST"
     request.addValue(token.lowercased, forHTTPHeaderField: "X-AdminToken")

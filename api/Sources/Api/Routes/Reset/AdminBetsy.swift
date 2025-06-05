@@ -6,7 +6,7 @@ import XCore
 
 enum AdminBetsy {
   enum Ids {
-    static let betsy = Admin.Id.from("BE000000-0000-0000-0000-000000000000")
+    static let betsy = Parent.Id.from("BE000000-0000-0000-0000-000000000000")
     static let jimmysId = Child.Id.from("00000000-1111-4444-0000-000000000000")
     static let jimmysDevice = ComputerUser.Id.from("DD000000-1111-0000-0000-000000000000")
     static let sallysDevice = ComputerUser.Id.from("DD000000-2222-0000-0000-000000000000")
@@ -16,7 +16,7 @@ enum AdminBetsy {
 
   static func create() async throws {
     @Dependency(\.db) var db
-    let betsy = try await db.create(Admin(
+    let betsy = try await db.create(Parent(
       id: Ids.betsy,
       email: "betsy-mcstandard" |> Reset.testEmail,
       password: Bcrypt.hash("betsy123"),
@@ -30,7 +30,7 @@ enum AdminBetsy {
       .email(email: betsy.email.rawValue)
     )
 
-    try await db.create(AdminNotification(
+    try await db.create(Parent.Notification(
       parentId: betsy.id,
       methodId: email.id,
       trigger: .unlockRequestSubmitted
@@ -46,13 +46,13 @@ enum AdminBetsy {
       .slack(channelId: "CQ1325FCA", channelName: "#Gertrude", token: "xoxb-123-456-789")
     )
 
-    try await db.create(AdminNotification(
+    try await db.create(Parent.Notification(
       parentId: betsy.id,
       methodId: text.id,
       trigger: .suspendFilterRequestSubmitted
     ))
 
-    try await db.create(AdminToken(
+    try await db.create(Parent.DashToken(
       value: .init(rawValue: betsy.id.rawValue),
       parentId: betsy.id
     ))
@@ -78,7 +78,7 @@ enum AdminBetsy {
     try await self.createUserActivity()
   }
 
-  private static func createUsers(_ betsy: Admin) async throws -> (Child, Child, Child) {
+  private static func createUsers(_ betsy: Parent) async throws -> (Child, Child, Child) {
     @Dependency(\.db) var db
     let jimmy = try await db.create(Child(
       id: Ids.jimmysId,
@@ -164,7 +164,7 @@ enum AdminBetsy {
     return (jimmy, sally, henry)
   }
 
-  private static func createKeychains(_ betsy: Admin) async throws -> (Keychain, Keychain) {
+  private static func createKeychains(_ betsy: Parent) async throws -> (Keychain, Keychain) {
     let musicTheory = try await Reset.createKeychain(
       adminId: betsy.id,
       name: "Jimmy's Music Theory",

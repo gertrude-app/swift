@@ -3,7 +3,7 @@ import Gertie
 
 struct Computer: Codable, Sendable {
   var id: Id
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var customName: String?
   var modelIdentifier: String
   var serialNumber: String
@@ -15,7 +15,7 @@ struct Computer: Codable, Sendable {
 
   init(
     id: Id = .init(),
-    parentId: Admin.Id,
+    parentId: Parent.Id,
     customName: String? = nil,
     appReleaseChannel: ReleaseChannel = .stable,
     filterVersion: Semver? = nil,
@@ -37,8 +37,8 @@ struct Computer: Codable, Sendable {
 // loaders
 
 extension Computer {
-  func parent(in db: any DuetSQL.Client) async throws -> Admin {
-    try await Admin.query()
+  func parent(in db: any DuetSQL.Client) async throws -> Parent {
+    try await Parent.query()
       .where(.id == self.parentId)
       .first(in: db)
   }

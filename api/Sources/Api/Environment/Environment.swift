@@ -19,7 +19,7 @@ func unexpected(_ id: String, detail: String = "") {
   unexpected(id, nil, detail)
 }
 
-func unexpected(_ id: String, _ adminId: Admin.Id? = nil, _ detail: String = "") {
+func unexpected(_ id: String, _ adminId: Parent.Id? = nil, _ detail: String = "") {
   Task { [detail] in
     with(dependency: \.logger).error("Unexpected event `\(id)`, \(detail)")
     with(dependency: \.postmark).unexpected(id, detail)
@@ -36,12 +36,12 @@ func unexpected(_ id: String, _ adminId: Admin.Id? = nil, _ detail: String = "")
 
 func unexpected(_ id: String, _ context: some ResolverContext, _ detail: String = "") {
   var detail = detail
-  let adminId: Admin.Id?
-  if let adminContext = context as? AdminContext {
-    adminId = adminContext.parent.id
-    detail += ", admin id: \(adminId!.lowercased)"
+  let parentId: Parent.Id?
+  if let parentContext = context as? ParentContext {
+    parentId = parentContext.parent.id
+    detail += ", parent id: \(parentId!.lowercased)"
   } else {
-    adminId = nil
+    parentId = nil
   }
-  unexpected(id, adminId, detail)
+  unexpected(id, parentId, detail)
 }

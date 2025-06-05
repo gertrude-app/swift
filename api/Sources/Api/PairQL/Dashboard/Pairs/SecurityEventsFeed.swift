@@ -37,7 +37,7 @@ struct SecurityEventsFeed: Pair {
 // resolver
 
 extension SecurityEventsFeed: NoInputResolver {
-  static func resolve(in context: AdminContext) async throws -> Output {
+  static func resolve(in context: ParentContext) async throws -> Output {
     let models = try await SecurityEvent.query()
       .where(.parentId == context.parent.id)
       .where(.createdAt >= Date(subtractingDays: 14))

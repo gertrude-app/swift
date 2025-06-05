@@ -30,7 +30,7 @@ struct GetIdentifiedApps: Pair {
 // resolver
 
 extension GetIdentifiedApps: NoInputResolver {
-  static func resolve(in context: AdminContext) async throws -> Output {
+  static func resolve(in context: ParentContext) async throws -> Output {
     // TODO: why aren't i using the cached app id manifest?
     async let apps = try await context.db.select(all: IdentifiedApp.self)
     async let bundleIds = try await context.db.select(all: AppBundleId.self)

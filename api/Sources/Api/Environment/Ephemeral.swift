@@ -8,67 +8,67 @@ actor Ephemeral {
   @Dependency(\.date.now) private var now
   @Dependency(\.verificationCode) private var verificationCode
 
-  private var adminIds: [UUID: (adminId: Admin.Id, expiration: Date)] = [:]
-  private var retrievedAdminIds: [UUID: Admin.Id] = [:]
+  private var parentIds: [UUID: (parentId: Parent.Id, expiration: Date)] = [:]
+  private var retrievedParentIds: [UUID: Parent.Id] = [:]
 
-  enum AdminId: Equatable {
+  enum ParentId: Equatable {
     case notFound
-    case notExpired(Admin.Id)
-    case expired(Admin.Id)
-    case previouslyRetrieved(Admin.Id)
+    case notExpired(Parent.Id)
+    case expired(Parent.Id)
+    case previouslyRetrieved(Parent.Id)
 
-    var notExpired: Admin.Id? {
-      guard case .notExpired(let adminId) = self else { return nil }
-      return adminId
+    var notExpired: Parent.Id? {
+      guard case .notExpired(let parentId) = self else { return nil }
+      return parentId
     }
   }
 
-  func createAdminIdToken(
-    _ adminId: Admin.Id,
+  func createParentIdToken(
+    _ parentId: Parent.Id,
     expiration: Date? = nil
   ) -> UUID {
     let token = self.uuid()
-    self.adminIds[token] = (
-      adminId: adminId,
+    self.parentIds[token] = (
+      parentId: parentId,
       expiration: expiration ?? self.now + .minutes(60)
     )
     return token
   }
 
-  func unexpiredAdminIdFromToken(_ token: UUID) -> Admin.Id? {
-    switch self.adminIdFromToken(token) {
-    case .notExpired(let adminId):
-      adminId
+  func unexpiredParentIdFromToken(_ token: UUID) -> Parent.Id? {
+    switch self.parentIdFromToken(token) {
+    case .notExpired(let parentId):
+      parentId
     case .expired, .notFound, .previouslyRetrieved:
       nil
     }
   }
 
-  func adminIdFromToken(_ token: UUID) -> AdminId {
-    if let (adminId, expiration) = adminIds.removeValue(forKey: token) {
+  func parentIdFromToken(_ token: UUID) -> ParentId {
+    if let (parentId, expiration) = self.parentIds.removeValue(forKey: token) {
       if expiration > self.now {
-        self.retrievedAdminIds[token] = adminId
-        return .notExpired(adminId)
+        self.retrievedParentIds[token] = parentId
+        return .notExpired(parentId)
       } else {
         // put back, so if they try again, they know it's expired, not missing
-        self.adminIds[token] = (adminId, expiration)
-        return .expired(adminId)
+        self.parentIds[token] = (parentId, expiration)
+        return .expired(parentId)
       }
-    } else if let adminId = retrievedAdminIds[token] {
-      return .previouslyRetrieved(adminId)
+    } else if let parentId = retrievedParentIds[token] {
+      return .previouslyRetrieved(parentId)
     } else {
       return .notFound
     }
   }
 
-  private var pendingMethods: [AdminVerifiedNotificationMethod.Id: (
-    model: AdminVerifiedNotificationMethod,
+  private var pendingMethods: [Parent.NotificationMethod.Id: (
+    model: Parent.NotificationMethod,
     code: Int,
     expiration: Date
   )] = [:]
 
   func createPendingNotificationMethod(
-    _ model: AdminVerifiedNotificationMethod,
+    _ model: Parent.NotificationMethod,
     expiration: Date? = nil
   ) -> Int {
     let code = self.verificationCode.generate()
@@ -81,9 +81,9 @@ actor Ephemeral {
   }
 
   func confirmPendingNotificationMethod(
-    _ modelId: AdminVerifiedNotificationMethod.Id,
+    _ modelId: Parent.NotificationMethod.Id,
     _ code: Int
-  ) -> AdminVerifiedNotificationMethod? {
+  ) -> Parent.NotificationMethod? {
     guard let (model, storedCode, expiration) = pendingMethods.removeValue(forKey: modelId),
           code == storedCode,
           expiration > self.now else {

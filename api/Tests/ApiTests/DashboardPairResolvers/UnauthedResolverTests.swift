@@ -8,7 +8,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase, @unchecked Sendable {
   let context = Context.mock
 
   func testLoginFromMagicLink() async throws {
-    let admin = try await self.db.create(Admin.random)
+    let parent = try await self.db.create(Parent.random)
     let uuids = MockUUIDs()
 
     try await withDependencies {
@@ -16,21 +16,21 @@ final class DasboardUnauthedResolverTests: ApiTestCase, @unchecked Sendable {
       $0.date = .init { Date() }
       $0.ephemeral = .init()
     } operation: {
-      let token = await with(dependency: \.ephemeral).createAdminIdToken(admin.id)
+      let token = await with(dependency: \.ephemeral).createParentIdToken(parent.id)
       let output = try await LoginMagicLink.resolve(with: .init(token: token), in: self.context)
-      let adminToken = try await self.db.find(AdminToken.Id(uuids[1]))
-      expect(output).toEqual(.init(token: .init(uuids[2]), adminId: admin.id))
-      expect(adminToken.value).toEqual(.init(uuids[2]))
-      expect(adminToken.parentId).toEqual(admin.id)
+      let parentToken = try await self.db.find(Parent.DashToken.Id(uuids[1]))
+      expect(output).toEqual(.init(token: .init(uuids[2]), adminId: parent.id))
+      expect(parentToken.value).toEqual(.init(uuids[2]))
+      expect(parentToken.parentId).toEqual(parent.id)
     }
   }
 
   func testRequestMagicLink() async throws {
-    let admin = try await self.db.create(Admin.random)
+    let parent = try await self.db.create(Parent.random)
 
     let (token, output) = try await withUUID {
       try await RequestMagicLink.resolve(
-        with: .init(email: admin.email.rawValue, redirect: nil),
+        with: .init(email: parent.email.rawValue, redirect: nil),
         in: .init(requestId: "", dashboardUrl: "/dash", ipAddress: nil)
       )
     }
@@ -42,11 +42,11 @@ final class DasboardUnauthedResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testSendMagicLinkWithRedirect() async throws {
-    let admin = try await self.db.create(Admin.random)
+    let parent = try await self.db.create(Parent.random)
 
     let (token, output) = try await withUUID {
       try await RequestMagicLink.resolve(
-        with: .init(email: admin.email.rawValue, redirect: "/foo"),
+        with: .init(email: parent.email.rawValue, redirect: "/foo"),
         in: .init(requestId: "", dashboardUrl: "/dash", ipAddress: nil)
       )
     }

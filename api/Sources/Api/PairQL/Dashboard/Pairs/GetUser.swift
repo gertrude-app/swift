@@ -6,7 +6,7 @@ import PairQL
 
 struct UserKeychainSummary: PairNestable {
   var id: Api.Keychain.Id
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var name: String
   var description: String?
   var isPublic: Bool
@@ -51,7 +51,7 @@ struct GetUser: Pair {
 extension GetUser: Resolver {
   static func resolve(
     with id: Api.Child.Id,
-    in context: AdminContext
+    in context: ParentContext
   ) async throws -> Output {
     try await Output(from: context.verifiedChild(from: id), in: context.db)
   }
@@ -93,17 +93,17 @@ extension GetUser.User {
     let pairs = try await ComputerUser.query()
       .where(.childId == child.id)
       .all(in: db)
-      .concurrentMap { (userDevice: ComputerUser) -> (GetUser.Device, Semver) in
-        let adminDevice = try await userDevice.computer(in: db)
+      .concurrentMap { (computerUser: ComputerUser) -> (GetUser.Device, Semver) in
+        let computer = try await computerUser.computer(in: db)
         return await (GetUser.Device(
-          id: userDevice.id,
-          deviceId: adminDevice.id,
-          status: userDevice.status(),
-          modelFamily: adminDevice.model.family,
-          modelTitle: adminDevice.model.shortDescription,
-          modelIdentifier: adminDevice.model.identifier,
-          customName: adminDevice.customName
-        ), adminDevice.filterVersion ?? .zero)
+          id: computerUser.id,
+          deviceId: computer.id,
+          status: computerUser.status(),
+          modelFamily: computer.model.family,
+          modelTitle: computer.model.shortDescription,
+          modelIdentifier: computer.model.identifier,
+          customName: computer.customName
+        ), computer.filterVersion ?? .zero)
       }
     let devices = pairs.map(\.0)
     let versions = pairs.map(\.1)

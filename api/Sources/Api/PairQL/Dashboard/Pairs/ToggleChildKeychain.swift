@@ -14,7 +14,7 @@ struct ToggleChildKeychain: Pair {
 // resolver
 
 extension ToggleChildKeychain: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     let existingChildKeychain = try? await ChildKeychain.query()
       .where(.keychainId == input.keychainId)
       .where(.childId == input.childId)

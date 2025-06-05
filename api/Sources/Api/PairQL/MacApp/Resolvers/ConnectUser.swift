@@ -20,16 +20,16 @@ extension ConnectUser: Resolver {
     let computerUser: ComputerUser
     let user = try await context.db.find(userId)
 
-    var adminDevice = try? await Computer.query()
+    var computer = try? await Computer.query()
       .where(.serialNumber == input.serialNumber)
       .first(in: context.db)
 
     // there should only ever be a single gertrude user
     // per computer + macOS user (represented by os user numeric id)
     var existingComputerUser: ComputerUser?
-    if let adminDevice {
+    if let computer {
       existingComputerUser = try? await ComputerUser.query()
-        .where(.computerId == adminDevice.id)
+        .where(.computerId == computer.id)
         .where(.numericId == .int(input.numericId))
         .first(in: context.db)
     }
@@ -72,9 +72,9 @@ extension ConnectUser: Resolver {
       }
 
     } else {
-      if adminDevice == nil {
+      if computer == nil {
         // create new admin device if we don't have one
-        adminDevice = try await context.db.create(Computer(
+        computer = try await context.db.create(Computer(
           parentId: user.parentId,
           osVersion: input.osVersion.flatMap(Semver.init),
           modelIdentifier: input.modelIdentifier,
@@ -85,7 +85,7 @@ extension ConnectUser: Resolver {
       // ...and create the user device
       computerUser = try await context.db.create(ComputerUser(
         childId: user.id,
-        computerId: adminDevice?.id ?? .init(),
+        computerId: computer?.id ?? .init(),
         isAdmin: input.isAdmin,
         appVersion: input.appVersion,
         username: input.username,

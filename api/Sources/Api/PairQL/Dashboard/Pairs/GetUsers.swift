@@ -8,7 +8,7 @@ struct GetUsers: Pair {
 // resolvers
 
 extension GetUsers: NoInputResolver {
-  static func resolve(in context: AdminContext) async throws -> Output {
+  static func resolve(in context: ParentContext) async throws -> Output {
     let users = try await context.parent.children(in: context.db)
     return try await users.concurrentMap { try await .init(from: $0, in: context.db) }
   }

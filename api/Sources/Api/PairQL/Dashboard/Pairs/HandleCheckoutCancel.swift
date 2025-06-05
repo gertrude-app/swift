@@ -14,7 +14,7 @@ struct HandleCheckoutCancel: Pair {
 // resolver
 
 extension HandleCheckoutCancel: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     let session = try await with(dependency: \.stripe)
       .getCheckoutSession(input.stripeCheckoutSessionId)
 

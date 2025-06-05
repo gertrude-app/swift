@@ -6,8 +6,8 @@ import XExpect
 
 final class StripeEventTests: ApiTestCase, @unchecked Sendable {
   func testSetsSubscriptionId() async throws {
-    let admin = try await self.db.create(
-      Admin.random(with: { $0.subscriptionId = nil })
+    let parent = try await self.db.create(
+      Parent.random(with: { $0.subscriptionId = nil })
     )
 
     let json = """
@@ -15,7 +15,7 @@ final class StripeEventTests: ApiTestCase, @unchecked Sendable {
         "type": "invoice.paid",
         "data": {
           "object": {
-            "customer_email": "\(admin.email)",
+            "customer_email": "\(parent.email)",
             "subscription": "sub_123"
           }
         }
@@ -23,15 +23,15 @@ final class StripeEventTests: ApiTestCase, @unchecked Sendable {
     """
 
     try await app.test(.POST, "stripe-events", body: .init(string: json), afterResponse: { res in
-      let retrieved = try await self.db.find(admin.id)
+      let retrieved = try await self.db.find(parent.id)
       expect(retrieved.subscriptionId).toEqual("sub_123")
     })
   }
 
   func testUpdateAdminSubscriptionStatusExpirationFromStripeEvent() async throws {
     let periodEnd = 1_704_050_627
-    let admin = try await self.db.create(
-      Admin.random(with: { $0.subscriptionStatusExpiration = .reference - .days(1000) })
+    let parent = try await self.db.create(
+      Parent.random(with: { $0.subscriptionStatusExpiration = .reference - .days(1000) })
     )
 
     let json = """
@@ -39,7 +39,7 @@ final class StripeEventTests: ApiTestCase, @unchecked Sendable {
         "type": "invoice.paid",
         "data": {
           "object": {
-            "customer_email": "\(admin.email)",
+            "customer_email": "\(parent.email)",
             "lines": {
               "data": [
                 {
@@ -60,7 +60,7 @@ final class StripeEventTests: ApiTestCase, @unchecked Sendable {
 
     try await app.test(.POST, "stripe-events", body: .init(string: json), afterResponse: { res in
       expect(res.status).toEqual(.noContent)
-      let retrieved = try await self.db.find(admin.id)
+      let retrieved = try await self.db.find(parent.id)
       expect(retrieved.subscriptionStatusExpiration).toEqual(expectedNewStatusExpiration)
     })
   }

@@ -10,7 +10,7 @@ struct ParentOverviews: Pair {
     var numKeychains: Int
     var numNotifications: Int
     var signupDate: Date
-    var subscriptionStatus: Admin.SubscriptionStatus
+    var subscriptionStatus: Parent.SubscriptionStatus
   }
 
   typealias Output = [ParentOverview]

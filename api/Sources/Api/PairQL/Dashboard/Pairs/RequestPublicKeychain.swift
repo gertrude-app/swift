@@ -11,7 +11,7 @@ struct RequestPublicKeychain: Pair {
 }
 
 extension RequestPublicKeychain: Resolver {
-  static func resolve(with input: Input, in context: AdminContext) async throws -> Output {
+  static func resolve(with input: Input, in context: ParentContext) async throws -> Output {
     @Dependency(\.postmark) var postmark
 
     let html = """

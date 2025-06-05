@@ -6,20 +6,20 @@ import Vapor
 struct CreatePendingNotificationMethod: Pair {
   static let auth: ClientAuth = .parent
 
-  typealias Input = AdminVerifiedNotificationMethod.Config
+  typealias Input = Parent.NotificationMethod.Config
 
   struct Output: PairOutput {
-    let methodId: AdminVerifiedNotificationMethod.Id
+    let methodId: Parent.NotificationMethod.Id
   }
 }
 
 // extensions
 
-extension AdminVerifiedNotificationMethod.Config: PairInput {}
+extension Parent.NotificationMethod.Config: PairInput {}
 
 extension CreatePendingNotificationMethod: Resolver {
-  static func resolve(with config: Input, in context: AdminContext) async throws -> Output {
-    let model = AdminVerifiedNotificationMethod(parentId: context.parent.id, config: config)
+  static func resolve(with config: Input, in context: ParentContext) async throws -> Output {
+    let model = Parent.NotificationMethod(parentId: context.parent.id, config: config)
     let code = await with(dependency: \.ephemeral)
       .createPendingNotificationMethod(model)
     try await sendVerification(code, for: config, in: context)
@@ -31,8 +31,8 @@ extension CreatePendingNotificationMethod: Resolver {
 
 private func sendVerification(
   _ code: Int,
-  for method: AdminVerifiedNotificationMethod.Config,
-  in context: AdminContext
+  for method: Parent.NotificationMethod.Config,
+  in context: ParentContext
 ) async throws {
   switch method {
   case .slack(channelId: let channel, channelName: _, token: let token):

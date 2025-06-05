@@ -27,7 +27,7 @@ enum ParentAnalyticsStatus: String, Codable {
 }
 
 struct ParentData: Sendable {
-  var id: Admin.Id
+  var id: Parent.Id
   var email: EmailAddress
   var numComputerUsers: Int
   var numChildren: Int
@@ -35,11 +35,11 @@ struct ParentData: Sendable {
   var numNotifications: Int
   var childActivityCount: Int
   var paidPrice: Cents<Int>?
-  var subscriptionStatus: Admin.SubscriptionStatus
+  var subscriptionStatus: Parent.SubscriptionStatus
   var hasGclid: Bool
   var createdAt: Date
 
-  init(model: Admin) {
+  init(model: Parent) {
     self.id = model.id
     self.email = model.email
     self.numComputerUsers = 0
@@ -65,7 +65,7 @@ struct Overview: PairOutput {
 }
 
 struct AnalyticsData: Sendable {
-  var parents: [Admin.Id: ParentData]
+  var parents: [Parent.Id: ParentData]
   var overview: Overview
 }
 
@@ -87,30 +87,30 @@ struct AnalyticsData: Sendable {
 
   func queryFreshData() async throws -> AnalyticsData {
     self.logger.notice("Querying analytics data")
-    let parentModels = try await Admin.query().all(in: self.db)
+    let parentModels = try await Parent.query().all(in: self.db)
 
     let nonEmptyKeyChains = try await self.db.customQuery(NonEmptyKeychains.self)
-    let keychainMap: [Admin.Id: [Int]] = nonEmptyKeyChains.reduce(into: [:]) { map, row in
+    let keychainMap: [Parent.Id: [Int]] = nonEmptyKeyChains.reduce(into: [:]) { map, row in
       map[row.parentId, default: []].append(row.keyCount)
     }
 
     let notificationsCount = try await self.db.customQuery(NotificationsCount.self)
-    let notificationsMap: [Admin.Id: Int] = notificationsCount.reduce(into: [:]) { map, row in
+    let notificationsMap: [Parent.Id: Int] = notificationsCount.reduce(into: [:]) { map, row in
       map[row.parentId] = row.notificationsCount
     }
 
     let childCount = try await self.db.customQuery(ChildCount.self)
-    let childMap: [Admin.Id: Int] = childCount.reduce(into: [:]) { map, child in
+    let childMap: [Parent.Id: Int] = childCount.reduce(into: [:]) { map, child in
       map[child.parentId] = child.childCount
     }
 
     let computerUserCount = try await self.db.customQuery(ComputerUserCount.self)
-    let computerUserMap: [Admin.Id: Int] = computerUserCount.reduce(into: [:]) { map, row in
+    let computerUserMap: [Parent.Id: Int] = computerUserCount.reduce(into: [:]) { map, row in
       map[row.parentId] = row.computerUserCount
     }
 
     let activityCounts = try await self.db.customQuery(ActivityCounts.self)
-    let activityMap: [Admin.Id: Int] = activityCounts.reduce(into: [:]) { map, row in
+    let activityMap: [Parent.Id: Int] = activityCounts.reduce(into: [:]) { map, row in
       map[row.parentId] = row.screenshotCount + row.keystrokeLineCount
     }
 
@@ -127,7 +127,7 @@ struct AnalyticsData: Sendable {
       )
     )
     var totalAnnualCents = Cents(0)
-    var parents = parentModels.reduce(into: [Admin.Id: ParentData]()) { map, model in
+    var parents = parentModels.reduce(into: [Parent.Id: ParentData]()) { map, model in
       var parent = ParentData(model: model)
       parent.numNonEmptyKeychains = keychainMap[model.id]?.count ?? 0
       parent.numChildren = childMap[model.id] ?? 0
@@ -209,7 +209,7 @@ struct NonEmptyKeychains: CustomQueryable {
     """)
   }
 
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var keyCount: Int
 }
 
@@ -223,7 +223,7 @@ struct ChildCount: CustomQueryable {
     """)
   }
 
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var childCount: Int
 }
 
@@ -237,7 +237,7 @@ struct NotificationsCount: CustomQueryable {
     """)
   }
 
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var notificationsCount: Int
 }
 
@@ -252,7 +252,7 @@ struct ComputerUserCount: CustomQueryable {
     """)
   }
 
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var computerUserCount: Int
 }
 
@@ -282,7 +282,7 @@ struct ActivityCounts: CustomQueryable {
     """)
   }
 
-  var parentId: Admin.Id
+  var parentId: Parent.Id
   var screenshotCount: Int
   var keystrokeLineCount: Int
 }

@@ -21,12 +21,12 @@ extension SendPasswordResetEmail: Resolver {
       throw Abort(.badRequest)
     }
 
-    if let admin = try? await Admin.query()
+    if let parent = try? await Parent.query()
       .where(.email == email)
       .first(in: context.db) {
       let token = await with(dependency: \.ephemeral)
-        .createAdminIdToken(admin.id)
-      dashSecurityEvent(.passwordResetRequested, admin: admin.id, in: context)
+        .createParentIdToken(parent.id)
+      dashSecurityEvent(.passwordResetRequested, parent: parent.id, in: context)
       try await postmark.send(template: .passwordReset(
         to: email,
         model: .init(dashboardUrl: context.dashboardUrl, token: token)
