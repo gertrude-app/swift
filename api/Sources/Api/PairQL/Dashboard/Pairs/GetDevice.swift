@@ -48,6 +48,11 @@ extension GetDevice: Resolver {
       }
     }
 
+    if computer.model.identifier == "unknown" {
+      await with(dependency: \.slack)
+        .error("unknown mac model identifier `\(computer.modelIdentifier)`")
+    }
+
     @Dependency(\.websockets) var websockets
 
     return try await .init(
