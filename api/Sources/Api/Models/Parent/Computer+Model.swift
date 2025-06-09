@@ -83,6 +83,7 @@ extension Computer.Model {
 
 extension Computer.Model {
   enum Chip: String, Encodable {
+    case m4 = "M4"
     case m3 = "M3"
     case m2 = "M2"
     case m1 = "M1"
@@ -158,6 +159,24 @@ extension Computer {
   var model: Model {
     switch modelIdentifier {
     // MacBook Air @link https://support.apple.com/en-us/HT201862
+    case "Mac16,13":
+      .init(
+        type: .macBookAir,
+        identifier: modelIdentifier,
+        chip: .m4,
+        manufactureDates: [2025],
+        screenSizeInInches: 15.0,
+        newestCompatibleOS: .sequoia
+      )
+    case "Mac16,12":
+      .init(
+        type: .macBookAir,
+        identifier: modelIdentifier,
+        chip: .m4,
+        manufactureDates: [2025],
+        screenSizeInInches: 13.0,
+        newestCompatibleOS: .sequoia
+      )
     case "Mac15,13":
       .init(
         type: .macBookAir,
@@ -283,6 +302,24 @@ extension Computer {
         newestCompatibleOS: .catalina
       )
     // Macbook Pro @link https://support.apple.com/en-us/HT201300
+    case "Mac16,1", "Mac16,6", "Mac16,8":
+      .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .m4,
+        manufactureDates: [2024],
+        screenSizeInInches: 14.0,
+        newestCompatibleOS: .sequoia
+      )
+    case "Mac16,7", "Mac16,5":
+      .init(
+        type: .macBookPro,
+        identifier: modelIdentifier,
+        chip: .m4,
+        manufactureDates: [2024],
+        screenSizeInInches: 16.0,
+        newestCompatibleOS: .sequoia
+      )
     case "Mac15,3", "Mac15,6", "Mac15,8", "Mac15,10":
       .init(
         type: .macBookPro,
@@ -518,6 +555,15 @@ extension Computer {
         newestCompatibleOS: .catalina
       )
     // iMac @link https://support.apple.com/en-us/HT201634
+    case "Mac16,3", "Mac16,2":
+      .init(
+        type: .iMac,
+        identifier: modelIdentifier,
+        chip: .m4,
+        manufactureDates: [2024],
+        screenSizeInInches: 24.0,
+        newestCompatibleOS: .sequoia
+      )
     case "Mac15,5", "Mac15,4":
       .init(
         type: .iMac,
@@ -663,6 +709,14 @@ extension Computer {
         newestCompatibleOS: .catalina
       )
     // Mac Mini @link https://support.apple.com/en-us/HT201894
+    case "Mac16,11", "Mac16,10":
+      .init(
+        type: .mini,
+        identifier: modelIdentifier,
+        chip: .m4,
+        manufactureDates: [2024],
+        newestCompatibleOS: .sequoia
+      )
     case "Mac14,3", "Mac14,12":
       .init(
         type: .mini,
@@ -704,6 +758,22 @@ extension Computer {
         newestCompatibleOS: .catalina
       )
     // Mac Studio @link https://support.apple.com/en-us/HT213073
+    case "Mac16,9":
+      .init(
+        type: .studio,
+        identifier: modelIdentifier,
+        chip: .m4,
+        manufactureDates: [2025],
+        newestCompatibleOS: .sequoia
+      )
+    case "Mac15,14":
+      .init(
+        type: .studio,
+        identifier: modelIdentifier,
+        chip: .m3,
+        manufactureDates: [2025],
+        newestCompatibleOS: .sequoia
+      )
     case "Mac14,13", "Mac14,14":
       .init(
         type: .studio,
