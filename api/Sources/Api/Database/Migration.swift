@@ -14,10 +14,6 @@ enum MigrationDirection: String {
 
 enum Deleted {}
 
-protocol TableNamingMigration {
-  static var tableName: String { get }
-}
-
 extension GertieMigration {
   func prepare(on database: Database) async throws {
     try await up(sql: database as! SQLDatabase)
