@@ -115,9 +115,10 @@ enum Reset {
   ) -> Either<Screenshot, KeystrokeLine> {
     if [1, 2, 3].shuffled().first! != 1 {
       let (width, height) = [(800, 600), (900, 600), (800, 500), (900, 500)].shuffled().first!
+      let webAssetsUrl = "https://gertrude-web-assets.nyc3.digitaloceanspaces.com"
       return .left(Screenshot(
         computerUserId: userDeviceId,
-        url: "https://fakeimg.pl/\(width)x\(height)/3e2a73/ffffff",
+        url: "\(webAssetsUrl)/placeholders-imgs/\(width)x\(height).png",
         width: width,
         height: height
       ))

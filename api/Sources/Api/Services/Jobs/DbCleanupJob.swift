@@ -27,7 +27,7 @@ struct CleanupJob: AsyncScheduledJob {
     let deletedScreenshots = try await Screenshot.query()
       .where(.and(
         .or(
-          .not(.isNull(.deletedAt)) .&& .deletedAt <= now,
+          .not(.isNull(.deletedAt)) .&& .deletedAt <= 14.daysAgo,
           .createdAt <= 21.daysAgo
         ),
         .or(.isNull(.flagged), .flagged <= 60.daysAgo)
@@ -39,7 +39,7 @@ struct CleanupJob: AsyncScheduledJob {
     let deletedKeystrokes = try await KeystrokeLine.query()
       .where(.and(
         .or(
-          .not(.isNull(.deletedAt)) .&& .deletedAt <= now,
+          .not(.isNull(.deletedAt)) .&& .deletedAt <= 14.daysAgo,
           .createdAt <= 21.daysAgo
         ),
         .or(.isNull(.flagged), .flagged <= 60.daysAgo)
