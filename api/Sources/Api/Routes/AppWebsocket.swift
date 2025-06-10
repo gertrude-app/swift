@@ -7,8 +7,8 @@ enum AppWebsocket {
   @Sendable static func handler(_ request: Request, _ ws: WebSocket) async {
     do {
       try await self.establish(request, ws)
-    } catch is UserTokenNotFound {
-      request.logger.debug("WebSocket conn err: user token not found (ws)")
+    } catch is ChildMacAppTokenNotFound {
+      request.logger.debug("WebSocket conn err: child mac app token not found (ws)")
       let code = Int(WebSocketMessage.ErrorCode.userTokenNotFound.rawValue)
       try? await ws.close(code: .init(codeNumber: code))
     } catch {
@@ -18,28 +18,28 @@ enum AppWebsocket {
   }
 
   private static func establish(
-    _ request: Request,
+    _ req: Request,
     _ ws: WebSocket
   ) async throws {
-    guard let token = try? await request.macAppToken(),
-          let computerUser = try? await token.computerUser(in: request.context.db) else {
-      throw UserTokenNotFound()
+    guard let token = try? await req.macAppToken(),
+          let computerUser = try? await token.computerUser(in: req.context.db) else {
+      throw ChildMacAppTokenNotFound()
     }
 
-    let user = try await token.child(in: request.context.db)
-    let keychains = try await user.keychains(in: request.context.db)
+    let child = try await token.child(in: req.context.db)
+    let keychains = try await child.keychains(in: req.context.db)
 
-    let entityIds = AppConnection.Ids(
-      userDevice: computerUser.id,
-      user: user.id,
+    let ids = AppConnection.Ids(
+      computerUser: computerUser.id,
+      child: child.id,
       keychains: keychains.map(\.id)
     )
 
-    let connection = AppConnection(ws: ws, ids: entityIds)
+    let connection = AppConnection(ws: ws, ids: ids)
     await with(dependency: \.websockets).add(connection)
   }
 }
 
 extension AppWebsocket {
-  struct UserTokenNotFound: Error {}
+  struct ChildMacAppTokenNotFound: Error {}
 }
