@@ -34,6 +34,7 @@ struct QueryAdmins: Pair {
     var email: EmailAddress
     var subscriptionId: Parent.SubscriptionId?
     var subscriptionStatus: Parent.SubscriptionStatus
+    var monthlyPriceInDollars: Int
     var abTestVariant: String?
     var numNotifications: Int
     var numKeychains: Int
@@ -110,6 +111,7 @@ extension QueryAdmins: NoInputResolver {
         email: row.email,
         subscriptionId: row.subscriptionId,
         subscriptionStatus: row.subscriptionStatus,
+        monthlyPriceInDollars: row.monthlyPrice / 100,
         abTestVariant: row.abTestVariant,
         numNotifications: row.numNotifications,
         numKeychains: row.numKeychains,
@@ -159,6 +161,7 @@ struct AdminQuery: CustomQueryable {
       parent.parents.gclid IS NOT NULL AS has_gclid,
       parent.parents.subscription_id,
       parent.parents.subscription_status,
+      parent.parents.monthly_price,
       parent.parents.ab_test_variant,
       parent.parents.created_at AS admin_created_at,
       COUNT(DISTINCT parent.keychains.id) AS num_keychains,
@@ -214,6 +217,7 @@ struct AdminQuery: CustomQueryable {
       parent.parents.email,
       parent.parents.subscription_id,
       parent.parents.subscription_status,
+      parent.parents.monthly_price,
       parent.parents.created_at,
       parent.children.id,
       parent.children.name,
@@ -241,6 +245,7 @@ struct AdminQuery: CustomQueryable {
   let email: EmailAddress
   let subscriptionId: Parent.SubscriptionId?
   let subscriptionStatus: Parent.SubscriptionStatus
+  let monthlyPrice: Int
   let abTestVariant: String?
   let numNotifications: Int
   let numKeychains: Int
