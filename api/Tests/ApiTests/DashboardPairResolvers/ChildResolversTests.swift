@@ -4,19 +4,19 @@ import XExpect
 
 @testable import Api
 
-final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
-  func testSaveAndDeleteNewUser() async throws {
+final class ChildResolversTests: ApiTestCase, @unchecked Sendable {
+  func testSaveAndDeleteNewChild() async throws {
     let parent = try await self.parent()
 
     let input = SaveUser.Input(
       id: .init(),
       isNew: true,
       name: "Franny",
-      keyloggingEnabled: false, // <-- ignored for new user, we set
-      screenshotsEnabled: false, // <-- ignored for new user, we set
-      screenshotsResolution: 999, // <-- ignored for new user, we set
-      screenshotsFrequency: 888, // <-- ignored for new user, we set
-      showSuspensionActivity: false, // <-- ignored for new user, we set
+      keyloggingEnabled: false, // <-- ignored for new child, we set
+      screenshotsEnabled: false, // <-- ignored for new child, we set
+      screenshotsResolution: 999, // <-- ignored for new child, we set
+      screenshotsFrequency: 888, // <-- ignored for new child, we set
+      showSuspensionActivity: false, // <-- ignored for new child, we set
       downtime: "22:00-06:00",
       keychains: []
     )
@@ -42,8 +42,8 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
     expect(sent.websocketMessages).toEqual([.init(.userUpdated, to: .user(child.id))])
 
     // now delete...
-    let deleteOutput = try await DeleteEntity.resolve(
-      with: .init(id: child.id.rawValue, type: .user),
+    let deleteOutput = try await DeleteEntity_v2.resolve(
+      with: .init(id: child.id.rawValue, type: .child),
       in: parent.context
     )
     expect(deleteOutput).toEqual(.success)
@@ -63,7 +63,7 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
     expect(retrievedKeychain).toBeNil()
   }
 
-  func testExistingUserUpdated() async throws {
+  func testExistingChildUpdated() async throws {
     let child = try await self.child()
 
     let output = try await SaveUser.resolve(
@@ -248,16 +248,16 @@ final class UsersResolversTests: ApiTestCase, @unchecked Sendable {
 }
 
 extension SaveUser.Input {
-  init(from user: ChildEntities, keychains: [ChildKeychain] = []) {
+  init(from child: ChildEntities, keychains: [ChildKeychain] = []) {
     self.init(
-      id: user.id,
+      id: child.id,
       isNew: false,
-      name: user.name,
-      keyloggingEnabled: user.keyloggingEnabled,
-      screenshotsEnabled: user.screenshotsEnabled,
-      screenshotsResolution: user.screenshotsResolution,
-      screenshotsFrequency: user.screenshotsFrequency,
-      showSuspensionActivity: user.showSuspensionActivity,
+      name: child.name,
+      keyloggingEnabled: child.keyloggingEnabled,
+      screenshotsEnabled: child.screenshotsEnabled,
+      screenshotsResolution: child.screenshotsResolution,
+      screenshotsFrequency: child.screenshotsFrequency,
+      showSuspensionActivity: child.showSuspensionActivity,
       keychains: keychains
     )
   }
