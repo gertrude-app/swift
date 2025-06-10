@@ -16,12 +16,12 @@ struct AppEvent: Equatable {
 extension AppConnection.Ids {
   func satisfies(matcher: AppEvent.Matcher) -> Bool {
     switch matcher {
-    case .user(let userId):
-      self.user == userId
+    case .user(let childId):
+      self.child == childId
     case .usersWith(let keychainId):
       self.keychains.contains(keychainId)
-    case .userDevice(let userDeviceId):
-      self.userDevice == userDeviceId
+    case .userDevice(let computerUserId):
+      self.computerUser == computerUserId
     }
   }
 }

@@ -5,7 +5,6 @@ import Gertie
 @globalActor actor AppConnections {
   static let shared = AppConnections()
 
-  let id = UUID()
   var connections: [AppConnection.Id: AppConnection] = [:]
 
   @Dependency(\.logger) private var logger
@@ -17,22 +16,21 @@ import Gertie
     }
   }
 
-  func add(_ newConnection: AppConnection) {
-    let numDupes = self.connections.values.filter { existing in
-      existing.ids.userDevice == newConnection.ids.userDevice
-    }.count
-    if numDupes > 0 {
-      self.logger.error("AppConnections: opening duplicate connection (ws)")
-      self.logger.error("  -> \(numDupes) connection/s already existed (ws)")
-      self.logger.error("  -> matching user device id: \(newConnection.ids.userDevice) (ws)")
-    } else {
-      self.logger.notice("AppConnections: opening new connection (ws)")
-      self.logger.notice("  -> for user device id: \(newConnection.ids.userDevice) (ws)")
+  func add(_ connection: AppConnection) {
+    let dupes: [AppConnection] = self.connections.values.filter {
+      $0.ids.computerUser == connection.ids.computerUser
     }
-    self.connections[newConnection.id] = newConnection
+    if dupes.count > 0 {
+      connection.log("ERR! open dupe", extra: "dupes: \(dupes.count)")
+      dupes.forEach { self.remove($0) }
+    } else {
+      connection.log("opened")
+    }
+    self.connections[connection.id] = connection
   }
 
   func remove(_ connection: AppConnection) {
+    connection.log("being removed")
     self.connections.removeValue(forKey: connection.id)
   }
 
@@ -44,10 +42,10 @@ import Gertie
     }
   }
 
-  func status(for userDeviceId: ComputerUser.Id) async -> ChildComputerStatus {
+  func status(for computerId: ComputerUser.Id) async -> ChildComputerStatus {
     for connection in self.connections.values {
-      if connection.ids.userDevice == userDeviceId {
-        let state = await connection.filterState
+      if connection.ids.computerUser == computerId {
+        let state = connection.filterState.withLock { $0 }
         switch state {
         case .withoutTimes(let filterState):
           return filterState.status
@@ -62,11 +60,7 @@ import Gertie
   }
 
   private func flush() {
-    self.logger.notice("AppConnections: flushing closed connections (ws)")
-    self.logger.notice("  -> self.id: \(self.id.lowercased) (ws)")
-    for connection in self.connections.values.filter(\.ws.isClosed) {
-      self.logger.notice("  -> removing connection: \(connection.id) (ws)")
-      self.logger.notice("  -> for user device id: \(connection.ids.userDevice) (ws)")
+    for connection in self.connections.values.filter(\.isDead) {
       self.remove(connection)
     }
   }
