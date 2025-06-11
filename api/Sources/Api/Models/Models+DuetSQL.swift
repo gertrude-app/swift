@@ -962,3 +962,31 @@ extension SecurityEvent: Model {
     ]
   }
 }
+
+extension GertieIOS.WebContentFilterPolicy: @retroactive PostgresJsonable {}
+
+extension IOSApp.WebPolicy: Model {
+  public static let schemaName = "iosapp"
+  public static let tableName = "web_policies"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
+    case .webPolicy: .json(self.webPolicy.toPostgresJson)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(self.deviceId),
+      .webPolicy: .json(self.webPolicy.toPostgresJson),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}

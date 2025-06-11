@@ -46,6 +46,7 @@ extension Configure {
     app.migrations.add(DashAnnouncements())
     app.migrations.add(IOSConnection())
     app.migrations.add(RenameParentNotifMethods())
+    app.migrations.add(WebPolicy())
   }
 }
 
