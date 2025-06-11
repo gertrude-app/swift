@@ -69,8 +69,6 @@ public final class FilterProxy: Sendable {
         self.deps.logger.log("read \(rules.count) (onboarding) rules")
       case .emergencyLockdown:
         self.deps.logger.log("unexpected stored emergencyLockdown mode")
-      case .suspended(until: let expiration, restoring: _):
-        self.deps.logger.log("read filter suspended, resuming: \(expiration)")
       }
       return mode
     } catch {
@@ -95,27 +93,6 @@ public final class FilterProxy: Sendable {
       self.deps.logger.log("Decide flow, rules: \(desc)")
     #endif
 
-    if hostname == "suspend-filter.xpc.gertrude.app",
-       let expiration = self.deps.storage.loadDate(forKey: .filterSuspensionExpirationKey),
-       expiration > self.deps.now,
-       isGertrude(bundleId) {
-      self.deps.logger.log("suspending filter until \(expiration)")
-      self.protectionMode.withLock { protectionMode in
-        if !protectionMode.isSuspended {
-          protectionMode = .suspended(until: expiration, restoring: protectionMode)
-        }
-      }
-      return .drop
-    }
-
-    if hostname == "resume-filter.xpc.gertrude.app", isGertrude(bundleId),
-       case .suspended(until: _, restoring: let previous) = self.protectionMode.withLock({ $0 }) {
-      self.deps.logger.log("resuming filter")
-      self.deps.storage.removeObject(forKey: .filterSuspensionExpirationKey)
-      self.protectionMode.withLock { $0 = previous }
-      return self.decideFlow(hostname: hostname, url: url, bundleId: bundleId, flowType: flowType)
-    }
-
     // NB: this _should_ be extremely fast, because
     //  1) network requests originate relatively rarely
     //  2) it's likely that the filter only ever operates on a single thread
@@ -123,20 +100,6 @@ public final class FilterProxy: Sendable {
     let protectionMode = self.protectionMode.withLock { $0 }
 
     guard let rules = protectionMode.rules else {
-      if case .suspended(until: let expiration, restoring: let previous) = protectionMode {
-        if expiration < self.deps.now {
-          self.deps.storage.removeObject(forKey: .filterSuspensionExpirationKey)
-          self.protectionMode.withLock { $0 = previous }
-          return self.decideFlow(
-            hostname: hostname,
-            url: url,
-            bundleId: bundleId,
-            flowType: flowType
-          )
-        }
-        return .allow
-      }
-
       return self.decideLockdownFlow(
         hostname: hostname,
         url: url,
@@ -214,11 +177,7 @@ public final class FilterProxy: Sendable {
       return
     }
     self.protectionMode.withLock { currentMode in
-      if case .suspended(let expiration, _) = currentMode {
-        currentMode = .suspended(until: expiration, restoring: loadedMode)
-      } else {
-        currentMode = loadedMode
-      }
+      currentMode = loadedMode
     }
     if loadedMode != .emergencyLockdown {
       // ...only setting normal if we get valid rules

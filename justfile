@@ -158,8 +158,6 @@ xmlfiles := """
 ./iosapp/controller/Info.plist \
 ./iosapp/filter/filter.entitlements \
 ./iosapp/filter/Info.plist \
-./iosapp/recorder/recorder.entitlements \
-./iosapp/recorder/Info.plist \
 ./macapp/Xcode/GertrudeFilterExtension/GertrudeFilterExtension.entitlements \
 ./macapp/Xcode/GertrudeFilterExtension/Info.plist \
 ./macapp/Xcode/Gertrude/Gertrude.entitlements \

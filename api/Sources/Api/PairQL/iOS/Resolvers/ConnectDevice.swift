@@ -25,7 +25,9 @@ extension ConnectDevice: Resolver {
       appVersion: input.appVersion,
       iosVersion: input.iosVersion
     ))
-    let token = try await context.db.create(IOSApp.Token(deviceId: device.id))
+    let token = try await context.db.create(IOSApp.Token(
+      deviceId: device.id
+    ))
 
     return .init(
       childId: child.id.rawValue,

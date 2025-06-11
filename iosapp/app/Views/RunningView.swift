@@ -49,11 +49,8 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
-        BigButton(
-          self.connected ? "Request filter suspension" : "Connect to parent account",
-          type: .button(self.onBtnTap)
-        )
-        .padding(.bottom, 20)
+        BigButton("Connect to parent account", type: .button(self.onBtnTap))
+          .padding(.bottom, 20)
 
         Text("You can quit the app now, it will keep blocking even when not running.")
           .font(.system(size: 18, weight: .medium))
@@ -92,12 +89,6 @@ struct RunningView: View {
       action: \.destination.connectAccount
     )) {
       ConnectingView(store: $0)
-    }
-    .sheet(item: self.$store.scope(
-      state: \.destination?.requestSuspension,
-      action: \.destination.requestSuspension
-    )) {
-      RequestSuspensionView(store: $0)
     }
   }
 }

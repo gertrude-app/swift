@@ -18,7 +18,6 @@ public struct IOSReducer {
     @Dependency(\.date.now) var now
     @Dependency(\.locale) var locale
     @Dependency(\.mainQueue) var mainQueue
-    @Dependency(\.recorder) var recorder
   }
 
   @ObservationIgnored
@@ -26,8 +25,6 @@ public struct IOSReducer {
 
   enum CancelId {
     case cacheClearUpdates
-    case screenshotUploads
-    case recorderEvents
   }
 
   public init() {}
@@ -118,22 +115,8 @@ public struct IOSReducer {
       // 👍 todo: restore
       return .none
 
-    case .runningBtnTapped where state.screen == .running(state: .notConnected):
+    case .runningBtnTapped: // rename...?
       state.destination = .connectAccount(.init(screen: .enteringCode))
-      return .none
-
-    case .runningBtnTapped
-      where state.screen == .running(state: .connected(waitingForSuspension: false)):
-      state.destination = .requestSuspension(.customizing)
-      return .none
-
-    case .runningBtnTapped
-      where state.screen == .running(state: .connected(waitingForSuspension: true)):
-      // TODO:
-      return .none
-
-    case .runningBtnTapped:
-      // unreachable
       return .none
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
@@ -601,7 +584,7 @@ public struct IOSReducer {
           switch (filterRunning, disabledBlockGroups, hasLegacyData) {
           case (true, .some, _):
             await send(.programmatic(.setScreen(.running(
-              state: connection != nil ? .connected() : .notConnected
+              state: connection != nil ? .connected : .notConnected
             ))))
             if let token = connection?.token {
               await deps.api.setAuthToken(token)
@@ -617,9 +600,6 @@ public struct IOSReducer {
           case (true, .none, false):
             deps.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
-          }
-          if !deps.recorder.ensureScreenshotsDir() {
-            // TODO: log
           }
         },
         // handle first launch
@@ -646,20 +626,11 @@ public struct IOSReducer {
         // safeguard in case app crashed trying to fill the disk
         .run { [deps = self.deps] send in
           await deps.device.deleteCacheFillDir()
-        },
-        .run { [deps = self.deps] send in
-          for await event in deps.recorder.events() {
-            await send(.programmatic(.receivedScreenRecordingEvent(event)))
-          }
-        }.cancellable(id: CancelId.recorderEvents, cancelInFlight: true)
+        }
       )
 
     case .appWillTerminate:
-      return .merge(
-        .cancel(id: CancelId.recorderEvents),
-        .cancel(id: CancelId.cacheClearUpdates),
-        .cancel(id: CancelId.screenshotUploads)
-      )
+      return .cancel(id: CancelId.cacheClearUpdates)
 
     case .setFirstLaunch(let date):
       state.onboarding.firstLaunch = date
@@ -766,92 +737,17 @@ public struct IOSReducer {
       state.onboarding.endClearCache = self.deps.now
       state.screen = .onboarding(.happyPath(.cacheCleared))
       return .cancel(id: CancelId.cacheClearUpdates)
-
-    case .receivedSuspensionUpdate(.pending):
-      return .none
-
-    case .receivedSuspensionUpdate(.denied(let comment)):
-      state.destination = .requestSuspension(.denied(comment: comment))
-      return .none
-
-    case .receivedSuspensionUpdate(.notFound):
-      self.deps.log("filter suspension id not found", "ceec0d93")
-      return .none
-
-    case .receivedSuspensionUpdate(.accepted(let duration, let comment)):
-      state.destination = .requestSuspension(.granted(duration: duration, comment: comment))
-      return .none
-
-    case .suspensionRequestExpired:
-      return .none
-
-    case .receivedScreenRecordingEvent(.broadcastStarted):
-      guard case .pendingBroadcastStart(let duration) = state.suspension else {
-        return .none
-      }
-      let expiration = self.deps.now + .seconds(duration.rawValue)
-      state.suspension = .active(until: expiration)
-      return .merge(
-        .run { [deps = self.deps] send in
-          await deps.filter.suspend(expiration)
-        },
-        .run { [deps = self.deps] send in
-          for await _ in deps.clock.timer(interval: .seconds(15)) { // TODO: time
-            var numProcessed = 0
-            while let screenshot = deps.recorder.unprocessedScreenshot() {
-              try await deps.api.uploadScreenshot(screenshot.image)
-              screenshot.cleanup()
-              numProcessed += 1
-              // prevent filesystem from seeing the same cleaned up file
-              try? await deps.clock.sleep(for: .milliseconds(5))
-            }
-            if numProcessed == 0 {
-              await send(.programmatic(.endSuspension))
-            }
-          }
-        }.cancellable(id: CancelId.screenshotUploads, cancelInFlight: true)
-      )
-
-    case .endSuspension, .receivedScreenRecordingEvent(.broadcastFinished):
-      return .merge(
-        .run { [deps = self.deps] send in
-          await deps.filter.resume()
-        },
-        .cancel(id: CancelId.screenshotUploads)
-      )
-
-    case .receivedScreenRecordingEvent:
-      return .none
     }
   }
 
   func destination(state: inout State, action: Destination.Action) -> Effect<Action> {
     switch action {
     case .connectAccount(.connectionSucceeded(childData: let data)):
-      state.screen = .running(state: .connected())
+      state.screen = .running(state: .connected)
       return .run { [deps = self.deps] send in
         await deps.api.setAuthToken(data.token)
         deps.storage.saveConnection(data: data)
       }
-    case .requestSuspension(.requestSucceeded(let id)):
-      state.screen = .running(state: .connected(waitingForSuspension: true))
-      return .run { [deps = self.deps] send in
-        // TODO: add backoff, better expiration, etc.
-        var count = 0
-        for await _ in deps.clock.timer(interval: .seconds(5)) {
-          if count > 60 { // 5 minutes
-            await send(.programmatic(.suspensionRequestExpired))
-            return
-          }
-          let decision = try await deps.api.pollSuspensionDecision(id: id)
-          await send(.programmatic(.receivedSuspensionUpdate(decision)))
-          if decision != .pending { return }
-          count += 1
-        }
-      }
-    case .requestSuspension(.startSuspensionTapped(let seconds)):
-      state.suspension = .pendingBroadcastStart(duration: seconds)
-      return .none
     default:
       return .none
     }

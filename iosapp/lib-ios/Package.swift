@@ -8,7 +8,6 @@ let package = Package(
     .library(name: "LibCore", targets: ["LibCore"]),
     .library(name: "LibFilter", targets: ["LibFilter"]),
     .library(name: "LibController", targets: ["LibController"]),
-    .library(name: "LibRecorder", targets: ["LibRecorder"]),
     .library(name: "LibClients", targets: ["LibClients"]),
     .library(name: "LibApp", targets: ["LibApp"]),
   ],
@@ -60,12 +59,6 @@ let package = Package(
     ),
     .target(
       name: "LibController",
-      dependencies: [
-        "LibClients",
-      ]
-    ),
-    .target(
-      name: "LibRecorder",
       dependencies: [
         "LibClients",
       ]
