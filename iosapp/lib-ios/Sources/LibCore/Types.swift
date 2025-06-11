@@ -71,12 +71,7 @@ public extension String {
   }
 
   static var gertrudeApi: String {
-    #if DEBUG
-      // just run-api-ip
-      "http://192.168.10.227:8080"
-    #else
-      "https://api.gertrude.app"
-    #endif
+    (try? Configuration.value(for: "API_URL")) ?? "https://api.gertrude.app"
   }
 
   static var protectionModeStorageKey: String {
@@ -89,5 +84,24 @@ public extension String {
 
   static var disabledBlockGroupsStorageKey: String {
     "disabledBlockGroups.v1.3.0"
+  }
+}
+
+enum Configuration {
+  enum Error: Swift.Error {
+    case missingKey, invalidValue
+  }
+
+  static func value(for key: String) throws -> String {
+    guard let object = Bundle.main.object(forInfoDictionaryKey: key) else {
+      throw Error.missingKey
+    }
+
+    switch object {
+    case let string as String:
+      return string
+    default:
+      throw Error.invalidValue
+    }
   }
 }
