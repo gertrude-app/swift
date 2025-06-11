@@ -5,29 +5,34 @@ import GertieIOS
 import IOSRoute
 
 extension ConnectDevice: Resolver {
-  static func resolve(with input: Input, in context: Context) async throws -> Output {
+  static func resolve(with input: Input, in ctx: Context) async throws -> Output {
     guard let childId = await with(dependency: \.ephemeral)
       .getPendingAppConnection(input.verificationCode) else {
-      throw context.error(
+      throw ctx.error(
         id: "79483727",
         type: .unauthorized,
         debugMessage: "verification code not found",
-        userMessage: "Connection code expired, or not found. Plese create a new code and try again.",
+        userMessage: "Connection code expired, or not found. Please create a new code and try again.",
         appTag: .connectionCodeNotFound
       )
     }
 
-    let child = try await context.db.find(childId)
-    let device = try await context.db.create(IOSApp.Device(
+    let child = try await ctx.db.find(childId)
+    let device = try await ctx.db.create(IOSApp.Device(
       childId: childId,
       vendorId: .init(input.vendorId),
       deviceType: input.deviceType,
       appVersion: input.appVersion,
       iosVersion: input.iosVersion
     ))
-    let token = try await context.db.create(IOSApp.Token(
-      deviceId: device.id
-    ))
+    let token = try await ctx.db.create(IOSApp.Token(deviceId: device.id))
+    try await ctx.db.create(IOSApp.WebPolicy(deviceId: device.id, webPolicy: .blockAdult))
+
+    // start with ALL block groups, parent controls from web ui
+    let groups = try await IOSApp.BlockGroup.query().all(in: ctx.db)
+    try await ctx.db.create(groups.map {
+      IOSApp.DeviceBlockGroup(deviceId: device.id, blockGroupId: $0.id)
+    })
 
     return .init(
       childId: child.id.rawValue,

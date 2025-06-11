@@ -2,21 +2,20 @@ import Duet
 import GertieIOS
 
 extension IOSApp {
-  struct WebPolicy: Codable, Sendable {
+  struct DeviceBlockGroup: Codable, Sendable {
     var id: Id
     var deviceId: Device.Id
-    var webPolicy: WebContentFilterPolicy
+    var blockGroupId: BlockGroup.Id
     var createdAt = Date()
-    var updatedAt = Date()
 
     init(
       id: Id = .init(),
       deviceId: Device.Id,
-      webPolicy: WebContentFilterPolicy
+      blockGroupId: BlockGroup.Id
     ) {
       self.id = id
       self.deviceId = deviceId
-      self.webPolicy = webPolicy
+      self.blockGroupId = blockGroupId
     }
   }
 }

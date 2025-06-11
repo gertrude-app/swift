@@ -7,7 +7,7 @@ extension IOSApp {
     var deviceId: Device.Id?
     var vendorId: VendorId?
     var rule: GertieIOS.BlockRule
-    var group: String?
+    var groupId: BlockGroup.Id?
     var comment: String?
     var createdAt = Date()
     var updatedAt = Date()
@@ -16,13 +16,13 @@ extension IOSApp {
       id: Id = .init(),
       vendorId: VendorId? = nil,
       rule: GertieIOS.BlockRule,
-      group: String? = nil,
+      groupId: BlockGroup.Id? = nil,
       comment: String? = nil
     ) {
       self.id = id
       self.vendorId = vendorId
       self.rule = rule
-      self.group = group
+      self.groupId = groupId
       self.comment = comment
     }
   }
