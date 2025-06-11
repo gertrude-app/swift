@@ -584,7 +584,7 @@ public struct IOSReducer {
           switch (filterRunning, disabledBlockGroups, hasLegacyData) {
           case (true, .some, _):
             await send(.programmatic(.setScreen(.running(
-              state: connection != nil ? .connected : .notConnected
+              state: connection.map { .connected(childName: $0.childName) } ?? .notConnected
             ))))
             if let token = connection?.token {
               await deps.api.setAuthToken(token)
@@ -743,7 +743,7 @@ public struct IOSReducer {
   func destination(state: inout State, action: Destination.Action) -> Effect<Action> {
     switch action {
     case .connectAccount(.connectionSucceeded(childData: let data)):
-      state.screen = .running(state: .connected)
+      state.screen = .running(state: .connected(childName: data.childName))
       return .run { [deps = self.deps] send in
         await deps.api.setAuthToken(data.token)
         deps.storage.saveConnection(data: data)

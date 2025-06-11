@@ -14,7 +14,7 @@ struct RunningView: View {
 
   @Bindable var store: StoreOf<IOSReducer>
 
-  let connected: Bool
+  let childName: String?
   let onBtnTap: () -> Void
 
   var body: some View {
@@ -49,8 +49,14 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
-        BigButton("Connect to parent account", type: .button(self.onBtnTap))
-          .padding(.bottom, 20)
+        if let childName = self.childName {
+          Text("Hi \(childName)!")
+            .font(.system(size: 18, weight: .medium))
+            .padding(.bottom, 20)
+        } else {
+          BigButton("Connect to parent account", type: .button(self.onBtnTap))
+            .padding(.bottom, 20)
+        }
 
         Text("You can quit the app now, it will keep blocking even when not running.")
           .font(.system(size: 18, weight: .medium))
@@ -96,7 +102,7 @@ struct RunningView: View {
 #Preview {
   RunningView(
     store: .init(initialState: .init()) { IOSReducer() },
-    connected: false,
+    childName: nil,
     onBtnTap: {}
   )
 }
