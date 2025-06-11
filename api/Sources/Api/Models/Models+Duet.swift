@@ -560,3 +560,17 @@ extension SecurityEvent {
     case createdAt
   }
 }
+
+extension IOSApp.WebPolicy: Duet.Identifiable {
+  typealias Id = Tagged<IOSApp.WebPolicy, UUID>
+}
+
+extension IOSApp.WebPolicy {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case deviceId
+    case webPolicy
+    case createdAt
+    case updatedAt
+  }
+}
