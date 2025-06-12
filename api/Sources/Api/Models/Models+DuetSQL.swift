@@ -135,6 +135,7 @@ extension IOSApp.Device: Model {
     case .deviceType: .string(self.deviceType)
     case .appVersion: .string(self.appVersion)
     case .iosVersion: .string(self.iosVersion)
+    case .webPolicy: .string(self.webPolicy)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
     }
@@ -148,6 +149,7 @@ extension IOSApp.Device: Model {
       .deviceType: .string(self.deviceType),
       .appVersion: .string(self.appVersion),
       .iosVersion: .string(self.iosVersion),
+      .webPolicy: .string(self.webPolicy),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -963,34 +965,6 @@ extension SecurityEvent: Model {
   }
 }
 
-extension GertieIOS.WebContentFilterPolicy: @retroactive PostgresJsonable {}
-
-extension IOSApp.WebPolicy: Model {
-  public static let schemaName = "iosapp"
-  public static let tableName = "web_policies"
-  public typealias ColumnName = CodingKeys
-
-  public func postgresData(for column: ColumnName) -> Postgres.Data {
-    switch column {
-    case .id: .id(self)
-    case .deviceId: .uuid(self.deviceId)
-    case .policy: .json(self.policy.toPostgresJson)
-    case .createdAt: .date(self.createdAt)
-    case .updatedAt: .date(self.updatedAt)
-    }
-  }
-
-  public var insertValues: [ColumnName: Postgres.Data] {
-    [
-      .id: .id(self),
-      .deviceId: .uuid(self.deviceId),
-      .policy: .json(self.policy.toPostgresJson),
-      .createdAt: .currentTimestamp,
-      .updatedAt: .currentTimestamp,
-    ]
-  }
-}
-
 extension IOSApp.BlockGroup: Model {
   public static let schemaName = "iosapp"
   public static let tableName = "block_groups"
@@ -1037,6 +1011,32 @@ extension IOSApp.DeviceBlockGroup: Model {
       .deviceId: .uuid(self.deviceId),
       .blockGroupId: .uuid(self.blockGroupId),
       .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension IOSApp.WebPolicyDomain: Model {
+  public static let schemaName = "iosapp"
+  public static let tableName = "web_policy_domains"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
+    case .domain: .string(self.domain)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(self.deviceId),
+      .domain: .string(self.domain),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
     ]
   }
 }
