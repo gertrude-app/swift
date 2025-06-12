@@ -9,6 +9,7 @@ extension IOSApp {
     var deviceType: String
     var appVersion: String
     var iosVersion: String
+    var webPolicy: String
     var createdAt = Date()
     var updatedAt = Date()
 
@@ -18,7 +19,8 @@ extension IOSApp {
       vendorId: VendorId,
       deviceType: String,
       appVersion: String,
-      iosVersion: String
+      iosVersion: String,
+      webPolicy: String = "blockAll"
     ) {
       self.id = id ?? .init(get(dependency: \.uuid)())
       self.childId = childId
@@ -26,6 +28,7 @@ extension IOSApp {
       self.deviceType = deviceType
       self.appVersion = appVersion
       self.iosVersion = iosVersion
+      self.webPolicy = webPolicy
     }
   }
 }
@@ -48,9 +51,26 @@ extension IOSApp.Device {
       .all(in: db)
   }
 
-  func webPolicy(in db: any DuetSQL.Client) async throws -> IOSApp.WebPolicy {
-    try await IOSApp.WebPolicy.query()
+  func webContentFilterPolicy(in db: any DuetSQL.Client) async throws -> WebContentFilterPolicy {
+    let domains = try await IOSApp.WebPolicyDomain.query()
       .where(.deviceId == self.id)
-      .first(in: db)
+      .all(in: db)
+      .map(\.domain)
+    switch self.webPolicy {
+    case "allowAll":
+      return .allowAll
+    case "blockAdult":
+      return .blockAdult
+    case "blockAdultAnd":
+      return .blockAdultAnd(Set(domains))
+    case "blockAllExcept":
+      return .blockAllExcept(Set(domains))
+    case "blockAll":
+      return .blockAll
+    default:
+      await with(dependency: \.slack)
+        .error("unexpected web policy `\(self.webPolicy)` for ios device \(self.id)")
+      return .blockAll
+    }
   }
 }

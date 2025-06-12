@@ -102,6 +102,7 @@ extension IOSApp.Device {
     case deviceType
     case appVersion
     case iosVersion
+    case webPolicy
     case createdAt
     case updatedAt
   }
@@ -561,20 +562,6 @@ extension SecurityEvent {
   }
 }
 
-extension IOSApp.WebPolicy: Duet.Identifiable {
-  typealias Id = Tagged<IOSApp.WebPolicy, UUID>
-}
-
-extension IOSApp.WebPolicy {
-  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
-    case id
-    case deviceId
-    case policy
-    case createdAt
-    case updatedAt
-  }
-}
-
 extension IOSApp.BlockGroup: Duet.Identifiable {
   typealias Id = Tagged<IOSApp.BlockGroup, UUID>
 }
@@ -599,5 +586,19 @@ extension IOSApp.DeviceBlockGroup {
     case deviceId
     case blockGroupId
     case createdAt
+  }
+}
+
+extension IOSApp.WebPolicyDomain: Duet.Identifiable {
+  typealias Id = Tagged<IOSApp.WebPolicyDomain, UUID>
+}
+
+extension IOSApp.WebPolicyDomain {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case deviceId
+    case domain
+    case createdAt
+    case updatedAt
   }
 }
