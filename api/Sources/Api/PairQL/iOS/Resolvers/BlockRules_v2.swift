@@ -5,7 +5,7 @@ import GertieIOS
 import IOSRoute
 
 extension BlockRules_v2: Resolver {
-  static func resolve(with input: Input, in context: Context) async throws -> Output {
+  static func resolve(with input: Input, in ctx: Context) async throws -> Output {
     with(dependency: \.logger).info("BlockRules_v2: \(input)")
     let groupIds = input.disabledGroups.map { Postgres.Data.uuid($0.blockGroupId) }
     return try await IOSApp.BlockRule.query()
@@ -14,7 +14,7 @@ extension BlockRules_v2: Resolver {
         .vendorId == (input.vendorId == .init(.zero) ? .init() : input.vendorId)
       ))
       .orderBy(.id, .asc)
-      .all(in: context.db)
+      .all(in: ctx.db)
       .map(\.rule)
   }
 }

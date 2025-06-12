@@ -569,7 +569,7 @@ extension IOSApp.WebPolicy {
   enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
     case id
     case deviceId
-    case webPolicy
+    case policy
     case createdAt
     case updatedAt
   }

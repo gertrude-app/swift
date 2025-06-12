@@ -26,7 +26,7 @@ extension ConnectDevice: Resolver {
       iosVersion: input.iosVersion
     ))
     let token = try await ctx.db.create(IOSApp.Token(deviceId: device.id))
-    try await ctx.db.create(IOSApp.WebPolicy(deviceId: device.id, webPolicy: .blockAdult))
+    try await ctx.db.create(IOSApp.WebPolicy(deviceId: device.id, policy: .blockAdult))
 
     // start with ALL block groups, parent controls from web ui
     let groups = try await IOSApp.BlockGroup.query().all(in: ctx.db)
