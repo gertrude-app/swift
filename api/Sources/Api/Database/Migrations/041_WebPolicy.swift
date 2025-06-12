@@ -7,7 +7,7 @@ struct WebPolicy: GertieMigration {
       CREATE TABLE iosapp.web_policies (
         id uuid NOT NULL,
         device_id uuid NOT NULL,
-        web_policy jsonb NOT NULL,
+        policy jsonb NOT NULL,
         created_at timestamp with time zone NOT NULL,
         updated_at timestamp with time zone NOT NULL
       );

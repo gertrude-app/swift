@@ -974,7 +974,7 @@ extension IOSApp.WebPolicy: Model {
     switch column {
     case .id: .id(self)
     case .deviceId: .uuid(self.deviceId)
-    case .webPolicy: .json(self.webPolicy.toPostgresJson)
+    case .policy: .json(self.policy.toPostgresJson)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
     }
@@ -984,7 +984,7 @@ extension IOSApp.WebPolicy: Model {
     [
       .id: .id(self),
       .deviceId: .uuid(self.deviceId),
-      .webPolicy: .json(self.webPolicy.toPostgresJson),
+      .policy: .json(self.policy.toPostgresJson),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]

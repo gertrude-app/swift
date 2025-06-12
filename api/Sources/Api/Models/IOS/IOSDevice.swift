@@ -2,7 +2,7 @@ import DuetSQL
 import GertieIOS
 
 extension IOSApp {
-  struct Device: Codable, Sendable {
+  struct Device: Codable, Sendable, Equatable {
     var id: Id
     var childId: Child.Id
     var vendorId: VendorId
@@ -36,6 +36,21 @@ extension IOSApp.Device {
   func child(in db: any DuetSQL.Client) async throws -> Child {
     try await Child.query()
       .where(.id == self.childId)
+      .first(in: db)
+  }
+
+  func blockGroups(in db: any DuetSQL.Client) async throws -> [IOSApp.BlockGroup] {
+    let pivots = try await IOSApp.DeviceBlockGroup.query()
+      .where(.deviceId == self.id)
+      .all(in: db)
+    return try await IOSApp.BlockGroup.query()
+      .where(.id |=| pivots.map(\.blockGroupId))
+      .all(in: db)
+  }
+
+  func webPolicy(in db: any DuetSQL.Client) async throws -> IOSApp.WebPolicy {
+    try await IOSApp.WebPolicy.query()
+      .where(.deviceId == self.id)
       .first(in: db)
   }
 }
