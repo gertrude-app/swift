@@ -135,6 +135,15 @@ jobs:
             pm2 reset staging > /dev/null
             pm2 stop staging > /dev/null
             pm2 start staging > /dev/null
+      - name: slack api prod deploy
+        if: github.event_name != 'pull_request'
+        run: |
+          curl -X POST \
+            -H "Content-type: application/json; charset=utf-8" \
+            -H "Authorization: Bearer $SLACK_API_TOKEN" \
+            -d "{\"channel\":\"C08GLK13HAB\",\"text\":\"Gertrude api *DEPLOY READY*\", \
+                 \"username\":\"Gertrude Bot\",\"icon_emoji\":\":robot_face:\"}" \
+            https://slack.com/api/chat.postMessage
 
   linux-api-test:
     if: github.event_name == 'pull_request'
@@ -285,3 +294,4 @@ env:
   STRIPE_SECRET_KEY: not-real
   SWIFT_DETERMINISTIC_HASHING: 1
   TASK_MEGA_YIELD_COUNT: 250
+  SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
