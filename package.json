@@ -1,5 +1,5 @@
 {
-  "packageManager": "pnpm@7",
+  "packageManager": "pnpm@10.12.1",
   "devDependencies": {
     "@friends-library/env": "^1.4.0",
     "@types/node": "^18.11.18",

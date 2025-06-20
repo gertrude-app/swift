@@ -9,13 +9,11 @@ enum AuthedAdminRoute: PairRoute {
   case dashboardWidgets
   case decideFilterSuspensionRequest(DecideFilterSuspensionRequest.Input)
   case deleteActivityItems_v2(DeleteActivityItems_v2.Input)
-  case deleteEntity(DeleteEntity.Input) // deprecated
   case deleteEntity_v2(DeleteEntity_v2.Input)
   case flagActivityItems(FlagActivityItems.Input)
   case getAdmin
   case getAdminKeychain(GetAdminKeychain.Input)
   case getAdminKeychains
-  case getDashboardWidgets // deprecated
   case getDevice(GetDevice.Input)
   case getDevices
   case getIdentifiedApps
@@ -29,11 +27,9 @@ enum AuthedAdminRoute: PairRoute {
   case latestAppVersions
   case logEvent(LogEvent.Input)
   case userActivityFeed(UserActivityFeed.Input)
-  case userActivitySummaries(UserActivitySummaries.Input) // deprecated
   case childActivitySummaries(ChildActivitySummaries.Input)
   case combinedUsersActivityFeed(CombinedUsersActivityFeed.Input)
   case familyActivitySummaries(FamilyActivitySummaries.Input)
-  case combinedUsersActivitySummaries // deprecated
   case getUsers
   case getUserUnlockRequests(GetUserUnlockRequests.Input)
   case saveDevice(SaveDevice.Input)
@@ -78,10 +74,6 @@ extension AuthedAdminRoute {
         Operation(DeleteActivityItems_v2.self)
         Body(.dashboardInput(DeleteActivityItems_v2.self))
       }
-      Route(.case(Self.deleteEntity)) {
-        Operation(DeleteEntity.self)
-        Body(.dashboardInput(DeleteEntity.self))
-      }
       Route(.case(Self.deleteEntity_v2)) {
         Operation(DeleteEntity_v2.self)
         Body(.dashboardInput(DeleteEntity_v2.self))
@@ -103,9 +95,6 @@ extension AuthedAdminRoute {
       }
       Route(.case(Self.getAdminKeychains)) {
         Operation(GetAdminKeychains.self)
-      }
-      Route(.case(Self.getDashboardWidgets)) {
-        Operation(GetDashboardWidgets.self)
       }
       Route(.case(Self.getDevice)) {
         Operation(GetDevice.self)
@@ -146,10 +135,6 @@ extension AuthedAdminRoute {
       Route(.case(Self.logEvent)) {
         Operation(LogEvent.self)
         Body(.dashboardInput(LogEvent.self))
-      }
-      Route(.case(Self.userActivitySummaries)) {
-        Operation(UserActivitySummaries.self)
-        Body(.dashboardInput(UserActivitySummaries.self))
       }
       Route(.case(Self.userActivityFeed)) {
         Operation(UserActivityFeed.self)
@@ -203,9 +188,6 @@ extension AuthedAdminRoute {
         Operation(UpdateUnlockRequest.self)
         Body(.dashboardInput(UpdateUnlockRequest.self))
       }
-      Route(.case(Self.combinedUsersActivitySummaries)) {
-        Operation(CombinedUsersActivitySummaries.self)
-      }
       Route(.case(Self.requestPublicKeychain)) {
         Operation(RequestPublicKeychain.self)
         Body(.dashboardInput(RequestPublicKeychain.self))
@@ -232,17 +214,11 @@ extension AuthedAdminRoute: RouteResponder {
     case .dashboardWidgets:
       let output = try await DashboardWidgets.resolve(in: context)
       return try await self.respond(with: output)
-    case .deleteEntity(let input):
-      let output = try await DeleteEntity.resolve(with: input, in: context)
-      return try await self.respond(with: output)
     case .deleteEntity_v2(let input):
       let output = try await DeleteEntity_v2.resolve(with: input, in: context)
       return try await self.respond(with: output)
     case .familyActivitySummaries(let input):
       let output = try await FamilyActivitySummaries.resolve(with: input, in: context)
-      return try await self.respond(with: output)
-    case .userActivitySummaries(let input):
-      let output = try await UserActivitySummaries.resolve(with: input, in: context)
       return try await self.respond(with: output)
     case .createPendingAppConnection(let input):
       let output = try await CreatePendingAppConnection.resolve(with: input, in: context)
@@ -255,9 +231,6 @@ extension AuthedAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .combinedUsersActivityFeed(let input):
       let output = try await CombinedUsersActivityFeed.resolve(with: input, in: context)
-      return try await self.respond(with: output)
-    case .combinedUsersActivitySummaries:
-      let output = try await CombinedUsersActivitySummaries.resolve(in: context)
       return try await self.respond(with: output)
     case .getAdmin:
       let output = try await GetAdmin.resolve(in: context)
@@ -273,9 +246,6 @@ extension AuthedAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .getIdentifiedApps:
       let output = try await GetIdentifiedApps.resolve(in: context)
-      return try await self.respond(with: output)
-    case .getDashboardWidgets:
-      let output = try await GetDashboardWidgets.resolve(in: context)
       return try await self.respond(with: output)
     case .getDevice(let input):
       let output = try await GetDevice.resolve(with: input, in: context)
