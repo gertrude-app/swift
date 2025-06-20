@@ -58,6 +58,8 @@ extension Parent {
       "price_1QooP1GKRdhETuKAcVawow7B"
     case 1000: // GHC conf special
       "price_1RJbTrGKRdhETuKAkI5OO1NB"
+    case 100: // test price decrease
+      "price_1Rc5cYGKRdhETuKApY0VOxR1"
     default: // legacy price
       "price_1M9xZYGKRdhETuKA22aYJ4fI"
     }
