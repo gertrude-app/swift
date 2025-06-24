@@ -95,7 +95,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     expect(output).toEqual(.init(code: 1234))
   }
 
-  func testGetAdminWithNotifications() async throws {
+  func testGetParentWithNotifications() async throws {
     let parent = try await self.parent(with: \.subscriptionStatus, of: .paid)
     let method = Parent.NotificationMethod(
       parentId: parent.id,
@@ -123,7 +123,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
         ],
         verifiedNotificationMethods: [.init(id: method.id, config: method.config)],
         hasAdminChild: false,
-        monthlyPriceInDollars: 15
+        monthlyPriceInDollars: 10
       )
     )
   }
