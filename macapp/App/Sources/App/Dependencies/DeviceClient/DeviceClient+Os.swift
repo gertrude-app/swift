@@ -9,6 +9,7 @@ struct MacOSVersion: Sendable {
     case ventura
     case sonoma
     case sequoia
+    case tahoe
   }
 
   let major: Int
@@ -27,7 +28,8 @@ struct MacOSVersion: Sendable {
     case (13, _): .ventura
     case (14, _): .sonoma
     case (15, _): .sequoia
-    default: .sequoia
+    case (26, _): .sequoia
+    default: .tahoe
     }
   }
 
@@ -47,6 +49,7 @@ struct MacOSVersion: Sendable {
 
 #if DEBUG
   extension MacOSVersion {
+    static let tahoe = Self(major: 26, minor: 0, patch: 0)
     static let sonoma = Self(major: 14, minor: 0, patch: 0)
     static let sequoia = Self(major: 15, minor: 0, patch: 0)
   }

@@ -31,7 +31,7 @@ struct Parent: Codable, Sendable {
     subscriptionStatus: SubscriptionStatus = .pendingEmailVerification,
     subscriptionStatusExpiration: Date = Date().advanced(by: .days(7)),
     subscriptionId: SubscriptionId? = nil,
-    monthlyPrice: Cents<Int> = .init(1500),
+    monthlyPrice: Cents<Int> = .init(1000),
     trialPeriodDays: Int = 21,
     gclid: String? = nil,
     abTestVariant: String? = nil
@@ -54,14 +54,10 @@ struct Parent: Codable, Sendable {
 extension Parent {
   var stripePriceId: String {
     switch self.monthlyPrice.rawValue {
-    case 1500: // new vinci-price, Feb 2025
-      "price_1QooP1GKRdhETuKAcVawow7B"
-    case 1000: // GHC conf special
-      "price_1RJbTrGKRdhETuKAkI5OO1NB"
-    case 100: // test price decrease
-      "price_1Rc5cYGKRdhETuKApY0VOxR1"
-    default: // legacy price
+    case 500: // legacy $5/mo price
       "price_1M9xZYGKRdhETuKA22aYJ4fI"
+    default: // new post-vinci lowered price, 6/25
+      "price_1RJbTrGKRdhETuKAkI5OO1NB"
     }
   }
 }
