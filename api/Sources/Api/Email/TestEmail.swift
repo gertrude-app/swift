@@ -107,10 +107,35 @@ import Vapor
         ))
 
       case "marketing-announcement":
+        let batch1 = [
+          "rafibiswas2015@gmail.com",
+          "mardanmiller@gmail.com",
+          "carson.quesenberry@gmail.com",
+          "nick@reachproductions.net",
+          "brandon_j_stubbs@msn.com",
+          "dove25hs@gmail.com",
+          "juawana.gaddis@gmail.com",
+          "yazid-13210@hotmail.fr",
+          "william.hussman@gmail.com",
+          "med.amine.ayadi@icloud.com",
+          "lolilight84@gmail.com",
+          "yalshaya@gmail.com",
+          "weissomarrealtor@gmail.com",
+          "chichianghsu@yahoo.com",
+          "saldana.antonio1@icloud.com",
+          "maxhollmann@icloud.com",
+          "matthewdbowman@gmail.com",
+          "ngominh99hp@gmail.com",
+          "sharonsam2003@gmail.com",
+          "jetdrew05@gmail.com",
+          "rowanvolino@gmail.com",
+          "mathiasabby@gmail.com",
+          "jared+2@netrivet.com",
+        ]
         try await postmark.send(template: .v2_7_0_Announce(
-          to: [to],
+          to: batch1,
           model: .init(),
-          dryRun: true
+          dryRun: false
         ))
 
       case "admin-trial-ending-soon":

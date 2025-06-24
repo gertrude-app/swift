@@ -90,8 +90,8 @@ struct VerifyNotificationEmail: TemplateEmailModel {
 
 struct V2_7_0_Announce: TemplateEmailModel {
   static var layout: EmailLayout { .topLogo }
-  static var displayName: String { "v2.7.0 Announcement" }
-  static var subject: String { "Gertrude v2.7.0 is here!" }
+  static var displayName: String { "Gertrude Price Decrease" }
+  static var subject: String { "Gertrude price DECREASE, effective immediately" }
 }
 
 enum AccountLifecycle {
