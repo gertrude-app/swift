@@ -1,15 +1,40 @@
 import Dependencies
+import DuetSQL
 import Foundation
 
-// @SCOPE: when the API restarts, we'll lose all magic links, eventually
-// this should be backed by the DB or some sort of persistent storage
 actor Ephemeral {
   @Dependency(\.uuid) private var uuid
   @Dependency(\.date.now) private var now
+  @Dependency(\.db) private var db
+  @Dependency(\.env) private var env
+  @Dependency(\.slack) private var slack
+  @Dependency(\.logger) private var logger
   @Dependency(\.verificationCode) private var verificationCode
 
-  private var parentIds: [UUID: (parentId: Parent.Id, expiration: Date)] = [:]
-  private var retrievedParentIds: [UUID: Parent.Id] = [:]
+  struct Storage: Codable {
+    struct ParentId: Codable {
+      var parentId: Parent.Id
+      var expiration: Date
+    }
+
+    struct ChildId: Codable {
+      var childId: Child.Id
+      var expiration: Date
+    }
+
+    struct PendingMethod: Codable {
+      var model: Parent.NotificationMethod
+      var code: Int
+      var expiration: Date
+    }
+
+    var parentIds: [UUID: ParentId] = [:]
+    var retrievedParentIds: [UUID: Parent.Id] = [:]
+    var pendingAppConnections: [Int: ChildId] = [:]
+    var pendingMethods: [Parent.NotificationMethod.Id: PendingMethod] = [:]
+  }
+
+  private var storage = Storage()
 
   enum ParentId: Equatable {
     case notFound
@@ -27,8 +52,9 @@ actor Ephemeral {
     _ parentId: Parent.Id,
     expiration: Date? = nil
   ) -> UUID {
+    defer { Task { await self.persistStorage() } }
     let token = self.uuid()
-    self.parentIds[token] = (
+    self.storage.parentIds[token] = .init(
       parentId: parentId,
       expiration: expiration ?? self.now + .minutes(60)
     )
@@ -45,34 +71,30 @@ actor Ephemeral {
   }
 
   func parentIdFromToken(_ token: UUID) -> ParentId {
-    if let (parentId, expiration) = self.parentIds.removeValue(forKey: token) {
-      if expiration > self.now {
-        self.retrievedParentIds[token] = parentId
-        return .notExpired(parentId)
+    defer { Task { await self.persistStorage() } }
+    if let stored = self.storage.parentIds.removeValue(forKey: token) {
+      if stored.expiration > self.now {
+        self.storage.retrievedParentIds[token] = stored.parentId
+        return .notExpired(stored.parentId)
       } else {
         // put back, so if they try again, they know it's expired, not missing
-        self.parentIds[token] = (parentId, expiration)
-        return .expired(parentId)
+        self.storage.parentIds[token] = stored
+        return .expired(stored.parentId)
       }
-    } else if let parentId = retrievedParentIds[token] {
+    } else if let parentId = self.storage.retrievedParentIds[token] {
       return .previouslyRetrieved(parentId)
     } else {
       return .notFound
     }
   }
 
-  private var pendingMethods: [Parent.NotificationMethod.Id: (
-    model: Parent.NotificationMethod,
-    code: Int,
-    expiration: Date
-  )] = [:]
-
   func createPendingNotificationMethod(
     _ model: Parent.NotificationMethod,
     expiration: Date? = nil
   ) -> Int {
+    defer { Task { await self.persistStorage() } }
     let code = self.verificationCode.generate()
-    self.pendingMethods[model.id] = (
+    self.storage.pendingMethods[model.id] = .init(
       model: model,
       code: code,
       expiration: expiration ?? self.now + .minutes(60)
@@ -84,26 +106,26 @@ actor Ephemeral {
     _ modelId: Parent.NotificationMethod.Id,
     _ code: Int
   ) -> Parent.NotificationMethod? {
-    guard let (model, storedCode, expiration) = pendingMethods.removeValue(forKey: modelId),
-          code == storedCode,
-          expiration > self.now else {
+    defer { Task { await self.persistStorage() } }
+    guard let stored = self.storage.pendingMethods.removeValue(forKey: modelId),
+          code == stored.code,
+          stored.expiration > self.now else {
       return nil
     }
-    return model
+    return stored.model
   }
 
-  private var pendingAppConnections: [Int: (userId: Child.Id, expiration: Date)] = [:]
-
   func createPendingAppConnection(
-    _ userId: Child.Id,
+    _ childId: Child.Id,
     expiration: Date? = nil
   ) -> Int {
+    defer { Task { await self.persistStorage() } }
     let code = self.verificationCode.generate()
-    if self.pendingAppConnections[code] != nil {
-      return self.createPendingAppConnection(userId)
+    if self.storage.pendingAppConnections[code] != nil {
+      return self.createPendingAppConnection(childId)
     }
-    self.pendingAppConnections[code] = (
-      userId: userId,
+    self.storage.pendingAppConnections[code] = .init(
+      childId: childId,
       expiration: expiration ?? self.now + .days(2)
     )
     return code
@@ -113,15 +135,61 @@ actor Ephemeral {
     #if DEBUG
       if code == 999_999 { return AdminBetsy.Ids.jimmysId }
     #endif
-    guard let (userId, expiration) = pendingAppConnections[code],
-          expiration > self.now else {
+    guard let stored = self.storage.pendingAppConnections[code],
+          stored.expiration > self.now else {
       return nil
     }
-    return userId
+    return stored.childId
   }
 }
 
-// dependency
+// extensions
+
+extension Ephemeral {
+  func persistStorage() async {
+    guard let data = try? JSONEncoder().encode(self.storage),
+          let json = String(data: data, encoding: .utf8) else {
+      await self.slack.error("failed to encode ephemeral storage")
+      return
+    }
+    _ = try? await self.storageQuery.delete(in: self.db)
+    _ = try? await self.db.create(InterestingEvent(
+      id: .init(UUID()),
+      eventId: "store-ephemeral",
+      kind: "system",
+      context: "api",
+      detail: json
+    ))
+  }
+
+  func restoreStorage() async {
+    guard let model = try? await self.storageQuery.first(in: self.db) else {
+      if self.env.mode == .prod {
+        await self.slack.error("no ephemeral storage found to restore")
+      }
+      return
+    }
+
+    guard let storage = try? JSONDecoder().decode(
+      Storage.self,
+      from: model.detail?.data(using: .utf8) ?? Data()
+    ) else {
+      await self.slack.error("failed to decode ephemeral storage")
+      return
+    }
+
+    self.storage = storage
+    self.logger.info("restored ephemeral storage")
+    _ = try? await self.db.delete(model)
+  }
+
+  private var storageQuery: DuetQuery<InterestingEvent> {
+    InterestingEvent.query()
+      .where(.eventId == "store-ephemeral")
+      .where(.context == "api")
+      .where(.kind == "system")
+  }
+}
 
 extension DependencyValues {
   var ephemeral: Ephemeral {
