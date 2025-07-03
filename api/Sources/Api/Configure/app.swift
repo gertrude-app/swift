@@ -23,15 +23,18 @@ public enum Configure {
 
 private struct ApiLifecyle: LifecycleHandler {
   func didBootAsync(_ app: Application) async throws {
-    #if DEBUG
+    await with(dependency: \.ephemeral).restoreStorage()
+    if app.env.mode == .dev {
       // syncing db from prod/staging does not keep search paths
       let db: SQLDatabase = app.db(.psql) as! SQLDatabase
       try await SearchPaths().up(sql: db)
-    #endif
+    }
   }
 
+  // NB: 7/2025 - as far as i can tell, this is not running ever
   func shutdownAsync(_ app: Application) async {
     app.logger.info("Shutting down")
     await with(dependency: \.websockets).disconnectAll()
+    await with(dependency: \.ephemeral).persistStorage()
   }
 }

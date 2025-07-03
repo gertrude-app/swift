@@ -1,6 +1,6 @@
 import Duet
 
-public struct DuetQuery<M: Model> {
+public struct DuetQuery<M: Model>: Sendable {
   public let constraint: SQL.WhereConstraint<M>
   public let order: SQL.Order<M>?
   public let limit: Int?
