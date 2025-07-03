@@ -393,7 +393,7 @@ struct AppView: View {
       )
 
     case .running(state: let state):
-      RunningView(store: self.store, connected: state != .notConnected) {
+      RunningView(store: self.store, childName: state.childName) {
         self.store.send(.interactive(.runningBtnTapped))
       }.onShake {
         self.store.send(.interactive(.receivedShake))

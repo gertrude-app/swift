@@ -102,6 +102,7 @@ extension IOSApp.Device {
     case deviceType
     case appVersion
     case iosVersion
+    case webPolicy
     case createdAt
     case updatedAt
   }
@@ -118,7 +119,7 @@ extension IOSApp.BlockRule {
     case deviceId
     case vendorId
     case rule
-    case group
+    case groupId
     case comment
     case createdAt
     case updatedAt
@@ -558,5 +559,46 @@ extension SecurityEvent {
     case detail
     case ipAddress
     case createdAt
+  }
+}
+
+extension IOSApp.BlockGroup: Duet.Identifiable {
+  typealias Id = Tagged<IOSApp.BlockGroup, UUID>
+}
+
+extension IOSApp.BlockGroup {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case name
+    case description
+    case createdAt
+    case updatedAt
+  }
+}
+
+extension IOSApp.DeviceBlockGroup: Duet.Identifiable {
+  typealias Id = Tagged<IOSApp.DeviceBlockGroup, UUID>
+}
+
+extension IOSApp.DeviceBlockGroup {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case deviceId
+    case blockGroupId
+    case createdAt
+  }
+}
+
+extension IOSApp.WebPolicyDomain: Duet.Identifiable {
+  typealias Id = Tagged<IOSApp.WebPolicyDomain, UUID>
+}
+
+extension IOSApp.WebPolicyDomain {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case deviceId
+    case domain
+    case createdAt
+    case updatedAt
   }
 }

@@ -4,3 +4,4 @@ xcuserdata/
 DerivedData/
 **/.swiftpm
 *.pbxuser
+config/Local.xcconfig

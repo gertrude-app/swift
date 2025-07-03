@@ -14,22 +14,19 @@ extension IOSApp {
 }
 
 extension AuthedRoute: RouteResponder {
-  static func respond(
-    to route: Self,
-    in context: IOSApp.ChildContext
-  ) async throws -> Response {
+  static func respond(to route: Self, in ctx: IOSApp.ChildContext) async throws -> Response {
     switch route {
-    case .blockRules_v3(let input):
-      let output = try await BlockRules_v3.resolve(with: input, in: context)
+    case .connectedRules(let input):
+      let output = try await ConnectedRules.resolve(with: input, in: ctx)
       return try await self.respond(with: output)
     case .createSuspendFilterRequest(let input):
-      let output = try await CreateSuspendFilterRequest.resolve(with: input, in: context)
+      let output = try await CreateSuspendFilterRequest.resolve(with: input, in: ctx)
       return try await self.respond(with: output)
     case .pollFilterSuspensionDecision(let input):
-      let output = try await PollFilterSuspensionDecision.resolve(with: input, in: context)
+      let output = try await PollFilterSuspensionDecision.resolve(with: input, in: ctx)
       return try await self.respond(with: output)
     case .screenshotUploadUrl(let input):
-      let output = try await ScreenshotUploadUrl.resolve(with: input, in: context)
+      let output = try await ScreenshotUploadUrl.resolve(with: input, in: ctx)
       return try await self.respond(with: output)
     }
   }

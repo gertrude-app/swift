@@ -1,12 +1,10 @@
 import Foundation
 import GertieIOS
 
-// TODO: will the json represation be stable across versions?
 public indirect enum ProtectionMode {
   case onboarding([BlockRule])
   case normal([BlockRule])
   case emergencyLockdown
-  case suspended(until: Date, restoring: ProtectionMode)
 }
 
 public extension ProtectionMode {
@@ -14,7 +12,7 @@ public extension ProtectionMode {
     switch self {
     case .normal(let rules):
       rules
-    case .onboarding, .emergencyLockdown, .suspended:
+    case .onboarding, .emergencyLockdown:
       nil
     }
   }
@@ -25,17 +23,8 @@ public extension ProtectionMode {
       rules
     case .normal(let rules):
       rules
-    case .emergencyLockdown, .suspended:
+    case .emergencyLockdown:
       nil
-    }
-  }
-
-  var isSuspended: Bool {
-    switch self {
-    case .suspended:
-      true
-    default:
-      false
     }
   }
 
@@ -47,8 +36,6 @@ public extension ProtectionMode {
       ".normal(\(rules.count))"
     case .emergencyLockdown:
       ".emergencyLockdown"
-    case .suspended(let expiration, restoring: let rules):
-      ".suspended(\(expiration), restoring: \(rules.shortDesc))"
     }
   }
 }
@@ -84,20 +71,11 @@ public extension String {
   }
 
   static var gertrudeApi: String {
-    #if DEBUG
-      // just run-api-ip
-      "http://192.168.10.227:8080"
-    #else
-      "https://api.gertrude.app"
-    #endif
+    (try? Configuration.value(for: "API_URL")) ?? "https://api.gertrude.app"
   }
 
   static var protectionModeStorageKey: String {
     "ProtectionMode.v1.3.0"
-  }
-
-  static var filterSuspensionExpirationKey: String {
-    "FilterSuspensionExpiration.v1.5.0"
   }
 
   static var connectionStorageKey: String {
@@ -106,5 +84,24 @@ public extension String {
 
   static var disabledBlockGroupsStorageKey: String {
     "disabledBlockGroups.v1.3.0"
+  }
+}
+
+enum Configuration {
+  enum Error: Swift.Error {
+    case missingKey, invalidValue
+  }
+
+  static func value(for key: String) throws -> String {
+    guard let object = Bundle.main.object(forInfoDictionaryKey: key) else {
+      throw Error.missingKey
+    }
+
+    switch object {
+    case let string as String:
+      return string
+    default:
+      throw Error.invalidValue
+    }
   }
 }

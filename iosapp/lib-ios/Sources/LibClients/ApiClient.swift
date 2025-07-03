@@ -13,17 +13,12 @@ import XCore
 public struct ApiClient: Sendable {
   public var connectDevice: @Sendable (_ code: Int, _ vendorId: UUID) async throws
     -> ChildIOSDeviceData
-  public var createSuspendFilterRequest: @Sendable (_ duration: Seconds<Int>, _ comment: String?)
-    async throws -> UUID
   public var fetchBlockRules: @Sendable (_ vendorId: UUID, _ disabledGroups: [BlockGroup])
     async throws -> [BlockRule]
   public var fetchDefaultBlockRules: @Sendable (_ vendorId: UUID?) async throws -> [BlockRule]
   public var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
-  public var pollSuspensionDecision: @Sendable (_ id: UUID) async throws
-    -> PollFilterSuspensionDecision.Output
   public var recoveryDirective: @Sendable () async throws -> String?
   public var setAuthToken: @Sendable (UUID?) async -> Void
-  public var uploadScreenshot: @Sendable (UploadScreenshotData) async throws -> Void
 }
 
 extension ApiClient: TestDependencyKey {
@@ -47,12 +42,6 @@ extension ApiClient: DependencyKey {
             appVersion: version,
             iosVersion: deviceData.iOSVersion
           ))
-        )
-      },
-      createSuspendFilterRequest: { duration, comment in
-        try await output(
-          from: CreateSuspendFilterRequest.self,
-          with: .createSuspendFilterRequest(.init(duration: duration, comment: comment))
         )
       },
       fetchBlockRules: { vendorId, disabledGroups in
@@ -87,12 +76,6 @@ extension ApiClient: DependencyKey {
           os_log("[G•] error logging event: %{public}s", String(reflecting: error))
         }
       },
-      pollSuspensionDecision: { id in
-        try await output(
-          from: PollFilterSuspensionDecision.self,
-          with: .pollFilterSuspensionDecision(id)
-        )
-      },
       recoveryDirective: {
         @Dependency(\.locale) var locale
         @Dependency(\.device) var device
@@ -110,21 +93,6 @@ extension ApiClient: DependencyKey {
       },
       setAuthToken: { token in
         _authToken.withLock { $0 = token }
-      },
-      uploadScreenshot: { screenshot in
-        let output = try await output(
-          from: ScreenshotUploadUrl.self,
-          with: .screenshotUploadUrl(.init(
-            width: screenshot.width,
-            height: screenshot.height,
-            createdAt: screenshot.createdAt
-          ))
-        )
-        var request = URLRequest(url: output.uploadUrl, cachePolicy: .reloadIgnoringCacheData)
-        request.httpMethod = "PUT"
-        request.addValue("public-read", forHTTPHeaderField: "x-amz-acl")
-        request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type")
-        _ = try await URLSession.shared.upload(for: request, from: screenshot.data)
       }
     )
   }
@@ -165,20 +133,6 @@ func output<T: Pair>(
     }
   }
   return try JSON.decode(data, as: T.Output.self, [.isoDates])
-}
-
-public struct UploadScreenshotData: Sendable {
-  public var data: Data
-  public var width: Int
-  public var height: Int
-  public var createdAt: Date
-
-  public init(data: Data, width: Int, height: Int, createdAt: Date) {
-    self.data = data
-    self.width = width
-    self.height = height
-    self.createdAt = createdAt
-  }
 }
 
 public extension ApiClient {

@@ -12,3 +12,4 @@ buildServer.json
 **/.build/
 **/.swiftpm/
 **/xcuserdata/
+**/.cursor

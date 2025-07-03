@@ -1,0 +1,4 @@
+// https://help.apple.com/xcode/#/dev745c5c974
+#include? "./Local.xcconfig"
+FALLBACK = http:/$()/127.0.0.1:8080
+API_URL = $(LOCAL_API_URL:default=$(FALLBACK))

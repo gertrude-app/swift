@@ -8,13 +8,15 @@ import XExpect
 final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
   func testBlockRules() async throws {
     let vendorId = UUID()
+    let gifs = CreateBlockGroups.GroupIds().gifs
+    let ads = CreateBlockGroups.GroupIds().ads
     try await self.db.delete(all: IOSApp.BlockRule.self)
     try await self.db.create([
-      IOSApp.BlockRule(rule: .urlContains("bad"), group: "gifs"),
-      IOSApp.BlockRule(rule: .urlContains("cat"), group: "ads"), // <-- skip, disabled group
+      IOSApp.BlockRule(rule: .urlContains("bad"), groupId: .init(gifs)),
+      IOSApp.BlockRule(rule: .urlContains("cat"), groupId: .init(ads)), // <-- skip, disabled group
       IOSApp.BlockRule(vendorId: .init(vendorId), rule: .urlContains("x1")), // <-- include
       IOSApp.BlockRule(vendorId: .init(), rule: .urlContains("x2")),
-      IOSApp.BlockRule(rule: .urlContains("nope"), group: nil),
+      IOSApp.BlockRule(rule: .urlContains("nope"), groupId: nil),
     ])
 
     let rules = try await BlockRules_v2.resolve(
@@ -29,9 +31,10 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
     // my understanding is that it just means the vendorId is set to zero, so we don't want
     // to ever consider these vendor ids for customizations
     let zeroVid = UUID("00000000-0000-0000-0000-000000000000")!
+    let gifs = CreateBlockGroups.GroupIds().gifs
     try await self.db.delete(all: IOSApp.BlockRule.self)
     try await self.db.create([
-      IOSApp.BlockRule(rule: .urlContains("bad"), group: "gifs"),
+      IOSApp.BlockRule(rule: .urlContains("bad"), groupId: .init(gifs)),
       IOSApp.BlockRule(vendorId: .init(zeroVid), rule: .urlContains("x1")), // <-- skip
     ])
 
@@ -43,12 +46,13 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
   }
 
   func testDefaultBlockRulesRetrievesAllWithGroup() async throws {
+    let gifs = CreateBlockGroups.GroupIds().gifs
+    let ads = CreateBlockGroups.GroupIds().ads
     try await self.db.delete(all: IOSApp.BlockRule.self)
     try await self.db.create([
-      IOSApp.BlockRule(rule: .urlContains("bad"), group: "gifs"),
-      IOSApp.BlockRule(rule: .urlContains("thing"), group: nil), // <-- skip, no group
-      IOSApp.BlockRule(rule: .urlContains("rofl"), group: "nope!"), // <-- skip, invalid group
-      IOSApp.BlockRule(rule: .urlContains("cat"), group: "ads"),
+      IOSApp.BlockRule(rule: .urlContains("bad"), groupId: .init(gifs)),
+      IOSApp.BlockRule(rule: .urlContains("thing"), groupId: nil), // <-- skip, no group
+      IOSApp.BlockRule(rule: .urlContains("cat"), groupId: .init(ads)),
     ])
 
     let defaultRules = try await DefaultBlockRules.resolve(
