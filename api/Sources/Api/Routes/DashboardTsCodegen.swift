@@ -1,4 +1,5 @@
 import Gertie
+import GertieIOS
 import PairQL
 import Tagged
 import TypeScriptInterop
@@ -45,6 +46,7 @@ enum DashboardTsCodegenRoute {
       ("AdminSubscriptionStatus", GetAdmin.SubscriptionStatus.self),
       ("VerifiedNotificationMethod", GetAdmin.VerifiedNotificationMethod.self),
       ("AdminNotification", GetAdmin.Notification.self),
+      ("WebPolicy", WebContentFilterPolicy.Kind.self),
     ]
   }
 
@@ -99,6 +101,8 @@ enum DashboardTsCodegenRoute {
       SecurityEventsFeed.self,
       RequestPublicKeychain.self,
       FlagActivityItems.self,
+      IOSDevices.self,
+      GetIOSDevice.self,
     ]
   }
 

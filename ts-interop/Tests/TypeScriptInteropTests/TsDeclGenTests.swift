@@ -236,15 +236,15 @@ final class CodeGenTests: XCTestCase {
     expect(expanded).toEqual(
       """
       export interface Foo {
-        a: Wrapped[];
-        b: Wrapped;
+        a: Custom[];
+        b: Custom;
       }
       """
     )
 
     expect(compact).toEqual(
       """
-      export interface Foo { a: Wrapped[]; b: Wrapped; }
+      export interface Foo { a: Custom[]; b: Custom; }
       """
     )
   }
@@ -309,5 +309,5 @@ struct Wrapped<T> {
 }
 
 extension Wrapped: TypeScriptAliased {
-  static var typescriptAlias: String { "Wrapped" }
+  static var typescriptAlias: String { "Custom" }
 }

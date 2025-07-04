@@ -26,3 +26,34 @@ public enum WebContentFilterPolicy: Codable, Equatable, Sendable {
     }
   }
 #endif
+
+public extension WebContentFilterPolicy {
+  enum Kind: String, Codable, Equatable, Sendable {
+    case allowAll
+    case blockAdult
+    case blockAdultAnd
+    case blockAllExcept
+    case blockAll
+
+    public init?(string: String) {
+      switch string {
+      case "allowAll": self = .allowAll
+      case "blockAdult": self = .blockAdult
+      case "blockAdultAnd": self = .blockAdultAnd
+      case "blockAllExcept": self = .blockAllExcept
+      case "blockAll": self = .blockAll
+      default: return nil
+      }
+    }
+  }
+
+  var kind: Kind {
+    switch self {
+    case .allowAll: .allowAll
+    case .blockAdult: .blockAdult
+    case .blockAdultAnd: .blockAdultAnd
+    case .blockAllExcept: .blockAllExcept
+    case .blockAll: .blockAll
+    }
+  }
+}

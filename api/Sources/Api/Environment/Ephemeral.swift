@@ -132,10 +132,11 @@ actor Ephemeral {
   }
 
   func getPendingAppConnection(_ code: Int) -> Child.Id? {
+    defer { Task { await self.persistStorage() } }
     #if DEBUG
       if code == 999_999 { return AdminBetsy.Ids.jimmysId }
     #endif
-    guard let stored = self.storage.pendingAppConnections[code],
+    guard let stored = self.storage.pendingAppConnections.removeValue(forKey: code),
           stored.expiration > self.now else {
       return nil
     }

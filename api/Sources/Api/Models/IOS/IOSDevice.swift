@@ -51,11 +51,16 @@ extension IOSApp.Device {
       .all(in: db)
   }
 
-  func webContentFilterPolicy(in db: any DuetSQL.Client) async throws -> WebContentFilterPolicy {
-    let domains = try await IOSApp.WebPolicyDomain.query()
+  func webPolicyDomains(in db: any DuetSQL.Client) async throws -> [IOSApp.WebPolicyDomain] {
+    try await IOSApp.WebPolicyDomain.query()
       .where(.deviceId == self.id)
       .all(in: db)
-      .map(\.domain)
+  }
+
+  func webContentFilterPolicy(
+    in db: any DuetSQL.Client
+  ) async throws -> WebContentFilterPolicy {
+    let domains = try await self.webPolicyDomains(in: db).map(\.domain)
     switch self.webPolicy {
     case "allowAll":
       return .allowAll

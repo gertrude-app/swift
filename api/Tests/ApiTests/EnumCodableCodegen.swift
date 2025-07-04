@@ -1,5 +1,6 @@
 import Foundation
 import Gertie
+import GertieIOS
 import TypeScriptInterop
 import XCTest
 
@@ -28,8 +29,12 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
         (SecurityEventsFeed.FeedEvent.self, false),
         (UserActivity.Item.self, true),
         (ChildComputerStatus.self, false),
+        (GertieIOS.BlockRule.self, false),
       ],
-      imports: ["Tagged": "Tagged"],
+      imports: [
+        "Tagged": "Tagged",
+        "BlockRule": "GertieIOS",
+      ],
       replacements: [
         "Foundation.UUID": "UUID",
         "Tagged.Tagged": "Tagged",
