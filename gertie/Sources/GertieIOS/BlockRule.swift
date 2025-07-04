@@ -6,7 +6,7 @@ public enum BlockRule {
   case hostnameEndsWith(String)
   case targetContains(String) // "target" = url ?? hostname
   case flowTypeIs(FlowType)
-  indirect case both(BlockRule, BlockRule)
+  indirect case both(a: BlockRule, b: BlockRule)
   indirect case unless(rule: BlockRule, negatedBy: [BlockRule])
 }
 
@@ -23,26 +23,6 @@ public extension BlockRule {
       | { case: 'both'; first: BlockRule; second: BlockRule }
       | { case: 'unless'; rule: BlockRule; negatedBy: BlockRule[] }
     """
-  }
-}
-
-public extension BlockRule {
-  static var defaults: [BlockRule] {
-    [
-      .bundleIdContains("HashtagImagesExtension"),
-      .bundleIdContains("com.apple.Spotlight"),
-      .bundleIdContains(".com.apple.photoanalysisd"),
-      .urlContains("tenor.co"),
-      .targetContains("cdn2.smoot.apple.com"),
-      .targetContains("tenor.co"),
-      .targetContains("giphy.com"),
-      .targetContains("media.fosu2-1.fna.whatsapp.net"),
-      .both(.bundleIdContains("com.apple.MobileSMS"), .targetContains("ssl.mzstatic.com")),
-      .both(
-        .bundleIdContains("org.whispersystems.signal"),
-        .targetContains("contentproxy.signal.org")
-      ),
-    ]
   }
 }
 

@@ -9,6 +9,6 @@ extension DefaultBlockRules: Resolver {
     try await IOSApp.BlockRule.query()
       .where(.not(.isNull(.groupId)))
       .all(in: context.db)
-      .map(\.rule)
+      .map(\.rule.legacy)
   }
 }

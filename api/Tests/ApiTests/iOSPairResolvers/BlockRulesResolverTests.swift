@@ -74,8 +74,8 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
     let rules = try await BlockRules.resolve(with: .init(vendorId: vendorId), in: .mock)
     expect(rules.contains(
       .both(
-        .bundleIdContains(".com.apple.MobileSMS"),
-        .targetContains("amp-api-edge.apps.apple.com")
+        a: .bundleIdContains(".com.apple.MobileSMS"),
+        b: .targetContains("amp-api-edge.apps.apple.com")
       )
     )).toEqual(true)
   }

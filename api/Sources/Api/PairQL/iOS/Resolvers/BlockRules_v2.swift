@@ -15,7 +15,7 @@ extension BlockRules_v2: Resolver {
       ))
       .orderBy(.id, .asc)
       .all(in: ctx.db)
-      .map(\.rule)
+      .map(\.rule.legacy)
   }
 }
 

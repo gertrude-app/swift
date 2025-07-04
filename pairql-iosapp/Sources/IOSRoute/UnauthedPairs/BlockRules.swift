@@ -16,7 +16,7 @@ public struct BlockRules: Pair {
     }
   }
 
-  public typealias Output = [BlockRule]
+  public typealias Output = [GertieIOS.BlockRule.Legacy]
 }
 
-extension BlockRule: @retroactive PairOutput {}
+extension BlockRule.Legacy: @retroactive PairOutput {}
