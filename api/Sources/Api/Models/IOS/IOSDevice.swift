@@ -51,6 +51,12 @@ extension IOSApp.Device {
       .all(in: db)
   }
 
+  func blockRules(in db: any DuetSQL.Client) async throws -> [IOSApp.BlockRule] {
+    try await IOSApp.BlockRule.query()
+      .where(.deviceId == self.id)
+      .all(in: db)
+  }
+
   func webPolicyDomains(in db: any DuetSQL.Client) async throws -> [IOSApp.WebPolicyDomain] {
     try await IOSApp.WebPolicyDomain.query()
       .where(.deviceId == self.id)

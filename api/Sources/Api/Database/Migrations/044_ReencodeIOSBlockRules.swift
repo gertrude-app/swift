@@ -12,6 +12,7 @@ struct ReencodeIOSBlockRules: GertieMigration {
       FROM iosapp.block_rules
       """
     )
+
     let records = try rows.map { row in
       let id: UUID = try row.decode(column: "id")
       let json: String = try row.decode(column: "rule")
@@ -38,6 +39,7 @@ struct ReencodeIOSBlockRules: GertieMigration {
       FROM iosapp.block_rules
       """
     )
+
     let records = try rows.map { row in
       let id: UUID = try row.decode(column: "id")
       let json: String = try row.decode(column: "rule")

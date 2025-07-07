@@ -19,16 +19,6 @@ public enum Configure {
     if app.env.mode == .dev {
       app.logger.notice("Connected to database `\(app.env.database.name)`")
     }
-
-    let rules: [GertieIOS.BlockRule] = [
-      .urlContains("badsites.com"),
-      .hostnameEquals("some site"),
-      .bundleIdContains("com.example.app"),
-      .both(a: .hostnameContains("foobar"), b: .urlContains("hashbaz")),
-      .unless(rule: .flowTypeIs(.browser), negatedBy: [.urlContains("wow")]),
-    ]
-    // print(JSONEncoder().encode)
-    print(try! JSON.encode(rules))
   }
 }
 

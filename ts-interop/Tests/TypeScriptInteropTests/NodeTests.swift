@@ -4,7 +4,6 @@ import XExpect
 @testable import TypeScriptInterop
 
 final class NodeTests: XCTestCase {
-
   func testParseNodePrimitive() throws {
     expect(try Node(from: String.self)).toEqual(.primitive(.string))
     expect(try Node(from: Int.self)).toEqual(.primitive(.number(.int)))
@@ -47,6 +46,18 @@ final class NodeTests: XCTestCase {
     try await expectErrorFrom {
       try Node(from: NotGoodForTs.self)
     }.toContain("unnamed tuple members")
+  }
+
+  func testEnumWithIndirectCase() async throws {
+    let node = try Node(from: Indirection.self)
+    expect(node).toEqual(.objectUnion([
+      .init(caseName: "a", associatedValues: [.init(name: "a", value: .primitive(.string))]),
+      .init(
+        caseName: "c",
+        associatedValues: [.init(name: "c", value: .selfReference(.init(Indirection.self)))]
+      ),
+      .init(caseName: "b", associatedValues: []),
+    ], .init(Indirection.self)))
   }
 
   func testUnrepresentableTupleThrows() async throws {
@@ -131,4 +142,11 @@ final class NodeTests: XCTestCase {
       .init(name: "never", value: .primitive(.never)),
     ], .init(Foo.self)))
   }
+}
+
+enum Indirection {
+  case a(String)
+  case b
+  indirect case c(Indirection)
+  indirect case d(d: [Indirection])
 }

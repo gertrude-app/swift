@@ -53,7 +53,6 @@ final class CodableTests: XCTestCase {
     let conformance = try (EnumType(from: DupeNames.self)).codableConformance()
     expect(conformance).toContain("self = .a(a: value.a, b: value.b)")
     expect(conformance).toContain("self = .b(b: value.b)")
-    expect(conformance).toContain("nope")
   }
 
   func testExtractEnumType() throws {
