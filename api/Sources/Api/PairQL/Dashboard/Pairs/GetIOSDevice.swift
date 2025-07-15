@@ -2,6 +2,7 @@ import Foundation
 import Gertie
 import GertieIOS
 import PairQL
+import TypeScriptInterop
 
 struct GetIOSDevice: Pair {
   static let auth: ClientAuth = .parent
@@ -53,3 +54,5 @@ extension GetIOSDevice: Resolver {
     )
   }
 }
+
+extension GertieIOS.BlockRule: @retroactive TypeScriptAliased {}

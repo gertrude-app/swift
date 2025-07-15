@@ -47,6 +47,7 @@ enum DashboardTsCodegenRoute {
       ("VerifiedNotificationMethod", GetAdmin.VerifiedNotificationMethod.self),
       ("AdminNotification", GetAdmin.Notification.self),
       ("WebPolicy", WebContentFilterPolicy.Kind.self),
+      ("BlockRule", GertieIOS.BlockRule.self),
     ]
   }
 
