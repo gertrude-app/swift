@@ -6,8 +6,12 @@ public struct CodeGen {
   }
 
   public func declaration(for type: Any.Type, as name: String? = nil) throws -> String {
-    let node = try Node(from: type)
-    let decl = self.config.alias(for: type) ?? node.declaration(.init(config: self.config))
+    if let alias = self.config.alias(for: type) {
+      return "export type \(name ?? "\(type)") = \(alias)"
+    }
+
+    let node = try Node(from: type, config: self.config)
+    let decl = node.declaration(.init(config: self.config))
     if case .object = node, decl.contains(" ") || decl.contains("\n") {
       return "export interface \(name ?? "\(type)") \(decl)"
     } else {

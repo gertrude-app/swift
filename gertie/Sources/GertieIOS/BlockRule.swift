@@ -20,7 +20,7 @@ public extension BlockRule {
       | { case: 'hostnameEndsWith'; value: string }
       | { case: 'targetContains'; value: string }
       | { case: 'flowTypeIs'; value: 'browser' | 'socket' }
-      | { case: 'both'; first: BlockRule; second: BlockRule }
+      | { case: 'both'; a: BlockRule; b: BlockRule }
       | { case: 'unless'; rule: BlockRule; negatedBy: BlockRule[] }
     """
   }
