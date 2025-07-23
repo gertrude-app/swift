@@ -66,19 +66,19 @@ private extension BlockRule.Legacy {
   var current: GertieIOS.BlockRule {
     switch self {
     case .bundleIdContains(let bundleId):
-      .bundleIdContains(bundleId)
+      .bundleIdContains(value: bundleId)
     case .urlContains(let url):
-      .urlContains(url)
+      .urlContains(value: url)
     case .hostnameContains(let hostname):
-      .hostnameContains(hostname)
+      .hostnameContains(value: hostname)
     case .hostnameEquals(let hostname):
-      .hostnameEquals(hostname)
+      .hostnameEquals(value: hostname)
     case .hostnameEndsWith(let hostname):
-      .hostnameEndsWith(hostname)
+      .hostnameEndsWith(value: hostname)
     case .targetContains(let target):
-      .targetContains(target)
+      .targetContains(value: target)
     case .flowTypeIs(let flowType):
-      .flowTypeIs(flowType)
+      .flowTypeIs(value: flowType)
     case .both(let a, let b):
       .both(a: a.current, b: b.current)
     case .unless(let rule, let negatedBy):

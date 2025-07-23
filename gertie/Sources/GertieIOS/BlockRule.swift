@@ -1,11 +1,11 @@
 public enum BlockRule {
-  case bundleIdContains(String)
-  case urlContains(String)
-  case hostnameContains(String)
-  case hostnameEquals(String)
-  case hostnameEndsWith(String)
-  case targetContains(String) // "target" = url ?? hostname
-  case flowTypeIs(FlowType)
+  case bundleIdContains(value: String)
+  case urlContains(value: String)
+  case hostnameContains(value: String)
+  case hostnameEquals(value: String)
+  case hostnameEndsWith(value: String)
+  case targetContains(value: String) // "target" = url ?? hostname
+  case flowTypeIs(value: FlowType)
   indirect case both(a: BlockRule, b: BlockRule)
   indirect case unless(rule: BlockRule, negatedBy: [BlockRule])
 }

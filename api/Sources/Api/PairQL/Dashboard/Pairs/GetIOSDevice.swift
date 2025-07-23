@@ -32,10 +32,7 @@ struct GetIOSDevice: Pair {
 }
 
 extension GetIOSDevice: Resolver {
-  static func resolve(
-    with id: IOSApp.Device.Id,
-    in ctx: ParentContext
-  ) async throws -> Output {
+  static func resolve(with id: IOSApp.Device.Id, in ctx: ParentContext) async throws -> Output {
     let device = try await ctx.db.find(id)
     let child = try await device.child(in: ctx.db)
     let enabledBlockGroups = try await device.blockGroups(in: ctx.db)

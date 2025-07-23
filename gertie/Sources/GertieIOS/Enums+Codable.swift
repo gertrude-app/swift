@@ -16,37 +16,37 @@ public extension BlockRule {
 
   private struct _CaseBundleIdContains: Codable {
     var `case` = "bundleIdContains"
-    var bundleIdContains: String
+    var value: String
   }
 
   private struct _CaseUrlContains: Codable {
     var `case` = "urlContains"
-    var urlContains: String
+    var value: String
   }
 
   private struct _CaseHostnameContains: Codable {
     var `case` = "hostnameContains"
-    var hostnameContains: String
+    var value: String
   }
 
   private struct _CaseHostnameEquals: Codable {
     var `case` = "hostnameEquals"
-    var hostnameEquals: String
+    var value: String
   }
 
   private struct _CaseHostnameEndsWith: Codable {
     var `case` = "hostnameEndsWith"
-    var hostnameEndsWith: String
+    var value: String
   }
 
   private struct _CaseTargetContains: Codable {
     var `case` = "targetContains"
-    var targetContains: String
+    var value: String
   }
 
   private struct _CaseFlowTypeIs: Codable {
     var `case` = "flowTypeIs"
-    var flowTypeIs: FlowType
+    var value: FlowType
   }
 
   private struct _CaseBoth: Codable {
@@ -63,20 +63,20 @@ public extension BlockRule {
 
   func encode(to encoder: Encoder) throws {
     switch self {
-    case .bundleIdContains(let bundleIdContains):
-      try _CaseBundleIdContains(bundleIdContains: bundleIdContains).encode(to: encoder)
-    case .urlContains(let urlContains):
-      try _CaseUrlContains(urlContains: urlContains).encode(to: encoder)
-    case .hostnameContains(let hostnameContains):
-      try _CaseHostnameContains(hostnameContains: hostnameContains).encode(to: encoder)
-    case .hostnameEquals(let hostnameEquals):
-      try _CaseHostnameEquals(hostnameEquals: hostnameEquals).encode(to: encoder)
-    case .hostnameEndsWith(let hostnameEndsWith):
-      try _CaseHostnameEndsWith(hostnameEndsWith: hostnameEndsWith).encode(to: encoder)
-    case .targetContains(let targetContains):
-      try _CaseTargetContains(targetContains: targetContains).encode(to: encoder)
-    case .flowTypeIs(let flowTypeIs):
-      try _CaseFlowTypeIs(flowTypeIs: flowTypeIs).encode(to: encoder)
+    case .bundleIdContains(let value):
+      try _CaseBundleIdContains(value: value).encode(to: encoder)
+    case .urlContains(let value):
+      try _CaseUrlContains(value: value).encode(to: encoder)
+    case .hostnameContains(let value):
+      try _CaseHostnameContains(value: value).encode(to: encoder)
+    case .hostnameEquals(let value):
+      try _CaseHostnameEquals(value: value).encode(to: encoder)
+    case .hostnameEndsWith(let value):
+      try _CaseHostnameEndsWith(value: value).encode(to: encoder)
+    case .targetContains(let value):
+      try _CaseTargetContains(value: value).encode(to: encoder)
+    case .flowTypeIs(let value):
+      try _CaseFlowTypeIs(value: value).encode(to: encoder)
     case .both(let a, let b):
       try _CaseBoth(a: a, b: b).encode(to: encoder)
     case .unless(let rule, let negatedBy):
@@ -90,25 +90,25 @@ public extension BlockRule {
     switch caseName {
     case "bundleIdContains":
       let value = try container.decode(_CaseBundleIdContains.self)
-      self = .bundleIdContains(value.bundleIdContains)
+      self = .bundleIdContains(value: value.value)
     case "urlContains":
       let value = try container.decode(_CaseUrlContains.self)
-      self = .urlContains(value.urlContains)
+      self = .urlContains(value: value.value)
     case "hostnameContains":
       let value = try container.decode(_CaseHostnameContains.self)
-      self = .hostnameContains(value.hostnameContains)
+      self = .hostnameContains(value: value.value)
     case "hostnameEquals":
       let value = try container.decode(_CaseHostnameEquals.self)
-      self = .hostnameEquals(value.hostnameEquals)
+      self = .hostnameEquals(value: value.value)
     case "hostnameEndsWith":
       let value = try container.decode(_CaseHostnameEndsWith.self)
-      self = .hostnameEndsWith(value.hostnameEndsWith)
+      self = .hostnameEndsWith(value: value.value)
     case "targetContains":
       let value = try container.decode(_CaseTargetContains.self)
-      self = .targetContains(value.targetContains)
+      self = .targetContains(value: value.value)
     case "flowTypeIs":
       let value = try container.decode(_CaseFlowTypeIs.self)
-      self = .flowTypeIs(value.flowTypeIs)
+      self = .flowTypeIs(value: value.value)
     case "both":
       let value = try container.decode(_CaseBoth.self)
       self = .both(a: value.a, b: value.b)

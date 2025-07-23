@@ -12,11 +12,12 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
     let ads = CreateBlockGroups.GroupIds().ads
     try await self.db.delete(all: IOSApp.BlockRule.self)
     try await self.db.create([
-      IOSApp.BlockRule(rule: .urlContains("bad"), groupId: .init(gifs)),
-      IOSApp.BlockRule(rule: .urlContains("cat"), groupId: .init(ads)), // <-- skip, disabled group
-      IOSApp.BlockRule(vendorId: .init(vendorId), rule: .urlContains("x1")), // <-- include
-      IOSApp.BlockRule(vendorId: .init(), rule: .urlContains("x2")),
-      IOSApp.BlockRule(rule: .urlContains("nope"), groupId: nil),
+      IOSApp.BlockRule(rule: .urlContains(value: "bad"), groupId: .init(gifs)),
+      IOSApp.BlockRule(rule: .urlContains(value: "cat"), groupId: .init(ads)),
+      // <-- skip, disabled group
+      IOSApp.BlockRule(vendorId: .init(vendorId), rule: .urlContains(value: "x1")), // <-- include
+      IOSApp.BlockRule(vendorId: .init(), rule: .urlContains(value: "x2")),
+      IOSApp.BlockRule(rule: .urlContains(value: "nope"), groupId: nil),
     ])
 
     let rules = try await BlockRules_v2.resolve(
@@ -34,8 +35,8 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
     let gifs = CreateBlockGroups.GroupIds().gifs
     try await self.db.delete(all: IOSApp.BlockRule.self)
     try await self.db.create([
-      IOSApp.BlockRule(rule: .urlContains("bad"), groupId: .init(gifs)),
-      IOSApp.BlockRule(vendorId: .init(zeroVid), rule: .urlContains("x1")), // <-- skip
+      IOSApp.BlockRule(rule: .urlContains(value: "bad"), groupId: .init(gifs)),
+      IOSApp.BlockRule(vendorId: .init(zeroVid), rule: .urlContains(value: "x1")), // <-- skip
     ])
 
     let rules = try await BlockRules_v2.resolve(
@@ -50,9 +51,9 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
     let ads = CreateBlockGroups.GroupIds().ads
     try await self.db.delete(all: IOSApp.BlockRule.self)
     try await self.db.create([
-      IOSApp.BlockRule(rule: .urlContains("bad"), groupId: .init(gifs)),
-      IOSApp.BlockRule(rule: .urlContains("thing"), groupId: nil), // <-- skip, no group
-      IOSApp.BlockRule(rule: .urlContains("cat"), groupId: .init(ads)),
+      IOSApp.BlockRule(rule: .urlContains(value: "bad"), groupId: .init(gifs)),
+      IOSApp.BlockRule(rule: .urlContains(value: "thing"), groupId: nil), // <-- skip, no group
+      IOSApp.BlockRule(rule: .urlContains(value: "cat"), groupId: .init(ads)),
     ])
 
     let defaultRules = try await DefaultBlockRules.resolve(
@@ -66,7 +67,7 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
 
   func testBlockRules_v1() async throws {
     let rules = try await BlockRules.resolve(with: .init(vendorId: UUID()), in: .mock)
-    expect(rules).toEqual(BlockRule.defaults)
+    expect(rules).toEqual(BlockRule.Legacy.defaults)
   }
 
   func testCustomizedBlockRules_v1() async throws {
@@ -74,8 +75,8 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
     let rules = try await BlockRules.resolve(with: .init(vendorId: vendorId), in: .mock)
     expect(rules.contains(
       .both(
-        a: .bundleIdContains(".com.apple.MobileSMS"),
-        b: .targetContains("amp-api-edge.apps.apple.com")
+        .bundleIdContains(".com.apple.MobileSMS"),
+        .targetContains("amp-api-edge.apps.apple.com")
       )
     )).toEqual(true)
   }

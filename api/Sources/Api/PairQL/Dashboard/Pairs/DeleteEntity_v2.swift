@@ -16,6 +16,7 @@ struct DeleteEntity_v2: Pair {
       case parentVerifiedNotificationMethod
       case key
       case keychain
+      case blockRule
     }
 
     let id: UUID
@@ -93,6 +94,18 @@ extension DeleteEntity_v2: Resolver {
         .where(.id == input.id)
         .where(.parentId == context.parent.id)
         .delete(in: context.db)
+
+    case .blockRule:
+      let blockRule = try await context.db.find(IOSApp.BlockRule.Id(input.id))
+      guard let device = try await blockRule.device(in: context.db) else {
+        throw Abort(.unauthorized)
+      }
+      let child = try await device.child(in: context.db)
+      if child.parentId != context.parent.id {
+        throw Abort(.unauthorized)
+      }
+      try await context.db.delete(blockRule)
+      dashSecurityEvent(.iosBlockRuleDeleted, "child: \(child.name)", in: context)
 
     case .child:
       let computerIds = try await context.computerUsers().map(\.computerId)

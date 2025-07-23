@@ -104,6 +104,8 @@ enum DashboardTsCodegenRoute {
       FlagActivityItems.self,
       IOSDevices.self,
       GetIOSDevice.self,
+      UpsertBlockRule.self,
+      UpdateIOSDevice.self,
     ]
   }
 

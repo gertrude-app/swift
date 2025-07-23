@@ -44,6 +44,8 @@ enum AuthedAdminRoute: PairRoute {
   case securityEventsFeed
   case updateUnlockRequest(UpdateUnlockRequest.Input)
   case requestPublicKeychain(RequestPublicKeychain.Input)
+  case upsertBlockRule(UpsertBlockRule.Input)
+  case updateIOSDevice(UpdateIOSDevice.Input)
 }
 
 extension AuthedAdminRoute {
@@ -201,6 +203,14 @@ extension AuthedAdminRoute {
         Operation(RequestPublicKeychain.self)
         Body(.dashboardInput(RequestPublicKeychain.self))
       }
+      Route(.case(Self.upsertBlockRule)) {
+        Operation(UpsertBlockRule.self)
+        Body(.dashboardInput(UpsertBlockRule.self))
+      }
+      Route(.case(Self.updateIOSDevice)) {
+        Operation(UpdateIOSDevice.self)
+        Body(.dashboardInput(UpdateIOSDevice.self))
+      }
     }
     .eraseToAnyParserPrinter()
 }
@@ -330,6 +340,12 @@ extension AuthedAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .flagActivityItems(let input):
       let output = try await FlagActivityItems.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .upsertBlockRule(let input):
+      let output = try await UpsertBlockRule.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .updateIOSDevice(let input):
+      let output = try await UpdateIOSDevice.resolve(with: input, in: context)
       return try await self.respond(with: output)
     }
   }
