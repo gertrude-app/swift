@@ -239,6 +239,21 @@ public struct IOSReducer {
         }
       }
 
+    case (.onboarding(.happyPath(.offerAccountConnect)), .primary):
+      self.deps.log(state.screen, action, "62b6a262")
+      state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      return .none
+
+    case (.onboarding(.happyPath(.offerAccountConnect)), .secondary):
+      self.deps.log(state.screen, action, "b93bb543")
+      state.destination = .connectAccount(.init())
+      return .none
+
+    case (.onboarding(.happyPath(.connectSuccess)), .primary):
+      self.deps.log(state.screen, action, "63d34e4c")
+      state.screen = .onboarding(.happyPath(.promptClearCache))
+      return .none
+
     case (.onboarding(.happyPath(.optOutBlockGroups)), .primary):
       self.deps.log(state.screen, action, "cdb31095")
       if state.disabledBlockGroups == .all { return .none }
@@ -260,7 +275,7 @@ public struct IOSReducer {
           // NB: safeguard so we don't ever end up with empty rules
           if deps.storage.loadProtectionMode().missingRules {
             deps.log("UNEXPECTED missing rules after opt-out", "ffff30ac")
-            deps.storage.saveProtectionMode(.normal(BlockRule.defaults))
+            deps.storage.saveProtectionMode(.normal(BlockRule.Legacy.defaults.map(\.current)))
           }
         },
         .run { [device = self.deps.device] send in
@@ -557,7 +572,8 @@ public struct IOSReducer {
 
     case (.supervisionSuccessFirstLaunch, .primary):
       self.deps.log(state.screen, action, "aa563df6")
-      state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      state.onboarding.deviceSupervised = true
+      state.screen = .onboarding(.happyPath(.offerAccountConnect))
       return .none
 
     default:
@@ -594,7 +610,8 @@ public struct IOSReducer {
             deps.log("non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
           case (false, .none, _):
-            await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+            // await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+            await send(.programmatic(.setScreen(.onboarding(.happyPath(.offerAccountConnect)))))
           case (_, .none, true):
             try await deps.handleUpgrade(send: send)
           case (true, .none, false):
@@ -615,7 +632,7 @@ public struct IOSReducer {
             if let defaultRules, !defaultRules.isEmpty {
               deps.storage.saveProtectionMode(.onboarding(defaultRules))
             } else {
-              deps.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+              deps.storage.saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
             }
             await deps.api.logEvent(
               "8d35f043",
@@ -693,7 +710,7 @@ public struct IOSReducer {
       } else {
         self.deps.unexpected(state.screen, action, "c98b9525")
       }
-      state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      state.screen = .onboarding(.happyPath(.offerAccountConnect))
       return .run { [deps = self.deps] _ in
         deps.storage.saveDisabledBlockGroups([])
       }
@@ -743,7 +760,7 @@ public struct IOSReducer {
   func destination(state: inout State, action: Destination.Action) -> Effect<Action> {
     switch action {
     case .connectAccount(.connectionSucceeded(childData: let data)):
-      state.screen = .running(state: .connected(childName: data.childName))
+      state.screen = .onboarding(.happyPath(.connectSuccess))
       return .run { [deps = self.deps] send in
         await deps.api.setAuthToken(data.token)
         deps.storage.saveConnection(data: data)
@@ -764,7 +781,7 @@ extension IOSReducer.Deps {
       self.storage.saveProtectionMode(.normal(defaultRules))
     } else {
       self.log("unexpected upgrade rule failure", "8d4a445b")
-      self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+      self.storage.saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
     }
     self.storage.removeObject(forKey: .legacyStorageKey)
     await send(.programmatic(.setScreen(.running(state: .notConnected))))

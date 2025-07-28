@@ -34,6 +34,29 @@ public extension BlockRule {
 // extensions
 
 public extension BlockRule.Legacy {
+  var current: GertieIOS.BlockRule {
+    switch self {
+    case .bundleIdContains(let bundleId):
+      .bundleIdContains(value: bundleId)
+    case .urlContains(let url):
+      .urlContains(value: url)
+    case .hostnameContains(let hostname):
+      .hostnameContains(value: hostname)
+    case .hostnameEquals(let hostname):
+      .hostnameEquals(value: hostname)
+    case .hostnameEndsWith(let hostname):
+      .hostnameEndsWith(value: hostname)
+    case .targetContains(let target):
+      .targetContains(value: target)
+    case .flowTypeIs(let flowType):
+      .flowTypeIs(value: flowType)
+    case .both(let a, let b):
+      .both(a: a.current, b: b.current)
+    case .unless(let rule, let negatedBy):
+      .unless(rule: rule.current, negatedBy: negatedBy.map(\.current))
+    }
+  }
+
   static var defaults: [BlockRule.Legacy] {
     [
       .bundleIdContains("HashtagImagesExtension"),

@@ -38,6 +38,7 @@ extension IOSReducer {
       public var availableDiskSpaceInBytes: Int?
       public var startClearCache: Date?
       public var endClearCache: Date?
+      public var deviceSupervised: Bool = false
 
       public init(
         firstLaunch: Date? = nil,
@@ -91,6 +92,8 @@ extension IOSReducer {
       case dontGetTrickedPreAuth
       case explainInstallWithDevicePasscode
       case dontGetTrickedPreInstall
+      case offerAccountConnect // new
+      case connectSuccess
       case optOutBlockGroups
       case promptClearCache
       case batteryWarning
