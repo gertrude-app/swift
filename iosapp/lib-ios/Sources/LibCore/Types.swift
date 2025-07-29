@@ -1,67 +1,20 @@
 import Foundation
-import GertieIOS
 
-public indirect enum ProtectionMode {
-  case onboarding([BlockRule])
-  case normal([BlockRule])
-  case emergencyLockdown
+public enum MagicStrings {
+  static let gertrudeBundleIdLong: String = .gertrudeBundleIdLong
+  static let gertrudeBundleIdShort: String = .gertrudeBundleIdShort
+  static let gertrudeGroupId: String = .gertrudeGroupId
 }
 
-public extension ProtectionMode {
-  var normalRules: [BlockRule]? {
-    switch self {
-    case .normal(let rules):
-      rules
-    case .onboarding, .emergencyLockdown:
-      nil
-    }
-  }
-
-  var rules: [BlockRule]? {
-    switch self {
-    case .onboarding(let rules):
-      rules
-    case .normal(let rules):
-      rules
-    case .emergencyLockdown:
-      nil
-    }
-  }
-
-  var shortDesc: String {
-    switch self {
-    case .onboarding(let rules):
-      ".onboarding(\(rules.count))"
-    case .normal(let rules):
-      ".normal(\(rules.count))"
-    case .emergencyLockdown:
-      ".emergencyLockdown"
-    }
-  }
-}
-
-extension ProtectionMode: Equatable, Sendable, Codable {}
-
-public extension ProtectionMode? {
-  var missingRules: Bool {
-    switch self {
-    case .none:
-      true
-    case .some(.emergencyLockdown):
-      true
-    case .some(.onboarding([])):
-      true
-    case .some(.normal([])):
-      true
-    default:
-      false
-    }
-  }
+public extension String {
+  static let gertrudeBundleIdLong = "WFN83LM943.com.netrivet.gertrude-ios.app"
+  static let gertrudeBundleIdShort = "com.netrivet.gertrude-ios.app"
+  static let gertrudeGroupId = "group.com.netrivet.gertrude-ios.app"
 }
 
 public extension UserDefaults {
   static var gertrude: UserDefaults {
-    UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
+    UserDefaults(suiteName: .gertrudeGroupId)!
   }
 }
 

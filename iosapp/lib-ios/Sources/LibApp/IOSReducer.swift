@@ -14,7 +14,8 @@ public struct IOSReducer {
     @Dependency(\.device) var device
     @Dependency(\.filter) var filter
     @Dependency(\.systemExtension) var systemExtension
-    @Dependency(\.storage) var storage
+    @Dependency(\.sharedUserDefaults) var userDefaults
+    @Dependency(\.sharedStorage) var sharedStorage
     @Dependency(\.date.now) var now
     @Dependency(\.locale) var locale
     @Dependency(\.mainQueue) var mainQueue
@@ -260,22 +261,22 @@ public struct IOSReducer {
       state.screen = .onboarding(.happyPath(.promptClearCache))
       return .merge(
         .run { [deps = self.deps, disabled = state.disabledBlockGroups] _ in
-          deps.storage.saveDisabledBlockGroups(disabled)
+          deps.sharedStorage.saveDisabledBlockGroups(disabled)
           if let vendorId = await deps.device.vendorId() {
             let result = try? await deps.api.fetchBlockRules(
               vendorId: vendorId,
               disabledGroups: disabled
             )
             if let rules = result, !rules.isEmpty {
-              deps.storage.saveProtectionMode(.normal(rules))
+              deps.sharedStorage.saveProtectionMode(.normal(rules))
             }
           } else {
             deps.log("UNEXPECTED no vendor id on opt out", "d9e93a4b")
           }
           // NB: safeguard so we don't ever end up with empty rules
-          if deps.storage.loadProtectionMode().missingRules {
+          if deps.sharedStorage.loadProtectionMode().missingRules {
             deps.log("UNEXPECTED missing rules after opt-out", "ffff30ac")
-            deps.storage.saveProtectionMode(.normal(BlockRule.Legacy.defaults.map(\.current)))
+            deps.sharedStorage.saveProtectionMode(.normal(BlockRule.Legacy.defaults.map(\.current)))
           }
         },
         .run { [device = self.deps.device] send in
@@ -594,9 +595,9 @@ public struct IOSReducer {
         // detect current state and set screen
         .run { [deps = self.deps] send in
           let filterRunning = await deps.systemExtension.filterRunning()
-          let disabledBlockGroups = deps.storage.loadDisabledBlockGroups()
-          let connection = deps.storage.loadConnection()
-          let hasLegacyData = deps.storage.loadData(forKey: .legacyStorageKey) != nil
+          let disabledBlockGroups = deps.sharedStorage.loadDisabledBlockGroups()
+          let connection = deps.sharedStorage.loadAccountConnection()
+          let hasLegacyData = deps.userDefaults.loadData(forKey: .legacyStorageKey) != nil
           switch (filterRunning, disabledBlockGroups, hasLegacyData) {
           case (true, .some, _):
             await send(.programmatic(.setScreen(.running(
@@ -610,8 +611,7 @@ public struct IOSReducer {
             deps.log("non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
           case (false, .none, _):
-            // await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
-            await send(.programmatic(.setScreen(.onboarding(.happyPath(.offerAccountConnect)))))
+            await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
           case (_, .none, true):
             try await deps.handleUpgrade(send: send)
           case (true, .none, false):
@@ -621,18 +621,19 @@ public struct IOSReducer {
         },
         // handle first launch
         .run { [deps = self.deps] send in
-          if let firstLaunch = deps.storage.loadFirstLaunchDate() {
+          if let firstLaunch = deps.sharedStorage.loadFirstLaunchDate() {
             await send(.programmatic(.setFirstLaunch(firstLaunch)))
           } else {
             let now = deps.now
-            deps.storage.saveFirstLaunchDate(now)
+            deps.sharedStorage.saveFirstLaunchDate(now)
             await send(.programmatic(.setFirstLaunch(now)))
             // prefetch the default block groups for onboarding
             let defaultRules = try? await deps.api.fetchDefaultBlockRules(deps.device.vendorId())
             if let defaultRules, !defaultRules.isEmpty {
-              deps.storage.saveProtectionMode(.onboarding(defaultRules))
+              deps.sharedStorage.saveProtectionMode(.onboarding(defaultRules))
             } else {
-              deps.storage.saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
+              deps.sharedStorage
+                .saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
             }
             await deps.api.logEvent(
               "8d35f043",
@@ -712,7 +713,7 @@ public struct IOSReducer {
       }
       state.screen = .onboarding(.happyPath(.offerAccountConnect))
       return .run { [deps = self.deps] _ in
-        deps.storage.saveDisabledBlockGroups([])
+        deps.sharedStorage.saveDisabledBlockGroups([])
       }
 
     case .installFailed(let err):
@@ -763,7 +764,7 @@ public struct IOSReducer {
       state.screen = .onboarding(.happyPath(.connectSuccess))
       return .run { [deps = self.deps] send in
         await deps.api.setAuthToken(data.token)
-        deps.storage.saveConnection(data: data)
+        deps.sharedStorage.saveAccountConnection(data)
       }
     default:
       return .none
@@ -775,15 +776,15 @@ extension IOSReducer.Deps {
   // TODO: need to handle two upgrades, > 1.3.x, and > 1.5.x
   func handleUpgrade(send: Send<IOSReducer.Action>) async throws {
     self.log("handling upgrade", "180e2347")
-    self.storage.saveDisabledBlockGroups([])
+    self.sharedStorage.saveDisabledBlockGroups([])
     let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId())
     if let defaultRules {
-      self.storage.saveProtectionMode(.normal(defaultRules))
+      self.sharedStorage.saveProtectionMode(.normal(defaultRules))
     } else {
       self.log("unexpected upgrade rule failure", "8d4a445b")
-      self.storage.saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
+      self.sharedStorage.saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
     }
-    self.storage.removeObject(forKey: .legacyStorageKey)
+    self.userDefaults.removeObject(forKey: .legacyStorageKey)
     await send(.programmatic(.setScreen(.running(state: .notConnected))))
     try await self.filter.notifyRulesChanged()
   }

@@ -10,96 +10,98 @@ import XCore
   public struct NEProviderStopReason {} // CI
 #endif
 
-public final class FilterProxy: Sendable {
-  struct Deps: Sendable {
-    @Dependency(\.osLog) var logger
-    @Dependency(\.storage) var storage
-    @Dependency(\.suspendingClock) var clock
-    @Dependency(\.date.now) var now
-    @Dependency(\.calendar) var calendar
+public struct FilterProxy {
+  #if DEBUG
+    static let FREQ_VERY_FAST: UInt = 3
+    static let FREQ_FAST: UInt = 5
+    static let FREQ_NORMAL: UInt = 10
+    static let FREQ_SLOW: UInt = 15
+    static let FREQ_VERY_SLOW: UInt = 20
+  #else
+    static let FREQ_VERY_FAST: UInt = 3
+    static let FREQ_FAST: UInt = 5
+    static let FREQ_NORMAL: UInt = 250
+    static let FREQ_SLOW: UInt = 500
+    static let FREQ_VERY_SLOW: UInt = 1000
+  #endif
+
+  @Dependency(\.osLog) var logger
+  @Dependency(\.date.now) var now
+  @Dependency(\.calendar) var calendar
+
+  // NB: The filter target is allowed to WRITE to UserDefaults,
+  // but if it does, the operating system seems to *clone* the
+  // underlying database, and it no longer is connected to the
+  // group container. This is not documented directly, but I've
+  // tested & verified it, and it fits with how the docs say that
+  // the filter is heavily sandboxed and is not allowed to export
+  // data, hence we use a storage client that can ONLY read
+  @Dependency(\.sharedStorageReader) var storage
+
+  var protectionMode: ProtectionMode = .emergencyLockdown
+  var count: UInt = 0
+  var requestUpdate: Bool = false
+
+  public init(protectionMode: ProtectionMode) {
+    self.protectionMode = protectionMode
+    self.logger.setPrefix("FILTER PROXY")
   }
 
-  struct HeartbeatDurations: Sendable {
-    var normal: Duration
-    var current: Duration
-  }
-
-  let deps = Deps()
-  let protectionMode: Mutex<ProtectionMode>
-  let heartbeatDurations: Mutex<HeartbeatDurations>
-  let heartbeatTask: Mutex<Task<Void, Error>?>
-
-  public init(
-    protectionMode: ProtectionMode,
-    normalHeartbeatInterval: Duration = .minutes(5)
-  ) {
-    self.heartbeatTask = Mutex(nil)
-    self.protectionMode = Mutex(protectionMode)
-    self.heartbeatDurations = Mutex(.init(normal: normalHeartbeatInterval, current: .seconds(10)))
-    self.deps.logger.setPrefix("FILTER PROXY")
-    self.readRules()
-    self.startHeartbeat()
-  }
-
-  func startHeartbeat() {
-    let task = Task {
-      while true {
-        let nextInterval = self.heartbeatDurations.withLock { $0.current }
-        try await self.deps.clock.sleep(for: nextInterval)
-        self.receiveHeartbeat()
-      }
+  mutating func getRules() -> ProtectionMode {
+    if self.count % FilterProxy.FREQ_VERY_SLOW == 0 {
+      self.loadAndSetRules()
     }
-    self.heartbeatTask.withLock { $0 = task }
+    switch self.protectionMode {
+    case .normal:
+      self.requestUpdate = self.requestUpdate || self.count % FilterProxy.FREQ_SLOW == 0
+    case .connected:
+      self.requestUpdate = self.requestUpdate || self.count % FilterProxy.FREQ_NORMAL == 0
+    case .onboarding:
+      self.requestUpdate = self.requestUpdate || self.count % FilterProxy.FREQ_FAST == 0
+    case .emergencyLockdown:
+      self.requestUpdate = self.requestUpdate || self.count % FilterProxy.FREQ_FAST == 0
+      self.loadAndSetRules()
+    }
+    return self.protectionMode
   }
 
-  func loadRules() -> ProtectionMode? {
-    guard let data = self.deps.storage.loadData(forKey: .protectionModeStorageKey) else {
-      self.deps.logger.log("no rules found")
-      return nil
+  mutating func loadAndSetRules() {
+    guard let mode = self.storage.loadProtectionMode() else {
+      self.logger.log("no rules found")
+      return
     }
-    do {
-      let mode = try JSONDecoder().decode(ProtectionMode.self, from: data)
-      switch mode {
-      case .normal([]), .onboarding([]):
-        self.deps.logger.log("unexpected empty rules")
-        return .emergencyLockdown
-      case .normal(let rules):
-        self.deps.logger.log("read \(rules.count) (normal) rules")
-      case .onboarding(let rules):
-        self.deps.logger.log("read \(rules.count) (onboarding) rules")
-      case .emergencyLockdown:
-        self.deps.logger.log("unexpected stored emergencyLockdown mode")
-      }
-      return mode
-    } catch {
-      self.deps.logger.log("error decoding rules: \(String(reflecting: error))")
-      return nil
+    self.protectionMode = mode
+    switch mode {
+    case .normal([]), .onboarding([]), .connected([], _):
+      self.logger.log("unexpected empty rules")
+    case .normal(let rules):
+      self.logger.log("read \(rules.count) (normal) rules")
+    case .connected(let rules, _):
+      self.logger.log("read \(rules.count) (connected) rules")
+    case .onboarding(let rules):
+      self.logger.log("read \(rules.count) (onboarding) rules")
+    case .emergencyLockdown:
+      self.logger.log("unexpected stored emergencyLockdown mode")
     }
   }
 
-  public func decideFlow(
+  public mutating func decideFlow(
     hostname: String? = nil,
     url: String? = nil,
     bundleId: String? = nil,
     flowType: FlowType? = nil
   ) -> FlowVerdict {
+    self.count &+= 1 // wrapping add
     if hostname == "read-rules.xpc.gertrude.app" {
-      self.readRules()
+      self.loadAndSetRules()
       return .drop
     }
 
     #if DEBUG
-      let desc = self.protectionMode.withLock { $0.shortDesc }
-      self.deps.logger.log("Decide flow, rules: \(desc)")
+      self.logger.log("Decide flow, rules: \(self.protectionMode.shortDesc)")
     #endif
 
-    // NB: this _should_ be extremely fast, because
-    //  1) network requests originate relatively rarely
-    //  2) it's likely that the filter only ever operates on a single thread
-    //  3) underlying NSLock should not incur a syscall in low contention
-    let protectionMode = self.protectionMode.withLock { $0 }
-
-    guard let rules = protectionMode.rules else {
+    guard let rules = self.protectionMode.rules else {
       return self.decideLockdownFlow(
         hostname: hostname,
         url: url,
@@ -116,34 +118,34 @@ public final class FilterProxy: Sendable {
     ) {
       return .drop
     } else {
-      return .allow
+      return self.allowFlow()
     }
   }
 
-  func decideLockdownFlow(
+  mutating func decideLockdownFlow(
     hostname: String? = nil,
     url: String? = nil,
     bundleId: String? = nil,
     flowType: FlowType? = nil
   ) -> FlowVerdict {
-    let components = self.deps.calendar.dateComponents([.hour, .minute], from: self.deps.now)
+    let components = self.calendar.dateComponents([.hour, .minute], from: self.now)
     if components.hour == 19, components.minute! >= 0, components.minute! <= 5 {
-      return .allow
+      return self.allowFlow()
     }
 
     let allowedSuffixes = ["gertrude.app", "apple.com", "icloud.com", "icloud.net"]
     if bundleId?.contains("com.netrivet.gertrude-ios.app") == true {
-      return .allow
+      return self.allowFlow()
     } else if bundleId?.contains("com.apple.mDNSResponder") == true {
-      return .allow
+      return self.allowFlow()
     } else if bundleId?.contains("com.apple.Preferences") == true {
-      return .allow
+      return self.allowFlow()
     } else if hostname == nil, url == nil {
-      return .allow
+      return self.allowFlow()
     } else if let hostname {
       for suffix in allowedSuffixes {
         if hostname.hasSuffix(suffix) {
-          return .allow
+          return self.allowFlow()
         }
       }
       return .drop
@@ -153,7 +155,7 @@ public final class FilterProxy: Sendable {
       let derivedHostname = segments.first ?? ""
       for suffix in allowedSuffixes {
         if derivedHostname.hasSuffix(suffix) {
-          return .allow
+          return self.allowFlow()
         }
       }
       return .drop
@@ -162,45 +164,37 @@ public final class FilterProxy: Sendable {
     }
   }
 
-  public func handleRulesChanged() {
-    self.readRules()
+  public mutating func handleRulesChanged() {
+    self.loadAndSetRules()
   }
 
-  public func receiveHeartbeat() {
-    self.readRules()
-  }
-
-  func readRules() {
-    // defensively set to check again quickly...
-    self.heartbeatDurations.withLock { $0.current = .seconds(10) }
-    guard let loadedMode = self.loadRules() else {
-      return
-    }
-    self.protectionMode.withLock { currentMode in
-      currentMode = loadedMode
-    }
-    if loadedMode != .emergencyLockdown {
-      // ...only setting normal if we get valid rules
-      self.heartbeatDurations.withLock { $0.current = $0.normal }
-    }
-  }
-
-  public func startFilter() {
-    self.readRules()
+  public mutating func startFilter() {
+    self.loadAndSetRules()
   }
 
   public func stopFilter(reason: NEProviderStopReason) {}
+
+  mutating func allowFlow() -> FlowVerdict {
+    if self.requestUpdate {
+      self.requestUpdate = false
+      return .updateAndAllow
+    } else {
+      return .allow
+    }
+  }
 }
 
 public extension FilterProxy {
   enum FlowVerdict {
     case allow
     case drop
+    case updateAndAllow
 
     public var description: String {
       switch self {
       case .allow: "ALLOW"
       case .drop: "DROP"
+      case .updateAndAllow: "ALLOW(w/ UPDATE)"
       }
     }
   }
@@ -211,11 +205,6 @@ public extension FilterProxy {
 private func isGertrude(_ bundleId: String?) -> Bool {
   guard let bundleId else { return false }
   return bundleId == .gertrudeBundleIdLong || bundleId == .gertrudeBundleIdShort
-}
-
-public extension String {
-  static let gertrudeBundleIdLong = "WFN83LM943.com.netrivet.gertrude-ios.app"
-  static let gertrudeBundleIdShort = "com.netrivet.gertrude-ios.app"
 }
 
 // conformances

@@ -33,7 +33,7 @@ import NetworkExtension
     return nil
   }
 
-  let connected = deps.storage.loadConnection() != nil
+  let connected = deps.userDefaults.loadConnection() != nil
 
   if connected {
     guard let connectedRules = try? await deps.api.connectedRules(vendorId) else {
@@ -47,10 +47,10 @@ import NetworkExtension
       return nil
     }
 
-    let savedRules = deps.storage.loadProtectionMode()?.normalRules
+    let savedRules = deps.userDefaults.loadProtectionMode()?.normalRules
     if apiRules != savedRules {
       deps.logger.log("saving changed rules (connected)")
-      deps.storage.saveProtectionMode(.normal(apiRules))
+      deps.userDefaults.saveProtectionMode(.normal(apiRules))
       notify.withValue { $0() }
     } else {
       deps.logger.log("rules unchanged")
@@ -59,7 +59,7 @@ import NetworkExtension
 
   } else {
 
-    guard let disabled = deps.storage.loadDisabledBlockGroups() else {
+    guard let disabled = deps.userDefaults.loadDisabledBlockGroups() else {
       deps.logger.log("no stored block groups, skipping rule update")
       return nil
     }
@@ -75,10 +75,10 @@ import NetworkExtension
       return nil
     }
 
-    let savedRules = deps.storage.loadProtectionMode()?.normalRules
+    let savedRules = deps.userDefaults.loadProtectionMode()?.normalRules
     if apiRules != savedRules {
       deps.logger.log("saving changed rules")
-      deps.storage.saveProtectionMode(.normal(apiRules))
+      deps.userDefaults.saveProtectionMode(.normal(apiRules))
       notify.withValue { $0() }
     } else {
       deps.logger.log("rules unchanged")
@@ -93,7 +93,7 @@ public class ControllerProxy {
     @Dependency(\.osLog) var logger
     @Dependency(\.suspendingClock) var clock
     @Dependency(\.device) var device
-    @Dependency(\.storage) var storage
+    @Dependency(\.sharedUserDefaults) var userDefaults
   }
 
   private let managedSettings =

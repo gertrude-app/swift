@@ -77,6 +77,21 @@ public extension WebContentFilterPolicy {
     }
   }
 
+  var shortDesc: String {
+    switch self {
+    case .allowAll:
+      "allowAll"
+    case .blockAdult:
+      "blockAdult"
+    case .blockAdultAnd(let domains):
+      "blockAdultAnd(<\(domains.count) domains>)"
+    case .blockAllExcept(let except):
+      "blockAllExcept(<\(except.count) domains>)"
+    case .blockAll:
+      "blockAll"
+    }
+  }
+
   var kind: Kind {
     switch self {
     case .allowAll: .allowAll

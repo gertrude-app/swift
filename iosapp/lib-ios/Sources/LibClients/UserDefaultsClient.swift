@@ -6,7 +6,7 @@ import IOSRoute
 import LibCore
 
 @DependencyClient
-public struct StorageClient: Sendable {
+public struct UserDefaultsClient: Sendable {
   public var saveDate: @Sendable (Date, _ forKey: String) -> Void
   public var loadDate: @Sendable (_ forKey: String) -> Date?
   public var saveCodable: @Sendable (_ value: any Codable & Sendable, _ forKey: String) -> Void
@@ -15,8 +15,8 @@ public struct StorageClient: Sendable {
   public var removeObject: @Sendable (_ forKey: String) -> Void
 }
 
-extension StorageClient: DependencyKey {
-  public static let liveValue = StorageClient(
+extension UserDefaultsClient: DependencyKey {
+  public static let liveValue = UserDefaultsClient(
     saveDate: { date, key in
       UserDefaults.gertrude.set(date, forKey: key)
     },
@@ -40,7 +40,7 @@ extension StorageClient: DependencyKey {
   )
 }
 
-public extension StorageClient {
+public extension UserDefaultsClient {
   func saveConnection(data: ChildIOSDeviceData) {
     self.saveCodable(value: data, forKey: .connectionStorageKey)
   }
@@ -96,13 +96,13 @@ public extension String {
   }
 }
 
-extension StorageClient: TestDependencyKey {
-  public static let testValue = StorageClient()
+extension UserDefaultsClient: TestDependencyKey {
+  public static let testValue = UserDefaultsClient()
 }
 
 public extension DependencyValues {
-  var storage: StorageClient {
-    get { self[StorageClient.self] }
-    set { self[StorageClient.self] = newValue }
+  var sharedUserDefaults: UserDefaultsClient {
+    get { self[UserDefaultsClient.self] }
+    set { self[UserDefaultsClient.self] = newValue }
   }
 }

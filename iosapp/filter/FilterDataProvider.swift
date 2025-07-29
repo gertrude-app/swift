@@ -79,10 +79,14 @@ class FilterDataProvider: NEFilterDataProvider {
       url ?? "(nil)",
       bundleId ?? "(nil)"
     )
-
+    
     return switch verdict {
     case .allow: .allow()
     case .drop: .drop()
+    // we use `.needRules()` as a sentinel to tell the controller layer
+    // that it is time to check for new rules. we always do this with requests
+    // that should be allowed, so the controller can also allow the flow for perf
+    case .updateAndAllow: .needRules()
     }
   }
 
