@@ -25,6 +25,36 @@ public enum WebContentFilterPolicy: Codable, Equatable, Sendable {
       }
     }
   }
+
+  public extension Set<WebDomain> {
+    var domainStrings: [String] {
+      var domains: [String] = []
+      for item in self {
+        if let domain = item.domain {
+          domains.append(domain)
+        }
+      }
+      return domains
+    }
+  }
+
+  public extension ManagedSettings.WebContentSettings.FilterPolicy {
+    var gertiePolicy: WebContentFilterPolicy {
+      switch self {
+      case .none:
+        return .allowAll
+      case .all(let except):
+        return except.isEmpty ? .blockAll : .blockAllExcept(Set(except.domainStrings))
+      case .auto(let domains, _):
+        return domains.isEmpty ? .blockAdult : .blockAdultAnd(Set(domains.domainStrings))
+      case .specific:
+        // not semantically correct, but we don't support this option, unreachable
+        return .blockAll
+      @unknown default:
+        return .blockAll
+      }
+    }
+  }
 #endif
 
 public extension WebContentFilterPolicy {
