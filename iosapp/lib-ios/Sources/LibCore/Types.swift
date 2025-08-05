@@ -1,9 +1,13 @@
 import Foundation
 
 public enum MagicStrings {
-  static let gertrudeBundleIdLong: String = .gertrudeBundleIdLong
-  static let gertrudeBundleIdShort: String = .gertrudeBundleIdShort
-  static let gertrudeGroupId: String = .gertrudeGroupId
+  public static let gertrudeBundleIdLong: String = .gertrudeBundleIdLong
+  public static let gertrudeBundleIdShort: String = .gertrudeBundleIdShort
+  public static let gertrudeGroupId: String = .gertrudeGroupId
+
+  // sentinal hostnames
+  public static let readRulesSentinalHostname: String = "read-rules.xpc.gertrude.app"
+  public static let dumpLogsSentinalHostname: String = "dump-logs.xpc.gertrude.app"
 }
 
 public extension String {
@@ -55,6 +59,14 @@ enum Configuration {
       return string
     default:
       throw Error.invalidValue
+    }
+  }
+}
+
+public extension Array {
+  func chunked(into size: Int) -> [[Element]] {
+    stride(from: 0, to: count, by: size).map {
+      Array(self[$0 ..< Swift.min($0 + size, count)])
     }
   }
 }

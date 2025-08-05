@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Foundation
 import LibClients
+import os.log
 
 @_exported import GertieIOS
 @_exported import XCore
@@ -114,7 +115,14 @@ public struct IOSReducer {
       //   try await deps.filter.notifyRulesChanged()
       // }
       // 👍 todo: restore
-      return .none
+      let allLogs = self.deps.sharedStorage.loadDebugLogs() ?? []
+      for (i, logs) in allLogs.chunked(into: 6).enumerated() {
+        os_log("[G•] APP dump memory logs %d:\n%{public}s", i + 1, logs.joined(separator: "\n"))
+      }
+      return .run { [filter = self.deps.filter] _ in
+        // FIXME: post backpacking jared 👍 not getting them dumped by filter...
+        try await filter.send(notification: .dumpLogs)
+      }
 
     case .runningBtnTapped: // rename...?
       state.destination = .connectAccount(.init(screen: .enteringCode))
@@ -786,6 +794,6 @@ extension IOSReducer.Deps {
     }
     self.userDefaults.removeObject(forKey: .legacyStorageKey)
     await send(.programmatic(.setScreen(.running(state: .notConnected))))
-    try await self.filter.notifyRulesChanged()
+    try await self.filter.send(notification: .rulesChanged)
   }
 }

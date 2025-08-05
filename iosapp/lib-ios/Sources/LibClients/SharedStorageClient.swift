@@ -18,6 +18,10 @@ public struct SharedStorageClient: Sendable {
 
   public var loadFirstLaunchDate: @Sendable () -> Date?
   public var saveFirstLaunchDate: @Sendable (Date) -> Void
+
+  public var loadDebugLogs: @Sendable () -> [String]?
+  // public var saveDebugLog: @Sendable (String) -> Void
+  public var saveDebugLogs: @Sendable ([String]) -> Void
 }
 
 @DependencyClient
@@ -26,10 +30,12 @@ public struct SharedStorageReaderClient: Sendable {
   public var loadProtectionMode: @Sendable () -> ProtectionMode?
   public var loadDisabledBlockGroups: @Sendable () -> [BlockGroup]?
   public var loadFirstLaunchDate: @Sendable () -> Date?
+  public var loadDebugLogs: @Sendable () -> [String]?
 }
 
 private enum Key: String {
   case accountConnection = "v1.5.0--account-connection"
+  case debugLogs = "v1.5.0--debug-logs"
   case protectionMode = "ProtectionMode.v1.3.0"
   case disabledBlockGroups = "disabledBlockGroups.v1.3.0"
   case firstLaunchDate
@@ -46,8 +52,18 @@ extension SharedStorageClient: DependencyKey {
       loadDisabledBlockGroups: reader.loadDisabledBlockGroups,
       saveDisabledBlockGroups: { saveCodable($0, forKey: .disabledBlockGroups) },
       loadFirstLaunchDate: reader.loadFirstLaunchDate,
-      saveFirstLaunchDate: { saveDate($0, forKey: .firstLaunchDate) }
+      saveFirstLaunchDate: { saveDate($0, forKey: .firstLaunchDate) },
+      loadDebugLogs: reader.loadDebugLogs,
+      saveDebugLogs: { saveCodable($0, forKey: .debugLogs) }
     )
+  }
+}
+
+public extension SharedStorageClient {
+  func saveDebugLog(_ log: String) {
+    var logs = self.loadDebugLogs() ?? []
+    logs.append(log)
+    self.saveDebugLogs(logs)
   }
 }
 
@@ -56,7 +72,8 @@ extension SharedStorageReaderClient: DependencyKey {
     loadAccountConnection: { loadCodable(forKey: .accountConnection) },
     loadProtectionMode: { loadCodable(forKey: .protectionMode) },
     loadDisabledBlockGroups: { loadCodable(forKey: .disabledBlockGroups) },
-    loadFirstLaunchDate: { loadDate(forKey: .firstLaunchDate) }
+    loadFirstLaunchDate: { loadDate(forKey: .firstLaunchDate) },
+    loadDebugLogs: { loadCodable(forKey: .debugLogs) }
   )
 }
 

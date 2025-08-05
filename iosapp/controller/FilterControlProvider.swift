@@ -10,13 +10,6 @@ class FilterControlProvider: NEFilterControlProvider {
     self.proxy.notifyRulesChanged.setValue { [weak self] in
       self?.notifyRulesChanged()
     }
-
-    #if DEBUG
-      self.proxy.startHeartbeat(initialDelay: .seconds(30), interval: .minutes(2))
-    #else
-      self.proxy.startHeartbeat(initialDelay: .seconds(60), interval: .minutes(60))
-    #endif
-
     os_log("[G•] CONTROLLER init")
   }
 
@@ -35,11 +28,7 @@ class FilterControlProvider: NEFilterControlProvider {
     completionHandler()
   }
 
-  override func handleNewFlow(
-    _ flow: NEFilterFlow,
-    completionHandler: @escaping (NEFilterControlVerdict) -> Void
-  ) {
-    self.proxy.handleNewFlow(flow)
-    completionHandler(.allow(withUpdateRules: false))
+  override func handleNewFlow(_ flow: NEFilterFlow) async -> NEFilterControlVerdict {
+    await self.proxy.handleNewFlow(flow)
   }
 }

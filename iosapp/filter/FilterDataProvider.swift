@@ -5,17 +5,7 @@ import NetworkExtension
 import os.log
 
 class FilterDataProvider: NEFilterDataProvider {
-  #if !DEBUG
-    let proxy = FilterProxy(
-      protectionMode: .emergencyLockdown,
-      normalHeartbeatInterval: .minutes(5)
-    )
-  #else
-    let proxy = FilterProxy(
-      protectionMode: .emergencyLockdown,
-      normalHeartbeatInterval: .seconds(45)
-    )
-  #endif
+  var proxy = FilterProxy(protectionMode: .emergencyLockdown)
 
   override init() {
     super.init()
@@ -38,55 +28,11 @@ class FilterDataProvider: NEFilterDataProvider {
   }
 
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
-    var hostname: String?
-    var url: String?
-    let bundleId: String? = flow.sourceAppIdentifier
-    let flowType: FlowType?
-
-    if let browserFlow = flow as? NEFilterBrowserFlow {
-      flowType = .browser
-      url = browserFlow.url?.absoluteString
-      os_log(
-        "[G•] FILTER handle new BROWSER flow (data) : %{public}s",
-        String(describing: browserFlow)
-      )
-    } else if let socketFlow = flow as? NEFilterSocketFlow {
-      flowType = .socket
-      hostname = socketFlow.remoteHostname
-      os_log(
-        "[G•] FILTER handle new SOCKET flow (data) : %{public}s",
-        String(describing: socketFlow)
-      )
-    } else {
-      flowType = nil
-      os_log(
-        "[G•] FILTER flow is NEITHER subclass (unreachable?) id: %{public}s",
-        String(describing: flow.identifier)
-      )
-    }
-
-    let verdict = self.proxy.decideFlow(
-      hostname: hostname,
-      url: url,
-      bundleId: bundleId,
-      flowType: flowType
-    )
-
-    os_log(
-      "[G•] FILTER flow verdict: %{public}s, hostname: %{public}s, url: %{public}s, sourceId: %{public}s",
-      verdict.description,
-      hostname ?? "(nil)",
-      url ?? "(nil)",
-      bundleId ?? "(nil)"
-    )
-    
+    let verdict = self.proxy.decideFlow(flow)
     return switch verdict {
     case .allow: .allow()
     case .drop: .drop()
-    // we use `.needRules()` as a sentinel to tell the controller layer
-    // that it is time to check for new rules. we always do this with requests
-    // that should be allowed, so the controller can also allow the flow for perf
-    case .updateAndAllow: .needRules()
+    case .needRules: .needRules()
     }
   }
 

@@ -4,6 +4,12 @@ public indirect enum ProtectionMode {
   case onboarding([BlockRule])
   case normal([BlockRule])
   case connected([BlockRule], WebContentFilterPolicy)
+  // NB: Emergency lockdown represents the state where the app
+  // is missing data, and needs to be very restrictive to fail safe.
+  // There is a time period while the device is booting, before it
+  // is unlocked, where the app can't access UserDefaults
+  // @see https://christianselig.com/2024/10/beware-userdefaults/
+  // so we fall back to this mode, ideally only for a few seconds.
   case emergencyLockdown
 }
 
@@ -38,6 +44,12 @@ public extension ProtectionMode {
     }
   }
 }
+
+// public protocol WithStorageBackedProtectionMode {
+//   func loadStoredProtectionMode() -> ProtectionMode?
+//   var
+//   var protectionMode: ProtectionMode { get set }
+// }
 
 extension ProtectionMode: Equatable, Sendable, Codable {}
 
