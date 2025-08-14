@@ -11,23 +11,17 @@ import XCore
   public struct NEProviderStopReason {} // CI
 #endif
 
-func foo() -> Result<Int, Error> {
-  .success("foo", 33)
-}
-
 public struct FilterProxy {
   #if DEBUG
-    static let FREQ_VERY_FAST: UInt = 3
-    static let FREQ_FAST: UInt = 5
-    static let FREQ_NORMAL: UInt = 10
-    static let FREQ_SLOW: UInt = 15
-    static let FREQ_VERY_SLOW: UInt = 20
-  #else
-    static let FREQ_VERY_FAST: UInt = 4
     static let FREQ_FAST: UInt = 10
-    static let FREQ_NORMAL: UInt = 250
-    static let FREQ_SLOW: UInt = 500
-    static let FREQ_VERY_SLOW: UInt = 1000
+    static let FREQ_NORMAL: UInt = 25
+    static let FREQ_SLOW: UInt = 50
+    static let FREQ_VERY_SLOW: UInt = 100
+  #else
+    static let FREQ_FAST: UInt = 25
+    static let FREQ_NORMAL: UInt = 500
+    static let FREQ_SLOW: UInt = 1000
+    static let FREQ_VERY_SLOW: UInt = 3000
   #endif
 
   @Dependency(\.osLog) var logger
@@ -85,6 +79,11 @@ public struct FilterProxy {
     mode.map { self.protectionMode = $0 }
   }
 
+  // NB: from logging, it appears that this can get called from different threads
+  // although big bursts of near simultaneous network connections seem to to be
+  // handled by the same thread, instead of being interleaved, seems more like the
+  // system puts the process to sleep after inactivity, then it wakes up on a new thread
+  // so it's probably the correct mental model to consider this a single-threaded
   public mutating func decideFlow(_ systemFlow: NEFilterFlow) -> FlowVerdict {
     self.count &+= 1 // wrapping add
 

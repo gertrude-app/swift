@@ -8,6 +8,14 @@ import ManagedSettings
 import NetworkExtension
 
 public final class ControllerProxy: Sendable {
+  #if DEBUG
+    static let API_DEBOUNCE_INTERVAL_NORMAL: TimeInterval = .minutes(3)
+    static let API_DEBOUNCE_INTERVAL_CONNECTED: TimeInterval = .minutes(2)
+  #else
+    static let API_DEBOUNCE_INTERVAL_NORMAL: TimeInterval = .minutes(120)
+    static let API_DEBOUNCE_INTERVAL_CONNECTED: TimeInterval = .minutes(20)
+  #endif
+
   struct Deps: Sendable {
     @Dependency(\.api) var api
     @Dependency(\.osLog) var logger
@@ -18,14 +26,18 @@ public final class ControllerProxy: Sendable {
     @Dependency(\.calendar) var calendar
   }
 
+  enum RefreshReason {
+    case startup
+    case filterRequested
+  }
+
   private let deps = Deps()
+  private let lastRefresh = LockIsolated<Date>(.distantPast)
   private let managedSettings = LockIsolated<ManagedSettingsStore?>(nil)
-  // private let protectionMode = LockIsolated<ProtectionMode>(.emergencyLockdown)
   public let notifyRulesChanged = LockIsolated<() -> Void>(unimplemented("notifyRulesChanged"))
 
   public init() {
     self.deps.logger.setPrefix("CONTROLLER PROXY")
-    // self.loadAndSetRules()
     self.deps.logger.setObserver { msg, isDebug in
       if isDebug { return }
       self.deps.storage.saveDebugLog("\(Date()) [G•] CONTROLLER PROXY \(msg.prefix(100))")
@@ -33,43 +45,52 @@ public final class ControllerProxy: Sendable {
     self.deps.logger.log("Initialized ControllerProxy")
   }
 
-  // func loadAndSetRules() {
-  //   let mode = self.deps.storage.loadProtectionMode()
-  //   self.deps.logger.logReadProtectionMode(mode)
-  //   mode.map { self.protectionMode.setValue($0) }
-  // }
-  //
   public func startFilter() -> Task<Void, Never> {
     self.deps.logger.log("starting filter")
     return Task {
       await self.deps.api.logEvent(id: "00ec3909", detail: "controller proxy: filter started")
       self.deps.logger.log("start filter refresh rules 1")
-      await self.refreshRules()
+      await self.refreshRules(reason: .startup)
       self.deps.logger.log("start filter refresh rules 2")
       try? await self.deps.clock.sleep(for: .seconds(15))
-      await self.refreshRules()
+      await self.refreshRules(reason: .startup)
       self.deps.logger.log("start filter refresh rules 3")
       try? await self.deps.clock.sleep(for: .seconds(15))
-      await self.refreshRules()
+      await self.refreshRules(reason: .startup)
     }
   }
 
   @discardableResult
-  func refreshRules() async -> Bool {
+  func refreshRules(reason: RefreshReason) async -> Bool {
+    let token = self.deps.storage.loadAccountConnection()?.token
+
+    if reason == .filterRequested {
+      let interval = token != nil
+        ? Self.API_DEBOUNCE_INTERVAL_CONNECTED
+        : Self.API_DEBOUNCE_INTERVAL_NORMAL
+      if self.lastRefresh.withValue({ $0 }).advanced(by: interval) > self.deps.now {
+        self.deps.logger.debug("skipping rule refresh, debounce")
+        return false
+      }
+      self.lastRefresh.withValue { $0 = self.deps.now }
+    }
+
     guard let vendorId = await self.deps.device.vendorId() else {
       self.deps.logger.log("no vendor id, skipping rule update")
       return false
     }
-    if self.deps.storage.loadAccountConnection() != nil {
-      return await self.refreshConnectedRules(vendorId)
+    if let token {
+      return await self.refreshConnectedRules(vendorId, token)
     } else {
       return await self.refreshNormalRules(vendorId)
     }
   }
 
-  func refreshConnectedRules(_ vendorId: UUID) async -> Bool {
+  func refreshConnectedRules(_ vendorId: UUID, _ token: UUID) async -> Bool {
     do {
       self.deps.logger.log("fetching rules from API")
+      // NB: always set the token, controller doesn't know when connection is made
+      await self.deps.api.setAuthToken(token)
       let config = try await self.deps.api.connectedRules(vendorId)
       guard config.blockRules.count > 0 else {
         self.deps.logger.log("unexpected empty rules from api (connected)")
@@ -143,8 +164,7 @@ public final class ControllerProxy: Sendable {
   public func handleNewFlow(_ systemFlow: NEFilterFlow) async -> NEFilterControlVerdict {
     // CONVENTION: we get here when the filter sends a `.needsRules` verdict, indicating
     // that according to it's incremental "timer", it thinks it's time to update the rules
-    // FIXME: check if we have internet!!! ...maybe in refreshRules?
-    let rulesChanged = await self.refreshRules()
+    let rulesChanged = await self.refreshRules(reason: .filterRequested)
     let flow = self.toFilterFlow(systemFlow)
     return switch self.decideNewFlow(flow) {
     case .allow:

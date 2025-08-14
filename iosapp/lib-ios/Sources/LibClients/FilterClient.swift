@@ -11,9 +11,7 @@ public struct FilterClient: Sendable {
     case dumpLogs
   }
 
-  // NB: FilterControProvider has a `notifyRulesChanged()`, which we expose
-  // on the ControllerProxy, but we can't access that from the main app process
-  // so this allows the App to instruct the Filter to reload its rules
+  /// send "notifications" via special sentinal http requests, from app to filter
   public var send: @Sendable (_ notification: Notification) async throws -> Void
 }
 
@@ -24,11 +22,11 @@ extension FilterClient: DependencyKey {
         switch notification {
         case .dumpLogs:
           await fireAndForget(
-            url: URL(string: "https://\(MagicStrings.readRulesSentinalHostname)")!
+            url: URL(string: "https://\(MagicStrings.dumpLogsSentinalHostname)")!
           )
         case .rulesChanged:
           await fireAndForget(
-            url: URL(string: "https://\(MagicStrings.dumpLogsSentinalHostname)")!
+            url: URL(string: "https://\(MagicStrings.readRulesSentinalHostname)")!
           )
         }
       }

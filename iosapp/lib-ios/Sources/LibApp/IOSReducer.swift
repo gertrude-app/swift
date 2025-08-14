@@ -120,7 +120,6 @@ public struct IOSReducer {
         os_log("[G•] APP dump memory logs %d:\n%{public}s", i + 1, logs.joined(separator: "\n"))
       }
       return .run { [filter = self.deps.filter] _ in
-        // FIXME: post backpacking jared 👍 not getting them dumped by filter...
         try await filter.send(notification: .dumpLogs)
       }
 
