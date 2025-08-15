@@ -113,7 +113,7 @@ public final class ControllerProxy: Sendable {
           $0 = current
         } else {
           self.deps.logger.log("creating new managed settings store")
-          let store = ManagedSettingsStore.init(named: .init(.gertrudeGroupId))
+          let store = ManagedSettingsStore(named: .init(.gertrudeGroupId))
           store.gertiePolicy = config.webPolicy
           $0 = store
         }
@@ -210,31 +210,10 @@ extension ConnectedRules.Output {
 }
 
 #if os(iOS)
-  import os.log // temp
-
   extension ManagedSettingsStore {
     var gertiePolicy: WebContentFilterPolicy? {
       get { self.webContent.blockedByFilter?.gertiePolicy }
-      set {
-        os_log(
-          "[G•] ManagedSettingsStore: setting gertiePolicy to %{public}s",
-          String(describing: newValue.map(\.managedSettingsPolicy))
-        )
-        // self.webContent.blockedByFilter = newValue.map(\.managedSettingsPolicy)
-        self.webContent.blockedByFilter = .all(except: [WebDomain(domain: "friendslibrary.com")])
-        os_log(
-          "[G•] ManagedSettingsStore: 1 %{public}s",
-          String(describing: self)
-        )
-        os_log(
-          "[G•] ManagedSettingsStore: 2 %{public}s",
-          String(describing: self.webContent)
-        )
-        os_log(
-          "[G•] ManagedSettingsStore: 3 (new) %{public}s",
-          String(describing: self.webContent.blockedByFilter)
-        )
-      }
+      set { self.webContent.blockedByFilter = newValue.map(\.managedSettingsPolicy) }
     }
   }
 #else
