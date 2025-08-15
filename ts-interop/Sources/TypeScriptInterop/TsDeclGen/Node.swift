@@ -8,6 +8,7 @@ public indirect enum Node: Equatable {
   case record(Node)
   case stringUnion([String], AnyType)
   case objectUnion([ObjectUnionMember], AnyType)
+  case alias(String, AnyType)
 
   public enum Primitive: Equatable {
     case string
@@ -21,20 +22,17 @@ public indirect enum Node: Equatable {
     case never
   }
 
+  private static let config = Mutex(Config())
+
   var anyType: AnyType {
     switch self {
-    case .array(_, let anyType):
-      .array(of: anyType.type)
-    case .object(_, let type):
-      type
-    case .objectUnion(_, let type):
-      type
-    case .primitive(let primitive):
-      primitive.anyType
-    case .record(let node):
-      node.anyType
-    case .stringUnion(_, let type):
-      type
+    case .array(_, let anyType): .array(of: anyType.type)
+    case .object(_, let type): type
+    case .objectUnion(_, let type): type
+    case .alias(_, let type): type
+    case .primitive(let primitive): primitive.anyType
+    case .record(let node): node.anyType
+    case .stringUnion(_, let type): type
     }
   }
 
@@ -78,7 +76,15 @@ extension Node.Property {
 }
 
 extension Node {
-  init(from type: Any.Type) throws {
+  init(from type: Any.Type, config: Config? = nil) throws {
+    if let config {
+      Node.config.replace(with: config)
+    }
+    defer {
+      if config != nil {
+        Node.config.replace(with: Config())
+      }
+    }
     switch type {
     case is String.Type:
       self = .primitive(.string)
@@ -102,7 +108,11 @@ extension Node {
     case is UUID.Type:
       self = .primitive(.uuid)
     default:
-      try self.init(from: typeInfo(of: type))
+      if let alias = Node.config.withValue({ $0.alias(for: type) }) {
+        self = .alias(alias, .init(type))
+      } else {
+        try self.init(from: typeInfo(of: type))
+      }
     }
   }
 
@@ -205,5 +215,29 @@ extension Node.Primitive {
     case .void:
       .init(Void.self)
     }
+  }
+}
+
+private class Mutex<T>: @unchecked Sendable {
+  private var _value: T
+  private let lock = NSLock()
+
+  init(_ value: T) {
+    self._value = value
+  }
+
+  func withValue<R: Sendable>(_ closure: (T) throws -> R) rethrows -> R {
+    self.lock.lock()
+    defer { lock.unlock() }
+    return try closure(self._value)
+  }
+
+  @discardableResult
+  func replace(with value: T) -> T {
+    self.lock.lock()
+    defer { lock.unlock() }
+    let previous = self._value
+    self._value = value
+    return previous
   }
 }

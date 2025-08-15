@@ -37,6 +37,9 @@ extension Node: TypeScriptRepresentable {
 
     case .objectUnion(let members, _):
       return members.map { $0.declaration(ctx) }.joined(separator: " | ")
+
+    case .alias(let name, _):
+      return name
     }
   }
 }

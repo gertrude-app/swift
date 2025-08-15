@@ -236,15 +236,15 @@ final class CodeGenTests: XCTestCase {
     expect(expanded).toEqual(
       """
       export interface Foo {
-        a: Wrapped[];
-        b: Wrapped;
+        a: Custom[];
+        b: Custom;
       }
       """
     )
 
     expect(compact).toEqual(
       """
-      export interface Foo { a: Wrapped[]; b: Wrapped; }
+      export interface Foo { a: Custom[]; b: Custom; }
       """
     )
   }
@@ -301,6 +301,19 @@ final class CodeGenTests: XCTestCase {
     )
   }
 
+  func testIndirectAlias() throws {
+    let config = Config(aliasing: [.init(Indirect.self, as: "Indirect")])
+    let decl = try CodeGen(config: config).declaration(for: ContainsIndirect.self)
+    expect(decl).toEqual(
+      """
+      export interface ContainsIndirect {
+        normal: string;
+        indirect: Indirect;
+      }
+      """
+    )
+  }
+
   // TODO: unprepresentable tuple should throw: (String?, Int)
 }
 
@@ -309,5 +322,15 @@ struct Wrapped<T> {
 }
 
 extension Wrapped: TypeScriptAliased {
-  static var typescriptAlias: String { "Wrapped" }
+  static var typescriptAlias: String { "Custom" }
+}
+
+struct ContainsIndirect {
+  var normal: String
+  var indirect: Indirect
+}
+
+indirect enum Indirect {
+  case normal
+  case recursive(Indirect)
 }
