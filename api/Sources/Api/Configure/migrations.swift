@@ -49,6 +49,7 @@ extension Configure {
     app.migrations.add(CreateBlockGroups())
     app.migrations.add(CreateDeviceBlockGroups())
     app.migrations.add(CreateWebPolicyDomains())
+    app.migrations.add(ReencodeIOSBlockRules())
   }
 }
 

@@ -90,12 +90,6 @@ struct RunningView: View {
       .multilineTextAlignment(.center)
       .padding(30)
     }
-    .sheet(item: self.$store.scope(
-      state: \.destination?.connectAccount,
-      action: \.destination.connectAccount
-    )) {
-      ConnectingView(store: $0)
-    }
   }
 }
 

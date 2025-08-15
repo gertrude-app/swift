@@ -18,5 +18,5 @@ public struct BlockRules_v2: Pair {
     }
   }
 
-  public typealias Output = [BlockRule]
+  public typealias Output = [GertieIOS.BlockRule.Legacy]
 }

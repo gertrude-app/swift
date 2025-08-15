@@ -201,6 +201,10 @@ extension IOSReducer.Onboarding.HappyPath {
       .onboarding(.happyPath(.doneQuit))
     case (.timeExpectation, _):
       .onboarding(.happyPath(.confirmChildsDevice))
+    case (.offerAccountConnect, _):
+      .onboarding(.happyPath(.optOutBlockGroups))
+    case (.connectSuccess, _):
+      .onboarding(.happyPath(.promptClearCache))
     }
   }
 }

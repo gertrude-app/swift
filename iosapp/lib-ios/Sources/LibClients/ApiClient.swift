@@ -13,6 +13,7 @@ import XCore
 public struct ApiClient: Sendable {
   public var connectDevice: @Sendable (_ code: Int, _ vendorId: UUID) async throws
     -> ChildIOSDeviceData
+  public var connectedRules: @Sendable (_ vendorId: UUID) async throws -> ConnectedRules.Output
   public var fetchBlockRules: @Sendable (_ vendorId: UUID, _ disabledGroups: [BlockGroup])
     async throws -> [BlockRule]
   public var fetchDefaultBlockRules: @Sendable (_ vendorId: UUID?) async throws -> [BlockRule]
@@ -44,34 +45,55 @@ extension ApiClient: DependencyKey {
           ))
         )
       },
+      connectedRules: { vendorId in
+        @Dependency(\.device) var device
+        let deviceData = await device.data()
+        return try await output(
+          from: ConnectedRules.self,
+          with: .connectedRules(.init(
+            vendorId: vendorId,
+            deviceType: deviceData.type.rawValue,
+            appVersion: version,
+            iosVersion: deviceData.iOSVersion
+          ))
+        )
+      },
       fetchBlockRules: { vendorId, disabledGroups in
-        let (data, _) = try await request(route: .unauthed(.blockRules_v2(.init(
-          disabledGroups: disabledGroups,
-          vendorId: vendorId,
-          version: version
-        ))))
-        return try JSONDecoder().decode([BlockRule].self, from: data)
+        let legacyRules = try await output(
+          from: BlockRules_v2.self,
+          withUnauthed: .blockRules_v2(.init(
+            disabledGroups: disabledGroups,
+            vendorId: vendorId,
+            version: version
+          ))
+        )
+        return legacyRules.map(\.current)
       },
       fetchDefaultBlockRules: { vendorId in
-        let (data, _) = try await request(route: .unauthed(.defaultBlockRules(.init(
-          vendorId: vendorId,
-          version: version
-        ))))
-        return try JSONDecoder().decode([BlockRule].self, from: data)
+        let legacyRules = try await output(
+          from: DefaultBlockRules.self,
+          withUnauthed: .defaultBlockRules(.init(
+            vendorId: vendorId,
+            version: version
+          ))
+        )
+        return legacyRules.map(\.current)
       },
       logEvent: { id, detail in
         @Dependency(\.device) var device
         let deviceData = await device.data()
-        let payload = LogIOSEvent.Input(
-          eventId: id,
-          kind: "ios",
-          deviceType: deviceData.type.rawValue,
-          iOSVersion: deviceData.iOSVersion,
-          vendorId: deviceData.vendorId,
-          detail: detail
-        )
         do {
-          try await request(route: .unauthed(.logIOSEvent(payload)))
+          _ = try await output(
+            from: LogIOSEvent.self,
+            withUnauthed: .logIOSEvent(.init(
+              eventId: id,
+              kind: "ios",
+              deviceType: deviceData.type.rawValue,
+              iOSVersion: deviceData.iOSVersion,
+              vendorId: deviceData.vendorId,
+              detail: detail
+            ))
+          )
         } catch {
           os_log("[G•] error logging event: %{public}s", String(reflecting: error))
         }
@@ -80,15 +102,16 @@ extension ApiClient: DependencyKey {
         @Dependency(\.locale) var locale
         @Dependency(\.device) var device
         let deviceData = await device.data()
-        let payload = RecoveryDirective.Input(
-          vendorId: deviceData.vendorId,
-          deviceType: deviceData.type.rawValue,
-          iOSVersion: deviceData.iOSVersion,
-          locale: locale.region?.identifier,
-          version: version
+        let result = try await output(
+          from: RecoveryDirective.self,
+          withUnauthed: .recoveryDirective(.init(
+            vendorId: deviceData.vendorId,
+            deviceType: deviceData.type.rawValue,
+            iOSVersion: deviceData.iOSVersion,
+            locale: locale.region?.identifier,
+            version: version
+          ))
         )
-        let (data, _) = try await request(route: .unauthed(.recoveryDirective(payload)))
-        let result = try JSONDecoder().decode(RecoveryDirective.Output.self, from: data)
         return result.directive
       },
       setAuthToken: { token in

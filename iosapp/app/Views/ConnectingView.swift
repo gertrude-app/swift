@@ -32,7 +32,7 @@ struct EnterCodeView: View {
       )
     }
     .padding(20)
-    .task { self.isFocused = true }
+    .onAppear { self.isFocused = true }
   }
 }
 

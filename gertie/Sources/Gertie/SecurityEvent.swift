@@ -24,6 +24,7 @@ public enum SecurityEvent: Equatable, Codable, Sendable {
     case passwordResetRequested
     case passwordChanged
     case childDeleted
+    case iosBlockRuleDeleted
     case childAdded
     case childComputerDeleted
     case monitoringDecreased
@@ -67,6 +68,8 @@ public extension SecurityEvent.Dashboard {
       "Password reset requested"
     case .blockedAppsChanged:
       "Blocked apps changed"
+    case .iosBlockRuleDeleted:
+      "iOS block rule deleted"
     }
   }
 
@@ -98,6 +101,8 @@ public extension SecurityEvent.Dashboard {
       "This event occurs when a parent requests a password reset for the parents admin site. Should be investigated if you did not request a password reset."
     case .blockedAppsChanged:
       "This event occurs when a parent changes which apps are blocked for a child. Should be investigated if the change was not made by you."
+    case .iosBlockRuleDeleted:
+      "This event occurs when a parent deletes an iOS block rule from the parents admin site. Should be investigated if the change was not made by you."
     }
   }
 }

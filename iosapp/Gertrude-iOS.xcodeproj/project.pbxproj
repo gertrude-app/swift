@@ -716,6 +716,7 @@
 		};
 		7FE743DD2C8F431500607876 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7FFB70602DF9D1AB00B04C17 /* Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;
@@ -752,6 +753,7 @@
 		};
 		7FE743DE2C8F431500607876 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7FFB705E2DF9D17900B04C17 /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = controller/controller.entitlements;

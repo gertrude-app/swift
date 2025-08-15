@@ -1,5 +1,6 @@
 import Foundation
 import Gertie
+import GertieIOS
 import TypeScriptInterop
 import XCTest
 
@@ -29,11 +30,17 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
         (UserActivity.Item.self, true),
         (ChildComputerStatus.self, false),
       ],
-      imports: ["Tagged": "Tagged"],
+      imports: [
+        "Tagged": "Tagged",
+      ],
       replacements: [
         "Foundation.UUID": "UUID",
         "Tagged.Tagged": "Tagged",
       ]
+    ),
+    EnumCodableGen.EnumsGenerator(
+      path: "/Users/jared/gertie/swift/gertie/Sources/GertieIOS/Enums+Codable.swift",
+      types: [(GertieIOS.BlockRule.self, true)]
     ),
   ]
 

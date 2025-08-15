@@ -24,6 +24,8 @@ enum AuthedAdminRoute: PairRoute {
   case getUser(GetUser.Input)
   case handleCheckoutCancel(HandleCheckoutCancel.Input)
   case handleCheckoutSuccess(HandleCheckoutSuccess.Input)
+  case iosDevice(IOSApp.Device.Id)
+  case iosDevices
   case latestAppVersions
   case logEvent(LogEvent.Input)
   case userActivityFeed(UserActivityFeed.Input)
@@ -42,6 +44,8 @@ enum AuthedAdminRoute: PairRoute {
   case securityEventsFeed
   case updateUnlockRequest(UpdateUnlockRequest.Input)
   case requestPublicKeychain(RequestPublicKeychain.Input)
+  case upsertBlockRule(UpsertBlockRule.Input)
+  case updateIOSDevice(UpdateIOSDevice.Input)
 }
 
 extension AuthedAdminRoute {
@@ -132,6 +136,13 @@ extension AuthedAdminRoute {
         Operation(HandleCheckoutSuccess.self)
         Body(.dashboardInput(HandleCheckoutSuccess.self))
       }
+      Route(.case(Self.iosDevices)) {
+        Operation(IOSDevices.self)
+      }
+      Route(.case(Self.iosDevice)) {
+        Operation(GetIOSDevice.self)
+        Body(.dashboardInput(GetIOSDevice.self))
+      }
       Route(.case(Self.logEvent)) {
         Operation(LogEvent.self)
         Body(.dashboardInput(LogEvent.self))
@@ -191,6 +202,14 @@ extension AuthedAdminRoute {
       Route(.case(Self.requestPublicKeychain)) {
         Operation(RequestPublicKeychain.self)
         Body(.dashboardInput(RequestPublicKeychain.self))
+      }
+      Route(.case(Self.upsertBlockRule)) {
+        Operation(UpsertBlockRule.self)
+        Body(.dashboardInput(UpsertBlockRule.self))
+      }
+      Route(.case(Self.updateIOSDevice)) {
+        Operation(UpdateIOSDevice.self)
+        Body(.dashboardInput(UpdateIOSDevice.self))
       }
     }
     .eraseToAnyParserPrinter()
@@ -268,6 +287,12 @@ extension AuthedAdminRoute: RouteResponder {
     case .handleCheckoutSuccess(let input):
       let output = try await HandleCheckoutSuccess.resolve(with: input, in: context)
       return try await self.respond(with: output)
+    case .iosDevice(let input):
+      let output = try await GetIOSDevice.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .iosDevices:
+      let output = try await IOSDevices.resolve(in: context)
+      return try await self.respond(with: output)
     case .latestAppVersions:
       let output = try await LatestAppVersions.resolve(in: context)
       return try await self.respond(with: output)
@@ -315,6 +340,12 @@ extension AuthedAdminRoute: RouteResponder {
       return try await self.respond(with: output)
     case .flagActivityItems(let input):
       let output = try await FlagActivityItems.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .upsertBlockRule(let input):
+      let output = try await UpsertBlockRule.resolve(with: input, in: context)
+      return try await self.respond(with: output)
+    case .updateIOSDevice(let input):
+      let output = try await UpdateIOSDevice.resolve(with: input, in: context)
       return try await self.respond(with: output)
     }
   }

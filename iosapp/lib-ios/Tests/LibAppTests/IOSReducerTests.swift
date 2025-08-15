@@ -40,13 +40,13 @@ final class IOSReducerTests: XCTestCase {
       }
       $0.api.fetchDefaultBlockRules = { @Sendable _ in
         defaultBlocksInvocations.withValue { $0 += 1 }
-        return [.urlContains("default-rule")]
+        return [.urlContains(value: "default-rule")]
       }
       $0.api.fetchBlockRules = { @Sendable vid, disabled in
         expect(vid).toEqual(vendorId)
         expect(disabled).toEqual([.appleMapsImages])
         fetchBlockRulesInvocations.withValue { $0 += 1 }
-        return [.urlContains("GIFs")]
+        return [.urlContains(value: "GIFs")]
       }
       $0.systemExtension.requestAuthorization = {
         requestAuthInvocations.withValue { $0 += 1 }
@@ -70,10 +70,10 @@ final class IOSReducerTests: XCTestCase {
         // prevent failsafe store of protection mode: `ffff30ac`
         let previouslySaved = storedCodables.value
         if key == .protectionModeStorageKey, previouslySaved.contains(where: {
-          $0 == .protectionMode(.onboarding([.urlContains("default-rule")]))
+          $0 == .protectionMode(.onboarding([.urlContains(value: "default-rule")]))
         }) {
           return try! JSONEncoder()
-            .encode(ProtectionMode.onboarding([.urlContains("default-rule")]))
+            .encode(ProtectionMode.onboarding([.urlContains(value: "default-rule")]))
         }
         return nil
       }
