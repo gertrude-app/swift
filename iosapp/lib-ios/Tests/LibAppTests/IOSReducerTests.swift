@@ -65,8 +65,8 @@ final class IOSReducerTests: XCTestCase {
         batteryCheckInvocations.withValue { $0 += 1 }
         return .level(0.2)
       }
-      $0.storage.loadDate = { @Sendable _ in nil }
-      $0.storage.loadData = { @Sendable key in
+      $0.sharedUserDefaults.loadDate = { @Sendable _ in nil }
+      $0.sharedUserDefaults.loadData = { @Sendable key in
         // prevent failsafe store of protection mode: `ffff30ac`
         let previouslySaved = storedCodables.value
         if key == .protectionModeStorageKey, previouslySaved.contains(where: {
@@ -77,11 +77,11 @@ final class IOSReducerTests: XCTestCase {
         }
         return nil
       }
-      $0.storage.saveDate = { @Sendable value, key in
+      $0.sharedUserDefaults.saveDate = { @Sendable value, key in
         assert(key == .launchDateStorageKey)
         storedDates.withValue { $0.append(value) }
       }
-      $0.storage.saveCodable = { @Sendable value, key in
+      $0.sharedUserDefaults.saveCodable = { @Sendable value, key in
         switch key {
         case .disabledBlockGroupsStorageKey:
           storedCodables.withValue { $0.append(.disabledBlockGroups(value as! [BlockGroup])) }
@@ -115,7 +115,7 @@ final class IOSReducerTests: XCTestCase {
     expect(deleteCacheFillDirInvocations.value).toEqual(1)
     expect(defaultBlocksInvocations.value).toEqual(1)
     expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains("default-rule")])),
+      .protectionMode(.onboarding([.urlContains(value: "default-rule")])),
     ])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
@@ -186,7 +186,7 @@ final class IOSReducerTests: XCTestCase {
     ])
 
     expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains("default-rule")])),
+      .protectionMode(.onboarding([.urlContains(value: "default-rule")])),
       // we save empty on first load of screen, in case they quit before clicking next
       // if they did, it would confuse the app to think they were in supervised mode
       .disabledBlockGroups([]),
@@ -213,10 +213,10 @@ final class IOSReducerTests: XCTestCase {
     expect(fetchBlockRulesInvocations.value).toEqual(1)
 
     expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains("default-rule")])),
+      .protectionMode(.onboarding([.urlContains(value: "default-rule")])),
       .disabledBlockGroups([]), // <-- on opt-out groups screen load, failsafe
       .disabledBlockGroups([.appleMapsImages]), // <-- persist user choice after "Done"
-      .protectionMode(.normal([.urlContains("GIFs")])), // <-- got customized rules from api
+      .protectionMode(.normal([.urlContains(value: "GIFs")])), // <-- got customized rules from api
     ])
 
     await store.receive(.programmatic(.setAvailableDiskSpaceInBytes(1024 * 12))) {
@@ -264,7 +264,7 @@ final class IOSReducerTests: XCTestCase {
     let defaultBlocksInvocations = LockIsolated(0)
     let storedCodables = LockIsolated<[SavedCodable]>([])
     let removeObjectInvocations = LockIsolated<[String]>([])
-    let notifyFilterInvocations = LockIsolated(0)
+    let notifyFilterInvocations = LockIsolated<[FilterClient.Notification]>([])
 
     let store = TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
@@ -273,21 +273,21 @@ final class IOSReducerTests: XCTestCase {
       $0.api.logEvent = { @Sendable _, _ in }
       $0.api.fetchDefaultBlockRules = { @Sendable _ in
         defaultBlocksInvocations.withValue { $0 += 1 }
-        return [.urlContains("GIFs")]
+        return [.urlContains(value: "GIFs")]
       }
-      $0.storage.removeObject = { @Sendable key in
+      $0.sharedUserDefaults.removeObject = { @Sendable key in
         removeObjectInvocations.withValue { $0.append(key) }
       }
       $0.systemExtension.filterRunning = { true } // <-- filter running
-      $0.storage.loadDate = { @Sendable _ in .reference } // <-- v1.1.0 launch date
-      $0.storage.loadData = { @Sendable key in
+      $0.sharedUserDefaults.loadDate = { @Sendable _ in .reference } // <-- v1.1.0 launch date
+      $0.sharedUserDefaults.loadData = { @Sendable key in
         if key == .legacyStorageKey {
           "[]".data(using: .utf8) // <-- has V1 legacy data
         } else {
           nil
         }
       }
-      $0.storage.saveCodable = { @Sendable value, key in
+      $0.sharedUserDefaults.saveCodable = { @Sendable value, key in
         switch key {
         case .disabledBlockGroupsStorageKey:
           storedCodables.withValue { $0.append(.disabledBlockGroups(value as! [BlockGroup])) }
@@ -297,8 +297,8 @@ final class IOSReducerTests: XCTestCase {
           fatalError("unexpected key: \(key)")
         }
       }
-      $0.filter.notifyRulesChanged = {
-        notifyFilterInvocations.withValue { $0 += 1 }
+      $0.filter.send = { @Sendable notification in
+        notifyFilterInvocations.withValue { $0.append(notification) }
       }
     }
 
@@ -314,10 +314,10 @@ final class IOSReducerTests: XCTestCase {
 
     expect(removeObjectInvocations.value).toEqual([.legacyStorageKey])
     expect(defaultBlocksInvocations.value).toEqual(1)
-    expect(notifyFilterInvocations.value).toEqual(1)
+    expect(notifyFilterInvocations.value).toEqual([.refreshRules])
     expect(storedCodables.value).toEqual([
       .disabledBlockGroups([]),
-      .protectionMode(.normal([.urlContains("GIFs")])),
+      .protectionMode(.normal([.urlContains(value: "GIFs")])),
     ])
 
     await store.send(.programmatic(.appWillTerminate))
@@ -338,10 +338,10 @@ final class IOSReducerTests: XCTestCase {
         struct TestError: Error {}
         throw TestError()
       }
-      $0.storage.loadDate = { @Sendable _ in nil }
-      $0.storage.loadData = { @Sendable _ in nil }
-      $0.storage.saveDate = { @Sendable _, _ in }
-      $0.storage.saveCodable = { @Sendable value, key in
+      $0.sharedUserDefaults.loadDate = { @Sendable _ in nil }
+      $0.sharedUserDefaults.loadData = { @Sendable _ in nil }
+      $0.sharedUserDefaults.saveDate = { @Sendable _, _ in }
+      $0.sharedUserDefaults.saveCodable = { @Sendable value, key in
         switch key {
         case .protectionModeStorageKey:
           storedCodables.withValue { $0.append(value as! ProtectionMode) }
@@ -354,7 +354,7 @@ final class IOSReducerTests: XCTestCase {
     store.exhaustivity = .off
     await store.send(.programmatic(.appDidLaunch))
 
-    expect(storedCodables.value).toEqual([.onboarding(BlockRule.defaults)])
+    expect(storedCodables.value).toEqual([.onboarding(BlockRule.Legacy.defaults.map(\.current))])
   }
 
   @MainActor
@@ -446,9 +446,9 @@ final class IOSReducerTests: XCTestCase {
     } withDependencies: {
       $0.device.deleteCacheFillDir = {}
       $0.api.fetchDefaultBlockRules = { @Sendable _ in [] }
-      $0.storage.saveCodable = { @Sendable _, _ in }
-      $0.storage.loadDate = { @Sendable _ in .distantPast }
-      $0.storage.loadData = { @Sendable _ in "[]".data(using: .utf8) }
+      $0.sharedUserDefaults.saveCodable = { @Sendable _, _ in }
+      $0.sharedUserDefaults.loadDate = { @Sendable _ in .distantPast }
+      $0.sharedUserDefaults.loadData = { @Sendable _ in "[]".data(using: .utf8) }
       $0.systemExtension.filterRunning = { true }
     }
 
@@ -471,11 +471,11 @@ final class IOSReducerTests: XCTestCase {
       $0.device.deleteCacheFillDir = {}
       $0.api.fetchDefaultBlockRules = { @Sendable _ in [] }
       $0.api.logEvent = { @Sendable _, _ in }
-      $0.storage.saveCodable = { @Sendable _, _ in }
-      $0.storage.saveDate = { @Sendable _, _ in }
-      $0.storage.loadDate = { @Sendable _ in nil }
+      $0.sharedUserDefaults.saveCodable = { @Sendable _, _ in }
+      $0.sharedUserDefaults.saveDate = { @Sendable _, _ in }
+      $0.sharedUserDefaults.loadDate = { @Sendable _ in nil }
       $0.systemExtension.filterRunning = { true } // <-- filter running
-      $0.storage.loadData = { @Sendable _ in nil } // <-- but no sign of onboarding...
+      $0.sharedUserDefaults.loadData = { @Sendable _ in nil } // <-- but no sign of onboarding...
     }
 
     await store.send(.programmatic(.appDidLaunch))

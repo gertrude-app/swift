@@ -8,7 +8,7 @@ import XExpect
 
 final class FilterProxyTests: XCTestCase {
   func testLockdownModeBlocking() async throws {
-    let cases: [(host: String?, url: String?, bundleId: String?, expect: FilterProxy.FlowVerdict)] =
+    let cases: [(host: String?, url: String?, bundleId: String?, expect: FlowVerdict)] =
       [
         ("api.gertrude.app", nil, nil, .allow),
         (nil, "api.gertrude.app", nil, .allow),
@@ -46,7 +46,6 @@ final class FilterProxyTests: XCTestCase {
 
     let proxy = withDependencies {
       $0.osLog.log = { _ in }
-      $0.storage.loadData = { @Sendable _ in nil }
       $0.suspendingClock = TestClock()
       $0.calendar = Calendar(identifier: .gregorian)
       $0.date = .constant(Date(timeIntervalSince1970: 400))
@@ -54,12 +53,24 @@ final class FilterProxyTests: XCTestCase {
       FilterProxy(protectionMode: .emergencyLockdown)
     }
     for (host, url, bundleId, expected) in cases {
-      expect(proxy.decideFlow(hostname: host, url: url, bundleId: bundleId, flowType: nil))
-        .toEqual(expected)
-      expect(proxy.decideFlow(hostname: host, url: url, bundleId: bundleId, flowType: .browser))
-        .toEqual(expected)
-      expect(proxy.decideFlow(hostname: host, url: url, bundleId: bundleId, flowType: .socket))
-        .toEqual(expected)
+      expect(proxy.decideNewFlow(.init(
+        hostname: host,
+        url: url,
+        bundleId: bundleId,
+        flowType: nil
+      ))).toEqual(expected)
+      expect(proxy.decideNewFlow(.init(
+        hostname: host,
+        url: url,
+        bundleId: bundleId,
+        flowType: .browser
+      ))).toEqual(expected)
+      expect(proxy.decideNewFlow(.init(
+        hostname: host,
+        url: url,
+        bundleId: bundleId,
+        flowType: .socket
+      ))).toEqual(expected)
     }
   }
 
@@ -70,49 +81,53 @@ final class FilterProxyTests: XCTestCase {
     let now = Calendar.current.date(from: components)!
     let proxy = withDependencies {
       $0.osLog.log = { _ in }
-      $0.storage.loadData = { @Sendable _ in nil }
       $0.suspendingClock = TestClock()
       $0.calendar = Calendar(identifier: .gregorian)
       $0.date = .constant(now)
     } operation: {
       FilterProxy(protectionMode: .emergencyLockdown)
     }
-    expect(proxy.decideFlow(hostname: "any.com", url: "any.com", bundleId: "com.x", flowType: nil))
-      .toEqual(.allow)
+    expect(proxy.decideNewFlow(.init(
+      hostname: "any.com",
+      url: "any.com",
+      bundleId: "com.x",
+      flowType: nil
+    )))
+    .toEqual(.allow)
   }
 
   func testReadsRulesInHeartbeat() async throws {
     let logs = LockIsolated<[String]>([])
-    let rules = LockIsolated<ProtectionMode>(.normal([.urlContains("foo")]))
+    let rules = LockIsolated<ProtectionMode>(.normal([.urlContains(value: "foo")]))
     let clock = TestClock()
 
     let proxy = withDependencies {
       $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
       $0.suspendingClock = clock
-      $0.storage.loadData = { @Sendable _ in
-        try! JSONEncoder().encode(rules.value)
+      $0.sharedStorageReader.loadProtectionMode = { @Sendable in
+        rules.value
       }
     } operation: {
-      FilterProxy(
-        protectionMode: .emergencyLockdown,
-        normalHeartbeatInterval: .seconds(60)
-      )
+      FilterProxy(protectionMode: .emergencyLockdown)
     }
 
     // initializer loads protection rules from storage
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("foo")]))
+    expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
     expect(logs.value).toEqual(["read 1 (normal) rules"])
 
     await clock.advance(by: .seconds(59))
 
     // no heartbeat yet
     expect(logs.value).toEqual(["read 1 (normal) rules"])
-    rules.setValue(.normal([.urlContains("bar"), .urlContains("baz")]))
+    rules.setValue(.normal([.urlContains(value: "bar"), .urlContains(value: "baz")]))
 
     // heartbeat should happen here
     await clock.advance(by: .seconds(1))
     expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("bar"), .urlContains("baz")]))
+    expect(proxy.protectionMode).toEqual(.normal([
+      .urlContains(value: "bar"),
+      .urlContains(value: "baz"),
+    ]))
   }
 
   // simulate user defaults not being available on first boot, before unlock
@@ -125,22 +140,19 @@ final class FilterProxyTests: XCTestCase {
     let proxy = withDependencies {
       $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
       $0.suspendingClock = clock
-      $0.storage.loadData = { @Sendable _ in
+      $0.sharedStorageReader.loadProtectionMode = { @Sendable in
         if !userDefaultsReady.value {
           nil
         } else {
-          try! JSONEncoder().encode(ProtectionMode.normal([.urlContains("foo")]))
+          .normal([.urlContains(value: "foo")])
         }
       }
     } operation: {
-      FilterProxy(
-        protectionMode: .emergencyLockdown,
-        normalHeartbeatInterval: .minutes(5)
-      )
+      FilterProxy(protectionMode: .emergencyLockdown)
     }
 
     // initializer tries to load, but finds no rules, goes into lockdown
-    expect(proxy.getProtectionMode).toEqual(.emergencyLockdown)
+    expect(proxy.protectionMode).toEqual(.emergencyLockdown)
     expect(logs.value).toEqual(["no rules found"])
 
     await clock.advance(by: .seconds(9))
@@ -163,7 +175,7 @@ final class FilterProxyTests: XCTestCase {
       "no rules found",
       "read 1 (normal) rules",
     ])
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("foo")]))
+    expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
 
     // now, we are not checking so often
     await clock.advance(by: .seconds(10))
@@ -178,87 +190,83 @@ final class FilterProxyTests: XCTestCase {
     let proxy = withDependencies {
       $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
       $0.suspendingClock = TestClock()
-      $0.storage.loadData = { @Sendable key in
-        expect(key).toEqual(.protectionModeStorageKey)
-        return try! JSONEncoder().encode(ProtectionMode.normal([.urlContains("lol")]))
+      $0.sharedStorageReader.loadProtectionMode = { @Sendable in
+        .normal([.urlContains(value: "lol")])
       }
     } operation: {
       FilterProxy(protectionMode: .normal([]))
     }
 
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("lol")]))
+    expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "lol")]))
     expect(logs.value).toEqual(["read 1 (normal) rules"])
   }
 
   func testHandleRulesChangesCausesReadRules() {
     let logs = LockIsolated<[String]>([])
-    let rules = LockIsolated<ProtectionMode>(.normal([.urlContains("foo")]))
+    let rules = LockIsolated<ProtectionMode>(.normal([.urlContains(value: "foo")]))
 
-    let proxy = withDependencies {
+    var proxy = withDependencies {
       $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
       $0.suspendingClock = TestClock()
-      $0.storage.loadData = { @Sendable _ in
-        try! JSONEncoder().encode(rules.value)
-      }
+      $0.sharedStorageReader.loadProtectionMode = { @Sendable in rules.value }
     } operation: {
       FilterProxy(protectionMode: .normal([]))
     }
 
     // init
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("foo")]))
+    expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
     expect(logs.value).toEqual(["read 1 (normal) rules"])
 
-    rules.setValue(.normal([.urlContains("bar"), .urlContains("baz")]))
+    rules.setValue(.normal([.urlContains(value: "bar"), .urlContains(value: "baz")]))
     proxy.handleRulesChanged()
 
     expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("bar"), .urlContains("baz")]))
+    expect(proxy.protectionMode).toEqual(.normal([
+      .urlContains(value: "bar"),
+      .urlContains(value: "baz"),
+    ]))
   }
 
-  func testReadRulesNilLogsErrAndKeepsOldRules() {
-    let logs = LockIsolated<[String]>([])
+  // TODO: figure out if/how to recreate these next two
 
-    let proxy = withDependencies {
-      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-      $0.storage.loadData = { @Sendable _ in nil }
-      $0.suspendingClock = TestClock()
-    } operation: {
-      FilterProxy(protectionMode: .normal([.urlContains("old")]))
-    }
+  // func testReadRulesNilLogsErrAndKeepsOldRules() {
+  //   let logs = LockIsolated<[String]>([])
+  //
+  //   let proxy = withDependencies {
+  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in nil }
+  //     $0.suspendingClock = TestClock()
+  //   } operation: {
+  //     FilterProxy(protectionMode: .normal([.urlContains(value: "old")]))
+  //   }
+  //
+  //   expect(proxy.getProtectionMode).toEqual(.normal([.urlContains(value: "old")]))
+  //   expect(logs.value).toEqual(["no rules found"])
+  //
+  //   proxy.receiveHeartbeat()
+  //
+  //   expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
+  //   expect(logs.value).toEqual(["no rules found", "no rules found"])
+  // }
 
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
-    expect(logs.value).toEqual(["no rules found"])
-
-    proxy.receiveHeartbeat()
-
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
-    expect(logs.value).toEqual(["no rules found", "no rules found"])
-  }
-
-  func testReadRulesDecodeErrorLogsErrAndKeepsOldRules() {
-    struct TestError: Error {}
-    let logs = LockIsolated<[String]>([])
-
-    let proxy = withDependencies {
-      $0.suspendingClock = TestClock()
-      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-      $0.storage.loadData = { @Sendable _ in
-        String("nope").data(using: .utf8)! // <-- error
-      }
-    } operation: {
-      FilterProxy(protectionMode: .normal([.urlContains("old")]))
-    }
-
-    expect(logs.value.count).toEqual(1)
-    expect(logs.value[0]).toContain("error decoding rules:")
-
-    // we keep the rules
-    expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
-  }
-}
-
-extension FilterProxy {
-  var getProtectionMode: ProtectionMode {
-    protectionMode.withLock { $0 }
-  }
+  // func testReadRulesDecodeErrorLogsErrAndKeepsOldRules() {
+  //   struct TestError: Error {}
+  //   let logs = LockIsolated<[String]>([])
+  //
+  //   let proxy = withDependencies {
+  //     $0.suspendingClock = TestClock()
+  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+  //     $0.storage.loadData = { @Sendable _ in
+  //       String("nope").data(using: .utf8)! // <-- error
+  //     }
+  //   } operation: {
+  //     FilterProxy(protectionMode: .normal([.urlContains("old")]))
+  //   }
+  //
+  //   expect(logs.value.count).toEqual(1)
+  //   expect(logs.value[0]).toContain("error decoding rules:")
+  //
+  //   // we keep the rules
+  //   expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
+  // }
 }

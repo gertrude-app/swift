@@ -6,7 +6,7 @@ import LibCore
 
 @DependencyClient
 public struct FilterClient: Sendable {
-  public enum Notification {
+  public enum Notification: Sendable {
     case rulesChanged
     case refreshRules
     case dumpLogs

@@ -205,9 +205,9 @@ final class IOSReducerTestsShake: XCTestCase {
     expect(mode.missingRules).toEqual(true)
     mode = nil
     expect(mode.missingRules).toEqual(true)
-    mode = .onboarding([.urlContains("default-rule")])
+    mode = .onboarding([.urlContains(value: "default-rule")])
     expect(mode.missingRules).toEqual(false)
-    mode = .normal([.urlContains("some-rule")])
+    mode = .normal([.urlContains(value: "some-rule")])
     expect(mode.missingRules).toEqual(false)
   }
 }
