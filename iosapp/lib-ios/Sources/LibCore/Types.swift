@@ -7,6 +7,7 @@ public enum MagicStrings {
 
   // sentinal hostnames
   public static let readRulesSentinalHostname: String = "read-rules.xpc.gertrude.app"
+  public static let refreshRulesSentinalHostname: String = "refresh-rules.xpc.gertrude.app"
   public static let dumpLogsSentinalHostname: String = "dump-logs.xpc.gertrude.app"
 }
 

@@ -93,6 +93,11 @@ public struct FilterProxy {
       return .drop
     }
 
+    if flow.hostname == MagicStrings.refreshRulesSentinalHostname {
+      self.logger.log("refresh rules requested from app")
+      return .needRules
+    }
+
     #if DEBUG
       if flow.hostname == MagicStrings.dumpLogsSentinalHostname {
         for (i, logs) in self.memoryLogs.withValue({ $0 }).chunked(into: 6).enumerated() {

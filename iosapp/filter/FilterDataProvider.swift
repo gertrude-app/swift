@@ -27,6 +27,11 @@ class FilterDataProvider: NEFilterDataProvider {
     completionHandler()
   }
 
+  // NB: from logging, it appears that this can get called from different threads
+  // although big bursts of near simultaneous network connections seem to to be
+  // handled by the same thread, instead of being interleaved, seems more like the
+  // system puts the process to sleep after inactivity, then it wakes up on a new thread
+  // so it's probably the correct mental model to consider this a single-threaded
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
     let verdict = self.proxy.decideFlow(flow)
     return switch verdict {

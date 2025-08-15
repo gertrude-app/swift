@@ -115,12 +115,15 @@ public struct IOSReducer {
       //   try await deps.filter.notifyRulesChanged()
       // }
       // 👍 todo: restore
-      let allLogs = self.deps.sharedStorage.loadDebugLogs() ?? []
-      for (i, logs) in allLogs.chunked(into: 6).enumerated() {
-        os_log("[G•] APP dump memory logs %d:\n%{public}s", i + 1, logs.joined(separator: "\n"))
-      }
+
+      // TODO: save this somewhere...
+      // let allLogs = self.deps.sharedStorage.loadDebugLogs() ?? []
+      // for (i, logs) in allLogs.chunked(into: 6).enumerated() {
+      //   os_log("[G•] APP dump memory logs %d:\n%{public}s", i + 1, logs.joined(separator: "\n"))
+      // }
+
       return .run { [filter = self.deps.filter] _ in
-        try await filter.send(notification: .dumpLogs)
+        try await filter.send(notification: .refreshRules)
       }
 
     case .runningBtnTapped: // rename...?

@@ -8,6 +8,7 @@ import LibCore
 public struct FilterClient: Sendable {
   public enum Notification {
     case rulesChanged
+    case refreshRules
     case dumpLogs
   }
 
@@ -27,6 +28,10 @@ extension FilterClient: DependencyKey {
         case .rulesChanged:
           await fireAndForget(
             url: URL(string: "https://\(MagicStrings.readRulesSentinalHostname)")!
+          )
+        case .refreshRules:
+          await fireAndForget(
+            url: URL(string: "https://\(MagicStrings.refreshRulesSentinalHostname)")!
           )
         }
       }

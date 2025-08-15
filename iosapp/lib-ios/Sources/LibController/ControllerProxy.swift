@@ -28,7 +28,8 @@ public final class ControllerProxy: Sendable {
 
   enum RefreshReason {
     case startup
-    case filterRequested
+    case fauxHeartbeat
+    case appShake
   }
 
   private let deps = Deps()
@@ -64,7 +65,7 @@ public final class ControllerProxy: Sendable {
   func refreshRules(reason: RefreshReason) async -> Bool {
     let token = self.deps.storage.loadAccountConnection()?.token
 
-    if reason == .filterRequested {
+    if reason == .fauxHeartbeat {
       let interval = token != nil
         ? Self.API_DEBOUNCE_INTERVAL_CONNECTED
         : Self.API_DEBOUNCE_INTERVAL_NORMAL
@@ -104,12 +105,15 @@ public final class ControllerProxy: Sendable {
       self.deps.logger.log("saving changed rules (connected)")
       self.deps.storage.saveProtectionMode(config.protectionMode)
       self.notifyRulesChanged.withValue { $0() }
+      self.deps.logger.log("web policy: \(String(describing: config.webPolicy))")
       self.managedSettings.withValue {
         if let current = $0 {
           current.gertiePolicy = config.webPolicy
+          self.deps.logger.log("updating existing managed settings store")
           $0 = current
         } else {
-          let store = ManagedSettingsStore(named: .init(.gertrudeGroupId))
+          self.deps.logger.log("creating new managed settings store")
+          let store = ManagedSettingsStore.init(named: .init(.gertrudeGroupId))
           store.gertiePolicy = config.webPolicy
           $0 = store
         }
@@ -164,8 +168,14 @@ public final class ControllerProxy: Sendable {
   public func handleNewFlow(_ systemFlow: NEFilterFlow) async -> NEFilterControlVerdict {
     // CONVENTION: we get here when the filter sends a `.needsRules` verdict, indicating
     // that according to it's incremental "timer", it thinks it's time to update the rules
-    let rulesChanged = await self.refreshRules(reason: .filterRequested)
+    // unless the flow is the refresh rules sentinel, which means the app was shaken
     let flow = self.toFilterFlow(systemFlow)
+    if flow.hostname == MagicStrings.refreshRulesSentinalHostname {
+      self.deps.logger.log("refresh rules requested from app")
+      let rulesChanged = await self.refreshRules(reason: .appShake)
+      return .drop(withUpdateRules: rulesChanged)
+    }
+    let rulesChanged = await self.refreshRules(reason: .fauxHeartbeat)
     return switch self.decideNewFlow(flow) {
     case .allow:
       .allow(withUpdateRules: rulesChanged)
@@ -200,10 +210,31 @@ extension ConnectedRules.Output {
 }
 
 #if os(iOS)
+  import os.log // temp
+
   extension ManagedSettingsStore {
     var gertiePolicy: WebContentFilterPolicy? {
       get { self.webContent.blockedByFilter?.gertiePolicy }
-      set { self.webContent.blockedByFilter = newValue.map(\.managedSettingsPolicy) }
+      set {
+        os_log(
+          "[G•] ManagedSettingsStore: setting gertiePolicy to %{public}s",
+          String(describing: newValue.map(\.managedSettingsPolicy))
+        )
+        // self.webContent.blockedByFilter = newValue.map(\.managedSettingsPolicy)
+        self.webContent.blockedByFilter = .all(except: [WebDomain(domain: "friendslibrary.com")])
+        os_log(
+          "[G•] ManagedSettingsStore: 1 %{public}s",
+          String(describing: self)
+        )
+        os_log(
+          "[G•] ManagedSettingsStore: 2 %{public}s",
+          String(describing: self.webContent)
+        )
+        os_log(
+          "[G•] ManagedSettingsStore: 3 (new) %{public}s",
+          String(describing: self.webContent.blockedByFilter)
+        )
+      }
     }
   }
 #else
