@@ -15,7 +15,6 @@ struct RunningView: View {
   @Bindable var store: StoreOf<IOSReducer>
 
   let childName: String?
-  let onBtnTap: () -> Void
 
   var body: some View {
     ZStack {
@@ -52,9 +51,6 @@ struct RunningView: View {
         if let childName = self.childName {
           Text("Hi \(childName)!")
             .font(.system(size: 18, weight: .medium))
-            .padding(.bottom, 20)
-        } else {
-          BigButton("Connect to parent account", type: .button(self.onBtnTap))
             .padding(.bottom, 20)
         }
 
@@ -96,7 +92,6 @@ struct RunningView: View {
 #Preview {
   RunningView(
     store: .init(initialState: .init()) { IOSReducer() },
-    childName: nil,
-    onBtnTap: {}
+    childName: nil
   )
 }

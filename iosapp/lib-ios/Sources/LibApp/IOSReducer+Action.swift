@@ -19,7 +19,6 @@ public extension IOSReducer {
       case onboardingBtnTapped(OnboardingBtn, String)
       case blockGroupToggled(BlockGroup)
       case sheetDismissed
-      case runningBtnTapped
       case receivedShake
     }
 

@@ -126,10 +126,6 @@ public struct IOSReducer {
         try await filter.send(notification: .refreshRules)
       }
 
-    case .runningBtnTapped: // rename...?
-      state.destination = .connectAccount(.init(screen: .enteringCode))
-      return .none
-
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
       #if DEBUG
         state.screen = .onboarding(.happyPath(.dontGetTrickedPreAuth))

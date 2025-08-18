@@ -407,11 +407,8 @@ struct AppView: View {
         )
 
       case .running(state: let state):
-        RunningView(store: self.store, childName: state.childName) {
-          self.store.send(.interactive(.runningBtnTapped))
-        }.onShake {
-          self.store.send(.interactive(.receivedShake))
-        }
+        RunningView(store: self.store, childName: state.childName)
+          .onShake { self.store.send(.interactive(.receivedShake)) }
       }
     }
     .sheet(item: self.$store.scope(
