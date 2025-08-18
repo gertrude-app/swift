@@ -39,10 +39,12 @@ public final class ControllerProxy: Sendable {
 
   public init() {
     self.deps.logger.setPrefix("CONTROLLER PROXY")
-    self.deps.logger.setObserver { msg, isDebug in
-      if isDebug { return }
-      self.deps.storage.saveDebugLog("\(Date()) [G•] CONTROLLER PROXY \(msg.prefix(100))")
-    }
+    #if DEBUG
+      self.deps.logger.setObserver { msg, isDebug in
+        if isDebug { return }
+        self.deps.storage.saveDebugLog("\(Date()) [G•] CONTROLLER PROXY \(msg.prefix(100))")
+      }
+    #endif
     self.deps.logger.log("Initialized ControllerProxy")
   }
 

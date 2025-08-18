@@ -38,7 +38,10 @@ public struct FilterProxy {
   @Dependency(\.sharedStorageReader) var storage
 
   var count: UInt = 0
-  let memoryLogs: LockIsolated<[String]> = LockIsolated([])
+
+  #if DEBUG
+    let memoryLogs: LockIsolated<[String]> = LockIsolated([])
+  #endif
 
   public private(set) var protectionMode: ProtectionMode = .emergencyLockdown
 
