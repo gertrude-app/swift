@@ -41,13 +41,13 @@ extension UserDefaultsClient: DependencyKey {
 }
 
 public extension UserDefaultsClient {
-  func saveConnection(data: ChildIOSDeviceData) {
+  func saveConnection(data: ChildIOSDeviceData_b1) {
     self.saveCodable(value: data, forKey: .connectionStorageKey)
   }
 
-  func loadConnection() -> ChildIOSDeviceData? {
+  func loadConnection() -> ChildIOSDeviceData_b1? {
     self.loadData(forKey: .connectionStorageKey).flatMap { data in
-      try? JSONDecoder().decode(ChildIOSDeviceData.self, from: data)
+      try? JSONDecoder().decode(ChildIOSDeviceData_b1.self, from: data)
     }
   }
 

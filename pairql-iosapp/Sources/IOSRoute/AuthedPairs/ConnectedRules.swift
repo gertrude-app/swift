@@ -3,7 +3,7 @@ import GertieIOS
 import PairQL
 
 /// testflight: v1.4.0 - present
-public struct ConnectedRules: Pair {
+public struct ConnectedRules_b1: Pair {
   public static let auth: ClientAuth = .child
 
   public struct Input: PairInput {

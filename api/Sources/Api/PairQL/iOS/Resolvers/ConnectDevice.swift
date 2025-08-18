@@ -4,7 +4,7 @@ import Gertie
 import GertieIOS
 import IOSRoute
 
-extension ConnectDevice: Resolver {
+extension ConnectDevice_b1: Resolver {
   static func resolve(with input: Input, in ctx: Context) async throws -> Output {
     guard let childId = await with(dependency: \.ephemeral)
       .getPendingAppConnection(input.verificationCode) else {

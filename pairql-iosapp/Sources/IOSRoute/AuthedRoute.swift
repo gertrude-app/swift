@@ -1,7 +1,7 @@
 import PairQL
 
 public enum AuthedRoute: PairRoute {
-  case connectedRules(ConnectedRules.Input)
+  case connectedRules(ConnectedRules_b1.Input)
   case createSuspendFilterRequest(CreateSuspendFilterRequest.Input)
   case pollFilterSuspensionDecision(PollFilterSuspensionDecision.Input)
   case screenshotUploadUrl(ScreenshotUploadUrl.Input)
@@ -10,8 +10,8 @@ public enum AuthedRoute: PairRoute {
 public extension AuthedRoute {
   nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, AuthedRoute> = OneOf {
     Route(.case(Self.connectedRules)) {
-      Operation(ConnectedRules.self)
-      Body(.json(ConnectedRules.Input.self))
+      Operation(ConnectedRules_b1.self)
+      Body(.json(ConnectedRules_b1.Input.self))
     }
     Route(.case(Self.createSuspendFilterRequest)) {
       Operation(CreateSuspendFilterRequest.self)

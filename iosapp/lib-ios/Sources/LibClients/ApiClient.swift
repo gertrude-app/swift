@@ -11,9 +11,10 @@ import XCore
 
 @DependencyClient
 public struct ApiClient: Sendable {
-  public var connectDevice: @Sendable (_ code: Int, _ vendorId: UUID) async throws
-    -> ChildIOSDeviceData
-  public var connectedRules: @Sendable (_ vendorId: UUID) async throws -> ConnectedRules.Output
+  public var connectDevice: @Sendable (_ code: Int, _ vendorId: UUID)
+    async throws -> ChildIOSDeviceData_b1
+  public var connectedRules: @Sendable (_ vendorId: UUID)
+    async throws -> ConnectedRules_b1.Output
   public var fetchBlockRules: @Sendable (_ vendorId: UUID, _ disabledGroups: [BlockGroup])
     async throws -> [BlockRule]
   public var fetchDefaultBlockRules: @Sendable (_ vendorId: UUID?) async throws -> [BlockRule]
@@ -35,7 +36,7 @@ extension ApiClient: DependencyKey {
         @Dependency(\.device) var device
         let deviceData = await device.data()
         return try await output(
-          from: ConnectDevice.self,
+          from: ConnectDevice_b1.self,
           withUnauthed: .connectDevice(.init(
             verificationCode: code,
             vendorId: vendorId,
@@ -49,7 +50,7 @@ extension ApiClient: DependencyKey {
         @Dependency(\.device) var device
         let deviceData = await device.data()
         return try await output(
-          from: ConnectedRules.self,
+          from: ConnectedRules_b1.self,
           with: .connectedRules(.init(
             vendorId: vendorId,
             deviceType: deviceData.type.rawValue,
