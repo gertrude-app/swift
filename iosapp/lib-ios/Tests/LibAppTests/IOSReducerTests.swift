@@ -8,11 +8,6 @@ import XExpect
 
 @testable import LibApp
 
-enum SavedCodable: Equatable {
-  case protectionMode(ProtectionMode)
-  case disabledBlockGroups([BlockGroup])
-}
-
 final class IOSReducerTests: XCTestCase {
   @MainActor
   func testHappyPath() async throws {
@@ -25,7 +20,8 @@ final class IOSReducerTests: XCTestCase {
     let defaultBlocksInvocations = LockIsolated(0)
     let fetchBlockRulesInvocations = LockIsolated(0)
     let storedDates = LockIsolated<[Date]>([])
-    let storedCodables = LockIsolated<[SavedCodable]>([])
+    let savedProtectionModes = LockIsolated<[ProtectionMode]>([])
+    let savedDisabledBlockGroups = LockIsolated<[[BlockGroup]]>([])
     let cacheClearSubject = PassthroughSubject<DeviceClient.ClearCacheUpdate, Never>()
     let vendorId = UUID()
 
@@ -65,31 +61,15 @@ final class IOSReducerTests: XCTestCase {
         batteryCheckInvocations.withValue { $0 += 1 }
         return .level(0.2)
       }
-      $0.sharedUserDefaults.loadDate = { @Sendable _ in nil }
-      $0.sharedUserDefaults.loadData = { @Sendable key in
-        // prevent failsafe store of protection mode: `ffff30ac`
-        let previouslySaved = storedCodables.value
-        if key == .protectionModeStorageKey, previouslySaved.contains(where: {
-          $0 == .protectionMode(.onboarding([.urlContains(value: "default-rule")]))
-        }) {
-          return try! JSONEncoder()
-            .encode(ProtectionMode.onboarding([.urlContains(value: "default-rule")]))
-        }
-        return nil
-      }
-      $0.sharedUserDefaults.saveDate = { @Sendable value, key in
-        assert(key == .launchDateStorageKey)
+      $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
+      $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
+      $0.sharedStorage.loadFirstLaunchDate = { @Sendable in nil }
+      $0.sharedUserDefaults.loadData = { @Sendable _ in nil }
+      $0.sharedStorage.saveFirstLaunchDate = { @Sendable value in
         storedDates.withValue { $0.append(value) }
       }
-      $0.sharedUserDefaults.saveCodable = { @Sendable value, key in
-        switch key {
-        case .disabledBlockGroupsStorageKey:
-          storedCodables.withValue { $0.append(.disabledBlockGroups(value as! [BlockGroup])) }
-        case .protectionModeStorageKey:
-          storedCodables.withValue { $0.append(.protectionMode(value as! ProtectionMode)) }
-        default:
-          fatalError("unexpected key: \(key)")
-        }
+      $0.sharedStorage.saveProtectionMode = { @Sendable value in
+        savedProtectionModes.withValue { $0.append(value) }
       }
       $0.device.clearCache = { _ in
         cacheClearSubject.eraseToAnyPublisher()
@@ -114,9 +94,7 @@ final class IOSReducerTests: XCTestCase {
     expect(apiLoggedDetails.value).toEqual(["[onboarding] first launch, region: `US`"])
     expect(deleteCacheFillDirInvocations.value).toEqual(1)
     expect(defaultBlocksInvocations.value).toEqual(1)
-    expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains(value: "default-rule")])),
-    ])
+    expect(savedProtectionModes.value).toEqual([.onboarding([.urlContains(value: "default-rule")])])
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.timeExpectation))
@@ -138,7 +116,6 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .onboarding(.happyPath(.confirmParentIsOnboarding))
     }
 
-    // resume
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.confirmInAppleFamily))
     }
@@ -171,25 +148,27 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .onboarding(.happyPath(.dontGetTrickedPreInstall))
     }
 
-    expect(storedCodables.value.count).toEqual(1)
+    store.dependencies.sharedStorage.saveDisabledBlockGroups = { @Sendable value in
+      savedDisabledBlockGroups.withValue { $0.append(value) }
+    }
+
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
 
     await store.receive(.programmatic(.installSucceeded)) {
+      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
     }
 
+    expect(savedProtectionModes.value.count).toEqual(1)
     expect(installInvocations.value).toEqual(1)
+    expect(savedDisabledBlockGroups.value).toEqual([[]])
     expect(apiLoggedDetails.value).toEqual([
       "[onboarding] first launch, region: `US`",
       "[onboarding] authorization succeeded",
       "[onboarding] filter install success",
-    ])
-
-    expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains(value: "default-rule")])),
-      // we save empty on first load of screen, in case they quit before clicking next
-      // if they did, it would confuse the app to think they were in supervised mode
-      .disabledBlockGroups([]),
     ])
 
     await store.send(.interactive(.blockGroupToggled(.whatsAppFeatures))) {
@@ -204,19 +183,21 @@ final class IOSReducerTests: XCTestCase {
       $0.disabledBlockGroups = [.appleMapsImages]
     }
 
-    expect(storedCodables.value.count).toEqual(2)
+    expect(savedProtectionModes.value.count).toEqual(1)
+    expect(savedDisabledBlockGroups.value.count).toEqual(1)
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) { // <-- "Done" from groups
       $0.screen = .onboarding(.happyPath(.promptClearCache))
     }
 
     expect(fetchBlockRulesInvocations.value).toEqual(1)
-
-    expect(storedCodables.value).toEqual([
-      .protectionMode(.onboarding([.urlContains(value: "default-rule")])),
-      .disabledBlockGroups([]), // <-- on opt-out groups screen load, failsafe
-      .disabledBlockGroups([.appleMapsImages]), // <-- persist user choice after "Done"
-      .protectionMode(.normal([.urlContains(value: "GIFs")])), // <-- got customized rules from api
+    expect(savedProtectionModes.value).toEqual([
+      .onboarding([.urlContains(value: "default-rule")]),
+      .normal([.urlContains(value: "GIFs")]),
+    ])
+    expect(savedDisabledBlockGroups.value).toEqual([
+      [], // <-- on opt-out groups screen load, failsafe
+      [.appleMapsImages], // <-- persist user choice after "Done"
     ])
 
     await store.receive(.programmatic(.setAvailableDiskSpaceInBytes(1024 * 12))) {
@@ -262,7 +243,8 @@ final class IOSReducerTests: XCTestCase {
   @MainActor
   func testUpgradeFromV110() async throws {
     let defaultBlocksInvocations = LockIsolated(0)
-    let storedCodables = LockIsolated<[SavedCodable]>([])
+    let savedProtectionModes = LockIsolated<[ProtectionMode]>([])
+    let savedDisabledBlockGroups = LockIsolated<[[BlockGroup]]>([])
     let removeObjectInvocations = LockIsolated<[String]>([])
     let notifyFilterInvocations = LockIsolated<[FilterClient.Notification]>([])
 
@@ -279,7 +261,8 @@ final class IOSReducerTests: XCTestCase {
         removeObjectInvocations.withValue { $0.append(key) }
       }
       $0.systemExtension.filterRunning = { true } // <-- filter running
-      $0.sharedUserDefaults.loadDate = { @Sendable _ in .reference } // <-- v1.1.0 launch date
+      $0.sharedStorage.loadFirstLaunchDate = { @Sendable in .reference } // <-- v1.1.0 launch date
+      $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
       $0.sharedUserDefaults.loadData = { @Sendable key in
         if key == .legacyStorageKey {
           "[]".data(using: .utf8) // <-- has V1 legacy data
@@ -287,15 +270,11 @@ final class IOSReducerTests: XCTestCase {
           nil
         }
       }
-      $0.sharedUserDefaults.saveCodable = { @Sendable value, key in
-        switch key {
-        case .disabledBlockGroupsStorageKey:
-          storedCodables.withValue { $0.append(.disabledBlockGroups(value as! [BlockGroup])) }
-        case .protectionModeStorageKey:
-          storedCodables.withValue { $0.append(.protectionMode(value as! ProtectionMode)) }
-        default:
-          fatalError("unexpected key: \(key)")
-        }
+      $0.sharedStorage.saveDisabledBlockGroups = { @Sendable value in
+        savedDisabledBlockGroups.withValue { $0.append(value) }
+      }
+      $0.sharedStorage.saveProtectionMode = { @Sendable value in
+        savedProtectionModes.withValue { $0.append(value) }
       }
       $0.filter.send = { @Sendable notification in
         notifyFilterInvocations.withValue { $0.append(notification) }
@@ -314,18 +293,16 @@ final class IOSReducerTests: XCTestCase {
 
     expect(removeObjectInvocations.value).toEqual([.legacyStorageKey])
     expect(defaultBlocksInvocations.value).toEqual(1)
-    expect(notifyFilterInvocations.value).toEqual([.refreshRules])
-    expect(storedCodables.value).toEqual([
-      .disabledBlockGroups([]),
-      .protectionMode(.normal([.urlContains(value: "GIFs")])),
-    ])
+    expect(notifyFilterInvocations.value).toEqual([.rulesChanged])
+    expect(savedDisabledBlockGroups.value).toEqual([[]])
+    expect(savedProtectionModes.value).toEqual([.normal([.urlContains(value: "GIFs")])])
 
     await store.send(.programmatic(.appWillTerminate))
   }
 
   @MainActor
   func testUsesHardcodedBlockRulesIfApiDefaultsReqFails() async throws {
-    let storedCodables = LockIsolated<[ProtectionMode]>([])
+    let savedProtectionModes = LockIsolated<[ProtectionMode]>([])
 
     let store = TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
@@ -338,23 +315,20 @@ final class IOSReducerTests: XCTestCase {
         struct TestError: Error {}
         throw TestError()
       }
-      $0.sharedUserDefaults.loadDate = { @Sendable _ in nil }
       $0.sharedUserDefaults.loadData = { @Sendable _ in nil }
-      $0.sharedUserDefaults.saveDate = { @Sendable _, _ in }
-      $0.sharedUserDefaults.saveCodable = { @Sendable value, key in
-        switch key {
-        case .protectionModeStorageKey:
-          storedCodables.withValue { $0.append(value as! ProtectionMode) }
-        default:
-          fatalError("unexpected key: \(key)")
-        }
+      $0.sharedStorage.loadFirstLaunchDate = { @Sendable in nil }
+      $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
+      $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
+      $0.sharedStorage.saveProtectionMode = { @Sendable value in
+        savedProtectionModes.withValue { $0.append(value) }
       }
     }
 
     store.exhaustivity = .off
     await store.send(.programmatic(.appDidLaunch))
 
-    expect(storedCodables.value).toEqual([.onboarding(BlockRule.Legacy.defaults.map(\.current))])
+    expect(savedProtectionModes.value)
+      .toEqual([.onboarding(BlockRule.Legacy.defaults.map(\.current))])
   }
 
   @MainActor
@@ -446,9 +420,12 @@ final class IOSReducerTests: XCTestCase {
     } withDependencies: {
       $0.device.deleteCacheFillDir = {}
       $0.api.fetchDefaultBlockRules = { @Sendable _ in [] }
-      $0.sharedUserDefaults.saveCodable = { @Sendable _, _ in }
-      $0.sharedUserDefaults.loadDate = { @Sendable _ in .distantPast }
-      $0.sharedUserDefaults.loadData = { @Sendable _ in "[]".data(using: .utf8) }
+      $0.sharedStorage.loadProtectionMode = { @Sendable in
+        .normal([.urlContains(value: "bad")])
+      }
+      $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in [] }
+      $0.sharedStorage.loadFirstLaunchDate = { @Sendable in .distantPast }
+      $0.sharedUserDefaults.loadData = { @Sendable _ in nil }
       $0.systemExtension.filterRunning = { true }
     }
 
@@ -471,11 +448,12 @@ final class IOSReducerTests: XCTestCase {
       $0.device.deleteCacheFillDir = {}
       $0.api.fetchDefaultBlockRules = { @Sendable _ in [] }
       $0.api.logEvent = { @Sendable _, _ in }
-      $0.sharedUserDefaults.saveCodable = { @Sendable _, _ in }
-      $0.sharedUserDefaults.saveDate = { @Sendable _, _ in }
-      $0.sharedUserDefaults.loadDate = { @Sendable _ in nil }
-      $0.systemExtension.filterRunning = { true } // <-- filter running
-      $0.sharedUserDefaults.loadData = { @Sendable _ in nil } // <-- but no sign of onboarding...
+      // filter running...
+      $0.systemExtension.filterRunning = { true }
+      // but no sign of onboarding
+      $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
+      $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
+      $0.sharedUserDefaults.loadData = { @Sendable _ in nil } // legacy data
     }
 
     await store.send(.programmatic(.appDidLaunch))
@@ -489,7 +467,8 @@ final class IOSReducerTests: XCTestCase {
 
     // primary button goes to opt out groups
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
+      $0.onboarding.deviceSupervised = true
     }
 
     await store.send(.programmatic(.appWillTerminate))

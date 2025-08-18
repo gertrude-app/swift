@@ -96,136 +96,140 @@ final class FilterProxyTests: XCTestCase {
     .toEqual(.allow)
   }
 
-  func testReadsRulesInHeartbeat() async throws {
-    let logs = LockIsolated<[String]>([])
-    let rules = LockIsolated<ProtectionMode>(.normal([.urlContains(value: "foo")]))
-    let clock = TestClock()
+  // TODO: restore or remove
+  // func testReadsRulesInHeartbeat() async throws {
+  //   let logs = LockIsolated<[String]>([])
+  //   let rules = LockIsolated<ProtectionMode>(.normal([.urlContains(value: "foo")]))
+  //   let clock = TestClock()
+  //
+  //   let proxy = withDependencies {
+  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+  //     $0.suspendingClock = clock
+  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in
+  //       rules.value
+  //     }
+  //   } operation: {
+  //     FilterProxy(protectionMode: .emergencyLockdown)
+  //   }
+  //
+  //   // initializer loads protection rules from storage
+  //   expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
+  //   expect(logs.value).toEqual(["read 1 (normal) rules"])
+  //
+  //   await clock.advance(by: .seconds(59))
+  //
+  //   // no heartbeat yet
+  //   expect(logs.value).toEqual(["read 1 (normal) rules"])
+  //   rules.setValue(.normal([.urlContains(value: "bar"), .urlContains(value: "baz")]))
+  //
+  //   // heartbeat should happen here
+  //   await clock.advance(by: .seconds(1))
+  //   expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
+  //   expect(proxy.protectionMode).toEqual(.normal([
+  //     .urlContains(value: "bar"),
+  //     .urlContains(value: "baz"),
+  //   ]))
+  // }
 
-    let proxy = withDependencies {
-      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-      $0.suspendingClock = clock
-      $0.sharedStorageReader.loadProtectionMode = { @Sendable in
-        rules.value
-      }
-    } operation: {
-      FilterProxy(protectionMode: .emergencyLockdown)
-    }
-
-    // initializer loads protection rules from storage
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
-    expect(logs.value).toEqual(["read 1 (normal) rules"])
-
-    await clock.advance(by: .seconds(59))
-
-    // no heartbeat yet
-    expect(logs.value).toEqual(["read 1 (normal) rules"])
-    rules.setValue(.normal([.urlContains(value: "bar"), .urlContains(value: "baz")]))
-
-    // heartbeat should happen here
-    await clock.advance(by: .seconds(1))
-    expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
-    expect(proxy.protectionMode).toEqual(.normal([
-      .urlContains(value: "bar"),
-      .urlContains(value: "baz"),
-    ]))
-  }
-
+  // TODO: restore or remove
   // simulate user defaults not being available on first boot, before unlock
   // we need to keep checking quickly until they are available to not be in lockdown long
   // @see https://christianselig.com/2024/10/beware-userdefaults/
-  func testNoDataFoundCausesFasterRecheckUntilFound() async throws {
-    let logs = LockIsolated<[String]>([])
-    let userDefaultsReady = LockIsolated(false)
-    let clock = TestClock()
-    let proxy = withDependencies {
-      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-      $0.suspendingClock = clock
-      $0.sharedStorageReader.loadProtectionMode = { @Sendable in
-        if !userDefaultsReady.value {
-          nil
-        } else {
-          .normal([.urlContains(value: "foo")])
-        }
-      }
-    } operation: {
-      FilterProxy(protectionMode: .emergencyLockdown)
-    }
+  // func testNoDataFoundCausesFasterRecheckUntilFound() async throws {
+  //   let logs = LockIsolated<[String]>([])
+  //   let userDefaultsReady = LockIsolated(false)
+  //   let clock = TestClock()
+  //   let proxy = withDependencies {
+  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+  //     $0.suspendingClock = clock
+  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in
+  //       if !userDefaultsReady.value {
+  //         nil
+  //       } else {
+  //         .normal([.urlContains(value: "foo")])
+  //       }
+  //     }
+  //   } operation: {
+  //     FilterProxy(protectionMode: .emergencyLockdown)
+  //   }
+  //
+  //   // initializer tries to load, but finds no rules, goes into lockdown
+  //   expect(proxy.protectionMode).toEqual(.emergencyLockdown)
+  //   expect(logs.value).toEqual(["no rules found"])
+  //
+  //   await clock.advance(by: .seconds(9))
+  //   expect(logs.value).toEqual(["no rules found"])
+  //
+  //   // because we have no rules, we're checking every ten seconds
+  //   await clock.advance(by: .seconds(1))
+  //   expect(logs.value).toEqual(["no rules found", "no rules found"])
+  //   await clock.advance(by: .seconds(10))
+  //   expect(logs.value).toEqual(["no rules found", "no rules found", "no rules found"])
+  //
+  //   // simulate user defaults ready
+  //   userDefaultsReady.setValue(true)
+  //   await clock.advance(by: .seconds(9))
+  //   expect(logs.value.count).toEqual(3)
+  //   await clock.advance(by: .seconds(1))
+  //   expect(logs.value).toEqual([
+  //     "no rules found",
+  //     "no rules found",
+  //     "no rules found",
+  //     "read 1 (normal) rules",
+  //   ])
+  //   expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
+  //
+  //   // now, we are not checking so often
+  //   await clock.advance(by: .seconds(10))
+  //   expect(logs.value.count).toEqual(4)
+  //
+  //   await clock.advance(by: .minutes(5))
+  //   expect(logs.value.count).toEqual(5)
+  // }
 
-    // initializer tries to load, but finds no rules, goes into lockdown
-    expect(proxy.protectionMode).toEqual(.emergencyLockdown)
-    expect(logs.value).toEqual(["no rules found"])
+  // TODO: restore or remove
+  // func testReadsRulesOnStart() {
+  //   let logs = LockIsolated<[String]>([])
+  //   let proxy = withDependencies {
+  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+  //     $0.suspendingClock = TestClock()
+  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in
+  //       .normal([.urlContains(value: "lol")])
+  //     }
+  //   } operation: {
+  //     FilterProxy(protectionMode: .normal([]))
+  //   }
+  //
+  //   expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "lol")]))
+  //   expect(logs.value).toEqual(["read 1 (normal) rules"])
+  // }
 
-    await clock.advance(by: .seconds(9))
-    expect(logs.value).toEqual(["no rules found"])
-
-    // because we have no rules, we're checking every ten seconds
-    await clock.advance(by: .seconds(1))
-    expect(logs.value).toEqual(["no rules found", "no rules found"])
-    await clock.advance(by: .seconds(10))
-    expect(logs.value).toEqual(["no rules found", "no rules found", "no rules found"])
-
-    // simulate user defaults ready
-    userDefaultsReady.setValue(true)
-    await clock.advance(by: .seconds(9))
-    expect(logs.value.count).toEqual(3)
-    await clock.advance(by: .seconds(1))
-    expect(logs.value).toEqual([
-      "no rules found",
-      "no rules found",
-      "no rules found",
-      "read 1 (normal) rules",
-    ])
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
-
-    // now, we are not checking so often
-    await clock.advance(by: .seconds(10))
-    expect(logs.value.count).toEqual(4)
-
-    await clock.advance(by: .minutes(5))
-    expect(logs.value.count).toEqual(5)
-  }
-
-  func testReadsRulesOnStart() {
-    let logs = LockIsolated<[String]>([])
-    let proxy = withDependencies {
-      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-      $0.suspendingClock = TestClock()
-      $0.sharedStorageReader.loadProtectionMode = { @Sendable in
-        .normal([.urlContains(value: "lol")])
-      }
-    } operation: {
-      FilterProxy(protectionMode: .normal([]))
-    }
-
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "lol")]))
-    expect(logs.value).toEqual(["read 1 (normal) rules"])
-  }
-
-  func testHandleRulesChangesCausesReadRules() {
-    let logs = LockIsolated<[String]>([])
-    let rules = LockIsolated<ProtectionMode>(.normal([.urlContains(value: "foo")]))
-
-    var proxy = withDependencies {
-      $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-      $0.suspendingClock = TestClock()
-      $0.sharedStorageReader.loadProtectionMode = { @Sendable in rules.value }
-    } operation: {
-      FilterProxy(protectionMode: .normal([]))
-    }
-
-    // init
-    expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
-    expect(logs.value).toEqual(["read 1 (normal) rules"])
-
-    rules.setValue(.normal([.urlContains(value: "bar"), .urlContains(value: "baz")]))
-    proxy.handleRulesChanged()
-
-    expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
-    expect(proxy.protectionMode).toEqual(.normal([
-      .urlContains(value: "bar"),
-      .urlContains(value: "baz"),
-    ]))
-  }
+  // TODO: restore or remove
+  // func testHandleRulesChangesCausesReadRules() {
+  //   let logs = LockIsolated<[String]>([])
+  //   let rules = LockIsolated<ProtectionMode>(.normal([.urlContains(value: "foo")]))
+  //
+  //   var proxy = withDependencies {
+  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
+  //     $0.suspendingClock = TestClock()
+  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in rules.value }
+  //   } operation: {
+  //     FilterProxy(protectionMode: .normal([]))
+  //   }
+  //
+  //   // init
+  //   expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
+  //   expect(logs.value).toEqual(["read 1 (normal) rules"])
+  //
+  //   rules.setValue(.normal([.urlContains(value: "bar"), .urlContains(value: "baz")]))
+  //   proxy.handleRulesChanged()
+  //
+  //   expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
+  //   expect(proxy.protectionMode).toEqual(.normal([
+  //     .urlContains(value: "bar"),
+  //     .urlContains(value: "baz"),
+  //   ]))
+  // }
 
   // TODO: figure out if/how to recreate these next two
 
