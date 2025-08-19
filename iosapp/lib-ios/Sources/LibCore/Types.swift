@@ -1,80 +1,25 @@
 import Foundation
-import GertieIOS
 
-// TODO: will the json represation be stable across versions?
-public indirect enum ProtectionMode {
-  case onboarding([BlockRule])
-  case normal([BlockRule])
-  case emergencyLockdown
-  case suspended(until: Date, restoring: ProtectionMode)
+public enum MagicStrings {
+  public static let gertrudeBundleIdLong: String = .gertrudeBundleIdLong
+  public static let gertrudeBundleIdShort: String = .gertrudeBundleIdShort
+  public static let gertrudeGroupId: String = .gertrudeGroupId
+
+  // sentinal hostnames
+  public static let readRulesSentinalHostname: String = "read-rules.xpc.gertrude.app"
+  public static let refreshRulesSentinalHostname: String = "refresh-rules.xpc.gertrude.app"
+  public static let dumpLogsSentinalHostname: String = "dump-logs.xpc.gertrude.app"
 }
 
-public extension ProtectionMode {
-  var normalRules: [BlockRule]? {
-    switch self {
-    case .normal(let rules):
-      rules
-    case .onboarding, .emergencyLockdown, .suspended:
-      nil
-    }
-  }
-
-  var rules: [BlockRule]? {
-    switch self {
-    case .onboarding(let rules):
-      rules
-    case .normal(let rules):
-      rules
-    case .emergencyLockdown, .suspended:
-      nil
-    }
-  }
-
-  var isSuspended: Bool {
-    switch self {
-    case .suspended:
-      true
-    default:
-      false
-    }
-  }
-
-  var shortDesc: String {
-    switch self {
-    case .onboarding(let rules):
-      ".onboarding(\(rules.count))"
-    case .normal(let rules):
-      ".normal(\(rules.count))"
-    case .emergencyLockdown:
-      ".emergencyLockdown"
-    case .suspended(let expiration, restoring: let rules):
-      ".suspended(\(expiration), restoring: \(rules.shortDesc))"
-    }
-  }
-}
-
-extension ProtectionMode: Equatable, Sendable, Codable {}
-
-public extension ProtectionMode? {
-  var missingRules: Bool {
-    switch self {
-    case .none:
-      true
-    case .some(.emergencyLockdown):
-      true
-    case .some(.onboarding([])):
-      true
-    case .some(.normal([])):
-      true
-    default:
-      false
-    }
-  }
+public extension String {
+  static let gertrudeBundleIdLong = "WFN83LM943.com.netrivet.gertrude-ios.app"
+  static let gertrudeBundleIdShort = "com.netrivet.gertrude-ios.app"
+  static let gertrudeGroupId = "group.com.netrivet.gertrude-ios.app"
 }
 
 public extension UserDefaults {
   static var gertrude: UserDefaults {
-    UserDefaults(suiteName: "group.com.netrivet.gertrude-ios.app")!
+    UserDefaults(suiteName: .gertrudeGroupId)!
   }
 }
 
@@ -84,20 +29,11 @@ public extension String {
   }
 
   static var gertrudeApi: String {
-    #if DEBUG
-      // just run-api-ip
-      "http://192.168.10.227:8080"
-    #else
-      "https://api.gertrude.app"
-    #endif
+    (try? Configuration.value(for: "API_URL")) ?? "https://api.gertrude.app"
   }
 
   static var protectionModeStorageKey: String {
     "ProtectionMode.v1.3.0"
-  }
-
-  static var filterSuspensionExpirationKey: String {
-    "FilterSuspensionExpiration.v1.5.0"
   }
 
   static var connectionStorageKey: String {
@@ -106,5 +42,32 @@ public extension String {
 
   static var disabledBlockGroupsStorageKey: String {
     "disabledBlockGroups.v1.3.0"
+  }
+}
+
+enum Configuration {
+  enum Error: Swift.Error {
+    case missingKey, invalidValue
+  }
+
+  static func value(for key: String) throws -> String {
+    guard let object = Bundle.main.object(forInfoDictionaryKey: key) else {
+      throw Error.missingKey
+    }
+
+    switch object {
+    case let string as String:
+      return string
+    default:
+      throw Error.invalidValue
+    }
+  }
+}
+
+public extension Array {
+  func chunked(into size: Int) -> [[Element]] {
+    stride(from: 0, to: count, by: size).map {
+      Array(self[$0 ..< Swift.min($0 + size, count)])
+    }
   }
 }

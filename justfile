@@ -58,6 +58,12 @@ sync-staging-data: build-api
 nuke-test-db:
   @killall -q Postico; dropdb --if-exists gertrude_test; createdb gertrude_test
 
+hurl-dev *args:
+  @hurl --variables-file api/hurl/dev.env {{args}}
+
+hurl-prod *args:
+  @hurl --variables-file api/hurl/prod.env {{args}}
+
 # emails (requires local dev api running)
 
 send-email template:
@@ -158,8 +164,6 @@ xmlfiles := """
 ./iosapp/controller/Info.plist \
 ./iosapp/filter/filter.entitlements \
 ./iosapp/filter/Info.plist \
-./iosapp/recorder/recorder.entitlements \
-./iosapp/recorder/Info.plist \
 ./macapp/Xcode/GertrudeFilterExtension/GertrudeFilterExtension.entitlements \
 ./macapp/Xcode/GertrudeFilterExtension/Info.plist \
 ./macapp/Xcode/Gertrude/Gertrude.entitlements \

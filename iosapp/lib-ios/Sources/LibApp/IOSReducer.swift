@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Foundation
 import LibClients
+import os.log
 
 @_exported import GertieIOS
 @_exported import XCore
@@ -14,11 +15,11 @@ public struct IOSReducer {
     @Dependency(\.device) var device
     @Dependency(\.filter) var filter
     @Dependency(\.systemExtension) var systemExtension
-    @Dependency(\.storage) var storage
+    @Dependency(\.sharedUserDefaults) var userDefaults
+    @Dependency(\.sharedStorage) var sharedStorage
     @Dependency(\.date.now) var now
     @Dependency(\.locale) var locale
     @Dependency(\.mainQueue) var mainQueue
-    @Dependency(\.recorder) var recorder
   }
 
   @ObservationIgnored
@@ -26,8 +27,6 @@ public struct IOSReducer {
 
   enum CancelId {
     case cacheClearUpdates
-    case screenshotUploads
-    case recorderEvents
   }
 
   public init() {}
@@ -116,25 +115,16 @@ public struct IOSReducer {
       //   try await deps.filter.notifyRulesChanged()
       // }
       // 👍 todo: restore
-      return .none
 
-    case .runningBtnTapped where state.screen == .running(state: .notConnected):
-      state.destination = .connectAccount(.init(screen: .enteringCode))
-      return .none
+      // TODO: save this somewhere...
+      // let allLogs = self.deps.sharedStorage.loadDebugLogs() ?? []
+      // for (i, logs) in allLogs.chunked(into: 6).enumerated() {
+      //   os_log("[G•] APP dump memory logs %d:\n%{public}s", i + 1, logs.joined(separator: "\n"))
+      // }
 
-    case .runningBtnTapped
-      where state.screen == .running(state: .connected(waitingForSuspension: false)):
-      state.destination = .requestSuspension(.customizing)
-      return .none
-
-    case .runningBtnTapped
-      where state.screen == .running(state: .connected(waitingForSuspension: true)):
-      // TODO:
-      return .none
-
-    case .runningBtnTapped:
-      // unreachable
-      return .none
+      return .run { [filter = self.deps.filter] _ in
+        try await filter.send(notification: .refreshRules)
+      }
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
       #if DEBUG
@@ -256,28 +246,43 @@ public struct IOSReducer {
         }
       }
 
+    case (.onboarding(.happyPath(.offerAccountConnect)), .primary):
+      self.deps.log(state.screen, action, "62b6a262")
+      state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      return .none
+
+    case (.onboarding(.happyPath(.offerAccountConnect)), .secondary):
+      self.deps.log(state.screen, action, "b93bb543")
+      state.destination = .connectAccount(.init())
+      return .none
+
+    case (.onboarding(.happyPath(.connectSuccess)), .primary):
+      self.deps.log(state.screen, action, "63d34e4c")
+      state.screen = .onboarding(.happyPath(.promptClearCache))
+      return .none
+
     case (.onboarding(.happyPath(.optOutBlockGroups)), .primary):
       self.deps.log(state.screen, action, "cdb31095")
       if state.disabledBlockGroups == .all { return .none }
       state.screen = .onboarding(.happyPath(.promptClearCache))
       return .merge(
         .run { [deps = self.deps, disabled = state.disabledBlockGroups] _ in
-          deps.storage.saveDisabledBlockGroups(disabled)
+          deps.sharedStorage.saveDisabledBlockGroups(disabled)
           if let vendorId = await deps.device.vendorId() {
             let result = try? await deps.api.fetchBlockRules(
               vendorId: vendorId,
               disabledGroups: disabled
             )
             if let rules = result, !rules.isEmpty {
-              deps.storage.saveProtectionMode(.normal(rules))
+              deps.sharedStorage.saveProtectionMode(.normal(rules))
             }
           } else {
             deps.log("UNEXPECTED no vendor id on opt out", "d9e93a4b")
           }
           // NB: safeguard so we don't ever end up with empty rules
-          if deps.storage.loadProtectionMode().missingRules {
+          if deps.sharedStorage.loadProtectionMode().missingRules {
             deps.log("UNEXPECTED missing rules after opt-out", "ffff30ac")
-            deps.storage.saveProtectionMode(.normal(BlockRule.defaults))
+            deps.sharedStorage.saveProtectionMode(.normal(BlockRule.Legacy.defaults.map(\.current)))
           }
         },
         .run { [device = self.deps.device] send in
@@ -574,7 +579,8 @@ public struct IOSReducer {
 
     case (.supervisionSuccessFirstLaunch, .primary):
       self.deps.log(state.screen, action, "aa563df6")
-      state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      state.onboarding.deviceSupervised = true
+      state.screen = .onboarding(.happyPath(.offerAccountConnect))
       return .none
 
     default:
@@ -595,13 +601,13 @@ public struct IOSReducer {
         // detect current state and set screen
         .run { [deps = self.deps] send in
           let filterRunning = await deps.systemExtension.filterRunning()
-          let disabledBlockGroups = deps.storage.loadDisabledBlockGroups()
-          let connection = deps.storage.loadConnection()
-          let hasLegacyData = deps.storage.loadData(forKey: .legacyStorageKey) != nil
+          let disabledBlockGroups = deps.sharedStorage.loadDisabledBlockGroups()
+          let connection = deps.sharedStorage.loadAccountConnection()
+          let hasLegacyData = deps.userDefaults.loadData(forKey: .legacyStorageKey) != nil
           switch (filterRunning, disabledBlockGroups, hasLegacyData) {
           case (true, .some, _):
             await send(.programmatic(.setScreen(.running(
-              state: connection != nil ? .connected() : .notConnected
+              state: connection.map { .connected(childName: $0.childName) } ?? .notConnected
             ))))
             if let token = connection?.token {
               await deps.api.setAuthToken(token)
@@ -618,24 +624,22 @@ public struct IOSReducer {
             deps.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
           }
-          if !deps.recorder.ensureScreenshotsDir() {
-            // TODO: log
-          }
         },
         // handle first launch
         .run { [deps = self.deps] send in
-          if let firstLaunch = deps.storage.loadFirstLaunchDate() {
+          if let firstLaunch = deps.sharedStorage.loadFirstLaunchDate() {
             await send(.programmatic(.setFirstLaunch(firstLaunch)))
           } else {
             let now = deps.now
-            deps.storage.saveFirstLaunchDate(now)
+            deps.sharedStorage.saveFirstLaunchDate(now)
             await send(.programmatic(.setFirstLaunch(now)))
             // prefetch the default block groups for onboarding
             let defaultRules = try? await deps.api.fetchDefaultBlockRules(deps.device.vendorId())
             if let defaultRules, !defaultRules.isEmpty {
-              deps.storage.saveProtectionMode(.onboarding(defaultRules))
+              deps.sharedStorage.saveProtectionMode(.onboarding(defaultRules))
             } else {
-              deps.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+              deps.sharedStorage
+                .saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
             }
             await deps.api.logEvent(
               "8d35f043",
@@ -646,20 +650,11 @@ public struct IOSReducer {
         // safeguard in case app crashed trying to fill the disk
         .run { [deps = self.deps] send in
           await deps.device.deleteCacheFillDir()
-        },
-        .run { [deps = self.deps] send in
-          for await event in deps.recorder.events() {
-            await send(.programmatic(.receivedScreenRecordingEvent(event)))
-          }
-        }.cancellable(id: CancelId.recorderEvents, cancelInFlight: true)
+        }
       )
 
     case .appWillTerminate:
-      return .merge(
-        .cancel(id: CancelId.recorderEvents),
-        .cancel(id: CancelId.cacheClearUpdates),
-        .cancel(id: CancelId.screenshotUploads)
-      )
+      return .cancel(id: CancelId.cacheClearUpdates)
 
     case .setFirstLaunch(let date):
       state.onboarding.firstLaunch = date
@@ -722,9 +717,9 @@ public struct IOSReducer {
       } else {
         self.deps.unexpected(state.screen, action, "c98b9525")
       }
-      state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      state.screen = .onboarding(.happyPath(.offerAccountConnect))
       return .run { [deps = self.deps] _ in
-        deps.storage.saveDisabledBlockGroups([])
+        deps.sharedStorage.saveDisabledBlockGroups([])
       }
 
     case .installFailed(let err):
@@ -766,92 +761,17 @@ public struct IOSReducer {
       state.onboarding.endClearCache = self.deps.now
       state.screen = .onboarding(.happyPath(.cacheCleared))
       return .cancel(id: CancelId.cacheClearUpdates)
-
-    case .receivedSuspensionUpdate(.pending):
-      return .none
-
-    case .receivedSuspensionUpdate(.denied(let comment)):
-      state.destination = .requestSuspension(.denied(comment: comment))
-      return .none
-
-    case .receivedSuspensionUpdate(.notFound):
-      self.deps.log("filter suspension id not found", "ceec0d93")
-      return .none
-
-    case .receivedSuspensionUpdate(.accepted(let duration, let comment)):
-      state.destination = .requestSuspension(.granted(duration: duration, comment: comment))
-      return .none
-
-    case .suspensionRequestExpired:
-      return .none
-
-    case .receivedScreenRecordingEvent(.broadcastStarted):
-      guard case .pendingBroadcastStart(let duration) = state.suspension else {
-        return .none
-      }
-      let expiration = self.deps.now + .seconds(duration.rawValue)
-      state.suspension = .active(until: expiration)
-      return .merge(
-        .run { [deps = self.deps] send in
-          await deps.filter.suspend(expiration)
-        },
-        .run { [deps = self.deps] send in
-          for await _ in deps.clock.timer(interval: .seconds(15)) { // TODO: time
-            var numProcessed = 0
-            while let screenshot = deps.recorder.unprocessedScreenshot() {
-              try await deps.api.uploadScreenshot(screenshot.image)
-              screenshot.cleanup()
-              numProcessed += 1
-              // prevent filesystem from seeing the same cleaned up file
-              try? await deps.clock.sleep(for: .milliseconds(5))
-            }
-            if numProcessed == 0 {
-              await send(.programmatic(.endSuspension))
-            }
-          }
-        }.cancellable(id: CancelId.screenshotUploads, cancelInFlight: true)
-      )
-
-    case .endSuspension, .receivedScreenRecordingEvent(.broadcastFinished):
-      return .merge(
-        .run { [deps = self.deps] send in
-          await deps.filter.resume()
-        },
-        .cancel(id: CancelId.screenshotUploads)
-      )
-
-    case .receivedScreenRecordingEvent:
-      return .none
     }
   }
 
   func destination(state: inout State, action: Destination.Action) -> Effect<Action> {
     switch action {
     case .connectAccount(.connectionSucceeded(childData: let data)):
-      state.screen = .running(state: .connected())
+      state.screen = .onboarding(.happyPath(.connectSuccess))
       return .run { [deps = self.deps] send in
         await deps.api.setAuthToken(data.token)
-        deps.storage.saveConnection(data: data)
+        deps.sharedStorage.saveAccountConnection(data)
       }
-    case .requestSuspension(.requestSucceeded(let id)):
-      state.screen = .running(state: .connected(waitingForSuspension: true))
-      return .run { [deps = self.deps] send in
-        // TODO: add backoff, better expiration, etc.
-        var count = 0
-        for await _ in deps.clock.timer(interval: .seconds(5)) {
-          if count > 60 { // 5 minutes
-            await send(.programmatic(.suspensionRequestExpired))
-            return
-          }
-          let decision = try await deps.api.pollSuspensionDecision(id: id)
-          await send(.programmatic(.receivedSuspensionUpdate(decision)))
-          if decision != .pending { return }
-          count += 1
-        }
-      }
-    case .requestSuspension(.startSuspensionTapped(let seconds)):
-      state.suspension = .pendingBroadcastStart(duration: seconds)
-      return .none
     default:
       return .none
     }
@@ -862,16 +782,16 @@ extension IOSReducer.Deps {
   // TODO: need to handle two upgrades, > 1.3.x, and > 1.5.x
   func handleUpgrade(send: Send<IOSReducer.Action>) async throws {
     self.log("handling upgrade", "180e2347")
-    self.storage.saveDisabledBlockGroups([])
+    self.sharedStorage.saveDisabledBlockGroups([])
     let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId())
     if let defaultRules {
-      self.storage.saveProtectionMode(.normal(defaultRules))
+      self.sharedStorage.saveProtectionMode(.normal(defaultRules))
     } else {
       self.log("unexpected upgrade rule failure", "8d4a445b")
-      self.storage.saveProtectionMode(.onboarding(BlockRule.defaults))
+      self.sharedStorage.saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
     }
-    self.storage.removeObject(forKey: .legacyStorageKey)
+    self.userDefaults.removeObject(forKey: .legacyStorageKey)
     await send(.programmatic(.setScreen(.running(state: .notConnected))))
-    try await self.filter.notifyRulesChanged()
+    try await self.filter.send(notification: .rulesChanged)
   }
 }

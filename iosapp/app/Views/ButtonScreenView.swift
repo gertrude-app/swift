@@ -22,7 +22,9 @@ struct ButtonScreenView: View {
     }
 
     init(
-      _ text: String, animate: Bool = true, asyncAction: Bool = false,
+      _ text: String,
+      animate: Bool = true,
+      asyncAction: Bool = false,
       _ action: @escaping () -> Void
     ) {
       self.init(text: text, type: .button(action), animate: animate, asyncAction: asyncAction)
@@ -217,7 +219,10 @@ struct ButtonScreenView: View {
   }
 
   func withOrWithoutVanishingAnimations(
-    type: BigButton.ButtonType, animate: Bool, asyncAction: Bool, isLoading: Binding<Bool>
+    type: BigButton.ButtonType,
+    animate: Bool,
+    asyncAction: Bool,
+    isLoading: Binding<Bool>
   )
     -> BigButton.ButtonType {
     switch type {

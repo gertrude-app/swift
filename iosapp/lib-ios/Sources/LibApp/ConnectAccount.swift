@@ -17,7 +17,7 @@ public struct ConnectAccount {
   public enum Action: Equatable {
     case codeSubmitted(Int)
     case receivedConnectionError(String)
-    case connectionSucceeded(childData: ChildIOSDeviceData)
+    case connectionSucceeded(childData: ChildIOSDeviceData_b1)
     case setScreen(State.SubScreen)
   }
 

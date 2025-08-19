@@ -7,7 +7,6 @@ extension IOSReducer {
   @Reducer(state: .equatable, action: .equatable)
   public enum Destination {
     case connectAccount(ConnectAccount)
-    case requestSuspension(RequestSuspension)
     case debug(Debug)
   }
 
@@ -16,13 +15,6 @@ extension IOSReducer {
     public var screen: Screen = .launching
     public var disabledBlockGroups: [BlockGroup] = []
     public var onboarding: OnboardingState = .init()
-    public var suspension: SuspensionState = .none
-
-    public enum SuspensionState: Equatable {
-      case none
-      case pendingBroadcastStart(duration: Seconds<Int>)
-      case active(until: Date)
-    }
 
     @Presents
     public var destination: Destination.State?
@@ -46,6 +38,7 @@ extension IOSReducer {
       public var availableDiskSpaceInBytes: Int?
       public var startClearCache: Date?
       public var endClearCache: Date?
+      public var deviceSupervised: Bool = false
 
       public init(
         firstLaunch: Date? = nil,
@@ -99,6 +92,8 @@ extension IOSReducer {
       case dontGetTrickedPreAuth
       case explainInstallWithDevicePasscode
       case dontGetTrickedPreInstall
+      case offerAccountConnect
+      case connectSuccess
       case optOutBlockGroups
       case promptClearCache
       case batteryWarning
@@ -160,7 +155,16 @@ extension IOSReducer {
 
   public enum RunningState: Equatable {
     case notConnected
-    case connected(waitingForSuspension: Bool = false)
+    case connected(childName: String)
+
+    public var childName: String? {
+      switch self {
+      case .notConnected:
+        nil
+      case .connected(let childName):
+        childName
+      }
+    }
   }
 
   public enum Screen: Equatable {

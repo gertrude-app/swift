@@ -11,19 +11,16 @@ import XCore
 
 @DependencyClient
 public struct ApiClient: Sendable {
-  public var connectDevice: @Sendable (_ code: Int, _ vendorId: UUID) async throws
-    -> ChildIOSDeviceData
-  public var createSuspendFilterRequest: @Sendable (_ duration: Seconds<Int>, _ comment: String?)
-    async throws -> UUID
+  public var connectDevice: @Sendable (_ code: Int, _ vendorId: UUID)
+    async throws -> ChildIOSDeviceData_b1
+  public var connectedRules: @Sendable (_ vendorId: UUID)
+    async throws -> ConnectedRules_b1.Output
   public var fetchBlockRules: @Sendable (_ vendorId: UUID, _ disabledGroups: [BlockGroup])
     async throws -> [BlockRule]
   public var fetchDefaultBlockRules: @Sendable (_ vendorId: UUID?) async throws -> [BlockRule]
   public var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
-  public var pollSuspensionDecision: @Sendable (_ id: UUID) async throws
-    -> PollFilterSuspensionDecision.Output
   public var recoveryDirective: @Sendable () async throws -> String?
   public var setAuthToken: @Sendable (UUID?) async -> Void
-  public var uploadScreenshot: @Sendable (UploadScreenshotData) async throws -> Void
 }
 
 extension ApiClient: TestDependencyKey {
@@ -39,7 +36,7 @@ extension ApiClient: DependencyKey {
         @Dependency(\.device) var device
         let deviceData = await device.data()
         return try await output(
-          from: ConnectDevice.self,
+          from: ConnectDevice_b1.self,
           withUnauthed: .connectDevice(.init(
             verificationCode: code,
             vendorId: vendorId,
@@ -49,82 +46,77 @@ extension ApiClient: DependencyKey {
           ))
         )
       },
-      createSuspendFilterRequest: { duration, comment in
-        try await output(
-          from: CreateSuspendFilterRequest.self,
-          with: .createSuspendFilterRequest(.init(duration: duration, comment: comment))
+      connectedRules: { vendorId in
+        @Dependency(\.device) var device
+        let deviceData = await device.data()
+        return try await output(
+          from: ConnectedRules_b1.self,
+          with: .connectedRules(.init(
+            vendorId: vendorId,
+            deviceType: deviceData.type.rawValue,
+            appVersion: version,
+            iosVersion: deviceData.iOSVersion
+          ))
         )
       },
       fetchBlockRules: { vendorId, disabledGroups in
-        let (data, _) = try await request(route: .unauthed(.blockRules_v2(.init(
-          disabledGroups: disabledGroups,
-          vendorId: vendorId,
-          version: version
-        ))))
-        return try JSONDecoder().decode([BlockRule].self, from: data)
+        let legacyRules = try await output(
+          from: BlockRules_v2.self,
+          withUnauthed: .blockRules_v2(.init(
+            disabledGroups: disabledGroups,
+            vendorId: vendorId,
+            version: version
+          ))
+        )
+        return legacyRules.map(\.current)
       },
       fetchDefaultBlockRules: { vendorId in
-        let (data, _) = try await request(route: .unauthed(.defaultBlockRules(.init(
-          vendorId: vendorId,
-          version: version
-        ))))
-        return try JSONDecoder().decode([BlockRule].self, from: data)
+        let legacyRules = try await output(
+          from: DefaultBlockRules.self,
+          withUnauthed: .defaultBlockRules(.init(
+            vendorId: vendorId,
+            version: version
+          ))
+        )
+        return legacyRules.map(\.current)
       },
       logEvent: { id, detail in
         @Dependency(\.device) var device
         let deviceData = await device.data()
-        let payload = LogIOSEvent.Input(
-          eventId: id,
-          kind: "ios",
-          deviceType: deviceData.type.rawValue,
-          iOSVersion: deviceData.iOSVersion,
-          vendorId: deviceData.vendorId,
-          detail: detail
-        )
         do {
-          try await request(route: .unauthed(.logIOSEvent(payload)))
+          _ = try await output(
+            from: LogIOSEvent.self,
+            withUnauthed: .logIOSEvent(.init(
+              eventId: id,
+              kind: "ios",
+              deviceType: deviceData.type.rawValue,
+              iOSVersion: deviceData.iOSVersion,
+              vendorId: deviceData.vendorId,
+              detail: detail
+            ))
+          )
         } catch {
           os_log("[G•] error logging event: %{public}s", String(reflecting: error))
         }
-      },
-      pollSuspensionDecision: { id in
-        try await output(
-          from: PollFilterSuspensionDecision.self,
-          with: .pollFilterSuspensionDecision(id)
-        )
       },
       recoveryDirective: {
         @Dependency(\.locale) var locale
         @Dependency(\.device) var device
         let deviceData = await device.data()
-        let payload = RecoveryDirective.Input(
-          vendorId: deviceData.vendorId,
-          deviceType: deviceData.type.rawValue,
-          iOSVersion: deviceData.iOSVersion,
-          locale: locale.region?.identifier,
-          version: version
+        let result = try await output(
+          from: RecoveryDirective.self,
+          withUnauthed: .recoveryDirective(.init(
+            vendorId: deviceData.vendorId,
+            deviceType: deviceData.type.rawValue,
+            iOSVersion: deviceData.iOSVersion,
+            locale: locale.region?.identifier,
+            version: version
+          ))
         )
-        let (data, _) = try await request(route: .unauthed(.recoveryDirective(payload)))
-        let result = try JSONDecoder().decode(RecoveryDirective.Output.self, from: data)
         return result.directive
       },
       setAuthToken: { token in
         _authToken.withLock { $0 = token }
-      },
-      uploadScreenshot: { screenshot in
-        let output = try await output(
-          from: ScreenshotUploadUrl.self,
-          with: .screenshotUploadUrl(.init(
-            width: screenshot.width,
-            height: screenshot.height,
-            createdAt: screenshot.createdAt
-          ))
-        )
-        var request = URLRequest(url: output.uploadUrl, cachePolicy: .reloadIgnoringCacheData)
-        request.httpMethod = "PUT"
-        request.addValue("public-read", forHTTPHeaderField: "x-amz-acl")
-        request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type")
-        _ = try await URLSession.shared.upload(for: request, from: screenshot.data)
       }
     )
   }
@@ -165,20 +157,6 @@ func output<T: Pair>(
     }
   }
   return try JSON.decode(data, as: T.Output.self, [.isoDates])
-}
-
-public struct UploadScreenshotData: Sendable {
-  public var data: Data
-  public var width: Int
-  public var height: Int
-  public var createdAt: Date
-
-  public init(data: Data, width: Int, height: Int, createdAt: Date) {
-    self.data = data
-    self.width = width
-    self.height = height
-    self.createdAt = createdAt
-  }
 }
 
 public extension ApiClient {

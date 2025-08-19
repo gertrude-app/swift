@@ -43,7 +43,7 @@ extension IOSApp.BlockRule: Model {
     case .deviceId: .uuid(self.deviceId)
     case .vendorId: .uuid(self.vendorId)
     case .rule: .json(self.rule.toPostgresJson)
-    case .group: .string(self.group)
+    case .groupId: .uuid(self.groupId)
     case .comment: .string(self.comment)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
@@ -56,7 +56,7 @@ extension IOSApp.BlockRule: Model {
       .deviceId: .uuid(self.deviceId),
       .vendorId: .uuid(self.vendorId),
       .rule: .json(self.rule.toPostgresJson),
-      .group: .string(self.group),
+      .groupId: .uuid(self.groupId),
       .comment: .string(self.comment),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
@@ -135,6 +135,7 @@ extension IOSApp.Device: Model {
     case .deviceType: .string(self.deviceType)
     case .appVersion: .string(self.appVersion)
     case .iosVersion: .string(self.iosVersion)
+    case .webPolicy: .string(self.webPolicy)
     case .createdAt: .date(self.createdAt)
     case .updatedAt: .date(self.updatedAt)
     }
@@ -148,6 +149,7 @@ extension IOSApp.Device: Model {
       .deviceType: .string(self.deviceType),
       .appVersion: .string(self.appVersion),
       .iosVersion: .string(self.iosVersion),
+      .webPolicy: .string(self.webPolicy),
       .createdAt: .currentTimestamp,
       .updatedAt: .currentTimestamp,
     ]
@@ -959,6 +961,82 @@ extension SecurityEvent: Model {
       .detail: .string(self.detail),
       .ipAddress: .string(self.ipAddress),
       .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension IOSApp.BlockGroup: Model {
+  public static let schemaName = "iosapp"
+  public static let tableName = "block_groups"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .name: .string(self.name)
+    case .description: .string(self.description)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .name: .string(self.name),
+      .description: .string(self.description),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension IOSApp.DeviceBlockGroup: Model {
+  public static let schemaName = "iosapp"
+  public static let tableName = "device_block_groups"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
+    case .blockGroupId: .uuid(self.blockGroupId)
+    case .createdAt: .date(self.createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(self.deviceId),
+      .blockGroupId: .uuid(self.blockGroupId),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
+extension IOSApp.WebPolicyDomain: Model {
+  public static let schemaName = "iosapp"
+  public static let tableName = "web_policy_domains"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .deviceId: .uuid(self.deviceId)
+    case .domain: .string(self.domain)
+    case .createdAt: .date(self.createdAt)
+    case .updatedAt: .date(self.updatedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .deviceId: .uuid(self.deviceId),
+      .domain: .string(self.domain),
+      .createdAt: .currentTimestamp,
+      .updatedAt: .currentTimestamp,
     ]
   }
 }

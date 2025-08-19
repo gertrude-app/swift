@@ -14,8 +14,7 @@ struct RunningView: View {
 
   @Bindable var store: StoreOf<IOSReducer>
 
-  let connected: Bool
-  let onBtnTap: () -> Void
+  let childName: String?
 
   var body: some View {
     ZStack {
@@ -49,11 +48,11 @@ struct RunningView: View {
             for: .seconds(0.5)
           )
 
-        BigButton(
-          self.connected ? "Request filter suspension" : "Connect to parent account",
-          type: .button(self.onBtnTap)
-        )
-        .padding(.bottom, 20)
+        if let childName = self.childName {
+          Text("Hi \(childName)!")
+            .font(.system(size: 18, weight: .medium))
+            .padding(.bottom, 20)
+        }
 
         Text("You can quit the app now, it will keep blocking even when not running.")
           .font(.system(size: 18, weight: .medium))
@@ -87,25 +86,12 @@ struct RunningView: View {
       .multilineTextAlignment(.center)
       .padding(30)
     }
-    .sheet(item: self.$store.scope(
-      state: \.destination?.connectAccount,
-      action: \.destination.connectAccount
-    )) {
-      ConnectingView(store: $0)
-    }
-    .sheet(item: self.$store.scope(
-      state: \.destination?.requestSuspension,
-      action: \.destination.requestSuspension
-    )) {
-      RequestSuspensionView(store: $0)
-    }
   }
 }
 
 #Preview {
   RunningView(
     store: .init(initialState: .init()) { IOSReducer() },
-    connected: false,
-    onBtnTap: {}
+    childName: nil
   )
 }

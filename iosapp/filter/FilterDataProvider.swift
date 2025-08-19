@@ -5,17 +5,7 @@ import NetworkExtension
 import os.log
 
 class FilterDataProvider: NEFilterDataProvider {
-  #if !DEBUG
-    let proxy = FilterProxy(
-      protectionMode: .emergencyLockdown,
-      normalHeartbeatInterval: .minutes(5)
-    )
-  #else
-    let proxy = FilterProxy(
-      protectionMode: .emergencyLockdown,
-      normalHeartbeatInterval: .seconds(45)
-    )
-  #endif
+  var proxy = FilterProxy(protectionMode: .emergencyLockdown)
 
   override init() {
     super.init()
@@ -37,52 +27,17 @@ class FilterDataProvider: NEFilterDataProvider {
     completionHandler()
   }
 
+  // NB: from logging, it appears that this can get called from different threads
+  // although big bursts of near simultaneous network connections seem to to be
+  // handled by the same thread, instead of being interleaved, seems more like the
+  // system puts the process to sleep after inactivity, then it wakes up on a new thread
+  // so it's probably the correct mental model to consider this a single-threaded
   override func handleNewFlow(_ flow: NEFilterFlow) -> NEFilterNewFlowVerdict {
-    var hostname: String?
-    var url: String?
-    let bundleId: String? = flow.sourceAppIdentifier
-    let flowType: FlowType?
-
-    if let browserFlow = flow as? NEFilterBrowserFlow {
-      flowType = .browser
-      url = browserFlow.url?.absoluteString
-      os_log(
-        "[G•] FILTER handle new BROWSER flow (data) : %{public}s",
-        String(describing: browserFlow)
-      )
-    } else if let socketFlow = flow as? NEFilterSocketFlow {
-      flowType = .socket
-      hostname = socketFlow.remoteHostname
-      os_log(
-        "[G•] FILTER handle new SOCKET flow (data) : %{public}s",
-        String(describing: socketFlow)
-      )
-    } else {
-      flowType = nil
-      os_log(
-        "[G•] FILTER flow is NEITHER subclass (unreachable?) id: %{public}s",
-        String(describing: flow.identifier)
-      )
-    }
-
-    let verdict = self.proxy.decideFlow(
-      hostname: hostname,
-      url: url,
-      bundleId: bundleId,
-      flowType: flowType
-    )
-
-    os_log(
-      "[G•] FILTER flow verdict: %{public}s, hostname: %{public}s, url: %{public}s, sourceId: %{public}s",
-      verdict.description,
-      hostname ?? "(nil)",
-      url ?? "(nil)",
-      bundleId ?? "(nil)"
-    )
-
+    let verdict = self.proxy.decideFlow(flow)
     return switch verdict {
     case .allow: .allow()
     case .drop: .drop()
+    case .needRules: .needRules()
     }
   }
 

@@ -4,7 +4,6 @@ import XExpect
 @testable import TypeScriptInterop
 
 final class NodeTests: XCTestCase {
-
   func testParseNodePrimitive() throws {
     expect(try Node(from: String.self)).toEqual(.primitive(.string))
     expect(try Node(from: Int.self)).toEqual(.primitive(.number(.int)))

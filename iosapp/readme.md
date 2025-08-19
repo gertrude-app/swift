@@ -1,5 +1,13 @@
 # Gertrude iOS
 
+## Local dev
+
+Create a `.xcconfig` file at `iosapp/config/Local.xcconfig` with the following content:
+
+```xcconfig
+LOCAL_API_URL = https:/$()/maybe-your-ngrok-url.com
+```
+
 ## Release notes
 
 - `1.0.0` (10/23/24)

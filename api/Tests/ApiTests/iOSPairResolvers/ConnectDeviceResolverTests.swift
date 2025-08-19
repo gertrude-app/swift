@@ -14,7 +14,7 @@ final class ConnectDeviceResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       let code = await with(dependency: \.ephemeral)
         .createPendingAppConnection(child.id)
-      return try await ConnectDevice.resolve(
+      return try await ConnectDevice_b1.resolve(
         with: .init(
           verificationCode: code,
           vendorId: .init(),

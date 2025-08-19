@@ -3,7 +3,7 @@ import PairQL
 public enum UnauthedRoute: PairRoute {
   case blockRules(BlockRules.Input)
   case blockRules_v2(BlockRules_v2.Input)
-  case connectDevice(ConnectDevice.Input)
+  case connectDevice(ConnectDevice_b1.Input)
   case defaultBlockRules(DefaultBlockRules.Input)
   case logIOSEvent(LogIOSEvent.Input)
   case recoveryDirective(RecoveryDirective.Input)
@@ -20,8 +20,8 @@ public extension UnauthedRoute {
       Body(.json(BlockRules_v2.Input.self))
     }
     Route(.case(Self.connectDevice)) {
-      Operation(ConnectDevice.self)
-      Body(.json(ConnectDevice.Input.self))
+      Operation(ConnectDevice_b1.self)
+      Body(.json(ConnectDevice_b1.Input.self))
     }
     Route(.case(Self.defaultBlockRules)) {
       Operation(DefaultBlockRules.self)
