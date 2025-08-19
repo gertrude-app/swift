@@ -22,6 +22,8 @@ LOCAL_API_URL = https:/$()/maybe-your-ngrok-url.com
 - `1.3.1` (3/14/25)
   - add recovery mode, various failsafes for app deletion
   - fix animation of running screen link
+- `1.4.0` (testflight) (8/19/25)
+  - connect to account
 
 ## Screenshots for release
 
