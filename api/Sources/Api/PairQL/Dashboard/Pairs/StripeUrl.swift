@@ -26,13 +26,13 @@ extension StripeUrl: NoInputResolver {
     case (.paid, .some(let subscription)),
          (.overdue, .some(let subscription)),
          (.unpaid, .some(let subscription)):
-      return try await .init(url: billingPortalSessionUrl(for: subscription, in: context))
+      return try await .init(url: billingPortalSessionUrl(for: subscription))
 
     // should never happen...
     case (let status, let subscription):
       unexpected("65554aa1", context, ".\(status), \(subscription ?? "nil")")
       if let subscription {
-        return try await .init(url: billingPortalSessionUrl(for: subscription, in: context))
+        return try await .init(url: billingPortalSessionUrl(for: subscription))
       } else {
         return try await .init(url: checkoutSessionUrl(for: context))
       }
@@ -70,7 +70,6 @@ private func checkoutSessionUrl(for context: ParentContext) async throws -> Stri
 
 private func billingPortalSessionUrl(
   for subscriptionId: Parent.SubscriptionId,
-  in context: ParentContext
 ) async throws -> String {
   @Dependency(\.stripe) var stripe
   let subscription = try await stripe.getSubscription(subscriptionId.rawValue)

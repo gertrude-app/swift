@@ -17,7 +17,10 @@ enum StripeEventsRoute {
        let email = event?.data?.object?.customer_email {
 
       let parent = try? await Parent.query()
-        .where(.email == email.lowercased())
+        .where(.or(
+          .email == email.lowercased(),
+          .subscriptionId == (event?.data?.object?.subscription ?? UUID().uuidString)
+        ))
         .first(in: request.context.db)
 
       if var parent {
@@ -32,6 +35,7 @@ enum StripeEventsRoute {
           Task {
             await slack.internal(.info, "*FIRST Payment* from `\(email)`")
             await slack.internal(.stripe, "*FIRST Payment* from `\(email)`")
+            get(dependency: \.postmark).toSuperAdmin("FIRST Payment from \(email)", "")
           }
         case (.some(let existing), .some(let subscriptionId))
           where existing.rawValue != subscriptionId:
