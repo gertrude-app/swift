@@ -17,7 +17,7 @@ extension LogPodcastEvent: Resolver {
     if context.env.mode == .prod {
       let slack = get(dependency: \.slack)
       let detail = input.detail ?? "(nil)"
-      let search = githubSearch(input.eventId, repo: "podcasts")
+      let search = githubSearch(input.eventId, repo: "gertrude-am")
       let message = "Podcast app event: \(search) \(detail)"
       await slack.internal(.info, message)
     }

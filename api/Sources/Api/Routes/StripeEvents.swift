@@ -35,7 +35,7 @@ enum StripeEventsRoute {
           Task {
             await slack.internal(.info, "*FIRST Payment* from `\(email)`")
             await slack.internal(.stripe, "*FIRST Payment* from `\(email)`")
-            get(dependency: \.postmark).toSuperAdmin("FIRST Payment from \(email)", "")
+            get(dependency: \.postmark).toSuperAdmin("FIRST Payment", "from \(email)")
           }
         case (.some(let existing), .some(let subscriptionId))
           where existing.rawValue != subscriptionId:
