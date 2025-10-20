@@ -50,6 +50,7 @@ extension Configure {
     app.migrations.add(CreateDeviceBlockGroups())
     app.migrations.add(CreateWebPolicyDomains())
     app.migrations.add(ReencodeIOSBlockRules())
+    app.migrations.add(PodcastEvents())
   }
 }
 

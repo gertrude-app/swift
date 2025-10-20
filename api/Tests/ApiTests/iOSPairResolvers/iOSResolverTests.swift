@@ -14,7 +14,7 @@ final class iOSResolverTests: ApiTestCase, @unchecked Sendable {
     let output = try await withDependencies {
       $0.date = .constant(.reference)
       $0.uuid = .incrementing
-      $0.aws.signedS3UploadUrl = { _ in signedUrl }
+      $0.aws._signedS3UploadUrl = { _, _, _ in signedUrl }
     } operation: {
       try await ScreenshotUploadUrl.resolve(
         with: .init(width: 973, height: 321, createdAt: .reference),

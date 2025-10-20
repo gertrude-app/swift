@@ -38,7 +38,7 @@ run-api: build-api
   @just exec-api serve
 
 run-api-ip: build-api
-  @just exec-api serve --hostname 192.168.10.227
+  @just exec-api serve --hostname 192.168.10.248
 
 build-api:
   @cd api && swift build

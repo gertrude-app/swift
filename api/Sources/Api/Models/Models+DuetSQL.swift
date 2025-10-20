@@ -1040,3 +1040,39 @@ extension IOSApp.WebPolicyDomain: Model {
     ]
   }
 }
+
+extension PodcastEvent: Model {
+  public static let schemaName = "podcasts"
+  public static let tableName = "events"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .eventId: .string(self.eventId)
+    case .kind: .string(self.kind.rawValue)
+    case .label: .string(self.label)
+    case .deviceType: .string(self.deviceType)
+    case .appVersion: .string(self.appVersion)
+    case .iosVersion: .string(self.iosVersion)
+    case .installId: .uuid(self.installId)
+    case .detail: .string(self.detail)
+    case .createdAt: .date(self.createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .eventId: .string(self.eventId),
+      .kind: .string(self.kind.rawValue),
+      .label: .string(self.label),
+      .deviceType: .string(self.deviceType),
+      .appVersion: .string(self.appVersion),
+      .iosVersion: .string(self.iosVersion),
+      .installId: .uuid(self.installId),
+      .detail: .string(self.detail),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
