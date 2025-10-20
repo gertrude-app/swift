@@ -602,3 +602,22 @@ extension IOSApp.WebPolicyDomain {
     case updatedAt
   }
 }
+
+extension PodcastEvent: Duet.Identifiable {
+  typealias Id = Tagged<PodcastEvent, UUID>
+}
+
+extension PodcastEvent {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case eventId
+    case kind
+    case label
+    case deviceType
+    case appVersion
+    case iosVersion
+    case installId
+    case detail
+    case createdAt
+  }
+}

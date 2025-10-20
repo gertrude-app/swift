@@ -132,7 +132,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
     let child = try await self.childWithComputer()
 
     let output = try await withDependencies {
-      $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
+      $0.aws._signedS3UploadUrl = { _, _, _ in URL(string: "from-aws.com")! }
     } operation: {
       try await CreateSignedScreenshotUpload.resolve(
         with: .init(width: 111, height: 222),
@@ -151,7 +151,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
     let uuids = MockUUIDs()
 
     try await withDependencies {
-      $0.aws.signedS3UploadUrl = { _ in URL(string: "from-aws.com")! }
+      $0.aws._signedS3UploadUrl = { _, _, _ in URL(string: "from-aws.com")! }
       $0.uuid = .mock(uuids)
     } operation: {
       _ = try await CreateSignedScreenshotUpload.resolve(

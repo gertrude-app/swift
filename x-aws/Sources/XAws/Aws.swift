@@ -2,15 +2,25 @@ import Foundation
 
 public enum AWS {
   public struct Client: Sendable {
-    public var signedS3UploadUrl: @Sendable (String) throws -> URL
+    public var _signedS3UploadUrl: @Sendable (String, String, Bool) throws -> URL
 
-    public init(signedS3UploadUrl: @Sendable @escaping (String) throws -> URL) {
-      self.signedS3UploadUrl = signedS3UploadUrl
+    public init(signedS3UploadUrl: @Sendable @escaping (String, String, Bool) throws -> URL) {
+      self._signedS3UploadUrl = signedS3UploadUrl
     }
   }
 
   public struct Error: Swift.Error, Sendable {
     public let message: String
+  }
+}
+
+public extension AWS.Client {
+  func signedS3UploadUrl(
+    _ objectKey: String,
+    contentType: String = "image/jpeg",
+    isPublicRead: Bool = true
+  ) throws -> URL {
+    try self._signedS3UploadUrl(objectKey, contentType, isPublicRead)
   }
 }
 
@@ -23,7 +33,13 @@ public extension AWS.Client {
   ) -> Self {
     let endpoint = endpoint.replacingOccurrences(of: "https://", with: "")
     return AWS.Client(
-      signedS3UploadUrl: { objectKey in
+      signedS3UploadUrl: { objectKey, contentType, isPublicRead in
+        var signedHeaders: [String: String] = [
+          "Content-Type": contentType,
+        ]
+        if isPublicRead {
+          signedHeaders["x-amz-acl"] = "public-read"
+        }
         let signedUrl = AWS.Request.signedUrl(
           httpVerb: .PUT,
           endpoint: endpoint,
@@ -32,10 +48,7 @@ public extension AWS.Client {
           secretAccessKey: secretAccessKey,
           objectKey: objectKey,
           expires: 90,
-          signedHeaders: [
-            "Content-Type": "image/jpeg",
-            "x-amz-acl": "public-read",
-          ]
+          signedHeaders: signedHeaders
         )
         guard let url = URL(string: signedUrl) else {
           throw AWS.Error(message: "Error creating URL")
@@ -46,6 +59,6 @@ public extension AWS.Client {
   }
 
   static let mock = AWS.Client(
-    signedS3UploadUrl: { _ in URL(string: "/mock-url")! }
+    signedS3UploadUrl: { _, _, _ in URL(string: "/mock-url")! }
   )
 }

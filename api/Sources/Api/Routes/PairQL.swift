@@ -1,6 +1,7 @@
 import Dependencies
 import IOSRoute
 import MacAppRoute
+import PodcastRoute
 import URLRouting
 import Vapor
 import VaporRouting
@@ -19,6 +20,7 @@ enum PairQLRoute: Equatable, RouteResponder {
   case macApp(MacAppRoute)
   case superAdmin(SuperAdminRoute)
   case iOS(IOSRoute)
+  case podcast(PodcastRoute)
 
   nonisolated(unsafe) static let router = OneOf {
     Route(.case(PairQLRoute.macApp)) {
@@ -30,6 +32,11 @@ enum PairQLRoute: Equatable, RouteResponder {
       Method("POST")
       Path { "ios-app" }
       IOSRoute.router
+    }
+    Route(.case(PairQLRoute.podcast)) {
+      Method("POST")
+      Path { "gertrude-am" }
+      PodcastRoute.router
     }
     Route(.case(PairQLRoute.dashboard)) {
       Method("POST")
@@ -53,6 +60,8 @@ enum PairQLRoute: Equatable, RouteResponder {
       try await SuperAdminRoute.respond(to: superAdminRoute, in: context)
     case .iOS(let iosAppRoute):
       try await IOSRoute.respond(to: iosAppRoute, in: context)
+    case .podcast(let podcastRoute):
+      try await PodcastRoute.respond(to: podcastRoute, in: context)
     }
   }
 
@@ -128,6 +137,9 @@ private func logOperation(_ route: PairQLRoute, _ request: Request, _ duration: 
   case .iOS:
     request.logger
       .notice("PairQL request: \("iOS".blue) \(operation) \(elapsed)")
+  case .podcast:
+    request.logger
+      .notice("PairQL request: \("Podcast".yellow) \(operation) \(elapsed)")
   }
 }
 
