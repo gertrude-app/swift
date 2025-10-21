@@ -20,6 +20,7 @@ extension XSlack.Slack.Client {
     case contactForm = "contact-form"
     case info
     case debug
+    case podcasts
   }
 
   func send(_ apiSlack: Api.Slack) async throws {
