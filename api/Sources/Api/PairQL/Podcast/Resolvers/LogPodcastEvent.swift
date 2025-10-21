@@ -16,10 +16,13 @@ extension LogPodcastEvent: Resolver {
 
     if context.env.mode == .prod {
       let slack = get(dependency: \.slack)
-      let detail = input.detail ?? "(nil)"
+      var msg = "`\(input.label)`"
+      if let detail = input.detail {
+        msg += " - \(detail)"
+      }
       let search = githubSearch(input.eventId, repo: "gertrude-am")
-      let message = "Podcast app event: \(search) \(detail)"
-      await slack.internal(.info, message)
+      let message = "Podcast app event: \(search) \(msg)"
+      await slack.internal(.podcasts, message)
     }
 
     return .success
