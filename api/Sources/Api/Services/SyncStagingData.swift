@@ -1,10 +1,12 @@
-import AsyncHTTPClient
 import Dependencies
 import DuetSQL
 import Foundation
-import NIOFoundationCompat
 import Vapor
 import XCore
+
+#if canImport(FoundationNetworking)
+  import FoundationNetworking
+#endif
 
 enum DumpStagingDataRoute {
   @Sendable static func handler(_ request: Request) async throws -> some AsyncResponseEncodable {
@@ -46,7 +48,7 @@ struct SyncStagingDataCommand: AsyncCommand {
   @Dependency(\.logger) var logger
 
   func run(using context: CommandContext, signature: Signature) async throws {
-    switch await self.exec(client: context.application.http.client.shared) {
+    switch await self.exec() {
     case .success:
       self.logger.info("Synced staging data")
     case .failure(let error):
@@ -54,12 +56,12 @@ struct SyncStagingDataCommand: AsyncCommand {
     }
   }
 
-  func exec(client: HTTPClient) async -> Result<Void, StringError> {
+  func exec() async -> Result<Void, StringError> {
     guard self.env.mode != .prod, let token = env.getUUID("SYNC_STAGING_TOKEN") else {
       return .failure("No SYNC_STAGING_TOKEN")
     }
 
-    let dataResult = await fetchData(client, token)
+    let dataResult = await fetchData(token)
     guard case .success(let data) = dataResult else {
       return dataResult.map { _ in () }
     }
@@ -84,23 +86,32 @@ struct SyncStagingDataCommand: AsyncCommand {
     }
   }
 
-  func fetchData(
-    _ client: HTTPClient,
-    _ token: UUID
-  ) async -> Result<SyncStagingData, StringError> {
+  func fetchData(_ token: UUID) async -> Result<SyncStagingData, StringError> {
     do {
-      let request =
-        HTTPClientRequest(url: "https://api.gertrude.app/dump-staging-data/\(token.lowercased)")
-      let response = try await client.execute(request, timeout: .seconds(5))
-      guard response.status == .ok else {
-        return .failure("Unexpected status syncing staging data: \(response.status)")
+      guard let url = URL(string: "https://api.gertrude.app/dump-staging-data/\(token.lowercased)")
+      else {
+        return .failure("Invalid URL")
       }
-      let buf = try await response.body.collect(upTo: 1024 * 1024) // 1 MB
-      guard let json = buf.getString(at: 0, length: buf.readableBytes, encoding: .utf8) else {
-        return .failure("Error converting buffer to string")
+
+      var request = URLRequest(url: url)
+      request.timeoutInterval = 5
+
+      let (data, response) = try await URLSession.shared.data(for: request)
+
+      guard let httpResponse = response as? HTTPURLResponse else {
+        return .failure("Invalid response type")
       }
-      let data = try JSON.decode(json, as: SyncStagingData.self, [.isoDates])
-      return .success(data)
+
+      guard httpResponse.statusCode == 200 else {
+        return .failure("Unexpected status syncing staging data: \(httpResponse.statusCode)")
+      }
+
+      guard let json = String(data: data, encoding: .utf8) else {
+        return .failure("Error converting data to string")
+      }
+
+      let syncData = try JSON.decode(json, as: SyncStagingData.self, [.isoDates])
+      return .success(syncData)
     } catch {
       return .failure("Error syncing staging data: \(error)")
     }

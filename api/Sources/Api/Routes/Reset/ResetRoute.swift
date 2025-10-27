@@ -22,7 +22,7 @@ enum ResetRoute {
 
     try await Reset.run()
     try await SyncStagingDataCommand()
-      .exec(client: request.application.http.client.shared)
+      .exec()
       .mapError { Abort(.internalServerError, reason: $0.message) }
       .get()
 
