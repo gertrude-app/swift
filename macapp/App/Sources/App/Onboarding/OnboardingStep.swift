@@ -201,7 +201,7 @@ extension OnboardingFeature.State.Step {
 }
 
 extension OnboardingFeature.State.Step: Comparable {
-  public static func < (lhs: Self, rhs: Self) -> Bool {
+  static func < (lhs: Self, rhs: Self) -> Bool {
     lhs.asInt < rhs.asInt
   }
 

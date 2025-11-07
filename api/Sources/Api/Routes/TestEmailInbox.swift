@@ -15,13 +15,13 @@ enum TestEmailInboxRoute {
     let response = try await HTTP.get(
       "https://api.testmail.app/api/json?apikey=\(API_KEY)&namespace=82uii",
       decoding: TestEmailResponse.self,
-      keyDecodingStrategy: .convertFromSnakeCase
+      keyDecodingStrategy: .convertFromSnakeCase,
     )
 
     return .init(
       status: .ok,
       headers: ["Content-Type": "text/html"],
-      body: .init(string: response.html)
+      body: .init(string: response.html),
     )
   }
 }

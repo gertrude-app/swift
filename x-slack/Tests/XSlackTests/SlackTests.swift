@@ -15,7 +15,7 @@ final class SlackTests: XCTestCase {
         "unfurl_media" : false,
         "username" : "FLP Bot"
       }
-      """
+      """,
     )
   }
 
@@ -30,13 +30,13 @@ final class SlackTests: XCTestCase {
             text: "section",
             accessory: .image(
               url: URL(string: "https://cat.com/cat.png")!,
-              altText: "cat"
-            )
+              altText: "cat",
+            ),
           ),
         ],
         fallbackText: "a test slack",
         channel: "#debug",
-        username: "FLP Bot"
+        username: "FLP Bot",
       )),
       """
       {
@@ -76,7 +76,7 @@ final class SlackTests: XCTestCase {
         "unfurl_media" : false,
         "username" : "FLP Bot"
       }
-      """
+      """,
     )
   }
 }

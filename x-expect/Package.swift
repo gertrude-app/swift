@@ -15,7 +15,7 @@ let package = Package(
       name: "XExpect",
       dependencies: [
         .product(name: "CustomDump", package: "swift-custom-dump"),
-      ]
+      ],
     ),
-  ]
+  ],
 )

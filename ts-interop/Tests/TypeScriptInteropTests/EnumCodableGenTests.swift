@@ -36,11 +36,11 @@ final class CodableTests: XCTestCase {
           .init(name: "bar", type: "Int"),
           .init(name: "id", type: "UUID"),
         ],
-        isFlattenedUserStruct: true
+        isFlattenedUserStruct: true,
       ),
       .init(name: "qux", values: [.init(name: "q", type: "Bool?")]),
       .init(name: "foo", values: []),
-    ]
+    ],
   )
 
   func testAssociatedValuesWithSameNameAsCase() throws {
@@ -143,7 +143,7 @@ final class CodableTests: XCTestCase {
           }
         }
       }
-      """
+      """,
     )
   }
 
@@ -255,7 +255,7 @@ extension Baz: Codable {
     var q: Bool?
   }
 
-  public func encode(to encoder: Encoder) throws {
+  func encode(to encoder: Encoder) throws {
     switch self {
     case .bar(let bar):
       try _CaseBar(bar: bar).encode(to: encoder)
@@ -270,7 +270,7 @@ extension Baz: Codable {
     }
   }
 
-  public init(from decoder: Decoder) throws {
+  init(from decoder: Decoder) throws {
     let caseName = try _NamedCase.extract(from: decoder)
     let container = try decoder.singleValueContainer()
     switch caseName {

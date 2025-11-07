@@ -105,7 +105,7 @@ final class IOSReducerTestsMajor: XCTestCase {
   func testSupervisionHappiestPath() async throws {
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.supervision(.intro)),
-      onboarding: .init(majorOnboarder: .other, ownsMac: true)
+      onboarding: .init(majorOnboarder: .other, ownsMac: true),
     )) {
       IOSReducer()
     }
@@ -127,7 +127,7 @@ final class IOSReducerTestsMajor: XCTestCase {
   func testSupervisionNeedsFriendHasFriendPath() async throws {
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.supervision(.intro)),
-      onboarding: .init(majorOnboarder: .self, ownsMac: true)
+      onboarding: .init(majorOnboarder: .self, ownsMac: true),
     )) {
       IOSReducer()
     }
@@ -153,7 +153,7 @@ final class IOSReducerTestsMajor: XCTestCase {
   func testSupervisionNeedsFriendNoFriendPath() async throws {
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.supervision(.intro)),
-      onboarding: .init(majorOnboarder: .self, ownsMac: false)
+      onboarding: .init(majorOnboarder: .self, ownsMac: false),
     )) {
       IOSReducer()
     }
@@ -176,7 +176,7 @@ final class IOSReducerTestsMajor: XCTestCase {
   func testSupervisionOtherNotParentOrGuardian() async throws {
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.major(.askIfOtherIsParent)),
-      onboarding: .init(majorOnboarder: .other, ownsMac: nil)
+      onboarding: .init(majorOnboarder: .other, ownsMac: nil),
     )) {
       IOSReducer()
     }

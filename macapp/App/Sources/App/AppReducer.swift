@@ -137,7 +137,7 @@ struct AppReducer: Reducer, Sendable {
             guard self.network.isConnected() else { return }
             await send(.checkIn(
               result: TaskResult { try await self.api.appCheckIn(filterVersion) },
-              reason: .startProtecting
+              reason: .startProtecting,
             ))
           },
 
@@ -175,7 +175,7 @@ struct AppReducer: Reducer, Sendable {
 
           .exec { _ in
             await self.preventScreenCaptureNag()
-          }
+          },
         )
 
       case .heartbeat(.everySixHours):

@@ -17,7 +17,7 @@ struct InterestingEvent: Codable, Sendable {
     context: String,
     computerUserId: ComputerUser.Id? = nil,
     parentId: Parent.Id? = nil,
-    detail: String? = nil
+    detail: String? = nil,
   ) {
     self.id = id
     self.eventId = eventId

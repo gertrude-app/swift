@@ -15,7 +15,7 @@ extension Parent.Notification: RandomMocked {
     Parent.Notification(
       parentId: .init(),
       methodId: .init(),
-      trigger: Trigger.allCases.shuffled().first!
+      trigger: Trigger.allCases.shuffled().first!,
     )
   }
 }

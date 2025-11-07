@@ -29,10 +29,10 @@ extension NetworkClient {
             subject
               .handleEvents()
               .removeDuplicates()
-              .eraseToAnyPublisher()
+              .eraseToAnyPublisher(),
           )
         }.consume()
-      }
+      },
     )
   }
 }
@@ -61,13 +61,13 @@ extension NetworkClient {
     isConnected: { true },
     connectionChanges: {
       CurrentValueSubject<Bool, Never>(true).eraseToAnyPublisher()
-    }
+    },
   )
 
   static let notConnected = NetworkClient(
     isConnected: { false },
     connectionChanges: {
       CurrentValueSubject<Bool, Never>(false).eraseToAnyPublisher()
-    }
+    },
   )
 }

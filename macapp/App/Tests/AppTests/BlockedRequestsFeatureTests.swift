@@ -45,7 +45,7 @@ final class BlockedRequestsFeatureTests: XCTestCase {
       id: id1,
       status: .rejected,
       target: "",
-      comment: nil
+      comment: nil,
     )))) {
       $0.blockedRequests.pendingUnlockRequests = [
         .init(id: id2, createdAt: .epoch),
@@ -241,7 +241,7 @@ final class BlockedRequestsFeatureTests: XCTestCase {
 
     await store.receive(.createUnlockRequests(.failure(TestErr("")))) {
       $0.createUnlockRequests = .failed(
-        error: "Sorry, something went wrong. Please try again, or contact help if the problem persists."
+        error: "Sorry, something went wrong. Please try again, or contact help if the problem persists.",
       )
     }
 

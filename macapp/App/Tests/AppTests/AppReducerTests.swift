@@ -68,7 +68,7 @@ final class AppReducerTests: XCTestCase {
     let timestamp = TrustedTimestamp(
       network: .epoch,
       system: .reference,
-      boottime: .reference - 60
+      boottime: .reference - 60,
     )
     await store.receive(.setTrustedTimestamp(timestamp)) {
       $0.timestamp = timestamp
@@ -172,7 +172,7 @@ extension AppReducer {
     exhaustive: Bool = false,
     mockDeps: Bool = true,
     reducer: some ReducerOf<AppReducer> = AppReducer(),
-    mutateState: @escaping (inout State) -> Void = { _ in }
+    mutateState: @escaping (inout State) -> Void = { _ in },
   ) -> (TestStoreOf<AppReducer>, TestSchedulerOf<DispatchQueue>) {
     var state = State(appVersion: "1.0.0")
     mutateState(&state)

@@ -17,7 +17,7 @@ struct KeystrokeLine: Codable, Sendable {
     line: String,
     filterSuspended: Bool = false,
     flagged: Date? = nil,
-    createdAt: Date = Date()
+    createdAt: Date = Date(),
   ) {
     self.id = id
     self.computerUserId = computerUserId

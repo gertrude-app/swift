@@ -82,7 +82,7 @@ final class MonitoringFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 300, extraMonitoring: nil),
-      comment: nil
+      comment: nil,
     ))))
 
     // suspending the filter triggers flushing of all pending screenshots as "not during suspension"
@@ -137,7 +137,7 @@ final class MonitoringFeatureTests: XCTestCase {
         appName: $0.appName,
         line: $0.line,
         filterSuspended: $0.filterSuspended,
-        time: .epoch
+        time: .epoch,
       )
     }
     expect(pending).toEqual([
@@ -181,15 +181,15 @@ final class MonitoringFeatureTests: XCTestCase {
         id: .init(),
         decision: .accepted(
           duration: 60 * 4,
-          extraMonitoring: .addKeyloggingAndSetScreenshotFreq(60)
+          extraMonitoring: .addKeyloggingAndSetScreenshotFreq(60),
         ),
-        comment: nil
+        comment: nil,
       )))) {
         $0.monitoring.suspensionMonitoring = .init(
           keyloggingEnabled: true,
           screenshotsEnabled: true,
           screenshotSize: 1000,
-          screenshotFrequency: 60
+          screenshotFrequency: 60,
         )
       }
 
@@ -246,13 +246,13 @@ final class MonitoringFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 60 * 4, extraMonitoring: .addKeylogging),
-      comment: nil
+      comment: nil,
     )))) {
       $0.monitoring.suspensionMonitoring = .init(
         keyloggingEnabled: true,
         screenshotsEnabled: false,
         screenshotSize: 1000,
-        screenshotFrequency: 60
+        screenshotFrequency: 60,
       )
     }
 
@@ -299,13 +299,13 @@ final class MonitoringFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 60 * 2, extraMonitoring: .setScreenshotFreq(30)),
-      comment: nil
+      comment: nil,
     )))) {
       $0.monitoring.suspensionMonitoring = .init(
         keyloggingEnabled: false,
         screenshotsEnabled: true,
         screenshotSize: 1000,
-        screenshotFrequency: 30
+        screenshotFrequency: 30,
       )
     }
 
@@ -342,15 +342,15 @@ final class MonitoringFeatureTests: XCTestCase {
       id: .init(),
       decision: .accepted(
         duration: 60 * 3,
-        extraMonitoring: .setScreenshotFreq(60)
+        extraMonitoring: .setScreenshotFreq(60),
       ),
-      comment: nil
+      comment: nil,
     )))) {
       $0.monitoring.suspensionMonitoring = .init(
         keyloggingEnabled: false,
         screenshotsEnabled: true,
         screenshotSize: 1000,
-        screenshotFrequency: 60
+        screenshotFrequency: 60,
       )
     }
 
@@ -389,7 +389,7 @@ final class MonitoringFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 60 * 2, extraMonitoring: .setScreenshotFreq(30)),
-      comment: nil
+      comment: nil,
     ))))
 
     // simulate the filter sends a message when the suspension is over
@@ -400,13 +400,13 @@ final class MonitoringFeatureTests: XCTestCase {
 
     // now the admin grants a suspension...
     await store.send(
-      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 120))))
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 120)))),
     ) {
       $0.monitoring.suspensionMonitoring = .init(
         keyloggingEnabled: false,
         screenshotsEnabled: true, // <-- from prev suspension extra monitoring
         screenshotSize: 1000,
-        screenshotFrequency: 30 // < -- and this
+        screenshotFrequency: 30, // < -- and this
       )
     }
 
@@ -420,7 +420,7 @@ final class MonitoringFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 60 * 2, extraMonitoring: nil),
-      comment: nil
+      comment: nil,
     ))))
 
     // simulate the filter sends a message when the suspension is over
@@ -431,7 +431,7 @@ final class MonitoringFeatureTests: XCTestCase {
 
     // now the admin grants another suspension...
     await store.send(
-      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 120))))
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 120)))),
     ) {
       // ...and we re-use the fact that the last suspension had no extra monitoring
       $0.monitoring.suspensionMonitoring = nil
@@ -460,7 +460,7 @@ final class MonitoringFeatureTests: XCTestCase {
     let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
     let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [nil],
-      then: [.mock]
+      then: [.mock],
     ))
 
     await store.send(.application(.didFinishLaunching))
@@ -555,7 +555,7 @@ final class MonitoringFeatureTests: XCTestCase {
     let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
     let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [nil],
-      then: [.mock]
+      then: [.mock],
     ))
 
     await store.send(.application(.didFinishLaunching))
@@ -606,7 +606,7 @@ final class MonitoringFeatureTests: XCTestCase {
     let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
     let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [[.mock]],
-      then: .some(nil)
+      then: .some(nil),
     ))
 
     await store.send(.application(.didFinishLaunching))
@@ -644,7 +644,7 @@ final class MonitoringFeatureTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
       user: nil, // <-- no user
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     ) }
 
     let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
@@ -686,7 +686,7 @@ final class MonitoringFeatureTests: XCTestCase {
     let (takeScreenshot, uploadScreenshot, _) = self.spyScreenshots(store)
     let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [[.mock]],
-      then: .some(nil)
+      then: .some(nil),
     ))
 
     await store.send(.application(.didFinishLaunching))
@@ -720,7 +720,7 @@ final class MonitoringFeatureTests: XCTestCase {
 
     let keylogging = self.spyKeylogging(store, keystrokes: mock(
       returning: [[.mock]],
-      then: .some(nil)
+      then: .some(nil),
     ))
 
     store.deps.storage.loadPersistentState = { .mock {
@@ -822,7 +822,7 @@ final class MonitoringFeatureTests: XCTestCase {
 
     let uploadScreenshot = spy(
       on: ApiClient.UploadScreenshotData.self,
-      returning: URL(string: "/uploaded.png")!
+      returning: URL(string: "/uploaded.png")!,
     )
     store.deps.api.uploadScreenshot = uploadScreenshot.fn
     return (takeScreenshot, uploadScreenshot, takePendingScreenshots)
@@ -838,7 +838,7 @@ final class MonitoringFeatureTests: XCTestCase {
 
   func spyKeylogging(
     _ store: TestStoreOf<AppReducer>,
-    keystrokes take: Mock<CreateKeystrokeLines.Input?> = mock(always: [.mock])
+    keystrokes take: Mock<CreateKeystrokeLines.Input?> = mock(always: [.mock]),
   ) -> Keylogging {
     let start = mock(always: ())
     store.deps.monitoring.startLoggingKeystrokes = start.fn
@@ -859,14 +859,14 @@ extension ApiClient.UploadScreenshotData {
     _ width: Int,
     _ height: Int,
     _ filterSuspended: Bool = false,
-    _ createdAt: Date
+    _ createdAt: Date,
   ) {
     self.init(
       image: image,
       width: width,
       height: height,
       filterSuspended: filterSuspended,
-      createdAt: createdAt
+      createdAt: createdAt,
     )
   }
 }

@@ -25,7 +25,7 @@ extension BlockedApp {
   func blocks(
     app: NSRunningApplication,
     at date: Date,
-    in calendar: Calendar = .current
+    in calendar: Calendar = .current,
   ) -> Bool {
     app.runningApp.map { self.blocks(app: $0, at: date, in: calendar) } ?? false
   }
@@ -35,7 +35,7 @@ public extension Collection<BlockedApp> {
   func blocks(
     app: NSRunningApplication,
     at date: Date,
-    in calendar: Calendar = .current
+    in calendar: Calendar = .current,
   ) -> Bool {
     self.contains { $0.blocks(app: app, at: date, in: calendar) }
   }

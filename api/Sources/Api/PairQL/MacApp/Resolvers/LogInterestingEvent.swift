@@ -17,7 +17,7 @@ extension LogInterestingEvent: Resolver {
         context: "macapp",
         computerUserId: computerUser?.id,
         parentId: nil,
-        detail: input.detail
+        detail: input.detail,
       ))
 
       let parentLink = await getParentLink(from: computerUser, in: context)
@@ -94,7 +94,7 @@ private func isUninterestingError(_ detail: String?) -> Bool {
 func githubSearch(_ eventId: String, repo: String = "swift") -> String {
   Slack.link(
     to: "https://github.com/search?q=repo%3Agertrude-app%2F\(repo)%20\(eventId)&type=code",
-    withText: eventId
+    withText: eventId,
   )
 }
 
@@ -106,6 +106,6 @@ func getParentLink(from computerUser: ComputerUser?, in context: Context) async 
   }
   return "\n  -> " + Slack.link(
     to: "\(context.env.analyticsSiteUrl)/admins/\(parent.id.lowercased)",
-    withText: "\(parent.email), \(child.name)"
+    withText: "\(parent.email), \(child.name)",
   )
 }

@@ -25,7 +25,7 @@ extension CreateDashAnnouncement: Resolver {
         parentId: $0.id,
         icon: input.icon,
         html: input.html,
-        learnMoreUrl: input.learnMoreUrl
+        learnMoreUrl: input.learnMoreUrl,
       )
     })
 

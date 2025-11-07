@@ -25,7 +25,7 @@ public struct Email: Sendable {
     replyTo: String? = nil,
     subject: String,
     textBody: String,
-    htmlBody: String? = nil
+    htmlBody: String? = nil,
   ) {
     self.to = to
     self.from = from
@@ -41,7 +41,7 @@ public struct Email: Sendable {
     replyTo: String? = nil,
     subject: String,
     htmlBody: String,
-    textBody: String? = nil
+    textBody: String? = nil,
   ) {
     self.to = to
     self.from = from
@@ -59,7 +59,7 @@ enum SingleEmail {
 
 @Sendable func sendSingle(
   _ email: SingleEmail,
-  _ apiKey: String
+  _ apiKey: String,
 ) async -> Result<Void, Client.Error> {
   do {
     let headers = [
@@ -73,13 +73,13 @@ enum SingleEmail {
       (data, urlResponse) = try await HTTP.sendJson(
         body: ApiEmail(email: email),
         to: "https://api.postmarkapp.com/email",
-        headers: headers
+        headers: headers,
       )
     case .template(let email):
       (data, urlResponse) = try await HTTP.sendJson(
         body: ApiTemplateEmail(email: email),
         to: "https://api.postmarkapp.com/email/withTemplate",
-        headers: headers
+        headers: headers,
       )
     }
     if urlResponse.statusCode == 200 {
@@ -91,21 +91,21 @@ enum SingleEmail {
       return .failure(Client.Error(
         statusCode: urlResponse.statusCode,
         errorCode: decoded.ErrorCode,
-        message: decoded.Message
+        message: decoded.Message,
       ))
     } catch {
       let body = String(decoding: data, as: UTF8.self)
       return .failure(Client.Error(
         statusCode: urlResponse.statusCode,
         errorCode: -1,
-        message: "Error decoding Postmark response: \(error), body: \(body)"
+        message: "Error decoding Postmark response: \(error), body: \(body)",
       ))
     }
   } catch {
     return .failure(Client.Error(
       statusCode: -2,
       errorCode: -2,
-      message: "Error sending Postmark email: \(error)"
+      message: "Error sending Postmark email: \(error)",
     ))
   }
 }

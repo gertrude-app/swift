@@ -8,7 +8,7 @@ public struct AppDescriptor: Equatable, Codable, Sendable {
     bundleId: String,
     slug: String? = nil,
     displayName: String? = nil,
-    categories: Set<String> = []
+    categories: Set<String> = [],
   ) {
     self.bundleId = bundleId
     self.slug = slug

@@ -29,7 +29,7 @@ func unexpected(_ id: String, _ adminId: Parent.Id? = nil, _ detail: String = ""
       context: "api",
       computerUserId: nil,
       parentId: adminId,
-      detail: detail
+      detail: detail,
     ))
   }
 }

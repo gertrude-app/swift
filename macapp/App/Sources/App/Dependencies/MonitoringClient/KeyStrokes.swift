@@ -54,7 +54,7 @@ struct Keystroke {
     char: Character,
     keyCode: UInt16 = 0,
     modifiers: Modifiers = [],
-    timestamp: TimeInterval = 0
+    timestamp: TimeInterval = 0,
   ) {
     self.char = char
     self.keyCode = keyCode

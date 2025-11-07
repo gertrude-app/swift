@@ -83,7 +83,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
       let existingUser = try await self.childWithComputer()
       let existingMacAppToken = try await self.db.create(MacAppToken(
         childId: existingUser.id,
-        computerUserId: existingUser.computerUser.id
+        computerUserId: existingUser.computerUser.id,
       ))
 
       // different user, owned by same admin
@@ -117,7 +117,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
     let existingUser = try await self.childWithComputer()
     let existingMacAppToken = try await self.db.create(MacAppToken(
       childId: existingUser.model.id,
-      computerUserId: existingUser.computerUser.id
+      computerUserId: existingUser.computerUser.id,
     ))
 
     // this user is from a DIFFERENT admin, so it should fail
@@ -150,7 +150,7 @@ final class ConnectUserResolversTests: ApiTestCase, @unchecked Sendable {
       numericId: 501,
       serialNumber: "X02VH0Y6JG5J",
       osVersion: "14.2.0",
-      isAdmin: false
+      isAdmin: false,
     )
   }
 

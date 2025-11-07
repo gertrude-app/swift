@@ -27,7 +27,7 @@ extension IOSDevices: NoInputResolver {
         id: device.id,
         childName: children.first(where: { $0.id == device.childId })?.name ?? "Unknown",
         deviceType: device.deviceType,
-        osVersion: device.iosVersion
+        osVersion: device.iosVersion,
       )
     }
   }

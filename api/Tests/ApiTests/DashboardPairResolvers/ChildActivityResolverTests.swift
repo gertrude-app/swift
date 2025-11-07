@@ -17,7 +17,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
 
     var output = try await FlagActivityItems.resolve(
       with: [keystrokeLine.id.rawValue],
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     let retrievedScreenshot = try await self.db.find(screenshot.id)
@@ -28,7 +28,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
 
     output = try await FlagActivityItems.resolve(
       with: [screenshot.id.rawValue],
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     let retrievedScreenshot2 = try await self.db.find(screenshot.id)
@@ -39,7 +39,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
 
     output = try await FlagActivityItems.resolve(
       with: [screenshot.id.rawValue],
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     // toggles if already flagged
@@ -64,10 +64,10 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
         userId: child.id,
         range: .init(
           start: twoDaysAgo.isoString,
-          end: Date.reference.isoString
-        )
+          end: Date.reference.isoString,
+        ),
       ),
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     expect(output.userName).toEqual(child.name)
@@ -81,7 +81,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
       line: keystrokeLine.line,
       duringSuspension: keystrokeLine.filterSuspended,
       flagged: keystrokeLine.flagged != nil,
-      createdAt: keystrokeLine.createdAt
+      createdAt: keystrokeLine.createdAt,
     ))
 
     expect(output.items.last?.screenshot).toEqual(.init(
@@ -92,7 +92,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
       height: screenshot.height,
       duringSuspension: screenshot.filterSuspended,
       flagged: screenshot.flagged != nil,
-      createdAt: screenshot.createdAt
+      createdAt: screenshot.createdAt,
     ))
   }
 
@@ -134,7 +134,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
     // test getting the activity overview summaries
     let summary = try await FamilyActivitySummaries.resolve(
       with: .init(jsTimezoneOffsetMinutes: -(TimeZone.current.secondsFromGMT() / 60)),
-      in: context(child1.parent)
+      in: context(child1.parent),
     )
 
     expect(summary).toEqual(
@@ -143,26 +143,26 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
           date: calendar.startOfDay(for: keystrokeLine2.createdAt),
           numApproved: 1,
           numFlagged: 0,
-          numTotal: 4
+          numTotal: 4,
         ),
         .init(
           date: calendar.startOfDay(for: flaggedOldScreenshot.createdAt),
           numApproved: 0,
           numFlagged: 1,
-          numTotal: 1
+          numTotal: 1,
         ),
-      ]
+      ],
     )
 
     let dateRange = DateRange(
       start: twoDaysAgo.isoString,
-      end: twoDaysAgo.advanced(by: .days(4)).isoString
+      end: twoDaysAgo.advanced(by: .days(4)).isoString,
     )
 
     // test getting the activity day detail (screenshots and keystrokes)
     let dayOutput = try await CombinedUsersActivityFeed.resolve(
       with: .init(range: dateRange),
-      in: context(child1.parent)
+      in: context(child1.parent),
     )
 
     expect(dayOutput).toHaveCount(2)
@@ -179,7 +179,7 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
           line: keystrokeLine.line,
           duringSuspension: keystrokeLine.filterSuspended,
           flagged: false,
-          createdAt: keystrokeLine.createdAt
+          createdAt: keystrokeLine.createdAt,
         )),
         .screenshot(.init(
           id: screenshot.id,
@@ -189,9 +189,9 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
           height: screenshot.height,
           duringSuspension: screenshot.filterSuspended,
           flagged: false,
-          createdAt: screenshot.createdAt
+          createdAt: screenshot.createdAt,
         )),
-      ]
+      ],
     ))
 
     let childDay2 = dayOutput[1]
@@ -207,8 +207,8 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
         height: screenshot2.height,
         duringSuspension: screenshot2.filterSuspended,
         flagged: false,
-        createdAt: screenshot2.createdAt
-      ))]
+        createdAt: screenshot2.createdAt,
+      ))],
     ))
   }
 
@@ -227,9 +227,9 @@ final class ChildActivityResolverTests: ApiTestCase, @unchecked Sendable {
     let output = try await DeleteActivityItems_v2.resolve(
       with: DeleteActivityItems_v2.Input(
         keystrokeLineIds: [keystrokeLine.id],
-        screenshotIds: [screenshot.id, flagged.id]
+        screenshotIds: [screenshot.id, flagged.id],
       ),
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     expect(output).toEqual(.success)

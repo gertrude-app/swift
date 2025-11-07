@@ -33,7 +33,7 @@ struct Thing: Codable {
     optionalString: String? = nil,
     createdAt: Date = Date(),
     updatedAt: Date = Date(),
-    deletedAt: Date? = nil
+    deletedAt: Date? = nil,
   ) {
     self.id = id
     self.string = string

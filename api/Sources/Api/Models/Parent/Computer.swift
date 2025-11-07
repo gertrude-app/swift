@@ -21,7 +21,7 @@ struct Computer: Codable, Sendable {
     filterVersion: Semver? = nil,
     osVersion: Semver? = nil,
     modelIdentifier: String,
-    serialNumber: String
+    serialNumber: String,
   ) {
     self.id = id
     self.parentId = parentId

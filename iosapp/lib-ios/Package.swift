@@ -14,15 +14,15 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-dependencies",
-      from: "1.8.1"
+      from: "1.8.1",
     ),
     .package(
       url: "https://github.com/pointfreeco/swift-concurrency-extras",
-      from: "1.3.1"
+      from: "1.3.1",
     ),
     .package(
       url: "https://github.com/pointfreeco/swift-composable-architecture",
-      from: "1.18.0"
+      from: "1.18.0",
     ),
     .package(path: "../../pairql-iosapp"),
     .package(path: "../../gertie"),
@@ -34,7 +34,7 @@ let package = Package(
       name: "LibCore",
       dependencies: [
         .product(name: "GertieIOS", package: "gertie"),
-      ]
+      ],
     ),
     .target(
       name: "LibFilter",
@@ -44,7 +44,7 @@ let package = Package(
         .product(name: "XCore", package: "x-kit"),
         .product(name: "GertieIOS", package: "gertie"),
         .product(name: "Dependencies", package: "swift-dependencies"),
-      ]
+      ],
     ),
     .target(
       name: "LibApp",
@@ -55,13 +55,13 @@ let package = Package(
         .product(name: "XCore", package: "x-kit"),
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-      ]
+      ],
     ),
     .target(
       name: "LibController",
       dependencies: [
         "LibClients",
-      ]
+      ],
     ),
     .target(
       name: "LibClients",
@@ -71,7 +71,7 @@ let package = Package(
         .product(name: "IOSRoute", package: "pairql-iosapp"),
         .product(name: "Dependencies", package: "swift-dependencies"),
         .product(name: "DependenciesMacros", package: "swift-dependencies"),
-      ]
+      ],
     ),
     .testTarget(
       name: "LibFilterTests",
@@ -80,14 +80,14 @@ let package = Package(
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
         .product(name: "GertieIOS", package: "gertie"),
         .product(name: "XExpect", package: "x-expect"),
-      ]
+      ],
     ),
     .testTarget(
       name: "LibAppTests",
       dependencies: [
         "LibApp",
         .product(name: "XExpect", package: "x-expect"),
-      ]
+      ],
     ),
     .testTarget(
       name: "LibControllerTests",
@@ -97,7 +97,7 @@ let package = Package(
         .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
         .product(name: "GertieIOS", package: "gertie"),
         .product(name: "XExpect", package: "x-expect"),
-      ]
+      ],
     ),
-  ]
+  ],
 )

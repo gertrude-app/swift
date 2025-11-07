@@ -23,7 +23,7 @@ extension LogEvent: Resolver {
       context: "dash",
       computerUserId: nil,
       parentId: context.parent.id,
-      detail: input.detail
+      detail: input.detail,
     ))
 
     let slack = get(dependency: \.slack)

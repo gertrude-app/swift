@@ -24,12 +24,12 @@ struct FilterMigrator: Migrator {
         [.init(
           id: .init(uuidString: "00000000-0000-0000-0000-000000000000")!,
           schedule: nil,
-          keys: keys
+          keys: keys,
         )]
       },
       userDowntime: [:],
       appIdManifest: v1.appIdManifest,
-      exemptUsers: v1.exemptUsers
+      exemptUsers: v1.exemptUsers,
     )
   }
 
@@ -43,7 +43,7 @@ struct FilterMigrator: Migrator {
     return .init(
       userKeys: [:],
       appIdManifest: .init(),
-      exemptUsers: Legacy.V1.parseCommaSeparatedUserIds(exemptUserIds)
+      exemptUsers: Legacy.V1.parseCommaSeparatedUserIds(exemptUserIds),
     )
   }
 }
@@ -57,7 +57,7 @@ extension FilterMigrator {
             .components(separatedBy: ",")
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { $0 != "" }
-            .compactMap { UInt32($0) as uid_t? }
+            .compactMap { UInt32($0) as uid_t? },
         )
       }
     }

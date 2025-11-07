@@ -16,4 +16,24 @@
 --wraparguments before-first
 --maxwidth 100
 --enable redundantReturn
+--enable emptyExtensions
+--enable blankLineAfterImports
+--enable blankLinesAtEndOfScope
+--enable blankLinesBetweenScopes
+--enable conditionalAssignment
+--enable consecutiveBlankLines
+--enable duplicateImports
+--enable emptyExtensions
+--enable environmentEntry
+--enable genericExtensions
+--enable linebreakAtEndOfFile
+--enable noForceTryInTests
+--enable opaqueGenericParameters
+--enable preferKeyPath
+--enable privateStateVariables
+--enable redundantAsync
+--enable redundantOptionalBinding
+--enable todos
+--enable urlMacro
 --self insert
+

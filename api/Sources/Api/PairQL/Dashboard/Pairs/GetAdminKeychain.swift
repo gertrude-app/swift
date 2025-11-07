@@ -16,7 +16,7 @@ struct GetAdminKeychain: Pair {
 extension GetAdminKeychain: Resolver {
   static func resolve(
     with id: Keychain.Id,
-    in context: ParentContext
+    in context: ParentContext,
   ) async throws -> Output {
     let model = try await Keychain.query()
       .where(.id == id)
@@ -32,7 +32,7 @@ extension GetAdminKeychain.Output {
     let keys = try await model.keys(in: context.db)
     try await self.init(
       summary: .init(from: model),
-      keys: keys.map { .init(from: $0, keychainId: model.id) }
+      keys: keys.map { .init(from: $0, keychainId: model.id) },
     )
   }
 }

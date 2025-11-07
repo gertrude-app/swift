@@ -13,7 +13,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
 
     let id = try await CreateSuspendFilterRequest_v2.resolve(
       with: .init(duration: 1111, comment: "test"),
-      in: self.context(child)
+      in: self.context(child),
     )
 
     let suspendRequests = try await MacApp.SuspendFilterRequest.query()
@@ -36,9 +36,9 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
           requestComment: "test",
           context: .macapp(
             computerUserId: child.computerUser.id,
-            requestId: suspendRequests.first!.id
-          )
-        ))
+            requestId: suspendRequests.first!.id,
+          ),
+        )),
       ),
     ])
   }
@@ -52,22 +52,22 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
       config: .slack(
         channelId: "#gertie",
         channelName: "Gertie",
-        token: "definitely-not-a-real-token"
-      )
+        token: "definitely-not-a-real-token",
+      ),
     ))
     let text = try await self.db.create(Parent.NotificationMethod(
       parentId: child.parentId,
-      config: .text(phoneNumber: "1234567890")
+      config: .text(phoneNumber: "1234567890"),
     ))
     try await self.db.create(Parent.Notification(
       parentId: child.parentId,
       methodId: slack.id,
-      trigger: .suspendFilterRequestSubmitted
+      trigger: .suspendFilterRequestSubmitted,
     ))
     try await self.db.create(Parent.Notification(
       parentId: child.parentId,
       methodId: text.id,
-      trigger: .suspendFilterRequestSubmitted
+      trigger: .suspendFilterRequestSubmitted,
     ))
 
     try await withDependencies {
@@ -77,7 +77,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await CreateSuspendFilterRequest_v2.resolve(
         with: .init(duration: 1111, comment: "test"),
-        in: self.context(child)
+        in: self.context(child),
       )
     }
 
@@ -94,9 +94,9 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
           appName: "Xcode",
           line: "import Foundation",
           filterSuspended: false,
-          time: .epoch
+          time: .epoch,
         )],
-        in: self.context(child)
+        in: self.context(child),
       )
     }
 
@@ -116,9 +116,9 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
           appName: "Xcode",
           line: "Hello\0World", // <-- causes postgres to choke
           filterSuspended: false,
-          time: .epoch
+          time: .epoch,
         )],
-        in: self.context(child)
+        in: self.context(child),
       )
     }
 
@@ -136,7 +136,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await CreateSignedScreenshotUpload.resolve(
         with: .init(width: 111, height: 222),
-        in: self.context(child)
+        in: self.context(child),
       )
     }
 
@@ -156,7 +156,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       _ = try await CreateSignedScreenshotUpload.resolve(
         with: .init(width: 1116, height: 222, createdAt: .epoch),
-        in: self.context(child)
+        in: self.context(child),
       )
       let screenshot = try await self.db.find(Screenshot.Id(uuids[1]))
       expect(screenshot.width).toEqual(1116)
@@ -193,7 +193,7 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await LogSecurityEvent.resolve(
       with: .init(deviceId: child.computerUser.id.rawValue, event: "appQuit", detail: "foo"),
-      in: context(child)
+      in: context(child),
     )
 
     let retrieved = try await SecurityEvent.query()
@@ -208,8 +208,8 @@ final class MacAppResolverTests: ApiTestCase, @unchecked Sendable {
       event: .adminChildSecurityEvent(.init(
         userName: child.name,
         event: .appQuit,
-        detail: "foo"
-      ))
+        detail: "foo",
+      )),
     )])
   }
 }

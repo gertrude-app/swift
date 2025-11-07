@@ -20,7 +20,7 @@ enum ReleasesRoute {
 
     return try Response(
       headers: ["Content-Type": "application/json"],
-      body: .init(string: JSON.encode(items))
+      body: .init(string: JSON.encode(items)),
     )
   }
 }

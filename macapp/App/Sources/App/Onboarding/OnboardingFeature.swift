@@ -87,7 +87,7 @@ struct OnboardingFeature: Feature {
         return .exec { send in
           try await send(.receivedDeviceData(
             currentUserId: self.device.currentUserId(),
-            users: self.device.listMacOSUsers()
+            users: self.device.listMacOSUsers(),
           ))
         }
 
@@ -101,7 +101,7 @@ struct OnboardingFeature: Feature {
             await send(.setStep(.allowFullDiskAccess_success))
           } else {
             await send(
-              .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: upgrade)))
+              .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: upgrade))),
             )
             await send(.setStep(.allowFullDiskAccess_failed))
           }
@@ -147,7 +147,7 @@ struct OnboardingFeature: Feature {
         return .exec { send in
           try await send(.receivedDeviceData(
             currentUserId: self.device.currentUserId(),
-            users: self.device.listMacOSUsers()
+            users: self.device.listMacOSUsers(),
           ))
         }
 
@@ -308,7 +308,7 @@ struct OnboardingFeature: Feature {
         return .exec { [isUpgrade = state.upgrade] send in
           await self.device.openSystemPrefs(.security(.fullDiskAccess))
           await send(
-            .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: isUpgrade)))
+            .delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: isUpgrade))),
           )
           if isUpgrade {
             // if its an upgrade onboarding session, we've already started protecting

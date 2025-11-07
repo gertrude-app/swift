@@ -25,7 +25,7 @@ public struct Semver {
     minor: Int,
     patch: Int,
     prerelease: [String] = [],
-    buildMetadata: [String] = []
+    buildMetadata: [String] = [],
   ) {
     self.major = major
     self.minor = minor
@@ -140,7 +140,7 @@ extension Semver: Codable {
     guard let version = Semver(str) else {
       throw DecodingError.dataCorruptedError(
         in: container,
-        debugDescription: "Invalid semantic version"
+        debugDescription: "Invalid semantic version",
       )
     }
     self = version
@@ -240,7 +240,7 @@ private extension String {
 private extension NSRegularExpression {
   func matches(
     in string: String,
-    options: NSRegularExpression.MatchingOptions = []
+    options: NSRegularExpression.MatchingOptions = [],
   ) -> [NSTextCheckingResult] {
     let r = NSRange(string.startIndex ..< string.endIndex, in: string)
     return self.matches(in: string, options: options, range: r)
@@ -248,7 +248,7 @@ private extension NSRegularExpression {
 
   func firstMatch(
     in string: String,
-    options: NSRegularExpression.MatchingOptions = []
+    options: NSRegularExpression.MatchingOptions = [],
   ) -> NSTextCheckingResult? {
     let r = NSRange(string.startIndex ..< string.endIndex, in: string)
     return self.firstMatch(in: string, options: options, range: r)

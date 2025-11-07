@@ -30,7 +30,7 @@ final class StripeEventTests: ApiTestCase, @unchecked Sendable {
   func testUpdateAdminSubscriptionStatusExpirationFromStripeEvent() async throws {
     let periodEnd = 1_704_050_627
     let parent = try await self.db.create(
-      Parent.random(with: { $0.subscriptionStatusExpiration = .reference - .days(1000) })
+      Parent.random(with: { $0.subscriptionStatusExpiration = .reference - .days(1000) }),
     )
 
     let json = """
@@ -71,7 +71,7 @@ final class StripeEventTests: ApiTestCase, @unchecked Sendable {
         $0.email = "changed@email.com" // <-- different email from stripe customer_email
         $0.subscriptionId = .init("subId_".random)
         $0.subscriptionStatusExpiration = .reference - .days(1000)
-      })
+      }),
     )
 
     let json = """

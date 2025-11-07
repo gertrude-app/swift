@@ -15,7 +15,7 @@ extension LogFilterEvents: Resolver {
         parentId: nil,
         detail: [event.detail, count > 1 ? "(\(count)x)" : nil]
           .compactMap(\.self)
-          .joined(separator: " ")
+          .joined(separator: " "),
       )
     })
 
@@ -37,7 +37,7 @@ extension LogFilterEvents: Resolver {
     if !bindings.isEmpty {
       _ = try await context.db.customQuery(
         UpsertUnidentifiedApps.self,
-        withBindings: bindings
+        withBindings: bindings,
       )
     }
 
@@ -45,7 +45,7 @@ extension LogFilterEvents: Resolver {
     for event in events {
       await slack.internal(
         .info,
-        "Macapp *filter* event: \(githubSearch(event.eventId)) \(event.detail ?? "")"
+        "Macapp *filter* event: \(githubSearch(event.eventId)) \(event.detail ?? "")",
       )
     }
 

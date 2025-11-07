@@ -28,9 +28,9 @@ struct CleanupJob: AsyncScheduledJob {
       .where(.and(
         .or(
           .not(.isNull(.deletedAt)) .&& .deletedAt <= 14.daysAgo,
-          .createdAt <= 21.daysAgo
+          .createdAt <= 21.daysAgo,
         ),
-        .or(.isNull(.flagged), .flagged <= 60.daysAgo)
+        .or(.isNull(.flagged), .flagged <= 60.daysAgo),
       ))
       .delete(in: self.db, force: true)
 
@@ -40,9 +40,9 @@ struct CleanupJob: AsyncScheduledJob {
       .where(.and(
         .or(
           .not(.isNull(.deletedAt)) .&& .deletedAt <= 14.daysAgo,
-          .createdAt <= 21.daysAgo
+          .createdAt <= 21.daysAgo,
         ),
-        .or(.isNull(.flagged), .flagged <= 60.daysAgo)
+        .or(.isNull(.flagged), .flagged <= 60.daysAgo),
       ))
       .delete(in: self.db, force: true)
 
@@ -88,7 +88,7 @@ struct CleanupJob: AsyncScheduledJob {
 
     await self.db.notifyDeprecationComplete(
       if: "BlockRules(v1)",
-      notLoggedWithinLast: .days(90)
+      notLoggedWithinLast: .days(90),
     )
 
     return logs

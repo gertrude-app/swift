@@ -58,7 +58,7 @@ class WebViewController<State, Action>:
     let colorScheme = self.supportsDarkMode ? self.app.colorScheme() : .light
     let filePathURL = URL(
       fileURLWithPath: "Contents/Resources/WebViews/\(screen)/index.\(colorScheme).html",
-      relativeTo: Bundle.main.bundleURL
+      relativeTo: Bundle.main.bundleURL,
     )
 
     let fileDirectoryURL = filePathURL.deletingLastPathComponent()
@@ -68,7 +68,7 @@ class WebViewController<State, Action>:
 
   func userContentController(
     _ userContentController: WKUserContentController,
-    didReceive message: WKScriptMessage
+    didReceive message: WKScriptMessage,
   ) {
     guard let message = message.body as? String else {
       #if DEBUG

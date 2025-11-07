@@ -10,7 +10,7 @@ public extension NSRunningApplication {
     guard let bundleURL = self.bundleURL else { return nil }
     guard let infoPlist = NSDictionary(
       contentsOf: bundleURL
-        .appendingPathComponent("Contents/Info.plist")
+        .appendingPathComponent("Contents/Info.plist"),
     ) else { return nil }
     return infoPlist["CFBundleName"] as? String
   }
@@ -22,7 +22,7 @@ public extension NSRunningApplication {
         bundleId: $0,
         bundleName: self.bundleName,
         localizedName: self.localizedName,
-        launchable: self.activationPolicy != .prohibited
+        launchable: self.activationPolicy != .prohibited,
       )
     }
   }
@@ -36,7 +36,7 @@ public extension RunningApp {
       bundleId: bundleId,
       bundleName: app.bundleName,
       localizedName: app.localizedName,
-      launchable: app.activationPolicy != .prohibited
+      launchable: app.activationPolicy != .prohibited,
     )
   }
 

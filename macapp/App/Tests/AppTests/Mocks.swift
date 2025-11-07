@@ -19,7 +19,7 @@ extension CreateKeystrokeLines.KeystrokeLineInput: @retroactive Mocked {
       appName: "Xcode",
       line: "import Foundation",
       filterSuspended: false,
-      time: Date(timeIntervalSince1970: 0)
+      time: Date(timeIntervalSince1970: 0),
     )
   }
 
@@ -28,7 +28,7 @@ extension CreateKeystrokeLines.KeystrokeLineInput: @retroactive Mocked {
       appName: "",
       line: "",
       filterSuspended: false,
-      time: Date(timeIntervalSince1970: 0)
+      time: Date(timeIntervalSince1970: 0),
     )
   }
 }
@@ -40,7 +40,7 @@ extension Persistent.State: @retroactive Mocked {
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
       user: .mock,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )
   }
 
@@ -50,7 +50,7 @@ extension Persistent.State: @retroactive Mocked {
       appUpdateReleaseChannel: .stable,
       filterVersion: "",
       user: .empty,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )
   }
 
@@ -60,7 +60,7 @@ extension Persistent.State: @retroactive Mocked {
       appUpdateReleaseChannel: .stable,
       filterVersion: version,
       user: .mock,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )
   }
 
@@ -70,7 +70,7 @@ extension Persistent.State: @retroactive Mocked {
       appUpdateReleaseChannel: .stable,
       filterVersion: "0.9.9",
       user: .mock,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )
   }
 }

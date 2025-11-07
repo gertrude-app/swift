@@ -1,6 +1,6 @@
 public extension Sequence {
   func asyncForEach(
-    _ operation: (Element) async throws -> Void
+    _ operation: (Element) async throws -> Void,
   ) async rethrows {
     for element in self {
       try await operation(element)
@@ -8,7 +8,7 @@ public extension Sequence {
   }
 
   func asyncMap<T>(
-    _ transform: (Element) async throws -> T
+    _ transform: (Element) async throws -> T,
   ) async rethrows -> [T] {
     var values = [T]()
 
@@ -22,7 +22,7 @@ public extension Sequence {
 
 public extension Sequence where Element: Sendable {
   func concurrentMap<T: Sendable>(
-    _ transform: @Sendable @escaping (Element) async throws -> T
+    _ transform: @Sendable @escaping (Element) async throws -> T,
   ) async throws -> [T] {
     let tasks = map { element in
       Task {

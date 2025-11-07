@@ -11,7 +11,7 @@ struct ExtensionClient: Sendable {
 }
 
 extension ExtensionClient: DependencyKey {
-  public static let liveValue = ExtensionClient(
+  static let liveValue = ExtensionClient(
     requestAuthorization: {
       #if os(iOS)
         do {
@@ -93,7 +93,7 @@ extension ExtensionClient: DependencyKey {
       } catch {
         os_log(
           "[G•] error loading preferences: %{public}s",
-          String(reflecting: error)
+          String(reflecting: error),
         )
         return false
       }
@@ -104,16 +104,16 @@ extension ExtensionClient: DependencyKey {
       #if os(iOS)
         AuthorizationCenter.shared.revokeAuthorization { _ in }
       #endif
-    }
+    },
   )
 }
 
 extension ExtensionClient: TestDependencyKey {
-  public static let testValue = ExtensionClient(
+  static let testValue = ExtensionClient(
     requestAuthorization: { .success(()) },
     installFilter: { .success(()) },
     filterRunning: { false },
-    cleanupForRetry: {}
+    cleanupForRetry: {},
   )
 }
 

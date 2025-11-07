@@ -14,7 +14,7 @@ let package = Package(
     .target(
       name: "XStripe",
       dependencies: [.product(name: "XHttp", package: "x-http")],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
-  ]
+  ],
 )

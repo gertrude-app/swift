@@ -18,7 +18,7 @@ extension FamilyActivitySummaries: Resolver {
     return try await ChildActivitySummaries.days(
       computerUserIds,
       input.jsTimezoneOffsetMinutes,
-      in: ctx.db
+      in: ctx.db,
     )
   }
 }

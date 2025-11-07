@@ -19,7 +19,7 @@ extension CheckIn_v2: Resolver {
         let autoKeys = try await autoKeychain.keys(in: context.db)
         keychains.append(.init(
           id: autoId,
-          keys: autoKeys.map { .init(id: $0.id.rawValue, key: $0.key) }
+          keys: autoKeys.map { .init(id: $0.id.rawValue, key: $0.key) },
         ))
       }
     }
@@ -37,7 +37,7 @@ extension CheckIn_v2: Resolver {
     async let latestRelease = resolveLatestRelease(
       channel: channel,
       currentAppVersion: input.appVersion,
-      in: context.db
+      in: context.db,
     )
 
     if let filterVersionSemver = input.filterVersion,
@@ -70,7 +70,7 @@ extension CheckIn_v2: Resolver {
       resolvedFilterSuspension = .init(
         id: resolved.id.rawValue,
         decision: resolved.decision ?? .rejected,
-        comment: resolved.responseComment
+        comment: resolved.responseComment,
       )
     }
 
@@ -87,7 +87,7 @@ extension CheckIn_v2: Resolver {
           id: $0.id.rawValue,
           status: $0.status,
           target: $0.target ?? "",
-          comment: $0.responseComment
+          comment: $0.responseComment,
         ) }
       }
     }
@@ -104,7 +104,7 @@ extension CheckIn_v2: Resolver {
       if !bindings.isEmpty {
         _ = try await context.db.customQuery(
           UpsertNamedApps.self,
-          withBindings: bindings
+          withBindings: bindings,
         )
       }
     }
@@ -126,12 +126,12 @@ extension CheckIn_v2: Resolver {
         screenshotSize: context.child.screenshotsResolution,
         downtime: context.child.downtime,
         blockedApps: blockedApps.map(\.blockedApp),
-        connectedAt: computerUser.createdAt
+        connectedAt: computerUser.createdAt,
       ),
       browsers: browsers.map(\.match),
       resolvedFilterSuspension: resolvedFilterSuspension,
       resolvedUnlockRequests: resolvedUnlockRequests,
-      trustedTime: get(dependency: \.date.now).timeIntervalSince1970
+      trustedTime: get(dependency: \.date.now).timeIntervalSince1970,
     )
   }
 }
@@ -142,7 +142,7 @@ extension CheckIn_v2: Resolver {
 // @see also userKeychainSummaries(for:in:)
 func ruleKeychains(
   for childId: Child.Id,
-  in db: any DuetSQL.Client
+  in db: any DuetSQL.Client,
 ) async throws -> [RuleKeychain] {
   let childKeychains = try await ChildKeychain.query()
     .where(.childId == childId)
@@ -155,7 +155,7 @@ func ruleKeychains(
     return .init(
       id: keychain.id.rawValue,
       schedule: childKeychains.first { $0.keychainId == keychain.id }?.schedule,
-      keys: keys.map { .init(id: $0.id.rawValue, key: $0.key) }
+      keys: keys.map { .init(id: $0.id.rawValue, key: $0.key) },
     )
   }
 }
@@ -163,7 +163,7 @@ func ruleKeychains(
 func resolveLatestRelease(
   channel: ReleaseChannel,
   currentAppVersion: String,
-  in db: any Client
+  in db: any Client,
 ) async throws -> CheckIn_v2.LatestRelease {
   var query = Release.query().orderBy(.semver, .asc)
 
@@ -187,7 +187,7 @@ func resolveLatestRelease(
       if let pace = release.requirementPace, latest.pace == nil {
         latest.pace = .init(
           nagOn: release.createdAt.advanced(by: .days(pace)),
-          requireOn: release.createdAt.advanced(by: .days(pace * 2))
+          requireOn: release.createdAt.advanced(by: .days(pace * 2)),
         )
       }
     }

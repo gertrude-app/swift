@@ -23,7 +23,7 @@ extension LatestAppVersions: NoInputResolver {
     var latest = Output(
       stable: "0.0.0",
       beta: "0.0.0",
-      canary: "0.0.0"
+      canary: "0.0.0",
     )
 
     for release in releases {

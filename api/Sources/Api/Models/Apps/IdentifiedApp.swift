@@ -14,7 +14,7 @@ struct IdentifiedApp: Codable, Sendable {
     categoryId: AppCategory.Id? = nil,
     name: String,
     slug: String,
-    launchable: Bool
+    launchable: Bool,
   ) {
     self.id = id
     self.categoryId = categoryId

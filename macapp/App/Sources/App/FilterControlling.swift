@@ -42,7 +42,7 @@ extension FilterControlling {
   func replaceFilter(
     _ send: Send<Action>,
     attempt: Int = 1,
-    reinstallOnFail: Bool = true
+    reinstallOnFail: Bool = true,
   ) async throws {
     _ = await self.filter.replace()
     await self.api.securityEvent(.systemExtensionChangeRequested, "replace")
@@ -50,7 +50,7 @@ extension FilterControlling {
     os_log(
       "[G•] APP FilterControlling.replaceFilter() attempt: %{public}d, result: %{public}s",
       attempt,
-      "\(result)"
+      "\(result)",
     )
     await self.afterFilterChange(send, repairing: true)
 
@@ -61,7 +61,7 @@ extension FilterControlling {
       return try await self.self.replaceFilter(
         send,
         attempt: attempt + 1,
-        reinstallOnFail: reinstallOnFail
+        reinstallOnFail: reinstallOnFail,
       )
     }
 

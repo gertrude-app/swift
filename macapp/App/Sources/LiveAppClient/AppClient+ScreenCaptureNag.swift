@@ -59,14 +59,14 @@ func tryCreateApprovalFile(at url: URL, for os: Semver) -> Result<Void, StringEr
     try FileManager.default.createDirectory(
       at: url.deletingLastPathComponent(),
       withIntermediateDirectories: true,
-      attributes: nil
+      attributes: nil,
     )
   } catch {
     return .failure(
       .init(
         oslogging: "error creating dir for plist file: \(error)",
-        context: "DeviceClient.preventScreenCaptureNag+(_createApprovalFile)"
-      )
+        context: "DeviceClient.preventScreenCaptureNag+(_createApprovalFile)",
+      ),
     )
   }
   var plist: [String: Any] = [:]
@@ -103,7 +103,7 @@ private func write(_ plist: [String: Any], to url: URL) -> Result<Void, StringEr
   } catch {
     return .failure(.init(
       oslogging: "error writing plist to path \(url.path): \(error)",
-      context: "DeviceClient.preventScreenCaptureNag"
+      context: "DeviceClient.preventScreenCaptureNag",
     ))
   }
 }
@@ -116,20 +116,20 @@ private func loadPlist(at url: URL) -> Result<[String: Any], StringError> {
         .propertyList(from: data, options: [], format: nil) as? [String: Any] else {
         return .failure(.init(
           oslogging: "got nil casting Data to [String: Any]",
-          context: "DeviceClient.preventScreenCaptureNag"
+          context: "DeviceClient.preventScreenCaptureNag",
         ))
       }
       return .success(plist)
     } catch {
       return .failure(.init(
         oslogging: "error casting Data to [String: Any]: \(error)",
-        context: "DeviceClient.preventScreenCaptureNag"
+        context: "DeviceClient.preventScreenCaptureNag",
       ))
     }
   } catch {
     return .failure(.init(
       oslogging: "error reading Data from plist file: \(error)",
-      context: "DeviceClient.preventScreenCaptureNag"
+      context: "DeviceClient.preventScreenCaptureNag",
     ))
   }
 }
@@ -163,18 +163,18 @@ private func restartReplayd() async -> Result<Void, StringError> {
       if let string = String(data: data, encoding: .utf8) {
         return .failure(.init(
           oslogging: "restart replayd failed w/ status \(exitCode) and output: \(string)",
-          context: "DeviceClient.preventScreenCaptureNag(restartReplayd)"
+          context: "DeviceClient.preventScreenCaptureNag(restartReplayd)",
         ))
       } else {
         return .failure(.init(
           oslogging: "restart replayd failed w/ status \(exitCode)",
-          context: "DeviceClient.preventScreenCaptureNag(restartReplayd)"
+          context: "DeviceClient.preventScreenCaptureNag(restartReplayd)",
         ))
       }
     } catch {
       return .failure(.init(
         oslogging: "restart replayd error: \(String(reflecting: error))",
-        context: "DeviceClient.preventScreenCaptureNag(restartReplayd)"
+        context: "DeviceClient.preventScreenCaptureNag(restartReplayd)",
       ))
     }
   }

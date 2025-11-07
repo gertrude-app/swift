@@ -14,7 +14,7 @@ extension DuetSQL.Client {
     _ = try? await self.create(InterestingEvent(
       eventId: event,
       kind: "deprecation",
-      context: "active"
+      context: "active",
     ))
     if prev == nil {
       with(dependency: \.postmark)
@@ -24,7 +24,7 @@ extension DuetSQL.Client {
 
   func notifyDeprecationComplete(
     if event: String,
-    notLoggedWithinLast interval: TimeInterval
+    notLoggedWithinLast interval: TimeInterval,
   ) async {
     guard get(dependency: \.env.mode) == .prod else {
       return

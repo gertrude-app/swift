@@ -71,7 +71,7 @@ struct RequestSuspensionFeature: Feature {
           await send(.createSuspensionRequest(TaskResult {
             try await self.api.createSuspendFilterRequest(.init(
               duration: durationInSeconds,
-              comment: comment
+              comment: comment,
             ))
           }))
         }

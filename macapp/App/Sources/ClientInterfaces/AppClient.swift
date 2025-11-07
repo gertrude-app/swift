@@ -37,7 +37,7 @@ public struct AppClient: Sendable {
     quit: @escaping @Sendable () async -> Void,
     relaunch: @escaping @Sendable () async throws -> Void,
     startRelaunchWatcher: @escaping @Sendable () async throws -> Void,
-    stopRelaunchWatcher: @escaping @Sendable () async -> Void
+    stopRelaunchWatcher: @escaping @Sendable () async -> Void,
   ) {
     self.colorScheme = colorScheme
     self.colorSchemeChanges = colorSchemeChanges
@@ -78,7 +78,7 @@ extension AppClient: TestDependencyKey {
     colorScheme: unimplemented("AppClient.colorScheme", placeholder: .light),
     colorSchemeChanges: unimplemented(
       "AppClient.colorSchemeChanges",
-      placeholder: AnyPublisher(Empty())
+      placeholder: AnyPublisher(Empty()),
     ),
     disableLaunchAtLogin: unimplemented("AppClient.disableLaunchAtLogin"),
     enableLaunchAtLogin: unimplemented("AppClient.enableLaunchAtLogin"),
@@ -88,12 +88,12 @@ extension AppClient: TestDependencyKey {
     installedVersion: unimplemented("AppClient.installedVersion", placeholder: "2.5.0"),
     preventScreenCaptureNag: unimplemented(
       "AppClient.preventScreenCaptureNag",
-      placeholder: .success(())
+      placeholder: .success(()),
     ),
     quit: unimplemented("AppClient.quit"),
     relaunch: unimplemented("AppClient.relaunch"),
     startRelaunchWatcher: unimplemented("AppClient.startRelaunchWatcher"),
-    stopRelaunchWatcher: unimplemented("AppClient.stopRelaunchWatcher")
+    stopRelaunchWatcher: unimplemented("AppClient.stopRelaunchWatcher"),
   )
   public static let mock = Self(
     colorScheme: { .light },
@@ -108,7 +108,7 @@ extension AppClient: TestDependencyKey {
     quit: {},
     relaunch: {},
     startRelaunchWatcher: {},
-    stopRelaunchWatcher: {}
+    stopRelaunchWatcher: {},
   )
 }
 

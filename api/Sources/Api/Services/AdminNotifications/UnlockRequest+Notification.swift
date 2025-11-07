@@ -49,8 +49,8 @@ extension AdminEvent.UnlockRequestSubmitted: AdminNotifying {
           url: self.url,
           userName: self.userName,
           unlockRequests: unlockRequests,
-          isFallback: isFallback
-        )
+          isFallback: isFallback,
+        ),
       ))
   }
 }

@@ -7,19 +7,19 @@ public struct PgClient: Client {
   public init(
     config: PostgresKit.SQLPostgresConfiguration,
     logger: Logger? = nil,
-    numberOfThreads: Int = 1
+    numberOfThreads: Int = 1,
   ) {
     self.init(
       factory: DatabaseConfigurationFactory.postgres(configuration: config),
       logger: logger,
-      numberOfThreads: numberOfThreads
+      numberOfThreads: numberOfThreads,
     )
   }
 
   public init(
     factory: DatabaseConfigurationFactory,
     logger: Logger? = nil,
-    numberOfThreads: Int = 1
+    numberOfThreads: Int = 1,
   ) {
     let configuration = factory.make()
     let eventLoop = MultiThreadedEventLoopGroup(numberOfThreads: numberOfThreads).any()
@@ -28,7 +28,7 @@ public struct PgClient: Client {
     let context = DatabaseContext(
       configuration: configuration,
       logger: logger ?? Logger(label: "DuetSQL.PgClient"),
-      eventLoop: eventLoop
+      eventLoop: eventLoop,
     )
     self.db = driver.makeDatabase(with: context) as! SQLDatabase
     self._shutdownHelper = ShutdownHelper(driver)
@@ -52,7 +52,7 @@ public struct PgClient: Client {
 
   public func execute<M: DuetSQL.Model>(
     statement: SQL.Statement,
-    returning: M.Type
+    returning: M.Type,
   ) async throws -> [M] {
     #if !DEBUG
       let rows = try await self.db.raw(statement.sql).all()

@@ -44,7 +44,7 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "2.5.0",
       user: .monitored,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )
     store.deps.storage.loadPersistentState = { persisted }
 
@@ -84,7 +84,7 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
     }
 
     await store.receive(.onboarding(
-      .delegate(.openForUpgrade(step: .allowFullDiskAccess_grantAndRestart))
+      .delegate(.openForUpgrade(step: .allowFullDiskAccess_grantAndRestart)),
     )) {
       $0.onboarding.step = .allowFullDiskAccess_grantAndRestart
       $0.onboarding.windowOpen = true
@@ -108,7 +108,7 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
 
     // ...we make a note to resume here after a quit/restart
     await store.receive(
-      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: true))))
+      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: true)))),
     )
 
     // ...and we send them to the full disk access grant system prefs pane
@@ -152,7 +152,7 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "2.7.1",
       user: .monitored,
-      resumeOnboarding: .checkingFullDiskAccessPermission(upgrade: true)
+      resumeOnboarding: .checkingFullDiskAccessPermission(upgrade: true),
     )
     resumeStore.deps.storage.loadPersistentState = { resuming }
 
@@ -442,6 +442,6 @@ extension TrustedTimestamp {
   static let reference = TrustedTimestamp(
     network: .reference,
     system: .reference,
-    boottime: .reference
+    boottime: .reference,
   )
 }

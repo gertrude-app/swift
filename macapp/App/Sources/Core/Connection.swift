@@ -12,7 +12,7 @@ public actor Connection {
   }
 
   public func withUnderlying(
-    operation: @Sendable (NSXPCConnection) async throws -> Void
+    operation: @Sendable (NSXPCConnection) async throws -> Void,
   ) async throws {
     try await operation(self.connection)
   }

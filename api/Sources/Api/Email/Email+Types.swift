@@ -56,7 +56,7 @@ extension EmailLayout {
       rawValue: slug.split(separator: "-")
         .enumerated()
         .map { i, s in i != 0 ? s.capitalized : String(s) }
-        .joined()
+        .joined(),
     )
   }
 }

@@ -70,7 +70,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
           self.filterXpc.events()
             .map { .xpc($0) }
             .receive(on: self.mainQueue)
-        }
+        },
       )
 
     case .heartbeat(.everyFiveMinutes):
@@ -80,7 +80,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
       return .exec { _ in
         guard let bufferedSecurityEvents = try? self.userDefaults.loadJson(
           at: .bufferedSecurityEventsKey,
-          decoding: [BufferedSecurityEvent].self
+          decoding: [BufferedSecurityEvent].self,
         ) else { return }
         self.userDefaults.remove(.bufferedSecurityEventsKey)
         for buffered in bufferedSecurityEvents {
@@ -88,9 +88,9 @@ extension ApplicationFeature.RootReducer: RootReducing {
             .init(
               deviceId: buffered.deviceId,
               event: buffered.event.rawValue,
-              detail: buffered.detail
+              detail: buffered.detail,
             ),
-            buffered.userToken
+            buffered.userToken,
           )
         }
       }
@@ -133,11 +133,11 @@ extension ApplicationFeature.RootReducer: RootReducing {
           await self.device.terminateApp(app)
           await self.device.notify(
             "Application blocked",
-            "The app “\(app.name ?? app.bundleId)” is not allowed"
+            "The app “\(app.name ?? app.bundleId)” is not allowed",
           )
           await self.api.securityEvent(
             .blockedAppLaunchAttempted,
-            "app: \(app.name ?? app.bundleId)"
+            "app: \(app.name ?? app.bundleId)",
           )
         }
       }
@@ -150,7 +150,7 @@ extension ApplicationFeature.RootReducer: RootReducing {
         .cancel(id: AppReducer.CancelId.heartbeatInterval),
         .cancel(id: AppReducer.CancelId.websocketMessages),
         .cancel(id: AppReducer.CancelId.networkConnectionChanges),
-        .exec { _ in await self.app.stopRelaunchWatcher() }
+        .exec { _ in await self.app.stopRelaunchWatcher() },
       )
 
     default:

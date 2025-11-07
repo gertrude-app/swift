@@ -50,13 +50,13 @@ actor Ephemeral {
 
   func createParentIdToken(
     _ parentId: Parent.Id,
-    expiration: Date? = nil
+    expiration: Date? = nil,
   ) -> UUID {
     defer { Task { await self.persistStorage() } }
     let token = self.uuid()
     self.storage.parentIds[token] = .init(
       parentId: parentId,
-      expiration: expiration ?? self.now + .minutes(60)
+      expiration: expiration ?? self.now + .minutes(60),
     )
     return token
   }
@@ -90,21 +90,21 @@ actor Ephemeral {
 
   func createPendingNotificationMethod(
     _ model: Parent.NotificationMethod,
-    expiration: Date? = nil
+    expiration: Date? = nil,
   ) -> Int {
     defer { Task { await self.persistStorage() } }
     let code = self.verificationCode.generate()
     self.storage.pendingMethods[model.id] = .init(
       model: model,
       code: code,
-      expiration: expiration ?? self.now + .minutes(60)
+      expiration: expiration ?? self.now + .minutes(60),
     )
     return code
   }
 
   func confirmPendingNotificationMethod(
     _ modelId: Parent.NotificationMethod.Id,
-    _ code: Int
+    _ code: Int,
   ) -> Parent.NotificationMethod? {
     defer { Task { await self.persistStorage() } }
     guard let stored = self.storage.pendingMethods.removeValue(forKey: modelId),
@@ -117,7 +117,7 @@ actor Ephemeral {
 
   func createPendingAppConnection(
     _ childId: Child.Id,
-    expiration: Date? = nil
+    expiration: Date? = nil,
   ) -> Int {
     defer { Task { await self.persistStorage() } }
     let code = self.verificationCode.generate()
@@ -126,7 +126,7 @@ actor Ephemeral {
     }
     self.storage.pendingAppConnections[code] = .init(
       childId: childId,
-      expiration: expiration ?? self.now + .days(2)
+      expiration: expiration ?? self.now + .days(2),
     )
     return code
   }
@@ -159,7 +159,7 @@ extension Ephemeral {
       eventId: "store-ephemeral",
       kind: "system",
       context: "api",
-      detail: json
+      detail: json,
     ))
   }
 
@@ -173,7 +173,7 @@ extension Ephemeral {
 
     guard let storage = try? JSONDecoder().decode(
       Storage.self,
-      from: model.detail?.data(using: .utf8) ?? Data()
+      from: model.detail?.data(using: .utf8) ?? Data(),
     ) else {
       await self.slack.error("failed to decode ephemeral storage")
       return
@@ -200,14 +200,14 @@ extension DependencyValues {
 }
 
 extension Ephemeral: DependencyKey {
-  public static var liveValue: Ephemeral {
+  static var liveValue: Ephemeral {
     .init()
   }
 }
 
 #if DEBUG
   extension Ephemeral: TestDependencyKey {
-    public static var testValue: Ephemeral {
+    static var testValue: Ephemeral {
       .init()
     }
   }

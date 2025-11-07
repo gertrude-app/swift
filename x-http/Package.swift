@@ -11,11 +11,11 @@ let package = Package(
   targets: [
     .target(
       name: "XHttp",
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .testTarget(
       name: "XHttpTests",
-      dependencies: ["XHttp"]
+      dependencies: ["XHttp"],
     ),
-  ]
+  ],
 )

@@ -24,7 +24,7 @@ protocol ResolverContext {
 }
 
 protocol PqlErrorConvertible: Error {
-  func pqlError<C: ResolverContext>(in: C) -> PqlError
+  func pqlError(in: some ResolverContext) -> PqlError
 }
 
 // extensions
@@ -50,7 +50,7 @@ extension PairOutput {
     try Response(
       status: .ok,
       headers: ["Content-Type": "application/json"],
-      body: .init(data: jsonData())
+      body: .init(data: jsonData()),
     )
   }
 }
@@ -60,14 +60,14 @@ extension ResolverContext {
     _ id: String,
     _ type: PqlError.Kind,
     _ debugMessage: String,
-    _ tag: PqlError.DashboardTag? = nil
+    _ tag: PqlError.DashboardTag? = nil,
   ) -> PqlError {
     PqlError(
       id: id,
       requestId: requestId,
       type: type,
       debugMessage: debugMessage,
-      dashboardTag: tag
+      dashboardTag: tag,
     )
   }
 
@@ -75,7 +75,7 @@ extension ResolverContext {
     _ id: String,
     _ type: PqlError.Kind,
     _ tag: PqlError.DashboardTag? = nil,
-    user userMessage: String
+    user userMessage: String,
   ) -> PqlError {
     PqlError(
       id: id,
@@ -83,7 +83,7 @@ extension ResolverContext {
       type: type,
       debugMessage: userMessage,
       userMessage: userMessage,
-      dashboardTag: tag
+      dashboardTag: tag,
     )
   }
 
@@ -96,7 +96,7 @@ extension ResolverContext {
     entityName: String? = nil,
     dashboardTag: PqlError.DashboardTag? = nil,
     appTag: PqlError.AppTag? = nil,
-    showContactSupport: Bool = false
+    showContactSupport: Bool = false,
   ) -> PqlError {
     PqlError(
       id: id,
@@ -108,7 +108,7 @@ extension ResolverContext {
       entityName: entityName,
       dashboardTag: dashboardTag,
       appTag: appTag,
-      showContactSupport: showContactSupport
+      showContactSupport: showContactSupport,
     )
   }
 }
@@ -119,7 +119,7 @@ extension Stripe.Api.Error: PqlErrorConvertible {
       id: "xstripe:\(type):\(code ?? "")",
       type: .serverError,
       debugMessage: "\(message.map { "\($0), error: " } ?? "")\(self)",
-      showContactSupport: true
+      showContactSupport: true,
     )
   }
 }
@@ -137,56 +137,56 @@ extension DuetSQLError: PqlErrorConvertible {
           .lowercased()
           .replacingOccurrences(of: "_", with: " ")
           .capitalizingFirstLetter(),
-        showContactSupport: false
+        showContactSupport: false,
       )
     case .decodingFailed:
       context.error(
         id: "416d42b5",
         type: .serverError,
         debugMessage: "DuetSQL model decoding failed",
-        showContactSupport: true
+        showContactSupport: true,
       )
     case .emptyBulkInsertInput:
       context.error(
         id: "c3d8dbfe",
         type: .serverError,
         debugMessage: "DuetSQL: empty bulk insert input",
-        showContactSupport: true
+        showContactSupport: true,
       )
     case .invalidEntity:
       context.error(
         id: "cc7c423d",
         type: .serverError,
         debugMessage: "DuetSQL: invalid entity",
-        showContactSupport: true
+        showContactSupport: true,
       )
     case .missingExpectedColumn(let column):
       context.error(
         id: "a6b2da10",
         type: .serverError,
         debugMessage: "DuetSQL: missing expected column `\(column)`",
-        showContactSupport: true
+        showContactSupport: true,
       )
     case .nonUniformBulkInsertInput:
       context.error(
         id: "0d09dbca",
         type: .serverError,
         debugMessage: "DuetSQL: non-uniform bulk insert input",
-        showContactSupport: true
+        showContactSupport: true,
       )
     case .notImplemented(let fn):
       context.error(
         id: "e3b3ae0e",
         type: .serverError,
         debugMessage: "DuetSQL: not implemented `\(fn)`",
-        showContactSupport: true
+        showContactSupport: true,
       )
     case .tooManyResultsForDeleteOne:
       context.error(
         id: "277b3958",
         type: .serverError,
         debugMessage: "DuetSQL: too many results for delete one",
-        showContactSupport: true
+        showContactSupport: true,
       )
     }
   }

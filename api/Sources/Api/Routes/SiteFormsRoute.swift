@@ -32,14 +32,14 @@ enum SiteFormsRoute {
         to: req.env.primarySupportEmail,
         replyTo: data.email,
         subject: data.form.name + " Submission",
-        html: data.emailBody
+        html: data.emailBody,
       )
       if let backupEmail = req.env.get("BACKUP_SUPPORT_EMAIL") {
         try await with(dependency: \.postmark).send(
           to: backupEmail,
           replyTo: data.email,
           subject: data.form.name + " Submission",
-          html: data.emailBody
+          html: data.emailBody,
         )
       }
     }
@@ -70,7 +70,7 @@ enum SiteFormsRoute {
           <p>You should hear back within 1-2 business days.</p>
         </body>
       </html>
-      """
+      """,
     )
   }
 }

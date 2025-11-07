@@ -15,7 +15,7 @@ struct Key: Codable, Sendable {
     keychainId: Keychain.Id,
     key: Gertie.Key,
     comment: String? = nil,
-    deletedAt: Date? = nil
+    deletedAt: Date? = nil,
   ) {
     self.id = id
     self.keychainId = keychainId

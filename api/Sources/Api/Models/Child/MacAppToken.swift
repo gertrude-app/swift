@@ -15,7 +15,7 @@ struct MacAppToken: Codable, Sendable {
     id: Id = .init(),
     childId: Child.Id,
     computerUserId: ComputerUser.Id,
-    value: Value? = nil
+    value: Value? = nil,
   ) {
     @Dependency(\.uuid) var uuid
     self.id = id

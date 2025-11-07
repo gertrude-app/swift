@@ -15,7 +15,7 @@ extension IdentifiedApp: RandomMocked {
     IdentifiedApp(
       name: "@random".random,
       slug: "random-slug-\(Int.random)",
-      launchable: Bool.random()
+      launchable: Bool.random(),
     )
   }
 }

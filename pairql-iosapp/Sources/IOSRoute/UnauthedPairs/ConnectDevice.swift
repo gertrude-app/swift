@@ -31,7 +31,7 @@ public struct ConnectDevice_b1: Pair {
       vendorId: UUID,
       deviceType: String,
       appVersion: String,
-      iosVersion: String
+      iosVersion: String,
     ) {
       self.verificationCode = verificationCode
       self.vendorId = vendorId

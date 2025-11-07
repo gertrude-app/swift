@@ -9,7 +9,7 @@ public struct SecurityClient: Sendable {
 extension SecurityClient: DependencyKey {
   #if DEBUG
     public static let liveValue = Self(
-      didAuthenticateAsAdmin: { true }
+      didAuthenticateAsAdmin: { true },
     )
   #else
     public static let liveValue = Self(didAuthenticateAsAdmin: {
@@ -24,7 +24,7 @@ extension SecurityClient: DependencyKey {
         do {
           try authorization.obtain(
             withRight: right,
-            flags: [.extendRights, .interactionAllowed, .destroyRights]
+            flags: [.extendRights, .interactionAllowed, .destroyRights],
           )
           continuation.resume(returning: true)
         } catch {
@@ -39,11 +39,11 @@ extension SecurityClient: TestDependencyKey {
   public static let testValue = Self(
     didAuthenticateAsAdmin: unimplemented(
       "SecurityClient.didAuthenticateAsAdmin",
-      placeholder: false
-    )
+      placeholder: false,
+    ),
   )
   public static let mock = Self(
-    didAuthenticateAsAdmin: { false }
+    didAuthenticateAsAdmin: { false },
   )
 }
 

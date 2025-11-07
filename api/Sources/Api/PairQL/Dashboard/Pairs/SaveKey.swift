@@ -26,7 +26,7 @@ extension SaveKey: Resolver {
         keychainId: keychain.id,
         key: input.key,
         comment: input.comment,
-        deletedAt: input.expiration
+        deletedAt: input.expiration,
       ))
       let detail = "key opening \(input.key.simpleDescription) added to keychain '\(keychain.name)'"
       dashSecurityEvent(.keyCreated, detail, in: context)

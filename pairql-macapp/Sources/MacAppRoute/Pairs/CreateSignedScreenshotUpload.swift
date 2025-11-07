@@ -20,7 +20,7 @@ public struct CreateSignedScreenshotUpload: Pair {
       width: Int,
       height: Int,
       filterSuspended: Bool? = false,
-      createdAt: Date? = nil
+      createdAt: Date? = nil,
     ) {
       self.width = width
       self.height = height

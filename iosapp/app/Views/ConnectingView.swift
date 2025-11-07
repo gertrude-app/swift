@@ -28,7 +28,7 @@ struct EnterCodeView: View {
       BigButton(
         "Submit",
         type: .button { self.submit(self.code ?? 111_111) },
-        disabled: !self.codeIsValid
+        disabled: !self.codeIsValid,
       )
     }
     .padding(20)

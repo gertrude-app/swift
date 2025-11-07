@@ -13,7 +13,7 @@ extension Parent {
       id: Id = .init(),
       parentId: Parent.Id,
       methodId: Parent.NotificationMethod.Id,
-      trigger: Trigger
+      trigger: Trigger,
     ) {
       self.id = id
       self.parentId = parentId

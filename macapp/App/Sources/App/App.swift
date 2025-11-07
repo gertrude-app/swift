@@ -28,29 +28,29 @@ import MacAppRoute
           return true
         }
       })
-    }
+    },
   )
 
   public init() {
     self.menuBarManager = MenuBarManager(store: self.store.scope(
       state: { $0 },
-      action: AppReducer.Action.menuBar
+      action: AppReducer.Action.menuBar,
     ))
     self.adminWindow = AdminWindow(store: self.store.scope(
       state: { $0 },
-      action: AppReducer.Action.adminWindow
+      action: AppReducer.Action.adminWindow,
     ))
     self.blockedRequestsWindow = BlockedRequestsWindow(store: self.store.scope(
       state: { $0 },
-      action: AppReducer.Action.blockedRequests
+      action: AppReducer.Action.blockedRequests,
     ))
     self.requestSuspensionWindow = RequestSuspensionWindow(store: self.store.scope(
       state: { $0 },
-      action: AppReducer.Action.requestSuspension
+      action: AppReducer.Action.requestSuspension,
     ))
     self.onboardingWindow = OnboardingWindow(store: self.store.scope(
       state: { $0 },
-      action: AppReducer.Action.onboarding
+      action: AppReducer.Action.onboarding,
     ))
 
     #if !DEBUG
@@ -62,7 +62,7 @@ import MacAppRoute
           eventId: eventId,
           kind: kind,
           deviceId: deviceId,
-          detail: detail
+          detail: detail,
         ))
       }
     #endif

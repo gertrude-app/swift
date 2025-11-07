@@ -18,7 +18,7 @@ extension UpdaterClient: @retroactive DependencyKey {
         if !updater.windowOpen {
           try await updater.triggerUpdate(from: feedUrl)
         }
-      }
+      },
     )
   }
 }
@@ -48,7 +48,7 @@ private class UpdateManager: Manager {
       // to update in the Sparkle popup after they already clicked our UI to update
       // however, their UI does cover a lot of edge cases, like failure to download...
       userDriver: SPUStandardUserDriver(hostBundle: Bundle.main, delegate: nil),
-      delegate: self.delegate
+      delegate: self.delegate,
     )
   }
 }

@@ -9,7 +9,7 @@ public struct AppcastQuery: Codable {
     channel: ReleaseChannel? = nil,
     force: Bool? = nil,
     version: String? = nil,
-    requestingAppVersion: String? = nil
+    requestingAppVersion: String? = nil,
   ) {
     self.channel = channel
     self.force = force

@@ -52,7 +52,7 @@ extension CreateRelease: Resolver {
       length: input.length,
       revision: .init(input.revision),
       requirementPace: input.requirementPace,
-      notes: input.notes
+      notes: input.notes,
     ))
 
     return .init(id: release.id)

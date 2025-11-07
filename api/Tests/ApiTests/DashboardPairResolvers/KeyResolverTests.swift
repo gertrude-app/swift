@@ -13,7 +13,7 @@ final class KeyResolverTests: ApiTestCase, @unchecked Sendable {
       keychainId: parent.keychain.id,
       key: .skeleton(scope: .bundleId("com.example.app")),
       comment: "a comment",
-      expiration: nil
+      expiration: nil,
     )
     return (input, parent)
   }

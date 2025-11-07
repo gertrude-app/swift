@@ -47,15 +47,15 @@ extension OsLogClient: DependencyKey {
       setPrefix: { newValue in
         helpers.setValue(Helpers(
           prefix: newValue,
-          observer: helpers.value.observer
+          observer: helpers.value.observer,
         ))
       },
       setObserver: { newObserver in
         helpers.setValue(Helpers(
           prefix: helpers.value.prefix,
-          observer: newObserver
+          observer: newObserver,
         ))
-      }
+      },
     )
   }
 }
@@ -82,14 +82,14 @@ extension OsLogClient: TestDependencyKey {
     log: unimplemented("OsLogClient.log"),
     debug: unimplemented("OsLogClient.debug"),
     setPrefix: { _ in }, // <-- never want test failures from this
-    setObserver: { _ in }
+    setObserver: { _ in },
   )
 
   public static let noop = OsLogClient(
     log: { _ in },
     debug: { _ in },
     setPrefix: { _ in },
-    setObserver: { _ in }
+    setObserver: { _ in },
   )
 }
 

@@ -43,7 +43,7 @@ struct MacOSVersion: Sendable {
   return MacOSVersion(
     major: version.majorVersion,
     minor: version.minorVersion,
-    patch: version.patchVersion
+    patch: version.patchVersion,
   )
 }
 

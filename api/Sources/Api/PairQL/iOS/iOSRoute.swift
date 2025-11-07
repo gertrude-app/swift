@@ -34,7 +34,7 @@ extension IOSRoute: RouteResponder {
           id: "3aecf9fd",
           type: .unauthorized,
           debugMessage: "child ios device token not found",
-          appTag: .iosDeviceTokenNotFound
+          appTag: .iosDeviceTokenNotFound,
         ))
 
       // TODO(perf): this is a fairly hot path, should probably join here
@@ -45,7 +45,7 @@ extension IOSRoute: RouteResponder {
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,
         child: child,
-        device: device
+        device: device,
       )
       return try await AuthedRoute.respond(to: authedRoute, in: childContext)
     }

@@ -58,7 +58,7 @@ let package = Package(
       exclude: ["Email/Templates/", "Email/Layouts/"],
       swiftSettings: [
         .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
-      ]
+      ],
     ),
     .executableTarget(name: "Run", dependencies: [
       .target(name: "Api"),
@@ -69,14 +69,14 @@ let package = Package(
       .product(name: "XExpect", package: "x-expect"),
       .product(name: "XCTVapor", package: "vapor"),
     ]),
-  ]
+  ],
 )
 
 import Foundation
 
 if ProcessInfo.processInfo.environment["CI"] != nil {
   package.targets[0].swiftSettings?.append(
-    .unsafeFlags(["-Xfrontend", "-warnings-as-errors"])
+    .unsafeFlags(["-Xfrontend", "-warnings-as-errors"]),
   )
 }
 
@@ -87,7 +87,7 @@ extension PackageDescription.Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
       url: "https://github.com/\(parts[0]).git",
-      exact: .init(stringLiteral: "\(parts[1])")
+      exact: .init(stringLiteral: "\(parts[1])"),
     )
   }
 }

@@ -12,7 +12,7 @@ extension LogIOSEvent: Resolver {
       eventId: input.eventId,
       kind: input.kind,
       context: "ios",
-      detail: detail
+      detail: detail,
     ))
 
     if context.env.mode == .prod {

@@ -30,7 +30,7 @@ final class EarlyDecisionTests: XCTestCase {
     let filter = TestFilter.scenario(
       userIdFromAuditToken: 502,
       macappsAliveUntil: [:], // <-- AWOL
-      exemptUsers: [502] // <-- but exempt
+      exemptUsers: [502], // <-- but exempt
     )
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.allow(.exemptUser(502)))
   }
@@ -38,7 +38,7 @@ final class EarlyDecisionTests: XCTestCase {
   func testBlockedByDowntime() {
     let downtime = PlainTimeWindow(
       start: .init(hour: 22, minute: 0),
-      end: .init(hour: 5, minute: 0)
+      end: .init(hour: 5, minute: 0),
     )
 
     let cases: [(hour: Int, minute: Int, decision: FilterDecision.FromUserId)] = [
@@ -54,7 +54,7 @@ final class EarlyDecisionTests: XCTestCase {
       let filter = TestFilter.scenario(
         userIdFromAuditToken: 502,
         userDowntime: [502: downtime],
-        date: .constant(date)
+        date: .constant(date),
       )
       expect(filter.earlyUserDecision(auditToken: .init())).toEqual(decision)
     }
@@ -63,14 +63,14 @@ final class EarlyDecisionTests: XCTestCase {
   func testDowntimeTrumpsExemption() {
     let downtime = PlainTimeWindow(
       start: .init(hour: 22, minute: 0),
-      end: .init(hour: 5, minute: 0)
+      end: .init(hour: 5, minute: 0),
     )
     let withinDowntime = Calendar.current.date(from: DateComponents(hour: 23, minute: 33))!
     let filter = TestFilter.scenario(
       userIdFromAuditToken: 502,
       userDowntime: [502: downtime], // has downtime...
       date: .constant(withinDowntime),
-      exemptUsers: [502] // <-- ... AND is EXEMPT, but downtime wins
+      exemptUsers: [502], // <-- ... AND is EXEMPT, but downtime wins
     )
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.blockDuringDowntime(502))
   }
@@ -78,7 +78,7 @@ final class EarlyDecisionTests: XCTestCase {
   func testDowntimeTrumpsSuspension() {
     let downtime = PlainTimeWindow(
       start: .init(hour: 22, minute: 0),
-      end: .init(hour: 5, minute: 0)
+      end: .init(hour: 5, minute: 0),
     )
     let withinDowntime = Calendar.current.date(from: DateComponents(hour: 23, minute: 33))!
     let filter = TestFilter.scenario(
@@ -87,8 +87,8 @@ final class EarlyDecisionTests: XCTestCase {
       date: .constant(withinDowntime),
       suspensions: [502: .init( // <-- AND is SUSPENDED, but downtime wins
         scope: .unrestricted,
-        duration: 1000
-      )]
+        duration: 1000,
+      )],
     )
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.blockDuringDowntime(502))
   }
@@ -96,13 +96,13 @@ final class EarlyDecisionTests: XCTestCase {
   func testDowntimeNotAppliedToOtherUser() {
     let downtime = PlainTimeWindow(
       start: .init(hour: 22, minute: 0),
-      end: .init(hour: 5, minute: 0)
+      end: .init(hour: 5, minute: 0),
     )
     let withinDowntime = Calendar.current.date(from: DateComponents(hour: 23, minute: 33))!
     let filter = TestFilter.scenario(
       userIdFromAuditToken: 502,
       userDowntime: [503: downtime], // <-- downtime exists, but for another user
-      date: .constant(withinDowntime)
+      date: .constant(withinDowntime),
     )
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.none(502))
   }
@@ -115,7 +115,7 @@ final class EarlyDecisionTests: XCTestCase {
   func testFilterSuspensionAllowNotGrantedEarlyIfMacappAppearsAWOL() {
     let filter = TestFilter.scenario(
       macappsAliveUntil: [:],
-      suspensions: [502: .init(scope: .unrestricted, duration: 100)]
+      suspensions: [502: .init(scope: .unrestricted, duration: 100)],
     )
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.none(502))
   }
@@ -133,7 +133,7 @@ final class EarlyDecisionTests: XCTestCase {
   func testUserWithAppSlugScopedFilterSuspensionProducesNoDecision() {
     let filter = TestFilter.scenario(suspensions: [502: .init(
       scope: .single(.identifiedAppSlug("foo")),
-      duration: 1000
+      duration: 1000,
     )])
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.none(502))
   }
@@ -141,7 +141,7 @@ final class EarlyDecisionTests: XCTestCase {
   func testUserWithBundleIdScopedFilterSuspensionProducesNoDecision() {
     let filter = TestFilter.scenario(suspensions: [502: .init(
       scope: .single(.bundleId("foo")),
-      duration: 1000
+      duration: 1000,
     )])
     expect(filter.earlyUserDecision(auditToken: .init())).toEqual(.none(502))
   }

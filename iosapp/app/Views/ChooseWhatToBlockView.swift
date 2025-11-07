@@ -37,11 +37,11 @@ struct ChooseWhatToBlockView: View {
             tracking: self.$titleOffset,
             to: .zero,
             after: .seconds(0.1),
-            for: .seconds(0.6)
+            for: .seconds(0.6),
           )
 
         Text(
-          "Gertrude is all set to block content. Take a moment to decide if there are any of these types of content that you don’t want to block:"
+          "Gertrude is all set to block content. Take a moment to decide if there are any of these types of content that you don’t want to block:",
         )
         .multilineTextAlignment(.center)
         .font(.system(size: 18, weight: .medium))
@@ -51,7 +51,7 @@ struct ChooseWhatToBlockView: View {
           tracking: self.$paragraphOffset,
           to: .zero,
           after: .seconds(0.2),
-          for: .seconds(0.6)
+          for: .seconds(0.6),
         )
 
         self.selectableGroups
@@ -65,13 +65,13 @@ struct ChooseWhatToBlockView: View {
             }
           },
           variant: .primary,
-          disabled: self.deselectedGroups == .all
+          disabled: self.deselectedGroups == .all,
         )
         .swooshIn(
           tracking: self.$buttonOffset,
           to: .zero,
           after: .seconds(0.2),
-          for: .seconds(0.6)
+          for: .seconds(0.6),
         )
       }
       .frame(maxWidth: 500)
@@ -109,8 +109,8 @@ struct ChooseWhatToBlockView: View {
                 Color(
                   self.cs,
                   light: .black.opacity(0.7),
-                  dark: .white.opacity(0.7)
-                )
+                  dark: .white.opacity(0.7),
+                ),
               )
               .multilineTextAlignment(.center)
           }
@@ -127,16 +127,16 @@ struct ChooseWhatToBlockView: View {
                     Color(
                       self.cs,
                       light: .black.opacity(0.4),
-                      dark: .white.opacity(0.5)
-                    )
+                      dark: .white.opacity(0.5),
+                    ),
                   )
                   .padding(8)
                   .background(
                     Color(
                       self.cs,
                       light: .black.opacity(0.05),
-                      dark: .white.opacity(0.08)
-                    )
+                      dark: .white.opacity(0.08),
+                    ),
                   )
                   .cornerRadius(16)
               }
@@ -168,15 +168,15 @@ struct ChooseWhatToBlockView: View {
                     : Color(
                       self.cs,
                       light: .white,
-                      dark: .black
-                    )
+                      dark: .black,
+                    ),
                 )
                 .cornerRadius(6)
                 .overlay {
                   RoundedRectangle(cornerRadius: 6)
                     .stroke(
                       self.isSelected(item) ? Color.violet500 : Color.gray.opacity(0.2),
-                      lineWidth: 2
+                      lineWidth: 2,
                     )
                 }
 
@@ -198,8 +198,8 @@ struct ChooseWhatToBlockView: View {
                         Color(
                           self.cs,
                           light: .black.opacity(0.4),
-                          dark: .white.opacity(0.4)
-                        )
+                          dark: .white.opacity(0.4),
+                        ),
                       )
                       .padding(.horizontal, 8)
                       .padding(.vertical, 4)
@@ -213,8 +213,8 @@ struct ChooseWhatToBlockView: View {
                     Color(
                       self.cs,
                       light: .black.opacity(0.6),
-                      dark: .white.opacity(0.6)
-                    )
+                      dark: .white.opacity(0.6),
+                    ),
                   )
                   .frame(maxWidth: .infinity, alignment: .leading)
               }
@@ -226,12 +226,12 @@ struct ChooseWhatToBlockView: View {
               Gradient(colors: [
                 Color(self.cs, light: .white, dark: .white.opacity(0.15)),
                 Color(self.cs, light: .white.opacity(0.7), dark: .white.opacity(0.07)),
-              ])
+              ]),
             )
             .cornerRadius(16)
             .shadow(
               color: Color(self.cs, light: .violet200, dark: .violet900.opacity(0.3)),
-              radius: 3
+              radius: 3,
             )
             .opacity(self.isSelected(item) ? 1 : self.cs == .light ? 0.7 : 0.5)
 
@@ -250,7 +250,7 @@ struct ChooseWhatToBlockView: View {
                     color: Color(self.cs, light: .violet900, dark: .black).opacity(0.3),
                     radius: 8,
                     x: 0,
-                    y: 2
+                    y: 2,
                   )
                 Rectangle()
                   .fill(Color(self.cs, light: .violet500, dark: .violet300))
@@ -276,7 +276,7 @@ struct ChooseWhatToBlockView: View {
           tracking: self.$itemOffsets[index],
           to: .zero,
           after: .seconds(Double(index) / 15.0 + 0.3),
-          for: .milliseconds(600)
+          for: .milliseconds(600),
         )
       }
     }
@@ -378,7 +378,7 @@ extension BlockGroup {
 }
 
 struct BounceButtonStyle: ButtonStyle {
-  public func makeBody(configuration: Configuration) -> some View {
+  func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
       .opacity(configuration.isPressed ? 0.8 : 1.0)

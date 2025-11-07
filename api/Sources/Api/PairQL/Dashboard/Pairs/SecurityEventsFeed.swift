@@ -74,7 +74,7 @@ extension SecurityEventsFeed: NoInputResolver {
           event: event.toWords,
           detail: model.detail,
           explanation: event.explanation,
-          createdAt: model.createdAt
+          createdAt: model.createdAt,
         ))
       } else {
         guard let event = Gertie.SecurityEvent.Dashboard(rawValue: model.event) else {
@@ -86,7 +86,7 @@ extension SecurityEventsFeed: NoInputResolver {
           detail: model.detail,
           explanation: event.explanation,
           ipAddress: model.ipAddress,
-          createdAt: model.createdAt
+          createdAt: model.createdAt,
         ))
       }
     }

@@ -26,7 +26,7 @@ extension ParentOverviews: NoInputResolver {
         numKeychains: parent.numNonEmptyKeychains,
         numNotifications: parent.numNotifications,
         signupDate: parent.createdAt,
-        subscriptionStatus: parent.subscriptionStatus
+        subscriptionStatus: parent.subscriptionStatus,
       )
     }
   }

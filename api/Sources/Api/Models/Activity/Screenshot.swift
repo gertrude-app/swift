@@ -21,7 +21,7 @@ struct Screenshot: Codable, Sendable {
     height: Int,
     filterSuspended: Bool = false,
     flagged: Date? = nil,
-    createdAt: Date = Date()
+    createdAt: Date = Date(),
   ) {
     self.id = id
     self.computerUserId = computerUserId

@@ -36,7 +36,7 @@ extension UserFeature.RootReducer: RootReducing {
       return .exec { [filterVersion = state.filter.version] send in
         await send(.checkIn(
           result: TaskResult { try await api.appCheckIn(filterVersion) },
-          reason: .receivedWebsocketMessage
+          reason: .receivedWebsocketMessage,
         ))
       }
 
@@ -59,7 +59,7 @@ extension UserFeature.RootReducer: RootReducing {
             if self.device.currentUserHasScreen(), !self.device.screensaverRunning() {
               await self.device.showNotification(
                 "😴 Downtime starting in 5 minutes",
-                "Browsers will quit, save any important work now!"
+                "Browsers will quit, save any important work now!",
               )
             }
           })

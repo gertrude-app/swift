@@ -26,9 +26,9 @@ final class LogPodcastEventResolverTests: ApiTestCase, @unchecked Sendable {
         installId: installId,
         deviceType: deviceType,
         appVersion: appVersion,
-        iosVersion: iosVersion
+        iosVersion: iosVersion,
       ),
-      in: .mock
+      in: .mock,
     )
 
     let retrieved = try await PodcastEvent.query()

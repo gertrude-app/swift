@@ -68,7 +68,7 @@ public extension SQL.Statement {
     where constraint: SQL.WhereConstraint<M> = .always,
     orderBy order: SQL.Order<M>? = nil,
     limit: Int? = nil,
-    offset: Int? = nil
+    offset: Int? = nil,
   ) -> SQL.Statement {
     .query(
       "SELECT * FROM",
@@ -76,7 +76,7 @@ public extension SQL.Statement {
       where: constraint,
       orderBy: order,
       limit: limit,
-      offset: offset
+      offset: offset,
     )
   }
 
@@ -85,7 +85,7 @@ public extension SQL.Statement {
     where constraint: SQL.WhereConstraint<M>,
     orderBy order: SQL.Order<M>?,
     limit: Int?,
-    offset: Int?
+    offset: Int?,
   ) -> SQL.Statement {
     var stmt = SQL.Statement.query(
       "DELETE FROM",
@@ -93,7 +93,7 @@ public extension SQL.Statement {
       where: constraint,
       orderBy: order,
       limit: limit,
-      offset: offset
+      offset: offset,
     )
     stmt.components.append(.sql("\nRETURNING id"))
     return stmt
@@ -104,7 +104,7 @@ public extension SQL.Statement {
     where constraint: SQL.WhereConstraint<M>,
     orderBy order: SQL.Order<M>?,
     limit: Int?,
-    offset: Int?
+    offset: Int?,
   ) -> SQL.Statement {
     .query(
       initial: "UPDATE \(M.qualifiedTableName)\nSET \"deleted_at\" = CURRENT_TIMESTAMP",
@@ -112,13 +112,13 @@ public extension SQL.Statement {
       where: constraint,
       orderBy: order,
       limit: limit,
-      offset: offset
+      offset: offset,
     )
   }
 
   internal static func count<M: Model>(
     _: M.Type,
-    where constraint: SQL.WhereConstraint<M> = .always
+    where constraint: SQL.WhereConstraint<M> = .always,
   ) -> SQL.Statement {
     .query("SELECT COUNT(*) FROM", M.self, where: constraint)
   }
@@ -129,7 +129,7 @@ public extension SQL.Statement {
     where constraint: SQL.WhereConstraint<M> = .always,
     orderBy order: SQL.Order<M>? = nil,
     limit: Int? = nil,
-    offset: Int? = nil
+    offset: Int? = nil,
   ) -> SQL.Statement {
     .query(
       initial: "\(query) \(M.qualifiedTableName)",
@@ -137,7 +137,7 @@ public extension SQL.Statement {
       where: constraint,
       orderBy: order,
       limit: limit,
-      offset: offset
+      offset: offset,
     )
   }
 
@@ -147,7 +147,7 @@ public extension SQL.Statement {
     where constraint: SQL.WhereConstraint<M> = .always,
     orderBy order: SQL.Order<M>? = nil,
     limit: Int? = nil,
-    offset: Int? = nil
+    offset: Int? = nil,
   ) -> SQL.Statement {
     var stmt = SQL.Statement(query)
     if let whereSql = constraint.sql {
@@ -156,7 +156,7 @@ public extension SQL.Statement {
     }
     if let order {
       stmt.components.append(.sql(
-        "\nORDER BY \"\(M.columnName(order.column))\" \(order.direction.rawValue.uppercased())"
+        "\nORDER BY \"\(M.columnName(order.column))\" \(order.direction.rawValue.uppercased())",
       ))
     }
     if let limit {

@@ -20,7 +20,7 @@ public enum ConnectionState: Sendable {
 
   public func receive(
     _ event: Event,
-    log: @Sendable (String) -> Void = { _ in }
+    log: @Sendable (String) -> Void = { _ in },
   ) -> ConnectionState {
     let prev = self
     let next = self.transition(event)

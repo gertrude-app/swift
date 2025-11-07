@@ -25,7 +25,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
       appVersion: "2.0.1", // <-- lower app version
       username: "Bob",
       fullUsername: "Bob",
-      numericId: 504
+      numericId: 504,
     ))
 
     try await withDependencies {
@@ -33,7 +33,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       var singleOutput = try await GetDevice.resolve(
         with: device.id.rawValue,
-        in: context(child.parent)
+        in: context(child.parent),
       )
 
       var expectedDeviceOutput = GetDevice.Output(
@@ -48,7 +48,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
         serialNumber: "1234567890",
         modelIdentifier: "MacBookPro16,1",
         modelFamily: .macBookPro,
-        modelTitle: "16\" MacBook Pro (2019)"
+        modelTitle: "16\" MacBook Pro (2019)",
       )
 
       sortUsers(in: &singleOutput, atPath: \.users)
@@ -70,7 +70,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
 
     var output = try await SaveDevice.resolve(
       with: .init(id: device.id, name: "Pinky", releaseChannel: .beta),
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     expect(output).toEqual(.success)
@@ -83,9 +83,9 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
       with: .init(
         id: device.id,
         name: nil, // <-- remove name
-        releaseChannel: .beta
+        releaseChannel: .beta,
       ),
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     let retrievedAgain = try await self.db.find(device.id)
@@ -97,7 +97,7 @@ final class DeviceResolversTests: ApiTestCase, @unchecked Sendable {
 
 func sortUsers<Root>(
   in root: inout Root,
-  atPath keyPath: WritableKeyPath<Root, [GetDevice.Output.User]>
+  atPath keyPath: WritableKeyPath<Root, [GetDevice.Output.User]>,
 ) {
   root[keyPath: keyPath].sort(by: { $0.name < $1.name })
 }

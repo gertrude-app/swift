@@ -20,7 +20,7 @@ enum Reset {
       try await db.create(Parent(
         id: .stagingPublicKeychainOwner,
         email: "public-keychain-owner" |> self.testEmail,
-        password: Bcrypt.hash("\(UUID())")
+        password: Bcrypt.hash("\(UUID())"),
       ))
     }
   }
@@ -28,7 +28,7 @@ enum Reset {
   @discardableResult
   static func createNotification(
     _ admin: Parent,
-    _ config: Parent.NotificationMethod.Config
+    _ config: Parent.NotificationMethod.Config,
   ) async throws -> Parent.NotificationMethod {
     @Dependency(\.db) var db
     return try await db.create(Parent.NotificationMethod(parentId: admin.id, config: config))
@@ -45,7 +45,7 @@ enum Reset {
     name: String,
     isPublic: Bool = false,
     description: String? = nil,
-    keys: [Gertie.Key] = []
+    keys: [Gertie.Key] = [],
   ) async throws -> Keychain {
     @Dependency(\.db) var db
     let keychain = try await db.create(Keychain(
@@ -53,7 +53,7 @@ enum Reset {
       parentId: adminId,
       name: name,
       isPublic: isPublic,
-      description: description
+      description: description,
     ))
 
     var keyRecords: [Key] = []
@@ -61,7 +61,7 @@ enum Reset {
       keyRecords.append(Key(
         keychainId: keychain.id,
         key: key,
-        comment: index & 3 == 0 ? "here is a lovely comment" : nil
+        comment: index & 3 == 0 ? "here is a lovely comment" : nil,
       ))
     }
     try await db.create(keyRecords)
@@ -72,7 +72,7 @@ enum Reset {
     _ num: Int = Int.random(in: 15 ... 30),
     _ deviceId: ComputerUser.Id,
     subtractingDays: Int = 0,
-    percentDeleted: Int = 0
+    percentDeleted: Int = 0,
   ) async throws {
     @Dependency(\.db) var db
     let items = Array(repeating: (), count: num)
@@ -111,7 +111,7 @@ enum Reset {
 
   private static func createActivityItem(
     _ userDeviceId: ComputerUser.Id,
-    subtractingDays: Int = 0
+    subtractingDays: Int = 0,
   ) -> Either<Screenshot, KeystrokeLine> {
     if [1, 2, 3].shuffled().first! != 1 {
       let (width, height) = [
@@ -130,7 +130,7 @@ enum Reset {
         computerUserId: userDeviceId,
         url: "\(webAssetsUrl)/placeholders-imgs/\(width)x\(height).png",
         width: width,
-        height: height
+        height: height,
       ))
     } else {
       let (app, line) = [
@@ -144,7 +144,7 @@ enum Reset {
         computerUserId: userDeviceId,
         appName: app,
         line: line,
-        createdAt: .init()
+        createdAt: .init(),
       ))
     }
   }
@@ -158,7 +158,7 @@ enum TimestampAdjustment {
 
 extension DuetSQL.Model where Self: HasCreatedAt {
   mutating func modifyCreatedAt(
-    _ adjustment: TimestampAdjustment
+    _ adjustment: TimestampAdjustment,
   ) async throws {
     switch adjustment {
     case .subtracting(let interval):
@@ -179,7 +179,7 @@ extension DuetSQL.Model where Self: HasCreatedAt {
       UPDATE \(unsafeRaw: Self.qualifiedTableName)
       SET \(col: .createdAt) = '\(unsafeRaw: createdAt.isoString)'
       WHERE id = '\(unsafeRaw: id.uuidString.lowercased())'
-      """
+      """,
     )
   }
 }

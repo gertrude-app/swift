@@ -6,7 +6,7 @@ public enum Relauncher {
     let originalParentProcessId = client.parentProcessId()
     os_log(
       "[G•] HELPER invoked pid=%{public}d, ppid=%{public}d",
-      client.processId(), originalParentProcessId
+      client.processId(), originalParentProcessId,
     )
 
     let args = client.commandLineArgs()
@@ -75,7 +75,7 @@ public enum Relauncher {
       if currentParentProcessId != originalParentProcessId {
         os_log(
           "[G•] HELPER termination/crash likely, new ppid: %{public}d",
-          currentParentProcessId
+          currentParentProcessId,
         )
 
         if client.runningApplicationsBundleUrlPaths().contains(appUrl.path) {

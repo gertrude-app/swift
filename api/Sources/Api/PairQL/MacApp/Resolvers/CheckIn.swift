@@ -14,7 +14,7 @@ extension CheckIn: Resolver {
       userData: v2.userData,
       browsers: v2.browsers,
       resolvedFilterSuspension: v2.resolvedFilterSuspension,
-      resolvedUnlockRequests: v2.resolvedUnlockRequests
+      resolvedUnlockRequests: v2.resolvedUnlockRequests,
     )
   }
 }

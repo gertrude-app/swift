@@ -35,7 +35,7 @@ private func corsMiddleware(_ app: Application) -> CORSMiddleware {
       .xSuperAdminToken,
       .xMacAppToken,
       .xAppVersion,
-    ]
+    ],
   )
 
   return CORSMiddleware(configuration: configuration)

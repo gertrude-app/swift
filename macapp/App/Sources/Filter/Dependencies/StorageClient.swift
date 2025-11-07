@@ -18,14 +18,14 @@ extension StorageClient: DependencyKey {
     @Sendable func loadSync() throws -> Persistent.State? {
       try userDefaults.loadJson(
         at: Persistent.State.storageKey,
-        decoding: Persistent.State.self
+        decoding: Persistent.State.self,
       )
     }
     return Self(
       savePersistentState: { state in
         try userDefaults.saveJson(
           from: state,
-          at: Persistent.State.storageKey
+          at: Persistent.State.storageKey,
         )
       },
       loadPersistentState: {
@@ -40,7 +40,7 @@ extension StorageClient: DependencyKey {
       },
       deleteAll: {
         userDefaults.removeAll()
-      }
+      },
     )
   }
 }
@@ -51,17 +51,17 @@ extension StorageClient: TestDependencyKey {
     loadPersistentState: unimplemented("StorageClient.loadPersistentState"),
     loadPersistentStateSync: unimplemented(
       "StorageClient.loadPersistentStateSync",
-      placeholder: nil
+      placeholder: nil,
     ),
     deleteAllPersistentState: unimplemented("StorageClient.deleteAllPersistentState"),
-    deleteAll: unimplemented("StorageClient.deleteAll")
+    deleteAll: unimplemented("StorageClient.deleteAll"),
   )
   static let mock = Self(
     savePersistentState: { _ in },
     loadPersistentState: { nil },
     loadPersistentStateSync: { nil },
     deleteAllPersistentState: {},
-    deleteAll: {}
+    deleteAll: {},
   )
 }
 

@@ -32,7 +32,7 @@ public class WebSocketConnection: WebSocketDelegate {
     log: @escaping @Sendable (String) -> Void = { _ in },
     logError: @escaping @Sendable (String) -> Void = { _ in },
     messageSubject: Core.Mutex<PassthroughSubject<WebSocketMessage.FromApiToApp, Never>>,
-    createSocket: @escaping () -> Starscream.WebSocketClient
+    createSocket: @escaping () -> Starscream.WebSocketClient,
   ) {
     self.scheduler = scheduler
     self.createSocket = createSocket

@@ -18,7 +18,7 @@ public struct RunningApp {
     bundleId: String,
     bundleName: String? = nil,
     localizedName: String? = nil,
-    launchable: Bool? = nil
+    launchable: Bool? = nil,
   ) {
     self.pid = pid
     self.bundleId = bundleId

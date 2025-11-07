@@ -13,7 +13,7 @@ public extension EnumCodableGen {
       types: [(Any.Type, Bool)],
       imports: [String: String] = [:],
       replacements: [String: String] = [:],
-      formatterBin: String? = nil
+      formatterBin: String? = nil,
     ) {
       self.path = path
       self.types = types

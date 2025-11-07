@@ -56,7 +56,7 @@ private func loadAppIdManifest() async throws -> AppIdManifest {
     appData[app.id] = AppData(
       bundleIds: ids,
       category: app.categoryId
-        .flatMap { cid in categories.first { $0.id == cid } }
+        .flatMap { cid in categories.first { $0.id == cid } },
     )
   }
 

@@ -8,7 +8,7 @@ extension Keychain: RandomMocked {
       parentId: .init(),
       name: "@mock name",
       isPublic: false,
-      description: "@mock description"
+      description: "@mock description",
     )
   }
 
@@ -21,7 +21,7 @@ extension Keychain: RandomMocked {
       parentId: .init(),
       name: "@mock name".random,
       isPublic: Bool.random(),
-      description: "@mock description".random
+      description: "@mock description".random,
     )
   }
 }

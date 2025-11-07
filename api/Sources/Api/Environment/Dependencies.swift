@@ -23,7 +23,7 @@ extension AWS.Client: @retroactive DependencyKey {
       accessKeyId: s3.key,
       secretAccessKey: s3.secret,
       endpoint: s3.endpoint,
-      bucket: s3.bucket
+      bucket: s3.bucket,
     )
   }
 }
@@ -99,7 +99,7 @@ public extension PgClient {
     self = PgClient(
       factory: .from(env: env),
       logger: .null,
-      numberOfThreads: threadCount
+      numberOfThreads: threadCount,
     )
   }
 }
@@ -111,7 +111,7 @@ extension DatabaseConfigurationFactory {
       username: env.database.username,
       password: env.database.password,
       database: env.database.name,
-      tls: .disable
+      tls: .disable,
     ))
   }
 
@@ -141,7 +141,7 @@ private enum LoggerKey: DependencyKey {
       getCheckoutSession: unimplemented("Stripe.Client.getCheckoutSession()"),
       createCheckoutSession: unimplemented("Stripe.Client.createCheckoutSession()"),
       getSubscription: unimplemented("Stripe.Client.getSubscription()"),
-      createBillingPortalSession: unimplemented("Stripe.Client.createBillingPortalSession()")
+      createBillingPortalSession: unimplemented("Stripe.Client.createBillingPortalSession()"),
     )
   }
 

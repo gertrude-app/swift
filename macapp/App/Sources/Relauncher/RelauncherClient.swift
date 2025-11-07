@@ -23,7 +23,7 @@ public struct RelauncherClient: Sendable {
     runningApplicationsBundleUrlPaths: @escaping @Sendable () -> [String],
     sleepForSeconds: @escaping @Sendable (Double) -> Void,
     writeToStdout: @escaping @Sendable (String) -> Void,
-    exit: @escaping @Sendable (Int32) -> Void
+    exit: @escaping @Sendable (Int32) -> Void,
   ) {
     self.commandLineArgs = commandLineArgs
     self.fileExistsAtPath = fileExistsAtPath
@@ -45,7 +45,7 @@ extension RelauncherClient: DependencyKey {
       openApplication: { executableUrl in
         NSWorkspace.shared.openApplication(
           at: executableUrl,
-          configuration: NSWorkspace.OpenConfiguration()
+          configuration: NSWorkspace.OpenConfiguration(),
         )
       },
       processId: { getpid() },
@@ -55,7 +55,7 @@ extension RelauncherClient: DependencyKey {
       },
       sleepForSeconds: { Thread.sleep(forTimeInterval: $0) },
       writeToStdout: { fputs($0, stdout) },
-      exit: { Darwin.exit($0) }
+      exit: { Darwin.exit($0) },
     )
   }
 }
@@ -71,7 +71,7 @@ extension RelauncherClient: DependencyKey {
       runningApplicationsBundleUrlPaths: { [] },
       sleepForSeconds: { _ in },
       writeToStdout: { _ in },
-      exit: { _ in }
+      exit: { _ in },
     )
   }
 #endif

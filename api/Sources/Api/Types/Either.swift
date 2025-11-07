@@ -7,7 +7,7 @@ enum Either<Left, Right> {
 
 extension Either {
   func mapLeft<NewLeft>(
-    _ transform: (Left) -> NewLeft
+    _ transform: (Left) -> NewLeft,
   ) -> Either<NewLeft, Right> {
     switch self {
     case .left(let left):
@@ -18,7 +18,7 @@ extension Either {
   }
 
   func mapRight<NewRight>(
-    _ transform: (Right) -> NewRight
+    _ transform: (Right) -> NewRight,
   ) -> Either<Left, NewRight> {
     switch self {
     case .left(let left):

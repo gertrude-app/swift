@@ -9,7 +9,7 @@ extension CreateSuspendFilterRequest_v2: Resolver {
       status: .pending,
       scope: .unrestricted,
       duration: .init(input.duration),
-      requestComment: input.comment
+      requestComment: input.comment,
     ))
 
     await with(dependency: \.adminNotifier).notify(
@@ -20,8 +20,8 @@ extension CreateSuspendFilterRequest_v2: Resolver {
         childName: context.child.name,
         duration: .init(input.duration),
         requestComment: input.comment,
-        context: .macapp(computerUserId: computerUser.id, requestId: request.id)
-      ))
+        context: .macapp(computerUserId: computerUser.id, requestId: request.id),
+      )),
     )
 
     return request.id.rawValue

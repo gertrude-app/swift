@@ -16,7 +16,7 @@ public struct Config {
   public init(
     compact: Bool = false,
     letsReadOnly: Bool = false,
-    aliasing aliases: [Alias] = []
+    aliasing aliases: [Alias] = [],
   ) {
     self.compact = compact
     self.letsReadOnly = letsReadOnly

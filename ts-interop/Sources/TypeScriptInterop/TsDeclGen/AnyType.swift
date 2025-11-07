@@ -13,7 +13,7 @@ extension AnyType {
       // major performance boost, and we were relying on the private func anyway
       fullyQualifiedName: Swift._typeName(Type.self, qualified: true),
       name: "\(Type)",
-      type: Type
+      type: Type,
     )
   }
 }

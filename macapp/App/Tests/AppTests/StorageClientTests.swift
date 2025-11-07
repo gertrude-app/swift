@@ -40,6 +40,6 @@ final class StorageClientTests: XCTestCase {
     let state = Persistent.State.mock
     try await client.savePersistentState(state)
     expect(observed.value.key).toEqual(Persistent.State.storageKey)
-    expect(observed.value.json).toEqual(try! JSON.encode(state))
+    expect(observed.value.json).toEqual(try JSON.encode(state))
   }
 }

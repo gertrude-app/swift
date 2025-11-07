@@ -56,7 +56,7 @@ public indirect enum Node: Equatable {
       name: String,
       value: Node,
       optional: Bool = false,
-      readonly: Bool = false
+      readonly: Bool = false,
     ) {
       self.name = name
       self.value = value
@@ -161,7 +161,7 @@ extension Node.ObjectUnionMember {
       try associatedValues.append(.init(
         name: member.name,
         value: Node(from: member.type),
-        optional: member.isOptional
+        optional: member.isOptional,
       ))
 
       // n-ary tuples: Foo.bar(Int, Int), Foo.bar(foo: Int, bar: Int)
@@ -173,7 +173,7 @@ extension Node.ObjectUnionMember {
         try associatedValues.append(.init(
           name: member.name,
           value: Node(from: member.type),
-          optional: member.isOptional
+          optional: member.isOptional,
         ))
       }
 
@@ -187,7 +187,7 @@ extension Node.ObjectUnionMember {
       try associatedValues.append(.init(
         name: `case`.name,
         value: Node(from: associatedValue),
-        optional: associatedValueType.kind == .optional
+        optional: associatedValueType.kind == .optional,
       ))
     }
   }

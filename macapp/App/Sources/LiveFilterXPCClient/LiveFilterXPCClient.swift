@@ -61,7 +61,7 @@ extension FilterXPCClient: @retroactive DependencyKey {
         xpcEventSubject.withValue { subject in
           Move(subject.eraseToAnyPublisher())
         }.consume()
-      }
+      },
     )
   }
 }
@@ -108,12 +108,12 @@ actor ThreadSafeFilterXPC {
   func sendUserRules(
     manifest: AppIdManifest,
     keychains: [RuleKeychain],
-    downtime: Downtime?
+    downtime: Downtime?,
   ) async throws {
     try await self.filterXpc.sendUserRules(
       manifest: manifest,
       keychains: keychains,
-      downtime: downtime
+      downtime: downtime,
     )
   }
 

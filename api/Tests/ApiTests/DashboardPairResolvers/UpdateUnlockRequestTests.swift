@@ -20,9 +20,9 @@ final class UpdateUnlockRequestTests: ApiTestCase, @unchecked Sendable {
       with: UpdateUnlockRequest.Input(
         id: request.id,
         responseComment: "looks good",
-        status: .accepted
+        status: .accepted,
       ),
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     expect(output).toEqual(.success)
@@ -37,9 +37,9 @@ final class UpdateUnlockRequestTests: ApiTestCase, @unchecked Sendable {
           id: request.id.rawValue,
           status: .accepted,
           target: request.target ?? "",
-          comment: "looks good"
+          comment: "looks good",
         ),
-        to: .userDevice(child.computerUser.id)
+        to: .userDevice(child.computerUser.id),
       ),
     ])
   }

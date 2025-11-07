@@ -34,7 +34,7 @@ enum DumpStagingDataRoute {
         .all(in: db),
       appBundleIds: AppBundleId.query().all(in: db),
       appCategories: AppCategory.query().all(in: db),
-      identifiedApps: IdentifiedApp.query().all(in: db)
+      identifiedApps: IdentifiedApp.query().all(in: db),
     )
   }
 }

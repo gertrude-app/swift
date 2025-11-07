@@ -60,7 +60,7 @@ final class HistoryUserConnectionTests: XCTestCase {
     await store.receive(.history(.userConnection(.connect(.failure(TestErr("Oh no!")))))) {
       $0.history.userConnection =
         .connectFailed(
-          "Sorry, something went wrong. Please try again, or contact help if the problem persists."
+          "Sorry, something went wrong. Please try again, or contact help if the problem persists.",
         )
     }
 

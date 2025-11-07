@@ -21,7 +21,7 @@ final class FilterReducerTests: XCTestCase {
     store.deps.storage.loadPersistentState = { .init(
       userKeychains: [503: [.mock]],
       appIdManifest: .init(),
-      exemptUsers: [501]
+      exemptUsers: [501],
     ) }
 
     await store.send(.extensionStarted)
@@ -30,7 +30,7 @@ final class FilterReducerTests: XCTestCase {
     await store.receive(.loadedPersistentState(.init(
       userKeychains: [503: [.mock]],
       appIdManifest: .init(),
-      exemptUsers: [501]
+      exemptUsers: [501],
     ))) {
       $0.userKeychains = [503: [.mock]]
       $0.exemptUsers = [501]
@@ -51,7 +51,7 @@ final class FilterReducerTests: XCTestCase {
       userId: 502,
       keychains: [keychain],
       downtime: nil,
-      manifest: manifest
+      manifest: manifest,
     ))
 
     let saveState = spy(on: Persistent.State.self, returning: ())
@@ -71,7 +71,7 @@ final class FilterReducerTests: XCTestCase {
     await expect(saveState.calls).toEqual([.init(
       userKeychains: [503: [.mock], 502: [keychain]], //  <-- new info from user rules
       appIdManifest: manifest, // <-- new info from user rules
-      exemptUsers: [501] // <-- preserving existing unchanged data
+      exemptUsers: [501], // <-- preserving existing unchanged data
     )])
 
     subject.send(completion: .finished)
@@ -92,7 +92,7 @@ final class FilterReducerTests: XCTestCase {
       userId: 501, // we get rules about user 501
       keychains: [.mock],
       downtime: nil,
-      manifest: .mock
+      manifest: .mock,
     )))) {
       $0.exemptUsers = [504] // ... so they are removed from the exempt list
     }
@@ -112,7 +112,7 @@ final class FilterReducerTests: XCTestCase {
       userId: 501, // we get rules about user 501
       keychains: [], // <-- but there are ZERO keys
       downtime: nil,
-      manifest: .mock
+      manifest: .mock,
     )))) {
       $0.exemptUsers = [501, 504] // ... so they are NOT removed from the exempt list
     }
@@ -131,7 +131,7 @@ final class FilterReducerTests: XCTestCase {
       userId: 502,
       keychains: [.mock],
       downtime: downtime,
-      manifest: .mock
+      manifest: .mock,
     )))) {
       $0.userDowntime[502] = downtime
     }
@@ -140,7 +140,7 @@ final class FilterReducerTests: XCTestCase {
       userKeychains: [502: [.mock]],
       userDowntime: [502: downtime.window], // <-- new downtime info saved
       appIdManifest: .mock,
-      exemptUsers: []
+      exemptUsers: [],
     )])
   }
 
@@ -148,7 +148,7 @@ final class FilterReducerTests: XCTestCase {
   func testReceivingNilDowntimeClearsUserDowntime() async {
     let downtime = Downtime(window: .init(
       start: .init(hour: 22, minute: 0),
-      end: .init(hour: 5, minute: 0)
+      end: .init(hour: 5, minute: 0),
     ))
     let (store, _) = Filter.testStore {
       $0.userDowntime[502] = downtime
@@ -160,7 +160,7 @@ final class FilterReducerTests: XCTestCase {
       userId: 502,
       keychains: [.mock],
       downtime: nil, // <-- downtime removed
-      manifest: .mock
+      manifest: .mock,
     )))) {
       $0.userDowntime = [:]
     }
@@ -182,7 +182,7 @@ final class FilterReducerTests: XCTestCase {
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: true,
-      userId: 502
+      userId: 502,
     )))) {
       $0.blockListeners[502] = .epoch + .minutes(5)
       $0.macappsAliveUntil[502] = .epoch + .macappAliveBuffer
@@ -200,7 +200,7 @@ final class FilterReducerTests: XCTestCase {
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: false,
-      userId: 502
+      userId: 502,
     )))) {
       $0.blockListeners = [:]
       $0.macappsAliveUntil[502] = .epoch + .minutes(5) + .macappAliveBuffer
@@ -220,7 +220,7 @@ final class FilterReducerTests: XCTestCase {
 
     await store.send(.xpc(.receivedAppMessage(.setBlockStreaming(
       enabled: true,
-      userId: 502
+      userId: 502,
     )))) {
       $0.blockListeners[502] = Date(timeIntervalSince1970: 60 * 5)
     }
@@ -274,7 +274,7 @@ final class FilterReducerTests: XCTestCase {
     await expect(save.calls).toEqual([.init(
       userKeychains: [503: [keychain2]],
       appIdManifest: .init(),
-      exemptUsers: [501]
+      exemptUsers: [501],
     )])
   }
 
@@ -348,7 +348,7 @@ final class FilterReducerTests: XCTestCase {
         502: .init(
           scope: .unrestricted,
           duration: 600,
-          expiresAt: .epoch.advanced(by: .seconds(600))
+          expiresAt: .epoch.advanced(by: .seconds(600)),
         ),
       ]
     }
@@ -361,7 +361,7 @@ final class FilterReducerTests: XCTestCase {
         502: .init(
           scope: .unrestricted,
           duration: 600,
-          expiresAt: .epoch.advanced(by: .seconds(500 + 600))
+          expiresAt: .epoch.advanced(by: .seconds(500 + 600)),
         ),
       ]
     }
@@ -491,7 +491,7 @@ final class FilterReducerTests: XCTestCase {
         502: .init(
           scope: .unrestricted,
           duration: 60 * 10 + 30, // <-- expires 10.5 minutes after 1970
-          now: Date(timeIntervalSince1970: 0)
+          now: Date(timeIntervalSince1970: 0),
         ),
       ]
     }
@@ -651,7 +651,7 @@ final class FilterReducerTests: XCTestCase {
 extension Filter {
   static func testStore(
     exhaustive: Bool = false,
-    mutateState: @escaping (inout State) -> Void = { _ in }
+    mutateState: @escaping (inout State) -> Void = { _ in },
   ) -> (TestStoreOf<Filter>, TestSchedulerOf<DispatchQueue>) {
     var state = State()
     mutateState(&state)
@@ -678,7 +678,7 @@ extension FilterFlow {
       url: url,
       hostname: hostname,
       ipAddress: ipAddress,
-      ipProtocol: ipProtocol
+      ipProtocol: ipProtocol,
     )
   }
 }

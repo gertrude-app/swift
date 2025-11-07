@@ -19,7 +19,7 @@ enum StripeEventsRoute {
       let parent = try? await Parent.query()
         .where(.or(
           .email == email.lowercased(),
-          .subscriptionId == (event?.data?.object?.subscription ?? UUID().uuidString)
+          .subscriptionId == (event?.data?.object?.subscription ?? UUID().uuidString),
         ))
         .first(in: request.context.db)
 

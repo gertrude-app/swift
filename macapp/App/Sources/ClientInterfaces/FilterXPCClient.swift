@@ -41,7 +41,7 @@ public struct FilterXPCClient: Sendable {
     setBlockStreaming: @escaping @Sendable (Bool) async -> Result<Void, XPCErr>,
     setUserExemption: @escaping @Sendable (uid_t, Bool) async -> Result<Void, XPCErr>,
     suspendFilter: @escaping @Sendable (Seconds<Int>) async -> Result<Void, XPCErr>,
-    events: @escaping @Sendable () -> AnyPublisher<XPCEvent.App, Never>
+    events: @escaping @Sendable () -> AnyPublisher<XPCEvent.App, Never>,
   ) {
     self.establishConnection = establishConnection
     self.checkConnectionHealth = checkConnectionHealth
@@ -81,65 +81,65 @@ extension FilterXPCClient: TestDependencyKey {
     .init(
       establishConnection: unimplemented(
         "FilterXPCClient.establishConnection",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       checkConnectionHealth: unimplemented(
         "FilterXPCClient.checkConnectionHealth",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       disconnectUser: unimplemented(
         "FilterXPCClient.disconnectUser",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       endFilterSuspension: unimplemented(
         "FilterXPCClient.endFilterSuspension",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       endDowntimePause: unimplemented(
         "FilterXPCClient.endDowntimePause",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       pauseDowntime: unimplemented(
         "FilterXPCClient.pauseDowntime",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       requestAck: unimplemented(
         "FilterXPCClient.requestAck",
-        placeholder: .success(.init(randomInt: 0, version: "", userId: 0, numUserKeys: 0))
+        placeholder: .success(.init(randomInt: 0, version: "", userId: 0, numUserKeys: 0)),
       ),
       requestUserTypes: unimplemented(
         "FilterXPCClient.requestUserTypes",
-        placeholder: .success(.init(exempt: [], protected: []))
+        placeholder: .success(.init(exempt: [], protected: [])),
       ),
       sendAlive: unimplemented(
         "FilterXPCClient.sendAlive",
-        placeholder: .success(true)
+        placeholder: .success(true),
       ),
       sendDeleteAllStoredState: unimplemented(
         "FilterXPCClient.sendDeleteAllStoredState",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       sendURLMessage: unimplemented("FilterXPCClient.sendURLMessage"),
       sendUserRules: unimplemented(
         "FilterXPCClient.sendUserRules",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       setBlockStreaming: unimplemented(
         "FilterXPCClient.setBlockStreaming",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       setUserExemption: unimplemented(
         "FilterXPCClient.setUserExemption",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       suspendFilter: unimplemented(
         "FilterXPCClient.suspendFilter",
-        placeholder: .success(())
+        placeholder: .success(()),
       ),
       events: unimplemented(
         "FilterXPCClient.events",
-        placeholder: AnyPublisher(Empty())
-      )
+        placeholder: AnyPublisher(Empty()),
+      ),
     )
   }
 
@@ -155,7 +155,7 @@ extension FilterXPCClient: TestDependencyKey {
         randomInt: 0,
         version: "",
         userId: 0,
-        numUserKeys: 0
+        numUserKeys: 0,
       )) },
       requestUserTypes: { .success(.init(exempt: [], protected: [])) },
       sendAlive: { .success(true) },
@@ -165,7 +165,7 @@ extension FilterXPCClient: TestDependencyKey {
       setBlockStreaming: { _ in .success(()) },
       setUserExemption: { _, _ in .success(()) },
       suspendFilter: { _ in .success(()) },
-      events: { Empty().eraseToAnyPublisher() }
+      events: { Empty().eraseToAnyPublisher() },
     )
   }
 }

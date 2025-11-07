@@ -71,7 +71,7 @@ extension DeviceClient: DependencyKey {
         return nil
       }
       return Date(timeIntervalSince1970: Double(tv.tv_sec) + (Double(tv.tv_usec) / 1_000_000.0))
-    }
+    },
   )
 }
 
@@ -90,11 +90,11 @@ extension DeviceClient: TestDependencyKey {
     openWebUrl: unimplemented("DeviceClient.openWebUrl"),
     osVersion: unimplemented(
       "DeviceClient.osVersion",
-      placeholder: .init(major: 15, minor: 0, patch: 0)
+      placeholder: .init(major: 15, minor: 0, patch: 0),
     ),
     quitBrowsers: unimplemented("DeviceClient.quitBrowsers"),
     requestNotificationAuthorization: unimplemented(
-      "DeviceClient.requestNotificationAuthorization"
+      "DeviceClient.requestNotificationAuthorization",
     ),
     runningAppFromPid: unimplemented("DeviceClient.runningAppFromPid", placeholder: nil),
     screensaverRunning: unimplemented("DeviceClient.screensaverRunning", placeholder: false),
@@ -103,7 +103,7 @@ extension DeviceClient: TestDependencyKey {
     terminateBlockedApps: unimplemented("DeviceClient.terminateBlockedApps"),
     terminateApp: unimplemented("DeviceClient.terminateApp"),
     username: unimplemented("DeviceClient.username", placeholder: ""),
-    boottime: unimplemented("DeviceClient.boottime", placeholder: nil)
+    boottime: unimplemented("DeviceClient.boottime", placeholder: nil),
   )
 
   static let mock = Self(
@@ -134,7 +134,7 @@ extension DeviceClient: TestDependencyKey {
     terminateBlockedApps: { _ in },
     terminateApp: { _ in },
     username: { "test-username" },
-    boottime: { nil }
+    boottime: { nil },
   )
 }
 
@@ -152,7 +152,7 @@ private enum Format { case data, string }
 private func platform(_ key: String, format: Format) -> String? {
   let service = IOServiceGetMatchingService(
     kIOMasterPortDefault,
-    IOServiceMatching("IOPlatformExpertDevice")
+    IOServiceMatching("IOPlatformExpertDevice"),
   )
 
   defer { IOObjectRelease(service) }
@@ -161,7 +161,7 @@ private func platform(_ key: String, format: Format) -> String? {
     service,
     key as CFString,
     kCFAllocatorDefault,
-    /* option bits */ 0
+    /* option bits */ 0,
   )
 
   switch format {

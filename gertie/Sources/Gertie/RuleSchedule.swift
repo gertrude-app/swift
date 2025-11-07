@@ -46,7 +46,7 @@ public extension RuleSchedule {
       wednesday: Bool,
       thursday: Bool,
       friday: Bool,
-      saturday: Bool
+      saturday: Bool,
     ) {
       self.sunday = sunday
       self.monday = monday
@@ -67,7 +67,7 @@ public extension RuleSchedule.Days {
     wednesday: true,
     thursday: true,
     friday: true,
-    saturday: true
+    saturday: true,
   )
 
   static let weekdays = RuleSchedule.Days(
@@ -77,7 +77,7 @@ public extension RuleSchedule.Days {
     wednesday: true,
     thursday: true,
     friday: true,
-    saturday: false
+    saturday: false,
   )
 
   func contains(_ date: Date, in calendar: Calendar = .current) -> Bool {
@@ -129,7 +129,7 @@ extension RuleSchedule.Days: Sendable, Equatable, Codable, Hashable {}
         wednesday: days.contains(.wednesday),
         thursday: days.contains(.thursday),
         friday: days.contains(.friday),
-        saturday: days.contains(.saturday)
+        saturday: days.contains(.saturday),
       )
     }
   }
@@ -142,14 +142,14 @@ extension RuleSchedule.Days: Sendable, Equatable, Codable, Hashable {}
         after: .init(),
         matching: DateComponents(weekday: day.rawValue),
         matchingPolicy: .strict,
-        direction: .backward
+        direction: .backward,
       )!
       assert(calendar.component(.weekday, from: date) == day.rawValue)
       return calendar.date(
         bySettingHour: plainTime.hour,
         minute: plainTime.minute,
         second: 0,
-        of: date
+        of: date,
       )!
     }
   }

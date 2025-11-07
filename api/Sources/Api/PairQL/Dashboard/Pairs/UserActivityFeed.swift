@@ -106,7 +106,7 @@ extension UserActivityFeed: Resolver {
       userName: child.name,
       showSuspensionActivity: child.showSuspensionActivity,
       numDeleted: coalesced.lazy.filter(\.isDeleted).count,
-      items: coalesced.lazy.filter(\.notDeleted)
+      items: coalesced.lazy.filter(\.notDeleted),
     )
   }
 }
@@ -115,7 +115,7 @@ extension UserActivityFeed: Resolver {
 
 func coalesce(
   _ screenshots: [Screenshot],
-  _ keystrokes: [KeystrokeLine]
+  _ keystrokes: [KeystrokeLine],
 ) -> [UserActivity.Item] {
   var sorted: [Either<Screenshot, KeystrokeLine>] =
     screenshots.map(Either.init(_:)) + keystrokes.map(Either.init(_:))

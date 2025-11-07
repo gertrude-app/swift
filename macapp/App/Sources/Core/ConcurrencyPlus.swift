@@ -15,7 +15,7 @@ public extension NSXPCConnection {
   // Create a continuation that is automatically cancelled on connection failure
   func withContinuation<Service, T>(
     function: String = #function,
-    _ body: (Service, CheckedContinuation<T, Error>) -> Void
+    _ body: (Service, CheckedContinuation<T, Error>) -> Void,
   ) async throws -> T {
     try await withCheckedThrowingContinuation(function: function) { continuation in
       let proxy = self.remoteObjectProxyWithErrorHandler { error in

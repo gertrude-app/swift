@@ -12,7 +12,7 @@ final class CheckInNameAppsTests: ApiTestCase, @unchecked Sendable {
       bundleId: "com.\(UUID().lowercased)",
       bundleName: "Bundle Name \(UUID())",
       localizedName: "Localized Name \(UUID())",
-      launchable: true
+      launchable: true,
     )
 
     try await self.nameApps([app])
@@ -31,7 +31,7 @@ final class CheckInNameAppsTests: ApiTestCase, @unchecked Sendable {
     let app = RunningApp(
       bundleId: "com.\(UUID().lowercased)",
       bundleName: "Bundle Name \(UUID())",
-      launchable: false
+      launchable: false,
     )
     try await self.db.create(UnidentifiedApp(bundleId: app.bundleId, count: 33))
 
@@ -53,7 +53,7 @@ final class CheckInNameAppsTests: ApiTestCase, @unchecked Sendable {
     let child = try await self.childWithComputer()
     _ = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: "3.3.3", namedApps: namedApps),
-      in: child.context
+      in: child.context,
     )
   }
 }

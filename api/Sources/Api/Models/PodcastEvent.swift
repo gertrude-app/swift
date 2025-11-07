@@ -21,7 +21,7 @@ struct PodcastEvent: Codable, Sendable {
     installId: UUID? = nil,
     deviceType: String,
     appVersion: String,
-    iosVersion: String
+    iosVersion: String,
   ) {
     self.id = id
     self.eventId = eventId

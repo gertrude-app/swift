@@ -13,7 +13,7 @@ struct ButtonScreenView: View {
       text: String,
       type: BigButton.ButtonType,
       animate: Bool = true,
-      asyncAction: Bool = false
+      asyncAction: Bool = false,
     ) {
       self.text = text
       self.type = type
@@ -25,7 +25,7 @@ struct ButtonScreenView: View {
       _ text: String,
       animate: Bool = true,
       asyncAction: Bool = false,
-      _ action: @escaping () -> Void
+      _ action: @escaping () -> Void,
     ) {
       self.init(text: text, type: .button(action), animate: animate, asyncAction: asyncAction)
     }
@@ -63,7 +63,7 @@ struct ButtonScreenView: View {
     listItems: [String]? = nil,
     image: String? = nil,
     screenType: ScreenType = .info,
-    primaryLooksLikeSecondary: Bool = false
+    primaryLooksLikeSecondary: Bool = false,
   ) {
     self.text = text
     self.screenType = screenType
@@ -82,7 +82,7 @@ struct ButtonScreenView: View {
           Gradient(colors: [
             Color(self.cs, light: .violet200, dark: .violet950.opacity(0.7)),
             .clear,
-          ])
+          ]),
         )
         .ignoresSafeArea()
         .opacity(self.showBg ? 1 : 0)
@@ -143,15 +143,15 @@ struct ButtonScreenView: View {
                 type: config.type,
                 animate: config.animate,
                 asyncAction: config.asyncAction,
-                isLoading: self.$primaryButtonStatus.isLoading
+                isLoading: self.$primaryButtonStatus.isLoading,
               ),
-              variant: self.primaryLooksLikeSecondary ? .secondary : .primary
+              variant: self.primaryLooksLikeSecondary ? .secondary : .primary,
             )
             .swooshIn(
               tracking: self.$primaryButtonStatus.offset,
               to: .zero,
               after: .milliseconds(150),
-              for: .milliseconds(800)
+              for: .milliseconds(800),
             )
             .padding(.top, 12)
           }
@@ -167,15 +167,15 @@ struct ButtonScreenView: View {
                 type: config.type,
                 animate: config.animate,
                 asyncAction: config.asyncAction,
-                isLoading: self.$secondaryButtonStatus.isLoading
+                isLoading: self.$secondaryButtonStatus.isLoading,
               ),
-              variant: .secondary
+              variant: .secondary,
             )
             .swooshIn(
               tracking: self.$secondaryButtonStatus.offset,
               to: .zero,
               after: .milliseconds(300),
-              for: .milliseconds(800)
+              for: .milliseconds(800),
             )
           }
         }
@@ -190,15 +190,15 @@ struct ButtonScreenView: View {
                 type: config.type,
                 animate: config.animate,
                 asyncAction: config.asyncAction,
-                isLoading: self.$tertiaryButtonStatus.isLoading
+                isLoading: self.$tertiaryButtonStatus.isLoading,
               ),
-              variant: .secondary
+              variant: .secondary,
             )
             .swooshIn(
               tracking: self.$tertiaryButtonStatus.offset,
               to: .zero,
               after: .milliseconds(450),
-              for: .milliseconds(800)
+              for: .milliseconds(800),
             )
           }
         }
@@ -222,7 +222,7 @@ struct ButtonScreenView: View {
     type: BigButton.ButtonType,
     animate: Bool,
     asyncAction: Bool,
-    isLoading: Binding<Bool>
+    isLoading: Binding<Bool>,
   )
     -> BigButton.ButtonType {
     switch type {
@@ -283,14 +283,14 @@ struct ButtonScreenView: View {
 #Preview("No button") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-    screenType: .error
+    screenType: .error,
   )
 }
 
 #Preview("1 button") {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-    primary: ButtonScreenView.Config(text: "Next", type: .button {}, animate: true)
+    primary: ButtonScreenView.Config(text: "Next", type: .button {}, animate: true),
   )
 }
 
@@ -298,8 +298,8 @@ struct ButtonScreenView: View {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primary: ButtonScreenView.Config(
-      text: "Next", type: .button {}, animate: false, asyncAction: true
-    )
+      text: "Next", type: .button {}, animate: false, asyncAction: true,
+    ),
   )
 }
 
@@ -307,7 +307,7 @@ struct ButtonScreenView: View {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
-    secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true)
+    secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true),
   )
 }
 
@@ -316,7 +316,7 @@ struct ButtonScreenView: View {
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
     secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true),
-    primaryLooksLikeSecondary: true
+    primaryLooksLikeSecondary: true,
   )
 }
 
@@ -325,7 +325,7 @@ struct ButtonScreenView: View {
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
     secondary: ButtonScreenView.Config(text: "Do something else", type: .button {}, animate: true),
-    tertiary: ButtonScreenView.Config(text: "Do another thing", type: .button {}, animate: true)
+    tertiary: ButtonScreenView.Config(text: "Do another thing", type: .button {}, animate: true),
   )
 }
 
@@ -333,7 +333,7 @@ struct ButtonScreenView: View {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit:",
     primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
-    listItems: ["Lorem ipsum dolor", "Sit amet consectetur adipiscing elit"]
+    listItems: ["Lorem ipsum dolor", "Sit amet consectetur adipiscing elit"],
   )
 }
 
@@ -346,7 +346,7 @@ struct ButtonScreenView: View {
       "Lorem ipsum dolor",
       "Sit amet consectetur adipiscing elit",
       "Jimmy Carter died recently and there was a national day of morning",
-    ]
+    ],
   )
 }
 
@@ -360,7 +360,7 @@ struct ButtonScreenView: View {
       "Lorem ipsum dolor",
       "Sit amet consectetur adipiscing elit",
       "Jimmy Carter died recently and there was a national day of morning",
-    ]
+    ],
   )
 }
 
@@ -368,6 +368,6 @@ struct ButtonScreenView: View {
   ButtonScreenView(
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
-    image: "AllowContentFilter"
+    image: "AllowContentFilter",
   )
 }

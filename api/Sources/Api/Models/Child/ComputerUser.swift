@@ -21,7 +21,7 @@ struct ComputerUser: Codable, Sendable, Equatable {
     appVersion: String,
     username: String,
     fullUsername: String,
-    numericId: Int
+    numericId: Int,
   ) {
     self.id = id
     self.childId = childId

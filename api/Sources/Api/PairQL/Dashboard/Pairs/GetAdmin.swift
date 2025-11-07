@@ -58,7 +58,7 @@ extension GetAdmin: NoInputResolver {
         .init(id: $0.id, config: $0.config)
       },
       hasAdminChild: hasAdminChild,
-      monthlyPriceInDollars: Int(parent.monthlyPrice.rawValue / 100)
+      monthlyPriceInDollars: Int(parent.monthlyPrice.rawValue / 100),
     )
   }
 }

@@ -13,7 +13,7 @@ struct UserBlockedApp: Codable, Sendable {
     id: Id = .init(),
     identifier: String,
     childId: Child.Id,
-    schedule: RuleSchedule? = nil
+    schedule: RuleSchedule? = nil,
   ) {
     self.id = id
     self.identifier = identifier
@@ -37,7 +37,7 @@ extension UserBlockedApp {
     init(
       id: Id = .init(),
       identifier: String,
-      schedule: RuleSchedule? = nil
+      schedule: RuleSchedule? = nil,
     ) {
       self.id = id
       self.identifier = identifier

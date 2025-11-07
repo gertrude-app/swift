@@ -8,7 +8,7 @@ final class UtilTests: XCTestCase {
   func testHmac() {
     let hmac = AWS.Util.hmac(
       "my-secret",
-      "An apple a day keeps anyone away, if you throw it hard enough"
+      "An apple a day keeps anyone away, if you throw it hard enough",
     )
     expect(AWS.Util.hex(hmac))
       .toBe("1c161b971ab68e7acdb0b45cca7ae92d574613b77fca4bc7d5c4effab89dab67")
@@ -23,12 +23,12 @@ final class UtilTests: XCTestCase {
     expect(yyyymmdd).toBe("20130524")
   }
 
-  func testLowercase() async throws {
+  func testLowercase() throws {
     let result = AWS.Util.lowercase("HELLO")
     expect(result).toBe("hello")
   }
 
-  func testUriEncode() async throws {
+  func testUriEncode() throws {
     let result = AWS.Util.uriEncode("hello world")
     expect(result).toBe("hello%20world")
 
@@ -54,11 +54,11 @@ final class UtilTests: XCTestCase {
     expect(AWS.Util.uriEncode("*")).toBe("%2A")
   }
 
-  func testHex() async throws {
+  func testHex() throws {
     expect(AWS.Util.hex("N".data(using: .utf8)!)).toBe("4e")
   }
 
-  func testSha256() async throws {
+  func testSha256() throws {
     expect(AWS.Util.sha256("hello"))
       .toBe("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824")
     expect(AWS.Util.sha256(""))

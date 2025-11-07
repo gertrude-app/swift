@@ -17,7 +17,7 @@ struct BigButton: View {
         .foregroundStyle(
           self.variant == .primary
             ? Color(self.cs, light: .white, dark: .white)
-            : Color(self.cs, light: .violet500, dark: .violet400)
+            : Color(self.cs, light: .violet500, dark: .violet400),
         )
       if let icon = self.icon {
         Image(systemName: icon)
@@ -25,7 +25,7 @@ struct BigButton: View {
           .foregroundStyle(
             self.variant == .primary
               ? Color(self.cs, light: .white, dark: .white)
-              : Color(self.cs, light: .violet500, dark: .violet400)
+              : Color(self.cs, light: .violet500, dark: .violet400),
           )
       }
       Spacer()
@@ -37,13 +37,13 @@ struct BigButton: View {
         ? Color(
           self.cs,
           light: .violet500,
-          dark: .violet600.opacity(0.9)
+          dark: .violet600.opacity(0.9),
         )
         : Color(
           self.cs,
           light: .violet500.opacity(0.1),
-          dark: .violet500.opacity(0.15)
-        )
+          dark: .violet500.opacity(0.15),
+        ),
     )
     .cornerRadius(16)
     .opacity(self.disabled ? 0.5 : 1)
@@ -75,7 +75,7 @@ struct BigButton: View {
     type: ButtonType,
     variant: Variant = .primary,
     icon: String? = nil,
-    disabled: Bool = false
+    disabled: Bool = false,
   ) {
     self.text = text
     self.type = type
@@ -124,13 +124,13 @@ struct BigButton: View {
       "Click me",
       type: .link(URL(string: "https://gertrude.app")!),
       variant: .primary,
-      icon: "plus"
+      icon: "plus",
     )
     BigButton(
       "Click me",
       type: .link(URL(string: "https://gertrude.app")!),
       variant: .secondary,
-      icon: "plus"
+      icon: "plus",
     )
   }
   .padding(20)

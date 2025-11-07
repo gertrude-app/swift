@@ -98,31 +98,31 @@ extension Env: DependencyKey {
         secret: processEnv("CLOUD_STORAGE_SECRET"),
         endpoint: processEnv("CLOUD_STORAGE_ENDPOINT"),
         bucketUrl: processEnv("CLOUD_STORAGE_BUCKET_URL"),
-        bucket: processEnv("CLOUD_STORAGE_BUCKET")
+        bucket: processEnv("CLOUD_STORAGE_BUCKET"),
       ),
       postmark: Postmark(
         serverId: Int(processEnv("POSTMARK_SERVER_ID"))!,
-        apiKey: processEnv("POSTMARK_API_KEY")
+        apiKey: processEnv("POSTMARK_API_KEY"),
       ),
       database: Database(
         name: mode == .test
           ? processEnv("TEST_DATABASE_NAME")
           : processEnv("DATABASE_NAME"),
         username: processEnv("DATABASE_USERNAME"),
-        password: processEnv("DATABASE_PASSWORD")
+        password: processEnv("DATABASE_PASSWORD"),
       ),
       dashboardUrl: processEnv("DASHBOARD_URL"),
       twilio: Twilio(
         accountSid: processEnv("TWILIO_ACCOUNT_SID"),
         authToken: processEnv("TWILIO_AUTH_TOKEN"),
-        fromPhone: processEnv("TWILIO_FROM_PHONE")
+        fromPhone: processEnv("TWILIO_FROM_PHONE"),
       ),
       stripe: Stripe(secretKey: processEnv("STRIPE_SECRET_KEY")),
       primarySupportEmail: processEnv("PRIMARY_SUPPORT_EMAIL"),
       superAdminEmail: processEnv("SUPER_ADMIN_EMAIL"),
       analyticsSiteUrl: processEnv("ANALYTICS_SITE_URL"),
       cloudflareSecret: processEnv("CLOUDFLARE_SECRET"),
-      get: { ProcessInfo.processInfo.environment[$0] }
+      get: { ProcessInfo.processInfo.environment[$0] },
     )
   }
 

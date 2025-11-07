@@ -15,7 +15,7 @@ let package = Package(
     .target(
       name: "PairQL",
       dependencies: [.product(name: "URLRouting", package: "swift-url-routing")],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
-  ]
+  ],
 )

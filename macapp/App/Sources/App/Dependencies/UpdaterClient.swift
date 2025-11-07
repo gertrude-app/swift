@@ -12,10 +12,10 @@ public struct UpdaterClient: Sendable {
 
 extension UpdaterClient: TestDependencyKey {
   public static let testValue = Self(
-    triggerUpdate: unimplemented("UpdaterClient.triggerUpdate")
+    triggerUpdate: unimplemented("UpdaterClient.triggerUpdate"),
   )
   public static let mock = Self(
-    triggerUpdate: { _ in }
+    triggerUpdate: { _ in },
   )
 }
 

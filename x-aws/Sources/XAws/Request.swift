@@ -25,7 +25,7 @@ extension AWS.Request {
     objectKey: String,
     expires: Int,
     queryParams: [String: String] = [:],
-    signedHeaders: [String: String] = [:]
+    signedHeaders: [String: String] = [:],
   ) -> String {
     let canonicalRequest = self.canonicalRequestForPreSignedUrl(
       httpVerb: httpVerb,
@@ -38,21 +38,21 @@ extension AWS.Request {
       objectKey: objectKey,
       expires: expires,
       queryParams: queryParams,
-      signedHeaders: signedHeaders
+      signedHeaders: signedHeaders,
     )
     let stringToSign = stringToSign(
       canonicalRequest: canonicalRequest,
       time: time,
       region: region,
-      service: service
+      service: service,
     )
     let signingKey = signingKey(
       secretAccessKey: secretAccessKey,
-      time: time
+      time: time,
     )
     let signature = signature(
       signingKey: signingKey,
-      stringToSign: stringToSign
+      stringToSign: stringToSign,
     )
     let (_, params) = self.data(
       accessKeyId,
@@ -62,7 +62,7 @@ extension AWS.Request {
       service,
       time,
       expires,
-      signedHeaders
+      signedHeaders,
     )
     return "https://\(bucket).\(endpoint)/\(objectKey)?\(self.queryString(params))&X-Amz-Signature=\(signature)"
   }
@@ -78,7 +78,7 @@ extension AWS.Request {
     objectKey: String,
     expires: Int,
     queryParams: [String: String] = [:],
-    signedHeaders: [String: String] = [:]
+    signedHeaders: [String: String] = [:],
   ) -> String {
     let (headers, params) = self.data(
       accessKeyId,
@@ -88,7 +88,7 @@ extension AWS.Request {
       service,
       time,
       expires,
-      signedHeaders
+      signedHeaders,
     )
 
     let canonicalUri = Util.uriEncode(objectKey, isObjectKeyName: true)
@@ -112,7 +112,7 @@ extension AWS.Request {
     _ service: String = "s3",
     _ time: Date = Date(),
     _ expires: Int,
-    _ signedHeaders: [String: String] = [:]
+    _ signedHeaders: [String: String] = [:],
   ) -> (header: [String: String], params: [String: String]) {
     var headers = signedHeaders
     headers["host"] = "\(bucket).\(endpoint)"
@@ -135,7 +135,7 @@ extension AWS.Request {
   static func scope(
     _ time: Date = Date(),
     _ region: String = "us-east-1",
-    _ service: String = "s3"
+    _ service: String = "s3",
   ) -> String {
     "\(Util.yyyymmdd(time))/\(region)/\(service)/aws4_request"
   }
@@ -165,7 +165,7 @@ extension AWS.Request {
     canonicalRequest: String,
     time: Date = Date(),
     region: String = "us-east-1",
-    service: String = "s3"
+    service: String = "s3",
   ) -> String {
     """
     AWS4-HMAC-SHA256
@@ -179,7 +179,7 @@ extension AWS.Request {
     secretAccessKey: String,
     time: Date = Date(),
     region: String = "us-east-1",
-    service: String = "s3"
+    service: String = "s3",
   ) -> Data {
     let dateKey = Util.hmac("AWS4\(secretAccessKey)", Util.yyyymmdd(time))
     let dateRegionKey = Util.hmac(dateKey, region)
@@ -189,7 +189,7 @@ extension AWS.Request {
 
   static func signature(
     signingKey: Data,
-    stringToSign: String
+    stringToSign: String,
   ) -> String {
     Util.hex(Util.hmac(signingKey, stringToSign))
   }

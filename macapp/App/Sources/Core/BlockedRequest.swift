@@ -17,7 +17,7 @@ public struct BlockedRequest: Equatable, Codable, Sendable {
     url: String? = nil,
     hostname: String? = nil,
     ipAddress: String? = nil,
-    ipProtocol: IpProtocol? = nil
+    ipProtocol: IpProtocol? = nil,
   ) {
     self.id = id
     self.time = time
@@ -33,7 +33,7 @@ public extension FilterFlow {
   func blockedRequest(
     id: UUID = .init(),
     time: Date = .init(),
-    app: AppDescriptor
+    app: AppDescriptor,
   ) -> BlockedRequest {
     BlockedRequest(
       id: id,
@@ -42,7 +42,7 @@ public extension FilterFlow {
       url: url,
       hostname: hostname,
       ipAddress: ipAddress,
-      ipProtocol: ipProtocol
+      ipProtocol: ipProtocol,
     )
   }
 }

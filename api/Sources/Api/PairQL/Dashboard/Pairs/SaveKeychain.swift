@@ -22,7 +22,7 @@ extension SaveKeychain: Resolver {
         name: input.name,
         isPublic: false,
         description: input.description,
-        warning: nil
+        warning: nil,
       ))
       dashSecurityEvent(.keychainCreated, "name: \(keychain.name)", in: context)
     } else {

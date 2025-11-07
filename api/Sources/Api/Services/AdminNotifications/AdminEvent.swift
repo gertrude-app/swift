@@ -23,11 +23,11 @@ enum AdminEvent: Equatable {
     enum Context: Equatable {
       case macapp(
         computerUserId: ComputerUser.Id,
-        requestId: MacApp.SuspendFilterRequest.Id
+        requestId: MacApp.SuspendFilterRequest.Id,
       )
       case iosapp(
         deviceId: IOSApp.Device.Id,
-        requestId: IOSApp.SuspendFilterRequest.Id
+        requestId: IOSApp.SuspendFilterRequest.Id,
       )
     }
 

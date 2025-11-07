@@ -30,7 +30,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
     let parent = try await self.parent(with: \.subscriptionStatus, of: .pendingEmailVerification)
     let token = await with(dependency: \.ephemeral).createParentIdToken(
       parent.id,
-      expiration: Date.reference - .days(1)
+      expiration: Date.reference - .days(1),
     )
 
     let result = await VerifySignupEmail.result(with: .init(token: token), in: self.context)
@@ -49,7 +49,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
         .parent(with: \.subscriptionStatus, of: .trialing) // <- already verified
       let token = await with(dependency: \.ephemeral).createParentIdToken(
         parent.id,
-        expiration: Date() - .days(1)
+        expiration: Date() - .days(1),
       )
 
       let result = await VerifySignupEmail.result(with: .init(token: token), in: self.context)
@@ -79,7 +79,7 @@ final class VerifySignupEmailResolverTests: ApiTestCase, @unchecked Sendable {
 
     let result = await Login.result(
       with: .init(email: parent.email.rawValue, password: "lol-lol-lol"),
-      in: self.context
+      in: self.context,
     )
 
     expect(result).toBeError(containing: "until your email is verified")

@@ -12,12 +12,12 @@ let package = Package(
   targets: [
     .target(
       name: "XCore",
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .target(
       name: "XBase64",
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .testTarget(name: "XCoreTests", dependencies: ["XCore"]),
-  ]
+  ],
 )

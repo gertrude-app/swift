@@ -101,7 +101,7 @@ final class SqlTests: XCTestCase {
     let stmt = try await select(
       Thing.self,
       where: .id == 123 .&& .int == 789,
-      withSoftDeleted: true
+      withSoftDeleted: true,
     )
 
     let expected = """
@@ -144,7 +144,7 @@ final class SqlTests: XCTestCase {
       Thing.self,
       orderBy: .init(.string, .asc),
       limit: 2,
-      offset: 3
+      offset: 3,
     )
 
     let expected = """
@@ -189,7 +189,7 @@ final class SqlTests: XCTestCase {
     _ = try? await client.count(
       Thing.self,
       where: .string == "a",
-      withSoftDeleted: true
+      withSoftDeleted: true,
     )
 
     let expected = """
@@ -276,7 +276,7 @@ final class SqlTests: XCTestCase {
       Thing.self,
       where: .id == 123,
       orderBy: .init(.createdAt, .asc),
-      limit: 1
+      limit: 1,
     )
 
     let expected = """
@@ -297,7 +297,7 @@ final class SqlTests: XCTestCase {
       Thing.self,
       where: .string == "a",
       orderBy: .init(.createdAt, .asc),
-      limit: 1
+      limit: 1,
     )
 
     let expected = """
@@ -445,7 +445,7 @@ final class SqlTests: XCTestCase {
       customEnum: .foo,
       optionalCustomEnum: nil,
       optionalInt: 4,
-      optionalString: nil
+      optionalString: nil,
     )
 
     let client = TestClient()
@@ -483,7 +483,7 @@ func select<M: Model>(
   orderBy order: SQL.Order<M>? = nil,
   limit: Int? = nil,
   offset: Int? = nil,
-  withSoftDeleted: Bool = true
+  withSoftDeleted: Bool = true,
 ) async throws -> SQL.Statement {
   let testClient = TestClient()
   _ = try? await testClient.select(
@@ -492,7 +492,7 @@ func select<M: Model>(
     orderBy: order,
     limit: limit,
     offset: offset,
-    withSoftDeleted: withSoftDeleted
+    withSoftDeleted: withSoftDeleted,
   )
   return testClient.stmt
 }

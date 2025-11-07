@@ -22,11 +22,11 @@ let package = Package(
         .product(name: "PairQL", package: "pairql"),
         .product(name: "Gertie", package: "gertie"),
       ],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .testTarget(name: "MacAppRouteTests", dependencies: [
       .target(name: "MacAppRoute"),
       .product(name: "XExpect", package: "x-expect"),
     ]),
-  ]
+  ],
 )

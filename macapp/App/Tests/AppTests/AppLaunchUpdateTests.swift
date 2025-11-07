@@ -22,7 +22,7 @@ final class UpdateTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
       user: nil,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )])
   }
 
@@ -48,7 +48,7 @@ final class UpdateTests: XCTestCase {
       appVersion: "1.0.0",
       appUpdateReleaseChannel: .stable,
       filterVersion: "0.9.9",
-      user: .mock
+      user: .mock,
     )])
 
     // and replaced the filter
@@ -92,7 +92,7 @@ final class UpdateTests: XCTestCase {
       filterVersion: "2.5.0",
       user: .mock,
       // and though we are "onboarding", it's for upgrade ---------vvvv
-      resumeOnboarding: .checkingFullDiskAccessPermission(upgrade: true)
+      resumeOnboarding: .checkingFullDiskAccessPermission(upgrade: true),
     )
 
     await store.send(.loadedPersistentState(persisted))
@@ -109,13 +109,13 @@ final class UpdateTests: XCTestCase {
 
     let replaceFilterMock = mock(
       returning: [FilterInstallResult.timedOutWaiting],
-      then: .installedSuccessfully
+      then: .installedSuccessfully,
     )
     store.deps.filterExtension.replace = replaceFilterMock.fn
     store.deps.filterExtension.state = { .installedAndRunning }
     store.deps.filterXpc.checkConnectionHealth = mockFn(
       returning: [.failure(.timeout)],
-      then: .success(())
+      then: .success(()),
     )
 
     await store.send(.application(.didFinishLaunching))

@@ -54,7 +54,7 @@ public struct Filter: Reducer, Sendable {
       os_log(
         "[G•] FILTER (%{public}@) received action: %{public}@",
         self.filterExtension.version(),
-        String(describing: action)
+        String(describing: action),
       )
     }
 
@@ -79,13 +79,13 @@ public struct Filter: Reducer, Sendable {
           self.xpc.events()
             .map { .xpc($0) }
             .receive(on: self.mainQueue)
-        }
+        },
       )
 
     case .extensionStopping:
       return .merge(
         .cancel(id: CancelId.heartbeat),
-        .run { _ in await self.xpc.stopListener() }
+        .run { _ in await self.xpc.stopListener() },
       )
 
     case .loadedPersistentState(.some(let persisted)):
@@ -159,7 +159,7 @@ public struct Filter: Reducer, Sendable {
       state.suspensions[userId] = nil
       return .merge(
         .cancel(id: CancelId.suspensionTimer(for: userId)),
-        .run { _ in try await self.xpc.notifyFilterSuspensionEnded(userId) }
+        .run { _ in try await self.xpc.notifyFilterSuspensionEnded(userId) },
       )
 
     case .cacheAppDescriptor("", _):
@@ -204,7 +204,7 @@ public struct Filter: Reducer, Sendable {
       state.suspensions[userId] = .init(
         scope: .unrestricted,
         duration: duration,
-        now: self.now
+        now: self.now,
       )
       return .run { send in
         // NB: this sleep pauses (and thus becomes incorrect) when the computer is asleep
@@ -218,7 +218,7 @@ public struct Filter: Reducer, Sendable {
       let userId,
       let keychains,
       let downtime,
-      let manifest
+      let manifest,
     ))):
       state.recordAppActivity(from: userId)
       if !keychains.isEmpty {
@@ -304,7 +304,7 @@ public extension Filter.State {
       suspensions: self.suspensions,
       numAppsInCache: self.appCache.count,
       blockListeners: self.blockListeners,
-      userDowntime: self.userDowntime
+      userDowntime: self.userDowntime,
     )
   }
 }

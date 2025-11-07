@@ -16,7 +16,7 @@ struct DashAnnouncement: Codable, Sendable {
     icon: String? = nil,
     html: String,
     learnMoreUrl: String? = nil,
-    deletedAt: Date? = nil
+    deletedAt: Date? = nil,
   ) {
     self.id = id ?? .init(get(dependency: \.uuid)())
     self.parentId = parentId

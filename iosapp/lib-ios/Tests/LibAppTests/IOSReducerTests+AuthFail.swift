@@ -10,7 +10,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   func testInvalidAccountToSupervision() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -109,7 +109,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   func testAuthConflict() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -139,7 +139,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   func testUnexpectedAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -168,7 +168,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   func testOtherAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -193,7 +193,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   func testNetworkErrorAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -219,7 +219,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   func testPasscodeRequiredAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -246,7 +246,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   func testRestrictedAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -270,7 +270,7 @@ final class IOSReducerTestsAuthFail: XCTestCase {
   func testCanceledAuthFail() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreAuth))),
     ) {
       IOSReducer()
     } withDependencies: {

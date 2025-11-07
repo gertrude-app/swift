@@ -14,7 +14,7 @@ import Gertie
 
   func receiveUserFilterSuspensionEnded(
     userId: uid_t,
-    reply: @escaping (XPCErrorData?) -> Void
+    reply: @escaping (XPCErrorData?) -> Void,
   ) {
     self.subject.withValue {
       $0.send(.receivedExtensionMessage(.userFilterSuspensionEnded(userId)))
@@ -25,7 +25,7 @@ import Gertie
   func receiveBlockedRequest(
     _ requestData: Data,
     userId: uid_t,
-    reply: @escaping (Core.XPCErrorData?) -> Void
+    reply: @escaping (Core.XPCErrorData?) -> Void,
   ) {
     guard userId == getuid() else {
       reply(nil)
@@ -42,7 +42,7 @@ import Gertie
         $0.send(.decodingExtensionMessageDataFailed(
           fn: "\(#function)",
           type: "\(BlockedRequest.self)",
-          error: "\(error)"
+          error: "\(error)",
         ))
       }
       reply(XPC.errorData(error))
@@ -51,7 +51,7 @@ import Gertie
 
   func receiveFilterLogs(
     _ logs: Data,
-    reply: @escaping (XPCErrorData?) -> Void
+    reply: @escaping (XPCErrorData?) -> Void,
   ) {
     do {
       let logs = try JSONDecoder().decode(FilterLogs.self, from: logs)
@@ -64,7 +64,7 @@ import Gertie
         $0.send(.decodingExtensionMessageDataFailed(
           fn: "\(#function)",
           type: "\(FilterLogs.self)",
-          error: "\(error)"
+          error: "\(error)",
         ))
       }
       reply(XPC.errorData(error))

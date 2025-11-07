@@ -74,7 +74,7 @@ enum PairQLRoute: Equatable, RouteResponder {
     let context = Context(
       requestId: request.id,
       dashboardUrl: request.dashboardUrl,
-      ipAddress: request.ipAddress
+      ipAddress: request.ipAddress,
     )
     do {
       let route = try PairQLRoute.router.parse(requestData)
@@ -99,7 +99,7 @@ enum PairQLRoute: Equatable, RouteResponder {
           debugMessage: request.context.env.mode == .dev
             ? "PairQL routing \(error)"
             : "PairQL route not found",
-          showContactSupport: true
+          showContactSupport: true,
         ))
       } else if let pqlError = error as? PqlError {
         return .init(pqlError)

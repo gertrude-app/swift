@@ -24,7 +24,7 @@ public extension BlockRule {
     case .targetContains(let target): .targetContains(target)
     case .unless(let rule, let negatedBy): .unless(
         rule: rule.legacy,
-        negatedBy: negatedBy.map(\.legacy)
+        negatedBy: negatedBy.map(\.legacy),
       )
     case .urlContains(let url): .urlContains(url)
     }
@@ -69,11 +69,11 @@ public extension BlockRule.Legacy {
       .targetContains("media.fosu2-1.fna.whatsapp.net"),
       .both(
         .bundleIdContains("com.apple.MobileSMS"),
-        .targetContains("ssl.mzstatic.com")
+        .targetContains("ssl.mzstatic.com"),
       ),
       .both(
         .bundleIdContains("org.whispersystems.signal"),
-        .targetContains("contentproxy.signal.org")
+        .targetContains("contentproxy.signal.org"),
       ),
     ]
   }

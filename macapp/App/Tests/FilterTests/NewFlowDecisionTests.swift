@@ -34,7 +34,7 @@ final class NewFlowDecisionTests: XCTestCase {
     let key = RuleKey(key: .skeleton(scope: .bundleId("com.foo")))
     let filter = TestFilter.scenario(
       userKeychains: [502: key.into()], // <-- we would normally permit by this key...
-      macappsAliveUntil: [:] // <-- but the macapp is awol
+      macappsAliveUntil: [:], // <-- but the macapp is awol
     )
     expect(filter.newFlowDecision(flow)).toEqual(.block(.macappAWOL(502)))
   }
@@ -43,7 +43,7 @@ final class NewFlowDecisionTests: XCTestCase {
     let flow = FilterFlow.test(
       url: "https://unknown.com/foo",
       hostname: "unknown.com",
-      bundleId: "com.foo.bar"
+      bundleId: "com.foo.bar",
     )
     expect(TestFilter.scenario().newFlowDecision(flow)).toEqual(.block(.defaultNotAllowed))
   }
@@ -53,7 +53,7 @@ final class NewFlowDecisionTests: XCTestCase {
     let filter = TestFilter.scenario(
       userKeychains: [502: [.mock]],
       macappsAliveUntil: [:], // <-- macapp is awol!
-      suspensions: [502: .init(scope: .unrestricted, duration: 100)]
+      suspensions: [502: .init(scope: .unrestricted, duration: 100)],
     )
     expect(filter.newFlowDecision(flow)).toEqual(.block(.macappAWOL(502)))
   }
@@ -71,7 +71,7 @@ final class NewFlowDecisionTests: XCTestCase {
       hostname: "abc123.com",
       bundleId: "com.foo",
       port: .other(333),
-      ipProtocol: .udp(Int32(IPPROTO_UDP))
+      ipProtocol: .udp(Int32(IPPROTO_UDP)),
     )
     let key = RuleKey(key: .skeleton(scope: .bundleId("com.foo")))
     let filter = TestFilter.scenario(userKeychains: [502: key.into()])
@@ -179,7 +179,7 @@ extension FilterFlow {
     remoteEndpoint: String? = nil,
     userId: uid_t? = 502,
     port: Core.Port? = nil,
-    ipProtocol: IpProtocol? = nil
+    ipProtocol: IpProtocol? = nil,
   ) -> Self {
     FilterFlow(
       url: url,
@@ -189,7 +189,7 @@ extension FilterFlow {
       remoteEndpoint: remoteEndpoint,
       userId: userId,
       port: port,
-      ipProtocol: ipProtocol
+      ipProtocol: ipProtocol,
     )
   }
 }

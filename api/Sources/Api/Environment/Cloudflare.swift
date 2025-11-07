@@ -18,7 +18,7 @@ extension CloudflareClient: DependencyKey {
         let response = try await HTTP.postFormUrlencoded(
           ["secret": secret, "response": token],
           to: "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-          decoding: VerifyResponse.self
+          decoding: VerifyResponse.self,
         )
         if response.success {
           return .success
@@ -36,7 +36,7 @@ extension CloudflareClient: TestDependencyKey {
   static var testValue: CloudflareClient {
     .init(verifyTurnstileToken: unimplemented(
       "CloudflareClient.verifyTurnstileToken()",
-      placeholder: .success
+      placeholder: .success,
     ))
   }
 }

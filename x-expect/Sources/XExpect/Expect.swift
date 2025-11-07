@@ -146,7 +146,7 @@ public struct ResultExpectation<Success, Failure: Swift.Error> {
         "\(error)".contains(substring),
         "Expected error `\(error)` to contain `\(substring)`",
         file: self.file,
-        line: self.line
+        line: self.line,
       )
     }
   }
@@ -199,14 +199,14 @@ public struct StringExpectation {
         self.value.contains(substring),
         "Expected `\(self.value)` to contain `\(substring)`",
         file: self.file,
-        line: self.line
+        line: self.line,
       )
     } else {
       XCTAssert(
         !self.value.contains(substring),
         "Expected `\(self.value)` NOT to contain `\(substring)`",
         file: self.file,
-        line: self.line
+        line: self.line,
       )
     }
   }
@@ -235,7 +235,7 @@ public struct BoolExpectation {
 public func expect(
   _ value: Bool,
   file: StaticString = #fileID,
-  line: UInt = #line
+  line: UInt = #line,
 ) -> BoolExpectation {
   BoolExpectation(value: value, file: file, line: line)
 }
@@ -243,7 +243,7 @@ public func expect(
 public func expect(
   _ value: String,
   file: StaticString = #fileID,
-  line: UInt = #line
+  line: UInt = #line,
 ) -> StringExpectation {
   StringExpectation(value: value, file: file, line: line)
 }
@@ -252,7 +252,7 @@ public func expect(
 public func expect<T: Equatable>(
   _ value: T,
   file: StaticString = #fileID,
-  line: UInt = #line
+  line: UInt = #line,
 ) -> EquatableExpectation<T> {
   EquatableExpectation(value: value, file: file, line: line)
 }
@@ -261,7 +261,7 @@ public func expect<T: Equatable>(
 public func expect<T: Equatable>(
   _ value: T?,
   file: StaticString = #fileID,
-  line: UInt = #line
+  line: UInt = #line,
 ) -> EquatableOptionalExpectation<T> {
   EquatableOptionalExpectation(value: value, file: file, line: line)
 }
@@ -269,7 +269,7 @@ public func expect<T: Equatable>(
 public func expect(
   _ value: (some Any)?,
   file: StaticString = #fileID,
-  line: UInt = #line
+  line: UInt = #line,
 ) -> OptionalExpectation {
   OptionalExpectation(value: value, file: file, line: line)
 }
@@ -277,7 +277,7 @@ public func expect(
 public func expect<C: Collection>(
   _ collection: C,
   file: StaticString = #fileID,
-  line: UInt = #line
+  line: UInt = #line,
 ) -> CollectionExpectation<C> {
   CollectionExpectation(collection: collection, file: file, line: line)
 }
@@ -285,7 +285,7 @@ public func expect<C: Collection>(
 public func expect<S, F: Error>(
   _ result: Result<S, F>,
   file: StaticString = #fileID,
-  line: UInt = #line
+  line: UInt = #line,
 ) -> ResultExpectation<S, F> {
   ResultExpectation(result: result, file: file, line: line)
 }
@@ -293,7 +293,7 @@ public func expect<S, F: Error>(
 public func expectErrorFrom<T>(
   file: StaticString = #fileID,
   line: UInt = #line,
-  fn: @escaping () async throws -> T
+  fn: @escaping () async throws -> T,
 ) -> ErrorExpectation<T> {
   ErrorExpectation(fn: fn, file: file, line: line)
 }

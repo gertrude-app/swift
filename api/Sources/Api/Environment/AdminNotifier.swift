@@ -14,7 +14,7 @@ extension DependencyValues {
 }
 
 extension AdminNotifier: DependencyKey {
-  public static var liveValue: AdminNotifier {
+  static var liveValue: AdminNotifier {
     .init { parentId, event in
       @Dependency(\.db) var db
       @Dependency(\.slack) var slack
@@ -72,7 +72,7 @@ extension AdminNotifier: DependencyKey {
 
 #if DEBUG
   extension AdminNotifier: TestDependencyKey {
-    public static var testValue: AdminNotifier {
+    static var testValue: AdminNotifier {
       .init(notify: unimplemented("AdminNotifier.notify(adminId:event:)"))
     }
   }

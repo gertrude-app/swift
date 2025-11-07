@@ -33,7 +33,7 @@ extension Parent.NotificationMethod.Config: RandomMocked {
       .slack(
         channelId: "C\(Int.random)",
         channelName: "Channel".random,
-        token: "xoxb-random".random
+        token: "xoxb-random".random,
       )
     default:
       .text(phoneNumber: "555-555-" + "\(Int.random)")

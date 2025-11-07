@@ -17,7 +17,7 @@ import Vapor
       guard let to = env.get("TEST_EMAIL_RECIPIENT") else {
         throw Abort(
           .badRequest,
-          reason: "required env var `TEST_EMAIL_RECIPIENT` not set"
+          reason: "required env var `TEST_EMAIL_RECIPIENT` not set",
         )
       }
 
@@ -25,49 +25,49 @@ import Vapor
       case "initial-signup":
         try await postmark.send(template: .initialSignup(
           to: to,
-          model: .init(dashboardUrl: localDash, token: .init())
+          model: .init(dashboardUrl: localDash, token: .init()),
         ))
 
       case "re-signup":
         try await postmark.send(template: .reSignup(
           to: to,
-          model: .init(dashboardUrl: localDash)
+          model: .init(dashboardUrl: localDash),
         ))
 
       case "password-reset":
         try await postmark.send(template: .passwordReset(
           to: to,
-          model: .init(dashboardUrl: localDash, token: .init())
+          model: .init(dashboardUrl: localDash, token: .init()),
         ))
 
       case "password-reset-no-account":
         try await postmark.send(template: .passwordResetNoAccount(
           to: to,
-          model: .init()
+          model: .init(),
         ))
 
       case "magic-link":
         try await postmark.send(template: .magicLink(
           to: to,
-          model: .init(url: "\(localDash)/otp/\(UUID().lowercased)")
+          model: .init(url: "\(localDash)/otp/\(UUID().lowercased)"),
         ))
 
       case "magic-link-no-account":
         try await postmark.send(template: .magicLinkNoAccount(
           to: to,
-          model: .init()
+          model: .init(),
         ))
 
       case "verify-notification-email":
         try await postmark.send(template: .verifyNotificationEmail(
           to: to,
-          model: .init(code: 99999)
+          model: .init(code: 99999),
         ))
 
       case "notify-suspend-filter":
         try await postmark.send(template: .notifySuspendFilter(
           to: to,
-          model: .init(url: localDash, userName: "Franny", isFallback: false)
+          model: .init(url: localDash, userName: "Franny", isFallback: false),
         ))
 
       case "notify-unlock-request":
@@ -78,8 +78,8 @@ import Vapor
             url: localDash,
             userName: "Franny",
             unlockRequests: "a new <b>unlock request</b>",
-            isFallback: false
-          )
+            isFallback: false,
+          ),
         ))
 
       // NB: same template, but more than one unlock request
@@ -92,8 +92,8 @@ import Vapor
             url: localDash,
             userName: "Franny",
             unlockRequests: "3 new <b>unlock requests</b>",
-            isFallback: false
-          )
+            isFallback: false,
+          ),
         ))
 
       case "notify-security-event":
@@ -102,15 +102,15 @@ import Vapor
           model: .init(
             userName: "Franny",
             description: Gertie.SecurityEvent.MacApp.appQuit.toWords,
-            explanation: Gertie.SecurityEvent.MacApp.appQuit.explanation
-          )
+            explanation: Gertie.SecurityEvent.MacApp.appQuit.explanation,
+          ),
         ))
 
       case "marketing-announcement":
         try await postmark.send(template: .v2_7_0_Announce(
           to: [to],
           model: .init(),
-          dryRun: true
+          dryRun: true,
         ))
 
       case "admin-trial-ending-soon":
@@ -206,7 +206,7 @@ import Vapor
     let layout = EmailLayout(slug: templateInput.LayoutTemplate!)!
     return layout.pmTemplateInput().HtmlBody.replacingOccurrences(
       of: "{{{ @content }}}",
-      with: templateInput.HtmlBody
+      with: templateInput.HtmlBody,
     )
   }
 #endif

@@ -47,7 +47,7 @@ extension GetIdentifiedApps: NoInputResolver {
           slug: identifiedApp.slug,
           launchable: identifiedApp.launchable,
           bundleIds: [],
-          category: categoryMap[identifiedApp.categoryId ?? .init()]
+          category: categoryMap[identifiedApp.categoryId ?? .init()],
         )
       }
 

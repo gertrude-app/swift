@@ -12,7 +12,7 @@ public struct DuetQuery<M: Model>: Sendable {
     order: SQL.Order<M>? = nil,
     limit: Int? = nil,
     offset: Int? = nil,
-    withSoftDeleted: Bool = false
+    withSoftDeleted: Bool = false,
   ) {
     self.constraint = constraint
     self.limit = limit
@@ -27,7 +27,7 @@ public struct DuetQuery<M: Model>: Sendable {
       order: self.order,
       limit: self.limit,
       offset: self.offset,
-      withSoftDeleted: withSoftDeleted
+      withSoftDeleted: withSoftDeleted,
     )
   }
 
@@ -37,7 +37,7 @@ public struct DuetQuery<M: Model>: Sendable {
       order: self.order,
       limit: self.limit,
       offset: self.offset,
-      withSoftDeleted: true
+      withSoftDeleted: true,
     )
   }
 
@@ -47,7 +47,7 @@ public struct DuetQuery<M: Model>: Sendable {
       order: self.order,
       limit: self.limit,
       offset: self.offset,
-      withSoftDeleted: self._withSoftDeleted
+      withSoftDeleted: self._withSoftDeleted,
     )
   }
 
@@ -57,7 +57,7 @@ public struct DuetQuery<M: Model>: Sendable {
       order: self.order,
       limit: limit,
       offset: self.offset,
-      withSoftDeleted: self._withSoftDeleted
+      withSoftDeleted: self._withSoftDeleted,
     )
   }
 
@@ -67,7 +67,7 @@ public struct DuetQuery<M: Model>: Sendable {
       order: self.order,
       limit: self.limit,
       offset: offset,
-      withSoftDeleted: self._withSoftDeleted
+      withSoftDeleted: self._withSoftDeleted,
     )
   }
 
@@ -77,7 +77,7 @@ public struct DuetQuery<M: Model>: Sendable {
       order: order,
       limit: self.limit,
       offset: self.offset,
-      withSoftDeleted: self._withSoftDeleted
+      withSoftDeleted: self._withSoftDeleted,
     )
   }
 
@@ -87,7 +87,7 @@ public struct DuetQuery<M: Model>: Sendable {
       order: .init(column: column, direction: direction),
       limit: self.limit,
       offset: self.offset,
-      withSoftDeleted: self._withSoftDeleted
+      withSoftDeleted: self._withSoftDeleted,
     )
   }
 
@@ -99,7 +99,7 @@ public struct DuetQuery<M: Model>: Sendable {
         where: self.constraint,
         orderBy: self.order,
         limit: self.limit,
-        offset: self.offset
+        offset: self.offset,
       )
     } else {
       try await db.delete(
@@ -107,7 +107,7 @@ public struct DuetQuery<M: Model>: Sendable {
         where: self.constraint,
         orderBy: self.order,
         limit: self.limit,
-        offset: self.offset
+        offset: self.offset,
       )
     }
   }
@@ -120,7 +120,7 @@ public struct DuetQuery<M: Model>: Sendable {
       orderBy: self.order,
       limit: self.limit,
       offset: self.offset,
-      withSoftDeleted: force || self._withSoftDeleted
+      withSoftDeleted: force || self._withSoftDeleted,
     )
     guard !models.isEmpty else { throw DuetSQLError.notFound("\(M.self)") }
     guard models.count == 1 else { throw DuetSQLError.tooManyResultsForDeleteOne }
@@ -130,7 +130,7 @@ public struct DuetQuery<M: Model>: Sendable {
         where: self.constraint,
         orderBy: self.order,
         limit: self.limit,
-        offset: self.offset
+        offset: self.offset,
       )
     } else {
       try await db.delete(
@@ -138,7 +138,7 @@ public struct DuetQuery<M: Model>: Sendable {
         where: self.constraint,
         orderBy: self.order,
         limit: self.limit,
-        offset: self.offset
+        offset: self.offset,
       )
     }
     return models.first!
@@ -151,13 +151,13 @@ public struct DuetQuery<M: Model>: Sendable {
       orderBy: self.order,
       limit: self.limit,
       offset: self.offset,
-      withSoftDeleted: self._withSoftDeleted
+      withSoftDeleted: self._withSoftDeleted,
     )
   }
 
   public func first(
     in db: any DuetSQL.Client,
-    orThrow error: Error = DuetSQLError.notFound("\(M.self)")
+    orThrow error: Error = DuetSQLError.notFound("\(M.self)"),
   ) async throws -> M {
     guard let first = try await self.all(in: db).first else {
       throw error

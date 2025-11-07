@@ -68,7 +68,7 @@ extension DashboardWidgets: NoInputResolver {
         unlockRequests: [],
         recentScreenshots: [],
         numParentNotifications: 0,
-        announcement: nil
+        announcement: nil,
       )
     }
 
@@ -112,30 +112,30 @@ extension DashboardWidgets: NoInputResolver {
         id: user.id,
         name: user.name,
         status: consolidatedChildComputerStatus(user.id, computerUsers),
-        numDevices: computerUsers.filter { $0.childId == user.id }.count
+        numDevices: computerUsers.count(where: { $0.childId == user.id }),
       ) },
       childActivitySummaries: childActivitySummaries(
         children: children,
         map: computerToChildMap,
         keystrokes: keystrokes,
-        screenshots: screenshots
+        screenshots: screenshots,
       ),
       unlockRequests: mapUnlockRequests(
         unlockRequests: unlockRequests,
-        map: computerToChildMap
+        map: computerToChildMap,
       ),
       recentScreenshots: recentScreenshots(
         children: children,
         map: computerToChildMap,
-        screenshots: screenshots
+        screenshots: screenshots,
       ),
       numParentNotifications: notifications.count,
       announcement: announcement.map { .init(
         id: $0.id,
         icon: $0.icon,
         html: $0.html,
-        learnMoreUrl: $0.learnMoreUrl
-      ) }
+        learnMoreUrl: $0.learnMoreUrl,
+      ) },
     )
   }
 }
@@ -144,7 +144,7 @@ extension DashboardWidgets: NoInputResolver {
 
 private func mapUnlockRequests(
   unlockRequests: [Api.UnlockRequest],
-  map: [ComputerUser.Id: Child]
+  map: [ComputerUser.Id: Child],
 ) -> [DashboardWidgets.UnlockRequest] {
   unlockRequests.map { unlockRequest in
     .init(
@@ -153,7 +153,7 @@ private func mapUnlockRequests(
       childName: map[unlockRequest.computerUserId]?.name ?? "",
       target: unlockRequest.target ?? "",
       comment: unlockRequest.requestComment,
-      createdAt: unlockRequest.createdAt
+      createdAt: unlockRequest.createdAt,
     )
   }
 }
@@ -161,7 +161,7 @@ private func mapUnlockRequests(
 private func recentScreenshots(
   children: [Child],
   map: [ComputerUser.Id: Child],
-  screenshots: [Screenshot]
+  screenshots: [Screenshot],
 ) -> [DashboardWidgets.RecentScreenshot] {
   children.compactMap { user in
     screenshots
@@ -174,7 +174,7 @@ private func childActivitySummaries(
   children: [Child],
   map: [ComputerUser.Id: Child],
   keystrokes: [KeystrokeLine],
-  screenshots: [Screenshot]
+  screenshots: [Screenshot],
 ) -> [DashboardWidgets.ChildActivitySummary] {
   children.map { user in
     let userScreenshots = screenshots.filter { map[$0.computerUserId ?? .init()]?.id == user.id }
@@ -184,12 +184,12 @@ private func childActivitySummaries(
       name: user.name,
       numUnreviewed: coalesce(
         userScreenshots.filter(\.notDeleted),
-        userKeystrokes.filter(\.notDeleted)
+        userKeystrokes.filter(\.notDeleted),
       ).count,
       numReviewed: coalesce(
         userScreenshots.filter(\.isDeleted),
-        userKeystrokes.filter(\.isDeleted)
-      ).count
+        userKeystrokes.filter(\.isDeleted),
+      ).count,
     )
   }
 }

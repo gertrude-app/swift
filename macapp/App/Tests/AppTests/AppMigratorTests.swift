@@ -22,9 +22,9 @@ class AppMigratorTests: XCTestCase {
     expect(result).toBeNil()
   }
 
-  func testCurrentStoredDataReturned() async {
+  func testCurrentStoredDataReturned() async throws {
     var migrator = self.testMigrator
-    let stateJson = try! JSON.encode(Persistent.State.mock)
+    let stateJson = try JSON.encode(Persistent.State.mock)
     let getString = spySync(on: String.self, returning: stateJson)
     migrator.userDefaults.getString = getString.fn
     let result = await migrator.migrate()
@@ -32,7 +32,7 @@ class AppMigratorTests: XCTestCase {
     expect(getString.calls).toEqual([Persistent.State.storageKey])
   }
 
-  func testMigratesV1Data() async {
+  func testMigratesV1Data() async throws {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
@@ -50,7 +50,7 @@ class AppMigratorTests: XCTestCase {
         return try! JSON.encode(Persistent.V1(
           appVersion: "2.0.2",
           appUpdateReleaseChannel: .stable,
-          user: .empty
+          user: .empty,
         ))
       default:
         XCTFail("Unexpected key: \(key)")
@@ -65,18 +65,18 @@ class AppMigratorTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "2.0.2",
       user: .empty,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     ))
-    expect(setStringInvocations.value).toEqual([
+    expect(setStringInvocations.value).toEqual(try [
       Both(
         "persistent.state.v2",
-        try! JSON.encode(Persistent.V2(
+        JSON.encode(Persistent.V2(
           appVersion: "2.0.2",
           appUpdateReleaseChannel: .stable,
           filterVersion: "2.0.2", // <-- transferred
           user: .empty,
-          resumeOnboarding: nil
-        ))
+          resumeOnboarding: nil,
+        )),
       ),
     ])
   }
@@ -99,12 +99,12 @@ class AppMigratorTests: XCTestCase {
         screenshotsEnabled: false,
         screenshotFrequency: 6,
         screenshotSize: 7,
-        connectedAt: Date(timeIntervalSince1970: 33)
+        connectedAt: Date(timeIntervalSince1970: 33),
       )
 
       let checkIn = spy(
         on: CheckIn_v2.Input.self,
-        returning: CheckIn_v2.Output.mock { $0.userData = apiUser }
+        returning: CheckIn_v2.Output.mock { $0.userData = apiUser },
       )
       migrator.api.checkIn = checkIn.fn
 
@@ -147,7 +147,7 @@ class AppMigratorTests: XCTestCase {
         appVersion: "1.77.88",
         appUpdateReleaseChannel: .stable,
         filterVersion: "1.77.88",
-        user: apiUser
+        user: apiUser,
       ))
       expect(setStringInvocations.value).toEqual([
         Both(
@@ -156,8 +156,8 @@ class AppMigratorTests: XCTestCase {
             appVersion: "1.77.88",
             appUpdateReleaseChannel: .stable,
             filterVersion: "1.77.88",
-            user: apiUser
-          ))
+            user: apiUser,
+          )),
         ),
       ])
     }
@@ -223,7 +223,7 @@ class AppMigratorTests: XCTestCase {
         screenshotsEnabled: false,
         screenshotFrequency: 444,
         screenshotSize: 777,
-        connectedAt: Date(timeIntervalSince1970: 0)
+        connectedAt: Date(timeIntervalSince1970: 0),
       )
 
       await expect(setApiToken.calls).toEqual([.ones])
@@ -243,7 +243,7 @@ class AppMigratorTests: XCTestCase {
         appVersion: "1.77.88",
         appUpdateReleaseChannel: .stable,
         filterVersion: "1.77.88",
-        user: expectedUser
+        user: expectedUser,
       ))
       expect(setStringInvocations.value).toEqual([Both(
         "persistent.state.v2",
@@ -251,8 +251,8 @@ class AppMigratorTests: XCTestCase {
           appVersion: "1.77.88",
           appUpdateReleaseChannel: .stable,
           filterVersion: "1.77.88",
-          user: expectedUser
-        ))
+          user: expectedUser,
+        )),
       )])
     }
   }

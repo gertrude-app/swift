@@ -19,7 +19,7 @@ let package = Package(
         .product(name: "URLRouting", package: "swift-url-routing"),
         .product(name: "PairQL", package: "pairql"),
       ],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
-  ]
+  ],
 )

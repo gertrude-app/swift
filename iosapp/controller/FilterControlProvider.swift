@@ -21,7 +21,7 @@ class FilterControlProvider: NEFilterControlProvider {
 
   override func stopFilter(
     with reason: NEProviderStopReason,
-    completionHandler: @escaping () -> Void
+    completionHandler: @escaping () -> Void,
   ) {
     self.proxy.stopFilter(reason: reason)
     os_log("[G•] CONTROLLER stop reason: %{public}s", String(describing: reason))

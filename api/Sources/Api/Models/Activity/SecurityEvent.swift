@@ -16,7 +16,7 @@ struct SecurityEvent: Codable, Sendable {
     event: String,
     detail: String? = nil,
     ipAddress: String? = nil,
-    createdAt: Date = Date()
+    createdAt: Date = Date(),
   ) {
     self.id = id
     self.parentId = parentId

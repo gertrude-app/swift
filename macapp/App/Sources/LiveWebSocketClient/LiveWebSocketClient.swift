@@ -51,7 +51,7 @@ extension ClientInterfaces.WebSocketClient: @retroactive DependencyKey {
                 os_log("[G•] APP WebSocket ERROR: %{public}s", message)
               #endif
             },
-            messageSubject: messageSubject
+            messageSubject: messageSubject,
           ) { [token] in
             var request = URLRequest(url: Self.endpoint)
             request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
@@ -90,7 +90,7 @@ extension ClientInterfaces.WebSocketClient: @retroactive DependencyKey {
 
       state: {
         currentState()
-      }
+      },
     )
   }
 

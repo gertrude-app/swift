@@ -47,13 +47,13 @@ final class BlockedRequestTests: XCTestCase {
       app: .mock,
       url: nil,
       hostname: nil,
-      ipAddress: "1.2.3.4"
+      ipAddress: "1.2.3.4",
     )
     let br2 = BlockedRequest(
       app: .mock,
       url: "https://a.com", // <- now have url for same ip, we WANT to show it
       hostname: nil,
-      ipAddress: "1.2.3.4"
+      ipAddress: "1.2.3.4",
     )
     expect(br1.mergeable(with: br2)).toBeFalse() // <- prefer to show url
     expect(br2.mergeable(with: br1)).toBeTrue() // <- don't show only ip if we have url

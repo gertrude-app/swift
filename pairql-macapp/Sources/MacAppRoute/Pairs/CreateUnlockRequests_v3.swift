@@ -16,7 +16,7 @@ public struct CreateUnlockRequests_v3: Pair {
         bundleId: String,
         url: String? = nil,
         hostname: String? = nil,
-        ipAddress: String? = nil
+        ipAddress: String? = nil,
       ) {
         self.bundleId = bundleId
         self.url = url

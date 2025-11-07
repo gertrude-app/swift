@@ -9,13 +9,13 @@ public enum WebSocketMessage {
     case filterSuspensionRequestDecided_v2(
       id: UUID,
       decision: FilterSuspensionDecision,
-      comment: String?
+      comment: String?,
     )
     case unlockRequestUpdated_v2(
       id: UUID,
       status: RequestStatus,
       target: String,
-      comment: String?
+      comment: String?,
     )
   }
 

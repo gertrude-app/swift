@@ -99,7 +99,7 @@ struct ParentWithOnboardedChildEntities {
 
 extension ApiTestCase {
   func parent(
-    with config: (inout Parent) -> Void = { _ in }
+    with config: (inout Parent) -> Void = { _ in },
   ) async throws -> ParentEntities {
     let parent = try await self.db.create(Parent.random(with: config))
     let token = try await self.db.create(Parent.DashToken(parentId: parent.id))
@@ -108,21 +108,21 @@ extension ApiTestCase {
 
   func parent<T>(
     with kp: WritableKeyPath<Parent, T>,
-    of value: T
+    of value: T,
   ) async throws -> ParentEntities {
     try await self.parent(with: { $0[keyPath: kp] = value })
   }
 
   func child<T>(
     with kp: WritableKeyPath<Child, T>,
-    of value: T
+    of value: T,
   ) async throws -> ChildEntities {
     try await self.child(with: { $0[keyPath: kp] = value })
   }
 
   func child(
     with childConfig: (inout Child) -> Void = { _ in },
-    withParent parentConfig: (inout Parent) -> Void = { _ in }
+    withParent parentConfig: (inout Parent) -> Void = { _ in },
   ) async throws -> ChildEntities {
     let parent = try await self.parent(with: parentConfig)
     let child = try await self.db.create(Child.random {
@@ -150,21 +150,21 @@ extension ApiTestCase {
     })
     let token = try await self.db.create(MacAppToken(
       childId: child.model.id,
-      computerUserId: computerUser.id
+      computerUserId: computerUser.id,
     ))
     return .init(
       model: child.model,
       computer: computer,
       computerUser: computerUser,
       token: token,
-      parent: child.parent
+      parent: child.parent,
     )
   }
 }
 
 extension ParentEntities {
   func withKeychain(
-    config: (inout Keychain, inout Key) -> Void = { _, _ in }
+    config: (inout Keychain, inout Key) -> Void = { _, _ in },
   ) async throws -> ParentWithKeychainEntities {
     @Dependency(\.db) var db
     var keychain = Keychain.random
@@ -181,7 +181,7 @@ extension ParentEntities {
 extension ChildEntities {
   func withDevice(
     config: (inout ComputerUser) -> Void = { _ in },
-    computer: (inout Computer) -> Void = { _ in }
+    computer: (inout Computer) -> Void = { _ in },
   ) async throws -> ChildWithComputerEntities {
     @Dependency(\.db) var db
     let computer = try await db.create(Computer.random {
@@ -195,14 +195,14 @@ extension ChildEntities {
     })
     let token = try await db.create(MacAppToken(
       childId: self.model.id,
-      computerUserId: computerUser.id
+      computerUserId: computerUser.id,
     ))
     return .init(
       model: self.model,
       computer: computer,
       computerUser: computerUser,
       token: token,
-      parent: self.parent
+      parent: self.parent,
     )
   }
 }

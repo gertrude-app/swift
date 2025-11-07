@@ -19,7 +19,7 @@ enum AppWebsocket {
 
   private static func establish(
     _ req: Request,
-    _ ws: WebSocket
+    _ ws: WebSocket,
   ) async throws {
     guard let token = try? await req.macAppToken(),
           let computerUser = try? await token.computerUser(in: req.context.db) else {
@@ -32,7 +32,7 @@ enum AppWebsocket {
     let ids = AppConnection.Ids(
       computerUser: computerUser.id,
       child: child.id,
-      keychains: keychains.map(\.id)
+      keychains: keychains.map(\.id),
     )
 
     let connection = AppConnection(ws: ws, ids: ids)

@@ -54,7 +54,7 @@ private func checkoutSessionUrl(for context: ParentContext) async throws -> Stri
     // since we don't send them to stripe at all when they sign up
     trialPeriodDays: nil,
     trialEndBehavior: nil,
-    paymentMethodCollection: nil
+    paymentMethodCollection: nil,
   )
 
   let session = try await with(dependency: \.stripe)

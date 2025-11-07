@@ -105,14 +105,14 @@ struct BlockedRequestsFeature: Feature {
             bundleId: $0.app.bundleId,
             url: $0.url,
             hostname: $0.hostname,
-            ipAddress: $0.ipAddress
+            ipAddress: $0.ipAddress,
           ) }
         // shouldn't need to check network connection, a blocked request should imply connected
         return .exec { send in
           await send(.createUnlockRequests(TaskResult {
             try await self.api.createUnlockRequests(.init(
               blockedRequests: inputReqs,
-              comment: comment
+              comment: comment,
             ))
           }))
         }
@@ -194,7 +194,7 @@ extension BlockedRequestsFeature.RootReducer {
             await device.notifyUnlockRequestUpdated(
               accepted: unlockRequest.status == .accepted,
               target: unlockRequest.target,
-              comment: unlockRequest.comment
+              comment: unlockRequest.comment,
             )
           }
         }
@@ -252,7 +252,7 @@ extension BlockedRequest {
       searchableText: [url, hostname, ipAddress, app.searchableText]
         .compactMap(\.self)
         .joined(separator: " "),
-      app: app.displayName ?? app.bundleId
+      app: app.displayName ?? app.bundleId,
     )
   }
 }

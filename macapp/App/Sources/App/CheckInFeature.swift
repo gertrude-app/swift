@@ -68,13 +68,13 @@ extension CheckInFeature.RootReducer {
             await send(.setTrustedTimestamp(.init(
               network: Date(timeIntervalSince1970: output.trustedTime),
               system: system,
-              boottime: boottime
+              boottime: boottime,
             )))
           }
         },
         .exec { [
           filterInstalled = state.filter.extension.installed,
-          downtimePausedUntil = state.user.downtimePausedUntil
+          downtimePausedUntil = state.user.downtimePausedUntil,
         ] _ in
           guard filterInstalled else {
             if reason == .userRefreshedRules {
@@ -90,7 +90,7 @@ extension CheckInFeature.RootReducer {
             output.keychains,
             output.userData.downtime.map {
               Downtime(window: $0, pausedUntil: downtimePausedUntil)
-            }
+            },
           )
 
           if case .some(let suspension) = output.resolvedFilterSuspension,
@@ -104,11 +104,11 @@ extension CheckInFeature.RootReducer {
             } else {
               await self.device.notify(
                 "Error refreshing rules",
-                "We got updated rules, but there was an error sending them to the filter."
+                "We got updated rules, but there was an error sending them to the filter.",
               )
             }
           }
-        }
+        },
       )
 
     case .checkIn(result: .failure(let err), reason: let reason):
@@ -119,7 +119,7 @@ extension CheckInFeature.RootReducer {
         if reason == .userRefreshedRules {
           await self.device.notify(
             "Error refreshing rules",
-            "Please try again, or contact support if the problem persists."
+            "Please try again, or contact support if the problem persists.",
           )
         }
       }
@@ -142,10 +142,10 @@ extension CheckInFeature.RootReducer {
               state.filter.version,
               pendingFilterSuspension: state.requestSuspension.pending?.id,
               pendingUnlockRequests: state.blockedRequests.pendingUnlockRequests.map(\.id),
-              sendNamedApps: reason == .heartbeat
+              sendNamedApps: reason == .heartbeat,
             )
           },
-          reason: reason
+          reason: reason,
         ))
       }
     }

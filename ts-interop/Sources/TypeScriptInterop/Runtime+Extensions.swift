@@ -4,7 +4,7 @@ extension TypeInfo {
   var isUserStruct: Bool {
     guard kind == .struct else { return false }
     // ignore structs like String, Bool, Date, Int, etc...
-    return properties.map(\.name).filter { !$0.starts(with: "_") }.count > 0
+    return properties.map(\.name).count(where: { !$0.starts(with: "_") }) > 0
   }
 
   var isArray: Bool {

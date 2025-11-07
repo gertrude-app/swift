@@ -13,7 +13,7 @@ final class LogInterestingEventResolverTests: ApiTestCase, @unchecked Sendable {
       eventId: "exec--App_v2.3.2--App/MonitoringFeature.swift:59",
       kind: "unexpected error",
       deviceId: nil,
-      detail: nil
+      detail: nil,
     )
 
     _ = try await LogInterestingEvent.resolve(with: input, in: .mock)
@@ -27,7 +27,7 @@ final class LogInterestingEventResolverTests: ApiTestCase, @unchecked Sendable {
       eventId: "a9fde6b3",
       kind: "unexpected error",
       deviceId: nil,
-      detail: nil
+      detail: nil,
     )
 
     _ = try await LogInterestingEvent.resolve(with: input, in: .mock)
@@ -58,7 +58,7 @@ final class LogInterestingEventResolverTests: ApiTestCase, @unchecked Sendable {
         eventId: "a9fde6b3",
         kind: "unexpected error",
         deviceId: nil,
-        detail: detail
+        detail: detail,
       )
 
       _ = try await LogInterestingEvent.resolve(with: input, in: .mock)

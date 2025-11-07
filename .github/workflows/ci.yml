@@ -249,12 +249,13 @@ jobs:
         uses: actions/checkout@v4
       - name: build
         run: |
-          git clone --depth 1 --branch 0.55.5 https://github.com/nicklockwood/SwiftFormat
+          git clone --depth 1 --branch 0.58.5 https://github.com/nicklockwood/SwiftFormat
           cd SwiftFormat && swift build -c debug
           cp ./.build/debug/swiftformat /usr/local/bin
           cd ../ && rm -rf SwiftFormat/
       - name: swiftlint
-        run: swiftformat . --lint
+        run: /usr/local/bin/swiftformat . --lint
+
 
   xml-lint:
     if: github.event_name == 'pull_request'

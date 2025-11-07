@@ -18,7 +18,7 @@ typealias ScreenshotData = (data: Data, width: Int, height: Int, createdAt: Date
     CGRect.infinite,
     .optionAll,
     kCGNullWindowID,
-    .nominalResolution
+    .nominalResolution,
   ) else {
     throw ScreenshotError.createImageFailed
   }

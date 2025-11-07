@@ -39,7 +39,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: reqId,
       decision: .accepted(duration: 33, extraMonitoring: nil),
-      comment: nil
+      comment: nil,
     )))) {
       // so we we nil out the pending request..
       $0.requestSuspension.pending = nil
@@ -67,7 +67,7 @@ final class RequestSuspensionFeatureTests: XCTestCase {
         $0.resolvedFilterSuspension = .init(
           id: reqId,
           decision: .accepted(duration: 33, extraMonitoring: .setScreenshotFreq(10)),
-          comment: "ok"
+          comment: "ok",
         )
       },
     ])
@@ -109,9 +109,9 @@ final class RequestSuspensionFeatureTests: XCTestCase {
       resolvedFilterSuspension: .init(
         id: reqId,
         decision: .accepted(duration: 33, extraMonitoring: .setScreenshotFreq(10)),
-        comment: "ok"
+        comment: "ok",
       ),
-      trustedTime: 0
+      trustedTime: 0,
     )), reason: .pendingRequest)) {
       $0.requestSuspension.pending = nil
       $0.monitoring.suspensionMonitoring!.screenshotFrequency = 10
@@ -174,8 +174,8 @@ final class RequestSuspensionFeatureTests: XCTestCase {
 
     await store.send(
       .requestSuspension(
-        .webview(.requestSubmitted(durationInSeconds: 30, comment: nil))
-      )
+        .webview(.requestSubmitted(durationInSeconds: 30, comment: nil)),
+      ),
     )
 
     await expect(connect.calls.count).toEqual(1)

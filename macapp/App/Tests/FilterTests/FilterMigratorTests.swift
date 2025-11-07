@@ -20,9 +20,9 @@ class FilterMigratorTests: XCTestCase {
     expect(result).toBeNil()
   }
 
-  func testCurrentStoredDataReturned() async {
+  func testCurrentStoredDataReturned() async throws {
     var migrator = self.testMigrator
-    let stateJson = try! JSON.encode(Persistent.State.mock)
+    let stateJson = try JSON.encode(Persistent.State.mock)
     let getString = spySync(on: String.self, returning: stateJson)
     migrator.userDefaults.getString = getString.fn
     let result = await migrator.migrate()
@@ -30,7 +30,7 @@ class FilterMigratorTests: XCTestCase {
     expect(getString.calls).toEqual(["persistent.state.v2"])
   }
 
-  func testMigratesV1ToV2() async {
+  func testMigratesV1ToV2() async throws {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
@@ -42,7 +42,7 @@ class FilterMigratorTests: XCTestCase {
     let v1Stored = Persistent.V1(
       userKeys: [502: [v1FilterKey]],
       appIdManifest: .init(),
-      exemptUsers: [503]
+      exemptUsers: [503],
     )
 
     let getStringInvocations = LockIsolated<[String]>([])
@@ -63,23 +63,23 @@ class FilterMigratorTests: XCTestCase {
       userKeychains: [502: [.init(
         id: 0, // <-- created by migrator
         schedule: nil,
-        keys: [.init(id: v1FilterKey.id, key: v1FilterKey.key)]
+        keys: [.init(id: v1FilterKey.id, key: v1FilterKey.key)],
       )]],
       userDowntime: [:], // <-- created by migrator
       appIdManifest: v1Stored.appIdManifest,
-      exemptUsers: v1Stored.exemptUsers
+      exemptUsers: v1Stored.exemptUsers,
     )
 
     let result = await migrator.migrate()
     expect(getStringInvocations.value).toEqual(["persistent.state.v2", "persistent.state.v1"])
     expect(result).toEqual(expectedState)
-    expect(setStringInvocations.value).toEqual([Both(
+    expect(setStringInvocations.value).toEqual(try [Both(
       "persistent.state.v2",
-      try! JSON.encode(expectedState)
+      JSON.encode(expectedState),
     )])
   }
 
-  func testMigratesV1Data() async {
+  func testMigratesV1Data() async throws {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
@@ -107,16 +107,16 @@ class FilterMigratorTests: XCTestCase {
       userKeychains: [:],
       userDowntime: [:],
       appIdManifest: .init(),
-      exemptUsers: [509, 507]
+      exemptUsers: [509, 507],
     )
 
     let result = await migrator.migrate()
     expect(getStringInvocations.value)
       .toEqual(["persistent.state.v2", "persistent.state.v1", "exemptUsers"])
     expect(result).toEqual(expectedState)
-    expect(setStringInvocations.value).toEqual([Both(
+    expect(setStringInvocations.value).toEqual(try [Both(
       "persistent.state.v2",
-      try! JSON.encode(expectedState)
+      JSON.encode(expectedState),
     )])
   }
 }
@@ -126,7 +126,7 @@ extension Persistent.State: Mocked {
     .init(
       userKeychains: [502: [.init(id: .deadbeef, schedule: nil, keys: [.mock])]],
       appIdManifest: .empty,
-      exemptUsers: [501]
+      exemptUsers: [501],
     )
   }
 
@@ -138,7 +138,7 @@ extension Persistent.State: Mocked {
 extension RuleKey {
   static let mock = RuleKey(
     id: .init(),
-    key: .skeleton(scope: .bundleId("com.whitelisted.widget"))
+    key: .skeleton(scope: .bundleId("com.whitelisted.widget")),
   )
 }
 

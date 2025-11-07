@@ -6,7 +6,7 @@ import XCore
 func output<T: Pair>(
   from pair: T.Type,
   with route: AuthedUserRoute,
-  using overrideToken: UUID? = nil
+  using overrideToken: UUID? = nil,
 ) async throws -> T.Output {
   let currentToken = await userToken.value
   // NB: prefer overrideToken
@@ -18,7 +18,7 @@ func output<T: Pair>(
 
 func output<T: Pair>(
   from pair: T.Type,
-  withUnauthed route: UnauthedRoute
+  withUnauthed route: UnauthedRoute,
 ) async throws -> T.Output {
   try await request(root: .unauthed(route), pair: T.self)
 }
@@ -27,7 +27,7 @@ func output<T: Pair>(
 
 private func request<T: Pair>(
   root route: MacAppRoute,
-  pair: T.Type
+  pair: T.Type,
 ) async throws -> T.Output {
   let router = App.router.baseURL(ApiClient.endpoint.absoluteString)
   var request = try router.request(for: .wrap(route))

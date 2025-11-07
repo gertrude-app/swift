@@ -63,7 +63,7 @@ final class CheckInFeatureTests: XCTestCase {
     expect(sentDowntimes.value).toEqual([
       Downtime(
         window: "22:00-05:00",
-        pausedUntil: .epoch + .minutes(20) // <-- we must pass along the pause
+        pausedUntil: .epoch + .minutes(20), // <-- we must pass along the pause
       ),
     ])
   }
@@ -91,7 +91,7 @@ final class CheckInFeatureTests: XCTestCase {
         $0.userData.name = "updated name"
         $0.userData.downtime = "22:00-05:00"
       }.userData,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )])
   }
 
@@ -156,7 +156,7 @@ final class CheckInFeatureTests: XCTestCase {
     await store.send(.menuBar(.refreshRulesClicked))
     await expect(notifications).toEqual([.init(
       "Error refreshing rules",
-      "We got updated rules, but there was an error sending them to the filter."
+      "We got updated rules, but there was an error sending them to the filter.",
     )])
   }
 
@@ -173,7 +173,7 @@ final class CheckInFeatureTests: XCTestCase {
     await store.send(.menuBar(.refreshRulesClicked))
     await expect(notifications).toEqual([.init(
       "Error refreshing rules",
-      "Please try again, or contact support if the problem persists."
+      "Please try again, or contact support if the problem persists.",
     )])
   }
 
@@ -242,7 +242,7 @@ final class CheckInFeatureTests: XCTestCase {
       $0.resolvedFilterSuspension = .init(
         id: reqId,
         decision: .accepted(duration: 44, extraMonitoring: nil),
-        comment: "ok!"
+        comment: "ok!",
       )
     }
 

@@ -18,7 +18,7 @@ final class iOSResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await ScreenshotUploadUrl.resolve(
         with: .init(width: 973, height: 321, createdAt: .reference),
-        in: child.context
+        in: child.context,
       )
     }
     let record = try await Screenshot.query()
@@ -40,9 +40,9 @@ final class iOSResolverTests: ApiTestCase, @unchecked Sendable {
         deviceType: "iPhone",
         iOSVersion: "18.0.1",
         vendorId: vendorId,
-        detail: "first launch"
+        detail: "first launch",
       ),
-      in: .mock
+      in: .mock,
     )
 
     let retrieved = try await InterestingEvent.query()

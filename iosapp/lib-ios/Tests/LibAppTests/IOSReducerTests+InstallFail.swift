@@ -10,7 +10,7 @@ final class IOSReducerTestsInstallFail: XCTestCase {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let cleanupInvocations = LockIsolated(0)
     let store = await TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreInstall)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreInstall))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -43,7 +43,7 @@ final class IOSReducerTestsInstallFail: XCTestCase {
   func testInstallOtherError() async throws {
     let apiLoggedDetails = LockIsolated<[String]>([])
     let store = await TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreInstall)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.dontGetTrickedPreInstall))),
     ) {
       IOSReducer()
     } withDependencies: {

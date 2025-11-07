@@ -68,7 +68,7 @@ extension MonitoringFeature.RootReducer {
             width: image.width,
             height: image.height,
             filterSuspended: filterSuspended,
-            createdAt: image.createdAt
+            createdAt: image.createdAt,
           ))
         }
       }
@@ -130,7 +130,7 @@ extension MonitoringFeature.RootReducer {
         state.monitoring.suspensionMonitoring = nil
         return .merge(
           self.configureMonitoring(current: state.user.data, previous: suspensionMonitoring),
-          flushPendingKeystrokes
+          flushPendingKeystrokes,
         )
       }
       return flushPendingKeystrokes
@@ -157,7 +157,7 @@ extension MonitoringFeature.RootReducer {
         state.monitoring.suspensionMonitoring = nil
         return .merge(
           self.configureMonitoring(current: state.user.data, previous: suspensionMonitoring),
-          self.flushKeystrokes(wasSuspended)
+          self.flushKeystrokes(wasSuspended),
         )
       }
       return self.flushKeystrokes(wasSuspended)
@@ -165,7 +165,7 @@ extension MonitoringFeature.RootReducer {
     case .application(.willTerminate):
       return .merge(
         .cancel(id: CancelId.screenshots),
-        self.flushKeystrokes(state.isFilterSuspended)
+        self.flushKeystrokes(state.isFilterSuspended),
       )
 
     case .adminAuthed(.adminWindow(.webview(.disconnectUserClicked))),
@@ -198,7 +198,7 @@ extension MonitoringFeature.RootReducer {
   func configureMonitoring(
     current currentConfig: MonitoringConfig?,
     previous previousConfig: MonitoringConfig?,
-    force: Bool = false
+    force: Bool = false,
   ) -> Effect<Action> {
     switch (currentConfig, previousConfig, force) {
 
@@ -214,7 +214,7 @@ extension MonitoringFeature.RootReducer {
     case (.none, .some, _):
       .merge(
         .cancel(id: CancelId.screenshots),
-        .exec { _ in await monitoring.stopLoggingKeystrokes() }
+        .exec { _ in await monitoring.stopLoggingKeystrokes() },
       )
 
     // current info changed (or we're forcing), reconfigure
@@ -240,7 +240,7 @@ extension MonitoringFeature.RootReducer {
               await send(.monitoring(.timerTriggeredTakeScreenshot))
             }
           }
-        }.cancellable(id: CancelId.screenshots, cancelInFlight: true)
+        }.cancellable(id: CancelId.screenshots, cancelInFlight: true),
       )
     }
   }
@@ -271,13 +271,13 @@ struct UserMonitoringConfig: MonitoringConfig, Equatable, Sendable {
 
 extension UserData: MonitoringConfig {
   func monitoring(
-    merging extra: FilterSuspensionDecision.ExtraMonitoring
+    merging extra: FilterSuspensionDecision.ExtraMonitoring,
   ) -> UserMonitoringConfig {
     UserMonitoringConfig(
       keyloggingEnabled: extra.addsKeylogging || keyloggingEnabled,
       screenshotsEnabled: extra.setsScreenshotFrequency || screenshotsEnabled,
       screenshotSize: screenshotSize,
-      screenshotFrequency: extra.screenshotsFrequency ?? screenshotFrequency
+      screenshotFrequency: extra.screenshotsFrequency ?? screenshotFrequency,
     )
   }
 }

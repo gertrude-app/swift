@@ -29,7 +29,7 @@ struct DeleteEntity_v2: Pair {
 extension DeleteEntity_v2: Resolver {
   static func resolve(
     with input: Input,
-    in context: ParentContext
+    in context: ParentContext,
   ) async throws -> Output {
     switch input.type {
     case .announcement:
@@ -45,7 +45,7 @@ extension DeleteEntity_v2: Resolver {
       try await context.db.create(DeletedEntity(
         type: "Admin",
         reason: "self-deleted from use-case initial screen",
-        data: JSON.encode(context.parent, [.isoDates])
+        data: JSON.encode(context.parent, [.isoDates]),
       ))
       try await context.db.delete(context.parent)
 
@@ -76,7 +76,7 @@ extension DeleteEntity_v2: Resolver {
       dashSecurityEvent(
         .childComputerDeleted,
         "child: \(child.name), computer serial: \(computer.serialNumber)",
-        in: context
+        in: context,
       )
 
     case .key:
@@ -142,7 +142,7 @@ extension DeleteEntity_v2: Resolver {
 
 private func deleteUnusedEmptyAutogenKeychain(
   _ childKeychainIds: [Keychain.Id],
-  _ db: any DuetSQL.Client
+  _ db: any DuetSQL.Client,
 ) async {
   do {
     let keychains = try await Keychain.query()

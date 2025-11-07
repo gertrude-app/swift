@@ -27,7 +27,7 @@ extension XSlack.Slack.Client {
     let slack = XSlack.Slack.Message(
       text: apiSlack.text,
       channel: apiSlack.channel,
-      username: "Gertrude App"
+      username: "Gertrude App",
     )
     if let error = await send(slack, apiSlack.token) {
       throw SendError(message: error)
@@ -46,7 +46,7 @@ extension XSlack.Slack.Client {
     let slack = XSlack.Slack.Message(
       text: message,
       channel: channel.rawValue,
-      username: "Gertrude Api"
+      username: "Gertrude Api",
     )
 
     if limitHelper.canSend(), let error = await self.sendInternal(slack, token) {
@@ -97,7 +97,7 @@ struct LimitHelper: Sendable {
       self.data.withValue { $0 = (Int.max, start) }
       with(dependency: \.postmark).toSuperAdmin(
         "internal slack rate limit reached",
-        "see server logs, db for un-slacked events"
+        "see server logs, db for un-slacked events",
       )
       return false
     }

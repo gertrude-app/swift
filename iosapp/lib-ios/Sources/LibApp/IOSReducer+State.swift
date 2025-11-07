@@ -22,7 +22,7 @@ extension IOSReducer {
     public init(
       screen: IOSReducer.Screen = .launching,
       disabledBlockGroups: [BlockGroup] = [],
-      onboarding: OnboardingState = .init()
+      onboarding: OnboardingState = .init(),
     ) {
       self.screen = screen
       self.disabledBlockGroups = disabledBlockGroups
@@ -48,7 +48,7 @@ extension IOSReducer {
         returningTo: IOSReducer.Screen? = nil,
         availableDiskSpaceInBytes: Int? = nil,
         startClearCache: Date? = nil,
-        endClearCache: Date? = nil
+        endClearCache: Date? = nil,
       ) {
         self.firstLaunch = firstLaunch
         self.batteryLevel = batteryLevel

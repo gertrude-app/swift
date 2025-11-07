@@ -36,11 +36,11 @@ struct ApiTypeScriptEnumsCodableGenerator: AggregateCodeGenerator {
       replacements: [
         "Foundation.UUID": "UUID",
         "Tagged.Tagged": "Tagged",
-      ]
+      ],
     ),
     EnumCodableGen.EnumsGenerator(
       path: "/Users/jared/gertie/swift/gertie/Sources/GertieIOS/Enums+Codable.swift",
-      types: [(GertieIOS.BlockRule.self, true)]
+      types: [(GertieIOS.BlockRule.self, true)],
     ),
   ]
 

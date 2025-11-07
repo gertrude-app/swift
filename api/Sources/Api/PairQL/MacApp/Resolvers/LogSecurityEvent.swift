@@ -14,7 +14,7 @@ extension LogSecurityEvent: Resolver {
       parentId: context.child.parentId,
       computerUserId: computerUser.id,
       event: input.event,
-      detail: input.detail
+      detail: input.detail,
     ))
 
     guard let event = Gertie.SecurityEvent.MacApp(rawValue: input.event) else {
@@ -34,8 +34,8 @@ extension LogSecurityEvent: Resolver {
       .adminChildSecurityEvent(.init(
         userName: context.child.name,
         event: event,
-        detail: input.detail
-      ))
+        detail: input.detail,
+      )),
     )
 
     return .success

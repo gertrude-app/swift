@@ -43,7 +43,7 @@ extension GetAdminKeychains: NoInputResolver {
     }
     return try await .init(
       keychains: keychains,
-      children: .init(parentId: context.parent.id)
+      children: .init(parentId: context.parent.id),
     )
   }
 }
@@ -56,7 +56,7 @@ extension GetAdminKeychains.AdminKeychain {
     try await self.init(
       summary: .init(from: model),
       children: .init(from: model, parentId: context.parent.id),
-      keys: keys.map { .init(from: $0, keychainId: model.id) }
+      keys: keys.map { .init(from: $0, keychainId: model.id) },
     )
   }
 }

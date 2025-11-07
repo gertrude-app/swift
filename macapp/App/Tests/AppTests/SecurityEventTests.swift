@@ -25,7 +25,7 @@ final class SecurityEventTests: XCTestCase {
 
     // we can't send this event because there's no internet connection
     await store.send(
-      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))),
     )
 
     // the event gets buffered
@@ -33,7 +33,7 @@ final class SecurityEventTests: XCTestCase {
       deviceId: .deadbeef,
       userToken: 1,
       event: .filterSuspensionGrantedByAdmin,
-      detail: "for < 1 min (at \(store.deps.date.now))"
+      detail: "for < 1 min (at \(store.deps.date.now))",
     )
 
     let event1Json = try JSON.encode([event1])
@@ -47,7 +47,7 @@ final class SecurityEventTests: XCTestCase {
       deviceId: .deadbeef,
       userToken: 1,
       event: .advancedSettingsOpened,
-      detail: "at \(store.deps.date.now)"
+      detail: "at \(store.deps.date.now)",
     )
     expect(setStringCalls.value).toEqual(try [
       .init(event1Json, .bufferedSecurityEventsKey),
@@ -76,17 +76,17 @@ final class SecurityEventTests: XCTestCase {
         .init(
           deviceId: .deadbeef,
           event: "\(SecurityEvent.MacApp.filterSuspensionGrantedByAdmin)",
-          detail: "for < 1 min (at \(store.deps.date.now))"
+          detail: "for < 1 min (at \(store.deps.date.now))",
         ),
-        1 // <-- the stored token
+        1, // <-- the stored token
       ),
       Both(
         .init(
           deviceId: .deadbeef,
           event: "\(SecurityEvent.MacApp.advancedSettingsOpened)",
-          detail: "at \(store.deps.date.now)"
+          detail: "at \(store.deps.date.now)",
         ),
-        1 // <-- the stored token
+        1, // <-- the stored token
       ),
     ])
 

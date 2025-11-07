@@ -19,7 +19,7 @@ public struct LogIOSEvent: Pair {
       deviceType: String,
       iOSVersion: String,
       vendorId: UUID? = nil,
-      detail: String? = nil
+      detail: String? = nil,
     ) {
       self.eventId = eventId
       self.kind = kind

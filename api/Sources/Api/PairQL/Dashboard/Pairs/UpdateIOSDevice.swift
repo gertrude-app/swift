@@ -32,7 +32,7 @@ extension UpdateIOSDevice: Resolver {
       try await ctx.db.create(input.enabledBlockGroups.map { blockGroupId in
         IOSApp.DeviceBlockGroup(
           deviceId: input.deviceId,
-          blockGroupId: blockGroupId
+          blockGroupId: blockGroupId,
         )
       })
     } catch {

@@ -32,7 +32,7 @@ extension CreatePendingNotificationMethod: Resolver {
 private func sendVerification(
   _ code: Int,
   for method: Parent.NotificationMethod.Config,
-  in context: ParentContext
+  in context: ParentContext,
 ) async throws {
   switch method {
   case .slack(channelId: let channel, channelName: _, token: let token):
@@ -40,14 +40,14 @@ private func sendVerification(
       try await with(dependency: \.slack).send(Slack(
         text: "Your verification code is `\(code)`",
         channel: channel,
-        token: token
+        token: token,
       ))
     } catch {
       throw context.error(
         id: "df619205",
         type: .unauthorized,
         debugMessage: "failed to send Slack verification code: \(error) ",
-        dashboardTag: .slackVerificationFailed
+        dashboardTag: .slackVerificationFailed,
       )
     }
 
@@ -58,7 +58,7 @@ private func sendVerification(
   case .text(phoneNumber: let phoneNumber):
     try await with(dependency: \.twilio).send(Text(
       to: .init(rawValue: phoneNumber),
-      message: "Your verification code is \(code)"
+      message: "Your verification code is \(code)",
     ))
   }
 }

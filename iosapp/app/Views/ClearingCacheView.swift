@@ -29,7 +29,7 @@ struct ClearingCacheView: View {
             tracking: self.$spinnerOffset,
             to: .zero,
             after: .seconds(0.2),
-            for: .seconds(0.5)
+            for: .seconds(0.5),
           )
 
         Text("Clearing cache...")
@@ -39,7 +39,7 @@ struct ClearingCacheView: View {
             tracking: self.$titleOffset,
             to: .zero,
             after: .seconds(0.3),
-            for: .seconds(0.5)
+            for: .seconds(0.5),
           )
 
         Text("This may take a little while.")
@@ -50,14 +50,14 @@ struct ClearingCacheView: View {
             tracking: self.$subtitleOffset,
             to: .zero,
             after: .seconds(0.4),
-            for: .seconds(0.5)
+            for: .seconds(0.5),
           )
 
         if let availableSpace = self.availableSpace {
           ProgressView(
             value: Double(self.bytesWritten),
             // available is estimate, pad a little to prevent full bar
-            total: Double(availableSpace) * 1.1
+            total: Double(availableSpace) * 1.1,
           )
           .progressViewStyle(LinearProgressViewStyle())
           .frame(height: 20)
@@ -67,12 +67,12 @@ struct ClearingCacheView: View {
             tracking: self.$amountClearedOffset,
             to: .zero,
             after: .seconds(0.5),
-            for: .seconds(0.5)
+            for: .seconds(0.5),
           )
         }
 
         Text(
-          "\(Bytes.humanReadable(self.bytesWritten, decimalPlaces: 3, prefix: .decimal)) checked"
+          "\(Bytes.humanReadable(self.bytesWritten, decimalPlaces: 3, prefix: .decimal)) checked",
         )
         .font(.system(size: 16, weight: .regular))
         .foregroundStyle(Color(self.cs, light: .black.opacity(0.4), dark: .white.opacity(0.4)))
@@ -81,7 +81,7 @@ struct ClearingCacheView: View {
           tracking: self.$amountClearedOffset,
           to: .zero,
           after: .seconds(0.5),
-          for: .seconds(0.5)
+          for: .seconds(0.5),
         )
       }
     }
@@ -91,6 +91,6 @@ struct ClearingCacheView: View {
 #Preview {
   ClearingCacheView(
     availableSpace: 3_000_000_000,
-    bytesWritten: 1_040_031_000
+    bytesWritten: 1_040_031_000,
   )
 }

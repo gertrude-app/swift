@@ -100,12 +100,12 @@ class ApiTestCase: XCTestCase, @unchecked Sendable {
     let keychain = try await self.db.create(Keychain(
       id: .init(autoId),
       parentId: parent.model.id,
-      name: "Auto Included (test)"
+      name: "Auto Included (test)",
     ))
 
     let key = try await self.db.create(Key(
       keychainId: keychain.id,
-      key: .domain(domain: "foo.com", scope: .webBrowsers)
+      key: .domain(domain: "foo.com", scope: .webBrowsers),
     ))
     return (keychain, key)
   }

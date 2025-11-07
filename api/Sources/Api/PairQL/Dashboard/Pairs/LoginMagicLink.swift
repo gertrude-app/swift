@@ -21,7 +21,7 @@ extension LoginMagicLink: Resolver {
         "9a314d21",
         .unauthorized,
         "Magic link token invalid or expired",
-        .magicLinkTokenNotFound
+        .magicLinkTokenNotFound,
       )
     }
 

@@ -15,7 +15,7 @@ extension Parent: RandomMocked {
     Parent(
       id: .init(.init()),
       email: .init(rawValue: "random@random\(Int.random).com"),
-      password: "@random".random
+      password: "@random".random,
     )
   }
 }

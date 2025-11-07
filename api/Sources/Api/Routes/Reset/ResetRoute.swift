@@ -58,7 +58,7 @@ enum ResetRoute {
           this route</a> in the dashboard web app:<br />
         </p>
         </body></html>
-      """)
+      """),
     )
   }
 }

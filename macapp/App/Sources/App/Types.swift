@@ -63,7 +63,7 @@ public extension ApiClient {
     _ filterVersion: String?,
     pendingFilterSuspension: UUID? = nil,
     pendingUnlockRequests: [UUID]? = nil,
-    sendNamedApps: Bool = false
+    sendNamedApps: Bool = false,
   ) async throws -> CheckIn_v2.Output {
     @Dependency(\.app) var appClient
     @Dependency(\.device) var device
@@ -75,8 +75,8 @@ public extension ApiClient {
         osVersion: device.osVersion().semver.string,
         pendingFilterSuspension: pendingFilterSuspension,
         pendingUnlockRequests: pendingUnlockRequests,
-        namedApps: sendNamedApps ? device.listRunningApps().filter(\.hasName) : nil
-      )
+        namedApps: sendNamedApps ? device.listRunningApps().filter(\.hasName) : nil,
+      ),
     )
   }
 }

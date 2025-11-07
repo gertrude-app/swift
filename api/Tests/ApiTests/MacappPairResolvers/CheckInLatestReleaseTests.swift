@@ -10,14 +10,14 @@ import XExpect
 final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
   func test(
     releaseChannel: ReleaseChannel,
-    currentVersion: String
+    currentVersion: String,
   ) async throws -> CheckIn_v2.LatestRelease {
     let child = try await self.child().withDevice(computer: {
       $0.appReleaseChannel = releaseChannel
     })
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: currentVersion, filterVersion: currentVersion),
-      in: child.context
+      in: child.context,
     )
     return output.latestRelease
   }
@@ -61,8 +61,8 @@ final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
       semver: "1.2.0",
       pace: .init(
         nagOn: .epoch.advanced(by: .days(30)),
-        requireOn: .epoch.advanced(by: .days(40))
-      )
+        requireOn: .epoch.advanced(by: .days(40)),
+      ),
     ))
   }
 
@@ -80,8 +80,8 @@ final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
       semver: "1.3.0", // update to very latest...
       pace: .init(
         nagOn: .epoch.advanced(by: .days(30)), // ... w/ pace of first missed release
-        requireOn: .epoch.advanced(by: .days(40))
-      )
+        requireOn: .epoch.advanced(by: .days(40)),
+      ),
     ))
   }
 
@@ -98,7 +98,7 @@ final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "2.0.0", filterVersion: nil),
-      in: child.context
+      in: child.context,
     )
 
     expect(output.updateReleaseChannel).toEqual(.stable)
@@ -118,7 +118,7 @@ final class CheckInLatestReleaseTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "2.1.0", filterVersion: nil),
-      in: child.context
+      in: child.context,
     )
 
     expect(output.updateReleaseChannel).toEqual(.canary) // they still are on canary...
@@ -145,7 +145,7 @@ extension Release {
     _ semver: String,
     channel: ReleaseChannel = .stable,
     pace requirementPace: Int? = nil,
-    createdAt: Date = .init()
+    createdAt: Date = .init(),
   ) {
     self.init(
       semver: semver,
@@ -153,7 +153,7 @@ extension Release {
       signature: "signature-123",
       length: 123_456_789,
       revision: "somesha-123",
-      requirementPace: requirementPace
+      requirementPace: requirementPace,
     )
     self.createdAt = createdAt
     updatedAt = createdAt

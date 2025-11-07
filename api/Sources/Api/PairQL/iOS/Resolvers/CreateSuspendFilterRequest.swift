@@ -3,13 +3,13 @@ import IOSRoute
 extension CreateSuspendFilterRequest: Resolver {
   static func resolve(
     with input: Input,
-    in context: IOSApp.ChildContext
+    in context: IOSApp.ChildContext,
   ) async throws -> Output {
     let req = try await context.db.create(IOSApp.SuspendFilterRequest(
       deviceId: context.device.id,
       status: .pending,
       duration: input.duration,
-      requestComment: input.comment
+      requestComment: input.comment,
     ))
     await with(dependency: \.adminNotifier).notify(
       context.child.parentId,
@@ -19,8 +19,8 @@ extension CreateSuspendFilterRequest: Resolver {
         childName: context.child.name,
         duration: input.duration,
         requestComment: input.comment,
-        context: .iosapp(deviceId: context.device.id, requestId: req.id)
-      ))
+        context: .iosapp(deviceId: context.device.id, requestId: req.id),
+      )),
     )
     return req.id.rawValue
   }

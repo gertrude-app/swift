@@ -45,7 +45,7 @@ struct FilterXPC: Sendable {
       filterProxy.receiveAckRequest(
         randomInt: randomInt,
         userId: getuid(),
-        reply: continuation.dataHandler
+        reply: continuation.dataHandler,
       )
     }
 
@@ -65,7 +65,7 @@ struct FilterXPC: Sendable {
   func sendUserRules(
     manifest: AppIdManifest,
     keychains: [RuleKeychain],
-    downtime: Downtime?
+    downtime: Downtime?,
   ) async throws {
     try await self.establishConnection()
 
@@ -77,7 +77,7 @@ struct FilterXPC: Sendable {
         userId: getuid(),
         manifestData: manifestData,
         filterData: filterData,
-        reply: continuation.dataHandler
+        reply: continuation.dataHandler,
       )
     }
   }
@@ -102,7 +102,7 @@ struct FilterXPC: Sendable {
       filterProxy.pauseDowntime(
         for: getuid(),
         until: expiration.timeIntervalSinceReferenceDate,
-        reply: continuation.dataHandler
+        reply: continuation.dataHandler,
       )
     }
   }
@@ -120,7 +120,7 @@ struct FilterXPC: Sendable {
       filterProxy.suspendFilter(
         for: getuid(),
         durationInSeconds: duration.rawValue,
-        reply: continuation.dataHandler
+        reply: continuation.dataHandler,
       )
     }
   }
@@ -131,7 +131,7 @@ struct FilterXPC: Sendable {
       filterProxy.setBlockStreaming(
         enabled,
         userId: getuid(),
-        reply: continuation.dataHandler
+        reply: continuation.dataHandler,
       )
     }
   }
@@ -142,7 +142,7 @@ struct FilterXPC: Sendable {
       filterProxy.setUserExemption(
         userId,
         enabled: enabled,
-        reply: continuation.dataHandler
+        reply: continuation.dataHandler,
       )
     }
   }
@@ -169,7 +169,7 @@ extension FilterXPC: XPCSender {
 func newConnection() -> NSXPCConnection {
   let connection = NSXPCConnection(
     machServiceName: Constants.MACH_SERVICE_NAME,
-    options: []
+    options: [],
   )
   connection.exportedInterface = NSXPCInterface(with: FilterMessageReceiving.self)
   connection.exportedObject = ReceiveFilterMessage(subject: xpcEventSubject)

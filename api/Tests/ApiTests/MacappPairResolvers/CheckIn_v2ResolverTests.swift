@@ -18,7 +18,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: "3.3.3"),
-      in: child.context
+      in: child.context,
     )
     expect(output.userData.name).toBe(child.name)
     expect(output.userData.keyloggingEnabled).toBeFalse()
@@ -46,7 +46,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
-      in: child.context
+      in: child.context,
     )
 
     expect(output.adminAccountStatus).toEqual(.needsAttention)
@@ -66,9 +66,9 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
         appVersion: "1.0.0",
         filterVersion: "3.3.3",
         userIsAdmin: true,
-        osVersion: "14.5.0"
+        osVersion: "14.5.0",
       ),
-      in: child.context
+      in: child.context,
     )
 
     let computer = try await self.db.find(child.computer.id)
@@ -89,9 +89,9 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
         appVersion: "1.0.0",
         filterVersion: "3.3.3",
         userIsAdmin: nil, // <-- don't overwrite val in database
-        osVersion: nil // <-- don't overwrite val in database
+        osVersion: nil, // <-- don't overwrite val in database
       ),
-      in: child.context
+      in: child.context,
     )
 
     let computer = try await self.db.find(child.computer.id)
@@ -114,7 +114,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
     let child = try await self.childWithComputer()
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
-      in: child.context
+      in: child.context,
     )
     expect(output.appManifest.apps).toEqual([app.slug: [id.bundleId]])
   }
@@ -125,7 +125,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
-      in: child.context
+      in: child.context,
     )
     expect(output.keychains).toHaveCount(0)
   }
@@ -138,7 +138,7 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
-      in: child.context
+      in: child.context,
     )
     expect(output.keys.contains(.init(id: autoKey.id.rawValue, key: autoKey.key))).toBeTrue()
   }
@@ -157,23 +157,23 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
       with: .init(
         appVersion: "1.0.0",
         filterVersion: nil,
-        pendingFilterSuspension: susp.id.rawValue
+        pendingFilterSuspension: susp.id.rawValue,
       ),
-      in: child.context
+      in: child.context,
     )
 
     expect(output.resolvedFilterSuspension).toEqual(.init(
       id: susp.id.rawValue,
       decision: .accepted(
         duration: 777,
-        extraMonitoring: .addKeyloggingAndSetScreenshotFreq(55)
+        extraMonitoring: .addKeyloggingAndSetScreenshotFreq(55),
       ),
-      comment: "susp2 response comment"
+      comment: "susp2 response comment",
     ))
 
     let notRequested = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
-      in: child.context
+      in: child.context,
     )
     expect(notRequested.resolvedFilterSuspension).toBeNil()
   }
@@ -189,9 +189,9 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
       with: .init(
         appVersion: "1.0.0",
         filterVersion: nil,
-        pendingFilterSuspension: susp.id.rawValue
+        pendingFilterSuspension: susp.id.rawValue,
       ),
-      in: child.context
+      in: child.context,
     )
 
     expect(output.resolvedFilterSuspension).toBeNil()
@@ -221,9 +221,9 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
       with: .init(
         appVersion: "1.0.0",
         filterVersion: nil,
-        pendingUnlockRequests: [unlock1.id.rawValue, unlock2.id.rawValue]
+        pendingUnlockRequests: [unlock1.id.rawValue, unlock2.id.rawValue],
       ),
-      in: child.context
+      in: child.context,
     )
 
     expect(output.resolvedUnlockRequests).toEqual(
@@ -231,13 +231,13 @@ final class CheckIn_v2ResolverTests: ApiTestCase, @unchecked Sendable {
         id: unlock2.id.rawValue,
         status: .accepted,
         target: "",
-        comment: "unlock2 response comment"
-      )]
+        comment: "unlock2 response comment",
+      )],
     )
 
     let notRequested = try await CheckIn_v2.resolve(
       with: .init(appVersion: "1.0.0", filterVersion: nil),
-      in: child.context
+      in: child.context,
     )
     expect(notRequested.resolvedUnlockRequests).toBeNil()
   }

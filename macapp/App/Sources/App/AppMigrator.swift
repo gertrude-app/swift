@@ -24,7 +24,7 @@ struct AppMigrator: Migrator {
       appVersion: v1.appVersion,
       appUpdateReleaseChannel: v1.appUpdateReleaseChannel,
       filterVersion: v1.appVersion,
-      user: v1.user
+      user: v1.user,
     )
   }
 
@@ -49,7 +49,7 @@ struct AppMigrator: Migrator {
       return Persistent.V1(
         appVersion: v1Version,
         appUpdateReleaseChannel: .stable,
-        user: user
+        user: user,
       )
     }
 
@@ -82,8 +82,8 @@ struct AppMigrator: Migrator {
         screenshotFrequency: screenshotsFrequency ?? 60,
         screenshotSize: screenshotsSize ?? 1000,
         downtime: nil,
-        connectedAt: Date(timeIntervalSince1970: 0)
-      )
+        connectedAt: Date(timeIntervalSince1970: 0),
+      ),
     )
   }
 }

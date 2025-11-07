@@ -5,14 +5,14 @@ extension Logger {
 }
 
 private struct NullHandler: LogHandler {
-  public func log(
+  func log(
     level: Logger.Level,
     message: Logger.Message,
     metadata: Logger.Metadata?,
     source: String,
     file: String,
     function: String,
-    line: UInt
+    line: UInt,
   ) {}
 
   subscript(metadataKey _: String) -> Logger.Metadata.Value? {

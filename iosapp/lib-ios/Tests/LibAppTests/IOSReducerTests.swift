@@ -335,7 +335,7 @@ final class IOSReducerTests: XCTestCase {
   func testChooseWriteReview() async throws {
     let writeReviewInvocations = LockIsolated(0)
     let store = TestStore(
-      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.requestAppStoreRating)))
+      initialState: IOSReducer.State(screen: .onboarding(.happyPath(.requestAppStoreRating))),
     ) {
       IOSReducer()
     } withDependencies: {
@@ -366,8 +366,8 @@ final class IOSReducerTests: XCTestCase {
       screen: .onboarding(.happyPath(.promptClearCache)),
       onboarding: .init(
         batteryLevel: .level(0.75), // <-- enough battery
-        availableDiskSpaceInBytes: 1024 * 1024 * 1024 * 5 // <-- 5 GB space
-      )
+        availableDiskSpaceInBytes: 1024 * 1024 * 1024 * 5, // <-- 5 GB space
+      ),
     )) {
       IOSReducer()
     } withDependencies: {
@@ -392,8 +392,8 @@ final class IOSReducerTests: XCTestCase {
       screen: .onboarding(.happyPath(.promptClearCache)),
       onboarding: .init(
         batteryLevel: .level(0.95), // <-- lots of battery, but...
-        availableDiskSpaceInBytes: 1024 * 1024 * 1024 * 65 // ...65 GB to clear !!
-      )
+        availableDiskSpaceInBytes: 1024 * 1024 * 1024 * 65, // ...65 GB to clear !!
+      ),
     )) {
       IOSReducer()
     } withDependencies: {
@@ -487,7 +487,7 @@ final class IOSReducerTests: XCTestCase {
   func testCantAdvanceWithZeroBlockGroups() async throws {
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.optOutBlockGroups)),
-      disabledBlockGroups: .all // <-- deselected all
+      disabledBlockGroups: .all, // <-- deselected all
     )) {
       IOSReducer()
     }

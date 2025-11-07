@@ -20,21 +20,21 @@ let package = Package(
         .product(name: "XCore", package: "x-kit"),
         .product(name: "TaggedTime", package: "swift-tagged"),
       ],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .testTarget(
       name: "GertieTests",
       dependencies: [
         "Gertie",
         .product(name: "XExpect", package: "x-expect"),
-      ]
+      ],
     ),
     .target(
       name: "GertieIOS",
       dependencies: [],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
-  ]
+  ],
 )
 
 // helpers
@@ -44,7 +44,7 @@ extension PackageDescription.Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
       url: "https://github.com/\(parts[0]).git",
-      from: .init(stringLiteral: "\(parts[1])")
+      from: .init(stringLiteral: "\(parts[1])"),
     )
   }
 }

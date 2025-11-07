@@ -52,7 +52,7 @@ public class FilterProxy {
         if self.verboseLogging {
           os_log(
             "[D•] FILTER ALLOW during downtime, bundleId: %{public}s",
-            "\(filterFlow.bundleId ?? "(nil)")"
+            "\(filterFlow.bundleId ?? "(nil)")",
           )
         }
         return .allow()
@@ -60,7 +60,7 @@ public class FilterProxy {
         if self.verboseLogging {
           os_log(
             "[D•] FILTER DROP during downtime, bundleId: %{public}s",
-            "\(filterFlow.bundleId ?? "(nil)")"
+            "\(filterFlow.bundleId ?? "(nil)")",
           )
         }
         return dropNewFlow()
@@ -102,14 +102,14 @@ public class FilterProxy {
         withFilterInbound: false,
         peekInboundBytes: Int.max,
         filterOutbound: true,
-        peekOutboundBytes: 1024
+        peekOutboundBytes: 1024,
       )
     }
   }
 
   public func handleOutboundData(
     from flow: NEFilterFlow.DTO,
-    readBytes: Data
+    readBytes: Data,
   ) -> NEFilterDataVerdict {
     let userId = self.flowUserIds.removeValue(forKey: flow.identifier)
 
@@ -122,7 +122,7 @@ public class FilterProxy {
     let decision = self.store.completedFlowDecision(
       &filterFlow,
       readBytes: readBytes,
-      auditToken: flow.sourceAppAuditToken
+      auditToken: flow.sourceAppAuditToken,
     )
 
     if self.verboseLogging {
@@ -156,7 +156,7 @@ public class FilterProxy {
       localNetwork: nil,
       localPrefix: 0,
       protocol: .any,
-      direction: .outbound
+      direction: .outbound,
     )
 
     let filterRule = NEFilterRule(networkRule: networkRule, action: .filterData)
@@ -189,7 +189,7 @@ public extension NEFilterFlow {
       identifier: UUID = .init(),
       sourceAppAuditToken: Data? = nil,
       description: String,
-      url: URL? = nil
+      url: URL? = nil,
     ) {
       self.identifier = identifier
       self.sourceAppAuditToken = sourceAppAuditToken
@@ -202,7 +202,7 @@ public extension NEFilterFlow {
     identifier: self.identifier,
     sourceAppAuditToken: self.sourceAppAuditToken,
     description: self.description,
-    url: self.url
+    url: self.url,
   ) }
 }
 

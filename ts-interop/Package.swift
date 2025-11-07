@@ -13,14 +13,14 @@ let package = Package(
   targets: [
     .executableTarget(
       name: "TypeScriptInteropCLI",
-      dependencies: []
+      dependencies: [],
     ),
     .target(
       name: "TypeScriptInterop",
       dependencies: [
         .product(name: "Runtime", package: "Runtime"),
       ],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .testTarget(
       name: "TypeScriptInteropTests",
@@ -28,7 +28,7 @@ let package = Package(
         "TypeScriptInteropCLI",
         "TypeScriptInterop",
         .product(name: "XExpect", package: "x-expect"),
-      ]
+      ],
     ),
-  ]
+  ],
 )
