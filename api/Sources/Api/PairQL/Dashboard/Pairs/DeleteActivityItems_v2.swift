@@ -15,7 +15,7 @@ struct DeleteActivityItems_v2: Pair {
 extension DeleteActivityItems_v2: Resolver {
   static func resolve(
     with input: Input,
-    in context: ParentContext
+    in context: ParentContext,
   ) async throws -> Output {
     let computerUserIds = try await context.computerUsers().map(\.id)
     async let keystrokes = try await KeystrokeLine.query()

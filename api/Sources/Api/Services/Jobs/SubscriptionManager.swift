@@ -57,7 +57,7 @@ struct SubscriptionManager: AsyncScheduledJob {
         try await self.db.create(DeletedEntity(
           type: "Admin",
           reason: reason,
-          data: JSON.encode(parent, [.isoDates])
+          data: JSON.encode(parent, [.isoDates]),
         ))
         try await self.db.delete(parent)
         logs.append("Deleted admin \(parent.email) reason: \(reason)")
@@ -72,7 +72,7 @@ struct SubscriptionManager: AsyncScheduledJob {
     if self.env.mode == .prod, !logs.isEmpty {
       self.postmark.toSuperAdmin(
         "Gertrude subscription manager events",
-        "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>"
+        "<ol><li>" + logs.joined(separator: "</li><li>") + "</li></ol>",
       )
     }
   }
@@ -88,58 +88,58 @@ struct SubscriptionManager: AsyncScheduledJob {
     case .pendingEmailVerification:
       return .init(
         action: .delete(reason: "email never verified"),
-        email: .deleteEmailUnverified
+        email: .deleteEmailUnverified,
       )
 
     case .trialing where parent.trialPeriodDays == 60: // <-- legacy 60-day trial
       return .init(
         action: .update(
           status: .trialExpiringSoon,
-          expiration: self.now + .days(7)
+          expiration: self.now + .days(7),
         ),
-        email: .trialEndingSoon(length: parent.trialPeriodDays, remaining: 7)
+        email: .trialEndingSoon(length: parent.trialPeriodDays, remaining: 7),
       )
 
     case .trialing:
       return .init(
         action: .update(
           status: .trialExpiringSoon,
-          expiration: self.now + .days(3)
+          expiration: self.now + .days(3),
         ),
-        email: .trialEndingSoon(length: parent.trialPeriodDays, remaining: 3)
+        email: .trialEndingSoon(length: parent.trialPeriodDays, remaining: 3),
       )
 
     case .trialExpiringSoon:
       return .init(
         action: .update(status: .overdue, expiration: self.now + .days(7)),
-        email: completedOnboarding ? .trialEndedToOverdue(length: parent.trialPeriodDays) : nil
+        email: completedOnboarding ? .trialEndedToOverdue(length: parent.trialPeriodDays) : nil,
       )
 
     case .overdue:
       return try await self.updateIfPaid(parent.subscriptionId) ?? .init(
         action: .update(status: .unpaid, expiration: self.now + .days(365)),
-        email: completedOnboarding ? .overdueToUnpaid : nil
+        email: completedOnboarding ? .overdueToUnpaid : nil,
       )
 
     case .pendingAccountDeletion:
       return .init(
         action: .delete(reason: "account unpaid > 1yr"),
-        email: nil
+        email: nil,
       )
 
     case .unpaid:
       return .init(
         action: .update(
           status: .pendingAccountDeletion,
-          expiration: self.now + .days(30)
+          expiration: self.now + .days(30),
         ),
-        email: completedOnboarding ? .unpaidToPendingDelete : nil
+        email: completedOnboarding ? .unpaidToPendingDelete : nil,
       )
 
     case .paid:
       return try await self.updateIfPaid(parent.subscriptionId) ?? .init(
         action: .update(status: .overdue, expiration: self.now + .days(14)),
-        email: .paidToOverdue
+        email: .paidToOverdue,
       )
 
     case .complimentary:
@@ -151,7 +151,7 @@ struct SubscriptionManager: AsyncScheduledJob {
   // failsafe in case webhook missed the `invoice.paid` event
   // theoretically, we should never find a subscription active
   private func updateIfPaid(
-    _ subscriptionId: Parent.SubscriptionId?
+    _ subscriptionId: Parent.SubscriptionId?,
   ) async throws -> SubscriptionUpdate? {
     if let subsId = subscriptionId?.rawValue,
        let subscription = try? await self.stripe.getSubscription(subsId),
@@ -160,9 +160,9 @@ struct SubscriptionManager: AsyncScheduledJob {
         action: .update(
           status: .paid,
           expiration: Date(timeIntervalSince1970: TimeInterval(subscription.currentPeriodEnd))
-            .advanced(by: .days(2)) // +2 days is for a little leeway, recommended by stripe docs
+            .advanced(by: .days(2)), // +2 days is for a little leeway, recommended by stripe docs
         ),
-        email: nil
+        email: nil,
       )
     }
     return nil
@@ -186,7 +186,7 @@ func email(_ event: SubscriptionEmail, to address: EmailAddress) -> TemplateEmai
   case .trialEndingSoon(let length, let remaining):
     .trialEndingSoon(
       to: address.rawValue,
-      model: .init(length: length, remaining: remaining)
+      model: .init(length: length, remaining: remaining),
     )
   case .trialEndedToOverdue(let length):
     .trialEndedToOverdue(to: address.rawValue, model: .init(length: length))

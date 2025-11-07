@@ -46,7 +46,7 @@ struct DiskSpaceJob: AsyncScheduledJob {
       await self.slack.error("Disk space is dangerously low: \(percent)%")
       self.postmark.toSuperAdmin(
         "API Disk space dangerously low",
-        "Disk space dangerously low: <code style='color: red;'>\(percent)%</code> used"
+        "Disk space dangerously low: <code style='color: red;'>\(percent)%</code> used",
       )
     }
   }

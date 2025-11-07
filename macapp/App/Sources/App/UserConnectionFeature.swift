@@ -69,9 +69,9 @@ extension UserConnectionFeature.RootReducer {
         .exec { send in
           await send(.focusedNotification(.text(
             "Child connection deleted",
-            "The connection between this computer and Gertrude was broken. Reconnect, connect to a different child, or quit the app."
+            "The connection between this computer and Gertrude was broken. Reconnect, connect to a different child, or quit the app.",
           )))
-        }
+        },
       )
 
     default:
@@ -92,7 +92,7 @@ extension UserConnectionFeature.RootReducer {
       },
       .cancel(id: AppReducer.CancelId.heartbeatInterval),
       .cancel(id: AppReducer.CancelId.networkConnectionChanges),
-      .cancel(id: AppReducer.CancelId.websocketMessages)
+      .cancel(id: AppReducer.CancelId.websocketMessages),
     )
   }
 }

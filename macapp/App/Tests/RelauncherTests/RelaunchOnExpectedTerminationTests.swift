@@ -114,7 +114,7 @@ func recordingClient(
   fileExistsAtPath: Bool = true,
   runningApps: [String] = [],
   processId: pid_t = 1234,
-  parentProcessIds: [pid_t] = [5678]
+  parentProcessIds: [pid_t] = [5678],
 ) -> (RelauncherClient, LockIsolated<[RelaunchClientInvocation]>) {
   let invocations = LockIsolated<[RelaunchClientInvocation]>([])
   let ppids = LockIsolated(parentProcessIds)
@@ -152,7 +152,7 @@ func recordingClient(
     },
     exit: { status in
       invocations.append(.exit(status))
-    }
+    },
   )
   return (client, invocations)
 }

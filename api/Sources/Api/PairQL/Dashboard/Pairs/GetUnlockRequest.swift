@@ -55,7 +55,7 @@ extension GetUnlockRequest.Output {
       appSlug: app.slug,
       appBundleId: request.appBundleId,
       appCategories: Array(app.categories),
-      createdAt: request.createdAt
+      createdAt: request.createdAt,
     )
   }
 }

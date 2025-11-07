@@ -13,7 +13,7 @@ final class TimeChangeTests: XCTestCase {
       $0.timestamp = .init(
         network: .reference,
         system: .reference - 1, // <-- very close to network time
-        boottime: .reference - 2000
+        boottime: .reference - 2000,
       )
     }
     store.deps.network.isConnected = { true }
@@ -30,7 +30,7 @@ final class TimeChangeTests: XCTestCase {
       $0.timestamp = .init(
         network: .reference,
         system: .reference - ((60 * 60 * 3) - 1), // <-- 3 hrs off at last trusted check
-        boottime: .reference - 2000
+        boottime: .reference - 2000,
       )
     }
     store.deps.network.isConnected = { true }
@@ -47,7 +47,7 @@ final class TimeChangeTests: XCTestCase {
       $0.timestamp = .init(
         network: .reference,
         system: .reference - 1, // <-- very close to network time
-        boottime: .reference - 2000
+        boottime: .reference - 2000,
       )
     }
     store.deps.network.isConnected = { true }
@@ -69,7 +69,7 @@ final class TimeChangeTests: XCTestCase {
       $0.timestamp = .init(
         network: .reference,
         system: .reference + 1, // <-- functionally the same as network time
-        boottime: .reference - 2000
+        boottime: .reference - 2000,
       )
     }
     store.deps.network.isConnected = { false }
@@ -87,7 +87,7 @@ final class TimeChangeTests: XCTestCase {
       $0.timestamp = .init(
         network: .reference,
         system: .reference + 10800, // <-- 3 hours diff
-        boottime: .reference - 2000
+        boottime: .reference - 2000,
       )
     }
     store.deps.network.isConnected = { false }
@@ -104,7 +104,7 @@ final class TimeChangeTests: XCTestCase {
       $0.timestamp = .init(
         network: .reference,
         system: .reference + 1, // <-- functionally the same as network time
-        boottime: .reference - 5000
+        boottime: .reference - 5000,
       )
     }
     store.deps.network.isConnected = { false }

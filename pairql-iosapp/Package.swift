@@ -24,7 +24,7 @@ let package = Package(
         .product(name: "GertieIOS", package: "gertie"),
         .product(name: "TaggedTime", package: "swift-tagged"),
       ],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
-  ]
+  ],
 )

@@ -12,7 +12,7 @@ struct ChildKeychain: Codable, Sendable {
     id: Id = .init(),
     childId: Child.Id,
     keychainId: Keychain.Id,
-    schedule: RuleSchedule? = nil
+    schedule: RuleSchedule? = nil,
   ) {
     self.id = id
     self.childId = childId

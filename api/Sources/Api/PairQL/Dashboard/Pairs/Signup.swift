@@ -39,7 +39,7 @@ extension Signup: Resolver {
     if let existing {
       if !existing.isPendingEmailVerification, let creds = try? await Login.resolve(
         with: .init(email: input.email, password: input.password),
-        in: context
+        in: context,
       ) {
         return .init(admin: creds)
       }
@@ -53,7 +53,7 @@ extension Signup: Resolver {
       } else {
         try await postmark.send(template: .reSignup(
           to: email,
-          model: .init(dashboardUrl: context.dashboardUrl)
+          model: .init(dashboardUrl: context.dashboardUrl),
         ))
       }
 
@@ -66,7 +66,7 @@ extension Signup: Resolver {
       subscriptionStatus: .pendingEmailVerification,
       subscriptionStatusExpiration: now + .days(7),
       gclid: input.gclid,
-      abTestVariant: input.abTestVariant
+      abTestVariant: input.abTestVariant,
     ))
 
     if context.env.mode == .prod, !isTestAddress(email) {
@@ -89,12 +89,12 @@ func sendVerificationEmail(to admin: Parent, in context: Context) async throws {
   let token = await with(dependency: \.ephemeral)
     .createParentIdToken(
       admin.id,
-      expiration: get(dependency: \.date.now) + .hours(24)
+      expiration: get(dependency: \.date.now) + .hours(24),
     )
 
   try await with(dependency: \.postmark)
     .send(template: .initialSignup(
       to: admin.email.rawValue,
-      model: .init(dashboardUrl: context.dashboardUrl, token: token)
+      model: .init(dashboardUrl: context.dashboardUrl, token: token),
     ))
 }

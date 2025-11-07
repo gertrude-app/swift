@@ -18,7 +18,7 @@ public struct RecoveryDirective: Pair {
       deviceType: String,
       iOSVersion: String,
       locale: String? = nil,
-      version: String? = nil
+      version: String? = nil,
     ) {
       self.vendorId = vendorId
       self.deviceType = deviceType

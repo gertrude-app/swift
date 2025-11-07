@@ -10,11 +10,11 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable 
     let child = try await self.childWithComputer()
     let blocked = CreateUnlockRequests_v3.Input.BlockedRequest(
       bundleId: "com.example.app",
-      url: "https://example.com"
+      url: "https://example.com",
     )
     let blocked2 = CreateUnlockRequests_v3.Input.BlockedRequest(
       bundleId: "com.other.thing",
-      url: "https://foo.com"
+      url: "https://foo.com",
     )
 
     let uuids = MockUUIDs()
@@ -23,7 +23,7 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable 
     } operation: {
       try await CreateUnlockRequests_v3.resolve(
         with: .init(blockedRequests: [blocked, blocked2], comment: nil),
-        in: self.context(child)
+        in: self.context(child),
       )
     }
 
@@ -49,8 +49,8 @@ final class CreateUnlockRequestsResolverTests: ApiTestCase, @unchecked Sendable 
         dashboardUrl: "",
         userId: child.id,
         userName: child.name,
-        requestIds: [unlockReq1.id, unlockReq2.id]
-      ))
+        requestIds: [unlockReq1.id, unlockReq2.id],
+      )),
     )])
   }
 }

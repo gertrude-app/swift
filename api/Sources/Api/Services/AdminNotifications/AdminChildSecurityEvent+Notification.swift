@@ -24,8 +24,8 @@ extension AdminEvent.MacAppSecurityEvent: AdminNotifying {
         model: .init(
           userName: self.userName,
           description: self.desc,
-          explanation: self.event.explanation
-        )
+          explanation: self.event.explanation,
+        ),
       ))
   }
 

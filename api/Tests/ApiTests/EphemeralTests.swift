@@ -19,7 +19,7 @@ class EphemeralTests: DependencyTestCase {
     let parent = Parent.mock
     let token = await ephemeral.createParentIdToken(
       parent.id,
-      expiration: Date.reference - .days(5)
+      expiration: Date.reference - .days(5),
     )
     var retrieved = await ephemeral.parentIdFromToken(token)
     expect(retrieved).toEqual(.expired(parent.id))

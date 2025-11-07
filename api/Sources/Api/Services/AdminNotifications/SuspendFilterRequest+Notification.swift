@@ -6,7 +6,7 @@ extension AdminEvent.SuspendFilterRequestSubmitted: AdminNotifying {
     try await with(dependency: \.postmark)
       .send(template: .notifySuspendFilter(
         to: address,
-        model: .init(url: self.url, userName: self.childName, isFallback: isFallback)
+        model: .init(url: self.url, userName: self.childName, isFallback: isFallback),
       ))
   }
 

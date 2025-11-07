@@ -26,7 +26,7 @@ public struct UserData {
     screenshotSize: Int,
     downtime: PlainTimeWindow? = nil,
     blockedApps: [BlockedApp]? = nil,
-    connectedAt: Date = .init()
+    connectedAt: Date = .init(),
   ) {
     self.id = id
     self.token = token
@@ -55,7 +55,7 @@ extension UserData: Equatable, Codable, Sendable {}
       screenshotsEnabled: false,
       screenshotFrequency: 60,
       screenshotSize: 1000,
-      connectedAt: .init(timeIntervalSince1970: 0)
+      connectedAt: .init(timeIntervalSince1970: 0),
     )
 
     public static var monitored: UserData {
@@ -85,7 +85,7 @@ extension UserData: Equatable, Codable, Sendable {}
       screenshotsEnabled: false,
       screenshotFrequency: 0,
       screenshotSize: 0,
-      connectedAt: .init(timeIntervalSince1970: 0)
+      connectedAt: .init(timeIntervalSince1970: 0),
     )
   }
 #endif

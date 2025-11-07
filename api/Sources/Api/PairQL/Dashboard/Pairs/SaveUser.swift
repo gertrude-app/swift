@@ -41,7 +41,7 @@ extension SaveUser: Resolver {
         screenshotsResolution: 1000,
         screenshotsFrequency: 180,
         showSuspensionActivity: true,
-        downtime: input.downtime
+        downtime: input.downtime,
       ))
       let keychain = try await context.db.create(Keychain(
         parentId: context.parent.id,
@@ -51,7 +51,7 @@ extension SaveUser: Resolver {
         This keychain was created automatically as a default place for you to \
         add keys for \(input.name). Feel free to use it as is, change it, \
         delete it, or create as many other keychains as you like.
-        """
+        """,
       ))
       try await context.db.create(ChildKeychain(childId: user.id, keychainId: keychain.id))
       dashSecurityEvent(.childAdded, "name: \(user.name)", in: context)
@@ -95,7 +95,7 @@ extension SaveUser: Resolver {
           ChildKeychain(
             childId: user.id,
             keychainId: keychain.id,
-            schedule: keychain.schedule
+            schedule: keychain.schedule,
           )
         }
 

@@ -19,7 +19,7 @@ extension FilterState.WithTimes {
          pauseExpiration > now {
         self = .init(
           checkingFilterSuspensionIn: state,
-          orElse: .downtimePaused(resuming: pauseExpiration)
+          orElse: .downtimePaused(resuming: pauseExpiration),
         )
       } else {
         let plainNow = PlainTime.from(now, in: calendar)
@@ -34,7 +34,7 @@ extension FilterState.WithTimes {
 
   private init(
     checkingFilterSuspensionIn state: AppReducer.State,
-    orElse fallback: FilterState.WithTimes = .on
+    orElse fallback: FilterState.WithTimes = .on,
   ) {
     @Dependency(\.date.now) var now
     guard let suspensionExpiration = state.filter.currentSuspensionExpiration,

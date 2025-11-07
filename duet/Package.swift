@@ -21,7 +21,7 @@ let package = Package(
         .product(name: "XCore", package: "x-kit"),
         .product(name: "Tagged", package: "swift-tagged"),
       ],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .target(
       name: "DuetSQL",
@@ -31,13 +31,13 @@ let package = Package(
         .product(name: "XCore", package: "x-kit"),
         .product(name: "Tagged", package: "swift-tagged"),
       ],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .testTarget(
       name: "DuetSQLTests",
-      dependencies: ["DuetSQL", .product(name: "XExpect", package: "x-expect")]
+      dependencies: ["DuetSQL", .product(name: "XExpect", package: "x-expect")],
     ),
-  ]
+  ],
 )
 
 // helpers
@@ -47,7 +47,7 @@ extension PackageDescription.Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
       url: "https://github.com/\(parts[0]).git",
-      exact: .init(stringLiteral: "\(parts[1])")
+      exact: .init(stringLiteral: "\(parts[1])"),
     )
   }
 }

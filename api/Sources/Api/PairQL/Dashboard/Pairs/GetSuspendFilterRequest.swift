@@ -39,7 +39,7 @@ extension GetSuspendFilterRequest: Resolver {
       requestComment: request.requestComment,
       responseComment: request.responseComment,
       extraMonitoringOptions: extraMonitoringOptions,
-      createdAt: request.createdAt
+      createdAt: request.createdAt,
     )
   }
 }

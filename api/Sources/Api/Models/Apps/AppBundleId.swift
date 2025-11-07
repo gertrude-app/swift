@@ -10,7 +10,7 @@ struct AppBundleId: Codable, Sendable {
   init(
     id: Id = .init(),
     identifiedAppId: IdentifiedApp.Id,
-    bundleId: String
+    bundleId: String,
   ) {
     self.id = id
     self.identifiedAppId = identifiedAppId

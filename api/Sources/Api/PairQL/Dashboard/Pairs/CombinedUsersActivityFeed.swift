@@ -54,7 +54,7 @@ extension CombinedUsersActivityFeed: Resolver {
         userName: child.name,
         showSuspensionActivity: child.showSuspensionActivity,
         numDeleted: coalesced.lazy.filter(\.isDeleted).count,
-        items: coalesced.lazy.filter(\.notDeleted)
+        items: coalesced.lazy.filter(\.notDeleted),
       )
     }
   }

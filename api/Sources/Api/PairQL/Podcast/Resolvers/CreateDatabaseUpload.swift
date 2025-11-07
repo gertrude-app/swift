@@ -11,7 +11,7 @@ extension CreateDatabaseUpload: Resolver {
     let signedUrl = try with(dependency: \.aws).signedS3UploadUrl(
       objectName,
       contentType: "application/octet-stream",
-      isPublicRead: false
+      isPublicRead: false,
     )
 
     return .init(uploadUrl: signedUrl)

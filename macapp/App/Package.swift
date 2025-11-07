@@ -36,7 +36,7 @@ let package = Package(
   targets: [
     .checkedTarget(
       name: "App",
-      dependencies: [.tca, "x-kit" => "XCore", "Core", "ClientInterfaces"]
+      dependencies: [.tca, "x-kit" => "XCore", "Core", "ClientInterfaces"],
     ),
     .checkedTarget(
       name: "ClientInterfaces",
@@ -46,27 +46,27 @@ let package = Package(
         "swift-tagged" => "Tagged",
         "pairql-macapp" => "MacAppRoute",
         "gertie" => "Gertie",
-      ]
+      ],
     ),
     .checkedTarget(
       name: "LiveApiClient",
-      dependencies: [.dependencies, "x-kit" => "XCore", "ClientInterfaces"]
+      dependencies: [.dependencies, "x-kit" => "XCore", "ClientInterfaces"],
     ),
     .checkedTarget(
       name: "LiveAppClient",
-      dependencies: [.dependencies, "LaunchAtLogin", "ClientInterfaces"]
+      dependencies: [.dependencies, "LaunchAtLogin", "ClientInterfaces"],
     ),
     .checkedTarget(
       name: "LiveFilterXPCClient",
-      dependencies: [.dependencies, "Core", "ClientInterfaces", "gertie" => "Gertie"]
+      dependencies: [.dependencies, "Core", "ClientInterfaces", "gertie" => "Gertie"],
     ),
     .checkedTarget(
       name: "LiveFilterExtensionClient",
-      dependencies: [.dependencies, "Core", "ClientInterfaces"]
+      dependencies: [.dependencies, "Core", "ClientInterfaces"],
     ),
     .checkedTarget(
       name: "LiveUpdaterClient",
-      dependencies: [.dependencies, "App", "Core", "gertie" => "Gertie", "Sparkle"]
+      dependencies: [.dependencies, "App", "Core", "gertie" => "Gertie", "Sparkle"],
     ),
     .checkedTarget(
       name: "LiveWebSocketClient",
@@ -78,24 +78,24 @@ let package = Package(
         "x-kit" => "XCore",
         "Starscream",
         "combine-schedulers" => "CombineSchedulers",
-      ]
+      ],
     ),
     .checkedTarget(
       name: "Filter",
       dependencies: [.tca, "Core", "x-kit" => "XCore", "gertie" => "Gertie"],
-      linkerSettings: [.linkedLibrary("bsm")]
+      linkerSettings: [.linkedLibrary("bsm")],
     ),
     .checkedTarget(
       name: "Core",
-      dependencies: [.dependencies, "gertie" => "Gertie"]
+      dependencies: [.dependencies, "gertie" => "Gertie"],
     ),
     .checkedTarget(
       name: "Relauncher",
-      dependencies: [.dependencies]
+      dependencies: [.dependencies],
     ),
     .target(
       name: "TestSupport",
-      dependencies: [.tca, "x-expect" => "XExpect"]
+      dependencies: [.tca, "x-expect" => "XExpect"],
     ),
     .testTarget(
       name: "AppTests",
@@ -106,7 +106,7 @@ let package = Package(
         "x-expect" => "XExpect",
         "x-kit" => "XCore",
       ],
-      exclude: ["__fixtures__/"]
+      exclude: ["__fixtures__/"],
     ),
     .testTarget(
       name: "FilterTests",
@@ -116,7 +116,7 @@ let package = Package(
         "TestSupport",
         "x-expect" => "XExpect",
         "gertie" => "Gertie",
-      ]
+      ],
     ),
     .testTarget(
       name: "WebSocketTests",
@@ -129,7 +129,7 @@ let package = Package(
         "x-kit" => "XCore",
         "combine-schedulers" => "CombineSchedulers",
         "Starscream",
-      ]
+      ],
     ),
     .testTarget(
       name: "RelauncherTests",
@@ -138,13 +138,13 @@ let package = Package(
         "Relauncher",
         "TestSupport",
         "x-expect" => "XExpect",
-      ]
+      ],
     ),
     .testTarget(
       name: "Codegen",
-      dependencies: ["App", "ts-interop" => "TypeScriptInterop"]
+      dependencies: ["App", "ts-interop" => "TypeScriptInterop"],
     ),
-  ]
+  ],
 )
 
 // extensions, helpers
@@ -158,7 +158,7 @@ extension Target {
   static func checkedTarget(
     name: String,
     dependencies: [Target.Dependency],
-    linkerSettings: [LinkerSetting] = []
+    linkerSettings: [LinkerSetting] = [],
   ) -> Target {
     .target(
       name: name,
@@ -169,7 +169,7 @@ extension Target {
           "-Xfrontend", "-enable-actor-data-race-checks",
         ]),
       ],
-      linkerSettings: linkerSettings
+      linkerSettings: linkerSettings,
     )
   }
 }
@@ -178,14 +178,14 @@ extension PackageDescription.Package.Dependency {
   static func github(_ repo: String, from: String) -> Package.Dependency {
     .package(
       url: "https://github.com/\(repo).git",
-      from: .init(stringLiteral: "\(from)")
+      from: .init(stringLiteral: "\(from)"),
     )
   }
 
   static func github(_ repo: String, branch: String) -> Package.Dependency {
     .package(
       url: "https://github.com/\(repo).git",
-      branch: .init(stringLiteral: "\(branch)")
+      branch: .init(stringLiteral: "\(branch)"),
     )
   }
 }
@@ -193,10 +193,10 @@ extension PackageDescription.Package.Dependency {
 extension Target.Dependency {
   static let tca: Self = .product(
     name: "ComposableArchitecture",
-    package: "swift-composable-architecture"
+    package: "swift-composable-architecture",
   )
   static let dependencies: Self = .product(
     name: "Dependencies",
-    package: "swift-dependencies"
+    package: "swift-dependencies",
   )
 }

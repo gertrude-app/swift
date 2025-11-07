@@ -58,7 +58,7 @@ final class ApplicationFeatureTests: XCTestCase {
     store.deps.date = .constant(.day(.monday, at: "09:50")) // <-- in window
     let scheduledApp = BlockedApp(
       identifier: "FaceSkype",
-      schedule: .init(mode: .active, days: .all, window: "09:00-17:00")
+      schedule: .init(mode: .active, days: .all, window: "09:00-17:00"),
     )
     checkIn = CheckIn_v2.Output.mock {
       $0.userData.blockedApps = [scheduledApp]

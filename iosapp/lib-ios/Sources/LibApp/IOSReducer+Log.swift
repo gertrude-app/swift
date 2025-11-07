@@ -18,7 +18,7 @@ extension IOSReducer.Deps {
     _ screen: IOSReducer.Screen,
     _ action: IOSReducer.Action.Interactive,
     _ id: String,
-    extra: String? = nil
+    extra: String? = nil,
   ) {
     self.log(screen, action: .interactive(action), id, extra: extra)
   }
@@ -26,7 +26,7 @@ extension IOSReducer.Deps {
   func log(
     _ action: IOSReducer.Action.Programmatic,
     _ id: String,
-    extra: String? = nil
+    extra: String? = nil,
   ) {
     var msg = "received .\(shorten("\(action)"))"
     if let extra {
@@ -39,7 +39,7 @@ extension IOSReducer.Deps {
     _ screen: IOSReducer.Screen,
     action: IOSReducer.Action,
     _ id: String,
-    extra: String? = nil
+    extra: String? = nil,
   ) {
     var msg = "received .\(shorten("\(action)")) from screen .\(shorten("\(screen)"))"
     if let extra {
@@ -51,11 +51,11 @@ extension IOSReducer.Deps {
   func unexpected(
     _ screen: IOSReducer.Screen,
     _ action: IOSReducer.Action.Programmatic,
-    _ id: String
+    _ id: String,
   ) {
     self.log(
       "UNEXPECTED: received .\(shorten("\(IOSReducer.Action.programmatic(action))")) from screen .\(shorten("\(screen)"))",
-      id
+      id,
     )
   }
 

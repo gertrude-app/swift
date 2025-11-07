@@ -9,7 +9,7 @@ final class IOSFilterSuspensionResolversTests: ApiTestCase, @unchecked Sendable 
     let child = try await self.childWithIOSDevice()
     let reqId = try await CreateSuspendFilterRequest.resolve(
       with: .init(duration: .init(33)),
-      in: child.context
+      in: child.context,
     )
 
     let retrieved = try await self.db.find(IOSApp.SuspendFilterRequest.Id(reqId))
@@ -24,8 +24,8 @@ final class IOSFilterSuspensionResolversTests: ApiTestCase, @unchecked Sendable 
           childName: child.name,
           duration: 33,
           requestComment: nil,
-          context: .iosapp(deviceId: child.device.id, requestId: .init(reqId))
-        ))
+          context: .iosapp(deviceId: child.device.id, requestId: .init(reqId)),
+        )),
       ),
     ])
   }
@@ -35,12 +35,12 @@ final class IOSFilterSuspensionResolversTests: ApiTestCase, @unchecked Sendable 
     var request = try await self.db.create(IOSApp.SuspendFilterRequest(
       deviceId: child.device.id,
       status: .pending,
-      duration: .init(99)
+      duration: .init(99),
     ))
 
     var status = try await PollFilterSuspensionDecision.resolve(
       with: request.id.rawValue,
-      in: child.context
+      in: child.context,
     )
     expect(status).toEqual(.pending)
 
@@ -48,7 +48,7 @@ final class IOSFilterSuspensionResolversTests: ApiTestCase, @unchecked Sendable 
     try await self.db.update(request)
     status = try await PollFilterSuspensionDecision.resolve(
       with: request.id.rawValue,
-      in: child.context
+      in: child.context,
     )
     expect(status).toEqual(.accepted(duration: 99, parentComment: nil))
   }

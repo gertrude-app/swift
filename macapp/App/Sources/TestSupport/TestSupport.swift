@@ -41,7 +41,7 @@ public struct ControllingNow {
   init(
     generator: DateGenerator,
     elapsed: LockIsolated<Int>,
-    scheduler: TestSchedulerOf<DispatchQueue>? = nil
+    scheduler: TestSchedulerOf<DispatchQueue>? = nil,
   ) {
     self.generator = generator
     self.elapsed = elapsed
@@ -50,7 +50,7 @@ public struct ControllingNow {
 
   public init(
     starting start: Date = Date(),
-    with scheduler: TestSchedulerOf<DispatchQueue>? = nil
+    with scheduler: TestSchedulerOf<DispatchQueue>? = nil,
   ) {
     let elapsed = LockIsolated<Int>(0)
     self.init(
@@ -58,7 +58,7 @@ public struct ControllingNow {
         start.advanced(by: Double(elapsed.value))
       },
       elapsed: elapsed,
-      scheduler: scheduler
+      scheduler: scheduler,
     )
   }
 
@@ -83,7 +83,7 @@ public struct ControllingNow {
 public func expect<T: Equatable>(
   _ isolated: ActorIsolated<T>,
   file: StaticString = #filePath,
-  line: UInt = #line
+  line: UInt = #line,
 ) async -> EquatableExpectation<T> {
   await EquatableExpectation(value: isolated.value, file: file, line: line)
 }
@@ -91,7 +91,7 @@ public func expect<T: Equatable>(
 public func expect<T: Equatable>(
   _ isolated: LockIsolated<T>,
   file: StaticString = #filePath,
-  line: UInt = #line
+  line: UInt = #line,
 ) -> EquatableExpectation<T> {
   EquatableExpectation(value: isolated.value, file: file, line: line)
 }

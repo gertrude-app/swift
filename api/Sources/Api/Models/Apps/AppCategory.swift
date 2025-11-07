@@ -12,7 +12,7 @@ struct AppCategory: Codable, Sendable {
     id: Id = .init(),
     name: String,
     slug: String,
-    description: String? = nil
+    description: String? = nil,
   ) {
     self.id = id
     self.name = name

@@ -93,7 +93,7 @@ extension ExtensionClient: DependencyKey {
       } catch {
         os_log(
           "[G•] error loading preferences: %{public}s",
-          String(reflecting: error)
+          String(reflecting: error),
         )
         return false
       }
@@ -104,7 +104,7 @@ extension ExtensionClient: DependencyKey {
       #if os(iOS)
         AuthorizationCenter.shared.revokeAuthorization { _ in }
       #endif
-    }
+    },
   )
 }
 
@@ -113,7 +113,7 @@ extension ExtensionClient: TestDependencyKey {
     requestAuthorization: { .success(()) },
     installFilter: { .success(()) },
     filterRunning: { false },
-    cleanupForRetry: {}
+    cleanupForRetry: {},
   )
 }
 

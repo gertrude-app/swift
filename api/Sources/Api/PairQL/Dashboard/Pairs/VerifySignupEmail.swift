@@ -40,7 +40,7 @@ extension VerifySignupEmail: Resolver {
       // they get a default "verified" notification method, since they verified email
       try await context.db.create(Parent.NotificationMethod(
         parentId: parent.id,
-        config: .email(email: parent.email.rawValue)
+        config: .email(email: parent.email.rawValue),
       ))
 
       if context.env.mode == .prod, !isTestAddress(parent.email.rawValue) {
@@ -65,7 +65,7 @@ extension VerifySignupEmail: Resolver {
           "beb1b493",
           .badRequest,
           "email already verified",
-          .emailAlreadyVerified
+          .emailAlreadyVerified,
         )
       }
 
@@ -79,7 +79,7 @@ extension VerifySignupEmail: Resolver {
           "f2b70e49",
           .badRequest,
           "email already verified",
-          .emailAlreadyVerified
+          .emailAlreadyVerified,
         )
       }
     }

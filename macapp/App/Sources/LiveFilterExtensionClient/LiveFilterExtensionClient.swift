@@ -26,7 +26,7 @@ extension FilterExtensionClient: @retroactive DependencyKey {
           Move(subject.eraseToAnyPublisher())
         }.consume()
       },
-      uninstall: { await manager.uninstallFilter() }
+      uninstall: { await manager.uninstallFilter() },
     )
   }
 }

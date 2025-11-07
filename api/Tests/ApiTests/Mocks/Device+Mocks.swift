@@ -8,7 +8,7 @@ extension Computer: RandomMocked {
       parentId: .init(),
       customName: "@mock customName",
       modelIdentifier: "@mock modelIdentifier",
-      serialNumber: "@mock serialNumber"
+      serialNumber: "@mock serialNumber",
     )
   }
 
@@ -17,7 +17,7 @@ extension Computer: RandomMocked {
       parentId: .init(),
       customName: nil,
       modelIdentifier: "",
-      serialNumber: ""
+      serialNumber: "",
     )
   }
 
@@ -26,7 +26,7 @@ extension Computer: RandomMocked {
       parentId: .init(),
       customName: "@random".random,
       modelIdentifier: "@random".random,
-      serialNumber: "@random".random
+      serialNumber: "@random".random,
     )
   }
 }

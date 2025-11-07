@@ -18,7 +18,7 @@ class FilterDataProvider: NEFilterDataProvider {
       if let error {
         os_log(
           "[G•] FILTER data provider: error applying filter settings: %{public}s",
-          error.localizedDescription
+          error.localizedDescription,
         )
       }
     }
@@ -27,7 +27,7 @@ class FilterDataProvider: NEFilterDataProvider {
 
   override func stopFilter(
     with reason: NEProviderStopReason,
-    completionHandler: @escaping () -> Void
+    completionHandler: @escaping () -> Void,
   ) {
     os_log("[G•] FILTER data provider: filter stopped, reason: %{public}s", "\(reason)")
     completionHandler()
@@ -40,7 +40,7 @@ class FilterDataProvider: NEFilterDataProvider {
   override func handleOutboundData(
     from flow: NEFilterFlow,
     readBytesStartOffset _: Int,
-    readBytes: Data
+    readBytes: Data,
   ) -> NEFilterDataVerdict {
     self.proxy.handleOutboundData(from: flow.dto, readBytes: readBytes)
   }

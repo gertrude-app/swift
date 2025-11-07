@@ -23,7 +23,7 @@ struct Child: Codable, Sendable {
     screenshotsResolution: Int = 1200,
     screenshotsFrequency: Int = 60,
     showSuspensionActivity: Bool = true,
-    downtime: PlainTimeWindow? = nil
+    downtime: PlainTimeWindow? = nil,
   ) {
     self.id = id
     self.parentId = parentId

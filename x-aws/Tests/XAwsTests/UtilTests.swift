@@ -8,7 +8,7 @@ final class UtilTests: XCTestCase {
   func testHmac() {
     let hmac = AWS.Util.hmac(
       "my-secret",
-      "An apple a day keeps anyone away, if you throw it hard enough"
+      "An apple a day keeps anyone away, if you throw it hard enough",
     )
     expect(AWS.Util.hex(hmac))
       .toBe("1c161b971ab68e7acdb0b45cca7ae92d574613b77fca4bc7d5c4effab89dab67")

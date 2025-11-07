@@ -51,7 +51,7 @@ import XHttp
           headers: [
             "Accept": "application/json",
             "X-Postmark-Server-Token": self.env.postmark.apiKey,
-          ]
+          ],
         )
         self.logger.info("Synced Postmark \(kind) `\(template.Name)`")
         self.logger.info("  -> \(res.accountUrl(in: self.env))")
@@ -76,7 +76,7 @@ import XHttp
         HtmlBody: html,
         TextBody: text,
         Alias: Self.alias,
-        LayoutTemplate: Self.layout.slug
+        LayoutTemplate: Self.layout.slug,
       )
     }
   }
@@ -94,7 +94,7 @@ import XHttp
       if self != .base {
         layoutHtml = baseHtml.replacingOccurrences(
           of: "{{{ @content }}}",
-          with: try! String(contentsOfFile: layoutsDir + "/\(self.slug).html", encoding: .utf8)
+          with: try! String(contentsOfFile: layoutsDir + "/\(self.slug).html", encoding: .utf8),
         )
       }
 
@@ -104,7 +104,7 @@ import XHttp
         HtmlBody: layoutHtml,
         TextBody: "{{{ @content }}}",
         Alias: self.slug,
-        LayoutTemplate: nil
+        LayoutTemplate: nil,
       )
     }
   }

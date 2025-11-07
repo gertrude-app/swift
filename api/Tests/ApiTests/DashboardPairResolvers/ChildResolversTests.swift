@@ -18,7 +18,7 @@ final class ChildResolversTests: ApiTestCase, @unchecked Sendable {
       screenshotsFrequency: 888, // <-- ignored for new child, we set
       showSuspensionActivity: false, // <-- ignored for new child, we set
       downtime: "22:00-06:00",
-      keychains: []
+      keychains: [],
     )
 
     let output = try await SaveUser.resolve(with: input, in: parent.context)
@@ -44,7 +44,7 @@ final class ChildResolversTests: ApiTestCase, @unchecked Sendable {
     // now delete...
     let deleteOutput = try await DeleteEntity_v2.resolve(
       with: .init(id: child.id.rawValue, type: .child),
-      in: parent.context
+      in: parent.context,
     )
     expect(deleteOutput).toEqual(.success)
     let retrieved = try? await self.db.find(child.id)
@@ -77,9 +77,9 @@ final class ChildResolversTests: ApiTestCase, @unchecked Sendable {
         screenshotsFrequency: 444,
         showSuspensionActivity: true,
         downtime: "22:00-06:00",
-        keychains: []
+        keychains: [],
       ),
-      in: child.parent.context
+      in: child.parent.context,
     )
 
     let retrieved = try await self.db.find(child.id)
@@ -108,9 +108,9 @@ final class ChildResolversTests: ApiTestCase, @unchecked Sendable {
         screenshotsResolution: 333,
         screenshotsFrequency: 1, // <-- below minimum of 10
         showSuspensionActivity: true,
-        keychains: []
+        keychains: [],
       ),
-      in: child.parent.context
+      in: child.parent.context,
     )
 
     let retrieved = try await self.db.find(child.id)
@@ -170,8 +170,8 @@ final class ChildResolversTests: ApiTestCase, @unchecked Sendable {
       from: child,
       keychains: [.init(
         id: keychain2.id,
-        schedule: .init(mode: .active, days: .all, window: "04:00-08:00")
-      )]
+        schedule: .init(mode: .active, days: .all, window: "04:00-08:00"),
+      )],
     )
     _ = try await SaveUser.resolve(with: input, in: child.parent.context)
 
@@ -258,7 +258,7 @@ extension SaveUser.Input {
       screenshotsResolution: child.screenshotsResolution,
       screenshotsFrequency: child.screenshotsFrequency,
       showSuspensionActivity: child.showSuspensionActivity,
-      keychains: keychains
+      keychains: keychains,
     )
   }
 
@@ -273,7 +273,7 @@ extension SaveUser.Input {
       screenshotsFrequency: 180,
       showSuspensionActivity: true,
       downtime: nil,
-      keychains: []
+      keychains: [],
     )
   }
 

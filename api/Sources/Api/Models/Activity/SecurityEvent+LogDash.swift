@@ -6,28 +6,28 @@ func dashSecurityEvent(
   _ event: Gertie.SecurityEvent.Dashboard,
   _ detail: String? = nil,
   parent parentId: Parent.Id,
-  in context: Context
+  in context: Context,
 ) {
   dashSecurityEvent(
     event,
     parentId,
     context.ipAddress,
     detail,
-    with: context.db
+    with: context.db,
   )
 }
 
 func dashSecurityEvent(
   _ event: Gertie.SecurityEvent.Dashboard,
   _ detail: String? = nil,
-  in context: ParentContext
+  in context: ParentContext,
 ) {
   dashSecurityEvent(
     event,
     context.parent.id,
     context.ipAddress,
     detail,
-    with: context.db
+    with: context.db,
   )
 }
 
@@ -36,7 +36,7 @@ private func dashSecurityEvent(
   _ parentId: Parent.Id,
   _ ipAddress: String? = nil,
   _ detail: String? = nil,
-  with db: any DuetSQL.Client
+  with db: any DuetSQL.Client,
 ) {
   Task {
     try? await db.create(Api.SecurityEvent(
@@ -46,7 +46,7 @@ private func dashSecurityEvent(
       parentId: parentId,
       event: event.rawValue,
       detail: detail,
-      ipAddress: ipAddress
+      ipAddress: ipAddress,
     ))
   }
 }

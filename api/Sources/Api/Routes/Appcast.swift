@@ -15,8 +15,8 @@ enum AppcastRoute {
       headers: ["Content-Type": "application/xml"],
       body: .init(string: feedXml(
         for: releases,
-        force: query.force == true || query.version != nil
-      ))
+        force: query.force == true || query.version != nil,
+      )),
     )
   }
 }

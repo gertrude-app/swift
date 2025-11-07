@@ -29,7 +29,7 @@ extension SendPasswordResetEmail: Resolver {
       dashSecurityEvent(.passwordResetRequested, parent: parent.id, in: context)
       try await postmark.send(template: .passwordReset(
         to: email,
-        model: .init(dashboardUrl: context.dashboardUrl, token: token)
+        model: .init(dashboardUrl: context.dashboardUrl, token: token),
       ))
     } else {
       try await postmark.send(template: .passwordResetNoAccount(to: email, model: .init()))

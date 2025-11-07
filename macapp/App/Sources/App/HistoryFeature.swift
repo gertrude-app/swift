@@ -115,7 +115,7 @@ extension ConnectUser.Input {
       username: device.username(),
       fullUsername: device.fullUsername(),
       numericId: Int(exactly: device.numericUserId())!,
-      serialNumber: serialNumber
+      serialNumber: serialNumber,
     )
   }
 }

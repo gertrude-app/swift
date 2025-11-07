@@ -13,7 +13,7 @@ extension ConnectDevice_b1: Resolver {
         type: .unauthorized,
         debugMessage: "verification code not found",
         userMessage: "Connection code expired, or not found. Please create a new code and try again.",
-        appTag: .connectionCodeNotFound
+        appTag: .connectionCodeNotFound,
       )
     }
 
@@ -23,7 +23,7 @@ extension ConnectDevice_b1: Resolver {
       vendorId: .init(input.vendorId),
       deviceType: input.deviceType,
       appVersion: input.appVersion,
-      iosVersion: input.iosVersion
+      iosVersion: input.iosVersion,
     ))
     let token = try await ctx.db.create(IOSApp.Token(deviceId: device.id))
 
@@ -37,7 +37,7 @@ extension ConnectDevice_b1: Resolver {
       childId: child.id.rawValue,
       token: token.value.rawValue,
       deviceId: device.id.rawValue,
-      childName: child.name
+      childName: child.name,
     )
   }
 }

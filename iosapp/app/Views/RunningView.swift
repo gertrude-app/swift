@@ -45,7 +45,7 @@ struct RunningView: View {
             tracking: self.$titleOffset,
             to: .zero,
             after: .seconds(0.3),
-            for: .seconds(0.5)
+            for: .seconds(0.5),
           )
 
         if let childName = self.childName {
@@ -61,7 +61,7 @@ struct RunningView: View {
             tracking: self.$subtitleOffset,
             to: .zero,
             after: .seconds(0.4),
-            for: .seconds(0.5)
+            for: .seconds(0.5),
           )
 
         Link(destination: URL(string: "https://gertrude.app")!) {
@@ -77,7 +77,7 @@ struct RunningView: View {
           tracking: self.$linkOffset,
           to: .zero,
           after: .seconds(0.5),
-          for: .seconds(0.5)
+          for: .seconds(0.5),
         )
 
         Spacer()
@@ -92,6 +92,6 @@ struct RunningView: View {
 #Preview {
   RunningView(
     store: .init(initialState: .init()) { IOSReducer() },
-    childName: nil
+    childName: nil,
   )
 }

@@ -31,7 +31,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase, @unchecked Sendable {
     let (token, output) = try await withUUID {
       try await RequestMagicLink.resolve(
         with: .init(email: parent.email.rawValue, redirect: nil),
-        in: .init(requestId: "", dashboardUrl: "/dash", ipAddress: nil)
+        in: .init(requestId: "", dashboardUrl: "/dash", ipAddress: nil),
       )
     }
 
@@ -47,7 +47,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase, @unchecked Sendable {
     let (token, output) = try await withUUID {
       try await RequestMagicLink.resolve(
         with: .init(email: parent.email.rawValue, redirect: "/foo"),
-        in: .init(requestId: "", dashboardUrl: "/dash", ipAddress: nil)
+        in: .init(requestId: "", dashboardUrl: "/dash", ipAddress: nil),
       )
     }
 
@@ -60,7 +60,7 @@ final class DasboardUnauthedResolverTests: ApiTestCase, @unchecked Sendable {
   func testSendMagicLinkToUnknownEmailReturnsSuccessSendingNoAccountEmail() async throws {
     let output = try await RequestMagicLink.resolve(
       with: .init(email: "some@hacker.com", redirect: nil),
-      in: self.context
+      in: self.context,
     )
 
     expect(output).toEqual(.success)

@@ -63,7 +63,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     }
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(status: .trialExpiringSoon, expiration: .reference + .days(3)),
-      email: .trialEndingSoon(length: 21, remaining: 3)
+      email: .trialEndingSoon(length: 21, remaining: 3),
     ))
   }
 
@@ -76,7 +76,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
 
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(status: .trialExpiringSoon, expiration: .reference + .days(7)),
-      email: .trialEndingSoon(length: 60, remaining: 7)
+      email: .trialEndingSoon(length: 60, remaining: 7),
     ))
   }
 
@@ -87,7 +87,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     }
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(status: .overdue, expiration: .reference + .days(7)),
-      email: nil // <-- no email, they never onboarded
+      email: nil, // <-- no email, they never onboarded
     ))
   }
 
@@ -98,7 +98,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     }.withOnboardedChild().model
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(status: .overdue, expiration: .reference + .days(7)),
-      email: .trialEndedToOverdue(length: 21)
+      email: .trialEndedToOverdue(length: 21),
     ))
   }
 
@@ -109,7 +109,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     }
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(status: .unpaid, expiration: .reference + .days(365)),
-      email: nil // <-- no email, they never onboarded
+      email: nil, // <-- no email, they never onboarded
     ))
   }
 
@@ -120,7 +120,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     }.withOnboardedChild().model
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(status: .unpaid, expiration: .reference + .days(365)),
-      email: .overdueToUnpaid
+      email: .overdueToUnpaid,
     ))
   }
 
@@ -132,9 +132,9 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(
         status: .pendingAccountDeletion,
-        expiration: .reference + .days(30)
+        expiration: .reference + .days(30),
       ),
-      email: nil // <-- no email, they never onboarded
+      email: nil, // <-- no email, they never onboarded
     ))
   }
 
@@ -146,9 +146,9 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(
         status: .pendingAccountDeletion,
-        expiration: .reference + .days(30)
+        expiration: .reference + .days(30),
       ),
-      email: .unpaidToPendingDelete
+      email: .unpaidToPendingDelete,
     ))
   }
 
@@ -159,7 +159,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     }
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .delete(reason: "account unpaid > 1yr"),
-      email: nil
+      email: nil,
     ))
   }
 
@@ -170,7 +170,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     }
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .delete(reason: "email never verified"),
-      email: .deleteEmailUnverified
+      email: .deleteEmailUnverified,
     ))
   }
 
@@ -181,7 +181,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
     }
     await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
       action: .update(status: .overdue, expiration: .reference + .days(14)),
-      email: .paidToOverdue
+      email: .paidToOverdue,
     ))
   }
 
@@ -201,13 +201,13 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
           id: subsId,
           status: .active,
           customer: "cs-123",
-          currentPeriodEnd: Int(Date.epoch.distance(to: nextExpiration))
+          currentPeriodEnd: Int(Date.epoch.distance(to: nextExpiration)),
         )
       }
     } operation: {
       await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
         action: .update(status: .paid, expiration: nextExpiration + .days(2)),
-        email: nil
+        email: nil,
       ))
     }
   }
@@ -226,13 +226,13 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
           id: subsId,
           status: .active,
           customer: "cs-123",
-          currentPeriodEnd: Int(Date.epoch.distance(to: nextExpiration))
+          currentPeriodEnd: Int(Date.epoch.distance(to: nextExpiration)),
         )
       }
     } operation: {
       await expect(try SubscriptionManager().subscriptionUpdate(for: parent)).toEqual(.init(
         action: .update(status: .paid, expiration: nextExpiration + .days(2)),
-        email: nil
+        email: nil,
       ))
     }
   }
@@ -240,7 +240,7 @@ final class SubscriptionManagerTests: ApiTestCase, @unchecked Sendable {
 
 private extension ParentEntities {
   func withOnboardedChild(
-    config: (inout Child, inout ComputerUser, inout Computer) -> Void = { _, _, _ in }
+    config: (inout Child, inout ComputerUser, inout Computer) -> Void = { _, _, _ in },
   ) async throws -> ParentWithOnboardedChildEntities {
     @Dependency(\.db) var db
     var child = Child.random { $0.parentId = model.id }
@@ -258,7 +258,7 @@ private extension ParentEntities {
       token: self.token,
       child: child,
       computerUser: computerUser,
-      computer: computer
+      computer: computer,
     )
   }
 }

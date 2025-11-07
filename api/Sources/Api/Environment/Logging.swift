@@ -12,7 +12,7 @@ private struct NullHandler: LogHandler {
     source: String,
     file: String,
     function: String,
-    line: UInt
+    line: UInt,
   ) {}
 
   subscript(metadataKey _: String) -> Logger.Metadata.Value? {

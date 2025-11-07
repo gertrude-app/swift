@@ -15,12 +15,12 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase, @unchecked Sendable
 
     let decision: DecideFilterSuspensionRequest.Decision = .accepted(
       durationInSeconds: 333,
-      extraMonitoring: "@55+k"
+      extraMonitoring: "@55+k",
     )
 
     let output = try await DecideFilterSuspensionRequest.resolve(
       with: .init(id: request.id, decision: decision, responseComment: "ok"),
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     expect(output).toEqual(.success)
@@ -36,9 +36,9 @@ final class DecideFilterSuspensionRequestTests: ApiTestCase, @unchecked Sendable
         .filterSuspensionRequestDecided_v2(
           id: updated.id.rawValue,
           decision: updated.decision!,
-          comment: "ok"
+          comment: "ok",
         ),
-        to: .userDevice(child.computerUser.id)
+        to: .userDevice(child.computerUser.id),
       ),
     ])
   }

@@ -51,7 +51,7 @@ struct GetUser: Pair {
 extension GetUser: Resolver {
   static func resolve(
     with id: Api.Child.Id,
-    in context: ParentContext
+    in context: ParentContext,
   ) async throws -> Output {
     try await Output(from: context.verifiedChild(from: id), in: context.db)
   }
@@ -61,7 +61,7 @@ extension GetUser: Resolver {
 // @see also ruleKeychains(for:in:)
 func childKeychainSummaries(
   for childId: Child.Id,
-  in db: any DuetSQL.Client
+  in db: any DuetSQL.Client,
 ) async throws -> [UserKeychainSummary] {
   let childKeychains = try await ChildKeychain.query()
     .where(.childId == childId)
@@ -73,7 +73,7 @@ func childKeychainSummaries(
     let numKeys = try await db.count(
       Key.self,
       where: .keychainId == keychain.id,
-      withSoftDeleted: false
+      withSoftDeleted: false,
     )
     return .init(
       id: keychain.id,
@@ -82,7 +82,7 @@ func childKeychainSummaries(
       description: keychain.description,
       isPublic: keychain.isPublic,
       numKeys: numKeys,
-      schedule: childKeychains.first { $0.keychainId == keychain.id }?.schedule
+      schedule: childKeychains.first { $0.keychainId == keychain.id }?.schedule,
     )
   }
 }
@@ -102,7 +102,7 @@ extension GetUser.User {
           modelFamily: computer.model.family,
           modelTitle: computer.model.shortDescription,
           modelIdentifier: computer.model.identifier,
-          customName: computer.customName
+          customName: computer.customName,
         ), computer.filterVersion ?? .zero)
       }
     let devices = pairs.map(\.0)
@@ -125,7 +125,7 @@ extension GetUser.User {
       downtime: child.downtime,
       devices: devices.uniqued(on: \.id),
       blockedApps: blockedApps,
-      createdAt: child.createdAt
+      createdAt: child.createdAt,
     )
   }
 }

@@ -29,7 +29,7 @@ extension Filter.State {
       userKeychains: self.userKeychains,
       userDowntime: self.userDowntime.mapValues { $0.window },
       appIdManifest: self.appIdManifest,
-      exemptUsers: self.exemptUsers
+      exemptUsers: self.exemptUsers,
     )
   }
 }

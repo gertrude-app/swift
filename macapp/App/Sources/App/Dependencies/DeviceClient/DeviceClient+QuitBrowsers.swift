@@ -33,7 +33,7 @@ import MacAppRoute
 func terminate(
   app: NSRunningApplication,
   retryDelay: DispatchQueue.SchedulerTimeType.Stride = .seconds(3),
-  on scheduler: AnySchedulerOf<DispatchQueue>
+  on scheduler: AnySchedulerOf<DispatchQueue>,
 ) async {
   #if DEBUG
     print("* (DEBUG) skipping terminating app: `\(app.localizedName ?? "")`")

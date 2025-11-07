@@ -53,7 +53,7 @@ extension AppReducer.State {
           recordingKeystrokes: monitoring.suspensionMonitoring?.keyloggingEnabled
             ?? user.keyloggingEnabled,
           adminAttentionRequired: self.somethingRequiresAdminAttention,
-          updateStatus: self.updateStatus
+          updateStatus: self.updateStatus,
         ))
       case .notConnected:
         return .notConnected(filterInstalled: filter.extension.installed)

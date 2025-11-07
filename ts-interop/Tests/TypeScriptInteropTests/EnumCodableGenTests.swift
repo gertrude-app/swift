@@ -36,11 +36,11 @@ final class CodableTests: XCTestCase {
           .init(name: "bar", type: "Int"),
           .init(name: "id", type: "UUID"),
         ],
-        isFlattenedUserStruct: true
+        isFlattenedUserStruct: true,
       ),
       .init(name: "qux", values: [.init(name: "q", type: "Bool?")]),
       .init(name: "foo", values: []),
-    ]
+    ],
   )
 
   func testAssociatedValuesWithSameNameAsCase() throws {
@@ -143,7 +143,7 @@ final class CodableTests: XCTestCase {
           }
         }
       }
-      """
+      """,
     )
   }
 

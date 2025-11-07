@@ -27,14 +27,14 @@ extension MacAppRoute: RouteResponder {
           id: "6e88d0de",
           type: .unauthorized,
           debugMessage: "user token not found",
-          appTag: .userTokenNotFound
+          appTag: .userTokenNotFound,
         ))
 
       let childContext = try await MacApp.ChildContext(
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,
         child: token.child(in: context.db),
-        token: token
+        token: token,
       )
       return try await AuthedUserRoute.respond(to: userRoute, in: childContext)
     }

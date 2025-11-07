@@ -26,9 +26,9 @@ extension UpdateUnlockRequest: Resolver {
         id: unlockRequest.id.rawValue,
         status: unlockRequest.status,
         target: unlockRequest.target ?? "",
-        comment: unlockRequest.responseComment
+        comment: unlockRequest.responseComment,
       ),
-      to: .userDevice(userDevice.id)
+      to: .userDevice(userDevice.id),
     )
     return .success
   }

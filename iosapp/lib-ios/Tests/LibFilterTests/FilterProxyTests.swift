@@ -57,19 +57,19 @@ final class FilterProxyTests: XCTestCase {
         hostname: host,
         url: url,
         bundleId: bundleId,
-        flowType: nil
+        flowType: nil,
       ))).toEqual(expected)
       expect(proxy.decideNewFlow(.init(
         hostname: host,
         url: url,
         bundleId: bundleId,
-        flowType: .browser
+        flowType: .browser,
       ))).toEqual(expected)
       expect(proxy.decideNewFlow(.init(
         hostname: host,
         url: url,
         bundleId: bundleId,
-        flowType: .socket
+        flowType: .socket,
       ))).toEqual(expected)
     }
   }
@@ -91,7 +91,7 @@ final class FilterProxyTests: XCTestCase {
       hostname: "any.com",
       url: "any.com",
       bundleId: "com.x",
-      flowType: nil
+      flowType: nil,
     )))
     .toEqual(.allow)
   }

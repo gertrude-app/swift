@@ -27,12 +27,12 @@ extension AppStoreClient: DependencyKey {
             await UIApplication.shared.open(writeReviewURL)
           }
         }
-      }
+      },
     )
   #else
     public static let liveValue = AppStoreClient(
       requestRating: {},
-      requestReview: {}
+      requestReview: {},
     )
   #endif
 }

@@ -22,7 +22,7 @@ extension MacApp {
 extension AuthedUserRoute: RouteResponder {
   static func respond(
     to route: Self,
-    in context: MacApp.ChildContext
+    in context: MacApp.ChildContext,
   ) async throws -> Response {
     switch route {
     case .checkIn(let input):

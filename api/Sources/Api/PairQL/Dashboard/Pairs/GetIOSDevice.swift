@@ -47,7 +47,7 @@ extension GetIOSDevice: Resolver {
       enabledBlockGroups: enabledBlockGroups.map(\.id),
       webPolicy: .init(string: device.webPolicy) ?? .blockAll,
       webPolicyDomains: domains.map(\.domain),
-      customBlockRules: blockRules.map { .init(id: $0.id, rule: $0.rule) }
+      customBlockRules: blockRules.map { .init(id: $0.id, rule: $0.rule) },
     )
   }
 }

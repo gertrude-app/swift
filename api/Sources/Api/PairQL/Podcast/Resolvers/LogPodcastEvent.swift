@@ -11,7 +11,7 @@ extension LogPodcastEvent: Resolver {
       installId: input.installId,
       deviceType: input.deviceType,
       appVersion: input.appVersion,
-      iosVersion: input.iosVersion
+      iosVersion: input.iosVersion,
     ))
 
     if context.env.mode == .prod {

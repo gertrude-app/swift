@@ -10,16 +10,16 @@ extension ExtensionClient: DependencyKey {
     version: {
       Bundle.main
         .infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
-    }
+    },
   )
 }
 
 extension ExtensionClient: TestDependencyKey {
   static let testValue = Self(
-    version: unimplemented("ExtensionClient.version", placeholder: "2.5.0")
+    version: unimplemented("ExtensionClient.version", placeholder: "2.5.0"),
   )
   static let mock = Self(
-    version: { "1.0.0" }
+    version: { "1.0.0" },
   )
 }
 

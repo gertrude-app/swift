@@ -104,7 +104,7 @@ extension WebSocketFeature.RootReducer {
           await device.notifyUnlockRequestUpdated(
             accepted: status == .accepted,
             target: target,
-            comment: comment
+            comment: comment,
           )
         }
 
@@ -146,7 +146,7 @@ extension WebSocketFeature.RootReducer {
 extension WebSocketClient {
   func sendFilterState(
     _ state: AppReducer.State,
-    overrideFilterState: FilterExtensionState? = nil
+    overrideFilterState: FilterExtensionState? = nil,
   ) async throws {
     if let overrideFilterState {
       var stateCopy = state

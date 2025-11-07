@@ -50,7 +50,7 @@ extension AppUpdatesFeature.State {
     self.init(
       installedVersion: installedVersion ?? "0.0.0",
       releaseChannel: .stable,
-      latestVersion: nil
+      latestVersion: nil,
     )
   }
 }
@@ -81,13 +81,13 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
               await self.api.securityEvent(.appUpdateSucceeded)
               await send(.appUpdates(.delegate(.updateSucceeded(
                 oldVersion: restored.appVersion,
-                newVersion: newVersion
+                newVersion: newVersion,
               ))))
 
               // refresh the rules post-update, or else health check will complain
               await send(.checkIn(
                 result: TaskResult { try await self.api.appCheckIn(newVersion) },
-                reason: .appUpdated
+                reason: .appUpdated,
               ))
 
               // big sur doesn't get notification pushed when filter restarts
@@ -96,7 +96,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
               await send(.filter(.receivedState(self.filter.state())))
             }
           }
-        }
+        },
       )
 
     // don't need admin challenge, because sparkle can't update w/out admin auth
@@ -149,7 +149,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         if self.network.isConnected() {
           try await self.triggerUpdate(
             .init(force: true, version: version, requestingAppVersion: persist.appVersion),
-            persist
+            persist,
           )
         } else {
           await self.device.notifyNoInternet()
@@ -171,7 +171,7 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         }
         if await self.app.hasFullDiskAccess() == false {
           await send(.onboarding(.delegate(.openForUpgrade(
-            step: .allowFullDiskAccess_grantAndRestart
+            step: .allowFullDiskAccess_grantAndRestart,
           ))))
         }
       }
@@ -184,19 +184,19 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
   func triggerUpdate(
     _ channel: ReleaseChannel,
     _ persist: Persistent.State,
-    force: Bool? = nil
+    force: Bool? = nil,
   ) async throws {
     let query = AppcastQuery(
       channel: channel,
       force: force,
-      requestingAppVersion: persist.appVersion
+      requestingAppVersion: persist.appVersion,
     )
     try await self.triggerUpdate(query, persist)
   }
 
   func triggerUpdate(
     _ query: AppcastQuery,
-    _ persist: Persistent.State
+    _ persist: Persistent.State,
   ) async throws {
     let feedUrl = "\(self.updater.endpoint.absoluteString)\(query.urlString)"
     try await self.storage.savePersistentState(persist)

@@ -20,7 +20,7 @@ extension IOSApp {
       deviceType: String,
       appVersion: String,
       iosVersion: String,
-      webPolicy: String = "blockAll"
+      webPolicy: String = "blockAll",
     ) {
       self.id = id ?? .init(get(dependency: \.uuid)())
       self.childId = childId
@@ -64,7 +64,7 @@ extension IOSApp.Device {
   }
 
   func webContentFilterPolicy(
-    in db: any DuetSQL.Client
+    in db: any DuetSQL.Client,
   ) async throws -> WebContentFilterPolicy {
     let domains = try await self.webPolicyDomains(in: db).map(\.domain)
     switch self.webPolicy {

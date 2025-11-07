@@ -44,7 +44,7 @@ extension SystemClient: DependencyKey {
       requestExtensionActivation: { delegate in
         let activationRequest = OSSystemExtensionRequest.activationRequest(
           forExtensionWithIdentifier: FILTER_EXT_BUNDLE_ID,
-          queue: .main
+          queue: .main,
         )
         activationRequest.delegate = delegate
         OSSystemExtensionManager.shared.submitRequest(activationRequest)
@@ -65,9 +65,9 @@ extension SystemClient: DependencyKey {
       filterDidChangePublisher: {
         NotificationCenter.default.publisher(
           for: .NEFilterConfigurationDidChange,
-          object: NEFilterManager.shared()
+          object: NEFilterManager.shared(),
         ).map { _ in }.eraseToAnyPublisher()
-      }
+      },
     )
   }
 }
@@ -76,44 +76,44 @@ extension SystemClient: TestDependencyKey {
   static let testValue = Self(
     loadFilterConfiguration: unimplemented(
       "SystemClient.loadFilterConfiguration",
-      placeholder: .doesNotExistOrLoadedSuccessfully
+      placeholder: .doesNotExistOrLoadedSuccessfully,
     ),
     isNEFilterManagerSharedEnabled: unimplemented(
       "SystemClient.isNEFilterManagerSharedEnabled",
-      placeholder: true
+      placeholder: true,
     ),
     enableNEFilterManagerShared: unimplemented(
       "SystemClient.enableNEFilterManagerShared",
-      placeholder: ()
+      placeholder: (),
     ),
     disableNEFilterManagerShared: unimplemented(
       "SystemClient.disableNEFilterManagerShared",
-      placeholder: ()
+      placeholder: (),
     ),
     filterProviderConfiguration: unimplemented(
       "SystemClient.filterProviderConfiguration",
-      placeholder: nil
+      placeholder: nil,
     ),
     removeFilterConfiguration: unimplemented(
       "SystemClient.removeFilterConfiguration",
-      placeholder: nil
+      placeholder: nil,
     ),
     requestExtensionActivation: unimplemented(
       "SystemClient.requestExtensionActivation",
-      placeholder: ()
+      placeholder: (),
     ),
     updateNEFilterManagerShared: unimplemented(
       "SystemClient.updateNEFilterManagerShared",
-      placeholder: ()
+      placeholder: (),
     ),
     saveNEFilterManagerShared: unimplemented(
       "SystemClient.saveNEFilterManagerShared",
-      placeholder: nil
+      placeholder: nil,
     ),
     filterDidChangePublisher: unimplemented(
       "SystemClient.filterDidChangePublisher",
-      placeholder: AnyPublisher(Empty())
-    )
+      placeholder: AnyPublisher(Empty()),
+    ),
   )
 
   static let mock = Self(
@@ -126,7 +126,7 @@ extension SystemClient: TestDependencyKey {
     requestExtensionActivation: { _ in },
     updateNEFilterManagerShared: { _ in },
     saveNEFilterManagerShared: { nil },
-    filterDidChangePublisher: { Empty().eraseToAnyPublisher() }
+    filterDidChangePublisher: { Empty().eraseToAnyPublisher() },
   )
 }
 

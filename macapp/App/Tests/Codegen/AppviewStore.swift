@@ -23,7 +23,7 @@ struct AppviewStore {
     namedTypes: [SwiftType] = [],
     types: [SwiftType] = [],
     localAliases: [(Any.Type, String)] = [],
-    globalAliases: [(Any.Type, String)] = []
+    globalAliases: [(Any.Type, String)] = [],
   ) {
     self.path = path
     self.namedTypes = namedTypes
@@ -41,7 +41,7 @@ extension AppviewStore: CodeGenerator {
       // generate named/extracted decls without all aliases
       var config = Config(
         compact: true,
-        aliasing: globalAliases.map { .init($0, as: $1) } + [.init(Date.self, as: "ISODateString")]
+        aliasing: globalAliases.map { .init($0, as: $1) } + [.init(Date.self, as: "ISODateString")],
       )
       let namedDecls = try namedTypes.map {
         let ts = CodeGen(config: config)
@@ -53,7 +53,7 @@ extension AppviewStore: CodeGenerator {
       // generate rest of decls using shared aliases
       let ts = CodeGen(config: .init(
         compact: true,
-        aliasing: localAliases.map { .init($0, as: $1) } + [.init(Date.self, as: "ISODateString")]
+        aliasing: localAliases.map { .init($0, as: $1) } + [.init(Date.self, as: "ISODateString")],
       ))
       let aliasedDecls = try types.map { try ts.declaration(for: $0.type, as: $0.alias) }
 

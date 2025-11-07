@@ -16,7 +16,7 @@ struct Keychain: Codable, Sendable {
     name: String,
     isPublic: Bool = false,
     description: String? = nil,
-    warning: String? = nil
+    warning: String? = nil,
   ) {
     self.id = id
     self.parentId = parentId

@@ -20,7 +20,7 @@ public extension ApiClient {
     }
     await self.logSecurityEvent(
       .init(deviceId: deviceId, event: event.rawValue, detail: detail),
-      nil
+      nil,
     )
   }
 }
@@ -36,7 +36,7 @@ private func buffer(
   _ event: SecurityEvent.MacApp,
   _ detail: String?,
   _ deviceId: UUID,
-  _ userToken: UUID?
+  _ userToken: UUID?,
 ) {
   guard let userToken else {
     return
@@ -54,19 +54,19 @@ private func buffer(
 
   var buffered = (try? userDefaults.loadJson(
     at: .bufferedSecurityEventsKey,
-    decoding: [BufferedSecurityEvent].self
+    decoding: [BufferedSecurityEvent].self,
   )) ?? []
 
   buffered.append(BufferedSecurityEvent(
     deviceId: deviceId,
     userToken: userToken,
     event: event,
-    detail: timestampedDetail
+    detail: timestampedDetail,
   ))
 
   try? userDefaults.saveJson(
     from: buffered,
-    at: .bufferedSecurityEventsKey
+    at: .bufferedSecurityEventsKey,
   )
 }
 

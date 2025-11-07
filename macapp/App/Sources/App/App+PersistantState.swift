@@ -32,7 +32,7 @@ extension AppReducer.State {
       appUpdateReleaseChannel: appUpdates.releaseChannel,
       filterVersion: filter.version,
       user: user.data,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )
   }
 }

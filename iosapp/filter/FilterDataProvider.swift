@@ -20,7 +20,7 @@ class FilterDataProvider: NEFilterDataProvider {
 
   override func stopFilter(
     with reason: NEProviderStopReason,
-    completionHandler: @escaping () -> Void
+    completionHandler: @escaping () -> Void,
   ) {
     os_log("[G•] FILTER stop reason: %{public}s", String(describing: reason))
     self.proxy.stopFilter(reason: reason)

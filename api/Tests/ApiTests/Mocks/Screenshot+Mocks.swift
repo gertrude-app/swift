@@ -18,7 +18,7 @@ extension Screenshot: RandomMocked {
       url: "@random".random,
       width: Int.random,
       height: Int.random,
-      flagged: Bool.random() ? Date() : nil
+      flagged: Bool.random() ? Date() : nil,
     )
   }
 }

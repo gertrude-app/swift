@@ -15,7 +15,7 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
   public init(
     apps: [String: Set<String>] = [:],
     displayNames: [String: String] = [:],
-    categories: [String: Set<String>] = [:]
+    categories: [String: Set<String>] = [:],
   ) {
     self.apps = apps
     self.displayNames = displayNames
@@ -72,7 +72,7 @@ public struct AppIdManifest: Codable, Equatable, Sendable {
       .init(
         apps: ["xcode": ["com.apple.xcode"]],
         displayNames: ["come.apple.xcode": "Xcode"],
-        categories: ["coding": ["xcode"]]
+        categories: ["coding": ["xcode"]],
       )
     }
 

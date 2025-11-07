@@ -41,7 +41,7 @@ public struct ApiClient: Sendable {
     setAccountActive: @escaping @Sendable (Bool) async -> Void,
     setUserToken: @escaping @Sendable (UUID) async -> Void,
     trustedNetworkTimestamp: @escaping @Sendable () async throws -> Double,
-    uploadScreenshot: @escaping @Sendable (UploadScreenshotData) async throws -> URL
+    uploadScreenshot: @escaping @Sendable (UploadScreenshotData) async throws -> URL,
   ) {
     self.checkIn = checkIn
     self.clearUserToken = clearUserToken
@@ -116,7 +116,7 @@ extension ApiClient: TestDependencyKey {
     setAccountActive: unimplemented("ApiClient.setAccountActive"),
     setUserToken: unimplemented("ApiClient.setUserToken"),
     trustedNetworkTimestamp: unimplemented("ApiClient.trustedNetworkTimestamp"),
-    uploadScreenshot: unimplemented("ApiClient.uploadScreenshot")
+    uploadScreenshot: unimplemented("ApiClient.uploadScreenshot"),
   )
 
   public static let mock = Self(
@@ -135,7 +135,7 @@ extension ApiClient: TestDependencyKey {
     setAccountActive: { _ in },
     setUserToken: { _ in },
     trustedNetworkTimestamp: { 0.0 },
-    uploadScreenshot: { _ in .init(string: "https://s3.buck.et/img.png")! }
+    uploadScreenshot: { _ in .init(string: "https://s3.buck.et/img.png")! },
   )
 }
 

@@ -27,14 +27,14 @@ struct ChildActivitySummaries: Pair {
 extension ChildActivitySummaries: Resolver {
   static func resolve(
     with input: Input,
-    in context: ParentContext
+    in context: ParentContext,
   ) async throws -> Output {
     let child = try await context.verifiedChild(from: input.childId)
     let computerUserIds = try await child.computerUsers(in: context.db).map(\.id)
     let days = try await ChildActivitySummaries.days(
       computerUserIds,
       input.jsTimezoneOffsetMinutes,
-      in: context.db
+      in: context.db,
     )
     return .init(childName: child.name, days: days)
   }
@@ -42,7 +42,7 @@ extension ChildActivitySummaries: Resolver {
   static func days(
     _ computerUserIds: [ComputerUser.Id],
     _ jsTimezoneOffsetMinutes: Int,
-    in db: any Client
+    in db: any Client,
   ) async throws -> [Day] {
     @Dependency(\.date) var date
 
@@ -57,7 +57,7 @@ extension ChildActivitySummaries: Resolver {
       .where(.computerUserId |=| computerUserIds)
       .where(.or(
         .createdAt > .date(twoWeeksAgo),
-        .isNull(.deletedAt) .&& .not(.isNull(.flagged))
+        .isNull(.deletedAt) .&& .not(.isNull(.flagged)),
       ))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
@@ -67,7 +67,7 @@ extension ChildActivitySummaries: Resolver {
       .where(.computerUserId |=| computerUserIds)
       .where(.or(
         .createdAt > .date(twoWeeksAgo),
-        .isNull(.deletedAt) .&& .not(.isNull(.flagged))
+        .isNull(.deletedAt) .&& .not(.isNull(.flagged)),
       ))
       .orderBy(.createdAt, .desc)
       .withSoftDeleted()
@@ -105,7 +105,7 @@ extension ChildActivitySummaries: Resolver {
         date: key,
         numApproved: deletedCount,
         numFlagged: flaggedCount,
-        numTotal: coalesced.count
+        numTotal: coalesced.count,
       )
     }
     days.sort { $0.date > $1.date }

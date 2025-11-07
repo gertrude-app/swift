@@ -11,7 +11,7 @@ public extension CustomQueryable {
       try row.decode(
         model: Self.self,
         prefix: nil,
-        keyDecodingStrategy: .convertFromSnakeCase
+        keyDecodingStrategy: .convertFromSnakeCase,
       )
     }
   }

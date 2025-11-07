@@ -140,7 +140,7 @@ public struct IOSReducer {
   func onboardingBtnTapped(
     _ btn: Action.Interactive.OnboardingBtn,
     state: inout State,
-    action: Action.Interactive
+    action: Action.Interactive,
   ) -> Effect<Action> {
     switch (state.screen, btn) {
     case (.onboarding(.happyPath(.hiThere)), .primary):
@@ -271,7 +271,7 @@ public struct IOSReducer {
           if let vendorId = await deps.device.vendorId() {
             let result = try? await deps.api.fetchBlockRules(
               vendorId: vendorId,
-              disabledGroups: disabled
+              disabledGroups: disabled,
             )
             if let rules = result, !rules.isEmpty {
               deps.sharedStorage.saveProtectionMode(.normal(rules))
@@ -292,7 +292,7 @@ public struct IOSReducer {
           if let bytes = await device.availableDiskSpaceInBytes() {
             await send(.programmatic(.setAvailableDiskSpaceInBytes(bytes)))
           }
-        }
+        },
       )
 
     case (.onboarding(.happyPath(.promptClearCache)), .primary):
@@ -607,7 +607,7 @@ public struct IOSReducer {
           switch (filterRunning, disabledBlockGroups, hasLegacyData) {
           case (true, .some, _):
             await send(.programmatic(.setScreen(.running(
-              state: connection.map { .connected(childName: $0.childName) } ?? .notConnected
+              state: connection.map { .connected(childName: $0.childName) } ?? .notConnected,
             ))))
             if let token = connection?.token {
               await deps.api.setAuthToken(token)
@@ -643,14 +643,14 @@ public struct IOSReducer {
             }
             await deps.api.logEvent(
               "8d35f043",
-              "[onboarding] first launch, region: `\(deps.locale.region?.identifier ?? "(nil)")`"
+              "[onboarding] first launch, region: `\(deps.locale.region?.identifier ?? "(nil)")`",
             )
           }
         },
         // safeguard in case app crashed trying to fill the disk
         .run { [deps = self.deps] send in
           await deps.device.deleteCacheFillDir()
-        }
+        },
       )
 
     case .appWillTerminate:

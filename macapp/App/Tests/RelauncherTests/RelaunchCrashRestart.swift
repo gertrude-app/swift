@@ -10,7 +10,7 @@ final class RelaunchCrashRestart: XCTestCase {
     let (client, invocations) = recordingClient(
       args: ["/", "Gertrude.app", "--crash-watch"],
       runningApps: ["foo/bar.app", "acme/widget.app"], // app not running
-      parentProcessIds: [99, 99, 99, 1]
+      parentProcessIds: [99, 99, 99, 1],
     )
 
     Relauncher.run(client)
@@ -38,7 +38,7 @@ final class RelaunchCrashRestart: XCTestCase {
     let (client, invocations) = recordingClient(
       args: ["/", "Gertrude.app", "--relaunch"],
       runningApps: ["foo/bar.app", "Gertrude.app"],
-      parentProcessIds: [99, 99, 1]
+      parentProcessIds: [99, 99, 1],
     )
 
     Relauncher.run(client)

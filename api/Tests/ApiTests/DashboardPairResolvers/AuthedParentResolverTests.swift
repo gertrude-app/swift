@@ -59,7 +59,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
           id: "cs_123",
           url: nil,
           subscription: "sub_123",
-          clientReferenceId: parent.id.lowercased
+          clientReferenceId: parent.id.lowercased,
         )
       }
       $0.stripe.getSubscription = { id in
@@ -69,7 +69,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await HandleCheckoutSuccess.resolve(
         with: .init(stripeCheckoutSessionId: sessionId),
-        in: context(parent)
+        in: context(parent),
       )
     }
 
@@ -88,7 +88,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await CreatePendingAppConnection.resolve(
         with: .init(userId: child.id),
-        in: context(child.parent)
+        in: context(child.parent),
       )
     }
 
@@ -99,7 +99,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let parent = try await self.parent(with: \.subscriptionStatus, of: .paid)
     let method = Parent.NotificationMethod(
       parentId: parent.id,
-      config: .email(email: "blob@blob.com")
+      config: .email(email: "blob@blob.com"),
     )
     try await self.db.create(method)
     var notification = Parent.Notification.random
@@ -118,13 +118,13 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
           .init(
             id: notification.id,
             trigger: notification.trigger,
-            methodId: notification.methodId
+            methodId: notification.methodId,
           ),
         ],
         verifiedNotificationMethods: [.init(id: method.id, config: method.config)],
         hasAdminChild: false,
-        monthlyPriceInDollars: 10
-      )
+        monthlyPriceInDollars: 10,
+      ),
     )
   }
 
@@ -139,7 +139,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await CreatePendingNotificationMethod.resolve(
         with: .text(phoneNumber: "+12345678901"),
-        in: context(parent)
+        in: context(parent),
       )
     }
 
@@ -153,14 +153,14 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     expect(sent.texts).toEqual([
       .init(
         to: "+12345678901",
-        message: "Your verification code is 987654"
+        message: "Your verification code is 987654",
       ),
     ])
 
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
       with: .init(id: .init(id), code: 987_654),
-      in: context(parent)
+      in: context(parent),
     )
 
     expect(confirmOuput).toEqual(.success)
@@ -183,7 +183,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await CreatePendingNotificationMethod.resolve(
         with: .slack(channelId: "C123", channelName: "Foo", token: "xoxb-123"),
-        in: context(parent)
+        in: context(parent),
       )
     }
 
@@ -202,7 +202,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
       with: .init(id: .init(id), code: 123_456),
-      in: context(parent)
+      in: context(parent),
     )
 
     expect(confirmOuput).toEqual(.success)
@@ -226,7 +226,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     } operation: {
       try await CreatePendingNotificationMethod.resolve(
         with: .email(email: "blob@blob.com"),
-        in: context(parent)
+        in: context(parent),
       )
     }
 
@@ -246,7 +246,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     // submit the "confirm pending" mutation
     let confirmOuput = try await ConfirmPendingNotificationMethod.resolve(
       with: .init(id: .init(id), code: 123_456),
-      in: context(parent)
+      in: context(parent),
     )
 
     expect(confirmOuput).toEqual(.success)
@@ -263,13 +263,13 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let method = try await self.db.create(
       Parent.NotificationMethod(
         parentId: parent.model.id,
-        config: .email(email: "foo@bar.com")
-      )
+        config: .email(email: "foo@bar.com"),
+      ),
     )
 
     let output = try await SaveNotification.resolve(
       with: .init(id: .init(), isNew: true, methodId: method.id, trigger: .unlockRequestSubmitted),
-      in: context(parent)
+      in: context(parent),
     )
 
     expect(output).toEqual(.success)
@@ -279,7 +279,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let parent = try await self.parent().withKeychain()
     let output = try await DeleteEntity_v2.resolve(
       with: .init(id: parent.key.id.rawValue, type: .key),
-      in: context(parent)
+      in: context(parent),
     )
     expect(output).toEqual(.success)
     expect(sent.websocketMessages).toEqual([
@@ -291,7 +291,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let child = try await self.childWithComputer()
     _ = try await DeleteEntity_v2.resolve(
       with: .init(id: child.computerUser.id.rawValue, type: .computerUser),
-      in: context(child.parent)
+      in: context(child.parent),
     )
     let retrieved = try? await self.db.find(child.computer.id)
     expect(retrieved).toBeNil()
@@ -301,7 +301,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let child = try await self.childWithComputer()
     _ = try await DeleteEntity_v2.resolve(
       with: .init(id: child.id.rawValue, type: .child),
-      in: context(child.parent)
+      in: context(child.parent),
     )
     let retrieved = try? await self.db.find(child.computer.id)
     expect(retrieved).toBeNil()
@@ -313,7 +313,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     _ = try await DeleteEntity_v2.resolve(
       with: .init(id: parent.id.rawValue, type: .parent),
-      in: context(parent)
+      in: context(parent),
     )
 
     let deleted = try await self.db.select(all: DeletedEntity.self)
@@ -331,7 +331,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     try await expectErrorFrom { [weak self] in
       _ = try await DeleteEntity_v2.resolve(
         with: .init(id: parent2.id.rawValue, type: .parent),
-        in: self!.context(parent1)
+        in: self!.context(parent1),
       )
     }.toContain("Unauthorized")
   }
@@ -342,7 +342,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await LogEvent.resolve(
       with: .init(eventId: "123", detail: "detail"),
-      in: context(parent)
+      in: context(parent),
     )
 
     expect(output).toEqual(.success)
@@ -358,21 +358,21 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let email = try await self.db.create(
       Parent.NotificationMethod(
         parentId: parent.model.id,
-        config: .email(email: "foo@bar.com")
-      )
+        config: .email(email: "foo@bar.com"),
+      ),
     )
     let text = try await self.db.create(
       Parent.NotificationMethod(
         parentId: parent.model.id,
-        config: .text(phoneNumber: "1234567890")
-      )
+        config: .text(phoneNumber: "1234567890"),
+      ),
     )
     let notification = try await self.db.create(
       Parent.Notification(
         parentId: parent.model.id,
         methodId: email.id,
-        trigger: .unlockRequestSubmitted
-      )
+        trigger: .unlockRequestSubmitted,
+      ),
     )
 
     let output = try await SaveNotification.resolve(
@@ -380,9 +380,9 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
         id: notification.id,
         isNew: false,
         methodId: text.id, // <-- new method
-        trigger: .suspendFilterRequestSubmitted // <-- new trigger
+        trigger: .suspendFilterRequestSubmitted, // <-- new trigger
       ),
-      in: context(parent)
+      in: context(parent),
     )
 
     expect(output).toEqual(.success)
@@ -414,7 +414,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
         slug: app.slug,
         launchable: app.launchable,
         bundleIds: [.init(from: bundleId)],
-        category: .init(from: cat)
+        category: .init(from: cat),
       ),
     ])
   }
@@ -423,7 +423,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     let parent = try await self.parent().withKeychain()
     let output = try await GetAdminKeychain.resolve(
       with: parent.keychain.id,
-      in: context(parent)
+      in: context(parent),
     )
     let expected = GetAdminKeychain.Output(
       summary: KeychainSummary(
@@ -432,9 +432,9 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
         name: parent.keychain.name,
         description: parent.keychain.description,
         isPublic: parent.keychain.isPublic,
-        numKeys: 1
+        numKeys: 1,
       ),
-      keys: [.init(from: parent.key, keychainId: parent.keychain.id)]
+      keys: [.init(from: parent.key, keychainId: parent.keychain.id)],
     )
 
     expect(output).toEqual(expected)
@@ -445,25 +445,25 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     // child with keychain assigned
     let littleJimmy = try await self.db.create(
-      Child(parentId: parent.model.id, name: "Little Jimmy")
+      Child(parentId: parent.model.id, name: "Little Jimmy"),
     )
     try await self.db.create(
-      ChildKeychain(childId: littleJimmy.id, keychainId: parent.keychain.id)
+      ChildKeychain(childId: littleJimmy.id, keychainId: parent.keychain.id),
     )
 
     // child without keychain assigned
     let sally = try await self.db.create(
-      Child(parentId: parent.model.id, name: "Sally")
+      Child(parentId: parent.model.id, name: "Sally"),
     )
 
     let output = try await GetAdminKeychains.resolve(in: context(parent))
 
     let expectedUsers = [
       GetAdminKeychains.Child(
-        id: littleJimmy.id, name: littleJimmy.name
+        id: littleJimmy.id, name: littleJimmy.name,
       ),
       GetAdminKeychains.Child(
-        id: sally.id, name: sally.name
+        id: sally.id, name: sally.name,
       ),
     ]
 
@@ -474,17 +474,17 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
         name: parent.keychain.name,
         description: parent.keychain.description,
         isPublic: parent.keychain.isPublic,
-        numKeys: 1
+        numKeys: 1,
       ),
       children: [littleJimmy.id], // only littleJimmy, because sally doesn't have the keychain
-      keys: [.init(from: parent.key, keychainId: parent.keychain.id)]
+      keys: [.init(from: parent.key, keychainId: parent.keychain.id)],
     )
 
     expect(output).toEqual(
       GetAdminKeychains.Output(
         keychains: [expectedKeychain],
-        children: expectedUsers
-      )
+        children: expectedUsers,
+      ),
     )
   }
 
@@ -507,8 +507,8 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
     await expect(output).toEqual(
       try .init(
         own: [.init(from: parent.keychain)],
-        public: [.init(from: publicKeychain)]
-      )
+        public: [.init(from: publicKeychain)],
+      ),
     )
   }
 
@@ -522,9 +522,9 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
         isNew: false,
         id: parent.keychain.id,
         name: "new name",
-        description: "new description"
+        description: "new description",
       ),
-      in: context(parent)
+      in: context(parent),
     )
 
     expect(output).toEqual(.success)
@@ -544,9 +544,9 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
         isNew: true,
         id: id,
         name: "some name",
-        description: "some description"
+        description: "some description",
       ),
-      in: context(parent)
+      in: context(parent),
     )
 
     expect(output).toEqual(.success)
@@ -565,7 +565,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await GetSuspendFilterRequest.resolve(
       with: request.id,
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     expect(output.id).toEqual(request.id)
@@ -587,7 +587,7 @@ final class AuthedAdminResolverTests: ApiTestCase, @unchecked Sendable {
 
     let output = try await GetUnlockRequest.resolve(
       with: request.id,
-      in: context(child.parent)
+      in: context(child.parent),
     )
 
     expect(output.id).toEqual(request.id)

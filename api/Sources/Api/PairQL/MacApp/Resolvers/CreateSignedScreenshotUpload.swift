@@ -21,7 +21,7 @@ extension CreateSignedScreenshotUpload: Resolver {
     guard let webUrl = URL(string: webUrlString) else {
       throw Abort(
         .internalServerError,
-        reason: "Unexpected nil constructing signed upload url"
+        reason: "Unexpected nil constructing signed upload url",
       )
     }
 
@@ -33,7 +33,7 @@ extension CreateSignedScreenshotUpload: Resolver {
       width: input.width,
       height: input.height,
       filterSuspended: input.filterSuspended ?? false,
-      createdAt: input.createdAt ?? get(dependency: \.date.now)
+      createdAt: input.createdAt ?? get(dependency: \.date.now),
     ))
 
     return .init(uploadUrl: signedUrl, webUrl: webUrl)

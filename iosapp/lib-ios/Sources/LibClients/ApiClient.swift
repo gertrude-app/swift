@@ -42,8 +42,8 @@ extension ApiClient: DependencyKey {
             vendorId: vendorId,
             deviceType: deviceData.type.rawValue,
             appVersion: version,
-            iosVersion: deviceData.iOSVersion
-          ))
+            iosVersion: deviceData.iOSVersion,
+          )),
         )
       },
       connectedRules: { vendorId in
@@ -55,8 +55,8 @@ extension ApiClient: DependencyKey {
             vendorId: vendorId,
             deviceType: deviceData.type.rawValue,
             appVersion: version,
-            iosVersion: deviceData.iOSVersion
-          ))
+            iosVersion: deviceData.iOSVersion,
+          )),
         )
       },
       fetchBlockRules: { vendorId, disabledGroups in
@@ -65,8 +65,8 @@ extension ApiClient: DependencyKey {
           withUnauthed: .blockRules_v2(.init(
             disabledGroups: disabledGroups,
             vendorId: vendorId,
-            version: version
-          ))
+            version: version,
+          )),
         )
         return legacyRules.map(\.current)
       },
@@ -75,8 +75,8 @@ extension ApiClient: DependencyKey {
           from: DefaultBlockRules.self,
           withUnauthed: .defaultBlockRules(.init(
             vendorId: vendorId,
-            version: version
-          ))
+            version: version,
+          )),
         )
         return legacyRules.map(\.current)
       },
@@ -92,8 +92,8 @@ extension ApiClient: DependencyKey {
               deviceType: deviceData.type.rawValue,
               iOSVersion: deviceData.iOSVersion,
               vendorId: deviceData.vendorId,
-              detail: detail
-            ))
+              detail: detail,
+            )),
           )
         } catch {
           os_log("[G•] error logging event: %{public}s", String(reflecting: error))
@@ -110,14 +110,14 @@ extension ApiClient: DependencyKey {
             deviceType: deviceData.type.rawValue,
             iOSVersion: deviceData.iOSVersion,
             locale: locale.region?.identifier,
-            version: version
-          ))
+            version: version,
+          )),
         )
         return result.directive
       },
       setAuthToken: { token in
         _authToken.withLock { $0 = token }
-      }
+      },
     )
   }
 }
@@ -126,7 +126,7 @@ private let _authToken = Mutex<UUID?>(nil)
 
 func output<T: Pair>(
   from pair: T.Type,
-  with route: AuthedRoute
+  with route: AuthedRoute,
 ) async throws -> T.Output {
   guard let token = _authToken.withLock({ $0 }) else {
     throw ApiClient.Error.missingAuthToken
@@ -145,7 +145,7 @@ func output<T: Pair>(
 
 func output<T: Pair>(
   from pair: T.Type,
-  withUnauthed route: UnauthedRoute
+  withUnauthed route: UnauthedRoute,
 ) async throws -> T.Output {
   let (data, res) = try await request(route: .unauthed(route))
   if let httpResponse = res as? HTTPURLResponse,

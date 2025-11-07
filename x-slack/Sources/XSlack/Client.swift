@@ -26,7 +26,7 @@ public extension Slack {
       to: "https://slack.com/api/chat.postMessage",
       decoding: SendResponse.self,
       auth: .bearer(token),
-      keyEncodingStrategy: .convertToSnakeCase
+      keyEncodingStrategy: .convertToSnakeCase,
     )
     if !response.ok {
       return response.error ?? "unknown error"

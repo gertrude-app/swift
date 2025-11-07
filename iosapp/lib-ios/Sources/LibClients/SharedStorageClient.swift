@@ -53,7 +53,7 @@ extension SharedStorageClient: DependencyKey {
       loadFirstLaunchDate: reader.loadFirstLaunchDate,
       saveFirstLaunchDate: { saveDate($0, forKey: .firstLaunchDate) },
       loadDebugLogs: reader.loadDebugLogs,
-      saveDebugLogs: { saveCodable($0, forKey: .debugLogs) }
+      saveDebugLogs: { saveCodable($0, forKey: .debugLogs) },
     )
   }
 }
@@ -72,7 +72,7 @@ extension SharedStorageReaderClient: DependencyKey {
     loadProtectionMode: { loadCodable(forKey: .protectionMode) },
     loadDisabledBlockGroups: { loadCodable(forKey: .disabledBlockGroups) },
     loadFirstLaunchDate: { loadDate(forKey: .firstLaunchDate) },
-    loadDebugLogs: { loadCodable(forKey: .debugLogs) }
+    loadDebugLogs: { loadCodable(forKey: .debugLogs) },
   )
 }
 

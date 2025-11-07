@@ -13,7 +13,7 @@ extension ConnectUser: Resolver {
         type: .unauthorized,
         debugMessage: "verification code not found",
         userMessage: "Connection code expired, or not found. Please create a new code and try again.",
-        appTag: .connectionCodeNotFound
+        appTag: .connectionCodeNotFound,
       )
     }
 
@@ -46,7 +46,7 @@ extension ConnectUser: Resolver {
           id: "41a43089",
           type: .unauthorized,
           debugMessage: "invalid connect transfer attempt",
-          userMessage: "This user is associated with another Gertrude parent account."
+          userMessage: "This user is associated with another Gertrude parent account.",
         )
       }
 
@@ -78,7 +78,7 @@ extension ConnectUser: Resolver {
           parentId: user.parentId,
           osVersion: input.osVersion.flatMap(Semver.init),
           modelIdentifier: input.modelIdentifier,
-          serialNumber: input.serialNumber
+          serialNumber: input.serialNumber,
         ))
       }
 
@@ -90,13 +90,13 @@ extension ConnectUser: Resolver {
         appVersion: input.appVersion,
         username: input.username,
         fullUsername: input.fullUsername,
-        numericId: input.numericId
+        numericId: input.numericId,
       ))
     }
 
     let token = try await context.db.create(MacAppToken(
       childId: user.id,
-      computerUserId: computerUser.id
+      computerUserId: computerUser.id,
     ))
 
     await notifyAdConversion(child: user, db: context.db)
@@ -109,7 +109,7 @@ extension ConnectUser: Resolver {
       keyloggingEnabled: user.keyloggingEnabled,
       screenshotsEnabled: user.screenshotsEnabled,
       screenshotFrequency: user.screenshotsFrequency,
-      screenshotSize: user.screenshotsResolution
+      screenshotSize: user.screenshotsResolution,
     )
   }
 }
@@ -130,13 +130,13 @@ private func notifyAdConversion(child: Child, db: any DuetSQL.Client) async {
   if markerEvent == nil {
     with(dependency: \.postmark).toSuperAdmin(
       "google ad conversion",
-      "gclid: <code>\(gclid)</code><br/>time: <code>\(Date())</code>"
+      "gclid: <code>\(gclid)</code><br/>time: <code>\(Date())</code>",
     )
     _ = try? await db.create(InterestingEvent(
       eventId: "g-ad-conversion",
       kind: "event",
       context: "reporting",
-      parentId: parent.id
+      parentId: parent.id,
     ))
   }
 }

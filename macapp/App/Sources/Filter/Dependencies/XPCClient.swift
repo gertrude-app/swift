@@ -36,7 +36,7 @@ extension XPCClient: DependencyKey {
         xpcEventSubject.withValue { subject in
           Move(subject.eraseToAnyPublisher())
         }.consume()
-      }
+      },
     )
   }
 }
@@ -48,7 +48,7 @@ extension XPCClient: TestDependencyKey {
     stopListener: unimplemented("XPCClient.stopListener"),
     sendBlockedRequest: unimplemented("XPCClient.sendBlockedRequest"),
     sendLogs: unimplemented("XPCClient.sendLogs"),
-    events: unimplemented("XPCClient.events", placeholder: AnyPublisher(Empty()))
+    events: unimplemented("XPCClient.events", placeholder: AnyPublisher(Empty())),
   )
   static let mock = Self(
     notifyFilterSuspensionEnded: { _ in },
@@ -56,7 +56,7 @@ extension XPCClient: TestDependencyKey {
     stopListener: {},
     sendBlockedRequest: { _, _ in },
     sendLogs: { _ in },
-    events: { Empty().eraseToAnyPublisher() }
+    events: { Empty().eraseToAnyPublisher() },
   )
 }
 

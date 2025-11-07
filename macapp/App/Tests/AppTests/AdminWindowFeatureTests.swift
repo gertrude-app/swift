@@ -31,7 +31,7 @@ final class AdminWindowFeatureTests: XCTestCase {
           .init(id: 503, name: "Monitored", type: .standard),
           .init(id: 501, name: "Rachel", type: .admin),
         ]),
-        .ok(value: .init(exempt: [501], protected: [503, 502, 501]))
+        .ok(value: .init(exempt: [501], protected: [503, 502, 501])),
       )))
 
       let viewState = AdminWindowFeature.State.View(rootState: store.state)
@@ -97,7 +97,7 @@ final class AdminWindowFeatureTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
       user: nil,
-      resumeOnboarding: nil
+      resumeOnboarding: nil,
     )])
     await expect(securityEvent.calls)
       .toEqual([Both(.init(.childDisconnected, "name: Mock User"), nil)])
@@ -109,12 +109,12 @@ final class AdminWindowFeatureTests: XCTestCase {
 
     let suspendFilter = spy(
       on: Seconds<Int>.self,
-      returning: Result<Void, XPCErr>.success(())
+      returning: Result<Void, XPCErr>.success(()),
     )
     store.deps.filterXpc.suspendFilter = suspendFilter.fn
 
     await store.send(
-      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 90))))
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 90)))),
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
     }

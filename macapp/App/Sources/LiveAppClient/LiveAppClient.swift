@@ -62,7 +62,7 @@ extension AppClient: @retroactive DependencyKey {
           }
         #endif
       },
-      stopRelaunchWatcher: { stopRelaunchWatcher() }
+      stopRelaunchWatcher: { stopRelaunchWatcher() },
     )
   }
 }

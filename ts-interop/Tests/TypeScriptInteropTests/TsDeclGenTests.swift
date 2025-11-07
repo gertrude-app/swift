@@ -29,7 +29,7 @@ final class CodeGenTests: XCTestCase {
           case: 'loading';
         };
       }
-      """
+      """,
     )
   }
 
@@ -39,7 +39,7 @@ final class CodeGenTests: XCTestCase {
     expect(try codegen.declaration(for: Foo.self, as: "Input")).toEqual(
       """
       export type Input = Foo
-      """
+      """,
     )
   }
 
@@ -54,7 +54,7 @@ final class CodeGenTests: XCTestCase {
         date: Date;
         uuid: UUID;
       }
-      """
+      """,
     )
 
     let config = Config(aliasing: [
@@ -63,22 +63,22 @@ final class CodeGenTests: XCTestCase {
     ])
 
     expect(
-      try CodeGen(config: config).declaration(for: FoundationTypes.self)
+      try CodeGen(config: config).declaration(for: FoundationTypes.self),
     ).toEqual(
       """
       export interface FoundationTypes {
         date: IsoDateString;
         uuid: string;
       }
-      """
+      """,
     )
 
     expect(
-      try CodeGen(config: config).declaration(for: Date.self)
+      try CodeGen(config: config).declaration(for: Date.self),
     ).toEqual("export type Date = IsoDateString")
 
     expect(
-      try CodeGen(config: config).declaration(for: UUID.self)
+      try CodeGen(config: config).declaration(for: UUID.self),
     ).toEqual("export type UUID = string")
   }
 
@@ -100,7 +100,7 @@ final class CodeGenTests: XCTestCase {
       } | {
         case: 'notConnected';
       }
-      """
+      """,
     )
   }
 
@@ -129,7 +129,7 @@ final class CodeGenTests: XCTestCase {
           case: 'a';
         };
       }
-      """
+      """,
     )
   }
 
@@ -152,7 +152,7 @@ final class CodeGenTests: XCTestCase {
           rofl?: boolean;
         } };
       }
-      """
+      """,
     )
   }
 
@@ -221,7 +221,7 @@ final class CodeGenTests: XCTestCase {
           readonly reallyLongPropertyName: number;
         };
       }
-      """
+      """,
     )
   }
 
@@ -239,13 +239,13 @@ final class CodeGenTests: XCTestCase {
         a: Custom[];
         b: Custom;
       }
-      """
+      """,
     )
 
     expect(compact).toEqual(
       """
       export interface Foo { a: Custom[]; b: Custom; }
-      """
+      """,
     )
   }
 
@@ -268,7 +268,7 @@ final class CodeGenTests: XCTestCase {
           b: number;
         };
       }
-      """
+      """,
     )
 
     let alias = try CodeGen(config: .init(aliasing: [.init(Tiny.self)]))
@@ -279,7 +279,7 @@ final class CodeGenTests: XCTestCase {
       export interface Foo {
         inline: Tiny;
       }
-      """
+      """,
     )
 
     let alias2 = try CodeGen(config: .init(aliasing: [.init(Tiny.self, as: "TinyStruct")]))
@@ -290,14 +290,14 @@ final class CodeGenTests: XCTestCase {
       export interface Foo {
         inline: TinyStruct;
       }
-      """
+      """,
     )
 
     let compact = try CodeGen(config: .init(compact: true)).declaration(for: Foo.self)
     expect(compact).toEqual(
       """
       export interface Foo { inline: { a: string; b: number; }; }
-      """
+      """,
     )
   }
 
@@ -310,7 +310,7 @@ final class CodeGenTests: XCTestCase {
         normal: string;
         indirect: Indirect;
       }
-      """
+      """,
     )
   }
 

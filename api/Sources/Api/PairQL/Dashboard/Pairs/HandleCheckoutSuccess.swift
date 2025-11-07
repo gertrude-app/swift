@@ -37,7 +37,7 @@ extension HandleCheckoutSuccess: Resolver {
       unexpected(
         "1146b93f",
         context,
-        "admin: .\(parentStatus), stripe: .\(stripeStatus), subs: \(subscriptionId)"
+        "admin: .\(parentStatus), stripe: .\(stripeStatus), subs: \(subscriptionId)",
       )
     }
 

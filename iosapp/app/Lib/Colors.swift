@@ -37,13 +37,13 @@ public extension Color {
       (r, g, b) = (
         Double((rgb >> 8) & 0xF) / 15.0,
         Double((rgb >> 4) & 0xF) / 15.0,
-        Double(rgb & 0xF) / 15.0
+        Double(rgb & 0xF) / 15.0,
       )
     case 6: // RRGGBB
       (r, g, b) = (
         Double((rgb >> 16) & 0xFF) / 255.0,
         Double((rgb >> 8) & 0xFF) / 255.0,
-        Double(rgb & 0xFF) / 255.0
+        Double(rgb & 0xFF) / 255.0,
       )
     default:
       return nil

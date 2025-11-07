@@ -30,7 +30,7 @@ extension ScreenshotUploadUrl: Resolver {
       width: input.width,
       height: input.height,
       filterSuspended: true, // always true for iOS
-      createdAt: input.createdAt
+      createdAt: input.createdAt,
     ))
 
     return .init(uploadUrl: signedUrl)

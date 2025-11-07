@@ -30,7 +30,7 @@ final class WebsocketTests: XCTestCase {
     self.scheduler = DispatchQueue.test
     self.conn = WebSocketConnection(
       scheduler: self.scheduler.eraseToAnyScheduler(),
-      messageSubject: Mutex(subject)
+      messageSubject: Mutex(subject),
     ) { [self] in
       self.socket = TestSocket()
       return self.socket

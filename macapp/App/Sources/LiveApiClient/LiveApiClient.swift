@@ -9,7 +9,7 @@ extension ApiClient: @retroactive DependencyKey {
     checkIn: { input in
       try await output(
         from: CheckIn_v2.self,
-        with: .checkIn_v2(input)
+        with: .checkIn_v2(input),
       )
     },
     clearUserToken: {
@@ -18,7 +18,7 @@ extension ApiClient: @retroactive DependencyKey {
     connectUser: { input in
       try await output(
         from: ConnectUser.self,
-        withUnauthed: .connectUser(input)
+        withUnauthed: .connectUser(input),
       )
     },
     createKeystrokeLines: { input in
@@ -26,21 +26,21 @@ extension ApiClient: @retroactive DependencyKey {
       // always produces `.success` if it doesn't throw
       _ = try await output(
         from: CreateKeystrokeLines.self,
-        with: .createKeystrokeLines(input)
+        with: .createKeystrokeLines(input),
       )
     },
     createSuspendFilterRequest: { input in
       guard accountActive.value else { return .init() }
       return try await output(
         from: CreateSuspendFilterRequest_v2.self,
-        with: .createSuspendFilterRequest_v2(input)
+        with: .createSuspendFilterRequest_v2(input),
       )
     },
     createUnlockRequests: { input in
       guard accountActive.value else { return [] }
       return try await output(
         from: CreateUnlockRequests_v3.self,
-        with: .createUnlockRequests_v3(input)
+        with: .createUnlockRequests_v3(input),
       )
     },
     getUserToken: {
@@ -50,13 +50,13 @@ extension ApiClient: @retroactive DependencyKey {
       guard accountActive.value else { return }
       _ = try? await output(
         from: LogFilterEvents.self,
-        with: .logFilterEvents(input)
+        with: .logFilterEvents(input),
       )
     },
     logInterestingEvent: { input in
       _ = try? await output(
         from: LogInterestingEvent.self,
-        withUnauthed: .logInterestingEvent(input)
+        withUnauthed: .logInterestingEvent(input),
       )
     },
     logSecurityEvent: { input, bufferedToken in
@@ -74,20 +74,20 @@ extension ApiClient: @retroactive DependencyKey {
       _ = try? await output(
         from: LogSecurityEvent.self,
         with: .logSecurityEvent(input),
-        using: token
+        using: token,
       )
     },
     recentAppVersions: {
       try await output(
         from: RecentAppVersions.self,
-        withUnauthed: .recentAppVersions
+        withUnauthed: .recentAppVersions,
       )
     },
     reportBrowsers: { input in
       guard accountActive.value else { return }
       _ = try await output(
         from: ReportBrowsers.self,
-        with: .reportBrowsers(input)
+        with: .reportBrowsers(input),
       )
     },
     setAccountActive: { accountActive.setValue($0) },
@@ -95,7 +95,7 @@ extension ApiClient: @retroactive DependencyKey {
     trustedNetworkTimestamp: {
       try await output(
         from: TrustedTime.self,
-        withUnauthed: .trustedTime
+        withUnauthed: .trustedTime,
       )
     },
     uploadScreenshot: { data in
@@ -106,8 +106,8 @@ extension ApiClient: @retroactive DependencyKey {
           width: data.width,
           height: data.height,
           filterSuspended: data.filterSuspended,
-          createdAt: data.createdAt
-        ))
+          createdAt: data.createdAt,
+        )),
       )
 
       var request = URLRequest(url: signed.uploadUrl, cachePolicy: .reloadIgnoringCacheData)
@@ -128,7 +128,7 @@ extension ApiClient: @retroactive DependencyKey {
           continuation.resume(returning: signed.webUrl)
         }.resume()
       }
-    }
+    },
   )
 }
 

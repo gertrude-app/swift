@@ -64,7 +64,7 @@ extension AppWindow {
       contentRect: self.initialSize,
       styleMask: [.titled, .closable, .miniaturizable, .resizable],
       backing: .buffered,
-      defer: false
+      defer: false,
     )
 
     window?.minSize = self.minSize

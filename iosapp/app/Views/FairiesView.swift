@@ -42,12 +42,12 @@ struct FairiesView: View {
         self.sparkles.append(Sparkle(
           position: Vector(
             x: Double.random(in: 0 ... UIScreen.main.bounds.width),
-            y: Double.random(in: 0 ... UIScreen.main.bounds.height)
+            y: Double.random(in: 0 ... UIScreen.main.bounds.height),
           ),
           velocity: Vector(
             x: Double.random(in: -1 ... 1),
-            y: Double.random(in: -1 ... 1)
-          )
+            y: Double.random(in: -1 ... 1),
+          ),
         ))
       }
       self.animate()
@@ -60,7 +60,7 @@ struct FairiesView: View {
   func animate() {
     self.timer = Timer.scheduledTimer(
       withTimeInterval: 0.016,
-      repeats: true
+      repeats: true,
     ) { _ in
       for index in self.sparkles.indices {
         self.sparkles[index].update()

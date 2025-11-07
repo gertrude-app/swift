@@ -24,7 +24,7 @@ public struct WebSocketClient: Sendable {
     disconnect: @escaping @Sendable () async throws -> Void,
     receive: @escaping @Sendable () -> AnyPublisher<WebSocketClient.Message.FromApiToApp, Never>,
     send: @escaping @Sendable (WebSocketClient.Message.FromAppToApi) async throws -> Void,
-    state: @escaping @Sendable () async throws -> State
+    state: @escaping @Sendable () async throws -> State,
   ) {
     self.connect = connect
     self.disconnect = disconnect
@@ -50,7 +50,7 @@ extension WebSocketClient: TestDependencyKey {
     disconnect: unimplemented("WebSocketClient.disconnect"),
     receive: unimplemented("WebSocketClient.receive", placeholder: AnyPublisher(Empty())),
     send: unimplemented("WebSocketClient.send"),
-    state: unimplemented("WebSocketClient.state")
+    state: unimplemented("WebSocketClient.state"),
   )
 
   public static let mock = Self(
@@ -58,7 +58,7 @@ extension WebSocketClient: TestDependencyKey {
     disconnect: {},
     receive: { Empty().eraseToAnyPublisher() },
     send: { _ in },
-    state: { .connected }
+    state: { .connected },
   )
 }
 

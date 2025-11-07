@@ -17,7 +17,7 @@ final class UserFeatureTests: XCTestCase {
       requestId: "345",
       type: .notFound,
       debugMessage: "oops",
-      appTag: .userTokenNotFound // <-- specific error, user token not found
+      appTag: .userTokenNotFound, // <-- specific error, user token not found
     )
 
     for _ in 1 ... 7 {
@@ -48,7 +48,7 @@ final class UserFeatureTests: XCTestCase {
       requestId: "345",
       type: .notFound,
       debugMessage: "oops",
-      appTag: .userTokenNotFound // <-- specific error, user token not found
+      appTag: .userTokenNotFound, // <-- specific error, user token not found
     )
 
     for _ in 1 ... 7 {
@@ -124,7 +124,7 @@ final class UserFeatureTests: XCTestCase {
 
     await expect(notification.calls).toEqual([.init(
       "😴 Downtime starting in 5 minutes",
-      "Browsers will quit, save any important work now!"
+      "Browsers will quit, save any important work now!",
     )])
 
     store.deps.device.showNotification = { _, _ in fatalError() }

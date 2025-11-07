@@ -19,20 +19,20 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
       self,
       selector: #selector(AppDelegate.receiveSleep(_:)),
       name: NSWorkspace.willSleepNotification,
-      object: nil
+      object: nil,
     )
 
     NSWorkspace.shared.notificationCenter.addObserver(
       self,
       selector: #selector(AppDelegate.receiveWakeup(_:)),
       name: NSWorkspace.didWakeNotification,
-      object: nil
+      object: nil,
     )
 
     NSWorkspace.shared.notificationCenter.addObserver(
       forName: NSWorkspace.didLaunchApplicationNotification,
       object: nil,
-      queue: nil
+      queue: nil,
     ) { [weak self] notification in
       if let app = notification
         .userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication {
@@ -44,7 +44,7 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
     NotificationCenter.default.addObserver(
       forName: NSNotification.Name.NSSystemClockDidChange,
       object: nil,
-      queue: nil
+      queue: nil,
     ) { [weak self] _ in
       self?.app.send(.systemClockOrTimeZoneChanged)
     }
@@ -52,7 +52,7 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
     NotificationCenter.default.addObserver(
       forName: NSNotification.Name.NSSystemTimeZoneDidChange,
       object: nil,
-      queue: nil
+      queue: nil,
     ) { [weak self] _ in
       self?.app.send(.systemClockOrTimeZoneChanged)
     }

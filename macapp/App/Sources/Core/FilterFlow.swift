@@ -74,7 +74,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
   public mutating func parseOutboundData(byteString: String) {
     if let range = byteString.range(
       of: #"^(GET|POST|PUT|PATCH|DELETE)•[^•]+•HTTP/[^•]+••Host••[^•]+"#,
-      options: .regularExpression
+      options: .regularExpression,
     ) {
       let firstChunk = String(byteString[range])
       let pieces = firstChunk.components(separatedBy: "•").filter { $0 != "" }
@@ -85,7 +85,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
 
     if let range = byteString.range(
       of: #"[a-z0-9_-]{1,}(\.[a-z0-9_-]{1,}){0,5}\.[a-z0-9_-]{2,}"#,
-      options: .regularExpression
+      options: .regularExpression,
     ) {
       self.hostname = String(byteString[range])
     }
@@ -99,7 +99,7 @@ public struct FilterFlow: Equatable, Codable, Sendable {
     remoteEndpoint: String? = nil,
     userId: uid_t? = nil,
     port: Port? = nil,
-    ipProtocol: IpProtocol? = nil
+    ipProtocol: IpProtocol? = nil,
   ) {
     self.url = url
     self.ipAddress = ipAddress

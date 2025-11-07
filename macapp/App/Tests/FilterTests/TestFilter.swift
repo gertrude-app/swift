@@ -39,10 +39,10 @@ class TestFilter: NetworkFilter {
     appIdManifest: AppIdManifest = .init(
       apps: ["chrome": ["com.chrome"]],
       displayNames: ["chrome": "Chrome"],
-      categories: ["browser": ["chrome"]]
+      categories: ["browser": ["chrome"]],
     ),
     exemptUsers: Set<uid_t> = [],
-    suspensions: [uid_t: FilterSuspension] = [:]
+    suspensions: [uid_t: FilterSuspension] = [:],
   ) -> TestFilter {
     withDependencies {
       $0.security.userIdFromAuditToken = { token in
@@ -58,7 +58,7 @@ class TestFilter: NetworkFilter {
         appIdManifest: appIdManifest,
         exemptUsers: exemptUsers,
         suspensions: suspensions,
-        macappsAliveUntil: macappsAliveUntil
+        macappsAliveUntil: macappsAliveUntil,
       )
       return filter
     }

@@ -13,7 +13,7 @@ final class XAwsTests: XCTestCase {
       secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
       time: .awsRefDate,
       objectKey: "test.txt",
-      expires: 86400
+      expires: 86400,
     )
 
     let expected =
@@ -54,7 +54,7 @@ final class XAwsTests: XCTestCase {
       objectKey: "test.txt",
       expires: 86400,
       queryParams: [:],
-      signedHeaders: [:]
+      signedHeaders: [:],
     )
 
     expect(request).toEqual(expected)
@@ -70,12 +70,12 @@ final class XAwsTests: XCTestCase {
 
     let signingKey = AWS.Request.signingKey(
       secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-      time: .awsRefDate
+      time: .awsRefDate,
     )
 
     let signature = AWS.Request.signature(
       signingKey: signingKey,
-      stringToSign: stringToSign
+      stringToSign: stringToSign,
     )
 
     expect(signature).toBe("aeeed9bbccd4d02ee5c0109b86d86835f995330da4c265957d157751f604d404")
@@ -96,7 +96,7 @@ final class XAwsTests: XCTestCase {
       canonicalRequest: canonicalRequest,
       time: .awsRefDate,
       region: "us-east-1",
-      service: "s3"
+      service: "s3",
     )
 
     expect(stringToSign).toBe("""

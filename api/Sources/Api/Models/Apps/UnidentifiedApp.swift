@@ -16,7 +16,7 @@ struct UnidentifiedApp: Codable, Sendable {
     bundleName: String? = nil,
     localizedName: String? = nil,
     launchable: Bool? = nil,
-    count: Int = 1
+    count: Int = 1,
   ) {
     self.id = id
     self.bundleId = bundleId

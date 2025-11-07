@@ -100,7 +100,7 @@ extension DecideFilterSuspensionRequest.Decision {
       let value = try container.decode(_CaseAccepted.self)
       self = .accepted(
         durationInSeconds: value.durationInSeconds,
-        extraMonitoring: value.extraMonitoring
+        extraMonitoring: value.extraMonitoring,
       )
     case "rejected":
       self = .rejected
@@ -212,7 +212,7 @@ extension SecurityEventsFeed.FeedEvent {
         event: unflat.event,
         detail: unflat.detail,
         explanation: unflat.explanation,
-        createdAt: unflat.createdAt
+        createdAt: unflat.createdAt,
       ).encode(to: encoder)
     case .admin(let unflat):
       try _CaseAdmin(
@@ -221,7 +221,7 @@ extension SecurityEventsFeed.FeedEvent {
         detail: unflat.detail,
         explanation: unflat.explanation,
         ipAddress: unflat.ipAddress,
-        createdAt: unflat.createdAt
+        createdAt: unflat.createdAt,
       ).encode(to: encoder)
     }
   }
@@ -241,7 +241,7 @@ extension SecurityEventsFeed.FeedEvent {
         event: value.event,
         detail: value.detail,
         explanation: value.explanation,
-        createdAt: value.createdAt
+        createdAt: value.createdAt,
       ))
     case "admin":
       let value = try container.decode(_CaseAdmin.self)
@@ -251,7 +251,7 @@ extension SecurityEventsFeed.FeedEvent {
         detail: value.detail,
         explanation: value.explanation,
         ipAddress: value.ipAddress,
-        createdAt: value.createdAt
+        createdAt: value.createdAt,
       ))
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")
@@ -309,7 +309,7 @@ public extension UserActivity.Item {
         duringSuspension: unflat.duringSuspension,
         flagged: unflat.flagged,
         createdAt: unflat.createdAt,
-        deletedAt: unflat.deletedAt
+        deletedAt: unflat.deletedAt,
       ).encode(to: encoder)
     case .keystrokeLine(let unflat):
       try _CaseKeystrokeLine(
@@ -320,7 +320,7 @@ public extension UserActivity.Item {
         duringSuspension: unflat.duringSuspension,
         flagged: unflat.flagged,
         createdAt: unflat.createdAt,
-        deletedAt: unflat.deletedAt
+        deletedAt: unflat.deletedAt,
       ).encode(to: encoder)
     }
   }
@@ -340,7 +340,7 @@ public extension UserActivity.Item {
         duringSuspension: value.duringSuspension,
         flagged: value.flagged,
         createdAt: value.createdAt,
-        deletedAt: value.deletedAt
+        deletedAt: value.deletedAt,
       ))
     case "keystrokeLine":
       let value = try container.decode(_CaseKeystrokeLine.self)
@@ -352,7 +352,7 @@ public extension UserActivity.Item {
         duringSuspension: value.duringSuspension,
         flagged: value.flagged,
         createdAt: value.createdAt,
-        deletedAt: value.deletedAt
+        deletedAt: value.deletedAt,
       ))
     default:
       throw _TypeScriptDecodeError(message: "Unexpected case name: `\(caseName)`")

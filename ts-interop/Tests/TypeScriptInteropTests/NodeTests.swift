@@ -76,7 +76,7 @@ final class NodeTests: XCTestCase {
         caseName: "connected",
         associatedValues: [
           .init(name: "flat", value: .primitive(.string)),
-        ]
+        ],
       ),
       .init(caseName: "notConnected"),
     ], .init(Screen.self)))
@@ -93,22 +93,22 @@ final class NodeTests: XCTestCase {
     expect(try Node(from: Foo.self)).toEqual(.objectUnion([
       .init(
         caseName: "bar",
-        associatedValues: [.init(name: "bar", value: .primitive(.string))]
+        associatedValues: [.init(name: "bar", value: .primitive(.string))],
       ),
       .init(
         caseName: "baz",
-        associatedValues: [.init(name: "baz", value: .primitive(.number(.int)), optional: true)]
+        associatedValues: [.init(name: "baz", value: .primitive(.number(.int)), optional: true)],
       ),
       .init(
         caseName: "foo",
-        associatedValues: [.init(name: "lol", value: .primitive(.boolean))]
+        associatedValues: [.init(name: "lol", value: .primitive(.boolean))],
       ),
       .init(
         caseName: "named",
         associatedValues: [
           .init(name: "a", value: .primitive(.boolean)),
           .init(name: "b", value: .primitive(.string), optional: true),
-        ]
+        ],
       ),
       .init(caseName: "jim"),
     ], .init(Foo.self)))

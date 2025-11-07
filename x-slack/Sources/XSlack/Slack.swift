@@ -46,7 +46,7 @@ public extension Slack {
       text: String,
       channel: String,
       username: String,
-      emoji: Emoji = .robotFace
+      emoji: Emoji = .robotFace,
     ) {
       self.content = .text(text)
       self.channel = channel
@@ -59,7 +59,7 @@ public extension Slack {
       fallbackText: String,
       channel: String,
       username: String,
-      emoji: Emoji = .robotFace
+      emoji: Emoji = .robotFace,
     ) {
       self.content = .blocks(blocks, fallbackText)
       self.channel = channel

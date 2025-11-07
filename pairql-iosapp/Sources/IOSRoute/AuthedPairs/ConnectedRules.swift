@@ -16,7 +16,7 @@ public struct ConnectedRules_b1: Pair {
       vendorId: UUID,
       deviceType: String,
       appVersion: String,
-      iosVersion: String
+      iosVersion: String,
     ) {
       self.vendorId = vendorId
       self.deviceType = deviceType

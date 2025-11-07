@@ -123,8 +123,8 @@ struct AnalyticsData: Sendable {
         childrenOfActiveParents: 0,
         allTimeSignups: parentModels.count,
         allTimeChildren: Child.query().count(in: self.db),
-        allTimeAppInstallations: ComputerUser.query().count(in: self.db)
-      )
+        allTimeAppInstallations: ComputerUser.query().count(in: self.db),
+      ),
     )
     var totalAnnualCents = Cents(0)
     var parents = parentModels.reduce(into: [Parent.Id: ParentData]()) { map, model in
@@ -180,7 +180,7 @@ extension ParentData {
     .init(
       date: self.createdAt,
       status: self.status,
-      email: self.email
+      email: self.email,
     )
   }
 }
@@ -190,7 +190,7 @@ extension AnalyticsOverview: NoInputResolver {
     let data = try await AnalyticsQuery.shared.data()
     return .init(
       overview: data.overview,
-      recentSignups: data.parents.values.map(\.recentSignup)
+      recentSignups: data.parents.values.map(\.recentSignup),
     )
   }
 }

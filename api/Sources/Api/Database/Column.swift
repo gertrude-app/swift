@@ -107,7 +107,7 @@ extension Column {
     _ name: FieldKey,
     _ type: ColumnType,
     _ constraint: Constraint = .notNull,
-    default: Default? = nil
+    default: Default? = nil,
   ) {
     self.name = name
     self.type = type
@@ -119,7 +119,7 @@ extension Column {
     _ name: FieldKey,
     _ type: ColumnType,
     _ constraints: [Constraint],
-    default: Default? = nil
+    default: Default? = nil,
   ) {
     self.name = name
     self.type = type

@@ -23,18 +23,18 @@ extension FilterClient: DependencyKey {
         switch notification {
         case .dumpLogs:
           await fireAndForget(
-            url: URL(string: "https://\(MagicStrings.dumpLogsSentinalHostname)")!
+            url: URL(string: "https://\(MagicStrings.dumpLogsSentinalHostname)")!,
           )
         case .rulesChanged:
           await fireAndForget(
-            url: URL(string: "https://\(MagicStrings.readRulesSentinalHostname)")!
+            url: URL(string: "https://\(MagicStrings.readRulesSentinalHostname)")!,
           )
         case .refreshRules:
           await fireAndForget(
-            url: URL(string: "https://\(MagicStrings.refreshRulesSentinalHostname)")!
+            url: URL(string: "https://\(MagicStrings.refreshRulesSentinalHostname)")!,
           )
         }
-      }
+      },
     )
   }
 }

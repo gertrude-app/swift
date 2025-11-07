@@ -54,7 +54,7 @@ extension QueryAdmins: NoInputResolver {
         throw context.error(
           id: "30e6e410",
           type: .serverError,
-          debugMessage: "unexpected nil for \(T.self) from \(file):\(line)"
+          debugMessage: "unexpected nil for \(T.self) from \(file):\(line)",
         )
       }
       return value
@@ -74,7 +74,7 @@ extension QueryAdmins: NoInputResolver {
         appReleaseChannel: expect(row.appReleaseChannel),
         osVersionNumber: row.osVersion?.description,
         osVersionName: osVersionName(row.osVersion),
-        createdAt: expect(row.userDeviceCreatedAt)
+        createdAt: expect(row.userDeviceCreatedAt),
       )
       installations[userDeviceId] = try (installation, expect(row.userId))
     }
@@ -91,7 +91,7 @@ extension QueryAdmins: NoInputResolver {
         numKeys: row.numKeys,
         numActivityItems: row.keystrokeCount + row.screenshotCount,
         installations: [],
-        createdAt: expect(row.userCreatedAt)
+        createdAt: expect(row.userCreatedAt),
       )
       children[userId] = (child, row.adminId)
     }
@@ -116,7 +116,7 @@ extension QueryAdmins: NoInputResolver {
         numNotifications: row.numNotifications,
         numKeychains: row.numKeychains,
         children: [],
-        createdAt: row.adminCreatedAt
+        createdAt: row.adminCreatedAt,
       )
     }
 

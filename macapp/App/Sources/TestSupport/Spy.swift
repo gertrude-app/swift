@@ -72,7 +72,7 @@ public func mockFn<T>(always value: T) -> @Sendable () async -> T {
 
 public func mockFn<T>(
   returning values: [T],
-  then fallback: T? = nil
+  then fallback: T? = nil,
 ) -> @Sendable () async -> T {
   mock(returning: values, then: fallback).fn
 }
@@ -95,11 +95,11 @@ public func mock<T>(returning values: [T], then fallback: T? = nil) -> Mock<T> {
         returnValue = fallback
       } else {
         fatalError(
-          "mock<\(String(reflecting: T.self))> called more than expected number of times \(values.count)"
+          "mock<\(String(reflecting: T.self))> called more than expected number of times \(values.count)",
         )
       }
       return returnValue
-    }
+    },
   )
 }
 
@@ -121,11 +121,11 @@ public func mockSync<T>(returning values: [T], then fallback: T? = nil) -> MockS
         returnValue = fallback
       } else {
         fatalError(
-          "mock<\(String(reflecting: T.self))> called more than expected number of times \(values.count)"
+          "mock<\(String(reflecting: T.self))> called more than expected number of times \(values.count)",
         )
       }
       return returnValue
-    }
+    },
   )
 }
 
@@ -153,12 +153,12 @@ public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Throw
         returnValue = fallback
       } else {
         fatalError(
-          "spy<\(String(reflecting: T.self)), \(String(reflecting: Arg.self))> called more than expected number of times \(values.count)"
+          "spy<\(String(reflecting: T.self)), \(String(reflecting: Arg.self))> called more than expected number of times \(values.count)",
         )
       }
 
       return returnValue
-    }
+    },
   )
 }
 
@@ -173,7 +173,7 @@ public func spySync<T, Arg>(on arg: Arg.Type, returning value: T) -> SpySync<T, 
 public func spySync<T, Arg>(
   on arg: Arg.Type,
   returning values: [T],
-  then value: T
+  then value: T,
 ) -> SpySync<T, Arg> {
   spySync(returning: values, then: value)
 }
@@ -198,11 +198,11 @@ public func spy<T, Arg>(returning values: [T], then fallback: T? = nil) -> Spy<T
         returnValue = fallback
       } else {
         fatalError(
-          "spy<\(String(reflecting: T.self)), \(String(reflecting: Arg.self))> called more than expected number of times \(values.count)"
+          "spy<\(String(reflecting: T.self)), \(String(reflecting: Arg.self))> called more than expected number of times \(values.count)",
         )
       }
       return returnValue
-    }
+    },
   )
 }
 
@@ -226,24 +226,24 @@ public func spySync<T, Arg>(returning values: [T], then fallback: T? = nil) -> S
         returnValue = fallback
       } else {
         fatalError(
-          "spy<\(String(reflecting: T.self)), \(String(reflecting: Arg.self))> called more than expected number of times \(values.count)"
+          "spy<\(String(reflecting: T.self)), \(String(reflecting: Arg.self))> called more than expected number of times \(values.count)",
         )
       }
       return returnValue
-    }
+    },
   )
 }
 
 public func spy2<T, Arg1, Arg2>(
   on arg: (Arg1.Type, Arg2.Type),
-  returning value: T
+  returning value: T,
 ) -> Spy2<T, Arg1, Arg2> {
   spy2(returning: [], then: value)
 }
 
 public func spy2<T, Arg1, Arg2>(
   returning values: [T],
-  then fallback: T? = nil
+  then fallback: T? = nil,
 ) -> Spy2<T, Arg1, Arg2> {
   let returns = ActorIsolated<[T]>(values)
   let invocations = ActorIsolated<[Both<Arg1, Arg2>]>([])
@@ -267,20 +267,20 @@ public func spy2<T, Arg1, Arg2>(
         fatalError("spy<\(types))> called more than expected number of times \(values.count)")
       }
       return returnValue
-    }
+    },
   )
 }
 
 public func spy3<T, Arg1, Arg2, Arg3>(
   on arg: (Arg1.Type, Arg2.Type, Arg3.Type),
-  returning value: T
+  returning value: T,
 ) -> Spy3<T, Arg1, Arg2, Arg3> {
   spy3(returning: [], then: value)
 }
 
 public func spy3<T, Arg1, Arg2, Arg3>(
   returning values: [T],
-  then fallback: T? = nil
+  then fallback: T? = nil,
 ) -> Spy3<T, Arg1, Arg2, Arg3> {
   let returns = ActorIsolated<[T]>(values)
   let invocations = ActorIsolated<[Three<Arg1, Arg2, Arg3>]>([])
@@ -306,6 +306,6 @@ public func spy3<T, Arg1, Arg2, Arg3>(
         fatalError("spy<\(types))> called more than expected number of times \(values.count)")
       }
       return returnValue
-    }
+    },
   )
 }

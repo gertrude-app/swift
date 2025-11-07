@@ -72,7 +72,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
     let key1 = RuleKey(key: .domain(domain: "one.com", scope: .unrestricted))
     let keychain = RuleKeychain(
       schedule: .init(mode: .active, days: .all, window: "04:00-05:00"),
-      keys: [key1]
+      keys: [key1],
     )
 
     let times =
@@ -130,7 +130,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
       hostname: "foo.com",
       bundleId: "com.skype",
       port: .other(333),
-      ipProtocol: .udp(Int32(IPPROTO_UDP))
+      ipProtocol: .udp(Int32(IPPROTO_UDP)),
     )
     let decision = filter.completedDecision(&unrestrictedAppFlow)
     expect(decision).toEqual(.allow(.permittedByKey(key.id)))
@@ -140,7 +140,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
       hostname: "foo.com",
       bundleId: "com.acme.widget",
       port: .other(333),
-      ipProtocol: .udp(Int32(IPPROTO_UDP))
+      ipProtocol: .udp(Int32(IPPROTO_UDP)),
     )
     let otherAppDecision = filter.completedDecision(&otherAppFlow)
     expect(otherAppDecision).toEqual(.block(.defaultNotAllowed))
@@ -179,7 +179,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
   func testIdentifiedAppSlugSuspensionAllowsRequestFromApp() {
     let filter = TestFilter.scenario(suspensions: [502: .init(
       scope: .single(.identifiedAppSlug("chrome")),
-      duration: 1000
+      duration: 1000,
     )])
     var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.chrome")
     let decision = filter.completedDecision(&flow)
@@ -189,7 +189,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
   func testIdentifiedAppSlugSuspensionDoesNotAllowNonMatchingRequest() {
     let filter = TestFilter.scenario(suspensions: [502: .init(
       scope: .single(.identifiedAppSlug("chrome")),
-      duration: 1000
+      duration: 1000,
     )])
     var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.xcode")
     let decision = filter.completedDecision(&flow)
@@ -199,7 +199,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
   func testBundleIdSuspensionAllowsRequestFromApp() {
     let filter = TestFilter.scenario(suspensions: [502: .init(
       scope: .single(.bundleId("com.chrome")),
-      duration: 1000
+      duration: 1000,
     )])
     var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.chrome")
     let decision = filter.completedDecision(&flow)
@@ -209,7 +209,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
   func testBundleIdSuspensionDoesNotAllowNonMatchingRequest() {
     let filter = TestFilter.scenario(suspensions: [502: .init(
       scope: .single(.bundleId("com.chrome")),
-      duration: 1000
+      duration: 1000,
     )])
     var flow = FilterFlow.test(hostname: "radsite.com", bundleId: "com.xcode")
     let decision = filter.completedDecision(&flow)
@@ -307,7 +307,7 @@ final class CompletedFlowDecisionTests: XCTestCase {
 extension NetworkFilter {
   func completedDecision(
     _ flow: inout FilterFlow,
-    bytes: String? = nil
+    bytes: String? = nil,
   ) -> FilterDecision.FromFlow {
     completedFlowDecision(&flow, readBytes: bytes?.data(using: .utf8) ?? .init())
   }

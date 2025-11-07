@@ -26,7 +26,7 @@ public struct ConnectUser: Pair {
       numericId: Int,
       serialNumber: String,
       osVersion: String? = nil,
-      isAdmin: Bool? = nil
+      isAdmin: Bool? = nil,
     ) {
       self.verificationCode = verificationCode
       self.appVersion = appVersion

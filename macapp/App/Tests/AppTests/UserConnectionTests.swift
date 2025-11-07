@@ -17,7 +17,7 @@ final class UserConnectionTests: XCTestCase {
       assertState: {
         $0.adminWindow.windowOpen = false
         $0.menuBar.dropdownOpen = true
-      }
+      },
     )
   }
 
@@ -27,9 +27,9 @@ final class UserConnectionTests: XCTestCase {
       extraReceivedActions: [
         .focusedNotification(.text(
           "Child connection deleted",
-          "The connection between this computer and Gertrude was broken. Reconnect, connect to a different child, or quit the app."
+          "The connection between this computer and Gertrude was broken. Reconnect, connect to a different child, or quit the app.",
         )),
-      ]
+      ],
     )
   }
 
@@ -39,9 +39,9 @@ final class UserConnectionTests: XCTestCase {
       extraReceivedActions: [
         .focusedNotification(.text(
           "Child connection deleted",
-          "The connection between this computer and Gertrude was broken. Reconnect, connect to a different child, or quit the app."
+          "The connection between this computer and Gertrude was broken. Reconnect, connect to a different child, or quit the app.",
         )),
-      ]
+      ],
     )
   }
 }
@@ -51,7 +51,7 @@ final class UserConnectionTests: XCTestCase {
   setupState: @escaping (inout AppReducer.State) -> Void = { _ in },
   setupStore: (TestStoreOf<AppReducer>) -> Void = { _ in },
   assertState: @escaping (inout AppReducer.State) -> Void = { _ in },
-  extraReceivedActions: [AppReducer.Action] = []
+  extraReceivedActions: [AppReducer.Action] = [],
 ) async {
   let (store, bgQueue) = AppReducer.testStore {
     $0.user.data = .mock

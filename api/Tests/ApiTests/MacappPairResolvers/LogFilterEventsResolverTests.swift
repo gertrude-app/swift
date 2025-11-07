@@ -28,7 +28,7 @@ final class LogFilterEventsResolverTests: ApiTestCase, @unchecked Sendable {
       events: [
         .init(id: eventId1, detail: "ev 1"): 1,
         .init(id: eventId2, detail: "ev 2"): 4,
-      ]
+      ],
     )
 
     _ = try await LogFilterEvents.resolve(with: input, in: child.context)

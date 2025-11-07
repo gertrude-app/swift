@@ -6,7 +6,7 @@ import os.log
 public extension NetworkFilter {
   func newFlowDecision(
     _ flow: FilterFlow,
-    auditToken: Data? = nil
+    auditToken: Data? = nil,
   ) -> FilterDecision.FromFlow? {
     #if DEBUG
       if let mock = self.__TEST_MOCK_FLOW_DECISION { return mock }
@@ -17,7 +17,7 @@ public extension NetworkFilter {
   func completedFlowDecision(
     _ flow: inout FilterFlow,
     readBytes: Data,
-    auditToken: Data? = nil
+    auditToken: Data? = nil,
   ) -> FilterDecision.FromFlow {
     #if DEBUG
       if case .some(.some(let mock)) = self.__TEST_MOCK_FLOW_DECISION { return mock }
@@ -32,7 +32,7 @@ public extension NetworkFilter {
   private func flowDecision(
     _ flow: FilterFlow,
     auditToken: Data?,
-    canDefer: Bool
+    canDefer: Bool,
   ) -> FilterDecision.FromFlow? {
 
     if flow.isDnsRequest {
@@ -130,7 +130,7 @@ public extension NetworkFilter {
 
   private func activeSuspension(
     for userId: uid_t,
-    permits app: AppDescriptor
+    permits app: AppDescriptor,
   ) -> Bool {
     guard let suspension = state.suspensions[userId], suspension.isActive else {
       return false

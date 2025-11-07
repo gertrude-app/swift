@@ -30,7 +30,7 @@ extension SaveNotification: Resolver {
       try await context.db.create(Parent.Notification(
         parentId: context.parent.id,
         methodId: input.methodId,
-        trigger: input.trigger
+        trigger: input.trigger,
       ))
       return .success
     }

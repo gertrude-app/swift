@@ -38,7 +38,7 @@ extension MonitoringClient: DependencyKey {
     stopLoggingKeystrokes: stopKeylogging,
     takePendingKeystrokes: takeKeystrokes,
     takePendingScreenshots: { screenshotBuffer.removeAll() },
-    takeScreenshot: takeScreenshot(width:)
+    takeScreenshot: takeScreenshot(width:),
   )
 }
 
@@ -47,24 +47,24 @@ extension MonitoringClient: TestDependencyKey {
     commitPendingKeystrokes: unimplemented("MonitoringClient.commitPendingKeystrokes"),
     keystrokeRecordingPermissionGranted: unimplemented(
       "MonitoringClient.keystrokeRecordingPermissionGranted",
-      placeholder: true
+      placeholder: true,
     ),
     restorePendingKeystrokes: unimplemented("MonitoringClient.restorePendingKeystrokes"),
     screenRecordingPermissionGranted: unimplemented(
       "MonitoringClient.screenRecordingPermissionGranted",
-      placeholder: true
+      placeholder: true,
     ),
     startLoggingKeystrokes: unimplemented("MonitoringClient.startLoggingKeystrokes"),
     stopLoggingKeystrokes: unimplemented("MonitoringClient.stopLoggingKeystrokes"),
     takePendingKeystrokes: unimplemented(
       "MonitoringClient.takePendingKeystrokes",
-      placeholder: nil
+      placeholder: nil,
     ),
     takePendingScreenshots: unimplemented(
       "MonitoringClient.takePendingScreenshots",
-      placeholder: []
+      placeholder: [],
     ),
-    takeScreenshot: unimplemented("MonitoringClient.takeScreenshot")
+    takeScreenshot: unimplemented("MonitoringClient.takeScreenshot"),
   )
   static let mock = Self(
     commitPendingKeystrokes: { _ in },
@@ -75,7 +75,7 @@ extension MonitoringClient: TestDependencyKey {
     stopLoggingKeystrokes: {},
     takePendingKeystrokes: { [] },
     takePendingScreenshots: { [] },
-    takeScreenshot: { _ in }
+    takeScreenshot: { _ in },
   )
 }
 

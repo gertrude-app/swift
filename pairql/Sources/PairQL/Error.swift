@@ -22,7 +22,7 @@ public struct PqlError: Error, Codable, Equatable, Sendable {
     entityName: String? = nil,
     dashboardTag: DashboardTag? = nil,
     appTag: AppTag? = nil,
-    showContactSupport: Bool = false
+    showContactSupport: Bool = false,
   ) {
     self.id = id
     self.requestId = requestId

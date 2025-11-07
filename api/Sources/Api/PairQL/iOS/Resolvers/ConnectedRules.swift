@@ -8,7 +8,7 @@ extension ConnectedRules_b1: Resolver {
     let blockRules = try await IOSApp.BlockRule.query()
       .where(.or(
         .groupId |=| groups.map { .uuid($0.id) },
-        .deviceId == ctx.device.id
+        .deviceId == ctx.device.id,
       ))
       .orderBy(.id, .asc)
       .all(in: ctx.db)
@@ -25,7 +25,7 @@ extension ConnectedRules_b1: Resolver {
 
     return try await .init(
       blockRules: blockRules,
-      webPolicy: ctx.device.webContentFilterPolicy(in: ctx.db)
+      webPolicy: ctx.device.webContentFilterPolicy(in: ctx.db),
     )
   }
 }

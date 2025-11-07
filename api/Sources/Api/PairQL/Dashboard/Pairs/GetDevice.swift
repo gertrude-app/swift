@@ -63,14 +63,14 @@ extension GetDevice: Resolver {
         try await .init(
           id: userDevice.childId,
           name: (userDevice.child(in: context.db)).name,
-          status: websockets.status(userDevice.id)
+          status: websockets.status(userDevice.id),
         )
       },
       appVersion: appVersion.description,
       serialNumber: computer.serialNumber,
       modelIdentifier: computer.modelIdentifier,
       modelFamily: computer.model.family,
-      modelTitle: computer.model.shortDescription
+      modelTitle: computer.model.shortDescription,
     )
   }
 }

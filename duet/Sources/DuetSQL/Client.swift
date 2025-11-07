@@ -25,7 +25,7 @@ public extension Client {
     let models = try await self.select(
       M.self,
       where: .equals(M.ColumnName.id, .uuid(id)),
-      withSoftDeleted: withSoftDeleted
+      withSoftDeleted: withSoftDeleted,
     )
     guard let model = models.first else {
       throw DuetSQLError.notFound("\(M.self)")
@@ -36,12 +36,12 @@ public extension Client {
   func find<M: Model>(
     _: M.Type,
     byId id: M.IdValue,
-    withSoftDeleted: Bool = false
+    withSoftDeleted: Bool = false,
   ) async throws -> M {
     let models = try await self.select(
       M.self,
       where: .equals(M.ColumnName.id, .uuid(id)),
-      withSoftDeleted: withSoftDeleted
+      withSoftDeleted: withSoftDeleted,
     )
     guard let model = models.first else {
       throw DuetSQLError.notFound("\(M.self)")
@@ -105,21 +105,21 @@ public extension Client {
     orderBy order: SQL.Order<M>? = nil,
     limit: Int? = nil,
     offset: Int? = nil,
-    withSoftDeleted included: Bool = false
+    withSoftDeleted included: Bool = false,
   ) async throws -> [M] {
     let stmt = SQL.Statement.select(
       M.self,
       where: constraint + .withSoftDeleted(if: included),
       orderBy: order,
       limit: limit,
-      offset: offset
+      offset: offset,
     )
     return try await execute(statement: stmt, returning: M.self)
   }
 
   func select<M: Model>(
     all _: M.Type,
-    withSoftDeleted: Bool = false
+    withSoftDeleted: Bool = false,
   ) async throws -> [M] {
     try await self.select(M.self, withSoftDeleted: withSoftDeleted)
   }
@@ -127,11 +127,11 @@ public extension Client {
   func count<M: Model>(
     _: M.Type,
     where constraint: SQL.WhereConstraint<M> = .always,
-    withSoftDeleted included: Bool = false
+    withSoftDeleted included: Bool = false,
   ) async throws -> Int {
     let stmt = SQL.Statement.count(
       M.self,
-      where: constraint + .withSoftDeleted(if: included)
+      where: constraint + .withSoftDeleted(if: included),
     )
     let rows = try await execute(statement: stmt)
     guard rows.count == 1 else {
@@ -147,7 +147,7 @@ public extension Client {
     where constraint: SQL.WhereConstraint<M> = .always,
     orderBy order: SQL.Order<M>? = nil,
     limit: Int? = nil,
-    offset: Int? = nil
+    offset: Int? = nil,
   ) async throws -> Int {
     if M.isSoftDeletable {
       let stmt = SQL.Statement.softDelete(
@@ -155,7 +155,7 @@ public extension Client {
         where: constraint,
         orderBy: order,
         limit: limit,
-        offset: offset
+        offset: offset,
       )
       let rows = try await execute(statement: stmt)
       return rows.count
@@ -165,7 +165,7 @@ public extension Client {
         where: constraint,
         orderBy: order,
         limit: limit,
-        offset: offset
+        offset: offset,
       )
     }
   }
@@ -176,14 +176,14 @@ public extension Client {
     where constraint: SQL.WhereConstraint<M> = .always,
     orderBy order: SQL.Order<M>? = nil,
     limit: Int? = nil,
-    offset: Int? = nil
+    offset: Int? = nil,
   ) async throws -> Int {
     let stmt = SQL.Statement.delete(
       M.self,
       where: constraint,
       orderBy: order,
       limit: limit,
-      offset: offset
+      offset: offset,
     )
     let rows = try await execute(statement: stmt)
     return rows.count
@@ -193,7 +193,7 @@ public extension Client {
   func delete<M: Model>(
     _: M.Type,
     byId id: UUIDStringable,
-    force: Bool = false
+    force: Bool = false,
   ) async throws -> Int {
     if M.isSoftDeletable, !force {
       let stmt = SQL.Statement.softDelete(
@@ -201,14 +201,14 @@ public extension Client {
         where: .equals(M.ColumnName.id, .uuid(id)),
         orderBy: nil,
         limit: nil,
-        offset: nil
+        offset: nil,
       )
       let rows = try await execute(statement: stmt)
       return rows.count
     } else {
       return try await self.forceDelete(
         M.self,
-        where: .equals(M.ColumnName.id, .uuid(id))
+        where: .equals(M.ColumnName.id, .uuid(id)),
       )
     }
   }
@@ -231,7 +231,7 @@ public extension Client {
         where: .always,
         orderBy: nil,
         limit: nil,
-        offset: nil
+        offset: nil,
       )
       _ = try await self.execute(statement: stmt)
     } else {
@@ -241,7 +241,7 @@ public extension Client {
 
   func customQuery<T: CustomQueryable>(
     _ Custom: T.Type,
-    withBindings bindings: [Postgres.Data]? = nil
+    withBindings bindings: [Postgres.Data]? = nil,
   ) async throws -> [T] {
     let statement = Custom.query(bindings: bindings ?? [])
     let rows = try await self.execute(statement: statement)

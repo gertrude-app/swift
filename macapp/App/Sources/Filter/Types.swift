@@ -10,7 +10,7 @@ public extension XPCEvent {
         userId: uid_t,
         keychains: [RuleKeychain],
         downtime: Downtime?,
-        manifest: AppIdManifest
+        manifest: AppIdManifest,
       )
       case setBlockStreaming(enabled: Bool, userId: uid_t)
       case disconnectUser(userId: uid_t)

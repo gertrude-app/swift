@@ -11,7 +11,7 @@ extension BlockRules_v2: Resolver {
     return try await IOSApp.BlockRule.query()
       .where(.or(
         .not(.isNull(.groupId)) .&& .groupId |!=| groupIds,
-        .vendorId == (input.vendorId == .init(.zero) ? .init() : input.vendorId)
+        .vendorId == (input.vendorId == .init(.zero) ? .init() : input.vendorId),
       ))
       .orderBy(.id, .asc)
       .all(in: ctx.db)

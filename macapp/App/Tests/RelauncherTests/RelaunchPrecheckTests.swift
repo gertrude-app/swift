@@ -24,7 +24,7 @@ final class RelaunchPrecheckTests: XCTestCase {
   func testUnreachableAppUrlTriggersEarlyExitFail() {
     let (client, invocations) = recordingClient(
       args: ["/", "Gertrude.app", "--precheck"],
-      fileExistsAtPath: false
+      fileExistsAtPath: false,
     )
 
     Relauncher.run(client)

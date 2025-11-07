@@ -47,7 +47,7 @@ final class CGImageTests: XCTestCase {
       pngDataProviderSource: .init(filename: "./Tests/AppTests/__fixtures__/\(filename)")!,
       decode: nil,
       shouldInterpolate: true,
-      intent: .defaultIntent
+      intent: .defaultIntent,
     )!
   }
 
@@ -56,7 +56,7 @@ final class CGImageTests: XCTestCase {
       jpegDataProviderSource: .init(filename: "./Tests/AppTests/__fixtures__/\(filename)")!,
       decode: nil,
       shouldInterpolate: true,
-      intent: .defaultIntent
+      intent: .defaultIntent,
     )!
   }
 }

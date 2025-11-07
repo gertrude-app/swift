@@ -50,7 +50,7 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
       email: email,
       password: "pass",
       gclid: "gclid-123",
-      abTestVariant: "old_site"
+      abTestVariant: "old_site",
     )
 
     _ = try await Signup.resolve(with: input, in: self.context)
@@ -78,7 +78,7 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
 
       expect(output).toEqual(.init(admin: .init(
         adminId: existing.id,
-        token: .init(uuids[1])
+        token: .init(uuids[1]),
       )))
 
       expect(sent.emails.count).toEqual(0)

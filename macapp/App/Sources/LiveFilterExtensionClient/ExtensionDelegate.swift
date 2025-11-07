@@ -6,7 +6,7 @@ import SystemExtensions
 extension FilterManager: OSSystemExtensionRequestDelegate {
   func request(
     _ request: OSSystemExtensionRequest,
-    didFinishWithResult result: OSSystemExtensionRequest.Result
+    didFinishWithResult result: OSSystemExtensionRequest.Result,
   ) {
     guard result == .completed else {
       Task { @MainActor in
@@ -39,7 +39,7 @@ extension FilterManager: OSSystemExtensionRequestDelegate {
   func request(
     _ request: OSSystemExtensionRequest,
     actionForReplacingExtension existing: OSSystemExtensionProperties,
-    withExtension extension: OSSystemExtensionProperties
+    withExtension extension: OSSystemExtensionProperties,
   ) -> OSSystemExtensionRequest.ReplacementAction {
     let old = existing.bundleShortVersion
     let new = `extension`.bundleShortVersion

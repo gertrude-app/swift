@@ -12,7 +12,7 @@ struct ConnectedApps: Sendable {
 extension ConnectedApps {
   func send(
     _ message: WebSocketMessage.FromApiToApp,
-    to matcher: AppEvent.Matcher
+    to matcher: AppEvent.Matcher,
   ) async throws {
     try await self.sendEvent(.init(matcher: matcher, message: message))
   }
@@ -35,7 +35,7 @@ extension ConnectedApps: DependencyKey {
       disconnectAll: { await AppConnections.shared.disconnectAll() },
       remove: { await AppConnections.shared.remove($0) },
       status: { await AppConnections.shared.status(for: $0) },
-      sendEvent: { try await AppConnections.shared.send($0) }
+      sendEvent: { try await AppConnections.shared.send($0) },
     )
   }
 }
@@ -48,7 +48,7 @@ extension ConnectedApps: DependencyKey {
         disconnectAll: unimplemented("ConnectedApps.disconnectAll()"),
         remove: unimplemented("ConnectedApps.remove()"),
         status: unimplemented("ConnectedApps.status()", placeholder: .filterOn),
-        sendEvent: unimplemented("ConnectedApps.sendEvent()")
+        sendEvent: unimplemented("ConnectedApps.sendEvent()"),
       )
     }
   }

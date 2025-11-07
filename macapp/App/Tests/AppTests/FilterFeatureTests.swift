@@ -68,7 +68,7 @@ final class FilterFeatureTests: XCTestCase {
       randomInt: 333,
       version: "1.3.4", // <-- filter version from ack
       userId: 502,
-      numUserKeys: 33
+      numUserKeys: 33,
     )) }
 
     await store.send(.heartbeat(.everyFiveMinutes))
@@ -101,7 +101,7 @@ final class FilterFeatureTests: XCTestCase {
       randomInt: 333,
       version: "1.3.4", // <-- but we get a new "ahead" filter version
       userId: 502,
-      numUserKeys: 33
+      numUserKeys: 33,
     )) }
 
     await store.send(.heartbeat(.everyFiveMinutes))
@@ -138,7 +138,7 @@ final class FilterFeatureTests: XCTestCase {
 
     // receive a manual suspension
     await store.send(
-      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))),
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
@@ -185,7 +185,7 @@ final class FilterFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 120, extraMonitoring: nil),
-      comment: "yup!"
+      comment: "yup!",
     )))) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 120)
     }
@@ -197,7 +197,7 @@ final class FilterFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 120, extraMonitoring: nil),
-      comment: "here's another one for ya!"
+      comment: "here's another one for ya!",
     )))) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 100 + 120)
     }
@@ -247,7 +247,7 @@ final class FilterFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 120, extraMonitoring: nil),
-      comment: "yup!"
+      comment: "yup!",
     )))) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 120)
     }
@@ -277,7 +277,7 @@ final class FilterFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .rejected,
-      comment: "nope!"
+      comment: "nope!",
     ))))
 
     await expect(showNotification.calls.count).toEqual(3)
@@ -289,7 +289,7 @@ final class FilterFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 90, extraMonitoring: nil),
-      comment: "OK"
+      comment: "OK",
     )))) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 90)
     }
@@ -337,7 +337,7 @@ final class FilterFeatureTests: XCTestCase {
     await store.send(.websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
       id: .init(),
       decision: .accepted(duration: 120, extraMonitoring: nil),
-      comment: nil
+      comment: nil,
     )))) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 120)
     }
@@ -351,7 +351,7 @@ final class FilterFeatureTests: XCTestCase {
 
     // now, receive a MANUAL suspension
     await store.send(
-      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))),
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
@@ -372,7 +372,7 @@ final class FilterFeatureTests: XCTestCase {
 
     // now, receive a SECOND MANUAL suspension, which stops timer
     await store.send(
-      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30))))
+      .adminAuthed(.requestSuspension(.webview(.grantSuspensionClicked(durationInSeconds: 30)))),
     ) {
       $0.filter.currentSuspensionExpiration = Date(timeIntervalSince1970: 30)
     }
@@ -389,7 +389,7 @@ final class FilterFeatureTests: XCTestCase {
 
     let logs = FilterLogs(
       bundleIds: ["com.widget": 1],
-      events: [.init(id: "foo", detail: nil): 1]
+      events: [.init(id: "foo", detail: nil): 1],
     )
 
     await store.send(.xpc(.receivedExtensionMessage(.logs(logs))))
@@ -402,7 +402,7 @@ extension LogSecurityEvent.Input {
     self.init(
       deviceId: Persistent.State.mock.user!.deviceId,
       event: event.rawValue,
-      detail: detail
+      detail: detail,
     )
   }
 }

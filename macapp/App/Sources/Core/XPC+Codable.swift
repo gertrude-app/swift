@@ -3,7 +3,7 @@ import Foundation
 public enum XPC {
   public static func encode<T: Encodable>(
     _ value: T,
-    fn: StaticString = #function
+    fn: StaticString = #function,
   ) throws -> Data {
     do {
       return try JSONEncoder().encode(value)
@@ -15,7 +15,7 @@ public enum XPC {
   public static func decode<T: Decodable>(
     _ type: T.Type,
     from data: Data,
-    fn: StaticString = #function
+    fn: StaticString = #function,
   ) throws -> T {
     do {
       return try JSONDecoder().decode(T.self, from: data)

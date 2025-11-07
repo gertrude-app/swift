@@ -42,9 +42,9 @@ extension DecideFilterSuspensionRequest: Resolver {
       .filterSuspensionRequestDecided_v2(
         id: suspendFilterRequest.id.rawValue,
         decision: suspendFilterRequest.decision ?? .rejected,
-        comment: suspendFilterRequest.responseComment
+        comment: suspendFilterRequest.responseComment,
       ),
-      to: .userDevice(userDevice.id)
+      to: .userDevice(userDevice.id),
     )
 
     return .success
@@ -62,7 +62,7 @@ extension DecideFilterSuspensionRequest.Decision {
       .accepted(
         duration: .init(durationInSeconds),
         extraMonitoring: magicString
-          .flatMap(FilterSuspensionDecision.ExtraMonitoring.init(magicString:))
+          .flatMap(FilterSuspensionDecision.ExtraMonitoring.init(magicString:)),
       )
     }
   }

@@ -18,7 +18,7 @@ extension CGImage {
     for index in stride(
       from: width * MENU_BAR_MAX_HEIGHT * BYTES_PER_PIXEL,
       to: data.count,
-      by: data.count / BYTES_PER_PIXEL / 100
+      by: data.count / BYTES_PER_PIXEL / 100,
     ) {
       if data[index] != otherData[index] ||
         data[index + 1] != otherData[index + 1] ||
@@ -56,7 +56,7 @@ extension CGImage {
     for index in stride(
       from: data.count / 2,
       to: data.count,
-      by: BYTES_PER_PIXEL * 2 // outside of clock area, we sample 50% of pixels, for speed
+      by: BYTES_PER_PIXEL * 2, // outside of clock area, we sample 50% of pixels, for speed
     ) {
       if data[index] != otherData[index] ||
         data[index + 1] != otherData[index + 1] ||
@@ -87,7 +87,7 @@ extension CGImage {
       for colOffset in stride(
         from: 0,
         to: width - CLOCK_MAX_EDGE_OFFSET,
-        by: BYTES_PER_PIXEL * 2
+        by: BYTES_PER_PIXEL * 2,
       ) {
         let index = (rowOffset * width * BYTES_PER_PIXEL) + (colOffset * BYTES_PER_PIXEL)
         if data[index] != otherData[index] ||

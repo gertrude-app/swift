@@ -28,7 +28,7 @@ public extension AppDescribing {
             bundleId: rootApp.bundleId,
             slug: rootApp.slug,
             displayName: rootDisplayName,
-            categories: rootApp.categories
+            categories: rootApp.categories,
           )
           appCache(insert: rootApp, for: bundleId)
         }
@@ -43,7 +43,7 @@ public extension AppDescribing {
       bundleId: bundleId,
       slug: slug,
       displayName: name,
-      categories: categories
+      categories: categories,
     )
 
     appCache(insert: descriptor, for: bundleId)

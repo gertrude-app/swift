@@ -17,7 +17,7 @@ public struct UserDefaultsClient: Sendable {
     setString: @escaping @Sendable (String, String) -> Void,
     getString: @escaping @Sendable (String) -> String?,
     remove: @escaping @Sendable (String) -> Void,
-    removeAll: @escaping @Sendable () -> Void
+    removeAll: @escaping @Sendable () -> Void,
   ) {
     self.setInt = setInt
     self.getInt = getInt
@@ -59,7 +59,7 @@ extension UserDefaultsClient: DependencyKey {
       for key in UserDefaults.standard.dictionaryRepresentation().keys {
         UserDefaults.standard.removeObject(forKey: key)
       }
-    }
+    },
   )
 }
 
@@ -70,7 +70,7 @@ extension UserDefaultsClient: TestDependencyKey {
     setString: unimplemented("UserDefaultsClient.setString", placeholder: ()),
     getString: unimplemented("UserDefaultsClient.getString", placeholder: nil),
     remove: unimplemented("UserDefaultsClient.remove", placeholder: ()),
-    removeAll: unimplemented("UserDefaultsClient.removeAll", placeholder: ())
+    removeAll: unimplemented("UserDefaultsClient.removeAll", placeholder: ()),
   )
   public static let mock = Self(
     setInt: { _, _ in },
@@ -78,7 +78,7 @@ extension UserDefaultsClient: TestDependencyKey {
     setString: { _, _ in },
     getString: { _ in nil },
     remove: { _ in },
-    removeAll: {}
+    removeAll: {},
   )
 }
 

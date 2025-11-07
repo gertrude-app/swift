@@ -15,13 +15,13 @@ let package = Package(
     .target(
       name: "XAws",
       dependencies: [.product(name: "Crypto", package: "swift-crypto")],
-      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])]
+      swiftSettings: [.unsafeFlags(["-Xfrontend", "-warnings-as-errors"])],
     ),
     .testTarget(
       name: "XAwsTests",
-      dependencies: ["XAws", .product(name: "XExpect", package: "x-expect")]
+      dependencies: ["XAws", .product(name: "XExpect", package: "x-expect")],
     ),
-  ]
+  ],
 )
 
 // helpers
@@ -31,7 +31,7 @@ extension PackageDescription.Package.Dependency {
     let parts = commitish.split(separator: "@")
     return .package(
       url: "https://github.com/\(parts[0]).git",
-      from: .init(stringLiteral: "\(parts[1])")
+      from: .init(stringLiteral: "\(parts[1])"),
     )
   }
 }

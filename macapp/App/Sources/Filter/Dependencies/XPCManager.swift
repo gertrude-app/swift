@@ -30,7 +30,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
 
     os_log(
       "[G•] FILTER XPCManager: sending blocked request: %{public}@",
-      String(describing: request)
+      String(describing: request),
     )
     let requestData = try XPC.encode(request)
     try await withTimeout(connection: connection) { appProxy, continuation in
@@ -67,7 +67,7 @@ class XPCManager: NSObject, NSXPCListenerDelegate, XPCSender {
 
   func listener(
     _ listener: NSXPCListener,
-    shouldAcceptNewConnection newConnection: NSXPCConnection
+    shouldAcceptNewConnection newConnection: NSXPCConnection,
   ) -> Bool {
     os_log("[G•] FILTER XPCManager: accepting new connection %{public}@", newConnection)
     // ⛔️⛔️⛔️ WARNING ⛔️⛔️⛔️ `newConnection` has been "moved" into

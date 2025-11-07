@@ -9,7 +9,7 @@ extension KeystrokeLine: RandomMocked {
       computerUserId: .init(),
       appName: "@mock appName",
       line: "@mock line",
-      createdAt: .reference
+      createdAt: .reference,
     )
   }
 
@@ -18,7 +18,7 @@ extension KeystrokeLine: RandomMocked {
       computerUserId: .init(),
       appName: "",
       line: "",
-      createdAt: .epoch
+      createdAt: .epoch,
     )
   }
 
@@ -28,7 +28,7 @@ extension KeystrokeLine: RandomMocked {
       appName: "@random".random,
       line: "@random".random,
       flagged: Bool.random() ? Date() : nil,
-      createdAt: Date()
+      createdAt: Date(),
     )
   }
 }

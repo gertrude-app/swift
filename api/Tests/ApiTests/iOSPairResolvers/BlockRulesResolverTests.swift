@@ -22,7 +22,7 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
 
     let rules = try await BlockRules_v2.resolve(
       with: .init(disabledGroups: [.ads], vendorId: vendorId, version: "1.0"),
-      in: .mock
+      in: .mock,
     )
     expect(Set(rules)).toEqual([.urlContains("bad"), .urlContains("x1")])
   }
@@ -41,7 +41,7 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
 
     let rules = try await BlockRules_v2.resolve(
       with: .init(disabledGroups: [.ads], vendorId: zeroVid, version: "1.0"),
-      in: .mock
+      in: .mock,
     )
     expect(rules).toEqual([.urlContains("bad")])
   }
@@ -58,7 +58,7 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
 
     let defaultRules = try await DefaultBlockRules.resolve(
       with: .init(vendorId: nil, version: "1.0"),
-      in: .mock
+      in: .mock,
     )
     expect(defaultRules).toEqual([.urlContains("bad"), .urlContains("cat")])
   }
@@ -76,8 +76,8 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
     expect(rules.contains(
       .both(
         .bundleIdContains(".com.apple.MobileSMS"),
-        .targetContains("amp-api-edge.apps.apple.com")
-      )
+        .targetContains("amp-api-edge.apps.apple.com"),
+      ),
     )).toEqual(true)
   }
 }

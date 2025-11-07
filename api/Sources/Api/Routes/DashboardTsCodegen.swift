@@ -133,7 +133,7 @@ enum DashboardTsCodegenRoute {
 
   private static func ts<P: Pair>(
     for type: P.Type,
-    with config: Config
+    with config: Config,
   ) throws -> Response.Pair {
     let codegen = CodeGen(config: config)
     let name = "\(P.self)"

@@ -19,7 +19,7 @@ extension TaskResult where Success == EquatableVoid {
 extension AnySchedulerOf<DispatchQueue> {
   func schedule(
     after time: DispatchQueue.SchedulerTimeType.Stride,
-    action: @escaping () -> Void
+    action: @escaping () -> Void,
   ) {
     self.schedule(after: now.advanced(by: time), action)
   }
@@ -45,7 +45,7 @@ public extension Effect {
     priority: TaskPriority? = nil,
     operation: @escaping @Sendable (Send<Action>) async throws -> Void,
     fileID: StaticString = #fileID,
-    line: UInt = #line
+    line: UInt = #line,
   ) -> Self {
     @Dependency(\.app) var app
     return .run(
@@ -62,7 +62,7 @@ public extension Effect {
         unexpectedError(id: id, error)
       },
       fileID: fileID,
-      line: line
+      line: line,
     )
   }
 }

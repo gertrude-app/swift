@@ -20,9 +20,9 @@ final class ConnectDeviceResolverTests: ApiTestCase, @unchecked Sendable {
           vendorId: .init(),
           deviceType: "iPhone",
           appVersion: "1.5.0",
-          iosVersion: "18.4.0"
+          iosVersion: "18.4.0",
         ),
-        in: .mock
+        in: .mock,
       )
     }
 
@@ -30,7 +30,7 @@ final class ConnectDeviceResolverTests: ApiTestCase, @unchecked Sendable {
       childId: child.id.rawValue,
       token: .init(2),
       deviceId: .init(0),
-      childName: child.name
+      childName: child.name,
     ))
   }
 }

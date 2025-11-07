@@ -51,7 +51,7 @@ public extension EnumCodableGen.EnumType {
 
     try self.init(
       name: typeName(info.type),
-      cases: info.cases.map { try .init(from: $0) }
+      cases: info.cases.map { try .init(from: $0) },
     )
   }
 
@@ -126,14 +126,14 @@ extension EnumCodableGen.EnumType.Case {
     if case .tuple = payloadType.kind {
       self = try .init(
         name: caseData.name,
-        values: payloadType.properties.map { try .init(from: $0) }
+        values: payloadType.properties.map { try .init(from: $0) },
       )
       // flatten unary payload of a user struct: `case foo(SomeStruct)`
     } else if payloadType.isUserStruct {
       self = try .init(
         name: caseData.name,
         values: payloadType.properties.map { try .init(from: $0) },
-        isFlattenedUserStruct: true
+        isFlattenedUserStruct: true,
       )
       // mostly (i think) single, unnamed payloads, like `case foo(Int)`
     } else {

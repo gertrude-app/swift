@@ -27,7 +27,7 @@ struct UnlockRequest: Codable, Sendable {
     ipAddress: String? = nil,
     requestComment: String? = nil,
     responseComment: String? = nil,
-    status: RequestStatus = .pending
+    status: RequestStatus = .pending,
   ) {
     self.id = id
     self.computerUserId = computerUserId

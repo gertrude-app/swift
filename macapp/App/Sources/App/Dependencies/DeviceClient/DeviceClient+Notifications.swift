@@ -8,7 +8,7 @@ import UserNotifications
   UNUserNotificationCenter.current().add(UNNotificationRequest(
     identifier: UUID().uuidString,
     content: content,
-    trigger: nil
+    trigger: nil,
   ))
 }
 
@@ -43,28 +43,28 @@ extension DeviceClient {
   func notifyNoInternet() async {
     await showNotification(
       "⚠️ No internet connection",
-      "Please connect to the internet and try again."
+      "Please connect to the internet and try again.",
     )
   }
 
   func notifyBrowsersQuitting() async {
     await showNotification(
       "⚠️ Web browsers quitting soon!",
-      "Filter suspension ended. All browsers will quit in 60 seconds. Save any important work NOW."
+      "Filter suspension ended. All browsers will quit in 60 seconds. Save any important work NOW.",
     )
   }
 
   func notifyUnexpectedError() async {
     await showNotification(
       "⚠️ Unexpected error",
-      "Sorry, please try again, or contact Gertrude support if the problem persists."
+      "Sorry, please try again, or contact Gertrude support if the problem persists.",
     )
   }
 
   func notifyFilterSuspensionDenied(with comment: String?) async {
     await showNotification(
       "⛔️ Suspend filter request DENIED",
-      comment == nil ? "" : "Parent comment: \"\(comment ?? "")\""
+      comment == nil ? "" : "Parent comment: \"\(comment ?? "")\"",
     )
   }
 
@@ -81,7 +81,7 @@ extension DeviceClient {
     resuming seconds: Seconds<Int>,
     from now: Date = Date(),
     with comment: String? = nil,
-    extraMonitoring: Bool = false
+    extraMonitoring: Bool = false,
   ) async {
     let title = extraMonitoring
       ? "👀 Temporarily disabling filter"

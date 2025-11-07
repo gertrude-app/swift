@@ -26,7 +26,7 @@ public struct FilterExtensionClient: Sendable {
     install: @escaping @Sendable () async -> FilterInstallResult,
     installOverridingTimeout: @escaping @Sendable (_ timeout: Int) async -> FilterInstallResult,
     stateChanges: @escaping @Sendable () -> AnyPublisher<FilterExtensionState, Never>,
-    uninstall: @escaping @Sendable () async -> Bool
+    uninstall: @escaping @Sendable () async -> Bool,
   ) {
     self.setup = setup
     self.start = start
@@ -54,13 +54,13 @@ extension FilterExtensionClient: TestDependencyKey {
     install: unimplemented("FilterExtensionClient.install", placeholder: .alreadyInstalled),
     installOverridingTimeout: unimplemented(
       "FilterExtensionClient.installOverridingTimeout",
-      placeholder: .alreadyInstalled
+      placeholder: .alreadyInstalled,
     ),
     stateChanges: unimplemented(
       "FilterExtensionClient.stateChanges",
-      placeholder: AnyPublisher(Empty())
+      placeholder: AnyPublisher(Empty()),
     ),
-    uninstall: unimplemented("FilterExtensionClient.uninstall", placeholder: true)
+    uninstall: unimplemented("FilterExtensionClient.uninstall", placeholder: true),
   )
 
   public static let mock = Self(
@@ -74,7 +74,7 @@ extension FilterExtensionClient: TestDependencyKey {
     install: { .installedSuccessfully },
     installOverridingTimeout: { _ in .installedSuccessfully },
     stateChanges: { Empty().eraseToAnyPublisher() },
-    uninstall: { true }
+    uninstall: { true },
   )
 }
 

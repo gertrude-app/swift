@@ -11,7 +11,7 @@ public struct Client: Sendable {
     sendEmail: @escaping @Sendable (Email) async -> Result<Void, Client.Error>,
     sendTemplateEmail: @escaping @Sendable (TemplateEmail) async -> Result<Void, Client.Error>,
     sendTemplateEmailBatch: @escaping @Sendable ([TemplateEmail]) async
-      -> Result<[Result<Void, Client.BatchEmail.Error>], Client.Error>
+      -> Result<[Result<Void, Client.BatchEmail.Error>], Client.Error>,
   ) {
     self.sendEmail = sendEmail
     self.sendTemplateEmail = sendTemplateEmail
@@ -45,7 +45,7 @@ public extension Client {
       },
       sendTemplateEmailBatch: { email in
         await _sendTemplateEmailBatch(email, apiKey)
-      }
+      },
     )
   }
 }
@@ -54,7 +54,7 @@ public extension Client {
   static let mock = Client(
     sendEmail: { _ in .success(()) },
     sendTemplateEmail: { _ in .success(()) },
-    sendTemplateEmailBatch: { emails in .success([]) }
+    sendTemplateEmailBatch: { emails in .success([]) },
   )
 }
 

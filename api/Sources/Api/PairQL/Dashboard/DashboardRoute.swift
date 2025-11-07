@@ -28,7 +28,7 @@ extension DashboardRoute: RouteResponder {
         .where(.value == uuid)
         .first(
           in: context.db,
-          orThrow: context.error("8df93d61", .loggedOut, "Admin token not found")
+          orThrow: context.error("8df93d61", .loggedOut, "Admin token not found"),
         )
 
       let parent = try await Parent.query()
@@ -39,7 +39,7 @@ extension DashboardRoute: RouteResponder {
         requestId: context.requestId,
         dashboardUrl: context.dashboardUrl,
         parent: parent,
-        ipAddress: context.ipAddress
+        ipAddress: context.ipAddress,
       )
 
       return try await AuthedAdminRoute.respond(to: parentRoute, in: parentContext)
@@ -53,7 +53,7 @@ extension DashboardRoute: RouteResponder {
 
 extension Conversion {
   static func dashboardInput<P: Pair>(
-    _ Pair: P.Type
+    _ Pair: P.Type,
   ) -> Self where Self == Conversions.JSON<P.Input> {
     .input(Pair, dateDecodingStrategy: .forgivingIso8601)
   }
@@ -69,7 +69,7 @@ extension JSONDecoder.DateDecodingStrategy {
     }
     throw DecodingError.dataCorruptedError(
       in: container,
-      debugDescription: "Invalid date: \(string)"
+      debugDescription: "Invalid date: \(string)",
     )
   }
 }

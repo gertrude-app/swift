@@ -36,7 +36,7 @@ extension UserDefaultsClient: DependencyKey {
     },
     removeObject: { key in
       UserDefaults.gertrude.removeObject(forKey: key)
-    }
+    },
   )
 }
 

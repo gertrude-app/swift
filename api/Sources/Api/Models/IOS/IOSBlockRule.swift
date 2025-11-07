@@ -18,7 +18,7 @@ extension IOSApp {
       vendorId: VendorId? = nil,
       rule: GertieIOS.BlockRule,
       groupId: BlockGroup.Id? = nil,
-      comment: String? = nil
+      comment: String? = nil,
     ) {
       self.id = id
       self.deviceId = deviceId

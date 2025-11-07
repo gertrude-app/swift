@@ -66,7 +66,7 @@ extension FilterFeature.State {
     self.init(
       currentSuspensionExpiration: nil,
       extension: .unknown,
-      version: appVersion ?? "unknown"
+      version: appVersion ?? "unknown",
     )
   }
 }
@@ -90,17 +90,17 @@ extension FilterFeature.RootReducer {
       return .none
 
     case .websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
-      _, .accepted(let seconds, let extraMonitoring), let comment
+      _, .accepted(let seconds, let extraMonitoring), let comment,
     ))):
       return self.suspendFilter(
         for: seconds,
         with: &state,
         comment: comment,
-        extraMonitoring: extraMonitoring != nil
+        extraMonitoring: extraMonitoring != nil,
       )
 
     case .websocket(.receivedMessage(.filterSuspensionRequestDecided_v2(
-      _, .rejected, let comment
+      _, .rejected, let comment,
     ))):
       return .exec { _ in
         await self.device.notifyFilterSuspensionDenied(with: comment)
@@ -123,7 +123,7 @@ extension FilterFeature.RootReducer {
             for: duration,
             with: &state,
             comment: resolvedSuspension.comment,
-            extraMonitoring: extraMonitoring != nil
+            extraMonitoring: extraMonitoring != nil,
           )
         case .rejected:
           return .exec { _ in
@@ -157,7 +157,7 @@ extension FilterFeature.RootReducer {
              filterVersion > appVersion {
             os_log(
               "[G•] APP relaunch, filter ahead: `%{public}s` > `%{public}s`",
-              acc.version, appVersionString
+              acc.version, appVersionString,
             )
             try await self.storage.savePersistentState(persist)
             await self.app.stopRelaunchWatcher()
@@ -250,7 +250,7 @@ extension FilterFeature.RootReducer {
             await send(.filter(.receivedState(state)))
             if state == .installedAndRunning { return }
           }
-        }
+        },
       )
 
     default:
@@ -263,7 +263,7 @@ extension FilterFeature.RootReducer {
     with state: inout State,
     fromAdmin: Bool = false,
     comment: String? = nil,
-    extraMonitoring: Bool = false
+    extraMonitoring: Bool = false,
   ) -> Effect<Action> {
     let expiration = now.advanced(by: Double(seconds.rawValue))
     state.filter.currentSuspensionExpiration = expiration
@@ -277,7 +277,7 @@ extension FilterFeature.RootReducer {
           resuming: seconds,
           from: now,
           with: comment,
-          extraMonitoring: extraMonitoring
+          extraMonitoring: extraMonitoring,
         )
       },
       .exec { _ in
@@ -285,16 +285,16 @@ extension FilterFeature.RootReducer {
           fromAdmin
             ? .filterSuspensionGrantedByAdmin
             : .filterSuspendedRemotely,
-          "for \(self.now.shortDuration(until: expiration))"
+          "for \(self.now.shortDuration(until: expiration))",
         )
       },
-      .cancel(id: FilterFeature.CancelId.quitBrowsers)
+      .cancel(id: FilterFeature.CancelId.quitBrowsers),
     )
   }
 
   func handleFilterSuspensionEnded(
     browsers: [BrowserMatch],
-    early endedEarly: Bool = false
+    early endedEarly: Bool = false,
   ) -> Effect<Action> {
     .exec { send in
       if endedEarly { _ = await self.xpc.endFilterSuspension() }
@@ -313,14 +313,14 @@ private extension AppReducer.Action.FocusedNotification {
   static var filterInstallTimeout: Self {
     .text(
       "Filter install never completed",
-      "Try again, and be sure to allow Gertrude to install a system extension in \"System Settings > Privacy & Security\"."
+      "Try again, and be sure to allow Gertrude to install a system extension in \"System Settings > Privacy & Security\".",
     )
   }
 
   static var filterInstallDenied: Self {
     .text(
       "Filter install failed",
-      "We couldn't install the filter, you may have refused permission. Please try again, clicking \"Allow\"."
+      "We couldn't install the filter, you may have refused permission. Please try again, clicking \"Allow\".",
     )
   }
 }

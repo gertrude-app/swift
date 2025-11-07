@@ -11,7 +11,7 @@ struct AppWebViews: AggregateCodeGenerator {
       namedTypes: [
         .init(FilterState.WithRelativeTimes.self, as: "FilterState"),
         .init(AdminAccountStatus.self),
-      ]
+      ],
     ),
     AppviewStore(
       at: "MenuBar/menubar-store.ts",
@@ -19,7 +19,7 @@ struct AppWebViews: AggregateCodeGenerator {
         .init(MenuBarFeature.State.View.self, as: "AppState"),
         .init(MenuBarFeature.Action.self, as: "AppEvent"),
       ],
-      localAliases: [(FilterState.WithRelativeTimes.self, "FilterState")]
+      localAliases: [(FilterState.WithRelativeTimes.self, "FilterState")],
     ),
     AppviewStore(
       at: "BlockedRequests/blockedrequests-store.ts",
@@ -33,7 +33,7 @@ struct AppWebViews: AggregateCodeGenerator {
       localAliases: [
         (BlockedRequestsFeature.State.View.Request.self, "Request"),
         (AdminAccountStatus.self, "AdminAccountStatus"),
-      ]
+      ],
     ),
     AppviewStore(
       at: "Administrate/administrate-store.ts",
@@ -64,7 +64,7 @@ struct AppWebViews: AggregateCodeGenerator {
       globalAliases: [
         (AdminAccountStatus.self, "AdminAccountStatus"),
         (Failable<AdminAccountStatus>.self, "Failable<AdminAccountStatus>"),
-      ]
+      ],
     ),
     AppviewStore(
       at: "RequestSuspension/requestsuspension-store.ts",
@@ -74,7 +74,7 @@ struct AppWebViews: AggregateCodeGenerator {
       ],
       localAliases: [
         (AdminAccountStatus.self, "AdminAccountStatus"),
-      ]
+      ],
     ),
     AppviewStore(
       at: "Onboarding/onboarding-store.ts",
@@ -93,7 +93,7 @@ struct AppWebViews: AggregateCodeGenerator {
         (OnboardingFeature.State.MacUser.RemediationStep.self, "UserRemediationStep"),
         (OnboardingFeature.State.MacUser.self, "MacOSUser"),
         (PayloadRequestState<String, String>.self, "RequestState<string>"),
-      ]
+      ],
     ),
   ]
 

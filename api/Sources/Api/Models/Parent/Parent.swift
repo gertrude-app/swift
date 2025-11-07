@@ -34,7 +34,7 @@ struct Parent: Codable, Sendable {
     monthlyPrice: Cents<Int> = .init(1000),
     trialPeriodDays: Int = 21,
     gclid: String? = nil,
-    abTestVariant: String? = nil
+    abTestVariant: String? = nil,
   ) {
     self.id = id
     self.email = email
@@ -97,7 +97,7 @@ extension Parent {
   }
 
   func verifiedNotificationMethods(
-    in db: any DuetSQL.Client
+    in db: any DuetSQL.Client,
   ) async throws -> [Parent.NotificationMethod] {
     try await Parent.NotificationMethod.query()
       .where(.parentId == self.id)

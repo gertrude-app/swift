@@ -11,7 +11,7 @@ extension ComputerUser: RandomMocked {
       appVersion: "2.0.0", // must be valid semver
       username: "@mock username liljimmy",
       fullUsername: "@mock fullUsername Jimmy McStandard",
-      numericId: 502
+      numericId: 502,
     )
   }
 
@@ -23,7 +23,7 @@ extension ComputerUser: RandomMocked {
       appVersion: "0.0.0", // must be valid semver
       username: "",
       fullUsername: "",
-      numericId: 0
+      numericId: 0,
     )
   }
 
@@ -35,7 +35,7 @@ extension ComputerUser: RandomMocked {
       appVersion: "3.\(Int.random(in: 10 ... 99)).\(Int.random(in: 10 ... 99))",
       username: "@random".random,
       fullUsername: "@random".random,
-      numericId: Int.random
+      numericId: Int.random,
     )
   }
 }

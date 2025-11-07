@@ -23,7 +23,7 @@ public struct CheckIn_v2: Pair {
       osVersion: String? = nil,
       pendingFilterSuspension: UUID? = nil,
       pendingUnlockRequests: [UUID]? = nil,
-      namedApps: [RunningApp]? = nil
+      namedApps: [RunningApp]? = nil,
     ) {
       self.appVersion = appVersion
       self.filterVersion = filterVersion
@@ -103,7 +103,7 @@ public struct CheckIn_v2: Pair {
       browsers: [BrowserMatch],
       resolvedFilterSuspension: ResolvedFilterSuspension? = nil,
       resolvedUnlockRequests: [ResolvedUnlockRequest]? = nil,
-      trustedTime: Double
+      trustedTime: Double,
     ) {
       self.adminAccountStatus = adminAccountStatus
       self.appManifest = appManifest
@@ -134,7 +134,7 @@ public struct CheckIn_v2: Pair {
         $0.screenshotSize = 555
       },
       browsers: [.name("Safari"), .bundleId("com.apple.Safari")],
-      trustedTime: 0.0
+      trustedTime: 0.0,
     )
 
     public static let empty = Self(
@@ -145,7 +145,7 @@ public struct CheckIn_v2: Pair {
       updateReleaseChannel: .stable,
       userData: .empty,
       browsers: [],
-      trustedTime: 0.0
+      trustedTime: 0.0,
     )
   }
 #endif

@@ -9,7 +9,7 @@ extension IOSApp.Device: RandomMocked {
       vendorId: .init(),
       deviceType: "iPhone",
       appVersion: "1.5.0",
-      iosVersion: "18.4.0"
+      iosVersion: "18.4.0",
     )
   }
 
@@ -19,7 +19,7 @@ extension IOSApp.Device: RandomMocked {
       vendorId: .init(),
       deviceType: "iPhone",
       appVersion: "1.5.0",
-      iosVersion: "18.4.0"
+      iosVersion: "18.4.0",
     )
   }
 
@@ -29,7 +29,7 @@ extension IOSApp.Device: RandomMocked {
       vendorId: .init(),
       deviceType: Bool.random() ? "iPhone" : "iPad",
       appVersion: "1.5.\(Int.random(in: 0 ... 100))",
-      iosVersion: "18.4.\(Int.random(in: 0 ... 100))"
+      iosVersion: "18.4.\(Int.random(in: 0 ... 100))",
     )
   }
 }

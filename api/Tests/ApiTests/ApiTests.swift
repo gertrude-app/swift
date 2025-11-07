@@ -48,7 +48,7 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
       keychainId: .init(),
       key: .mock,
       comment: nil,
-      expiration: Date(timeIntervalSince1970: 0)
+      expiration: Date(timeIntervalSince1970: 0),
     )
     let parent = try await self.parent()
     let token = parent.token.value
@@ -67,7 +67,7 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
     let json = String(data: request.httpBody!, encoding: .utf8)!
     let fractional = json.replacingOccurrences(
       of: "1970-01-01T00:00:00Z",
-      with: "1970-01-01T00:00:00.000Z"
+      with: "1970-01-01T00:00:00.000Z",
     )
     expect(json).not.toBe(fractional)
     request = URLRequest(url: URL(string: "dashboard/SaveKey")!)
@@ -87,7 +87,7 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
       username: "kids",
       fullUsername: "kids",
       numericId: 501,
-      serialNumber: "X02VH0Y6JG5J"
+      serialNumber: "X02VH0Y6JG5J",
     )
 
     var request = URLRequest(url: URL(string: "macos-app/ConnectUser")!)
@@ -122,9 +122,9 @@ final class ApiTests: ApiTestCase, @unchecked Sendable {
     let response = try await PairQLRoute.respond(
       to: .macApp(.userAuthed(
         child.token.value.rawValue,
-        .createSuspendFilterRequest_v2(.init(duration: 1, comment: nil))
+        .createSuspendFilterRequest_v2(.init(duration: 1, comment: nil)),
       )),
-      in: .mock
+      in: .mock,
     )
 
     expect(response.status).toEqual(.ok)

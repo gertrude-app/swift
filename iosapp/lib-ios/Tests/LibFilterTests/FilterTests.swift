@@ -38,21 +38,21 @@ final class FilterTests: XCTestCase {
       (
         .unless(
           rule: .bundleIdContains(value: "com.mobile.Safari"),
-          negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")]
+          negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")],
         ),
         .init(host: "bad.com", src: ".com.mobile.Safari", block: true)
       ),
       (
         .unless(
           rule: .bundleIdContains(value: "com.mobile.Safari"),
-          negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")]
+          negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")],
         ),
         .init(host: "www.kids.org", src: ".com.mobile.Safari", block: false)
       ),
       (
         .unless(
           rule: .bundleIdContains(value: "com.mobile.Safari"),
-          negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")]
+          negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")],
         ),
         .init(host: "bad.com", src: "com.other.app", block: false)
       ),
@@ -71,9 +71,9 @@ final class FilterTests: XCTestCase {
           hostname: t.host,
           url: t.url,
           bundleId: t.src,
-          flowType: t.flowType
+          flowType: t.flowType,
         )),
-        t.block
+        t.block,
       )
     }
   }
@@ -100,9 +100,9 @@ final class FilterTests: XCTestCase {
           hostname: t.host,
           url: t.url,
           bundleId: t.src,
-          flowType: nil
+          flowType: nil,
         )),
-        t.block
+        t.block,
       )
     }
   }
@@ -120,7 +120,7 @@ private struct Test {
     url: String? = nil,
     src: String = "com.acme.app",
     flowType: FlowType? = nil,
-    block: Bool
+    block: Bool,
   ) {
     self.host = host
     self.url = url

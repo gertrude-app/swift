@@ -23,7 +23,7 @@ extension MacApp {
       duration: Seconds<Int> = 180,
       requestComment: String? = nil,
       responseComment: String? = nil,
-      extraMonitoring: String? = nil
+      extraMonitoring: String? = nil,
     ) {
       self.id = id
       self.computerUserId = computerUserId
@@ -56,7 +56,7 @@ extension MacApp.SuspendFilterRequest {
       .accepted(
         duration: self.duration,
         extraMonitoring: self.extraMonitoring
-          .flatMap(FilterSuspensionDecision.ExtraMonitoring.init(magicString:))
+          .flatMap(FilterSuspensionDecision.ExtraMonitoring.init(magicString:)),
       )
     }
   }

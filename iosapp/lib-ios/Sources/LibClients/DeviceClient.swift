@@ -24,7 +24,7 @@ public struct DeviceClient: Sendable {
     batteryLevel: @Sendable @escaping () async -> BatteryLevel,
     clearCache: @Sendable @escaping (Int?) -> AnyPublisher<ClearCacheUpdate, Never>,
     deleteCacheFillDir: @Sendable @escaping () async -> Void,
-    availableDiskSpaceInBytes: @Sendable @escaping () async -> Int?
+    availableDiskSpaceInBytes: @Sendable @escaping () async -> Int?,
   ) {
     self.type = type
     self.iOSVersion = iOSVersion
@@ -86,7 +86,7 @@ extension DeviceClient: DependencyKey {
         data: { await MainActor.run { .init(
           type: UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone,
           iOSVersion: UIDevice.current.systemVersion,
-          vendorId: UIDevice.current.identifierForVendor
+          vendorId: UIDevice.current.identifierForVendor,
         ) }},
         batteryLevel: { @MainActor in
           UIDevice.current.isBatteryMonitoringEnabled = true
@@ -99,7 +99,7 @@ extension DeviceClient: DependencyKey {
         },
         clearCache: doClearCache,
         deleteCacheFillDir: { try? FileManager.default.removeItem(at: .fillDir) },
-        availableDiskSpaceInBytes: getAvailableDiskSpaceInBytes
+        availableDiskSpaceInBytes: getAvailableDiskSpaceInBytes,
       )
     }
   #else
@@ -111,7 +111,7 @@ extension DeviceClient: DependencyKey {
       batteryLevel: { .level(0.9) },
       clearCache: { _ in AnyPublisher(Empty()) },
       deleteCacheFillDir: {},
-      availableDiskSpaceInBytes: { 1_000_000_000 }
+      availableDiskSpaceInBytes: { 1_000_000_000 },
     )
   #endif
 }

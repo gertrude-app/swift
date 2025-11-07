@@ -28,7 +28,7 @@ public struct CheckIn: Pair {
       userData: UserData,
       browsers: [BrowserMatch],
       resolvedFilterSuspension: CheckIn_v2.ResolvedFilterSuspension? = nil,
-      resolvedUnlockRequests: [CheckIn_v2.ResolvedUnlockRequest]? = nil
+      resolvedUnlockRequests: [CheckIn_v2.ResolvedUnlockRequest]? = nil,
     ) {
       self.adminAccountStatus = adminAccountStatus
       self.appManifest = appManifest
@@ -57,7 +57,7 @@ public struct CheckIn: Pair {
         $0.screenshotFrequency = 333
         $0.screenshotSize = 555
       },
-      browsers: [.name("Safari"), .bundleId("com.apple.Safari")]
+      browsers: [.name("Safari"), .bundleId("com.apple.Safari")],
     )
 
     public static let empty = Self(
@@ -67,7 +67,7 @@ public struct CheckIn: Pair {
       latestRelease: .init(semver: "2.0.4"),
       updateReleaseChannel: .stable,
       userData: .empty,
-      browsers: []
+      browsers: [],
     )
   }
 #endif

@@ -66,7 +66,7 @@ final class FilterProxyTests: XCTestCase {
   func testBlockedNewFlowWithoutPeekingBytesDropsAndLogs() {
     let proxy = FilterProxy(
       earlyDecision: .none(501),
-      flowDecision: .block(.defaultNotAllowed)
+      flowDecision: .block(.defaultNotAllowed),
     )
     let verdict = proxy.handleNewFlow(.mock)
     expect(verdict.isDrop).toBeTrue()
@@ -86,7 +86,7 @@ final class FilterProxyTests: XCTestCase {
     } operation: {
       let proxy = FilterProxy(
         earlyDecision: .none(501),
-        flowDecision: .block(.defaultNotAllowed)
+        flowDecision: .block(.defaultNotAllowed),
       ) {
         $0.blockListeners[501] = .distantFuture
       }
@@ -101,7 +101,7 @@ final class FilterProxyTests: XCTestCase {
   func testAllowedNewFlowWithoutPeekingBytesAllowsAndLogs() {
     let proxy = FilterProxy(
       earlyDecision: .none(501),
-      flowDecision: .allow(.permittedByKey(.init()))
+      flowDecision: .allow(.permittedByKey(.init())),
     )
     let verdict = proxy.handleNewFlow(.mock)
     expect(verdict.isDrop).toBeFalse()
@@ -115,7 +115,7 @@ final class FilterProxyTests: XCTestCase {
     } operation: {
       let proxy = FilterProxy(
         earlyDecision: .none(501), // <-- we know the user id is 501
-        flowDecision: .allow(.fromGertrudeApp) // <-- so count any api req as an alive
+        flowDecision: .allow(.fromGertrudeApp), // <-- so count any api req as an alive
       )
       let verdict = proxy.handleNewFlow(.mock)
       expect(verdict.isDrop).toBeFalse()
@@ -193,7 +193,7 @@ extension FilterProxy {
   convenience init(
     earlyDecision: FilterDecision.FromUserId = .none(501),
     flowDecision: FilterDecision.FromFlow?? = .some(.some(.block(.defaultNotAllowed))),
-    config: (inout Filter.State) -> Void = { _ in }
+    config: (inout Filter.State) -> Void = { _ in },
   ) {
     var state = Filter.State()
     config(&state)

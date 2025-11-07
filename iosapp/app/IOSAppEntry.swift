@@ -10,7 +10,7 @@ struct IOSAppEntry: App {
   init() {
     self.store = Store(
       initialState: IOSReducer.State(),
-      reducer: { IOSReducer()._printChanges() }
+      reducer: { IOSReducer()._printChanges() },
     )
     self.appDelegate.onTerminate = { [weak store = self.store] in
       store?.send(.programmatic(.appWillTerminate))

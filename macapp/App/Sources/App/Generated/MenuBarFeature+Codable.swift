@@ -239,7 +239,7 @@ extension MenuBarFeature.State.View {
         recordingScreen: unflat.recordingScreen,
         recordingKeystrokes: unflat.recordingKeystrokes,
         adminAttentionRequired: unflat.adminAttentionRequired,
-        updateStatus: unflat.updateStatus
+        updateStatus: unflat.updateStatus,
       ).encode(to: encoder)
     case .enteringConnectionCode:
       try _NamedCase(case: "enteringConnectionCode").encode(to: encoder)
@@ -268,7 +268,7 @@ extension MenuBarFeature.State.View {
         recordingScreen: value.recordingScreen,
         recordingKeystrokes: value.recordingKeystrokes,
         adminAttentionRequired: value.adminAttentionRequired,
-        updateStatus: value.updateStatus
+        updateStatus: value.updateStatus,
       ))
     case "enteringConnectionCode":
       self = .enteringConnectionCode

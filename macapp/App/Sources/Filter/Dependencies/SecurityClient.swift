@@ -9,7 +9,7 @@ public struct SecurityClient: Sendable {
 
   public init(
     userIdFromAuditToken: @escaping @Sendable (Data?) -> uid_t?,
-    rootAppFromAuditToken: @escaping @Sendable (Data?) -> RootApp
+    rootAppFromAuditToken: @escaping @Sendable (Data?) -> RootApp,
   ) {
     self.userIdFromAuditToken = userIdFromAuditToken
     self.rootAppFromAuditToken = rootAppFromAuditToken
@@ -39,7 +39,7 @@ extension SecurityClient: DependencyKey {
         nil,
         [kSecGuestAttributeAudit: token] as NSDictionary,
         [],
-        &secCode
+        &secCode,
       )
 
       guard auditStatus == errSecSuccess, let code = secCode else {
@@ -81,7 +81,7 @@ extension SecurityClient: DependencyKey {
 
       app.bundleId = rootBundleId
       return app
-    }
+    },
   )
 }
 
@@ -90,12 +90,12 @@ extension SecurityClient: TestDependencyKey {
     userIdFromAuditToken: unimplemented("SecurityClient.userIdFromAuditToken", placeholder: nil),
     rootAppFromAuditToken: unimplemented(
       "SecurityClient.rootAppFromAuditToken",
-      placeholder: (nil, nil)
-    )
+      placeholder: (nil, nil),
+    ),
   )
   public static let mock = Self(
     userIdFromAuditToken: { _ in nil },
-    rootAppFromAuditToken: { _ in (nil, nil) }
+    rootAppFromAuditToken: { _ in (nil, nil) },
   )
 }
 

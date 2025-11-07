@@ -16,7 +16,7 @@ import XCore
       try FileManager.default.createDirectory(
         at: .fillDir,
         withIntermediateDirectories: true,
-        attributes: nil
+        attributes: nil,
       )
     } catch {
       os_log("[G•] Error creating cache fill dir %{public}s", "\(error)")

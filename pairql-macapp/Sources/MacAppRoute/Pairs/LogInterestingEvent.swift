@@ -15,7 +15,7 @@ public struct LogInterestingEvent: Pair {
       eventId: String,
       kind: String,
       deviceId: UUID? = nil,
-      detail: String? = nil
+      detail: String? = nil,
     ) {
       self.eventId = eventId
       self.kind = kind

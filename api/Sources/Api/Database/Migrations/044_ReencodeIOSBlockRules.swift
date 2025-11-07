@@ -10,7 +10,7 @@ struct ReencodeIOSBlockRules: GertieMigration {
       """
       SELECT id, rule::TEXT
       FROM iosapp.block_rules
-      """
+      """,
     )
 
     let records = try rows.map { row in
@@ -27,7 +27,7 @@ struct ReencodeIOSBlockRules: GertieMigration {
         UPDATE iosapp.block_rules
         SET rule = '\(unsafeRaw: json)'::JSONB
         WHERE id = '\(uuid: record.id)'
-        """
+        """,
       )
     }
   }
@@ -37,7 +37,7 @@ struct ReencodeIOSBlockRules: GertieMigration {
       """
       SELECT id, rule::TEXT
       FROM iosapp.block_rules
-      """
+      """,
     )
 
     let records = try rows.map { row in
@@ -54,7 +54,7 @@ struct ReencodeIOSBlockRules: GertieMigration {
         UPDATE iosapp.block_rules
         SET rule = '\(unsafeRaw: json)'::JSONB
         WHERE id = '\(uuid: record.id)'
-        """
+        """,
       )
     }
   }

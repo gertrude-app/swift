@@ -26,7 +26,7 @@ extension SaveConferenceEmail: Resolver {
       context: "marketing",
       computerUserId: nil,
       parentId: nil,
-      detail: detail
+      detail: detail,
     ))
 
     await with(dependency: \.slack).internal(.info, detail)

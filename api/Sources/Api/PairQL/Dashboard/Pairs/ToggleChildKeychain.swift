@@ -27,7 +27,7 @@ extension ToggleChildKeychain: Resolver {
       // if the child does not have the keychain assigned, assign it
       let newChildKeychain = ChildKeychain(
         childId: input.childId,
-        keychainId: input.keychainId
+        keychainId: input.keychainId,
       )
       try await context.db.create(newChildKeychain)
     }

@@ -14,7 +14,7 @@ struct LilThing: Codable {
     int: Int = 123,
     createdAt: Date = Date(),
     updatedAt: Date = Date(),
-    deletedAt: Date? = nil
+    deletedAt: Date? = nil,
   ) {
     self.id = id
     self.int = int

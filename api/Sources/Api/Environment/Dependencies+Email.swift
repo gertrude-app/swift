@@ -26,7 +26,7 @@ extension PostmarkClient: DependencyKey {
           return await pmClient.sendTemplateEmail(email)
         }
       },
-      _sendTemplateEmailBatch: pmClient.sendTemplateEmailBatch
+      _sendTemplateEmailBatch: pmClient.sendTemplateEmailBatch,
     )
   }
 }
@@ -53,7 +53,7 @@ extension PostmarkClient {
       replyTo: get(dependency: \.env.primarySupportEmail),
       templateAlias: email.model.templateAlias,
       templateModel: templateModel,
-      messageStream: nil
+      messageStream: nil,
     )
     switch email {
     case .initialSignup(let recipient, _),
@@ -95,7 +95,7 @@ extension PostmarkClient {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: replyTo,
       subject: subject.withEmailSubjectDisambiguator,
-      htmlBody: html
+      htmlBody: html,
     )).loggingFailure()
   }
 
@@ -111,7 +111,7 @@ extension PostmarkClient {
       from: "Gertrude App <noreply@gertrude.app>",
       replyTo: nil,
       subject: subject.withEmailSubjectDisambiguator,
-      htmlBody: html
+      htmlBody: html,
     ))
   }
 
@@ -121,7 +121,7 @@ extension PostmarkClient {
       to: get(dependency: \.env).superAdminEmail,
       from: "Gertrude App <noreply@gertrude.app>",
       subject: "Gertrude API unexpected event".withEmailSubjectDisambiguator,
-      htmlBody: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)"
+      htmlBody: "id: <code><a href='\(search)'>\(id)</a></code><br/><br/>\(detail)",
     ))
   }
 }

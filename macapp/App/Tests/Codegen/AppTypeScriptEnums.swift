@@ -12,19 +12,19 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
         FilterState.WithRelativeTimes.self,
         MenuBarFeature.Action.self,
         MenuBarFeature.State.View.self,
-      ]
+      ],
     ),
     EnumCodableGen.EnumsGenerator(
       name: "BlockedRequestsFeature",
       types: [
         BlockedRequestsFeature.Action.View.self,
-      ]
+      ],
     ),
     EnumCodableGen.EnumsGenerator(
       name: "RequestSuspensionFeature",
       types: [
         RequestSuspensionFeature.Action.View.self,
-      ]
+      ],
     ),
     EnumCodableGen.EnumsGenerator(
       name: "AdminWindowFeature",
@@ -32,13 +32,13 @@ struct AppTypeScriptEnums: AggregateCodeGenerator {
         AdminWindowFeature.State.HealthCheck.FilterStatus.self,
         AdminWindowFeature.Action.View.AdvancedAction.self,
         AdminWindowFeature.Action.View.self,
-      ]
+      ],
     ),
     EnumCodableGen.EnumsGenerator(
       name: "OnboardingFeature",
       types: [
         OnboardingFeature.Action.View.self,
-      ]
+      ],
     ),
   ]
 
@@ -60,7 +60,7 @@ extension EnumCodableGen.EnumsGenerator {
       path:
       "/Users/jared/gertie/swift/macapp/App/Sources/App/Generated/\(name)+Codable.swift",
       types: types.map { ($0, $0 == FilterState.WithRelativeTimes.self) },
-      imports: ["ReleaseChannel": "Gertie", "FilterState": "Gertie"]
+      imports: ["ReleaseChannel": "Gertie", "FilterState": "Gertie"],
     )
   }
 }

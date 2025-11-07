@@ -63,7 +63,7 @@ final class OnboardingFeatureTests: XCTestCase {
       users: [
         .init(id: 501, name: "Dad", type: .admin),
         .init(id: 502, name: "liljimmy", type: .standard),
-      ]
+      ],
     ))) {
       $0.onboarding.users = [
         .init(id: 501, name: "Dad", isAdmin: true),
@@ -169,7 +169,7 @@ final class OnboardingFeatureTests: XCTestCase {
 
     // ...we make a note to resume here after a quit/restart
     await store.receive(
-      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: false))))
+      .onboarding(.delegate(.saveForResume(.checkingFullDiskAccessPermission(upgrade: false)))),
     )
     // ...and we send them to the full disk access grant system prefs pane
     await expect(openSysPrefs.calls).toEqual([.notifications, .security(.fullDiskAccess)])
@@ -294,19 +294,19 @@ final class OnboardingFeatureTests: XCTestCase {
 
     let installSysExt = spy(
       on: Int.self,
-      returning: FilterInstallResult.installedSuccessfully // <-- success
+      returning: FilterInstallResult.installedSuccessfully, // <-- success
     )
     store.deps.filterExtension.installOverridingTimeout = installSysExt.fn
 
     let setUserExemption = spy2(
       on: (uid_t.self, Bool.self),
-      returning: Result<Void, XPCErr>.success(())
+      returning: Result<Void, XPCErr>.success(()),
     )
     store.deps.filterXpc.setUserExemption = setUserExemption.fn
 
     let getUserTypes = mock(
       always: Result<FilterUserTypes, XPCErr>
-        .success(.init(exempt: [], protected: []))
+        .success(.init(exempt: [], protected: [])),
     )
     store.deps.filterXpc.requestUserTypes = getUserTypes.fn
 
@@ -379,7 +379,7 @@ final class OnboardingFeatureTests: XCTestCase {
     let timestamp = TrustedTimestamp(
       network: .reference - 1,
       system: .reference,
-      boottime: .reference - 60
+      boottime: .reference - 60,
     )
     await store.receive(.setTrustedTimestamp(timestamp)) {
       $0.timestamp = timestamp
@@ -441,7 +441,7 @@ final class OnboardingFeatureTests: XCTestCase {
       appVersion: "1.0.0",
       filterVersion: "1.0.0",
       userIsAdmin: false,
-      osVersion: "14.0.0"
+      osVersion: "14.0.0",
     )])
     await expect(enableLaunchAtLogin.calls.count).toEqual(1)
 
@@ -519,8 +519,8 @@ final class OnboardingFeatureTests: XCTestCase {
       then: Persistent.State( // <-- quit+delete failsave, w/ no user
         appVersion: "1.0.0",
         appUpdateReleaseChannel: .stable,
-        filterVersion: "1.0.0"
-      )
+        filterVersion: "1.0.0",
+      ),
     )
     store.deps.storage.loadPersistentState = loadState.fn
     let saveState = spy(on: Persistent.State.self, returning: ())
@@ -907,7 +907,7 @@ final class OnboardingFeatureTests: XCTestCase {
     store.deps.filterExtension.state = filterState.fn
     let installSysExt = spy(
       on: Int.self,
-      returning: FilterInstallResult.userClickedDontAllow // <-- fail
+      returning: FilterInstallResult.userClickedDontAllow, // <-- fail
     )
     store.deps.filterExtension.installOverridingTimeout = installSysExt.fn
 
@@ -1064,7 +1064,7 @@ final class OnboardingFeatureTests: XCTestCase {
     let notifsSettings = mock(
       // they did NOT enable notifications (the first 2 times we check)
       returning: [NotificationsSetting.none, .none],
-      then: NotificationsSetting.alert // ... but they fix it before 3rd...
+      then: NotificationsSetting.alert, // ... but they fix it before 3rd...
     )
     store.deps.device.notificationsSetting = notifsSettings.fn
 
@@ -1129,7 +1129,7 @@ final class OnboardingFeatureTests: XCTestCase {
     await store.send(.onboarding(.connectUser(.failure(TestErr("oh noes!"))))) {
       $0.onboarding.step = .connectChild
       $0.onboarding.connectChildRequest = .failed(
-        error: "Sorry, something went wrong. Please try again, or contact help if the problem persists."
+        error: "Sorry, something went wrong. Please try again, or contact help if the problem persists.",
       )
     }
 
@@ -1154,7 +1154,7 @@ final class OnboardingFeatureTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
       user: nil,
-      resumeOnboarding: .at(step: .macosUserAccountType)
+      resumeOnboarding: .at(step: .macosUserAccountType),
     ) }
 
     await store.send(.application(.didFinishLaunching))
@@ -1170,7 +1170,7 @@ final class OnboardingFeatureTests: XCTestCase {
         appUpdateReleaseChannel: .stable,
         filterVersion: "1.0.0",
         user: nil,
-        resumeOnboarding: nil // <-- nils out step
+        resumeOnboarding: nil, // <-- nils out step
       ),
     ])
   }
@@ -1184,7 +1184,7 @@ final class OnboardingFeatureTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
       user: nil,
-      resumeOnboarding: .checkingScreenRecordingPermission // <-- check
+      resumeOnboarding: .checkingScreenRecordingPermission, // <-- check
     ) }
 
     await store.send(.application(.didFinishLaunching))
@@ -1204,7 +1204,7 @@ final class OnboardingFeatureTests: XCTestCase {
       appUpdateReleaseChannel: .stable,
       filterVersion: "1.0.0",
       user: nil,
-      resumeOnboarding: .checkingScreenRecordingPermission // <-- check
+      resumeOnboarding: .checkingScreenRecordingPermission, // <-- check
     ) }
 
     await store.send(.application(.didFinishLaunching))
@@ -1481,7 +1481,7 @@ final class OnboardingFeatureTests: XCTestCase {
 }
 
 func onboardingFeatureStore(
-  mutateState: @escaping (inout OnboardingFeature.State) -> Void = { _ in }
+  mutateState: @escaping (inout OnboardingFeature.State) -> Void = { _ in },
 ) -> TestStoreOf<OnboardingFeature.Reducer> {
   var state = OnboardingFeature.State()
   state.windowOpen = true

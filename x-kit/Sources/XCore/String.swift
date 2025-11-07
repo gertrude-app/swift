@@ -23,13 +23,13 @@ public extension String {
     String(
       String(reversed())
         .padding(toLength: length, withPad: "\(pad)", startingAt: 0)
-        .reversed()
+        .reversed(),
     )
   }
 
   func regexReplace(
     _ pattern: some StringProtocol,
-    _ replacement: some StringProtocol
+    _ replacement: some StringProtocol,
   ) -> String {
     replacingOccurrences(of: pattern, with: replacement, options: .regularExpression)
   }
@@ -49,7 +49,7 @@ public extension String {
       in: self,
       options: [],
       range: range,
-      withTemplate: "$1_$2"
+      withTemplate: "$1_$2",
     )
   }
 }

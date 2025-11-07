@@ -86,7 +86,7 @@ public enum Stripe {
         code: String? = nil,
         message: String? = nil,
         docUrl: String? = nil,
-        param: String? = nil
+        param: String? = nil,
       ) {
         self.type = type
         self.code = code
@@ -143,7 +143,7 @@ public enum Stripe {
       customerEmail: String?,
       trialPeriodDays: Int?,
       trialEndBehavior: TrialEndBehavior?,
-      paymentMethodCollection: PaymentMethodCollection?
+      paymentMethodCollection: PaymentMethodCollection?,
     ) {
       self.successUrl = successUrl
       self.cancelUrl = cancelUrl

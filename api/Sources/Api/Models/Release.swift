@@ -21,7 +21,7 @@ struct Release: Codable, Sendable {
     length: Int,
     revision: GitCommitSha,
     requirementPace: Int? = nil,
-    notes: String? = nil
+    notes: String? = nil,
   ) {
     self.id = id
     self.semver = semver

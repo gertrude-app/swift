@@ -20,8 +20,8 @@ final class AppUpdatesFeatureTests: XCTestCase {
       semver: "1.1.0",
       pace: .init(
         nagOn: .epoch.advanced(by: .days(10)),
-        requireOn: .epoch.advanced(by: .days(20))
-      )
+        requireOn: .epoch.advanced(by: .days(20)),
+      ),
     )
 
     let checkInRes = CheckIn_v2.Output.mock {
@@ -65,9 +65,9 @@ final class AppUpdatesFeatureTests: XCTestCase {
             semver: "1.1.0",
             pace: .init(
               nagOn: .epoch.advanced(by: .days(25)), // <-- not in nag period yet
-              requireOn: .epoch.advanced(by: .days(35))
-            )
-          )
+              requireOn: .epoch.advanced(by: .days(35)),
+            ),
+          ),
         ),
         .available
       ),
@@ -78,9 +78,9 @@ final class AppUpdatesFeatureTests: XCTestCase {
             semver: "1.1.0",
             pace: .init(
               nagOn: .epoch.advanced(by: .days(15)), // <-- within nag period
-              requireOn: .epoch.advanced(by: .days(30))
-            )
-          )
+              requireOn: .epoch.advanced(by: .days(30)),
+            ),
+          ),
         ),
         .nag
       ),
@@ -91,10 +91,10 @@ final class AppUpdatesFeatureTests: XCTestCase {
             semver: "1.1.0",
             pace: .init(
               nagOn: .epoch.advanced(by: .days(15)), // <-- within nag period...
-              requireOn: .epoch.advanced(by: .days(30))
-            )
+              requireOn: .epoch.advanced(by: .days(30)),
+            ),
           ),
-          updateNagDismissedUntil: .epoch.advanced(by: .days(21)) // <-- ...but dismissed
+          updateNagDismissedUntil: .epoch.advanced(by: .days(21)), // <-- ...but dismissed
         ),
         .available
       ),
@@ -105,10 +105,10 @@ final class AppUpdatesFeatureTests: XCTestCase {
             semver: "1.1.0",
             pace: .init(
               nagOn: .epoch.advanced(by: .days(5)),
-              requireOn: .epoch.advanced(by: .days(10)) // <-- within require period
-            )
+              requireOn: .epoch.advanced(by: .days(10)), // <-- within require period
+            ),
           ),
-          updateNagDismissedUntil: .epoch.advanced(by: .days(21)) // <-- no effect
+          updateNagDismissedUntil: .epoch.advanced(by: .days(21)), // <-- no effect
         ),
         .require
       ),

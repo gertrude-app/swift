@@ -18,7 +18,7 @@ public extension AWS.Client {
   func signedS3UploadUrl(
     _ objectKey: String,
     contentType: String = "image/jpeg",
-    isPublicRead: Bool = true
+    isPublicRead: Bool = true,
   ) throws -> URL {
     try self._signedS3UploadUrl(objectKey, contentType, isPublicRead)
   }
@@ -29,7 +29,7 @@ public extension AWS.Client {
     accessKeyId: String,
     secretAccessKey: String,
     endpoint: String,
-    bucket: String
+    bucket: String,
   ) -> Self {
     let endpoint = endpoint.replacingOccurrences(of: "https://", with: "")
     return AWS.Client(
@@ -48,17 +48,17 @@ public extension AWS.Client {
           secretAccessKey: secretAccessKey,
           objectKey: objectKey,
           expires: 90,
-          signedHeaders: signedHeaders
+          signedHeaders: signedHeaders,
         )
         guard let url = URL(string: signedUrl) else {
           throw AWS.Error(message: "Error creating URL")
         }
         return url
-      }
+      },
     )
   }
 
   static let mock = AWS.Client(
-    signedS3UploadUrl: { _, _, _ in URL(string: "/mock-url")! }
+    signedS3UploadUrl: { _, _, _ in URL(string: "/mock-url")! },
   )
 }

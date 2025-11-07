@@ -14,7 +14,7 @@ extension Parent {
       id: Id? = nil,
       value: Value? = nil,
       parentId: Parent.Id,
-      deletedAt: Date? = nil
+      deletedAt: Date? = nil,
     ) {
       @Dependency(\.uuid) var uuid
       self.id = id ?? .init(uuid())

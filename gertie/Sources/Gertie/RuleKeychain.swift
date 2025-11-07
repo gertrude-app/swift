@@ -8,7 +8,7 @@ public struct RuleKeychain {
   public init(
     id: UUID = .init(),
     schedule: RuleSchedule? = nil,
-    keys: [RuleKey]
+    keys: [RuleKey],
   ) {
     self.id = id
     self.schedule = schedule

@@ -16,7 +16,7 @@ public struct FilterFlow: Sendable {
     hostname: String? = nil,
     url: String? = nil,
     bundleId: String? = nil,
-    flowType: FlowType? = nil
+    flowType: FlowType? = nil,
   ) {
     self.hostname = hostname
     self.url = url
@@ -103,7 +103,7 @@ public extension FlowDecider {
       hostname: hostname,
       url: url,
       bundleId: bundleId,
-      flowType: flowType
+      flowType: flowType,
     )
   }
 }

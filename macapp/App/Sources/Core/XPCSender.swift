@@ -16,7 +16,7 @@ public extension XPCSender {
     function: String = #function,
     of seconds: Double = 3,
     connection: Connection,
-    operation: @escaping @Sendable (Proxy, CheckedContinuation<T, Error>) -> Void
+    operation: @escaping @Sendable (Proxy, CheckedContinuation<T, Error>) -> Void,
   ) async throws -> T {
     let isolatedData = ActorIsolated<T?>(nil)
     let isolatedError = ActorIsolated<Error?>(nil)

@@ -189,10 +189,10 @@ extension AdminWindowFeature.RootReducer {
         .exec { send in
           await send(.adminWindow(.setExemptionData(
             Failable { try await self.device.nonCurrentUsers() },
-            Failable(result: self.xpc.requestUserTypes())
+            Failable(result: self.xpc.requestUserTypes()),
           )))
         },
-        self.checkHealth(state: &state, action: action)
+        self.checkHealth(state: &state, action: action),
       )
 
     case .adminWindow(.webview(.healthCheck(.recheckClicked))):
@@ -213,7 +213,7 @@ extension AdminWindowFeature.RootReducer {
           // wait for user feature reducer to send rules to filter
           try await self.mainQueue.sleep(for: .milliseconds(10))
           await self.recheckFilter(send)
-        }
+        },
       )
 
     case .checkIn(.failure, _) where state.adminWindow.windowOpen:
@@ -289,14 +289,14 @@ extension AdminWindowFeature.RootReducer {
         state.adminWindow.healthCheck.filterStatus = nil
         return .merge(
           .exec { try await self.startFilter($0) },
-          self.withTimeoutAfter(seconds: 3)
+          self.withTimeoutAfter(seconds: 3),
         )
 
       case .webview(.healthCheck(.installFilterClicked)):
         state.adminWindow.healthCheck.filterStatus = .installing
         return .merge(
           .exec { try await self.installFilter($0) },
-          self.withTimeoutAfter(seconds: 20)
+          self.withTimeoutAfter(seconds: 20),
         )
 
       case .webview(.healthCheck(.repairFilterCommunicationClicked)):
@@ -380,7 +380,7 @@ extension AdminWindowFeature.RootReducer {
         state.adminWindow.healthCheck.filterStatus = nil
         return .merge(
           .exec { try await replaceFilter($0) },
-          self.withTimeoutAfter(seconds: 10)
+          self.withTimeoutAfter(seconds: 10),
         )
 
       case .webview(.healthCheck(.repairFilterCommunicationClicked)):
@@ -393,7 +393,7 @@ extension AdminWindowFeature.RootReducer {
               try await replaceFilter(send)
             }
           },
-          self.withTimeoutAfter(seconds: 10)
+          self.withTimeoutAfter(seconds: 10),
         )
 
       case .webview(.healthCheck(.upgradeAppClicked)):
@@ -485,27 +485,27 @@ extension AdminWindowFeature.RootReducer {
         result: self.network.isConnected()
           ? TaskResult { try await self.api.appCheckIn(filterVersion) }
           : .failure(NetworkClient.NotConnected()),
-        reason: .healthCheck
+        reason: .healthCheck,
       ))
 
       await send(.adminWindow(.setKeystrokeRecordingPermissionOk(
-        keyloggingEnabled ? self.monitoring.keystrokeRecordingPermissionGranted() : true
+        keyloggingEnabled ? self.monitoring.keystrokeRecordingPermissionGranted() : true,
       )))
 
       await send(.adminWindow(.setScreenRecordingPermissionOk(
-        screenRecordingEnabled ? self.monitoring.screenRecordingPermissionGranted() : true
+        screenRecordingEnabled ? self.monitoring.screenRecordingPermissionGranted() : true,
       )))
 
       await send(.adminWindow(.setFullDiskAccessPermissionOk(
-        self.app.hasFullDiskAccess()
+        self.app.hasFullDiskAccess(),
       )))
 
       await send(.adminWindow(.setNotificationsSetting(
-        self.device.notificationsSetting()
+        self.device.notificationsSetting(),
       )))
 
       await send(.adminWindow(.setMacOsUserType(
-        .init { try await self.device.currentMacOsUserType() }
+        .init { try await self.device.currentMacOsUserType() },
       )))
 
       await self.recheckFilter(send)
@@ -518,7 +518,7 @@ extension AdminWindowFeature.RootReducer {
     return .merge(
       main,
       action == .adminWindow(.webview(.healthCheck(action: .recheckClicked)))
-        ? .cancel(id: CancelId.healthCheckTimeout) : .none
+        ? .cancel(id: CancelId.healthCheckTimeout) : .none,
     )
   }
 
@@ -547,11 +547,11 @@ extension AdminWindowFeature.RootReducer {
       switch await self.xpc.requestAck() {
       case .success(let ack) where ack.userId == getuid():
         await send(.adminWindow(.setFilterStatus(
-          .installed(version: ack.version, numUserKeys: ack.numUserKeys)
+          .installed(version: ack.version, numUserKeys: ack.numUserKeys),
         )))
       case .success(let ack):
         await send(.adminWindow(.setFilterStatus(
-          .installed(version: ack.version, numUserKeys: 0)
+          .installed(version: ack.version, numUserKeys: 0),
         )))
       case .failure:
         await send(.adminWindow(.setFilterStatus(.communicationBroken(repairing: repairing))))
@@ -560,11 +560,11 @@ extension AdminWindowFeature.RootReducer {
       switch await self.xpc.requestAck() {
       case .success(let ack) where ack.userId == getuid():
         await send(.adminWindow(.setFilterStatus(
-          .installed(version: ack.version, numUserKeys: ack.numUserKeys)
+          .installed(version: ack.version, numUserKeys: ack.numUserKeys),
         )))
       case .success(let ack):
         await send(.adminWindow(.setFilterStatus(
-          .installed(version: ack.version, numUserKeys: 0)
+          .installed(version: ack.version, numUserKeys: 0),
         )))
       case .failure:
         await send(.adminWindow(.setFilterStatus(.disabled)))
@@ -613,7 +613,7 @@ extension AdminWindowFeature.State.View {
     self.user = rootState.user.data.map { user in .init(
       name: user.name,
       screenshotMonitoringEnabled: user.screenshotsEnabled,
-      keystrokeMonitoringEnabled: user.keyloggingEnabled
+      keystrokeMonitoringEnabled: user.keyloggingEnabled,
     ) }
     self.installedAppVersion = installedVersion
     self.releaseChannel = rootState.appUpdates.releaseChannel
@@ -625,7 +625,7 @@ extension AdminWindowFeature.State.View {
         required: latest.pace.map { pace in
           @Dependency(\.date.now) var now
           return now > pace.nagOn
-        } ?? false
+        } ?? false,
       )
     }
 
@@ -640,7 +640,7 @@ extension AdminWindowFeature.State.View {
         appcastEndpointOverride: UpdaterClient.endpointOverride()?.absoluteString,
         appcastEndpointDefault: UpdaterClient.defaultEndpoint().absoluteString,
         appVersions: featureState.recentAppVersions,
-        webviewDebugging: UserDefaults.standard.bool(forKey: "allowWebviewDebugging")
+        webviewDebugging: UserDefaults.standard.bool(forKey: "allowWebviewDebugging"),
       )
     }
 
@@ -651,7 +651,7 @@ extension AdminWindowFeature.State.View {
           id: $0.id,
           name: $0.name,
           isAdmin: $0.type == .admin,
-          isExempt: userIds.contains($0.id)
+          isExempt: userIds.contains($0.id),
         )
       })
     case (.error, _), (_, .error):

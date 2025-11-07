@@ -34,7 +34,7 @@ struct FinishedView: View {
           tracking: self.$subtitleOffset,
           to: .zero,
           after: .seconds(0.4),
-          for: .seconds(0.5)
+          for: .seconds(0.5),
         )
 
       Spacer()

@@ -13,7 +13,7 @@ public enum Bytes {
   public static func humanReadable(
     _ bytes: Int,
     decimalPlaces: Int? = nil,
-    prefix: Prefix = .binary
+    prefix: Prefix = .binary,
   ) -> String {
     guard bytes > 0 else {
       return "0 bytes"

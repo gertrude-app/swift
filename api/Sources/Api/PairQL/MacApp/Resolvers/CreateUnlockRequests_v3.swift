@@ -12,7 +12,7 @@ extension CreateUnlockRequests_v3: Resolver {
         hostname: $0.hostname,
         ipAddress: $0.ipAddress,
         requestComment: input.comment,
-        status: .pending
+        status: .pending,
       )
     })
 
@@ -22,8 +22,8 @@ extension CreateUnlockRequests_v3: Resolver {
         dashboardUrl: context.dashboardUrl,
         userId: context.child.id,
         userName: context.child.name,
-        requestIds: requests.map(\.id)
-      ))
+        requestIds: requests.map(\.id),
+      )),
     )
 
     return requests.map(\.id.rawValue)
