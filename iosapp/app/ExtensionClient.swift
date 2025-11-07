@@ -11,7 +11,7 @@ struct ExtensionClient: Sendable {
 }
 
 extension ExtensionClient: DependencyKey {
-  public static let liveValue = ExtensionClient(
+  static let liveValue = ExtensionClient(
     requestAuthorization: {
       #if os(iOS)
         do {
@@ -109,7 +109,7 @@ extension ExtensionClient: DependencyKey {
 }
 
 extension ExtensionClient: TestDependencyKey {
-  public static let testValue = ExtensionClient(
+  static let testValue = ExtensionClient(
     requestAuthorization: { .success(()) },
     installFilter: { .success(()) },
     filterRunning: { false },

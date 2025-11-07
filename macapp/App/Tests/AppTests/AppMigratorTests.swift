@@ -22,9 +22,9 @@ class AppMigratorTests: XCTestCase {
     expect(result).toBeNil()
   }
 
-  func testCurrentStoredDataReturned() async {
+  func testCurrentStoredDataReturned() async throws {
     var migrator = self.testMigrator
-    let stateJson = try! JSON.encode(Persistent.State.mock)
+    let stateJson = try JSON.encode(Persistent.State.mock)
     let getString = spySync(on: String.self, returning: stateJson)
     migrator.userDefaults.getString = getString.fn
     let result = await migrator.migrate()
@@ -32,7 +32,7 @@ class AppMigratorTests: XCTestCase {
     expect(getString.calls).toEqual([Persistent.State.storageKey])
   }
 
-  func testMigratesV1Data() async {
+  func testMigratesV1Data() async throws {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
@@ -67,10 +67,10 @@ class AppMigratorTests: XCTestCase {
       user: .empty,
       resumeOnboarding: nil,
     ))
-    expect(setStringInvocations.value).toEqual([
+    expect(setStringInvocations.value).toEqual(try [
       Both(
         "persistent.state.v2",
-        try! JSON.encode(Persistent.V2(
+        JSON.encode(Persistent.V2(
           appVersion: "2.0.2",
           appUpdateReleaseChannel: .stable,
           filterVersion: "2.0.2", // <-- transferred

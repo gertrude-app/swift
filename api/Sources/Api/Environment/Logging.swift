@@ -5,7 +5,7 @@ extension Logger {
 }
 
 private struct NullHandler: LogHandler {
-  public func log(
+  func log(
     level: Logger.Level,
     message: Logger.Message,
     metadata: Logger.Metadata?,

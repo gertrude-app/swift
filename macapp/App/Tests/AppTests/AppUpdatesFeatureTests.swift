@@ -54,7 +54,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
   }
 
   @MainActor
-  func testMenuBarUpdateState() async {
+  func testMenuBarUpdateState() {
     let cases: [(AppUpdatesFeature.State, MenuBarFeature.State.View.Connected.UpdateStatus?)] = [
       (.init(installedVersion: "1.0.0", latestVersion: nil), nil),
       (.init(installedVersion: "1.0.0", latestVersion: .init(semver: "1.1.0")), .available),

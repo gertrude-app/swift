@@ -12,7 +12,7 @@ struct PostmarkClient: Sendable {
 }
 
 extension PostmarkClient: DependencyKey {
-  public static var liveValue: PostmarkClient {
+  static var liveValue: PostmarkClient {
     let env = Env.fromProcess(mode: try? Vapor.Environment.detect())
     let pmClient = XPostmark.Client.live(apiKey: env.postmark.apiKey)
     return .init(

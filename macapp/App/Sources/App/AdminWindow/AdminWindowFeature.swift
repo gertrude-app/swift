@@ -573,8 +573,6 @@ extension AdminWindowFeature.RootReducer {
   }
 }
 
-extension AdminWindowFeature.State {}
-
 extension AdminWindowFeature.State.HealthCheck {
   mutating func setPendingChecksToError() {
     if latestAppVersion == nil { latestAppVersion = .error }

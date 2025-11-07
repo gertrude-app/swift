@@ -42,7 +42,7 @@ struct Column {
     case uuid(UUID)
     case currentTimestamp
 
-    public var sql: String {
+    var sql: String {
       switch self {
       case .boolean(let value):
         value ? "TRUE" : "FALSE"

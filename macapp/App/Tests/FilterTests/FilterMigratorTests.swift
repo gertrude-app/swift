@@ -20,9 +20,9 @@ class FilterMigratorTests: XCTestCase {
     expect(result).toBeNil()
   }
 
-  func testCurrentStoredDataReturned() async {
+  func testCurrentStoredDataReturned() async throws {
     var migrator = self.testMigrator
-    let stateJson = try! JSON.encode(Persistent.State.mock)
+    let stateJson = try JSON.encode(Persistent.State.mock)
     let getString = spySync(on: String.self, returning: stateJson)
     migrator.userDefaults.getString = getString.fn
     let result = await migrator.migrate()
@@ -30,7 +30,7 @@ class FilterMigratorTests: XCTestCase {
     expect(getString.calls).toEqual(["persistent.state.v2"])
   }
 
-  func testMigratesV1ToV2() async {
+  func testMigratesV1ToV2() async throws {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
@@ -73,13 +73,13 @@ class FilterMigratorTests: XCTestCase {
     let result = await migrator.migrate()
     expect(getStringInvocations.value).toEqual(["persistent.state.v2", "persistent.state.v1"])
     expect(result).toEqual(expectedState)
-    expect(setStringInvocations.value).toEqual([Both(
+    expect(setStringInvocations.value).toEqual(try [Both(
       "persistent.state.v2",
-      try! JSON.encode(expectedState),
+      JSON.encode(expectedState),
     )])
   }
 
-  func testMigratesV1Data() async {
+  func testMigratesV1Data() async throws {
     var migrator = self.testMigrator
 
     let setStringInvocations = LockIsolated<[Both<String, String>]>([])
@@ -114,9 +114,9 @@ class FilterMigratorTests: XCTestCase {
     expect(getStringInvocations.value)
       .toEqual(["persistent.state.v2", "persistent.state.v1", "exemptUsers"])
     expect(result).toEqual(expectedState)
-    expect(setStringInvocations.value).toEqual([Both(
+    expect(setStringInvocations.value).toEqual(try [Both(
       "persistent.state.v2",
-      try! JSON.encode(expectedState),
+      JSON.encode(expectedState),
     )])
   }
 }

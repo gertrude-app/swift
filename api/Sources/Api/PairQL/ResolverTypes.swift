@@ -24,7 +24,7 @@ protocol ResolverContext {
 }
 
 protocol PqlErrorConvertible: Error {
-  func pqlError<C: ResolverContext>(in: C) -> PqlError
+  func pqlError(in: some ResolverContext) -> PqlError
 }
 
 // extensions

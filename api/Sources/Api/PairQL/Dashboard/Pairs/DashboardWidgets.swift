@@ -112,7 +112,7 @@ extension DashboardWidgets: NoInputResolver {
         id: user.id,
         name: user.name,
         status: consolidatedChildComputerStatus(user.id, computerUsers),
-        numDevices: computerUsers.filter { $0.childId == user.id }.count,
+        numDevices: computerUsers.count(where: { $0.childId == user.id }),
       ) },
       childActivitySummaries: childActivitySummaries(
         children: children,

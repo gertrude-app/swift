@@ -28,7 +28,7 @@ extension DependencyValues {
 }
 
 extension ConnectedApps: DependencyKey {
-  public static var liveValue: ConnectedApps {
+  static var liveValue: ConnectedApps {
     Task { await AppConnections.shared.start() }
     return ConnectedApps(
       add: { await AppConnections.shared.add($0) },
@@ -42,7 +42,7 @@ extension ConnectedApps: DependencyKey {
 
 #if DEBUG
   extension ConnectedApps: TestDependencyKey {
-    public static var testValue: ConnectedApps {
+    static var testValue: ConnectedApps {
       ConnectedApps(
         add: unimplemented("ConnectedApps.add()"),
         disconnectAll: unimplemented("ConnectedApps.disconnectAll()"),

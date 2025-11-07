@@ -9,8 +9,7 @@ protocol WebsocketProtocol {
   func close(code: WebSocketErrorCode) -> EventLoopFuture<Void>
   var onClose: EventLoopFuture<Void> { get }
   var isClosed: Bool { get }
-  func send<S>(_ text: S) async throws
-    where S: Collection, S.Element == Character
+  func send(_ text: some Collection<Character>) async throws
 }
 
 extension WebSocket: WebsocketProtocol {}

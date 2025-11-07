@@ -11,7 +11,7 @@ import LiveWebSocketClient
 class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
   let app = App()
 
-  public func applicationDidFinishLaunching(_ notification: Notification) {
+  func applicationDidFinishLaunching(_ notification: Notification) {
     self.app.send(.didFinishLaunching)
 
     // NB: wake/sleep notifications are NOT posted to NotificationCenter.default
@@ -58,7 +58,7 @@ class AppDelegate: NSViewController, NSApplicationDelegate, NSWindowDelegate {
     }
   }
 
-  public func applicationWillTerminate(_ notification: Notification) {
+  func applicationWillTerminate(_ notification: Notification) {
     self.app.send(.willTerminate)
     NSWorkspace.shared.notificationCenter.removeObserver(self)
   }

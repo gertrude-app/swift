@@ -13,7 +13,7 @@ extension ApiClient: @retroactive DependencyKey {
       )
     },
     clearUserToken: {
-      userToken.setValue(nil)
+      await userToken.setValue(nil)
     },
     connectUser: { input in
       try await output(
@@ -22,7 +22,7 @@ extension ApiClient: @retroactive DependencyKey {
       )
     },
     createKeystrokeLines: { input in
-      guard accountActive.value else { return }
+      guard await accountActive.value else { return }
       // always produces `.success` if it doesn't throw
       _ = try await output(
         from: CreateKeystrokeLines.self,
@@ -30,24 +30,24 @@ extension ApiClient: @retroactive DependencyKey {
       )
     },
     createSuspendFilterRequest: { input in
-      guard accountActive.value else { return .init() }
+      guard await accountActive.value else { return .init() }
       return try await output(
         from: CreateSuspendFilterRequest_v2.self,
         with: .createSuspendFilterRequest_v2(input),
       )
     },
     createUnlockRequests: { input in
-      guard accountActive.value else { return [] }
+      guard await accountActive.value else { return [] }
       return try await output(
         from: CreateUnlockRequests_v3.self,
         with: .createUnlockRequests_v3(input),
       )
     },
     getUserToken: {
-      userToken.value
+      await userToken.value
     },
     logFilterEvents: { input in
-      guard accountActive.value else { return }
+      guard await accountActive.value else { return }
       _ = try? await output(
         from: LogFilterEvents.self,
         with: .logFilterEvents(input),
@@ -66,8 +66,8 @@ extension ApiClient: @retroactive DependencyKey {
       } else {
         try? await Task.sleep(nanoseconds: 1_000_000) // 1ms
       }
-      guard accountActive.value else { return }
-      let currentToken = userToken.value
+      guard await accountActive.value else { return }
+      let currentToken = await userToken.value
       // NB: prefer bufferedToken
       let token = bufferedToken ?? currentToken
       guard token != nil else { return }
@@ -84,14 +84,14 @@ extension ApiClient: @retroactive DependencyKey {
       )
     },
     reportBrowsers: { input in
-      guard accountActive.value else { return }
+      guard await accountActive.value else { return }
       _ = try await output(
         from: ReportBrowsers.self,
         with: .reportBrowsers(input),
       )
     },
-    setAccountActive: { accountActive.setValue($0) },
-    setUserToken: { userToken.setValue($0) },
+    setAccountActive: { await accountActive.setValue($0) },
+    setUserToken: { await userToken.setValue($0) },
     trustedNetworkTimestamp: {
       try await output(
         from: TrustedTime.self,
@@ -99,7 +99,7 @@ extension ApiClient: @retroactive DependencyKey {
       )
     },
     uploadScreenshot: { data in
-      guard accountActive.value else { throw Error.accountInactive }
+      guard await accountActive.value else { throw Error.accountInactive }
       let signed = try await output(
         from: CreateSignedScreenshotUpload.self,
         with: .createSignedScreenshotUpload(.init(

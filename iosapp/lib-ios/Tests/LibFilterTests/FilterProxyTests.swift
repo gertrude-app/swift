@@ -7,7 +7,7 @@ import XExpect
 @testable import LibFilter
 
 final class FilterProxyTests: XCTestCase {
-  func testLockdownModeBlocking() async throws {
+  func testLockdownModeBlocking() throws {
     let cases: [(host: String?, url: String?, bundleId: String?, expect: FlowVerdict)] =
       [
         ("api.gertrude.app", nil, nil, .allow),

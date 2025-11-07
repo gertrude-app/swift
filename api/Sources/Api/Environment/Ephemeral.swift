@@ -200,14 +200,14 @@ extension DependencyValues {
 }
 
 extension Ephemeral: DependencyKey {
-  public static var liveValue: Ephemeral {
+  static var liveValue: Ephemeral {
     .init()
   }
 }
 
 #if DEBUG
   extension Ephemeral: TestDependencyKey {
-    public static var testValue: Ephemeral {
+    static var testValue: Ephemeral {
       .init()
     }
   }
