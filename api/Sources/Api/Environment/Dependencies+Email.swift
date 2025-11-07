@@ -101,7 +101,9 @@ extension PostmarkClient {
 
   func toSuperAdmin(_ email: XPostmark.Email) {
     Task {
-      try await self._sendEmail(email).loggingFailure()
+      if get(dependency: \.env).mode == .prod {
+        try await self._sendEmail(email).loggingFailure()
+      }
     }
   }
 
