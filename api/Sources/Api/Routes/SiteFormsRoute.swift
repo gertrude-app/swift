@@ -8,7 +8,24 @@ private struct FormData: Codable {
     case fiveThings
   }
 
+  enum App: String, Codable {
+    case mac
+    case ios
+    case podcasts
+    case unsure
+
+    var display: String {
+      switch self {
+      case .mac: "Gertrude Mac"
+      case .ios: "Gertrude iOS"
+      case .podcasts: "Gertrude AM"
+      case .unsure: "(not sure)"
+      }
+    }
+  }
+
   var form: Form
+  var app: App?
   var name: String
   var email: String
   var message: String
@@ -24,7 +41,9 @@ enum SiteFormsRoute {
       throw Abort(.badRequest, reason: "Invalid form data")
     }
 
-    try await spamChallenge(data)
+    if get(dependency: \.env).mode != .dev {
+      try await spamChallenge(data)
+    }
 
     Task {
       await with(dependency: \.slack).internal(.contactForm, data.slackText)
@@ -97,8 +116,9 @@ private func spamChallenge(_ data: FormData) async throws {
 extension FormData {
   var emailBody: String {
     """
-    From: \(self.name), \(self.email)
+    From: \(self.name), \(self.email)<br />
     \(self.subject.map { "Subject: \($0)<br />" } ?? "")
+    \(self.app.map { "App: \($0.display)<br />" } ?? "")
     Message:
     \(self.message.replacingOccurrences(of: "\n", with: "<br />"))
     """
@@ -108,7 +128,8 @@ extension FormData {
     """
     *\(self.form.name) Submission*
     _From:_ `\(self.name), \(self.email)`
-    \(self.subject.map { "_Subject:_ \($0)\n" } ?? "")
+    \(self.subject.map { "_Subject:_ \($0)" } ?? "")
+    \(self.app.map { "_App:_ `\($0.display)`" } ?? "")
     _Message:_
     \(self.message)
     """
