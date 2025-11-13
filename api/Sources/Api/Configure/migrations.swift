@@ -51,6 +51,7 @@ extension Configure {
     app.migrations.add(CreateWebPolicyDomains())
     app.migrations.add(ReencodeIOSBlockRules())
     app.migrations.add(PodcastEvents())
+    app.migrations.add(AddSpotifyBlockGroup())
   }
 }
 

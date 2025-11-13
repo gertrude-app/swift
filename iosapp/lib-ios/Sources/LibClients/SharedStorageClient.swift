@@ -91,6 +91,11 @@ func migrateLegacyStorage() async -> Bool {
   if let v13x: ProtectionMode.Legacy = loadCodable(forKey: .legacyProtectionMode) {
     let current = v13x.toCurrent()
     saveCodable(current, forKey: .protectionMode)
+    var disabledGroups: [BlockGroup] = loadCodable(forKey: .disabledBlockGroups) ?? []
+    if !disabledGroups.contains(.spotifyImages) {
+      disabledGroups.append(.spotifyImages)
+    }
+    saveCodable(disabledGroups, forKey: .disabledBlockGroups)
     await api.logEvent(id: "edd6e55f", detail: "migrated v1.3.x -> 1.5.x")
     return true
   }
@@ -114,7 +119,7 @@ func migrateLegacyStorage() async -> Bool {
 
   // migrate < 1.3.x very old data, from 1.0/1 -> 1.5
   @Dependency(\.device) var device
-  saveCodable([BlockGroup]([]), forKey: .disabledBlockGroups)
+  saveCodable([BlockGroup.spotifyImages], forKey: .disabledBlockGroups)
   if let defaultRules = try? await api.fetchDefaultBlockRules(device.vendorId()) {
     await api.logEvent(id: "c732e0ab", detail: "migrated v1.1.x -> 1.5.x")
     saveCodable(ProtectionMode.normal(defaultRules), forKey: .protectionMode)

@@ -32,6 +32,9 @@ func test_v1_3_to_v15_migration() async throws {
 
   userDefaults.set(jsonData, forKey: "ProtectionMode.v1.3.0")
 
+  let disabledData = try JSONEncoder().encode([BlockGroup.whatsAppFeatures])
+  userDefaults.set(disabledData, forKey: "disabledBlockGroups.v1.3.0")
+
   #expect(userDefaults.data(forKey: "v1.5.0--protection-mode") == nil)
 
   let migrated = await migrateLegacyStorage()
@@ -47,6 +50,10 @@ func test_v1_3_to_v15_migration() async throws {
 
   let decoded = try JSONDecoder().decode(ProtectionMode.self, from: migratedData)
   #expect(decoded == .normal([.targetContains(value: "example.com")]))
+
+  let blockGroupsData = userDefaults.data(forKey: "disabledBlockGroups.v1.3.0")!
+  let blockGroups = try JSONDecoder().decode([BlockGroup].self, from: blockGroupsData)
+  #expect(blockGroups == [.whatsAppFeatures, .spotifyImages]) // <- spotify added
 }
 
 func test_v1_4_testflight_to_v15_migration() async throws {
@@ -75,7 +82,7 @@ func test_v1_0_to_v15_migration() async throws {
 
   let blockGroupsData = userDefaults.data(forKey: "disabledBlockGroups.v1.3.0")!
   let blockGroups = try JSONDecoder().decode([BlockGroup].self, from: blockGroupsData)
-  #expect(blockGroups == [])
+  #expect(blockGroups == [.spotifyImages])
 
   let protectionModeData = userDefaults.data(forKey: "v1.5.0--protection-mode")!
   let protectionMode = try JSONDecoder().decode(ProtectionMode.self, from: protectionModeData)

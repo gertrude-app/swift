@@ -1,5 +1,8 @@
 # Gertrude Parental Controls - Swift Monorepo
 
+NOTE: when writing code, almost NEVER leave comments, unless something is extremely
+non-obvious.
+
 - **Product:** Gertrude - Parental controls and monitoring system for macOS and iOS
 - **Repository:** Swift-based monorepo containing macOS app, iOS app, API server, and
   shared libraries
