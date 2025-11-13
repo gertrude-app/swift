@@ -63,6 +63,66 @@ final class BlockRulesResolverTests: ApiTestCase, @unchecked Sendable {
     expect(defaultRules).toEqual([.urlContains("bad"), .urlContains("cat")])
   }
 
+  func testBlockRulesV2_RetroactiveOptOut_OldVersion() async throws {
+    let spotify = CreateBlockGroups.GroupIds().spotifyImages
+    let gifs = CreateBlockGroups.GroupIds().gifs
+    try await self.db.delete(all: IOSApp.BlockRule.self)
+    try await self.db.create([
+      IOSApp.BlockRule(rule: .urlContains(value: "spotify1"), groupId: .init(spotify)),
+      IOSApp.BlockRule(rule: .urlContains(value: "spotify2"), groupId: .init(spotify)),
+      IOSApp.BlockRule(rule: .urlContains(value: "gif"), groupId: .init(gifs)),
+    ])
+
+    let rulesV130 = try await BlockRules_v2.resolve(
+      with: .init(disabledGroups: [], vendorId: UUID(), version: "1.3.0"),
+      in: .mock,
+    )
+    expect(Set(rulesV130)).toEqual([.urlContains("gif")])
+
+    let rulesV149 = try await BlockRules_v2.resolve(
+      with: .init(disabledGroups: [], vendorId: UUID(), version: "1.4.9"),
+      in: .mock,
+    )
+    expect(Set(rulesV149)).toEqual([.urlContains("gif")])
+  }
+
+  func testBlockRulesV2_NewVersion_ReceivesSpotify() async throws {
+    let spotify = CreateBlockGroups.GroupIds().spotifyImages
+    let gifs = CreateBlockGroups.GroupIds().gifs
+    try await self.db.delete(all: IOSApp.BlockRule.self)
+    try await self.db.create([
+      IOSApp.BlockRule(rule: .urlContains(value: "spotify1"), groupId: .init(spotify)),
+      IOSApp.BlockRule(rule: .urlContains(value: "spotify2"), groupId: .init(spotify)),
+      IOSApp.BlockRule(rule: .urlContains(value: "gif"), groupId: .init(gifs)),
+    ])
+
+    let rulesV150 = try await BlockRules_v2.resolve(
+      with: .init(disabledGroups: [], vendorId: UUID(), version: "1.5.0"),
+      in: .mock,
+    )
+    expect(Set(rulesV150)).toEqual([
+      .urlContains("spotify1"),
+      .urlContains("spotify2"),
+      .urlContains("gif"),
+    ])
+  }
+
+  func testBlockRulesV2_NewVersion_CanOptOutOfSpotify() async throws {
+    let spotify = CreateBlockGroups.GroupIds().spotifyImages
+    let gifs = CreateBlockGroups.GroupIds().gifs
+    try await self.db.delete(all: IOSApp.BlockRule.self)
+    try await self.db.create([
+      IOSApp.BlockRule(rule: .urlContains(value: "spotify1"), groupId: .init(spotify)),
+      IOSApp.BlockRule(rule: .urlContains(value: "gif"), groupId: .init(gifs)),
+    ])
+
+    let rules = try await BlockRules_v2.resolve(
+      with: .init(disabledGroups: [.spotifyImages], vendorId: UUID(), version: "1.5.0"),
+      in: .mock,
+    )
+    expect(Set(rules)).toEqual([.urlContains("gif")])
+  }
+
   // MARK: v1 legacy tests below
 
   func testBlockRules_v1() async throws {

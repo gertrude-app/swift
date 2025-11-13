@@ -7,6 +7,7 @@ public enum BlockGroup: String {
   case ads
   case whatsAppFeatures
   case appleWebsite
+  case spotifyImages
 }
 
 public extension [BlockGroup] {
@@ -20,6 +21,7 @@ public extension [BlockGroup] {
       .ads,
       .whatsAppFeatures,
       .appleWebsite,
+      .spotifyImages,
     ]
   }
 }

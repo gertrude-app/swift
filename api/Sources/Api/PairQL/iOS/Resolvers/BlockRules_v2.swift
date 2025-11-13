@@ -7,10 +7,17 @@ import IOSRoute
 extension BlockRules_v2: Resolver {
   static func resolve(with input: Input, in ctx: Context) async throws -> Output {
     with(dependency: \.logger).info("BlockRules_v2: \(input)")
-    let groupIds = input.disabledGroups.map { Postgres.Data.uuid($0.blockGroupId) }
+
+    var disabledGroups = input.disabledGroups
+    if let version = Semver(input.version),
+       version < Semver(major: 1, minor: 5, patch: 0) {
+      disabledGroups.append(.spotifyImages)
+    }
+
+    let disabledGroupIds = disabledGroups.map { Postgres.Data.uuid($0.blockGroupId) }
     return try await IOSApp.BlockRule.query()
       .where(.or(
-        .not(.isNull(.groupId)) .&& .groupId |!=| groupIds,
+        .not(.isNull(.groupId)) .&& .groupId |!=| disabledGroupIds,
         .vendorId == (input.vendorId == .init(.zero) ? .init() : input.vendorId),
       ))
       .orderBy(.id, .asc)
@@ -33,6 +40,7 @@ public extension GertieIOS.BlockGroup {
     case .ads: ids.ads
     case .whatsAppFeatures: ids.whatsAppFeatures
     case .appleWebsite: ids.appleWebsite
+    case .spotifyImages: ids.spotifyImages
     }
   }
 
@@ -46,6 +54,7 @@ public extension GertieIOS.BlockGroup {
     case .ads: "Ads"
     case .whatsAppFeatures: "WhatsApp"
     case .appleWebsite: "apple.com"
+    case .spotifyImages: "Spotify images"
     }
   }
 }

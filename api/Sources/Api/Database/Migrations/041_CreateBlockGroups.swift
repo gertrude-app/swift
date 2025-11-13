@@ -12,6 +12,7 @@ struct CreateBlockGroups: GertieMigration {
     let gifs = UUID(uuidString: "087628b2-742c-4164-a3cc-717c4ac72c1a")!
     let spotlightSearches = UUID(uuidString: "df7fb156-488a-497b-aa12-c585d3fa4e6c")!
     let whatsAppFeatures = UUID(uuidString: "8e337c3c-2efb-404a-8eb3-781661231844")!
+    let spotifyImages = UUID(uuidString: "ee242fc6-07c7-4694-a3ce-0323b0ddc1fe")!
   }
 
   let ids = GroupIds()

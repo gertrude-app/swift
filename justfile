@@ -29,6 +29,9 @@ watch-ios:
 iosapp:
   @open iosapp/Gertrude-iOS.xcodeproj
 
+iosconfig:
+  @echo "LOCAL_API_URL = https:/\$()/REPLACE.ngrok-free.app" > iosapp/config/Local.xcconfig
+
 # api
 
 watch-api:

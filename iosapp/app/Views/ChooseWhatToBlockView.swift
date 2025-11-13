@@ -12,7 +12,7 @@ struct ChooseWhatToBlockView: View {
   @State private var iconOffset = Vector(x: 0, y: 20)
   @State private var titleOffset = Vector(x: 0, y: 20)
   @State private var paragraphOffset = Vector(x: 0, y: 20)
-  @State private var itemOffsets = Array(repeating: Vector(x: 0, y: 40), count: 8)
+  @State private var itemOffsets = Array(repeating: Vector(x: 0, y: 40), count: 9)
   @State private var buttonOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
   @State private var showTooltip = false
@@ -318,6 +318,7 @@ extension BlockGroup {
     case .gifs: "GIFs"
     case .spotlightSearches: "Spotlight"
     case .whatsAppFeatures: "WhatsApp"
+    case .spotifyImages: "Spotify images"
     }
   }
 
@@ -331,6 +332,7 @@ extension BlockGroup {
     case .gifs: "MessagesGIFs"
     case .spotlightSearches: "SpotlightSearch"
     case .whatsAppFeatures: "BadWhatsAppFeatures"
+    case .spotifyImages: "SpotifyImages"
     }
   }
 
@@ -344,6 +346,7 @@ extension BlockGroup {
     case .gifs: "Block GIFs in Messages #images, WhatsApp, Signal, and more."
     case .spotlightSearches: "Block internet searches through Spotlight."
     case .whatsAppFeatures: "Block some parts of WhatsApp, including media content."
+    case .spotifyImages: "Block most album artwork and images from the Spotify app."
     }
   }
 
@@ -365,6 +368,8 @@ extension BlockGroup {
       "The built in search bar in iOS (called Spotlight) allows searching for information and images from the internet. This group stops all spotlight internet searches. On-device data searches are not blocked."
     case .whatsAppFeatures:
       "This group attempts to block some of aspects of the WhatsApp app, including the media channels. It is experimental, and does not guarantee by any means that the app will be safe for children, but it does reduce some risks."
+    case .spotifyImages:
+      "Blocks images displayed in the Spotify app, including album artwork, artist photos, and playlist covers. This helps prevent exposure to potentially explicit or inappropriate imagery while still allowing music playback."
     }
   }
 }

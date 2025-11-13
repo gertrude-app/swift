@@ -278,7 +278,7 @@ final class IOSReducerTests: XCTestCase {
 
     data = userDefaults.data(forKey: "disabledBlockGroups.v1.3.0")!
     let disabled = try JSONDecoder().decode([BlockGroup].self, from: data)
-    expect(disabled).toEqual([])
+    expect(disabled).toEqual([.spotifyImages])
 
     await store.send(.programmatic(.appWillTerminate))
   }
@@ -321,7 +321,7 @@ final class IOSReducerTests: XCTestCase {
 
     data = userDefaults.data(forKey: "disabledBlockGroups.v1.3.0")!
     let disabled = try JSONDecoder().decode([BlockGroup].self, from: data)
-    expect(disabled).toEqual(disabledGroups)
+    expect(disabled).toEqual(disabledGroups + [.spotifyImages])
 
     await store.send(.programmatic(.appWillTerminate))
   }
