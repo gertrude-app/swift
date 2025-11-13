@@ -15,7 +15,6 @@ public struct IOSReducer {
     @Dependency(\.device) var device
     @Dependency(\.filter) var filter
     @Dependency(\.systemExtension) var systemExtension
-    @Dependency(\.sharedUserDefaults) var userDefaults
     @Dependency(\.sharedStorage) var sharedStorage
     @Dependency(\.date.now) var now
     @Dependency(\.locale) var locale
@@ -600,27 +599,28 @@ public struct IOSReducer {
       return .merge(
         // detect current state and set screen
         .run { [deps = self.deps] send in
+          // controller proxy also tries to migrate, but we do it here as safeguard
+          if await deps.sharedStorage.migrateLegacyData() {
+            deps.log("migration performed by app", "5258e97c")
+          }
           let filterRunning = await deps.systemExtension.filterRunning()
           let disabledBlockGroups = deps.sharedStorage.loadDisabledBlockGroups()
-          let connection = deps.sharedStorage.loadAccountConnection()
-          let hasLegacyData = deps.userDefaults.loadData(forKey: .legacyStorageKey) != nil
-          switch (filterRunning, disabledBlockGroups, hasLegacyData) {
-          case (true, .some, _):
+          switch (filterRunning, disabledBlockGroups) {
+          case ( /* filter running: */ true, .some):
+            let connection = deps.sharedStorage.loadAccountConnection()
             await send(.programmatic(.setScreen(.running(
               state: connection.map { .connected(childName: $0.childName) } ?? .notConnected,
             ))))
             if let token = connection?.token {
               await deps.api.setAuthToken(token)
             }
-          case (false, .some, _):
+          case ( /* filter running: */ false, .none):
+            await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+          case ( /* filter running: */ false, .some):
             // NB: if they remove the filter via Settings then launch app, we'll get here
             deps.log("non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
-          case (false, .none, _):
-            await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
-          case (_, .none, true):
-            try await deps.handleUpgrade(send: send)
-          case (true, .none, false):
+          case ( /* filter running: */ true, .none):
             deps.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
           }
@@ -775,23 +775,5 @@ public struct IOSReducer {
     default:
       return .none
     }
-  }
-}
-
-extension IOSReducer.Deps {
-  // TODO: need to handle two upgrades, > 1.3.x, and > 1.5.x
-  func handleUpgrade(send: Send<IOSReducer.Action>) async throws {
-    self.log("handling upgrade", "180e2347")
-    self.sharedStorage.saveDisabledBlockGroups([])
-    let defaultRules = try? await self.api.fetchDefaultBlockRules(self.device.vendorId())
-    if let defaultRules {
-      self.sharedStorage.saveProtectionMode(.normal(defaultRules))
-    } else {
-      self.log("unexpected upgrade rule failure", "8d4a445b")
-      self.sharedStorage.saveProtectionMode(.onboarding(BlockRule.Legacy.defaults.map(\.current)))
-    }
-    self.userDefaults.removeObject(forKey: .legacyStorageKey)
-    await send(.programmatic(.setScreen(.running(state: .notConnected))))
-    try await self.filter.send(notification: .rulesChanged)
   }
 }

@@ -90,6 +90,14 @@ let package = Package(
       ],
     ),
     .testTarget(
+      name: "LibClientsTests",
+      dependencies: [
+        "LibClients",
+        "LibCore",
+        .product(name: "GertieIOS", package: "gertie"),
+      ],
+    ),
+    .testTarget(
       name: "LibControllerTests",
       dependencies: [
         "LibController",
