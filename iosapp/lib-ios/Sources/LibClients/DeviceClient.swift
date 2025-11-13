@@ -80,13 +80,13 @@ extension DeviceClient: DependencyKey {
         iOSVersion: { await MainActor.run {
           UIDevice.current.systemVersion
         }},
-        vendorId: { await MainActor.run {
-          UIDevice.current.identifierForVendor
-        }},
-        data: { await MainActor.run { .init(
+        vendorId: {
+          await getStableVendorId()
+        },
+        data: { await MainActor.run { await .init(
           type: UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone,
           iOSVersion: UIDevice.current.systemVersion,
-          vendorId: UIDevice.current.identifierForVendor,
+          vendorId: getStableVendorId(),
         ) }},
         batteryLevel: { @MainActor in
           UIDevice.current.isBatteryMonitoringEnabled = true
@@ -114,6 +114,24 @@ extension DeviceClient: DependencyKey {
       availableDiskSpaceInBytes: { 1_000_000_000 },
     )
   #endif
+}
+
+@Sendable func getStableVendorId() async -> UUID? {
+  @Dependency(\.keychain) var keychain
+  if let stored = keychain.loadVendorId() {
+    return stored
+  }
+  let current: UUID? = await MainActor.run {
+    #if os(iOS)
+      UIDevice.current.identifierForVendor
+    #else
+      UUID()
+    #endif
+  }
+  if let current {
+    keychain.save(vendorId: current)
+  }
+  return current
 }
 
 @Sendable func getAvailableDiskSpaceInBytes() -> Int? {
