@@ -31,18 +31,6 @@ public extension String {
   static var gertrudeApi: String {
     (try? Configuration.value(for: "API_URL")) ?? "https://api.gertrude.app"
   }
-
-  static var protectionModeStorageKey: String {
-    "ProtectionMode.v1.3.0"
-  }
-
-  static var connectionStorageKey: String {
-    "ChildIOSDeviceData.v1.5.0"
-  }
-
-  static var disabledBlockGroupsStorageKey: String {
-    "disabledBlockGroups.v1.3.0"
-  }
 }
 
 enum Configuration {

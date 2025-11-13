@@ -21,6 +21,8 @@ public struct SharedStorageClient: Sendable {
 
   public var loadDebugLogs: @Sendable () -> [String]?
   public var saveDebugLogs: @Sendable ([String]) -> Void
+
+  public var migrateLegacyData: @Sendable () async -> Bool = { false }
 }
 
 @DependencyClient
@@ -35,8 +37,10 @@ public struct SharedStorageReaderClient: Sendable {
 private enum Key: String {
   case accountConnection = "v1.5.0--account-connection"
   case debugLogs = "v1.5.0--debug-logs"
-  case protectionMode = "ProtectionMode.v1.3.0"
+  case legacyProtectionMode = "ProtectionMode.v1.3.0"
+  case protectionMode = "v1.5.0--protection-mode"
   case disabledBlockGroups = "disabledBlockGroups.v1.3.0"
+  case legacyV1StorageKey = "blockRules.v1"
   case firstLaunchDate
 }
 
@@ -54,6 +58,7 @@ extension SharedStorageClient: DependencyKey {
       saveFirstLaunchDate: { saveDate($0, forKey: .firstLaunchDate) },
       loadDebugLogs: reader.loadDebugLogs,
       saveDebugLogs: { saveCodable($0, forKey: .debugLogs) },
+      migrateLegacyData: { await migrateLegacyStorage() },
     )
   }
 }
@@ -74,6 +79,54 @@ extension SharedStorageReaderClient: DependencyKey {
     loadFirstLaunchDate: { loadDate(forKey: .firstLaunchDate) },
     loadDebugLogs: { loadCodable(forKey: .debugLogs) },
   )
+}
+
+func migrateLegacyStorage() async -> Bool {
+  if UserDefaults.gertrude.data(forKey: Key.protectionMode.rawValue) != nil {
+    return false // fast path, they have current data, we're done
+  }
+  @Dependency(\.api) var api
+
+  // migrate 1.3.x data to 1.5.x
+  if let v13x: ProtectionMode.Legacy = loadCodable(forKey: .legacyProtectionMode) {
+    let current = v13x.toCurrent()
+    saveCodable(current, forKey: .protectionMode)
+    await api.logEvent(id: "edd6e55f", detail: "migrated v1.3.x -> 1.5.x")
+    return true
+  }
+
+  // 1.4.x testflight users had new data in old location
+  if let v14x: ProtectionMode = loadCodable(forKey: .legacyProtectionMode) {
+    saveCodable(v14x, forKey: .protectionMode)
+    await api.logEvent(id: "90442103", detail: "migrated v1.4.x (TestFlight) -> 1.5.x")
+    return true
+  }
+
+  if UserDefaults.gertrude.data(forKey: Key.legacyProtectionMode.rawValue) != nil {
+    await api.logEvent(id: "fdab6cff", detail: "unexpected migration error")
+    return false
+  }
+
+  if UserDefaults.gertrude.data(forKey: Key.legacyV1StorageKey.rawValue) == nil {
+    // no data, nothing to migrate, probably initial launch
+    return false
+  }
+
+  // migrate < 1.3.x very old data, from 1.0/1 -> 1.5
+  @Dependency(\.device) var device
+  saveCodable([BlockGroup]([]), forKey: .disabledBlockGroups)
+  if let defaultRules = try? await api.fetchDefaultBlockRules(device.vendorId()) {
+    await api.logEvent(id: "c732e0ab", detail: "migrated v1.1.x -> 1.5.x")
+    saveCodable(ProtectionMode.normal(defaultRules), forKey: .protectionMode)
+  } else {
+    saveCodable(
+      // setting to .onboarding will produce faster api re-check to recover from this state
+      ProtectionMode.onboarding(BlockRule.Legacy.defaults.map(\.current)),
+      forKey: .protectionMode,
+    )
+    await api.logEvent(id: "8d4a445b", detail: "error migrating v1.1.x -> 1.5.x")
+  }
+  return true
 }
 
 private func saveCodable(_ value: some Codable, forKey key: Key) {
@@ -106,5 +159,24 @@ public extension DependencyValues {
   var sharedStorageReader: SharedStorageReaderClient {
     get { self[SharedStorageReaderClient.self] }
     set { self[SharedStorageReaderClient.self] = newValue }
+  }
+}
+
+extension ProtectionMode {
+  enum Legacy: Codable {
+    case onboarding([BlockRule.Legacy])
+    case normal([BlockRule.Legacy])
+    case emergencyLockdown
+
+    func toCurrent() -> ProtectionMode {
+      switch self {
+      case .onboarding(let rules):
+        .onboarding(rules.map(\.current))
+      case .normal(let rules):
+        .normal(rules.map(\.current))
+      case .emergencyLockdown:
+        .emergencyLockdown
+      }
+    }
   }
 }

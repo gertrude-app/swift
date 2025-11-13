@@ -46,6 +46,16 @@ public final class ControllerProxy: Sendable {
       }
     #endif
     self.deps.logger.log("Initialized ControllerProxy")
+
+    // proxy init handles migration, b/c app target might never launch after update
+    // app target .appDidLaunch also attempts migration, but it's idempotent
+    Task {
+      if await self.deps.storage.migrateLegacyData() {
+        self.deps.logger.log("migration performed by controller")
+        await self.deps.api.logEvent(id: "99bacaaa", detail: "migration performed by controller")
+        self.notifyRulesChanged.withValue { $0() }
+      }
+    }
   }
 
   public func startFilter() -> Task<Void, Never> {

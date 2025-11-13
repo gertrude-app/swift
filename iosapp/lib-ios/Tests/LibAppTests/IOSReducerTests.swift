@@ -1,12 +1,12 @@
 @preconcurrency import Combine
 import ComposableArchitecture
 import GertieIOS
-import LibClients
 import LibCore
 import XCTest
 import XExpect
 
 @testable import LibApp
+@testable import LibClients
 
 final class IOSReducerTests: XCTestCase {
   @MainActor
@@ -64,7 +64,6 @@ final class IOSReducerTests: XCTestCase {
       $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
       $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
       $0.sharedStorage.loadFirstLaunchDate = { @Sendable in nil }
-      $0.sharedUserDefaults.loadData = { @Sendable _ in nil }
       $0.sharedStorage.saveFirstLaunchDate = { @Sendable value in
         storedDates.withValue { $0.append(value) }
       }
@@ -243,10 +242,9 @@ final class IOSReducerTests: XCTestCase {
   @MainActor
   func testUpgradeFromV110() async throws {
     let defaultBlocksInvocations = LockIsolated(0)
-    let savedProtectionModes = LockIsolated<[ProtectionMode]>([])
-    let savedDisabledBlockGroups = LockIsolated<[[BlockGroup]]>([])
-    let removeObjectInvocations = LockIsolated<[String]>([])
-    let notifyFilterInvocations = LockIsolated<[FilterClient.Notification]>([])
+    let userDefaults = UserDefaults.gertrude
+    userDefaults.removePersistentDomain(forName: .gertrudeGroupId)
+    userDefaults.set(Data([0x01]), forKey: "blockRules.v1") // <-- V1 data
 
     let store = TestStore(initialState: IOSReducer.State()) {
       IOSReducer()
@@ -257,28 +255,10 @@ final class IOSReducerTests: XCTestCase {
         defaultBlocksInvocations.withValue { $0 += 1 }
         return [.urlContains(value: "GIFs")]
       }
-      $0.sharedUserDefaults.removeObject = { @Sendable key in
-        removeObjectInvocations.withValue { $0.append(key) }
-      }
+      $0.sharedStorage = .liveValue
+      $0.sharedStorage.saveFirstLaunchDate(.reference)
+
       $0.systemExtension.filterRunning = { true } // <-- filter running
-      $0.sharedStorage.loadFirstLaunchDate = { @Sendable in .reference } // <-- v1.1.0 launch date
-      $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
-      $0.sharedUserDefaults.loadData = { @Sendable key in
-        if key == .legacyStorageKey {
-          "[]".data(using: .utf8) // <-- has V1 legacy data
-        } else {
-          nil
-        }
-      }
-      $0.sharedStorage.saveDisabledBlockGroups = { @Sendable value in
-        savedDisabledBlockGroups.withValue { $0.append(value) }
-      }
-      $0.sharedStorage.saveProtectionMode = { @Sendable value in
-        savedProtectionModes.withValue { $0.append(value) }
-      }
-      $0.filter.send = { @Sendable notification in
-        notifyFilterInvocations.withValue { $0.append(notification) }
-      }
     }
 
     await store.send(.programmatic(.appDidLaunch))
@@ -291,11 +271,57 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .running(state: .notConnected)
     }
 
-    expect(removeObjectInvocations.value).toEqual([.legacyStorageKey])
     expect(defaultBlocksInvocations.value).toEqual(1)
-    expect(notifyFilterInvocations.value).toEqual([.rulesChanged])
-    expect(savedDisabledBlockGroups.value).toEqual([[]])
-    expect(savedProtectionModes.value).toEqual([.normal([.urlContains(value: "GIFs")])])
+    var data = userDefaults.data(forKey: "v1.5.0--protection-mode")!
+    let protection = try JSONDecoder().decode(ProtectionMode.self, from: data)
+    expect(protection).toEqual(.normal([.urlContains(value: "GIFs")]))
+
+    data = userDefaults.data(forKey: "disabledBlockGroups.v1.3.0")!
+    let disabled = try JSONDecoder().decode([BlockGroup].self, from: data)
+    expect(disabled).toEqual([])
+
+    await store.send(.programmatic(.appWillTerminate))
+  }
+
+  @MainActor
+  func testUpgradeFromV13x() async throws {
+    let userDefaults = UserDefaults.gertrude
+    userDefaults.removePersistentDomain(forName: .gertrudeGroupId)
+
+    let legacyRules = ProtectionMode.Legacy.normal([.targetContains("v13-example.com")])
+    let legacyData = try JSONEncoder().encode(legacyRules)
+    userDefaults.set(legacyData, forKey: "ProtectionMode.v1.3.0")
+    let disabledGroups = [BlockGroup.gifs, BlockGroup.ads]
+    let disabledData = try JSONEncoder().encode(disabledGroups)
+    userDefaults.set(disabledData, forKey: "disabledBlockGroups.v1.3.0")
+
+    let store = TestStore(initialState: IOSReducer.State()) {
+      IOSReducer()
+    } withDependencies: {
+      $0.device.deleteCacheFillDir = {}
+      $0.api.logEvent = { @Sendable _, _ in }
+      $0.sharedStorage = .liveValue
+      $0.sharedStorage.saveFirstLaunchDate(.reference)
+      $0.systemExtension.filterRunning = { true }
+    }
+
+    await store.send(.programmatic(.appDidLaunch))
+
+    await store.receive(.programmatic(.setFirstLaunch(.reference))) {
+      $0.onboarding.firstLaunch = .reference
+    }
+
+    await store.receive(.programmatic(.setScreen(.running(state: .notConnected)))) {
+      $0.screen = .running(state: .notConnected)
+    }
+
+    var data = userDefaults.data(forKey: "v1.5.0--protection-mode")!
+    let protection = try JSONDecoder().decode(ProtectionMode.self, from: data)
+    expect(protection).toEqual(.normal([.targetContains(value: "v13-example.com")]))
+
+    data = userDefaults.data(forKey: "disabledBlockGroups.v1.3.0")!
+    let disabled = try JSONDecoder().decode([BlockGroup].self, from: data)
+    expect(disabled).toEqual(disabledGroups)
 
     await store.send(.programmatic(.appWillTerminate))
   }
@@ -315,7 +341,6 @@ final class IOSReducerTests: XCTestCase {
         struct TestError: Error {}
         throw TestError()
       }
-      $0.sharedUserDefaults.loadData = { @Sendable _ in nil }
       $0.sharedStorage.loadFirstLaunchDate = { @Sendable in nil }
       $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
       $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
@@ -425,7 +450,6 @@ final class IOSReducerTests: XCTestCase {
       }
       $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in [] }
       $0.sharedStorage.loadFirstLaunchDate = { @Sendable in .distantPast }
-      $0.sharedUserDefaults.loadData = { @Sendable _ in nil }
       $0.systemExtension.filterRunning = { true }
     }
 
@@ -453,7 +477,6 @@ final class IOSReducerTests: XCTestCase {
       // but no sign of onboarding
       $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
       $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
-      $0.sharedUserDefaults.loadData = { @Sendable _ in nil } // legacy data
     }
 
     await store.send(.programmatic(.appDidLaunch))
