@@ -32,10 +32,14 @@ public final class ControllerProxy: Sendable {
     case appShake
   }
 
-  private let deps = Deps()
-  private let lastRefresh = LockIsolated<Date>(.distantPast)
-  private let managedSettings = LockIsolated<ManagedSettingsStore?>(nil)
+  let deps = Deps()
+  let lastRefresh = LockIsolated<Date>(.distantPast)
+  let managedSettings = LockIsolated<ManagedSettingsStore?>(nil)
   public let notifyRulesChanged = LockIsolated<() -> Void>(unimplemented("notifyRulesChanged"))
+
+  #if DEBUG
+    let migrateTask = LockIsolated<Task<Void, Never>?>(nil)
+  #endif
 
   public init() {
     self.deps.logger.setPrefix("CONTROLLER PROXY")
@@ -49,13 +53,17 @@ public final class ControllerProxy: Sendable {
 
     // proxy init handles migration, b/c app target might never launch after update
     // app target .appDidLaunch also attempts migration, but it's idempotent
-    Task {
+    let task = Task {
       if await self.deps.storage.migrateLegacyData() {
         self.deps.logger.log("migration performed by controller")
         await self.deps.api.logEvent(id: "99bacaaa", detail: "migration performed by controller")
         self.notifyRulesChanged.withValue { $0() }
       }
     }
+
+    #if DEBUG
+      self.migrateTask.withValue { $0 = task }
+    #endif
   }
 
   public func startFilter() -> Task<Void, Never> {
@@ -99,6 +107,38 @@ public final class ControllerProxy: Sendable {
     }
   }
 
+  func refreshNormalRules(_ vendorId: UUID) async -> Bool {
+    self.managedSettings.setValue(nil)
+    guard let disabled = self.deps.storage.loadDisabledBlockGroups() else {
+      self.deps.logger.log("no stored block groups, skipping rule update")
+      return false
+    }
+
+    do {
+      self.deps.logger.log("fetching rules from API")
+      let apiRules = try await deps.api.fetchBlockRules(vendorId, disabled)
+
+      guard apiRules.count > 0 else {
+        self.deps.logger.log("unexpected empty rules from api")
+        return false
+      }
+
+      let savedRules = self.deps.storage.loadProtectionMode()?.normalRules
+      if apiRules != savedRules {
+        self.deps.logger.log("saving changed rules")
+        self.deps.storage.saveProtectionMode(.normal(apiRules))
+        self.notifyRulesChanged.withValue { $0() }
+        return true
+      } else {
+        self.deps.logger.log("rules unchanged")
+        return false
+      }
+    } catch {
+      self.deps.logger.log("failed to fetch block rules: \(error)")
+      return false
+    }
+  }
+
   func refreshConnectedRules(_ vendorId: UUID, _ token: UUID) async -> Bool {
     do {
       self.deps.logger.log("fetching rules from API")
@@ -137,38 +177,6 @@ public final class ControllerProxy: Sendable {
     }
   }
 
-  func refreshNormalRules(_ vendorId: UUID) async -> Bool {
-    self.managedSettings.setValue(nil)
-    guard let disabled = self.deps.storage.loadDisabledBlockGroups() else {
-      self.deps.logger.log("no stored block groups, skipping rule update")
-      return false
-    }
-
-    do {
-      self.deps.logger.log("fetching rules from API")
-      let apiRules = try await deps.api.fetchBlockRules(vendorId, disabled)
-
-      guard apiRules.count > 0 else {
-        self.deps.logger.log("unexpected empty rules from api")
-        return false
-      }
-
-      let savedRules = self.deps.storage.loadProtectionMode()?.normalRules
-      if apiRules != savedRules {
-        self.deps.logger.log("saving changed rules")
-        self.deps.storage.saveProtectionMode(.normal(apiRules))
-        self.notifyRulesChanged.withValue { $0() }
-        return true
-      } else {
-        self.deps.logger.log("rules unchanged")
-        return false
-      }
-    } catch {
-      self.deps.logger.log("failed to fetch block rules: \(error)")
-      return false
-    }
-  }
-
   @discardableResult
   public func stopFilter(reason: NEProviderStopReason) -> Task<Void, Never> {
     self.deps.logger.log("stopping filter")
@@ -182,6 +190,10 @@ public final class ControllerProxy: Sendable {
     // that according to it's incremental "timer", it thinks it's time to update the rules
     // unless the flow is the refresh rules sentinel, which means the app was shaken
     let flow = self.toFilterFlow(systemFlow)
+    return await self.handleFilterFlow(flow)
+  }
+
+  func handleFilterFlow(_ flow: FilterFlow) async -> NEFilterControlVerdict {
     if flow.hostname == MagicStrings.refreshRulesSentinalHostname {
       self.deps.logger.log("refresh rules requested from app")
       let rulesChanged = await self.refreshRules(reason: .appShake)
@@ -242,9 +254,23 @@ extension ConnectedRules_b1.Output {
     }
   }
 
-  public class NEFilterControlVerdict {
-    public class func allow(withUpdateRules: Bool) -> NEFilterControlVerdict { .init() }
-    public class func drop(withUpdateRules: Bool) -> NEFilterControlVerdict { .init() }
-    public class func updateRules() -> NEFilterControlVerdict { .init() }
+  public class NEFilterControlVerdict: Equatable {
+    private enum Repr: Equatable {
+      case allow(withUpdateRules: Bool)
+      case drop(withUpdateRules: Bool)
+      case updateRules
+    }
+
+    private let repr: Repr
+    private init(_ repr: Repr) { self.repr = repr }
+    public class func allow(withUpdateRules: Bool)
+      -> NEFilterControlVerdict { .init(.allow(withUpdateRules: withUpdateRules)) }
+    public class func drop(withUpdateRules: Bool)
+      -> NEFilterControlVerdict { .init(.drop(withUpdateRules: withUpdateRules)) }
+    public class func updateRules() -> NEFilterControlVerdict { .init(.updateRules) }
+
+    public static func == (lhs: NEFilterControlVerdict, rhs: NEFilterControlVerdict) -> Bool {
+      lhs.repr == rhs.repr
+    }
   }
 #endif
