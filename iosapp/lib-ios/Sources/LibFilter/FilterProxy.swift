@@ -88,9 +88,13 @@ public struct FilterProxy {
   // system puts the process to sleep after inactivity, then it wakes up on a new thread
   // so it's probably the correct mental model to consider this a single-threaded
   public mutating func decideFlow(_ systemFlow: NEFilterFlow) -> FlowVerdict {
+    let flow = self.toFilterFlow(systemFlow)
+    return self.decideFilterFlow(flow)
+  }
+
+  mutating func decideFilterFlow(_ flow: FilterFlow) -> FlowVerdict {
     self.count &+= 1 // wrapping add
 
-    let flow = self.toFilterFlow(systemFlow)
     if flow.hostname == MagicStrings.readRulesSentinalHostname {
       self.loadAndSetRules()
       return .drop
