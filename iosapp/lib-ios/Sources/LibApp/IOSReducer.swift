@@ -64,13 +64,7 @@ public struct IOSReducer {
     case .sheetDismissed:
       return .none
 
-    case .receivedShake where state.screen.isRunning && state.destination == nil:
-      // TODO: save this somewhere...
-      // let allLogs = self.deps.sharedStorage.loadDebugLogs() ?? []
-      // for (i, logs) in allLogs.chunked(into: 6).enumerated() {
-      //   os_log("[G•] APP dump memory logs %d:\n%{public}s", i + 1, logs.joined(separator: "\n"))
-      // }
-
+    case .settingsBtnTapped:
       state.destination = .debug(.init(timesShaken: 1))
       return .none
 
