@@ -1,276 +1,287 @@
-import ConcurrencyExtras
 import Dependencies
+import Foundation
 import LibCore
-import XCTest
+import Testing
 import XExpect
 
 @testable import LibFilter
 
-final class FilterProxyTests: XCTestCase {
-  func testLockdownModeBlocking() throws {
-    let cases: [(host: String?, url: String?, bundleId: String?, expect: FlowVerdict)] =
-      [
-        ("api.gertrude.app", nil, nil, .allow),
-        (nil, "api.gertrude.app", nil, .allow),
-        (nil, "https://api.gertrude.app", nil, .allow),
-        (nil, "anysite.com", String.gertrudeBundleIdLong, .allow),
-        (nil, "anysite.com", String.gertrudeBundleIdShort, .allow),
-        (nil, "anysite.com", ".\(String.gertrudeBundleIdLong)", .allow),
-        (nil, "anysite.com", ".\(String.gertrudeBundleIdShort)", .allow),
-        ("anothersite.com", nil, String.gertrudeBundleIdLong, .allow),
-        ("anothersite.com", nil, String.gertrudeBundleIdShort, .allow),
-        (nil, "api.gertrude.app/pairql/foo/bar", nil, .allow),
-        ("gertrude.app", nil, nil, .allow),
-        (nil, "gertrude.app/docs", nil, .allow),
-        ("api.gertrude.app", nil, "com.acme", .allow),
-        ("gertrude.app", nil, "com.acme", .allow),
-        (nil, "gertrude.app/foo/bar", "com.acme", .allow),
-        (nil, "sneaky.com/gertrude.app/foo/bar", "com.acme", .drop),
-        (nil, "bad.com/gertrude.app", nil, .drop),
-        ("api.gertrude.app", nil, "com.acme.com", .allow),
-        (nil, "anysite.com", "12345.com.acme", .drop),
-        ("anothersite.com", nil, "com.acme", .drop),
-        ("safesite.com", nil, nil, .drop),
-        (nil, "safesite.com", nil, .drop),
-        // allowances for screen time auth
-        ("apple.com", nil, "com.acme", .allow),
-        ("configuration.icloud.com", nil, "com.acme", .allow),
-        ("configuration.icloud.net", nil, "com.acme", .allow),
-        ("bag.itunes.apple.com", nil, "com.acme", .allow),
-        ("fbs.smoot.apple.com", nil, "com.acme", .allow),
-        ("smp-device-content.apple.com", nil, "com.acme", .allow),
-        ("badbad.com", nil, "com.apple.mDNSResponder", .allow),
-        ("badbad.com", nil, "com.apple.Preferences", .allow),
-        (nil, nil, "com.anybody", .allow),
-      ]
+@Test func lockdownModeBlocking() throws {
+  let cases: [(host: String?, url: String?, bundleId: String?, expect: FlowVerdict)] =
+    [
+      ("api.gertrude.app", nil, nil, .allow),
+      (nil, "api.gertrude.app", nil, .allow),
+      (nil, "https://api.gertrude.app", nil, .allow),
+      (nil, "anysite.com", String.gertrudeBundleIdLong, .allow),
+      (nil, "anysite.com", String.gertrudeBundleIdShort, .allow),
+      (nil, "anysite.com", ".\(String.gertrudeBundleIdLong)", .allow),
+      (nil, "anysite.com", ".\(String.gertrudeBundleIdShort)", .allow),
+      ("anothersite.com", nil, String.gertrudeBundleIdLong, .allow),
+      ("anothersite.com", nil, String.gertrudeBundleIdShort, .allow),
+      (nil, "api.gertrude.app/pairql/foo/bar", nil, .allow),
+      ("gertrude.app", nil, nil, .allow),
+      (nil, "gertrude.app/docs", nil, .allow),
+      ("api.gertrude.app", nil, "com.acme", .allow),
+      ("gertrude.app", nil, "com.acme", .allow),
+      (nil, "gertrude.app/foo/bar", "com.acme", .allow),
+      (nil, "sneaky.com/gertrude.app/foo/bar", "com.acme", .drop),
+      (nil, "bad.com/gertrude.app", nil, .drop),
+      ("api.gertrude.app", nil, "com.acme.com", .allow),
+      (nil, "anysite.com", "12345.com.acme", .drop),
+      ("anothersite.com", nil, "com.acme", .drop),
+      ("safesite.com", nil, nil, .drop),
+      (nil, "safesite.com", nil, .drop),
+      // allowances for screen time auth
+      ("apple.com", nil, "com.acme", .allow),
+      ("configuration.icloud.com", nil, "com.acme", .allow),
+      ("configuration.icloud.net", nil, "com.acme", .allow),
+      ("bag.itunes.apple.com", nil, "com.acme", .allow),
+      ("fbs.smoot.apple.com", nil, "com.acme", .allow),
+      ("smp-device-content.apple.com", nil, "com.acme", .allow),
+      ("badbad.com", nil, "com.apple.mDNSResponder", .allow),
+      ("badbad.com", nil, "com.apple.Preferences", .allow),
+      (nil, nil, "com.anybody", .allow),
+    ]
 
-    let proxy = withDependencies {
-      $0.osLog.log = { _ in }
-      $0.suspendingClock = TestClock()
-      $0.calendar = Calendar(identifier: .gregorian)
-      $0.date = .constant(Date(timeIntervalSince1970: 400))
-    } operation: {
-      FilterProxy(protectionMode: .emergencyLockdown)
-    }
-    for (host, url, bundleId, expected) in cases {
-      expect(proxy.decideNewFlow(.init(
-        hostname: host,
-        url: url,
-        bundleId: bundleId,
-        flowType: nil,
-      ))).toEqual(expected)
-      expect(proxy.decideNewFlow(.init(
-        hostname: host,
-        url: url,
-        bundleId: bundleId,
-        flowType: .browser,
-      ))).toEqual(expected)
-      expect(proxy.decideNewFlow(.init(
-        hostname: host,
-        url: url,
-        bundleId: bundleId,
-        flowType: .socket,
-      ))).toEqual(expected)
-    }
-  }
-
-  func testLockDownRecoveryWindow() {
-    var components = DateComponents()
-    components.hour = 19
-    components.minute = 3
-    let now = Calendar.current.date(from: components)!
-    let proxy = withDependencies {
-      $0.osLog.log = { _ in }
-      $0.suspendingClock = TestClock()
-      $0.calendar = Calendar(identifier: .gregorian)
-      $0.date = .constant(now)
-    } operation: {
-      FilterProxy(protectionMode: .emergencyLockdown)
-    }
+  let (_, proxy) = setup(now: Date(timeIntervalSince1970: 400))
+  for (host, url, bundleId, expected) in cases {
     expect(proxy.decideNewFlow(.init(
-      hostname: "any.com",
-      url: "any.com",
-      bundleId: "com.x",
+      hostname: host,
+      url: url,
+      bundleId: bundleId,
       flowType: nil,
-    )))
-    .toEqual(.allow)
+    ))).toEqual(expected)
+    expect(proxy.decideNewFlow(.init(
+      hostname: host,
+      url: url,
+      bundleId: bundleId,
+      flowType: .browser,
+    ))).toEqual(expected)
+    expect(proxy.decideNewFlow(.init(
+      hostname: host,
+      url: url,
+      bundleId: bundleId,
+      flowType: .socket,
+    ))).toEqual(expected)
+  }
+}
+
+@Test func lockDownRecoveryWindow() {
+  var components = DateComponents()
+  components.hour = 19
+  components.minute = 3
+  let window = Calendar.current.date(from: components)!
+  let (_, proxy) = setup(now: window)
+  expect(proxy.decideNewFlow(.init(
+    hostname: "any.com",
+    url: "any.com",
+    bundleId: "com.x",
+    flowType: nil,
+  )))
+  .toEqual(.allow)
+}
+
+struct FilterTestCase {
+  let osLogs: LockIsolated<[String]> = .init([])
+  let loadProtectionModeCalls: LockIsolated<Int> = .init(0)
+
+  func logged(_ message: String) -> Bool {
+    self.osLogs.withValue { $0.contains(message) }
+  }
+}
+
+func setup(
+  now: Date = .reference + .hours(5),
+  initialProtectionMode: ProtectionMode = .emergencyLockdown,
+  storedProtectionMode: ProtectionMode? = .normal([.urlContains(value: "bad")]),
+) -> (FilterTestCase, FilterProxy) {
+  let test = FilterTestCase()
+  let proxy = withDependencies {
+    $0.date = .constant(now)
+    $0.osLog = .noop
+    $0.osLog.log = { msg in test.osLogs.withValue { $0.append(msg) } }
+    $0.calendar = Calendar(identifier: .gregorian)
+    $0.sharedStorageReader.loadProtectionMode = { @Sendable in
+      test.loadProtectionModeCalls.withValue { $0 += 1 }
+      return storedProtectionMode
+    }
+  } operation: {
+    FilterProxy(protectionMode: initialProtectionMode)
+  }
+  test.osLogs.withValue { $0.removeAll() } // clear init logs
+  return (test, proxy)
+}
+
+@Test func startFilterCausesReadRules() {
+  var (test, proxy) = setup()
+  #expect(test.loadProtectionModeCalls.value == 0)
+
+  proxy.startFilter()
+
+  #expect(test.loadProtectionModeCalls.value == 1)
+  #expect(test.logged("Starting filter"))
+  #expect(test.logged("read 1 (normal) rules"))
+}
+
+@Test func respondToReadRulesSentinal() {
+  var (test, proxy) = setup()
+  proxy.count = 11
+
+  let verdict = proxy.decideFilterFlow(.init(hostname: MagicStrings.readRulesSentinalHostname))
+
+  #expect(verdict == .drop)
+  #expect(test.loadProtectionModeCalls.value == 1)
+  #expect(test.osLogs.value == ["read 1 (normal) rules"])
+  #expect(proxy.count == 12)
+}
+
+@Test func respondToRefreshRulesSentinal() {
+  var (test, proxy) = setup()
+  proxy.count = 11
+
+  let verdict = proxy.decideFilterFlow(.init(hostname: MagicStrings.refreshRulesSentinalHostname))
+
+  #expect(verdict == .needRules) // tells the controller layer we need rules
+  #expect(test.loadProtectionModeCalls.value == 0)
+  #expect(test.osLogs.value == ["refresh rules requested from app"])
+  #expect(proxy.count == 12)
+}
+
+@Test func requestsUpdatePeriodicallyInNormalMode() {
+  var (test, proxy) = setup(initialProtectionMode: .normal([.targetContains(value: "bad.com")]))
+  proxy.count = FilterProxy.FREQ_SLOW * 3 - 2
+
+  // haven't hit faux-heartbeat yet, won't read any rules
+  let verdict1 = proxy.decideFilterFlow(.init(hostname: "ok.com"))
+
+  #expect(verdict1 == .allow)
+  #expect(test.loadProtectionModeCalls.value == 0)
+
+  // now we hit the faux-heartbeat
+  let verdict2 = proxy.decideFilterFlow(.init(hostname: "bad.com"))
+
+  #expect(verdict2 == .needRules)
+  #expect(test.loadProtectionModeCalls.value == 0)
+  #expect(test.logged("request update, count: \(FilterProxy.FREQ_SLOW * 3)"))
+}
+
+@Test func requestsUpdatePeriodicallyInConnectedMode() {
+  var (test, proxy) = setup(initialProtectionMode: .connected(
+    [.targetContains(value: "bad.com")],
+    .blockAll,
+  ))
+  proxy.count = FilterProxy.FREQ_NORMAL * 3 - 2
+
+  // haven't hit faux-heartbeat yet, won't read any rules
+  let verdict1 = proxy.decideFilterFlow(.init(hostname: "ok.com"))
+
+  #expect(verdict1 == .allow)
+  #expect(test.loadProtectionModeCalls.value == 0)
+
+  // now we hit the faux-heartbeat
+  let verdict2 = proxy.decideFilterFlow(.init(hostname: "bad.com"))
+
+  #expect(verdict2 == .needRules)
+  #expect(test.loadProtectionModeCalls.value == 0)
+  #expect(test.logged("request update, count: \(FilterProxy.FREQ_NORMAL * 3)"))
+}
+
+@Test func requestsUpdatePeriodicallyInOnboardingMode() {
+  var (test, proxy) = setup(initialProtectionMode: .onboarding([.targetContains(value: "bad.com")]))
+  proxy.count = FilterProxy.FREQ_FAST * 3 - 2
+
+  // haven't hit faux-heartbeat yet, won't read any rules
+  let verdict1 = proxy.decideFilterFlow(.init(hostname: "ok.com"))
+
+  #expect(verdict1 == .allow)
+  #expect(test.loadProtectionModeCalls.value == 0)
+
+  // now we hit the faux-heartbeat
+  let verdict2 = proxy.decideFilterFlow(.init(hostname: "bad.com"))
+
+  #expect(verdict2 == .needRules)
+  #expect(test.loadProtectionModeCalls.value == 0)
+  #expect(test.logged("request update, count: \(FilterProxy.FREQ_FAST * 3)"))
+}
+
+@Test func requestsUpdatePeriodicallyInEmergencyLockdownMode() {
+  var (test, proxy) = setup(initialProtectionMode: .emergencyLockdown, storedProtectionMode: nil)
+  proxy.count = FilterProxy.FREQ_FAST * 3 - 2
+
+  // haven't hit faux-heartbeat yet, will use lockdown rules
+  let verdict1 = proxy.decideFilterFlow(.init(hostname: "ok.com"))
+
+  #expect(verdict1 == .drop)
+  #expect(test.loadProtectionModeCalls.value == 1)
+
+  // now we hit the faux - heartbeat, rules loaded again
+  let verdict2 = proxy.decideFilterFlow(.init(hostname: "bad.com"))
+
+  #expect(verdict2 == .needRules)
+  #expect(test.loadProtectionModeCalls.value == 2)
+  #expect(test.logged("request update, count: \(FilterProxy.FREQ_FAST * 3)"))
+}
+
+@Test func reReadsRulesPeriodicallyAsVerySlowFallback() {
+  var (test, proxy) = setup(initialProtectionMode: .normal([.targetContains(value: "bad.com")]))
+  proxy.count = FilterProxy.FREQ_VERY_SLOW * 3 - 2
+
+  // haven't hit FREQ_VERY_SLOW yet, won't read any rules
+  let verdict1 = proxy.decideFilterFlow(.init(hostname: "ok.com"))
+
+  #expect(verdict1 == .allow)
+  #expect(test.loadProtectionModeCalls.value == 0)
+
+  // now we hit the FREQ_VERY_SLOW fallback, rules ARE loaded
+  let verdict2 = proxy.decideFilterFlow(.init(hostname: "bad.com"))
+
+  #expect(verdict2 == .needRules)
+  #expect(test.loadProtectionModeCalls.value == 1)
+  #expect(test.logged("re-read rules fallback, count: \(FilterProxy.FREQ_VERY_SLOW * 3)"))
+}
+
+@Test func handleRulesChangedCausesReadRules() {
+  let test = FilterTestCase()
+  let reads: LockIsolated<[ProtectionMode?]> = .init([
+    .normal([.targetContains(value: "one.com")]),
+    .normal([.targetContains(value: "two.com")]),
+    nil,
+  ])
+  var proxy = withDependencies {
+    $0.osLog = .noop
+    $0.osLog.log = { msg in test.osLogs.withValue { $0.append(msg) } }
+    $0.sharedStorageReader.loadProtectionMode = { @Sendable in
+      test.loadProtectionModeCalls.withValue { $0 += 1 }
+      return reads.withValue { $0.isEmpty ? nil : $0.removeFirst() }
+    }
+  } operation: {
+    FilterProxy(protectionMode: .emergencyLockdown)
   }
 
-  // TODO: restore or remove
-  // func testReadsRulesInHeartbeat() async throws {
-  //   let logs = LockIsolated<[String]>([])
-  //   let rules = LockIsolated<ProtectionMode>(.normal([.urlContains(value: "foo")]))
-  //   let clock = TestClock()
-  //
-  //   let proxy = withDependencies {
-  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-  //     $0.suspendingClock = clock
-  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in
-  //       rules.value
-  //     }
-  //   } operation: {
-  //     FilterProxy(protectionMode: .emergencyLockdown)
-  //   }
-  //
-  //   // initializer loads protection rules from storage
-  //   expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
-  //   expect(logs.value).toEqual(["read 1 (normal) rules"])
-  //
-  //   await clock.advance(by: .seconds(59))
-  //
-  //   // no heartbeat yet
-  //   expect(logs.value).toEqual(["read 1 (normal) rules"])
-  //   rules.setValue(.normal([.urlContains(value: "bar"), .urlContains(value: "baz")]))
-  //
-  //   // heartbeat should happen here
-  //   await clock.advance(by: .seconds(1))
-  //   expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
-  //   expect(proxy.protectionMode).toEqual(.normal([
-  //     .urlContains(value: "bar"),
-  //     .urlContains(value: "baz"),
-  //   ]))
-  // }
+  #expect(proxy.protectionMode == .emergencyLockdown)
+  let verdict1 = proxy.decideFilterFlow(.init(hostname: "one.com"))
+  #expect(proxy.protectionMode == .normal([.targetContains(value: "one.com")]))
+  #expect(verdict1 == .drop)
+  #expect(test.loadProtectionModeCalls.value == 1)
 
-  // TODO: restore or remove
-  // simulate user defaults not being available on first boot, before unlock
-  // we need to keep checking quickly until they are available to not be in lockdown long
-  // @see https://christianselig.com/2024/10/beware-userdefaults/
-  // func testNoDataFoundCausesFasterRecheckUntilFound() async throws {
-  //   let logs = LockIsolated<[String]>([])
-  //   let userDefaultsReady = LockIsolated(false)
-  //   let clock = TestClock()
-  //   let proxy = withDependencies {
-  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-  //     $0.suspendingClock = clock
-  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in
-  //       if !userDefaultsReady.value {
-  //         nil
-  //       } else {
-  //         .normal([.urlContains(value: "foo")])
-  //       }
-  //     }
-  //   } operation: {
-  //     FilterProxy(protectionMode: .emergencyLockdown)
-  //   }
-  //
-  //   // initializer tries to load, but finds no rules, goes into lockdown
-  //   expect(proxy.protectionMode).toEqual(.emergencyLockdown)
-  //   expect(logs.value).toEqual(["no rules found"])
-  //
-  //   await clock.advance(by: .seconds(9))
-  //   expect(logs.value).toEqual(["no rules found"])
-  //
-  //   // because we have no rules, we're checking every ten seconds
-  //   await clock.advance(by: .seconds(1))
-  //   expect(logs.value).toEqual(["no rules found", "no rules found"])
-  //   await clock.advance(by: .seconds(10))
-  //   expect(logs.value).toEqual(["no rules found", "no rules found", "no rules found"])
-  //
-  //   // simulate user defaults ready
-  //   userDefaultsReady.setValue(true)
-  //   await clock.advance(by: .seconds(9))
-  //   expect(logs.value.count).toEqual(3)
-  //   await clock.advance(by: .seconds(1))
-  //   expect(logs.value).toEqual([
-  //     "no rules found",
-  //     "no rules found",
-  //     "no rules found",
-  //     "read 1 (normal) rules",
-  //   ])
-  //   expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
-  //
-  //   // now, we are not checking so often
-  //   await clock.advance(by: .seconds(10))
-  //   expect(logs.value.count).toEqual(4)
-  //
-  //   await clock.advance(by: .minutes(5))
-  //   expect(logs.value.count).toEqual(5)
-  // }
+  proxy.handleRulesChanged()
 
-  // TODO: restore or remove
-  // func testReadsRulesOnStart() {
-  //   let logs = LockIsolated<[String]>([])
-  //   let proxy = withDependencies {
-  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-  //     $0.suspendingClock = TestClock()
-  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in
-  //       .normal([.urlContains(value: "lol")])
-  //     }
-  //   } operation: {
-  //     FilterProxy(protectionMode: .normal([]))
-  //   }
-  //
-  //   expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "lol")]))
-  //   expect(logs.value).toEqual(["read 1 (normal) rules"])
-  // }
+  #expect(proxy.protectionMode == .normal([.targetContains(value: "two.com")]))
+  #expect(test.loadProtectionModeCalls.value == 2)
 
-  // TODO: restore or remove
-  // func testHandleRulesChangesCausesReadRules() {
-  //   let logs = LockIsolated<[String]>([])
-  //   let rules = LockIsolated<ProtectionMode>(.normal([.urlContains(value: "foo")]))
-  //
-  //   var proxy = withDependencies {
-  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-  //     $0.suspendingClock = TestClock()
-  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in rules.value }
-  //   } operation: {
-  //     FilterProxy(protectionMode: .normal([]))
-  //   }
-  //
-  //   // init
-  //   expect(proxy.protectionMode).toEqual(.normal([.urlContains(value: "foo")]))
-  //   expect(logs.value).toEqual(["read 1 (normal) rules"])
-  //
-  //   rules.setValue(.normal([.urlContains(value: "bar"), .urlContains(value: "baz")]))
-  //   proxy.handleRulesChanged()
-  //
-  //   expect(logs.value).toEqual(["read 1 (normal) rules", "read 2 (normal) rules"])
-  //   expect(proxy.protectionMode).toEqual(.normal([
-  //     .urlContains(value: "bar"),
-  //     .urlContains(value: "baz"),
-  //   ]))
-  // }
+  let verdict2 = proxy.decideFilterFlow(.init(hostname: "one.com"))
+  #expect(verdict2 == .allow)
 
-  // TODO: figure out if/how to recreate these next two
+  // now if we read a nil, we should keep the old rules
+  proxy.handleRulesChanged()
 
-  // func testReadRulesNilLogsErrAndKeepsOldRules() {
-  //   let logs = LockIsolated<[String]>([])
-  //
-  //   let proxy = withDependencies {
-  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-  //     $0.sharedStorageReader.loadProtectionMode = { @Sendable in nil }
-  //     $0.suspendingClock = TestClock()
-  //   } operation: {
-  //     FilterProxy(protectionMode: .normal([.urlContains(value: "old")]))
-  //   }
-  //
-  //   expect(proxy.getProtectionMode).toEqual(.normal([.urlContains(value: "old")]))
-  //   expect(logs.value).toEqual(["no rules found"])
-  //
-  //   proxy.receiveHeartbeat()
-  //
-  //   expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
-  //   expect(logs.value).toEqual(["no rules found", "no rules found"])
-  // }
+  #expect(test.logged("no rules found"))
+  #expect(test.loadProtectionModeCalls.value == 3)
+  #expect(proxy.protectionMode == .normal([.targetContains(value: "two.com")]))
+  #expect(reads.value.isEmpty)
+}
 
-  // func testReadRulesDecodeErrorLogsErrAndKeepsOldRules() {
-  //   struct TestError: Error {}
-  //   let logs = LockIsolated<[String]>([])
-  //
-  //   let proxy = withDependencies {
-  //     $0.suspendingClock = TestClock()
-  //     $0.osLog.log = { msg in logs.withValue { $0.append(msg) } }
-  //     $0.storage.loadData = { @Sendable _ in
-  //       String("nope").data(using: .utf8)! // <-- error
-  //     }
-  //   } operation: {
-  //     FilterProxy(protectionMode: .normal([.urlContains("old")]))
-  //   }
-  //
-  //   expect(logs.value.count).toEqual(1)
-  //   expect(logs.value[0]).toContain("error decoding rules:")
-  //
-  //   // we keep the rules
-  //   expect(proxy.getProtectionMode).toEqual(.normal([.urlContains("old")]))
-  // }
+public extension Date {
+  static let epoch = Date(timeIntervalSince1970: 0)
+  static let reference = Date(timeIntervalSinceReferenceDate: 0)
 }

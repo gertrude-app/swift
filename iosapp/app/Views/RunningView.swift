@@ -10,6 +10,7 @@ struct RunningView: View {
   @State private var titleOffset = Vector(x: 0, y: 20)
   @State private var subtitleOffset = Vector(x: 0, y: 20)
   @State private var linkOffset = Vector(x: 0, y: 20)
+  @State private var settingsOffset = Vector(x: 0, y: 20)
   @State private var showBg = false
 
   @Bindable var store: StoreOf<IOSReducer>
@@ -81,10 +82,26 @@ struct RunningView: View {
         )
 
         Spacer()
+
+        Button(action: { self.store.send(.interactive(.settingsBtnTapped)) }) {
+          HStack(spacing: 6) {
+            Image(systemName: "gearshape")
+              .font(.system(size: 14, weight: .regular))
+            Text("Settings")
+              .font(.system(size: 15, weight: .regular))
+          }
+        }
+        .padding(.bottom, 8)
+        .swooshIn(
+          tracking: self.$settingsOffset,
+          to: .zero,
+          after: .seconds(0.6),
+          for: .seconds(0.5),
+        )
       }
       .frame(maxWidth: .infinity)
       .multilineTextAlignment(.center)
-      .padding(30)
+      .padding(.horizontal, 30)
     }
   }
 }
@@ -94,4 +111,12 @@ struct RunningView: View {
     store: .init(initialState: .init()) { IOSReducer() },
     childName: nil,
   )
+}
+
+#Preview("Dark Mode") {
+  RunningView(
+    store: .init(initialState: .init()) { IOSReducer() },
+    childName: nil,
+  )
+  .preferredColorScheme(.dark)
 }

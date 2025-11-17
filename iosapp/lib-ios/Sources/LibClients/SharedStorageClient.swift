@@ -4,6 +4,7 @@ import Foundation
 import GertieIOS
 import IOSRoute
 import LibCore
+import os.log
 
 @DependencyClient
 public struct SharedStorageClient: Sendable {
@@ -164,6 +165,20 @@ public extension DependencyValues {
   var sharedStorageReader: SharedStorageReaderClient {
     get { self[SharedStorageReaderClient.self] }
     set { self[SharedStorageReaderClient.self] = newValue }
+  }
+}
+
+extension SharedStorageClient {
+  func osLogBufferedDebugLogs(prefix: String) {
+    let allLogs = self.loadDebugLogs() ?? []
+    for (i, logs) in allLogs.chunked(into: 6).enumerated() {
+      os_log(
+        "[G•] %{public}s buffered logs %d:\n%{public}s",
+        i + 1,
+        prefix,
+        logs.joined(separator: "\n"),
+      )
+    }
   }
 }
 

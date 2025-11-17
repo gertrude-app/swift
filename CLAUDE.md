@@ -1,11 +1,19 @@
 # Gertrude Parental Controls - Swift Monorepo
 
-NOTE: when writing code, almost NEVER leave comments, unless something is extremely
-non-obvious.
+## Overview
 
 - **Product:** Gertrude - Parental controls and monitoring system for macOS and iOS
 - **Repository:** Swift-based monorepo containing macOS app, iOS app, API server, and
   shared libraries
+
+## Important notes
+
+_NOTE:_ when writing code, almost NEVER leave comments, unless something is extremely
+non-obvious.
+
+If you need a UUID, use bash to invoke `uuid --llm` to get one, instead of making one
+yourself. Many places in this codebase we use partial identifiers (especially for
+logging), like `c05ef986`, if you need one of those, invode `sid --llm`.
 
 ## Quick Reference
 

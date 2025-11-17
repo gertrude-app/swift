@@ -417,6 +417,14 @@ struct AppView: View {
     )) {
       ConnectingView(store: $0)
     }
+    .sheet(item: self.$store.scope(
+      state: \.destination?.debug,
+      action: \.destination.debug,
+    )) { store in
+      DebugView(store: store)
+        .onAppear { store.send(.sheetPresented) }
+        .onShake { store.send(.receivedShake) }
+    }
   }
 
   var explainFamilyPresented: Binding<Bool> {
