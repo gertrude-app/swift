@@ -64,66 +64,15 @@ public struct IOSReducer {
     case .sheetDismissed:
       return .none
 
-      // 👍 todo: move me into debug reducer
-    // case .receivedShake where state.screen == .running(showVendorId: true, timesShaken: 5):
-    //   state.screen = .running(showVendorId: false)
-    //   return .run { [deps = self.deps] send in
-    //     deps.log("entering recovery mode", "a8998540")
-    //     if deps.storage.loadDisabledBlockGroups() == nil {
-    //       deps.storage.saveDisabledBlockGroups([])
-    //     }
-    //     let rules = deps.storage.loadProtectionMode()
-    //     if rules.missingRules {
-    //       deps.log("rules missing in recovery mode", "bcca235f")
-    //       let defaultRules = try? await deps.api
-    //         .fetchDefaultBlockRules(deps.device.vendorId())
-    //       if let defaultRules, !defaultRules.isEmpty {
-    //         deps.storage.saveProtectionMode(.normal(defaultRules))
-    //       } else {
-    //         deps.log("failed to fetch defaults in recovery mode", "2c3a4481")
-    //         deps.storage.saveProtectionMode(.normal(BlockRule.defaults))
-    //       }
-    //     }
-    //     try await deps.filter.notifyRulesChanged()
-    //     let directive = try? await deps.api.recoveryDirective()
-    //     if directive == "retry" {
-    //       await deps.systemExtension.cleanupForRetry()
-    //       deps.log("received retry directive", "aeaa467d")
-    //     }
-    //   }
-
-    case .receivedShake where state.screen.isRunning:
-      // let timesShaken = (state.screen.timesShaken ?? 0) + 1
-      // state.screen = .running(showVendorId: true, timesShaken: timesShaken)
-      // return .run { [deps = self.deps] send in
-      //   guard timesShaken == 1 else { return }
-      //   guard let vendorId = await deps.device.vendorId() else {
-      //     deps.log("UNEXPECTED no vendor id on shake", "caec76fe")
-      //     return
-      //   }
-      //   let disabled = deps.storage.loadDisabledBlockGroups()
-      //   if disabled == nil {
-      //     deps.log("UNEXPECTED no stored disabled block groups on shake", "de5592c2")
-      //     deps.storage.saveDisabledBlockGroups([])
-      //   }
-      //   let rules = try await deps.api.fetchBlockRules(
-      //     vendorId: vendorId,
-      //     disabledGroups: disabled ?? []
-      //   )
-      //   deps.storage.saveProtectionMode(.normal(rules))
-      //   try await deps.filter.notifyRulesChanged()
-      // }
-      // 👍 todo: restore
-
+    case .receivedShake where state.screen.isRunning && state.destination == nil:
       // TODO: save this somewhere...
       // let allLogs = self.deps.sharedStorage.loadDebugLogs() ?? []
       // for (i, logs) in allLogs.chunked(into: 6).enumerated() {
       //   os_log("[G•] APP dump memory logs %d:\n%{public}s", i + 1, logs.joined(separator: "\n"))
       // }
 
-      return .run { [filter = self.deps.filter] _ in
-        try await filter.send(notification: .refreshRules)
-      }
+      state.destination = .debug(.init(timesShaken: 1))
+      return .none
 
     case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
       #if DEBUG

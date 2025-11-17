@@ -83,11 +83,14 @@ extension DeviceClient: DependencyKey {
         vendorId: {
           await getStableVendorId()
         },
-        data: { await MainActor.run { await .init(
-          type: UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone,
-          iOSVersion: UIDevice.current.systemVersion,
-          vendorId: getStableVendorId(),
-        ) }},
+        data: {
+          let vendorId = await getStableVendorId()
+          return await MainActor.run { .init(
+            type: UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone,
+            iOSVersion: UIDevice.current.systemVersion,
+            vendorId: vendorId,
+          ) }
+        },
         batteryLevel: { @MainActor in
           UIDevice.current.isBatteryMonitoringEnabled = true
           let level = UIDevice.current.batteryLevel
