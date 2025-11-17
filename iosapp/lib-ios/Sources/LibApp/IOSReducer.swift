@@ -603,24 +603,23 @@ public struct IOSReducer {
           if await deps.sharedStorage.migrateLegacyData() {
             deps.log("migration performed by app", "5258e97c")
           }
+          let connection = deps.sharedStorage.loadAccountConnection()
           let filterRunning = await deps.systemExtension.filterRunning()
           let disabledBlockGroups = deps.sharedStorage.loadDisabledBlockGroups()
-          switch (filterRunning, disabledBlockGroups) {
-          case ( /* filter running: */ true, .some):
-            let connection = deps.sharedStorage.loadAccountConnection()
-            await send(.programmatic(.setScreen(.running(
-              state: connection.map { .connected(childName: $0.childName) } ?? .notConnected,
-            ))))
-            if let token = connection?.token {
-              await deps.api.setAuthToken(token)
-            }
-          case ( /* filter running: */ false, .none):
+          switch (connection, filterRunning, disabledBlockGroups) {
+          case (.some(let conn), /* filter on: */ true, /* groups: */ _):
+            await send(.programmatic(.setScreen(.running(state:
+              .connected(childName: conn.childName)))))
+            await deps.api.setAuthToken(conn.token)
+          case ( /* conn: */ nil, /* filter on: */ true, /* groups: */ .some):
+            await send(.programmatic(.setScreen(.running(state: .notConnected))))
+          case ( /* conn: */ _, /* filter on: */ false, /* groups: */ .none):
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
-          case ( /* filter running: */ false, .some):
+          case ( /* conn: */ _, /* filter on: */ false, /* groups: */ .some):
             // NB: if they remove the filter via Settings then launch app, we'll get here
             deps.log("non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
-          case ( /* filter running: */ true, .none):
+          case ( /* conn: */ _, /* filter on: */ true, /* groups: */ .none):
             deps.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
           }
