@@ -45,6 +45,7 @@ public struct InfoFeature {
     case receivedShake
     case clearCacheTapped
     case explainClearCacheNextTapped
+    case cancelClearCacheTapped
     case clearCache(ClearCacheFeature.Action)
   }
 
@@ -57,6 +58,7 @@ public struct InfoFeature {
     @Dependency(\.dismiss) var dismiss
     @Dependency(\.osLog) var osLog
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.continuousClock) var clock
   }
 
   enum CancelId {
@@ -71,7 +73,7 @@ public struct InfoFeature {
       switch action {
       case .sheetPresented:
         state.subScreen = .main
-        return .run { [state, deps = self.deps] send in
+        return .run { [state, deps = self.deps] _ in
           deps.osLog.log("Info appear vendor id: \(state.vendorId?.uuidString ?? "(nil)")")
           if let connection = state.connection {
             try await deps.refreshConnectedState(connection: connection)
@@ -85,11 +87,14 @@ public struct InfoFeature {
         state.subScreen = .explainClearCache1
         return .none
 
+      case .cancelClearCacheTapped:
+        state.clearCache = nil
+        state.subScreen = .main
+        return .none
+
       case .explainClearCacheNextTapped where state.subScreen == .explainClearCache1:
         state.subScreen = .explainClearCache2
         return .none
-
-      // TODO: allow cancelling from clear cache flow?
 
       case .explainClearCacheNextTapped where state.subScreen == .explainClearCache2:
         state.subScreen = .clearingCache
@@ -98,7 +103,7 @@ public struct InfoFeature {
 
       case .explainClearCacheNextTapped:
         state.subScreen = .main
-        return .run { [deps = self.deps] send in
+        return .run { [deps = self.deps] _ in
           await deps.api.logEvent("e81796af", "UNEXPECTED")
         }
 
@@ -108,7 +113,7 @@ public struct InfoFeature {
 
       case .receivedShake where state.connection != nil && state.timesShaken == 5:
         state.timesShaken = 0
-        return .run { [deps = self.deps] send in
+        return .run { [deps = self.deps] _ in
           await deps.sendRecoveryDirective()
           await deps.dismiss()
         }
@@ -133,7 +138,7 @@ public struct InfoFeature {
   }
 
   func unconnectedRecovery() -> Effect<Action> {
-    .run { [deps = self.deps] send in
+    .run { [deps = self.deps] _ in
       await deps.api.logEvent("a8998540", "entering recovery mode")
       if deps.sharedStorage.loadDisabledBlockGroups() == nil {
         deps.sharedStorage.saveDisabledBlockGroups([])
@@ -178,6 +183,7 @@ extension InfoFeature.Deps {
     let before = self.sharedStorage.loadProtectionMode()
     self.osLog.log("InfoFeature connected rules before refresh: \(before?.shortDesc ?? "(nil)")")
     try await self.filter.send(notification: .refreshRules)
+    try await self.clock.sleep(for: .seconds(2)) // time for api request, save rules
     let after = self.sharedStorage.loadProtectionMode()
     self.osLog.log("InfoFeature connected rules after refresh: \(after?.shortDesc ?? "(nil)")")
   }

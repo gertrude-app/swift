@@ -226,6 +226,9 @@ struct InfoView: View {
       primary: ButtonScreenView.Config(text: "Next", type: .button {
         self.store.send(.explainClearCacheNextTapped)
       }),
+      secondary: ButtonScreenView.Config(text: "Cancel", type: .button {
+        self.store.send(.cancelClearCacheTapped)
+      }),
     )
   }
 
@@ -234,6 +237,9 @@ struct InfoView: View {
       text: "However, clearing the cache does not always remove all of these images. If you find that images persist, the only guaranteed way to remove them is to backup the device, do a factory reset, and then restore the backup.",
       primary: ButtonScreenView.Config(text: "Next", type: .button {
         self.store.send(.explainClearCacheNextTapped)
+      }),
+      secondary: ButtonScreenView.Config(text: "Cancel", type: .button {
+        self.store.send(.cancelClearCacheTapped)
       }),
     )
   }
