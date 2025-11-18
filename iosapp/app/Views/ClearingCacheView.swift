@@ -1,11 +1,14 @@
+import ComposableArchitecture
 import LibApp
 import SwiftUI
 
 struct ClearingCacheView: View {
   @Environment(\.colorScheme) var cs
 
-  var availableSpace: Int?
-  var bytesWritten: Int
+  @Bindable var store: StoreOf<ClearCacheFeature>
+
+  var clearedMessage: String
+  var clearedBtnLabel: String
 
   @State private var spinnerOffset = Vector(x: 0, y: 20)
   @State private var titleOffset = Vector(x: 0, y: 20)
@@ -14,6 +17,23 @@ struct ClearingCacheView: View {
   @State private var showBg = false
 
   var body: some View {
+    if !self.store.completed {
+      self.clearingView
+    } else {
+      self.clearedView
+    }
+  }
+
+  var clearedView: some View {
+    ButtonScreenView(
+      text: self.clearedMessage,
+      primary: .init(self.clearedBtnLabel) {
+        self.store.send(.completeBtnTapped)
+      },
+    )
+  }
+
+  var clearingView: some View {
     ZStack {
       FairiesView()
         .opacity(self.showBg ? 1 : 0)
@@ -53,9 +73,9 @@ struct ClearingCacheView: View {
             for: .seconds(0.5),
           )
 
-        if let availableSpace = self.availableSpace {
+        if let availableSpace = self.store.availableDiskSpaceInBytes {
           ProgressView(
-            value: Double(self.bytesWritten),
+            value: Double(self.store.bytesCleared),
             // available is estimate, pad a little to prevent full bar
             total: Double(availableSpace) * 1.1,
           )
@@ -72,7 +92,7 @@ struct ClearingCacheView: View {
         }
 
         Text(
-          "\(Bytes.humanReadable(self.bytesWritten, decimalPlaces: 3, prefix: .decimal)) checked",
+          "\(Bytes.humanReadable(self.store.bytesCleared, decimalPlaces: 3, prefix: .decimal)) checked",
         )
         .font(.system(size: 16, weight: .regular))
         .foregroundStyle(Color(self.cs, light: .black.opacity(0.4), dark: .white.opacity(0.4)))
@@ -90,7 +110,13 @@ struct ClearingCacheView: View {
 
 #Preview {
   ClearingCacheView(
-    availableSpace: 3_000_000_000,
-    bytesWritten: 1_040_031_000,
+    store: .init(initialState: .init(
+      availableDiskSpaceInBytes: 3_000_000_000,
+      bytesCleared: 1_040_031_000,
+    )) {
+      ClearCacheFeature()
+    },
+    clearedMessage: "Done! Previously downloaded GIFs should be gone!",
+    clearedBtnLabel: "Next",
   )
 }

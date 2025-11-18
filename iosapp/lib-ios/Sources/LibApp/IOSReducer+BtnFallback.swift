@@ -155,10 +155,6 @@ extension IOSReducer.Onboarding.HappyPath {
     switch (self, btn) {
     case (.batteryWarning, _):
       .onboarding(.happyPath(.requestAppStoreRating))
-    case (.cacheCleared, _):
-      .onboarding(.happyPath(.requestAppStoreRating))
-    case (.clearingCache(let bytes), _):
-      .onboarding(.happyPath(.clearingCache(bytes)))
     case (.confirmChildsDevice, .primary):
       .onboarding(.happyPath(.explainMinorOrSupervised))
     case (.confirmChildsDevice, _):

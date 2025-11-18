@@ -14,7 +14,7 @@ public struct DeviceClient: Sendable {
   @MainActor public var batteryLevel: @Sendable () async -> BatteryLevel
   public var clearCache: @Sendable (Int?) -> AnyPublisher<ClearCacheUpdate, Never>
   public var deleteCacheFillDir: @Sendable () async -> Void
-  public var availableDiskSpaceInBytes: @Sendable () async -> Int?
+  public var availableDiskSpaceInBytes: @Sendable () -> Int?
 
   public init(
     type: @Sendable @escaping () async -> DeviceType,
@@ -24,7 +24,7 @@ public struct DeviceClient: Sendable {
     batteryLevel: @Sendable @escaping () async -> BatteryLevel,
     clearCache: @Sendable @escaping (Int?) -> AnyPublisher<ClearCacheUpdate, Never>,
     deleteCacheFillDir: @Sendable @escaping () async -> Void,
-    availableDiskSpaceInBytes: @Sendable @escaping () async -> Int?,
+    availableDiskSpaceInBytes: @Sendable @escaping () -> Int?,
   ) {
     self.type = type
     self.iOSVersion = iOSVersion
@@ -118,6 +118,21 @@ extension DeviceClient: DependencyKey {
     )
   #endif
 }
+
+#if DEBUG
+  public extension DeviceClient {
+    static let mock = DeviceClient(
+      type: { .iPhone },
+      iOSVersion: { "18.3.1" },
+      vendorId: { UUID(42) },
+      data: { .init(type: .iPhone, iOSVersion: "18.3.1", vendorId: UUID(42)) },
+      batteryLevel: { .level(0.85) },
+      clearCache: { _ in AnyPublisher(Empty()) },
+      deleteCacheFillDir: {},
+      availableDiskSpaceInBytes: { 500_000_000 },
+    )
+  }
+#endif
 
 @Sendable func getStableVendorId() async -> UUID? {
   @Dependency(\.keychain) var keychain

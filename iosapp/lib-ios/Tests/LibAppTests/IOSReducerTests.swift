@@ -199,10 +199,6 @@ final class IOSReducerTests: XCTestCase {
       [.appleMapsImages], // <-- persist user choice after "Done"
     ])
 
-    await store.receive(.programmatic(.setAvailableDiskSpaceInBytes(1024 * 12))) {
-      $0.onboarding.availableDiskSpaceInBytes = 1024 * 12
-    }
-
     await store.receive(.programmatic(.setBatteryLevel(.level(0.2)))) {
       $0.onboarding.batteryLevel = .level(0.2)
     }
@@ -212,22 +208,28 @@ final class IOSReducerTests: XCTestCase {
     }
 
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.onboarding.startClearCache = .reference
-      $0.screen = .onboarding(.happyPath(.clearingCache(0)))
+      $0.onboarding.clearCache = .init()
+    }
+
+    await store.send(.interactive(.onboardingClearCache(.onAppear))) {
+      $0.onboarding.clearCache?.startClearCache = .reference
+      $0.onboarding.clearCache?.availableDiskSpaceInBytes = 1024 * 12
     }
 
     cacheClearSubject.send(.bytesCleared(1024))
-    await store.receive(.programmatic(.receiveClearCacheUpdate(.bytesCleared(1024)))) {
-      $0.screen = .onboarding(.happyPath(.clearingCache(1024)))
+    await store.receive(.interactive(
+      .onboardingClearCache(.receivedClearCacheUpdate(.bytesCleared(1024))),
+    )) {
+      $0.onboarding.clearCache?.bytesCleared = 1024
     }
 
     cacheClearSubject.send(.finished)
-    await store.receive(.programmatic(.receiveClearCacheUpdate(.finished))) {
-      $0.onboarding.endClearCache = .reference
-      $0.screen = .onboarding(.happyPath(.cacheCleared))
+    await store.receive(.interactive(.onboardingClearCache(.receivedClearCacheUpdate(.finished)))) {
+      $0.onboarding.clearCache?.completed = true
     }
 
-    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
+    await store.send(.interactive(.onboardingClearCache(.completeBtnTapped))) {
+      $0.onboarding.clearCache = nil
       $0.screen = .onboarding(.happyPath(.requestAppStoreRating))
     }
 
@@ -389,23 +391,24 @@ final class IOSReducerTests: XCTestCase {
     let clearCacheInvocations = LockIsolated(0)
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.promptClearCache)),
-      onboarding: .init(
-        batteryLevel: .level(0.75), // <-- enough battery
-        availableDiskSpaceInBytes: 1024 * 1024 * 1024 * 5, // <-- 5 GB space
-      ),
+      onboarding: .init(batteryLevel: .level(0.75)), // <-- enough battery
     )) {
       IOSReducer()
     } withDependencies: {
       $0.mainQueue = .immediate
       $0.date = .constant(.reference)
+      $0.device.availableDiskSpaceInBytes = { 1024 * 1024 * 1024 * 5 } // <-- 5 GB space
       $0.device.clearCache = { _ in
         clearCacheInvocations.withValue { $0 += 1 }
         return AnyPublisher(Empty())
       }
     }
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.onboarding.startClearCache = .reference
-      $0.screen = .onboarding(.happyPath(.clearingCache(0)))
+      $0.onboarding.clearCache = .init()
+    }
+    await store.send(.interactive(.onboardingClearCache(.onAppear))) {
+      $0.onboarding.clearCache?.startClearCache = .reference
+      $0.onboarding.clearCache?.availableDiskSpaceInBytes = 1024 * 1024 * 1024 * 5
     }
     expect(clearCacheInvocations.value).toEqual(1)
   }
@@ -415,15 +418,13 @@ final class IOSReducerTests: XCTestCase {
     let clearCacheInvocations = LockIsolated(0)
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.promptClearCache)),
-      onboarding: .init(
-        batteryLevel: .level(0.95), // <-- lots of battery, but...
-        availableDiskSpaceInBytes: 1024 * 1024 * 1024 * 65, // ...65 GB to clear !!
-      ),
+      onboarding: .init(batteryLevel: .level(0.95)), // <-- lots of battery, but...,
     )) {
       IOSReducer()
     } withDependencies: {
       $0.mainQueue = .immediate
       $0.date = .constant(.reference)
+      $0.device.availableDiskSpaceInBytes = { 1024 * 1024 * 1024 * 65 } // ...65 GB to clear !!
       $0.device.clearCache = { _ in
         clearCacheInvocations.withValue { $0 += 1 }
         return AnyPublisher(Empty())
@@ -433,8 +434,11 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .onboarding(.happyPath(.batteryWarning))
     }
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.onboarding.startClearCache = .reference
-      $0.screen = .onboarding(.happyPath(.clearingCache(0)))
+      $0.onboarding.clearCache = .init()
+    }
+    await store.send(.interactive(.onboardingClearCache(.onAppear))) {
+      $0.onboarding.clearCache?.startClearCache = .reference
+      $0.onboarding.clearCache?.availableDiskSpaceInBytes = 1024 * 1024 * 1024 * 65
     }
     expect(clearCacheInvocations.value).toEqual(1)
   }

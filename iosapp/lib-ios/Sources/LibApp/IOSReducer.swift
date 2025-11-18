@@ -24,10 +24,6 @@ public struct IOSReducer {
   @ObservationIgnored
   let deps = Deps()
 
-  enum CancelId {
-    case cacheClearUpdates
-  }
-
   public init() {}
 
   public var body: some ReducerOf<Self> {
@@ -44,6 +40,9 @@ public struct IOSReducer {
       }
     }
     .ifLet(\.$destination, action: \.destination)
+    .ifLet(\.onboarding.clearCache, action: \.interactive.onboardingClearCache) {
+      ClearCacheFeature()
+    }
   }
 
   func interactive(state: inout State, action: Action.Interactive) -> Effect<Action> {
@@ -68,10 +67,19 @@ public struct IOSReducer {
       state.destination = .debug(.init(timesShaken: 1))
       return .none
 
-    case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
-      #if DEBUG
+    #if DEBUG
+      case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
         state.screen = .onboarding(.happyPath(.dontGetTrickedPreAuth))
-      #endif
+        return .none
+    #endif
+
+    case .onboardingClearCache(.completeBtnTapped),
+         .onboardingClearCache(.receivedClearCacheUpdate(.errorCouldNotCreateDir)):
+      state.onboarding.clearCache = nil
+      state.screen = .onboarding(.happyPath(.requestAppStoreRating))
+      return .none
+
+    case .onboardingClearCache:
       return .none
 
     case .receivedShake:
@@ -230,15 +238,10 @@ public struct IOSReducer {
         .run { [device = self.deps.device] send in
           await send(.programmatic(.setBatteryLevel(device.batteryLevel())))
         },
-        .run { [device = self.deps.device] send in
-          if let bytes = await device.availableDiskSpaceInBytes() {
-            await send(.programmatic(.setAvailableDiskSpaceInBytes(bytes)))
-          }
-        },
       )
 
     case (.onboarding(.happyPath(.promptClearCache)), .primary):
-      let available = state.onboarding.availableDiskSpaceInBytes ?? -1
+      let available = self.deps.device.availableDiskSpaceInBytes() ?? -1
       let humanSize = Bytes.humanReadable(available, decimalPlaces: 1, prefix: .binary)
       if state.onboarding.batteryLevel.isLow || available > (Bytes.inGigabyte * 60) {
         self.deps.log("clear cache -> battery warning, disk size: \(humanSize)", "ea3f9c37")
@@ -246,14 +249,9 @@ public struct IOSReducer {
         return .none
       } else {
         self.deps.log("clear cache, skip battery warning, disk size: \(humanSize)", "8a8a3033")
-        state.onboarding.startClearCache = self.deps.now
-        state.screen = .onboarding(.happyPath(.clearingCache(0)))
-        return .publisher { [deps = self.deps] in
-          deps.device.clearCache(state.onboarding.availableDiskSpaceInBytes)
-            .map { .programmatic(.receiveClearCacheUpdate($0)) }
-            .receive(on: deps.mainQueue)
-        }
+        state.onboarding.clearCache = .init()
       }
+      return .none
 
     case (.onboarding(.happyPath(.promptClearCache)), .secondary):
       self.deps.log(state.screen, action, "1221f1a3")
@@ -262,17 +260,7 @@ public struct IOSReducer {
 
     case (.onboarding(.happyPath(.batteryWarning)), .primary):
       self.deps.log(state.screen, action, "72dc8e84")
-      state.onboarding.startClearCache = self.deps.now
-      state.screen = .onboarding(.happyPath(.clearingCache(0)))
-      return .publisher { [deps = self.deps] in
-        deps.device.clearCache(state.onboarding.availableDiskSpaceInBytes)
-          .map { .programmatic(.receiveClearCacheUpdate($0)) }
-          .receive(on: deps.mainQueue)
-      }.cancellable(id: CancelId.cacheClearUpdates, cancelInFlight: true)
-
-    case (.onboarding(.happyPath(.cacheCleared)), .primary):
-      self.deps.log(state.screen, action, "f9f2e206")
-      state.screen = .onboarding(.happyPath(.requestAppStoreRating))
+      state.onboarding.clearCache = .init()
       return .none
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .primary):
@@ -596,7 +584,7 @@ public struct IOSReducer {
       )
 
     case .appWillTerminate:
-      return .cancel(id: CancelId.cacheClearUpdates)
+      return .cancel(id: ClearCacheFeature.CancelId.cacheClearUpdates)
 
     case .setFirstLaunch(let date):
       state.onboarding.firstLaunch = date
@@ -608,10 +596,6 @@ public struct IOSReducer {
 
     case .setBatteryLevel(let level):
       state.onboarding.batteryLevel = level
-      return .none
-
-    case .setAvailableDiskSpaceInBytes(let bytes):
-      state.onboarding.availableDiskSpaceInBytes = bytes
       return .none
 
     case .authorizationSucceeded:
@@ -678,31 +662,6 @@ public struct IOSReducer {
         state.screen = .onboarding(.installFail(.other(err)))
       }
       return .none
-
-    case .receiveClearCacheUpdate(.bytesCleared(let bytes)):
-      if case .onboarding(.happyPath(.clearingCache)) = state.screen {
-        state.screen = .onboarding(.happyPath(.clearingCache(bytes)))
-      }
-      return .none
-
-    case .receiveClearCacheUpdate(.finished):
-      state.onboarding.endClearCache = self.deps.now
-      let diskSpace = state.onboarding.availableDiskSpaceInBytes
-        .map { Bytes.humanReadable($0) } ?? "unknown"
-      if let start = state.onboarding.startClearCache {
-        let elapsed = String(format: "%.1f", self.deps.now.timeIntervalSince(start) / 60.0)
-        self.deps.log(action, "cb9cf096", extra: "elapsed time: \(elapsed)m, disk: \(diskSpace)")
-      } else {
-        self.deps.log(action, "cb9cf096", extra: "disk: \(diskSpace)")
-      }
-      state.screen = .onboarding(.happyPath(.cacheCleared))
-      return .cancel(id: CancelId.cacheClearUpdates)
-
-    case .receiveClearCacheUpdate(.errorCouldNotCreateDir):
-      self.deps.log("UNEXPECTED error, could not create cache clear dir", "ae941213")
-      state.onboarding.endClearCache = self.deps.now
-      state.screen = .onboarding(.happyPath(.cacheCleared))
-      return .cancel(id: CancelId.cacheClearUpdates)
     }
   }
 

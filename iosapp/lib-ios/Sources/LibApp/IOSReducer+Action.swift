@@ -9,6 +9,7 @@ public extension IOSReducer {
     case programmatic(Programmatic)
     case destination(PresentationAction<Destination.Action>)
 
+    @CasePathable
     public enum Interactive: Equatable {
       public enum OnboardingBtn: Equatable {
         case primary
@@ -16,6 +17,7 @@ public extension IOSReducer {
         case tertiary
       }
 
+      case onboardingClearCache(ClearCacheFeature.Action)
       case onboardingBtnTapped(OnboardingBtn, String)
       case blockGroupToggled(BlockGroup)
       case sheetDismissed
@@ -33,8 +35,6 @@ public extension IOSReducer {
       case installSucceeded
       case installFailed(FilterInstallError)
       case setBatteryLevel(DeviceClient.BatteryLevel)
-      case setAvailableDiskSpaceInBytes(Int)
-      case receiveClearCacheUpdate(DeviceClient.ClearCacheUpdate)
     }
   }
 }

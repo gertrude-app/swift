@@ -35,10 +35,8 @@ extension IOSReducer {
       public var majorOnboarder: MajorOnboarder?
       public var ownsMac: Bool?
       public var returningTo: Screen?
-      public var availableDiskSpaceInBytes: Int?
-      public var startClearCache: Date?
-      public var endClearCache: Date?
       public var deviceSupervised: Bool = false
+      public var clearCache: ClearCacheFeature.State?
 
       public init(
         firstLaunch: Date? = nil,
@@ -46,18 +44,12 @@ extension IOSReducer {
         majorOnboarder: IOSReducer.MajorOnboarder? = nil,
         ownsMac: Bool? = nil,
         returningTo: IOSReducer.Screen? = nil,
-        availableDiskSpaceInBytes: Int? = nil,
-        startClearCache: Date? = nil,
-        endClearCache: Date? = nil,
       ) {
         self.firstLaunch = firstLaunch
         self.batteryLevel = batteryLevel
         self.majorOnboarder = majorOnboarder
         self.ownsMac = ownsMac
         self.returningTo = returningTo
-        self.availableDiskSpaceInBytes = availableDiskSpaceInBytes
-        self.startClearCache = startClearCache
-        self.endClearCache = endClearCache
       }
 
       mutating func takeReturningTo() -> IOSReducer.Screen? {
@@ -97,8 +89,6 @@ extension IOSReducer {
       case optOutBlockGroups
       case promptClearCache
       case batteryWarning
-      case clearingCache(Int)
-      case cacheCleared
       case requestAppStoreRating
       case doneQuit
     }
