@@ -17,11 +17,25 @@ struct ClearingCacheView: View {
   @State private var showBg = false
 
   var body: some View {
-    if !self.store.completed {
+    switch self.store.screen {
+    case .loading:
+      Color.clear // can't use EmptyView, won't get .onAppear
+    case .batteryWarning:
+      self.batteryWarningView
+    case .clearing:
       self.clearingView
-    } else {
+    case .cleared:
       self.clearedView
     }
+  }
+
+  var batteryWarningView: some View {
+    ButtonScreenView(
+      text: "Clearing the cache uses a lot of battery; we recommend you plug in the device now.",
+      primary: .init("Next") {
+        self.store.send(.batteryWarningContinueTapped)
+      },
+    )
   }
 
   var clearedView: some View {
@@ -111,6 +125,7 @@ struct ClearingCacheView: View {
 #Preview {
   ClearingCacheView(
     store: .init(initialState: .init(
+      context: .onboarding,
       availableDiskSpaceInBytes: 3_000_000_000,
       bytesCleared: 1_040_031_000,
     )) {

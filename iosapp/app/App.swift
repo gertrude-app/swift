@@ -135,12 +135,6 @@ struct AppView: View {
             secondary: self.btn(text: "No need, skip", .secondary),
           )
 
-        case .onboarding(.happyPath(.batteryWarning)):
-          ButtonScreenView(
-            text: "Clearing the cache uses a lot of battery; we recommend you plug in the device now.",
-            primary: self.btn(text: "Next", .primary),
-          )
-
         case .onboarding(.happyPath(.requestAppStoreRating)):
           ButtonScreenView(
             text: "All set! But, if you’d like to help other parents protect their kids, tap to give us a rating on the App Store.",

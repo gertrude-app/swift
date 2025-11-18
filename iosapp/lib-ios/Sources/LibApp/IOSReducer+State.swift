@@ -31,7 +31,6 @@ extension IOSReducer {
 
     public struct OnboardingState: Equatable {
       public var firstLaunch: Date?
-      public var batteryLevel: DeviceClient.BatteryLevel = .unknown
       public var majorOnboarder: MajorOnboarder?
       public var ownsMac: Bool?
       public var returningTo: Screen?
@@ -40,13 +39,11 @@ extension IOSReducer {
 
       public init(
         firstLaunch: Date? = nil,
-        batteryLevel: DeviceClient.BatteryLevel = .unknown,
         majorOnboarder: IOSReducer.MajorOnboarder? = nil,
         ownsMac: Bool? = nil,
         returningTo: IOSReducer.Screen? = nil,
       ) {
         self.firstLaunch = firstLaunch
-        self.batteryLevel = batteryLevel
         self.majorOnboarder = majorOnboarder
         self.ownsMac = ownsMac
         self.returningTo = returningTo
@@ -88,7 +85,6 @@ extension IOSReducer {
       case connectSuccess
       case optOutBlockGroups
       case promptClearCache
-      case batteryWarning
       case requestAppStoreRating
       case doneQuit
     }

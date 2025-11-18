@@ -153,8 +153,6 @@ extension IOSReducer.Onboarding.Major {
 extension IOSReducer.Onboarding.HappyPath {
   func fallbackDestination(from btn: OnboardingBtn) -> IOSReducer.Screen {
     switch (self, btn) {
-    case (.batteryWarning, _):
-      .onboarding(.happyPath(.requestAppStoreRating))
     case (.confirmChildsDevice, .primary):
       .onboarding(.happyPath(.explainMinorOrSupervised))
     case (.confirmChildsDevice, _):

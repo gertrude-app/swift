@@ -235,32 +235,16 @@ public struct IOSReducer {
             deps.sharedStorage.saveProtectionMode(.normal(BlockRule.Legacy.defaults.map(\.current)))
           }
         },
-        .run { [device = self.deps.device] send in
-          await send(.programmatic(.setBatteryLevel(device.batteryLevel())))
-        },
       )
 
     case (.onboarding(.happyPath(.promptClearCache)), .primary):
-      let available = self.deps.device.availableDiskSpaceInBytes() ?? -1
-      let humanSize = Bytes.humanReadable(available, decimalPlaces: 1, prefix: .binary)
-      if state.onboarding.batteryLevel.isLow || available > (Bytes.inGigabyte * 60) {
-        self.deps.log("clear cache -> battery warning, disk size: \(humanSize)", "ea3f9c37")
-        state.screen = .onboarding(.happyPath(.batteryWarning))
-        return .none
-      } else {
-        self.deps.log("clear cache, skip battery warning, disk size: \(humanSize)", "8a8a3033")
-        state.onboarding.clearCache = .init()
-      }
+      self.deps.log(state.screen, action, "8a8a3033")
+      state.onboarding.clearCache = .init(context: .onboarding)
       return .none
 
     case (.onboarding(.happyPath(.promptClearCache)), .secondary):
       self.deps.log(state.screen, action, "1221f1a3")
       state.screen = .onboarding(.happyPath(.requestAppStoreRating))
-      return .none
-
-    case (.onboarding(.happyPath(.batteryWarning)), .primary):
-      self.deps.log(state.screen, action, "72dc8e84")
-      state.onboarding.clearCache = .init()
       return .none
 
     case (.onboarding(.happyPath(.requestAppStoreRating)), .primary):
@@ -592,10 +576,6 @@ public struct IOSReducer {
 
     case .setScreen(let screen):
       state.screen = screen
-      return .none
-
-    case .setBatteryLevel(let level):
-      state.onboarding.batteryLevel = level
       return .none
 
     case .authorizationSucceeded:
