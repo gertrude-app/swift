@@ -561,6 +561,30 @@ final class IOSReducerTests: XCTestCase {
       $0.screen = .onboarding(.happyPath(.requestAppStoreRating))
     }
   }
+
+  @MainActor
+  func testInfoBtnTappedLoadsInfoFeatureDestination() async throws {
+    let vendorId = UUID()
+    let store = TestStore(initialState: IOSReducer.State(screen: .running(state: .notConnected))) {
+      IOSReducer()
+    } withDependencies: {
+      $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
+      $0.keychain._load = { @Sendable _ in vendorId.uuidString.data(using: .utf8) }
+      $0.sharedStorage.loadProtectionMode = { @Sendable in
+        .normal([.urlContains(value: "test")])
+      }
+      $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in [.gifs] }
+    }
+
+    await store.send(.interactive(.infoBtnTapped)) {
+      $0.destination = .info(InfoFeature.State(
+        connection: nil,
+        vendorId: vendorId,
+        numRules: 1,
+        numDisabledBlockGroups: 1,
+      ))
+    }
+  }
 }
 
 @MainActor

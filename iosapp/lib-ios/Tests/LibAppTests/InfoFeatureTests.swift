@@ -484,6 +484,43 @@ import Testing
   #expect(filterNotifications.value == [.rulesChanged])
 }
 
+@MainActor
+@Test func refreshConnectedState() async throws {
+  let osLogs = LockIsolated<[String]>([])
+  let filterNotifications = LockIsolated<[FilterClient.Notification]>([])
+  let childId = UUID(1)
+
+  let store = TestStore(initialState: InfoFeature.State(
+    connection: ChildIOSDeviceData_b1(
+      childId: childId,
+      token: UUID(),
+      deviceId: UUID(),
+      childName: "Test Child",
+    ),
+  )) {
+    InfoFeature()
+  } withDependencies: {
+    $0.continuousClock = ImmediateClock()
+    $0.osLog.log = { @Sendable msg in
+      osLogs.withValue { $0.append(msg) }
+    }
+    $0.sharedStorage.loadProtectionMode = { @Sendable in
+      .normal([.urlContains(value: "test")])
+    }
+    $0.filter.send = { @Sendable notification in
+      filterNotifications.withValue { $0.append(notification) }
+    }
+  }
+
+  await store.send(.sheetPresented)
+  await store.finish()
+
+  #expect(osLogs.value.contains { $0.contains("child id: \(childId.uuidString)") })
+  #expect(osLogs.value.contains { $0.contains("before refresh") })
+  #expect(osLogs.value.contains { $0.contains("after refresh") })
+  #expect(filterNotifications.value == [.refreshRules])
+}
+
 @Test func testMissingRules() {
   var mode: ProtectionMode? = .onboarding([])
   #expect(mode.missingRules)
