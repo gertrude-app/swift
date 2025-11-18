@@ -4,13 +4,13 @@ import Foundation
 import Security
 
 @DependencyClient
-struct KeychainClient: Sendable {
+public struct KeychainClient: Sendable {
   var _load: @Sendable (_ key: Key) -> Data?
   var _save: @Sendable (_ key: Key, _ data: Data) -> Void
-  var delete: @Sendable (_ key: Key) -> Void
+  public var delete: @Sendable (_ key: Key) -> Void
 }
 
-extension KeychainClient {
+public extension KeychainClient {
   enum Key: String {
     case vendorId
 
@@ -20,7 +20,7 @@ extension KeychainClient {
   }
 }
 
-extension KeychainClient {
+public extension KeychainClient {
   func loadVendorId() -> UUID? {
     if let data = self._load(.vendorId),
        let string = String(data: data, encoding: .utf8),
@@ -38,7 +38,7 @@ extension KeychainClient {
 }
 
 extension KeychainClient: DependencyKey {
-  static var liveValue: KeychainClient {
+  public static var liveValue: KeychainClient {
     .init(
       _load: { key in
         let query: [String: Any] = [
@@ -76,7 +76,7 @@ extension KeychainClient: DependencyKey {
   }
 }
 
-extension DependencyValues {
+public extension DependencyValues {
   var keychain: KeychainClient {
     get { self[KeychainClient.self] }
     set { self[KeychainClient.self] = newValue }
@@ -84,7 +84,7 @@ extension DependencyValues {
 }
 
 #if DEBUG
-  extension KeychainClient {
+  public extension KeychainClient {
     static let mock = KeychainClient(
       _load: { key in
         switch key {

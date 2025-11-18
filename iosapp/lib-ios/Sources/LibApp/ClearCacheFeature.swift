@@ -4,7 +4,7 @@ import LibClients
 @Reducer
 public struct ClearCacheFeature {
   @ObservableState
-  public struct State: Equatable {
+  public struct State: Equatable, Sendable {
     public var screen: Screen = .loading
     public var availableDiskSpaceInBytes: Int?
     public var batteryLevel: DeviceClient.BatteryLevel = .unknown
@@ -16,7 +16,7 @@ public struct ClearCacheFeature {
       "(context: \(self.context))"
     }
 
-    public enum Screen: Equatable {
+    public enum Screen: Equatable, Sendable {
       case loading
       case batteryWarning
       case clearing

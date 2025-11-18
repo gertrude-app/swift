@@ -7,7 +7,7 @@ extension IOSReducer {
   @Reducer(state: .equatable, action: .equatable)
   public enum Destination {
     case connectAccount(ConnectAccount)
-    case debug(Debug)
+    case info(InfoFeature)
   }
 
   @ObservableState

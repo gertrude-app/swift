@@ -412,10 +412,10 @@ struct AppView: View {
       ConnectingView(store: $0)
     }
     .sheet(item: self.$store.scope(
-      state: \.destination?.debug,
-      action: \.destination.debug,
+      state: \.destination?.info,
+      action: \.destination.info,
     )) { store in
-      DebugView(store: store)
+      InfoView(store: store)
         .onAppear { store.send(.sheetPresented) }
         .onShake { store.send(.receivedShake) }
     }

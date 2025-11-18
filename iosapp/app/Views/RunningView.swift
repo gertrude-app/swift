@@ -83,11 +83,11 @@ struct RunningView: View {
 
         Spacer()
 
-        Button(action: { self.store.send(.interactive(.settingsBtnTapped)) }) {
+        Button(action: { self.store.send(.interactive(.infoBtnTapped)) }) {
           HStack(spacing: 6) {
             Image(systemName: "gearshape")
               .font(.system(size: 14, weight: .regular))
-            Text("Settings")
+            Text("Info")
               .font(.system(size: 15, weight: .regular))
           }
         }

@@ -19,6 +19,7 @@ public struct IOSReducer {
     @Dependency(\.date.now) var now
     @Dependency(\.locale) var locale
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.keychain) var keychain
   }
 
   @ObservationIgnored
@@ -63,8 +64,13 @@ public struct IOSReducer {
     case .sheetDismissed:
       return .none
 
-    case .settingsBtnTapped:
-      state.destination = .debug(.init(timesShaken: 1))
+    case .infoBtnTapped:
+      state.destination = .info(.init(
+        connection: self.deps.sharedStorage.loadAccountConnection(),
+        vendorId: self.deps.keychain.loadVendorId(),
+        numRules: self.deps.sharedStorage.loadProtectionMode()?.rules?.count ?? 0,
+        numDisabledBlockGroups: self.deps.sharedStorage.loadDisabledBlockGroups()?.count ?? 0,
+      ))
       return .none
 
     #if DEBUG

@@ -22,7 +22,7 @@ public extension IOSReducer {
       case blockGroupToggled(BlockGroup)
       case sheetDismissed
       case receivedShake
-      case settingsBtnTapped
+      case infoBtnTapped
     }
 
     public enum Programmatic: Equatable {

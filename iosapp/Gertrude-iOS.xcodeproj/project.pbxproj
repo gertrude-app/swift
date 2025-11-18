@@ -35,7 +35,7 @@
 		7FA7B85B2AEB243400363B53 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
 		7FA7B85E2AEB243400363B53 /* FilterDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA7B85D2AEB243400363B53 /* FilterDataProvider.swift */; };
 		7FA7B8632AEB243400363B53 /* filter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FA7B8582AEB243400363B53 /* filter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		7FB498882ECB80260086E7F3 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FB498872ECB80260086E7F3 /* DebugView.swift */; };
+		7FB498882ECB80260086E7F3 /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FB498872ECB80260086E7F3 /* InfoView.swift */; };
 		7FE743D32C8F431500607876 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA7B85A2AEB243400363B53 /* NetworkExtension.framework */; };
 		7FE743D62C8F431500607876 /* FilterControlProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FE743D52C8F431500607876 /* FilterControlProvider.swift */; };
 		7FE743DB2C8F431500607876 /* controller.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7FE743D22C8F431500607876 /* controller.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -105,7 +105,7 @@
 		7FA7B85F2AEB243400363B53 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7FA7B8602AEB243400363B53 /* filter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = filter.entitlements; sourceTree = "<group>"; };
 		7FA7B8682AEB271800363B53 /* app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = app.entitlements; sourceTree = "<group>"; };
-		7FB498872ECB80260086E7F3 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
+		7FB498872ECB80260086E7F3 /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		7FE743D22C8F431500607876 /* controller.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = controller.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FE743D52C8F431500607876 /* FilterControlProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterControlProvider.swift; sourceTree = "<group>"; };
 		7FE743D72C8F431500607876 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -171,7 +171,7 @@
 				0FA657FE2D538A5A00BA1254 /* FinishedView.swift */,
 				0F4609D82D4BCA510038C617 /* WelcomeView.swift */,
 				0F4609D92D4BCA510038C617 /* ButtonScreenView.swift */,
-				7FB498872ECB80260086E7F3 /* DebugView.swift */,
+				7FB498872ECB80260086E7F3 /* InfoView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -421,7 +421,7 @@
 				0F4609FD2D4BCA510038C617 /* Colors.swift in Sources */,
 				0F460A002D4BCA510038C617 /* BigButton.swift in Sources */,
 				0FA657FF2D538A5E00BA1254 /* FinishedView.swift in Sources */,
-				7FB498882ECB80260086E7F3 /* DebugView.swift in Sources */,
+				7FB498882ECB80260086E7F3 /* InfoView.swift in Sources */,
 				0F5DCFD62D54DBDE003E2361 /* FairiesView.swift in Sources */,
 				0F460A022D4BCA510038C617 /* WelcomeView.swift in Sources */,
 				7FA7B8472AEB238700363B53 /* IOSAppEntry.swift in Sources */,
