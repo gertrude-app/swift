@@ -7,6 +7,7 @@ public enum UnauthedRoute: PairRoute {
   case defaultBlockRules(DefaultBlockRules.Input)
   case logIOSEvent(LogIOSEvent.Input)
   case recoveryDirective(RecoveryDirective.Input)
+  case connectAccountFeatureFlag
 }
 
 public extension UnauthedRoute {
@@ -34,6 +35,9 @@ public extension UnauthedRoute {
     Route(.case(Self.recoveryDirective)) {
       Operation(RecoveryDirective.self)
       Body(.json(RecoveryDirective.Input.self))
+    }
+    Route(.case(Self.connectAccountFeatureFlag)) {
+      Operation(ConnectAccountFeatureFlag.self)
     }
   }
   .eraseToAnyParserPrinter()

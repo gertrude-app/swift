@@ -65,7 +65,7 @@ struct RunningView: View {
             for: .seconds(0.5),
           )
 
-        Link(destination: URL(string: "https://gertrude.app")!) {
+        Link(destination: URL(string: "https://gertrude.app/iosapp-main")!) {
           HStack {
             Text("www.gertrude.app")
             Image(systemName: "arrow.up.right")

@@ -8,8 +8,9 @@
 
 ## Important notes
 
-_NOTE:_ when writing code, almost NEVER leave comments, unless something is extremely
-non-obvious.
+When writing code, almost NEVER leave comments, unless something is extremely non-obvious.
+
+When running any `swift test` commands, always prepend `SWIFT_DETERMINISTIC_HASHING=1`
 
 Never run `xcodebuild` for any reason.
 

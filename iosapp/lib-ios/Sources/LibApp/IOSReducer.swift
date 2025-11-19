@@ -212,6 +212,16 @@ public struct IOSReducer {
       state.destination = .connectAccount(.init())
       return .none
 
+    case (.onboarding(.happyPath(.offerAccountConnect)), .tertiary):
+      self.deps.log(state.screen, action, "f4986227")
+      state.screen = .onboarding(.happyPath(.explainAccountConnect))
+      return .none
+
+    case (.onboarding(.happyPath(.explainAccountConnect)), .primary):
+      self.deps.log(state.screen, action, "0d00951c")
+      state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      return .none
+
     case (.onboarding(.happyPath(.connectSuccess)), .primary):
       self.deps.log(state.screen, action, "63d34e4c")
       state.screen = .onboarding(.happyPath(.promptClearCache))
@@ -500,7 +510,11 @@ public struct IOSReducer {
     case (.supervisionSuccessFirstLaunch, .primary):
       self.deps.log(state.screen, action, "aa563df6")
       state.onboarding.deviceSupervised = true
-      state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      if state.onboarding.connectFeature.isEnabled {
+        state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      } else {
+        state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      }
       return .none
 
     default:
@@ -528,21 +542,37 @@ public struct IOSReducer {
           let filterRunning = await deps.systemExtension.filterRunning()
           let disabledBlockGroups = deps.sharedStorage.loadDisabledBlockGroups()
           switch (connection, filterRunning, disabledBlockGroups) {
+
+          // state: normal launch, ACCOUNT CONNECTED
           case (.some(let conn), /* filter on: */ true, /* groups: */ _):
             await send(.programmatic(.setScreen(.running(state:
               .connected(childName: conn.childName)))))
             await deps.api.setAuthToken(conn.token)
+
+          // state: normal launch, NO ACCOUNT
           case ( /* conn: */ nil, /* filter on: */ true, /* groups: */ .some):
             await send(.programmatic(.setScreen(.running(state: .notConnected))))
+
+          // state: first launch / onboarding needed
           case ( /* conn: */ _, /* filter on: */ false, /* groups: */ .none):
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+            if let featureFlag = try? await deps.api.connectAccountFeatureFlag() {
+              await send(.programmatic(.receivedConnectAccountFeatureFlag(featureFlag)))
+            }
+
+          // state: unusual - filter not running but block groups stored
           case ( /* conn: */ _, /* filter on: */ false, /* groups: */ .some):
             // NB: if they remove the filter via Settings then launch app, we'll get here
             deps.log("non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+
+          // state: first launch SUPERVISION
           case ( /* conn: */ _, /* filter on: */ true, /* groups: */ .none):
             deps.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
+            if let featureFlag = try? await deps.api.connectAccountFeatureFlag() {
+              await send(.programmatic(.receivedConnectAccountFeatureFlag(featureFlag)))
+            }
           }
         },
         // handle first launch
@@ -629,7 +659,11 @@ public struct IOSReducer {
       } else {
         self.deps.unexpected(state.screen, action, "c98b9525")
       }
-      state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      if state.onboarding.connectFeature.isEnabled {
+        state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      } else {
+        state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      }
       return .run { [deps = self.deps] _ in
         deps.sharedStorage.saveDisabledBlockGroups([])
       }
@@ -647,6 +681,10 @@ public struct IOSReducer {
         self.deps.log(action, "321558ed", extra: "other error: \(String(reflecting: err))")
         state.screen = .onboarding(.installFail(.other(err)))
       }
+      return .none
+
+    case .receivedConnectAccountFeatureFlag(let feature):
+      state.onboarding.connectFeature = feature
       return .none
     }
   }

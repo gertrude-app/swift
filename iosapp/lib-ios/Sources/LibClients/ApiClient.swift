@@ -21,6 +21,8 @@ public struct ApiClient: Sendable {
   public var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
   public var recoveryDirective: @Sendable () async throws -> String?
   public var setAuthToken: @Sendable (UUID?) async -> Void
+  public var connectAccountFeatureFlag: @Sendable ()
+    async throws -> ConnectAccountFeatureFlag.Output
 }
 
 extension ApiClient: TestDependencyKey {
@@ -117,6 +119,12 @@ extension ApiClient: DependencyKey {
       },
       setAuthToken: { token in
         _authToken.withLock { $0 = token }
+      },
+      connectAccountFeatureFlag: {
+        try await output(
+          from: ConnectAccountFeatureFlag.self,
+          withUnauthed: .connectAccountFeatureFlag,
+        )
       },
     )
   }

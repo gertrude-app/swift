@@ -44,6 +44,9 @@ final class IOSReducerTests: XCTestCase {
         fetchBlockRulesInvocations.withValue { $0 += 1 }
         return [.urlContains(value: "GIFs")]
       }
+      $0.api.connectAccountFeatureFlag = { @Sendable in
+        .init(isEnabled: false)
+      }
       $0.systemExtension.requestAuthorization = {
         requestAuthInvocations.withValue { $0 += 1 }
         return .success(())
@@ -88,6 +91,8 @@ final class IOSReducerTests: XCTestCase {
     await store.receive(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere))))) {
       $0.screen = .onboarding(.happyPath(.hiThere))
     }
+
+    await store.receive(.programmatic(.receivedConnectAccountFeatureFlag(.init(isEnabled: false))))
 
     expect(storedDates.value).toEqual([.reference])
     expect(apiLoggedDetails.value).toEqual(["[onboarding] first launch, region: `US`"])
@@ -154,10 +159,6 @@ final class IOSReducerTests: XCTestCase {
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
 
     await store.receive(.programmatic(.installSucceeded)) {
-      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
-    }
-
-    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
     }
 
@@ -242,6 +243,40 @@ final class IOSReducerTests: XCTestCase {
 
     expect(ratingRequestInvocations.value).toEqual(1)
     await store.send(.programmatic(.appWillTerminate))
+  }
+
+  @MainActor
+  func testConnectAccountFeatureFlagEnabled() async throws {
+    var initialState = IOSReducer.State(
+      screen: .onboarding(.happyPath(.dontGetTrickedPreInstall)),
+    )
+    initialState.onboarding.connectFeature = .init(isEnabled: true)
+
+    let store = TestStore(initialState: initialState) {
+      IOSReducer()
+    } withDependencies: {
+      $0.api.logEvent = { @Sendable _, _ in }
+      $0.systemExtension.installFilter = { .success(()) }
+      $0.sharedStorage.saveDisabledBlockGroups = { @Sendable _ in }
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
+
+    await store.receive(.programmatic(.installSucceeded)) {
+      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) {
+      $0.screen = .onboarding(.happyPath(.explainAccountConnect))
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
+      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
+      $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
+    }
   }
 
   @MainActor
@@ -345,6 +380,9 @@ final class IOSReducerTests: XCTestCase {
       $0.api.fetchDefaultBlockRules = { @Sendable _ in
         struct TestError: Error {}
         throw TestError()
+      }
+      $0.api.connectAccountFeatureFlag = { @Sendable in
+        .init(isEnabled: false)
       }
       $0.sharedStorage.loadFirstLaunchDate = { @Sendable in nil }
       $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
@@ -493,25 +531,30 @@ final class IOSReducerTests: XCTestCase {
       $0.device.deleteCacheFillDir = {}
       $0.api.fetchDefaultBlockRules = { @Sendable _ in [] }
       $0.api.logEvent = { @Sendable _, _ in }
+      $0.api.connectAccountFeatureFlag = { @Sendable in .init(isEnabled: false) }
       // filter running...
       $0.systemExtension.filterRunning = { true }
-      // but no sign of onboarding
+      // but no sign of onboarding...
       $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
       $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
     }
 
     await store.send(.programmatic(.appDidLaunch))
+
     await store.receive(.programmatic(.setFirstLaunch(.reference))) {
       $0.onboarding.firstLaunch = .reference
     }
+
     // ...so we go straight to supervision first launch
     await store.receive(.programmatic(.setScreen(.supervisionSuccessFirstLaunch))) {
       $0.screen = .supervisionSuccessFirstLaunch
     }
 
+    await store.receive(.programmatic(.receivedConnectAccountFeatureFlag(.init(isEnabled: false))))
+
     // primary button goes to opt out groups
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
+      $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
       $0.onboarding.deviceSupervised = true
     }
 

@@ -25,6 +25,9 @@ extension IOSRoute: RouteResponder {
       case .recoveryDirective(let input):
         let output = try await RecoveryDirective.resolve(with: input, in: context)
         return try await self.respond(with: output)
+      case .connectAccountFeatureFlag:
+        let output = try await ConnectAccountFeatureFlag.resolve(in: context)
+        return try await self.respond(with: output)
       }
 
     case .authed(let uuid, let authedRoute):

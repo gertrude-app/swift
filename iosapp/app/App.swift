@@ -110,9 +110,24 @@ struct AppView: View {
 
         case .onboarding(.happyPath(.offerAccountConnect)):
           ButtonScreenView(
-            text: "You can connect this device to a Gertrude parent account for more controls and features.",
+            text: self.store.onboarding.connectFeature.offerScreenText ??
+              "You can connect this device to a Gertrude parent account for more controls and features.",
             primary: self.btn(text: "No thanks", .primary),
-            secondary: self.btn(text: "Connect to account", .secondary, animate: false),
+            secondary: self.btn(
+              text: self.store.onboarding.connectFeature.offerScreenConnectBtnText ??
+                "Connect to account",
+              .secondary,
+              animate: false,
+            ),
+            tertiary: self.btn(text: "Tell me more", .tertiary),
+          )
+
+        case .onboarding(.happyPath(.explainAccountConnect)):
+          ButtonScreenView(
+            text: self.store.onboarding.connectFeature.explainScreenText ??
+              "Connecting to a Gertrude account allows the parent to modify settings remotely after installation, safe-list websites in Safari, and more. It is not required, all the core blocking features will always work without an account or payment.",
+            primary: self.btn(text: "Back", .primary),
+            secondary: .init(text: "Read the blog post", type: .link(.connect), animate: false),
           )
 
         case .onboarding(.happyPath(.connectSuccess)):
@@ -123,7 +138,7 @@ struct AppView: View {
 
         case .onboarding(.happyPath(.optOutBlockGroups)):
           ChooseWhatToBlockView(
-            deselectedGroups: self.store.state.disabledBlockGroups,
+            deselectedGroups: self.store.disabledBlockGroups,
             onGroupToggle: { self.store.send(.interactive(.blockGroupToggled($0))) },
             onDone: { self.store.send(.interactive(.onboardingBtnTapped(.primary, "Done"))) },
           )
@@ -454,10 +469,10 @@ struct AppView: View {
 }
 
 extension URL {
-  static let support = URL(string: "https://gertrude.app/contact")!
-  static let supervisionTutorial =
-    URL(string: "https://gertrude.app/blog/gertrude-ios-supervised-mode")!
-  static let appleFamily = URL(string: "https://support.apple.com/en-us/108380")!
+  static let support = URL(string: "https://gertrude.app/iosapp-contact")!
+  static let connect = URL(string: "https://gertrude.app/iosapp-connect")!
+  static let supervisionTutorial = URL(string: "https://gertrude.app/iosapp-supervise")!
+  static let appleFamily = URL(string: "https://gertrude.app/iosapp-apple-fam")!
 }
 
 #Preview {

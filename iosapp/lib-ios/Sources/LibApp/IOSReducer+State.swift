@@ -1,5 +1,6 @@
 // swiftformat:disable extensionAccessControl
 import ComposableArchitecture
+import IOSRoute
 import LibClients
 import TaggedTime
 
@@ -36,6 +37,7 @@ extension IOSReducer {
       public var returningTo: Screen?
       public var deviceSupervised: Bool = false
       public var clearCache: ClearCacheFeature.State?
+      public var connectFeature = ConnectAccountFeatureFlag.Output(isEnabled: false)
 
       public init(
         firstLaunch: Date? = nil,
@@ -82,6 +84,7 @@ extension IOSReducer {
       case explainInstallWithDevicePasscode
       case dontGetTrickedPreInstall
       case offerAccountConnect
+      case explainAccountConnect
       case connectSuccess
       case optOutBlockGroups
       case promptClearCache

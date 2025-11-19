@@ -34,6 +34,7 @@ public extension IOSReducer {
       case authorizationFailed(AuthFailureReason)
       case installSucceeded
       case installFailed(FilterInstallError)
+      case receivedConnectAccountFeatureFlag(ConnectAccountFeatureFlag.Output)
     }
   }
 }
