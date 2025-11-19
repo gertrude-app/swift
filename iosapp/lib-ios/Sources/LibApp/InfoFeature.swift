@@ -6,7 +6,7 @@ import LibClients
 public struct InfoFeature {
   @ObservableState
   public struct State: Equatable, Sendable {
-    public var connection: ChildIOSDeviceData_b1?
+    public var connection: ChildIOSDeviceData?
     public var vendorId: UUID?
     public var numRules: Int = 0
     public var numDisabledBlockGroups: Int = 0
@@ -15,7 +15,7 @@ public struct InfoFeature {
     public var clearCache: ClearCacheFeature.State?
 
     public init(
-      connection: ChildIOSDeviceData_b1? = nil,
+      connection: ChildIOSDeviceData? = nil,
       vendorId: UUID? = nil,
       numRules: Int = 0,
       numDisabledBlockGroups: Int = 0,
@@ -178,7 +178,7 @@ extension InfoFeature.Deps {
     self.sharedStorage.saveProtectionMode(.normal(rules))
   }
 
-  func refreshConnectedState(connection: ChildIOSDeviceData_b1) async throws {
+  func refreshConnectedState(connection: ChildIOSDeviceData) async throws {
     self.osLog.log("InfoFeature child id: \(connection.childId)")
     let before = self.sharedStorage.loadProtectionMode()
     self.osLog.log("InfoFeature connected rules before refresh: \(before?.shortDesc ?? "(nil)")")

@@ -227,7 +227,7 @@ extension ControllerProxy: FlowDecider {
   }
 }
 
-extension ConnectedRules_b1.Output {
+extension ConnectedRules.Output {
   var protectionMode: ProtectionMode {
     .connected(self.blockRules, self.webPolicy)
   }

@@ -1,8 +1,7 @@
 import DuetSQL
 import IOSRoute
 
-/// testflight only: v1.4.0 - present
-extension ConnectedRules_b1: Resolver {
+extension ConnectedRules: Resolver {
   static func resolve(with input: Input, in ctx: IOSApp.ChildContext) async throws -> Output {
     let groups = try await ctx.device.blockGroups(in: ctx.db)
     let blockRules = try await IOSApp.BlockRule.query()
@@ -27,5 +26,11 @@ extension ConnectedRules_b1: Resolver {
       blockRules: blockRules,
       webPolicy: ctx.device.webContentFilterPolicy(in: ctx.db),
     )
+  }
+}
+
+extension ConnectedRules_b1: Resolver {
+  static func resolve(with input: Input, in ctx: IOSApp.ChildContext) async throws -> Output {
+    try await ConnectedRules.resolve(with: input, in: ctx)
   }
 }

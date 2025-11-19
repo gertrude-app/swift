@@ -341,7 +341,7 @@ import Testing
   let dismissInvocations = LockIsolated(0)
 
   let store = TestStore(initialState: InfoFeature.State(
-    connection: ChildIOSDeviceData_b1(
+    connection: ChildIOSDeviceData(
       childId: UUID(),
       token: UUID(),
       deviceId: UUID(),
@@ -491,7 +491,7 @@ import Testing
   let childId = UUID(1)
 
   let store = TestStore(initialState: InfoFeature.State(
-    connection: ChildIOSDeviceData_b1(
+    connection: ChildIOSDeviceData(
       childId: childId,
       token: UUID(),
       deviceId: UUID(),
