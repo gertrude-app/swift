@@ -128,7 +128,7 @@ struct InfoView: View {
 
           self.infoCard(
             title: "Child ID",
-            value: String(connection.childId.uuidString.prefix(8)),
+            value: String(connection.childId.uuidString.lowercased().prefix(23)),
             icon: "number",
           )
 

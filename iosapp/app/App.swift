@@ -112,7 +112,10 @@ struct AppView: View {
           ButtonScreenView(
             text: self.store.onboarding.connectFeature.offerScreenText ??
               "You can connect this device to a Gertrude parent account for more controls and features.",
-            primary: self.btn(text: "No thanks", .primary),
+            primary: self.btn(
+              text: self.store.onboarding.connectFeature.offerScreenSkipBtnText ?? "No thanks",
+              .primary,
+            ),
             secondary: self.btn(
               text: self.store.onboarding.connectFeature.offerScreenConnectBtnText ??
                 "Connect to account",
@@ -414,8 +417,8 @@ struct AppView: View {
             primary: self.btn(text: "Next", .primary),
           )
 
-        case .running(state: let state):
-          RunningView(store: self.store, childName: state.childName)
+        case .running:
+          RunningView(store: self.store)
             .onShake { self.store.send(.interactive(.receivedShake)) }
         }
       }
@@ -424,7 +427,10 @@ struct AppView: View {
       state: \.destination?.connectAccount,
       action: \.destination.connectAccount,
     )) {
-      ConnectingView(store: $0)
+      ConnectingView(
+        store: $0,
+        infoBlurb: self.store.onboarding.connectFeature.connectAccountSheetInfoBlurb,
+      )
     }
     .sheet(item: self.$store.scope(
       state: \.destination?.info,

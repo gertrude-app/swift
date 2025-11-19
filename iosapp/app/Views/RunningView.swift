@@ -15,8 +15,6 @@ struct RunningView: View {
 
   @Bindable var store: StoreOf<IOSReducer>
 
-  let childName: String?
-
   var body: some View {
     ZStack {
       FairiesView()
@@ -48,12 +46,6 @@ struct RunningView: View {
             after: .seconds(0.3),
             for: .seconds(0.5),
           )
-
-        if let childName = self.childName {
-          Text("Hi \(childName)!")
-            .font(.system(size: 18, weight: .medium))
-            .padding(.bottom, 20)
-        }
 
         Text("You can quit the app now, it will keep blocking even when not running.")
           .font(.system(size: 18, weight: .medium))
@@ -107,16 +99,10 @@ struct RunningView: View {
 }
 
 #Preview {
-  RunningView(
-    store: .init(initialState: .init()) { IOSReducer() },
-    childName: nil,
-  )
+  RunningView(store: .init(initialState: .init()) { IOSReducer() })
 }
 
 #Preview("Dark Mode") {
-  RunningView(
-    store: .init(initialState: .init()) { IOSReducer() },
-    childName: nil,
-  )
-  .preferredColorScheme(.dark)
+  RunningView(store: .init(initialState: .init()) { IOSReducer() })
+    .preferredColorScheme(.dark)
 }

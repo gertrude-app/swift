@@ -545,8 +545,7 @@ public struct IOSReducer {
 
           // state: normal launch, ACCOUNT CONNECTED
           case (.some(let conn), /* filter on: */ true, /* groups: */ _):
-            await send(.programmatic(.setScreen(.running(state:
-              .connected(childName: conn.childName)))))
+            await send(.programmatic(.setScreen(.running(state: .connected))))
             await deps.api.setAuthToken(conn.token)
 
           // state: normal launch, NO ACCOUNT

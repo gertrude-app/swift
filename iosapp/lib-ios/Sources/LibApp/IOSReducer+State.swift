@@ -144,16 +144,7 @@ extension IOSReducer {
 
   public enum RunningState: Equatable {
     case notConnected
-    case connected(childName: String)
-
-    public var childName: String? {
-      switch self {
-      case .notConnected:
-        nil
-      case .connected(let childName):
-        childName
-      }
-    }
+    case connected
   }
 
   public enum Screen: Equatable {
