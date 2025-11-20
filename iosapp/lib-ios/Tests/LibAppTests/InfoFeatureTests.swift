@@ -87,6 +87,7 @@ import Testing
   )) {
     InfoFeature()
   } withDependencies: {
+    $0.osLog.log = { @Sendable _ in }
     $0.api.logEvent = { @Sendable id, detail in
       apiLoggedEvents.withValue { $0.append(Both(id, detail)) }
     }
@@ -134,6 +135,7 @@ import Testing
   let store = TestStore(initialState: InfoFeature.State(connection: nil)) {
     InfoFeature()
   } withDependencies: {
+    $0.osLog.log = { @Sendable _ in }
     $0.api.logEvent = { @Sendable id, detail in
       apiLoggedEvents.withValue { $0.append(Both(id, detail)) }
     }
@@ -183,6 +185,7 @@ import Testing
   let store = TestStore(initialState: InfoFeature.State(connection: nil)) {
     InfoFeature()
   } withDependencies: {
+    $0.osLog.log = { @Sendable _ in }
     $0.device.vendorId = { UUID(1) }
     $0.api.logEvent = { @Sendable id, detail in
       apiLoggedEvents.withValue { $0.append(Both(id, detail)) }
@@ -238,6 +241,7 @@ import Testing
   let store = TestStore(initialState: InfoFeature.State(connection: nil)) {
     InfoFeature()
   } withDependencies: {
+    $0.osLog.log = { @Sendable _ in }
     $0.device.vendorId = { UUID(1) }
     $0.api.logEvent = { @Sendable id, detail in
       apiLoggedEvents.withValue { $0.append(Both(id, detail)) }
@@ -293,6 +297,7 @@ import Testing
   let store = TestStore(initialState: InfoFeature.State(connection: nil)) {
     InfoFeature()
   } withDependencies: {
+    $0.osLog.log = { @Sendable _ in }
     $0.api.logEvent = { @Sendable id, detail in
       apiLoggedEvents.withValue { $0.append(Both(id, detail)) }
     }
@@ -351,6 +356,7 @@ import Testing
   )) {
     InfoFeature()
   } withDependencies: {
+    $0.osLog.log = { @Sendable _ in }
     $0.api.logEvent = { @Sendable id, detail in
       apiLoggedEvents.withValue { $0.append(Both(id, detail)) }
     }

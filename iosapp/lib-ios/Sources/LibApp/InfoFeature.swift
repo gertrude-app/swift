@@ -108,10 +108,12 @@ public struct InfoFeature {
         }
 
       case .receivedShake where state.connection == nil && state.timesShaken == 5:
+        self.deps.osLog.log("received 5th shake: entering unconnected recovery mode")
         state.timesShaken = 0
         return self.unconnectedRecovery()
 
       case .receivedShake where state.connection != nil && state.timesShaken == 5:
+        self.deps.osLog.log("received 5th shake: entering connected recovery mode")
         state.timesShaken = 0
         return .run { [deps = self.deps] _ in
           await deps.sendRecoveryDirective()
@@ -119,6 +121,7 @@ public struct InfoFeature {
         }
 
       case .receivedShake:
+        self.deps.osLog.log("received shake \(state.timesShaken + 1)")
         state.timesShaken += 1
         return .none
 
@@ -141,23 +144,33 @@ public struct InfoFeature {
     .run { [deps = self.deps] _ in
       await deps.api.logEvent("a8998540", "entering recovery mode")
       if deps.sharedStorage.loadDisabledBlockGroups() == nil {
+        deps.osLog.log("unconnected recovery: no stored disabled block groups, saving empty")
         deps.sharedStorage.saveDisabledBlockGroups([])
+      } else {
+        deps.osLog.log("unconnected recovery: disabled block groups already stored")
       }
       let rules = deps.sharedStorage.loadProtectionMode()
+      deps.osLog.log("unconnected recovery: current rules: \(rules?.shortDesc ?? "(nil)")")
       if rules.missingRules {
+        deps.osLog.log("unconnected recovery: rules missing, fetching defaults")
         await deps.api.logEvent("bcca235f", "rules missing in recovery mode")
         let defaultRules = try? await deps.api
           .fetchDefaultBlockRules(deps.device.vendorId())
         if let defaultRules, !defaultRules.isEmpty {
           deps.sharedStorage.saveProtectionMode(.normal(defaultRules))
+          deps.osLog.log("unconnected recovery: saved fetched default rules")
         } else {
           await deps.api.logEvent("2c3a4481", "failed to fetch defaults in recovery mode")
           deps.sharedStorage
             .saveProtectionMode(.normal(BlockRule.Legacy.defaults.map(\.current)))
+          deps.osLog.log("unconnected recovery: saved hardcoded default fallback rules")
         }
       }
+      deps.osLog.log("unconnected recovery: sending rules changed notification")
       try await deps.filter.send(notification: .rulesChanged)
+      deps.osLog.log("unconnected recovery: sending recovery directive")
       await deps.sendRecoveryDirective()
+      deps.osLog.log("unconnected recovery: dismissing info screen")
       await deps.dismiss()
     }
   }
