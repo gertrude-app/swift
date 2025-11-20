@@ -14,7 +14,7 @@ extension IOSRoute: RouteResponder {
         let output = try await BlockRules_v2.resolve(with: input, in: context)
         return try await self.respond(with: output)
       case .connectDevice(let input):
-        let output = try await ConnectDevice_b1.resolve(with: input, in: context)
+        let output = try await ConnectDevice.resolve(with: input, in: context)
         return try await self.respond(with: output)
       case .defaultBlockRules(let input):
         let output = try await DefaultBlockRules.resolve(with: input, in: context)
@@ -24,6 +24,9 @@ extension IOSRoute: RouteResponder {
         return try await self.respond(with: output)
       case .recoveryDirective(let input):
         let output = try await RecoveryDirective.resolve(with: input, in: context)
+        return try await self.respond(with: output)
+      case .connectAccountFeatureFlag:
+        let output = try await ConnectAccountFeatureFlag.resolve(in: context)
         return try await self.respond(with: output)
       }
 

@@ -29,7 +29,7 @@ public final class ControllerProxy: Sendable {
   enum RefreshReason {
     case startup
     case fauxHeartbeat
-    case appShake
+    case infoSheetPresented
   }
 
   let deps = Deps()
@@ -188,15 +188,15 @@ public final class ControllerProxy: Sendable {
   public func handleNewFlow(_ systemFlow: NEFilterFlow) async -> NEFilterControlVerdict {
     // CONVENTION: we get here when the filter sends a `.needsRules` verdict, indicating
     // that according to it's incremental "timer", it thinks it's time to update the rules
-    // unless the flow is the refresh rules sentinel, which means the app was shaken
+    // unless the flow is the refresh rules sentinel, which means the info sheet was shown
     let flow = self.toFilterFlow(systemFlow)
     return await self.handleFilterFlow(flow)
   }
 
   func handleFilterFlow(_ flow: FilterFlow) async -> NEFilterControlVerdict {
     if flow.hostname == MagicStrings.refreshRulesSentinalHostname {
-      self.deps.logger.log("refresh rules requested from app")
-      let rulesChanged = await self.refreshRules(reason: .appShake)
+      self.deps.logger.log("refresh rules requested from app, info sheet presented")
+      let rulesChanged = await self.refreshRules(reason: .infoSheetPresented)
       return .drop(withUpdateRules: rulesChanged)
     }
     let rulesChanged = await self.refreshRules(reason: .fauxHeartbeat)
@@ -227,7 +227,7 @@ extension ControllerProxy: FlowDecider {
   }
 }
 
-extension ConnectedRules_b1.Output {
+extension ConnectedRules.Output {
   var protectionMode: ProtectionMode {
     .connected(self.blockRules, self.webPolicy)
   }

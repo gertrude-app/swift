@@ -1,5 +1,6 @@
 // swiftformat:disable extensionAccessControl
 import ComposableArchitecture
+import IOSRoute
 import LibClients
 import TaggedTime
 
@@ -7,7 +8,7 @@ extension IOSReducer {
   @Reducer(state: .equatable, action: .equatable)
   public enum Destination {
     case connectAccount(ConnectAccount)
-    case debug(Debug)
+    case info(InfoFeature)
   }
 
   @ObservableState
@@ -31,33 +32,23 @@ extension IOSReducer {
 
     public struct OnboardingState: Equatable {
       public var firstLaunch: Date?
-      public var batteryLevel: DeviceClient.BatteryLevel = .unknown
       public var majorOnboarder: MajorOnboarder?
       public var ownsMac: Bool?
       public var returningTo: Screen?
-      public var availableDiskSpaceInBytes: Int?
-      public var startClearCache: Date?
-      public var endClearCache: Date?
       public var deviceSupervised: Bool = false
+      public var clearCache: ClearCacheFeature.State?
+      public var connectFeature = ConnectAccountFeatureFlag.Output(isEnabled: false)
 
       public init(
         firstLaunch: Date? = nil,
-        batteryLevel: DeviceClient.BatteryLevel = .unknown,
         majorOnboarder: IOSReducer.MajorOnboarder? = nil,
         ownsMac: Bool? = nil,
         returningTo: IOSReducer.Screen? = nil,
-        availableDiskSpaceInBytes: Int? = nil,
-        startClearCache: Date? = nil,
-        endClearCache: Date? = nil,
       ) {
         self.firstLaunch = firstLaunch
-        self.batteryLevel = batteryLevel
         self.majorOnboarder = majorOnboarder
         self.ownsMac = ownsMac
         self.returningTo = returningTo
-        self.availableDiskSpaceInBytes = availableDiskSpaceInBytes
-        self.startClearCache = startClearCache
-        self.endClearCache = endClearCache
       }
 
       mutating func takeReturningTo() -> IOSReducer.Screen? {
@@ -93,12 +84,10 @@ extension IOSReducer {
       case explainInstallWithDevicePasscode
       case dontGetTrickedPreInstall
       case offerAccountConnect
+      case explainAccountConnect
       case connectSuccess
       case optOutBlockGroups
       case promptClearCache
-      case batteryWarning
-      case clearingCache(Int)
-      case cacheCleared
       case requestAppStoreRating
       case doneQuit
     }
@@ -155,16 +144,7 @@ extension IOSReducer {
 
   public enum RunningState: Equatable {
     case notConnected
-    case connected(childName: String)
-
-    public var childName: String? {
-      switch self {
-      case .notConnected:
-        nil
-      case .connected(let childName):
-        childName
-      }
-    }
+    case connected
   }
 
   public enum Screen: Equatable {

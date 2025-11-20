@@ -8,8 +8,11 @@
 
 ## Important notes
 
-_NOTE:_ when writing code, almost NEVER leave comments, unless something is extremely
-non-obvious.
+When writing code, almost NEVER leave comments, unless something is extremely non-obvious.
+
+When running any `swift test` commands, always prepend `SWIFT_DETERMINISTIC_HASHING=1`
+
+Never run `xcodebuild` for any reason.
 
 If you need a UUID, use bash to invoke `uuid --llm` to get one, instead of making one
 yourself. Many places in this codebase we use partial identifiers (especially for

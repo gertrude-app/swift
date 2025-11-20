@@ -44,6 +44,9 @@ final class IOSReducerTests: XCTestCase {
         fetchBlockRulesInvocations.withValue { $0 += 1 }
         return [.urlContains(value: "GIFs")]
       }
+      $0.api.connectAccountFeatureFlag = { @Sendable in
+        .init(isEnabled: false)
+      }
       $0.systemExtension.requestAuthorization = {
         requestAuthInvocations.withValue { $0 += 1 }
         return .success(())
@@ -88,6 +91,8 @@ final class IOSReducerTests: XCTestCase {
     await store.receive(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere))))) {
       $0.screen = .onboarding(.happyPath(.hiThere))
     }
+
+    await store.receive(.programmatic(.receivedConnectAccountFeatureFlag(.init(isEnabled: false))))
 
     expect(storedDates.value).toEqual([.reference])
     expect(apiLoggedDetails.value).toEqual(["[onboarding] first launch, region: `US`"])
@@ -154,10 +159,6 @@ final class IOSReducerTests: XCTestCase {
     await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
 
     await store.receive(.programmatic(.installSucceeded)) {
-      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
-    }
-
-    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
       $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
     }
 
@@ -199,35 +200,40 @@ final class IOSReducerTests: XCTestCase {
       [.appleMapsImages], // <-- persist user choice after "Done"
     ])
 
-    await store.receive(.programmatic(.setAvailableDiskSpaceInBytes(1024 * 12))) {
-      $0.onboarding.availableDiskSpaceInBytes = 1024 * 12
-    }
-
-    await store.receive(.programmatic(.setBatteryLevel(.level(0.2)))) {
-      $0.onboarding.batteryLevel = .level(0.2)
-    }
-
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.screen = .onboarding(.happyPath(.batteryWarning))
+      $0.onboarding.clearCache = .init(context: .onboarding, screen: .loading)
     }
 
-    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.onboarding.startClearCache = .reference
-      $0.screen = .onboarding(.happyPath(.clearingCache(0)))
+    await store.send(.interactive(.onboardingClearCache(.onAppear)))
+
+    await store.receive(.interactive(.onboardingClearCache(.receivedDeviceInfo(
+      batteryLevel: .level(0.2),
+      availableSpace: 1024 * 12,
+    )))) {
+      $0.onboarding.clearCache?.batteryLevel = .level(0.2)
+      $0.onboarding.clearCache?.screen = .batteryWarning
+      $0.onboarding.clearCache?.availableDiskSpaceInBytes = 1024 * 12
+    }
+
+    await store.send(.interactive(.onboardingClearCache(.batteryWarningContinueTapped))) {
+      $0.onboarding.clearCache?.screen = .clearing
+      $0.onboarding.clearCache?.startClearCache = .reference
     }
 
     cacheClearSubject.send(.bytesCleared(1024))
-    await store.receive(.programmatic(.receiveClearCacheUpdate(.bytesCleared(1024)))) {
-      $0.screen = .onboarding(.happyPath(.clearingCache(1024)))
+    await store.receive(.interactive(
+      .onboardingClearCache(.receivedClearCacheUpdate(.bytesCleared(1024))),
+    )) {
+      $0.onboarding.clearCache?.bytesCleared = 1024
     }
 
     cacheClearSubject.send(.finished)
-    await store.receive(.programmatic(.receiveClearCacheUpdate(.finished))) {
-      $0.onboarding.endClearCache = .reference
-      $0.screen = .onboarding(.happyPath(.cacheCleared))
+    await store.receive(.interactive(.onboardingClearCache(.receivedClearCacheUpdate(.finished)))) {
+      $0.onboarding.clearCache?.screen = .cleared
     }
 
-    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
+    await store.send(.interactive(.onboardingClearCache(.completeBtnTapped))) {
+      $0.onboarding.clearCache = nil
       $0.screen = .onboarding(.happyPath(.requestAppStoreRating))
     }
 
@@ -237,6 +243,40 @@ final class IOSReducerTests: XCTestCase {
 
     expect(ratingRequestInvocations.value).toEqual(1)
     await store.send(.programmatic(.appWillTerminate))
+  }
+
+  @MainActor
+  func testConnectAccountFeatureFlagEnabled() async throws {
+    var initialState = IOSReducer.State(
+      screen: .onboarding(.happyPath(.dontGetTrickedPreInstall)),
+    )
+    initialState.onboarding.connectFeature = .init(isEnabled: true)
+
+    let store = TestStore(initialState: initialState) {
+      IOSReducer()
+    } withDependencies: {
+      $0.api.logEvent = { @Sendable _, _ in }
+      $0.systemExtension.installFilter = { .success(()) }
+      $0.sharedStorage.saveDisabledBlockGroups = { @Sendable _ in }
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.primary, "")))
+
+    await store.receive(.programmatic(.installSucceeded)) {
+      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.tertiary, ""))) {
+      $0.screen = .onboarding(.happyPath(.explainAccountConnect))
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
+      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
+    }
+
+    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
+      $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
+    }
   }
 
   @MainActor
@@ -341,6 +381,9 @@ final class IOSReducerTests: XCTestCase {
         struct TestError: Error {}
         throw TestError()
       }
+      $0.api.connectAccountFeatureFlag = { @Sendable in
+        .init(isEnabled: false)
+      }
       $0.sharedStorage.loadFirstLaunchDate = { @Sendable in nil }
       $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
       $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
@@ -389,23 +432,31 @@ final class IOSReducerTests: XCTestCase {
     let clearCacheInvocations = LockIsolated(0)
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.promptClearCache)),
-      onboarding: .init(
-        batteryLevel: .level(0.75), // <-- enough battery
-        availableDiskSpaceInBytes: 1024 * 1024 * 1024 * 5, // <-- 5 GB space
-      ),
     )) {
       IOSReducer()
     } withDependencies: {
       $0.mainQueue = .immediate
       $0.date = .constant(.reference)
+      $0.api.logEvent = { @Sendable _, _ in }
+      $0.device.batteryLevel = { .level(0.75) } // <-- enough battery
+      $0.device.availableDiskSpaceInBytes = { 1024 * 1024 * 1024 * 5 } // <-- 5 GB space
       $0.device.clearCache = { _ in
         clearCacheInvocations.withValue { $0 += 1 }
         return AnyPublisher(Empty())
       }
     }
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.onboarding.startClearCache = .reference
-      $0.screen = .onboarding(.happyPath(.clearingCache(0)))
+      $0.onboarding.clearCache = .init(context: .onboarding)
+    }
+    await store.send(.interactive(.onboardingClearCache(.onAppear)))
+    await store.receive(.interactive(.onboardingClearCache(.receivedDeviceInfo(
+      batteryLevel: .level(0.75),
+      availableSpace: 1024 * 1024 * 1024 * 5,
+    )))) {
+      $0.onboarding.clearCache?.batteryLevel = .level(0.75)
+      $0.onboarding.clearCache?.screen = .clearing
+      $0.onboarding.clearCache?.startClearCache = .reference
+      $0.onboarding.clearCache?.availableDiskSpaceInBytes = 1024 * 1024 * 1024 * 5
     }
     expect(clearCacheInvocations.value).toEqual(1)
   }
@@ -415,26 +466,34 @@ final class IOSReducerTests: XCTestCase {
     let clearCacheInvocations = LockIsolated(0)
     let store = TestStore(initialState: IOSReducer.State(
       screen: .onboarding(.happyPath(.promptClearCache)),
-      onboarding: .init(
-        batteryLevel: .level(0.95), // <-- lots of battery, but...
-        availableDiskSpaceInBytes: 1024 * 1024 * 1024 * 65, // ...65 GB to clear !!
-      ),
     )) {
       IOSReducer()
     } withDependencies: {
       $0.mainQueue = .immediate
       $0.date = .constant(.reference)
+      $0.api.logEvent = { @Sendable _, _ in }
+      $0.device.batteryLevel = { .level(0.95) } // <-- logs of battery, but...
+      $0.device.availableDiskSpaceInBytes = { 1024 * 1024 * 1024 * 65 } // ...65 GB to clear !!
       $0.device.clearCache = { _ in
         clearCacheInvocations.withValue { $0 += 1 }
         return AnyPublisher(Empty())
       }
     }
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.screen = .onboarding(.happyPath(.batteryWarning))
+      $0.onboarding.clearCache = .init(context: .onboarding, screen: .loading)
     }
-    await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.onboarding.startClearCache = .reference
-      $0.screen = .onboarding(.happyPath(.clearingCache(0)))
+    await store.send(.interactive(.onboardingClearCache(.onAppear)))
+    await store.receive(.interactive(.onboardingClearCache(.receivedDeviceInfo(
+      batteryLevel: .level(0.95),
+      availableSpace: 1024 * 1024 * 1024 * 65,
+    )))) {
+      $0.onboarding.clearCache?.batteryLevel = .level(0.95)
+      $0.onboarding.clearCache?.screen = .batteryWarning
+      $0.onboarding.clearCache?.availableDiskSpaceInBytes = 1024 * 1024 * 1024 * 65
+    }
+    await store.send(.interactive(.onboardingClearCache(.batteryWarningContinueTapped))) {
+      $0.onboarding.clearCache?.screen = .clearing
+      $0.onboarding.clearCache?.startClearCache = .reference
     }
     expect(clearCacheInvocations.value).toEqual(1)
   }
@@ -472,25 +531,30 @@ final class IOSReducerTests: XCTestCase {
       $0.device.deleteCacheFillDir = {}
       $0.api.fetchDefaultBlockRules = { @Sendable _ in [] }
       $0.api.logEvent = { @Sendable _, _ in }
+      $0.api.connectAccountFeatureFlag = { @Sendable in .init(isEnabled: false) }
       // filter running...
       $0.systemExtension.filterRunning = { true }
-      // but no sign of onboarding
+      // but no sign of onboarding...
       $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in nil }
       $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
     }
 
     await store.send(.programmatic(.appDidLaunch))
+
     await store.receive(.programmatic(.setFirstLaunch(.reference))) {
       $0.onboarding.firstLaunch = .reference
     }
+
     // ...so we go straight to supervision first launch
     await store.receive(.programmatic(.setScreen(.supervisionSuccessFirstLaunch))) {
       $0.screen = .supervisionSuccessFirstLaunch
     }
 
+    await store.receive(.programmatic(.receivedConnectAccountFeatureFlag(.init(isEnabled: false))))
+
     // primary button goes to opt out groups
     await store.send(.interactive(.onboardingBtnTapped(.primary, ""))) {
-      $0.screen = .onboarding(.happyPath(.offerAccountConnect))
+      $0.screen = .onboarding(.happyPath(.optOutBlockGroups))
       $0.onboarding.deviceSupervised = true
     }
 
@@ -538,6 +602,30 @@ final class IOSReducerTests: XCTestCase {
 
     await store.send(.interactive(.onboardingBtnTapped(.secondary, ""))) {
       $0.screen = .onboarding(.happyPath(.requestAppStoreRating))
+    }
+  }
+
+  @MainActor
+  func testInfoBtnTappedLoadsInfoFeatureDestination() async throws {
+    let vendorId = UUID()
+    let store = TestStore(initialState: IOSReducer.State(screen: .running(state: .notConnected))) {
+      IOSReducer()
+    } withDependencies: {
+      $0.sharedStorage.loadAccountConnection = { @Sendable in nil }
+      $0.keychain._load = { @Sendable _ in vendorId.uuidString.data(using: .utf8) }
+      $0.sharedStorage.loadProtectionMode = { @Sendable in
+        .normal([.urlContains(value: "test")])
+      }
+      $0.sharedStorage.loadDisabledBlockGroups = { @Sendable in [.gifs] }
+    }
+
+    await store.send(.interactive(.infoBtnTapped)) {
+      $0.destination = .info(InfoFeature.State(
+        connection: nil,
+        vendorId: vendorId,
+        numRules: 1,
+        numDisabledBlockGroups: 1,
+      ))
     }
   }
 }

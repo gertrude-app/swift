@@ -8,8 +8,8 @@ import os.log
 
 @DependencyClient
 public struct SharedStorageClient: Sendable {
-  public var loadAccountConnection: @Sendable () -> ChildIOSDeviceData_b1?
-  public var saveAccountConnection: @Sendable (ChildIOSDeviceData_b1) -> Void
+  public var loadAccountConnection: @Sendable () -> ChildIOSDeviceData?
+  public var saveAccountConnection: @Sendable (ChildIOSDeviceData) -> Void
 
   public var loadProtectionMode: @Sendable () -> ProtectionMode?
   public var saveProtectionMode: @Sendable (ProtectionMode) -> Void
@@ -28,7 +28,7 @@ public struct SharedStorageClient: Sendable {
 
 @DependencyClient
 public struct SharedStorageReaderClient: Sendable {
-  public var loadAccountConnection: @Sendable () -> ChildIOSDeviceData_b1?
+  public var loadAccountConnection: @Sendable () -> ChildIOSDeviceData?
   public var loadProtectionMode: @Sendable () -> ProtectionMode?
   public var loadDisabledBlockGroups: @Sendable () -> [BlockGroup]?
   public var loadFirstLaunchDate: @Sendable () -> Date?

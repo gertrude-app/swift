@@ -2,7 +2,7 @@ import Foundation
 import GertieIOS
 import PairQL
 
-public struct ChildIOSDeviceData_b1: PairOutput {
+public struct ChildIOSDeviceData: PairOutput {
   public var childId: UUID
   public var token: UUID
   public var deviceId: UUID
@@ -16,7 +16,7 @@ public struct ChildIOSDeviceData_b1: PairOutput {
   }
 }
 
-public struct ConnectDevice_b1: Pair {
+public struct ConnectDevice: Pair {
   public static let auth: ClientAuth = .none
 
   public struct Input: PairInput {
@@ -41,5 +41,5 @@ public struct ConnectDevice_b1: Pair {
     }
   }
 
-  public typealias Output = ChildIOSDeviceData_b1
+  public typealias Output = ChildIOSDeviceData
 }

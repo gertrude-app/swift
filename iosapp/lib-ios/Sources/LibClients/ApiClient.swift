@@ -12,7 +12,7 @@ import XCore
 @DependencyClient
 public struct ApiClient: Sendable {
   public var connectDevice: @Sendable (_ code: Int, _ vendorId: UUID)
-    async throws -> ChildIOSDeviceData_b1
+    async throws -> ChildIOSDeviceData
   public var connectedRules: @Sendable (_ vendorId: UUID)
     async throws -> ConnectedRules_b1.Output
   public var fetchBlockRules: @Sendable (_ vendorId: UUID, _ disabledGroups: [BlockGroup])
@@ -21,6 +21,8 @@ public struct ApiClient: Sendable {
   public var logEvent: @Sendable (_ id: String, _ detail: String?) async -> Void
   public var recoveryDirective: @Sendable () async throws -> String?
   public var setAuthToken: @Sendable (UUID?) async -> Void
+  public var connectAccountFeatureFlag: @Sendable ()
+    async throws -> ConnectAccountFeatureFlag.Output
 }
 
 extension ApiClient: TestDependencyKey {
@@ -36,7 +38,7 @@ extension ApiClient: DependencyKey {
         @Dependency(\.device) var device
         let deviceData = await device.data()
         return try await output(
-          from: ConnectDevice_b1.self,
+          from: ConnectDevice.self,
           withUnauthed: .connectDevice(.init(
             verificationCode: code,
             vendorId: vendorId,
@@ -50,7 +52,7 @@ extension ApiClient: DependencyKey {
         @Dependency(\.device) var device
         let deviceData = await device.data()
         return try await output(
-          from: ConnectedRules_b1.self,
+          from: ConnectedRules.self,
           with: .connectedRules(.init(
             vendorId: vendorId,
             deviceType: deviceData.type.rawValue,
@@ -117,6 +119,12 @@ extension ApiClient: DependencyKey {
       },
       setAuthToken: { token in
         _authToken.withLock { $0 = token }
+      },
+      connectAccountFeatureFlag: {
+        try await output(
+          from: ConnectAccountFeatureFlag.self,
+          withUnauthed: .connectAccountFeatureFlag,
+        )
       },
     )
   }

@@ -15,8 +15,6 @@ struct RunningView: View {
 
   @Bindable var store: StoreOf<IOSReducer>
 
-  let childName: String?
-
   var body: some View {
     ZStack {
       FairiesView()
@@ -49,12 +47,6 @@ struct RunningView: View {
             for: .seconds(0.5),
           )
 
-        if let childName = self.childName {
-          Text("Hi \(childName)!")
-            .font(.system(size: 18, weight: .medium))
-            .padding(.bottom, 20)
-        }
-
         Text("You can quit the app now, it will keep blocking even when not running.")
           .font(.system(size: 18, weight: .medium))
           .foregroundStyle(Color(self.cs, light: .black.opacity(0.6), dark: .white.opacity(0.6)))
@@ -65,7 +57,7 @@ struct RunningView: View {
             for: .seconds(0.5),
           )
 
-        Link(destination: URL(string: "https://gertrude.app")!) {
+        Link(destination: URL(string: "https://gertrude.app/iosapp-main")!) {
           HStack {
             Text("www.gertrude.app")
             Image(systemName: "arrow.up.right")
@@ -83,11 +75,11 @@ struct RunningView: View {
 
         Spacer()
 
-        Button(action: { self.store.send(.interactive(.settingsBtnTapped)) }) {
+        Button(action: { self.store.send(.interactive(.infoBtnTapped)) }) {
           HStack(spacing: 6) {
             Image(systemName: "gearshape")
               .font(.system(size: 14, weight: .regular))
-            Text("Settings")
+            Text("Info")
               .font(.system(size: 15, weight: .regular))
           }
         }
@@ -107,16 +99,10 @@ struct RunningView: View {
 }
 
 #Preview {
-  RunningView(
-    store: .init(initialState: .init()) { IOSReducer() },
-    childName: nil,
-  )
+  RunningView(store: .init(initialState: .init()) { IOSReducer() })
 }
 
 #Preview("Dark Mode") {
-  RunningView(
-    store: .init(initialState: .init()) { IOSReducer() },
-    childName: nil,
-  )
-  .preferredColorScheme(.dark)
+  RunningView(store: .init(initialState: .init()) { IOSReducer() })
+    .preferredColorScheme(.dark)
 }

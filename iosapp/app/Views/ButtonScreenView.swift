@@ -103,8 +103,9 @@ struct ButtonScreenView: View {
 
         if let image = self.image {
           Image(image)
+            .scaleEffect(image.contains("IOS26") ? 1.25 : 1.0)
             .frame(maxWidth: .infinity)
-            .padding(.bottom, 20)
+            .padding(.bottom, 50)
             .swooshIn(tracking: self.$textOffset, to: .zero, after: .zero, for: .milliseconds(800))
         }
 
@@ -369,5 +370,37 @@ struct ButtonScreenView: View {
     text: "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
     primary: ButtonScreenView.Config(text: "Do something", type: .button {}, animate: true),
     image: "AllowContentFilter",
+  )
+}
+
+#Preview("Screen Time Access (< iOS 26)") {
+  ButtonScreenView(
+    text: "Don’t get tricked! Be sure to click “Continue”, even though it looks like you're supposed to click “Don’t Allow”.",
+    primary: .init("Got it, next") {},
+    image: "AllowScreenTimeAccess",
+  )
+}
+
+#Preview("Screen Time Access (iOS 26+)") {
+  ButtonScreenView(
+    text: "Don’t get tricked! Be sure to click “Continue”, even though it looks like you're supposed to click “Don’t Allow”.",
+    primary: .init("Got it, next") {},
+    image: "AllowScreenTimeAccessIOS26",
+  )
+}
+
+#Preview("Content Filter (< iOS 26)") {
+  ButtonScreenView(
+    text: "Again, don't get tricked! Be sure to click “Allow”, even though it looks like you're supposed to click “Don’t Allow”.",
+    primary: .init("Got it, next") {},
+    image: "AllowContentFilter",
+  )
+}
+
+#Preview("Content Filter (iOS 26+)") {
+  ButtonScreenView(
+    text: "Again, don't get tricked! Be sure to click “Allow”, even though it looks like you're supposed to click “Don’t Allow”.",
+    primary: .init("Got it, next") {},
+    image: "AllowContentFilterIOS26",
   )
 }

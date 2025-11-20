@@ -10,6 +10,8 @@ LOCAL_API_URL = https:/$()/maybe-your-ngrok-url.com
 
 ## Release notes
 
+- `1.4.3` (testflight) (11/20/25)
+  - final testflight before 1.5.0 public release
 - `1.4.2` (testflight) (9/4/25)
   - fix handling of app launch w/ connected account
 - `1.4.1` (testflight) (8/28/25)

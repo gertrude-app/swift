@@ -19,14 +19,11 @@ public struct IOSReducer {
     @Dependency(\.date.now) var now
     @Dependency(\.locale) var locale
     @Dependency(\.mainQueue) var mainQueue
+    @Dependency(\.keychain) var keychain
   }
 
   @ObservationIgnored
   let deps = Deps()
-
-  enum CancelId {
-    case cacheClearUpdates
-  }
 
   public init() {}
 
@@ -44,6 +41,9 @@ public struct IOSReducer {
       }
     }
     .ifLet(\.$destination, action: \.destination)
+    .ifLet(\.onboarding.clearCache, action: \.interactive.onboardingClearCache) {
+      ClearCacheFeature()
+    }
   }
 
   func interactive(state: inout State, action: Action.Interactive) -> Effect<Action> {
@@ -64,14 +64,28 @@ public struct IOSReducer {
     case .sheetDismissed:
       return .none
 
-    case .settingsBtnTapped:
-      state.destination = .debug(.init(timesShaken: 1))
+    case .infoBtnTapped:
+      state.destination = .info(.init(
+        connection: self.deps.sharedStorage.loadAccountConnection(),
+        vendorId: self.deps.keychain.loadVendorId(),
+        numRules: self.deps.sharedStorage.loadProtectionMode()?.rules?.count ?? 0,
+        numDisabledBlockGroups: self.deps.sharedStorage.loadDisabledBlockGroups()?.count ?? 0,
+      ))
       return .none
 
-    case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
-      #if DEBUG
+    #if DEBUG
+      case .receivedShake where state.screen == .onboarding(.happyPath(.hiThere)):
         state.screen = .onboarding(.happyPath(.dontGetTrickedPreAuth))
-      #endif
+        return .none
+    #endif
+
+    case .onboardingClearCache(.completeBtnTapped),
+         .onboardingClearCache(.receivedClearCacheUpdate(.errorCouldNotCreateDir)):
+      state.onboarding.clearCache = nil
+      state.screen = .onboarding(.happyPath(.requestAppStoreRating))
+      return .none
+
+    case .onboardingClearCache:
       return .none
 
     case .receivedShake:
@@ -198,6 +212,16 @@ public struct IOSReducer {
       state.destination = .connectAccount(.init())
       return .none
 
+    case (.onboarding(.happyPath(.offerAccountConnect)), .tertiary):
+      self.deps.log(state.screen, action, "f4986227")
+      state.screen = .onboarding(.happyPath(.explainAccountConnect))
+      return .none
+
+    case (.onboarding(.happyPath(.explainAccountConnect)), .primary):
+      self.deps.log(state.screen, action, "0d00951c")
+      state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      return .none
+
     case (.onboarding(.happyPath(.connectSuccess)), .primary):
       self.deps.log(state.screen, action, "63d34e4c")
       state.screen = .onboarding(.happyPath(.promptClearCache))
@@ -227,51 +251,15 @@ public struct IOSReducer {
             deps.sharedStorage.saveProtectionMode(.normal(BlockRule.Legacy.defaults.map(\.current)))
           }
         },
-        .run { [device = self.deps.device] send in
-          await send(.programmatic(.setBatteryLevel(device.batteryLevel())))
-        },
-        .run { [device = self.deps.device] send in
-          if let bytes = await device.availableDiskSpaceInBytes() {
-            await send(.programmatic(.setAvailableDiskSpaceInBytes(bytes)))
-          }
-        },
       )
 
     case (.onboarding(.happyPath(.promptClearCache)), .primary):
-      let available = state.onboarding.availableDiskSpaceInBytes ?? -1
-      let humanSize = Bytes.humanReadable(available, decimalPlaces: 1, prefix: .binary)
-      if state.onboarding.batteryLevel.isLow || available > (Bytes.inGigabyte * 60) {
-        self.deps.log("clear cache -> battery warning, disk size: \(humanSize)", "ea3f9c37")
-        state.screen = .onboarding(.happyPath(.batteryWarning))
-        return .none
-      } else {
-        self.deps.log("clear cache, skip battery warning, disk size: \(humanSize)", "8a8a3033")
-        state.onboarding.startClearCache = self.deps.now
-        state.screen = .onboarding(.happyPath(.clearingCache(0)))
-        return .publisher { [deps = self.deps] in
-          deps.device.clearCache(state.onboarding.availableDiskSpaceInBytes)
-            .map { .programmatic(.receiveClearCacheUpdate($0)) }
-            .receive(on: deps.mainQueue)
-        }
-      }
+      self.deps.log(state.screen, action, "8a8a3033")
+      state.onboarding.clearCache = .init(context: .onboarding)
+      return .none
 
     case (.onboarding(.happyPath(.promptClearCache)), .secondary):
       self.deps.log(state.screen, action, "1221f1a3")
-      state.screen = .onboarding(.happyPath(.requestAppStoreRating))
-      return .none
-
-    case (.onboarding(.happyPath(.batteryWarning)), .primary):
-      self.deps.log(state.screen, action, "72dc8e84")
-      state.onboarding.startClearCache = self.deps.now
-      state.screen = .onboarding(.happyPath(.clearingCache(0)))
-      return .publisher { [deps = self.deps] in
-        deps.device.clearCache(state.onboarding.availableDiskSpaceInBytes)
-          .map { .programmatic(.receiveClearCacheUpdate($0)) }
-          .receive(on: deps.mainQueue)
-      }.cancellable(id: CancelId.cacheClearUpdates, cancelInFlight: true)
-
-    case (.onboarding(.happyPath(.cacheCleared)), .primary):
-      self.deps.log(state.screen, action, "f9f2e206")
       state.screen = .onboarding(.happyPath(.requestAppStoreRating))
       return .none
 
@@ -522,7 +510,11 @@ public struct IOSReducer {
     case (.supervisionSuccessFirstLaunch, .primary):
       self.deps.log(state.screen, action, "aa563df6")
       state.onboarding.deviceSupervised = true
-      state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      if state.onboarding.connectFeature.isEnabled {
+        state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      } else {
+        state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      }
       return .none
 
     default:
@@ -550,21 +542,36 @@ public struct IOSReducer {
           let filterRunning = await deps.systemExtension.filterRunning()
           let disabledBlockGroups = deps.sharedStorage.loadDisabledBlockGroups()
           switch (connection, filterRunning, disabledBlockGroups) {
+
+          // state: normal launch, ACCOUNT CONNECTED
           case (.some(let conn), /* filter on: */ true, /* groups: */ _):
-            await send(.programmatic(.setScreen(.running(state:
-              .connected(childName: conn.childName)))))
+            await send(.programmatic(.setScreen(.running(state: .connected))))
             await deps.api.setAuthToken(conn.token)
+
+          // state: normal launch, NO ACCOUNT
           case ( /* conn: */ nil, /* filter on: */ true, /* groups: */ .some):
             await send(.programmatic(.setScreen(.running(state: .notConnected))))
+
+          // state: first launch / onboarding needed
           case ( /* conn: */ _, /* filter on: */ false, /* groups: */ .none):
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+            if let featureFlag = try? await deps.api.connectAccountFeatureFlag() {
+              await send(.programmatic(.receivedConnectAccountFeatureFlag(featureFlag)))
+            }
+
+          // state: unusual - filter not running but block groups stored
           case ( /* conn: */ _, /* filter on: */ false, /* groups: */ .some):
             // NB: if they remove the filter via Settings then launch app, we'll get here
             deps.log("non-running filter w/ stored groups", "23c207e2")
             await send(.programmatic(.setScreen(.onboarding(.happyPath(.hiThere)))))
+
+          // state: first launch SUPERVISION
           case ( /* conn: */ _, /* filter on: */ true, /* groups: */ .none):
             deps.log("supervision success first launch", "bad8adcc")
             await send(.programmatic(.setScreen(.supervisionSuccessFirstLaunch)))
+            if let featureFlag = try? await deps.api.connectAccountFeatureFlag() {
+              await send(.programmatic(.receivedConnectAccountFeatureFlag(featureFlag)))
+            }
           }
         },
         // handle first launch
@@ -596,7 +603,7 @@ public struct IOSReducer {
       )
 
     case .appWillTerminate:
-      return .cancel(id: CancelId.cacheClearUpdates)
+      return .cancel(id: ClearCacheFeature.CancelId.cacheClearUpdates)
 
     case .setFirstLaunch(let date):
       state.onboarding.firstLaunch = date
@@ -604,14 +611,6 @@ public struct IOSReducer {
 
     case .setScreen(let screen):
       state.screen = screen
-      return .none
-
-    case .setBatteryLevel(let level):
-      state.onboarding.batteryLevel = level
-      return .none
-
-    case .setAvailableDiskSpaceInBytes(let bytes):
-      state.onboarding.availableDiskSpaceInBytes = bytes
       return .none
 
     case .authorizationSucceeded:
@@ -659,7 +658,11 @@ public struct IOSReducer {
       } else {
         self.deps.unexpected(state.screen, action, "c98b9525")
       }
-      state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      if state.onboarding.connectFeature.isEnabled {
+        state.screen = .onboarding(.happyPath(.offerAccountConnect))
+      } else {
+        state.screen = .onboarding(.happyPath(.optOutBlockGroups))
+      }
       return .run { [deps = self.deps] _ in
         deps.sharedStorage.saveDisabledBlockGroups([])
       }
@@ -679,30 +682,9 @@ public struct IOSReducer {
       }
       return .none
 
-    case .receiveClearCacheUpdate(.bytesCleared(let bytes)):
-      if case .onboarding(.happyPath(.clearingCache)) = state.screen {
-        state.screen = .onboarding(.happyPath(.clearingCache(bytes)))
-      }
+    case .receivedConnectAccountFeatureFlag(let feature):
+      state.onboarding.connectFeature = feature
       return .none
-
-    case .receiveClearCacheUpdate(.finished):
-      state.onboarding.endClearCache = self.deps.now
-      let diskSpace = state.onboarding.availableDiskSpaceInBytes
-        .map { Bytes.humanReadable($0) } ?? "unknown"
-      if let start = state.onboarding.startClearCache {
-        let elapsed = String(format: "%.1f", self.deps.now.timeIntervalSince(start) / 60.0)
-        self.deps.log(action, "cb9cf096", extra: "elapsed time: \(elapsed)m, disk: \(diskSpace)")
-      } else {
-        self.deps.log(action, "cb9cf096", extra: "disk: \(diskSpace)")
-      }
-      state.screen = .onboarding(.happyPath(.cacheCleared))
-      return .cancel(id: CancelId.cacheClearUpdates)
-
-    case .receiveClearCacheUpdate(.errorCouldNotCreateDir):
-      self.deps.log("UNEXPECTED error, could not create cache clear dir", "ae941213")
-      state.onboarding.endClearCache = self.deps.now
-      state.screen = .onboarding(.happyPath(.cacheCleared))
-      return .cancel(id: CancelId.cacheClearUpdates)
     }
   }
 

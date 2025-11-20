@@ -16,8 +16,11 @@ extension IOSApp {
 extension AuthedRoute: RouteResponder {
   static func respond(to route: Self, in ctx: IOSApp.ChildContext) async throws -> Response {
     switch route {
-    case .connectedRules(let input):
+    case .connectedRules_b1(let input):
       let output = try await ConnectedRules_b1.resolve(with: input, in: ctx)
+      return try await self.respond(with: output)
+    case .connectedRules(let input):
+      let output = try await ConnectedRules.resolve(with: input, in: ctx)
       return try await self.respond(with: output)
     case .createSuspendFilterRequest(let input):
       let output = try await CreateSuspendFilterRequest.resolve(with: input, in: ctx)
