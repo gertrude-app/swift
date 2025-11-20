@@ -7,6 +7,10 @@ struct IOSAppEntry: App {
   let store: StoreOf<IOSReducer>
   @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+  var osMajorVersion: Int {
+    ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+  }
+
   init() {
     self.store = Store(
       initialState: IOSReducer.State(),
@@ -19,7 +23,7 @@ struct IOSAppEntry: App {
 
   var body: some Scene {
     WindowGroup {
-      AppView(store: self.store)
+      AppView(store: self.store, osMajorVersion: self.osMajorVersion)
         .onAppear {
           self.store.send(.programmatic(.appDidLaunch))
         }

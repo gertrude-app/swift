@@ -4,6 +4,7 @@ import SwiftUI
 
 struct AppView: View {
   @Bindable var store: StoreOf<IOSReducer>
+  let osMajorVersion: Int
 
   @Environment(\.colorScheme) var cs
   @Environment(\.openURL) var openLink
@@ -92,7 +93,7 @@ struct AppView: View {
           ButtonScreenView(
             text: "Don’t get tricked! Be sure to click “Continue”, even though it looks like you’re supposed to click “Don’t Allow”.",
             primary: self.btn(text: "Got it, next", .primary, animate: false, async: true),
-            image: "AllowScreenTimeAccess",
+            image: self.iosVersionImage("AllowScreenTimeAccess"),
           )
 
         case .onboarding(.happyPath(.explainInstallWithDevicePasscode)):
@@ -105,7 +106,7 @@ struct AppView: View {
           ButtonScreenView(
             text: "Again, don’t get tricked! Be sure to click “Allow”, even though it looks like you’re supposed to click “Don’t Allow”.",
             primary: self.btn(text: "Got it, next", .primary, animate: false, async: true),
-            image: "AllowContentFilter",
+            image: self.iosVersionImage("AllowContentFilter"),
           )
 
         case .onboarding(.happyPath(.offerAccountConnect)):
@@ -467,6 +468,10 @@ struct AppView: View {
     }
   }
 
+  func iosVersionImage(_ baseName: String) -> String {
+    self.osMajorVersion >= 26 ? "\(baseName)IOS26" : baseName
+  }
+
   enum ButtonType {
     case primary
     case secondary
@@ -486,5 +491,6 @@ extension URL {
     store: Store(initialState: IOSReducer.State()) {
       IOSReducer()
     },
+    osMajorVersion: 26,
   )
 }
