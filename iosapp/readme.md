@@ -2,10 +2,11 @@
 
 ## Local dev
 
-Create a `.xcconfig` file at `iosapp/config/Local.xcconfig` with the following content:
+Create a `.xcconfig` file at `iosapp/config/Local.xcconfig` with the following content, or
+use `just iosconfig` to create it automatically:
 
 ```xcconfig
-LOCAL_API_URL = https:/$()/maybe-your-ngrok-url.com
+LOCAL_API_URL = https:/$()/REPLACE.ngrok-free.app
 ```
 
 ## Release notes
