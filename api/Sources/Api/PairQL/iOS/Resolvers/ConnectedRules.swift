@@ -28,9 +28,3 @@ extension ConnectedRules: Resolver {
     )
   }
 }
-
-extension ConnectedRules_b1: Resolver {
-  static func resolve(with input: Input, in ctx: IOSApp.ChildContext) async throws -> Output {
-    try await ConnectedRules.resolve(with: input, in: ctx)
-  }
-}

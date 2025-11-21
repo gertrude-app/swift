@@ -14,7 +14,7 @@ public struct ApiClient: Sendable {
   public var connectDevice: @Sendable (_ code: Int, _ vendorId: UUID)
     async throws -> ChildIOSDeviceData
   public var connectedRules: @Sendable (_ vendorId: UUID)
-    async throws -> ConnectedRules_b1.Output
+    async throws -> ConnectedRules.Output
   public var fetchBlockRules: @Sendable (_ vendorId: UUID, _ disabledGroups: [BlockGroup])
     async throws -> [BlockRule]
   public var fetchDefaultBlockRules: @Sendable (_ vendorId: UUID?) async throws -> [BlockRule]

@@ -35,12 +35,3 @@ public struct ConnectedRules: Pair {
     }
   }
 }
-
-/// testflight: v1.4.0 - present
-/// delete when 3 testflight users migrated to 1.5.x
-public struct ConnectedRules_b1: Pair {
-  public static let auth: ClientAuth = .child
-
-  public typealias Input = ConnectedRules.Input
-  public typealias Output = ConnectedRules.Output
-}

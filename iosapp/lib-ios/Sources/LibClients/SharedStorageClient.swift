@@ -101,13 +101,6 @@ func migrateLegacyStorage() async -> Bool {
     return true
   }
 
-  // 1.4.x testflight users had new data in old location
-  if let v14x: ProtectionMode = loadCodable(forKey: .legacyProtectionMode) {
-    saveCodable(v14x, forKey: .protectionMode)
-    await api.logEvent(id: "90442103", detail: "migrated v1.4.x (TestFlight) -> 1.5.x")
-    return true
-  }
-
   if UserDefaults.gertrude.data(forKey: Key.legacyProtectionMode.rawValue) != nil {
     await api.logEvent(id: "fdab6cff", detail: "unexpected migration error")
     return false
