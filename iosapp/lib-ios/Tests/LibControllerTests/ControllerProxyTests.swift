@@ -56,6 +56,7 @@ func setup(
     }
     $0.device.vendorId = { UUID(1) }
     $0.api.logEvent = { id, detail in
+      await Task.megaYield() // ensure notify callback set in time for init migration
       test.loggedApiEvents.withValue { $0.append(id) }
     }
     $0.api.fetchBlockRules = { vendorId, disabledGroups in
