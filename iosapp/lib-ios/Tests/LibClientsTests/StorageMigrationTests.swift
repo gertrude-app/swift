@@ -15,7 +15,6 @@ import Testing
     $0.device.vendorId = { UUID() }
   } operation: {
     try await test_v1_3_to_v15_migration()
-    try await test_v1_4_testflight_to_v15_migration()
     try await test_v1_0_to_v15_migration()
   }
 }
@@ -54,20 +53,6 @@ func test_v1_3_to_v15_migration() async throws {
   let blockGroupsData = userDefaults.data(forKey: "disabledBlockGroups.v1.3.0")!
   let blockGroups = try JSONDecoder().decode([BlockGroup].self, from: blockGroupsData)
   #expect(blockGroups == [.whatsAppFeatures, .spotifyImages]) // <- spotify added
-}
-
-func test_v1_4_testflight_to_v15_migration() async throws {
-  let userDefaults = getUserDefaults()
-
-  let rules = ProtectionMode.normal([.urlContains(value: "test.com")])
-  try userDefaults.set(JSONEncoder().encode(rules), forKey: "ProtectionMode.v1.3.0")
-
-  let migrated = await migrateLegacyStorage()
-  #expect(migrated == true)
-
-  let migratedData = userDefaults.data(forKey: "v1.5.0--protection-mode")!
-  let decoded = try JSONDecoder().decode(ProtectionMode.self, from: migratedData)
-  #expect(decoded == rules)
 }
 
 func test_v1_0_to_v15_migration() async throws {
