@@ -521,7 +521,7 @@ public struct IOSReducer {
       #if DEBUG
         fatalError("Unhandled combination:\n -> btn: .\(btn)\n -> screen: .\(state.screen)")
       #else
-        self.log(state.screen, action, "7c039b10", extra: "UNHANDLED ACTION")
+        self.deps.log(state.screen, action, "7c039b10", extra: "UNHANDLED ACTION")
         state.screen = state.screen.fallbackDestination(from: btn)
         return .none
       #endif

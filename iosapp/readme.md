@@ -11,6 +11,11 @@ LOCAL_API_URL = https:/$()/REPLACE.ngrok-free.app
 
 ## Release notes
 
+- `1.5.0` (11/22/25)
+  - battery fix, new faux-heartbeat
+  - connect to account (hidden behind feature flag)
+  - new Info screen, which allows clear cache after install
+  - spotify block group
 - `1.4.3` (testflight) (11/20/25)
   - final testflight before 1.5.0 public release
 - `1.4.2` (testflight) (9/4/25)
