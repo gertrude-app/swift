@@ -1,12 +1,7 @@
 import Dependencies
+import Foundation
 import MacAppRoute
 import Vapor
-
-#if os(Linux)
-  @preconcurrency import Foundation
-#else
-  import Foundation
-#endif
 
 extension CreateSignedScreenshotUpload: Resolver {
   static func resolve(with input: Input, in context: MacApp.ChildContext) async throws -> Output {

@@ -29,7 +29,7 @@ final class TimeChangeTests: XCTestCase {
     let (store, _) = AppReducer.testStore(mockDeps: false) {
       $0.timestamp = .init(
         network: .reference,
-        system: .reference - ((60 * 60 * 3) - 1), // <-- 3 hrs off at last trusted check
+        system: .reference - 10799, // <-- 3 hrs (-1 sec) off at last trusted check
         boottime: .reference - 2000,
       )
     }

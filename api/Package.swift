@@ -5,7 +5,7 @@ let package = Package(
   name: "api",
   platforms: [.macOS(.v13)],
   dependencies: [
-    .package("vapor/vapor@4.104.0"),
+    .package("vapor/vapor@4.119.1"),
     .package("vapor/fluent@4.11.0"),
     .package("vapor/fluent-postgres-driver@2.9.2"),
     .package("onevcat/Rainbow@4.0.1"),

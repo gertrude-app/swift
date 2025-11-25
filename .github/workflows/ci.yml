@@ -107,11 +107,16 @@ jobs:
             echo "CONFIGURATION=debug"       >> $GITHUB_ENV
           fi
           echo "FILENAME=api_${API_ENV}_${DATESTR}_${SHORTSHA}" >> $GITHUB_ENV
+      - name: install-static-sdk
+        run: |
+          swift sdk install https://download.swift.org/swift-6.2.1-release/static-sdk/swift-6.2.1-RELEASE/swift-6.2.1-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz \
+            --checksum 08e1939a504e499ec871b36826569173103e4562769e12b9b8c2a50f098374ad
       - name: build-api
         run: |
-          cd api && swift build --static-swift-stdlib -c $CONFIGURATION \
-            --arch x86_64 -Xcc -mavx2 -Xswiftc -target -Xswiftc x86_64-unknown-linux-gnu
-          cd ../ && cp ${SRCDIR}/Run ${FILENAME}
+          cd api
+          swift build --swift-sdk x86_64-swift-linux-musl -c $CONFIGURATION
+          BIN_PATH=$(swift build --swift-sdk x86_64-swift-linux-musl -c $CONFIGURATION --show-bin-path)
+          cp "${BIN_PATH}/Run" ../${FILENAME}
       - name: scp-bin
         uses: appleboy/scp-action@v0.1.7
         with:
