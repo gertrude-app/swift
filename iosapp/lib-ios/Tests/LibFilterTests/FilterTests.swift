@@ -28,11 +28,11 @@ final class FilterTests: XCTestCase {
       (.hostnameEndsWith(value: "a.com"), .init(host: nil, url: "bla.com", block: false)),
       (
         .hostnameEquals(value: "www.safe.com"),
-        .init(host: nil, url: "https://www.safe.com/foo/bar", block: true)
+        .init(host: nil, url: "https://www.safe.com/foo/bar", block: true),
       ),
       (
         .hostnameEndsWith(value: "safe.com"),
-        .init(host: nil, url: "https://foo.bar-sobaz.qux.safe.com/foo/bar", block: true)
+        .init(host: nil, url: "https://foo.bar-sobaz.qux.safe.com/foo/bar", block: true),
       ),
       // unless(rule:negatedBy)
       (
@@ -40,21 +40,21 @@ final class FilterTests: XCTestCase {
           rule: .bundleIdContains(value: "com.mobile.Safari"),
           negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")],
         ),
-        .init(host: "bad.com", src: ".com.mobile.Safari", block: true)
+        .init(host: "bad.com", src: ".com.mobile.Safari", block: true),
       ),
       (
         .unless(
           rule: .bundleIdContains(value: "com.mobile.Safari"),
           negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")],
         ),
-        .init(host: "www.kids.org", src: ".com.mobile.Safari", block: false)
+        .init(host: "www.kids.org", src: ".com.mobile.Safari", block: false),
       ),
       (
         .unless(
           rule: .bundleIdContains(value: "com.mobile.Safari"),
           negatedBy: [.hostnameEndsWith(value: "safe.com"), .hostnameEndsWith(value: "kids.org")],
         ),
-        .init(host: "bad.com", src: "com.other.app", block: false)
+        .init(host: "bad.com", src: "com.other.app", block: false),
       ),
       // flowTypeIs()
       (.flowTypeIs(value: .browser), .init(flowType: .browser, block: true)),

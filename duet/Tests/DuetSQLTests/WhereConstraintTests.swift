@@ -21,27 +21,27 @@ final class WhereConstraintTests: XCTestCase {
       (
         .and(.isNull(.optionalString), .equals(.int, 3)),
         #"("optional_string" IS NULL AND "int" = $1)"#,
-        [3]
+        [3],
       ),
       (
         .isNull(.optionalString) .&& .int == 3,
         #"("optional_string" IS NULL AND "int" = $1)"#,
-        [3]
+        [3],
       ),
       (
         .isNull(.optionalString) .&& .int <> 3,
         #"("optional_string" IS NULL AND NOT "int" = $1)"#,
-        [3]
+        [3],
       ),
       (
         .or(.isNull(.optionalString), .equals(.int, 3)),
         #"("optional_string" IS NULL OR "int" = $1)"#,
-        [3]
+        [3],
       ),
       (
         .isNull(.optionalString) .|| .int == 3,
         #"("optional_string" IS NULL OR "int" = $1)"#,
-        [3]
+        [3],
       ),
     ]
 

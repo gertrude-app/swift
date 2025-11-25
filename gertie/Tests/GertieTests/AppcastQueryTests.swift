@@ -7,15 +7,15 @@ final class AppcastQueryTests: XCTestCase {
     let cases = [
       (
         AppcastQuery(channel: .beta, force: true, version: "1.0.0"),
-        "?version=1.0.0&force=true&channel=beta"
+        "?version=1.0.0&force=true&channel=beta",
       ),
       (
         .init(channel: nil, force: nil, version: nil),
-        ""
+        "",
       ),
       (
         .init(channel: .beta, force: true, version: "1.0.0", requestingAppVersion: "4.9.0"),
-        "?requestingAppVersion=4.9.0&force=true&version=1.0.0&channel=beta"
+        "?requestingAppVersion=4.9.0&force=true&version=1.0.0&channel=beta",
       ),
     ]
 

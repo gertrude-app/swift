@@ -11,14 +11,14 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
       (
         /* keystrokes already enabled: */ true,
         /* existing screenshots freq:  */ 10, // <-- too fast to increase
-        [:]
+        [:],
       ),
       (
         /* keystrokes already enabled: */ false,
         /* existing screenshots freq:  */ 10, // <-- too fast to increase
         [
           .addKeylogging: "keylogging",
-        ]
+        ],
       ),
       (
         /* keystrokes already enabled: */ true,
@@ -28,7 +28,7 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
           .setScreenshotFreq(90): "Screenshot every 90s",
           .setScreenshotFreq(60): "Screenshot every 60s",
           .setScreenshotFreq(30): "Screenshot every 30s",
-        ]
+        ],
       ),
       (
         /* keystrokes already enabled: */ false,
@@ -43,7 +43,7 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
           .addKeyloggingAndSetScreenshotFreq(90): "Screenshot every 90s + keylogging",
           .addKeyloggingAndSetScreenshotFreq(60): "Screenshot every 60s + keylogging",
           .addKeyloggingAndSetScreenshotFreq(30): "Screenshot every 30s + keylogging",
-        ]
+        ],
       ),
       (
         /* keystrokes already enabled: */ true,
@@ -52,7 +52,7 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
           .setScreenshotFreq(80): "1.5x screenshots",
           .setScreenshotFreq(60): "2x screenshots",
           .setScreenshotFreq(40): "3x screenshots",
-        ]
+        ],
       ),
       (
         /* keystrokes already enabled: */ true,
@@ -60,7 +60,7 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
         [
           .setScreenshotFreq(20): "1.5x screenshots",
           .setScreenshotFreq(15): "2x screenshots",
-        ]
+        ],
       ),
       (
         /* keystrokes already enabled: */ false,
@@ -73,7 +73,7 @@ final class UserExtraMonitoringOptionsTests: ApiTestCase, @unchecked Sendable {
           .addKeyloggingAndSetScreenshotFreq(80): "1.5x screenshots + keylogging",
           .addKeyloggingAndSetScreenshotFreq(60): "2x screenshots + keylogging",
           .addKeyloggingAndSetScreenshotFreq(40): "3x screenshots + keylogging",
-        ]
+        ],
       ),
     ]
 

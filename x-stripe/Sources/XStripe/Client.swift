@@ -10,7 +10,7 @@ public extension Stripe {
     public var createPaymentIntent: @Sendable (
       Int,
       Stripe.Api.Currency,
-      [String: String]
+      [String: String],
     ) async throws -> Stripe.Api.PaymentIntent
     public var cancelPaymentIntent: @Sendable (String) async throws -> Stripe.Api.PaymentIntent
     public var createRefund: @Sendable (String) async throws -> Stripe.Api.Refund
@@ -25,7 +25,7 @@ public extension Stripe {
       createPaymentIntent: @Sendable @escaping (
         Int,
         Stripe.Api.Currency,
-        [String: String]
+        [String: String],
       ) async throws -> Stripe.Api.PaymentIntent,
       cancelPaymentIntent: @Sendable @escaping (String) async throws -> Stripe.Api.PaymentIntent,
       createRefund: @Sendable @escaping (String) async throws -> Stripe.Api.Refund,

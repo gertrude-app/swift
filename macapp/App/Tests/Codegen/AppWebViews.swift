@@ -58,7 +58,7 @@ struct AppWebViews: AggregateCodeGenerator {
         (FilterState.WithRelativeTimes.self, "FilterState"),
         (
           Failable<[AdminWindowFeature.State.View.ExemptableUser]>.self,
-          "Failable<ExemptableUser[]>"
+          "Failable<ExemptableUser[]>",
         ),
       ],
       globalAliases: [

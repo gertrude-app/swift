@@ -23,7 +23,7 @@ final class RuleScheduleTests: XCTestCase {
           (test: .day(.monday, at: "10:59"), active: true),
           (test: .day(.monday, at: "11:00"), active: false),
           (test: .day(.monday, at: "21:32"), active: false),
-        ]
+        ],
       ),
       (
         RuleSchedule(mode: .inactive, days: .all, window: "09:00-11:00"),
@@ -34,7 +34,7 @@ final class RuleScheduleTests: XCTestCase {
           (test: .day(.monday, at: "10:59"), active: false),
           (test: .day(.monday, at: "11:00"), active: true),
           (test: .day(.monday, at: "21:32"), active: true),
-        ]
+        ],
       ),
       (
         RuleSchedule(mode: .active, days: .weekdays, window: "09:00-11:00"),
@@ -57,7 +57,7 @@ final class RuleScheduleTests: XCTestCase {
           (test: .day(.sunday, at: "10:59"), active: false),
           (test: .day(.sunday, at: "11:00"), active: false),
           (test: .day(.sunday, at: "21:32"), active: false),
-        ]
+        ],
       ),
       (
         RuleSchedule(mode: .inactive, days: .only(.thursday), window: "22:31-22:34"),
@@ -71,7 +71,7 @@ final class RuleScheduleTests: XCTestCase {
           (test: .day(.sunday, at: "22:30"), active: true),
           (test: .day(.sunday, at: "22:32"), active: true),
           (test: .day(.sunday, at: "22:34"), active: true),
-        ]
+        ],
       ),
     ]
     for (schedule, tests) in cases {

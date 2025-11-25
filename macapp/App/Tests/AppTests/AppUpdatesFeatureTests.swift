@@ -69,7 +69,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
             ),
           ),
         ),
-        .available
+        .available,
       ),
       (
         .init(
@@ -82,7 +82,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
             ),
           ),
         ),
-        .nag
+        .nag,
       ),
       (
         .init(
@@ -96,7 +96,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
           ),
           updateNagDismissedUntil: .epoch.advanced(by: .days(21)), // <-- ...but dismissed
         ),
-        .available
+        .available,
       ),
       (
         .init(
@@ -110,7 +110,7 @@ final class AppUpdatesFeatureTests: XCTestCase {
           ),
           updateNagDismissedUntil: .epoch.advanced(by: .days(21)), // <-- no effect
         ),
-        .require
+        .require,
       ),
     ]
 

@@ -12,7 +12,7 @@ import Testing
 @Test func clearCacheButtonFlow() async throws {
   nonisolated(unsafe) let cacheClearSubject = PassthroughSubject<
     DeviceClient.ClearCacheUpdate,
-    Never
+    Never,
   >()
 
   let store = TestStore(initialState: InfoFeature.State()) {
