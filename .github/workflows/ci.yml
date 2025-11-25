@@ -10,7 +10,7 @@ jobs:
   linux-build-libs-1:
     if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
-    container: swift:6.1.2-focal
+    container: swift:6.2.1-noble
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
   linux-build-libs-2:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    container: swift:6.1.2-focal
+    container: swift:6.2.1-noble
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
   linux-lib-test-libs-1:
     if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
-    container: swift:6.1.2-focal
+    container: swift:6.2.1-noble
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
   linux-lib-test-libs-2:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    container: swift:6.1.2-focal
+    container: swift:6.2.1-noble
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -77,15 +77,15 @@ jobs:
 
   linux-api-build:
     runs-on: namespace-profile-default
-    container: swift:6.1.2-focal
+    container: swift:6.2.1-noble
     steps:
       - name: checkout
         uses: actions/checkout@v4
       - uses: actions/cache@v4
         with:
           path: api/.build
-          key: api-build-v2-${{ hashFiles('api/Package.resolved') }}
-          restore-keys: api-build-v2-
+          key: api-build-v3-${{ hashFiles('api/Package.resolved') }}
+          restore-keys: api-build-v3-
       - name: meta
         id: meta
         uses: friends-library/dev/actions/ts-pack/actions/meta@master
@@ -149,7 +149,7 @@ jobs:
   linux-api-test:
     if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
-    container: swift:6.1.2-focal
+    container: swift:6.2.1-noble
     env:
       DATABASE_HOST: postgres
       AUTO_INCLUDED_KEYCHAIN_ID: 77777777-7777-7777-7777-777777777777
@@ -168,8 +168,8 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: api/.build
-          key: api-test-v2-${{ hashFiles('api/Package.resolved') }}
-          restore-keys: api-test-v2-
+          key: api-test-v3-${{ hashFiles('api/Package.resolved') }}
+          restore-keys: api-test-v3-
       - name: test-api
         run: cd api && swift test
 
@@ -208,12 +208,12 @@ jobs:
       - name: setup xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 16.4.0
+          xcode-version: 26.1.1
       - uses: actions/cache@v4
         with:
           path: macapp/App/.build
-          key: macapp-xc16.4.0--${{ hashFiles('macapp/App/Package.resolved') }}
-          restore-keys: macapp-xc16.4.0--
+          key: macapp-xc26.1.1--${{ hashFiles('macapp/App/Package.resolved') }}
+          restore-keys: macapp-xc26.1.1--
       - name: build
         run: cd macapp/App && swift build
       - name: test
@@ -229,12 +229,12 @@ jobs:
       - name: setup xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 16.4.0
+          xcode-version: 26.1.1
       - uses: actions/cache@v4
         with:
           path: iosapp/lib-ios/.build
-          key: iosapp-xc16.4.0--${{ hashFiles('iosapp/lib-ios/Package.resolved') }}
-          restore-keys: iosapp-xc16.4.0--
+          key: iosapp-xc26.1.1--${{ hashFiles('iosapp/lib-ios/Package.resolved') }}
+          restore-keys: iosapp-xc26.1.1--
       - name: build
         run: cd iosapp/lib-ios && swift build
       - name: test
@@ -243,7 +243,7 @@ jobs:
   swift-lint:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    container: swift:6.1.2-focal
+    container: swift:6.2.1-noble
     steps:
       - name: checkout
         uses: actions/checkout@v4
