@@ -10,7 +10,7 @@ jobs:
   linux-build-libs-1:
     if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
-    container: swift:6.2.1-noble
+    container: ghcr.io/gertrude-app/api-ci-build:latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
   linux-build-libs-2:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    container: swift:6.2.1-noble
+    container: ghcr.io/gertrude-app/api-ci-build:latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
   linux-lib-test-libs-1:
     if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
-    container: swift:6.2.1-noble
+    container: ghcr.io/gertrude-app/api-ci-build:latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
   linux-lib-test-libs-2:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    container: swift:6.2.1-noble
+    container: ghcr.io/gertrude-app/api-ci-build:latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
 
   linux-api-build:
     runs-on: namespace-profile-default
-    container: swift:6.2.1-noble
+    container: ghcr.io/gertrude-app/api-ci-build:latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -107,15 +107,11 @@ jobs:
             echo "CONFIGURATION=debug"       >> $GITHUB_ENV
           fi
           echo "FILENAME=api_${API_ENV}_${DATESTR}_${SHORTSHA}" >> $GITHUB_ENV
-      - name: install-static-sdk
-        run: |
-          swift sdk install https://download.swift.org/swift-6.2.1-release/static-sdk/swift-6.2.1-RELEASE/swift-6.2.1-RELEASE_static-linux-0.0.1.artifactbundle.tar.gz \
-            --checksum 08e1939a504e499ec871b36826569173103e4562769e12b9b8c2a50f098374ad
       - name: build-api
         run: |
           cd api
-          swift build --swift-sdk x86_64-swift-linux-musl -c $CONFIGURATION
-          BIN_PATH=$(swift build --swift-sdk x86_64-swift-linux-musl -c $CONFIGURATION --show-bin-path)
+          swift build -c $CONFIGURATION -Xswiftc -static-stdlib
+          BIN_PATH=$(swift build -c $CONFIGURATION -Xswiftc -static-stdlib --show-bin-path)
           cp "${BIN_PATH}/Run" ../${FILENAME}
       - name: scp-bin
         uses: appleboy/scp-action@v0.1.7
@@ -154,7 +150,7 @@ jobs:
   linux-api-test:
     if: github.event_name == 'pull_request'
     runs-on: namespace-profile-default
-    container: swift:6.2.1-noble
+    container: ghcr.io/gertrude-app/api-ci-build:latest
     env:
       DATABASE_HOST: postgres
       AUTO_INCLUDED_KEYCHAIN_ID: 77777777-7777-7777-7777-777777777777
@@ -248,7 +244,7 @@ jobs:
   swift-lint:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    container: swift:6.2.1-noble
+    container: ghcr.io/gertrude-app/api-ci-build:latest
     steps:
       - name: checkout
         uses: actions/checkout@v4

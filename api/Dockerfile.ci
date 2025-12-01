@@ -1,0 +1,42 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get -q update && \
+    apt-get -q install -y \
+    binutils \
+    git \
+    unzip \
+    gnupg2 \
+    libc6-dev \
+    libcurl4-openssl-dev \
+    libedit2 \
+    libgcc-13-dev \
+    libpython3-dev \
+    libsqlite3-0 \
+    libstdc++-13-dev \
+    libxml2-dev \
+    libncurses-dev \
+    libz3-dev \
+    pkg-config \
+    tzdata \
+    zlib1g-dev \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -O https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz && \
+    tar zxf swiftly-$(uname -m).tar.gz && \
+    ./swiftly init --quiet-shell-followup && \
+    rm swiftly-$(uname -m).tar.gz
+
+ENV SWIFTLY_HOME_DIR=/root/.local/share/swiftly
+ENV PATH="${SWIFTLY_HOME_DIR}/bin:${PATH}"
+
+# NB: change swift version here as needed for prod build deploy
+RUN . "${SWIFTLY_HOME_DIR}/env.sh" && swiftly install 6.2.1
+
+WORKDIR /workspace
+
+CMD ["bash"]

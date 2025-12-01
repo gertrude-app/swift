@@ -14,6 +14,8 @@ When running any `swift test` commands, always prepend `SWIFT_DETERMINISTIC_HASH
 
 Never run `xcodebuild` for any reason.
 
+Never make git commits unless I specifically ask you to.
+
 If you need a UUID, use bash to invoke `uuid --llm` to get one, instead of making one
 yourself. Many places in this codebase we use partial identifiers (especially for
 logging), like `c05ef986`, if you need one of those, invode `sid --llm`.
@@ -171,6 +173,7 @@ searches, and more
 
 - GitHub Actions CI/CD with SSH deployment
 - Separate production/staging builds
+- see `./docs/api-build.md` for details on ci build
 
 ## Core Shared Libraries
 
