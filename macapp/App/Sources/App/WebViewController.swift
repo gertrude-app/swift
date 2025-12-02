@@ -154,5 +154,5 @@ private func allowWebviewDebugging() -> Bool {
 
 typealias WebViewControllerOf<F: Feature> = WebViewController<
   F.Reducer.State,
-  F.Reducer.Action
+  F.Reducer.Action,
 > where F.Reducer.State: Encodable, F.Reducer.Action: Decodable

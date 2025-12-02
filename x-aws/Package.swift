@@ -8,7 +8,7 @@ let package = Package(
     .library(name: "XAws", targets: ["XAws"]),
   ],
   dependencies: [
-    .package("apple/swift-crypto@2.2.4"),
+    .package("apple/swift-crypto@4.1.0"),
     .package(path: "../x-expect"),
   ],
   targets: [

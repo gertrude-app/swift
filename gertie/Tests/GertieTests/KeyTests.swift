@@ -115,7 +115,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "ipAddress"
         }
-        """
+        """,
       ),
       (
         Key.path(path: "foo.com/safe/path", scope: .unrestricted),
@@ -127,7 +127,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "path"
         }
-        """
+        """,
       ),
       (
         Key.domainRegex(pattern: "foo--*bar.foo.com", scope: .unrestricted),
@@ -139,7 +139,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "domainRegex"
         }
-        """
+        """,
       ),
       (
         Key.skeleton(scope: .identifiedAppSlug("foo-app")),
@@ -151,7 +151,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "skeleton"
         }
-        """
+        """,
       ),
       (
         Key.skeleton(scope: .bundleId("com.foo")),
@@ -163,7 +163,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "skeleton"
         }
-        """
+        """,
       ),
       (
         Key.anySubdomain(domain: .init("foo.com")!, scope: .unrestricted),
@@ -175,7 +175,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "anySubdomain"
         }
-        """
+        """,
       ),
       (
         Key.domain(domain: .init("foo.com")!, scope: .unrestricted),
@@ -187,7 +187,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "domain"
         }
-        """
+        """,
       ),
       (
         Key.domain(domain: .init("foo.com")!, scope: .webBrowsers),
@@ -199,7 +199,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "domain"
         }
-        """
+        """,
       ),
       (
         Key.domain(domain: .init("foo.com")!, scope: .single(.bundleId("foo"))),
@@ -215,7 +215,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "domain"
         }
-        """
+        """,
       ),
     ]
 
@@ -233,7 +233,7 @@ final class KeyTests: XCTestCase {
         {
           "type": "unrestricted"
         }
-        """
+        """,
       ),
       (
         .webBrowsers,
@@ -241,7 +241,7 @@ final class KeyTests: XCTestCase {
         {
           "type": "webBrowsers"
         }
-        """
+        """,
       ),
       (
         .single(.bundleId("com.foo")),
@@ -253,7 +253,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "single"
         }
-        """
+        """,
       ),
       (
         .single(.identifiedAppSlug("foo")),
@@ -265,7 +265,7 @@ final class KeyTests: XCTestCase {
           },
           "type": "single"
         }
-        """
+        """,
       ),
     ]
     for (scope, jsonString) in cases {

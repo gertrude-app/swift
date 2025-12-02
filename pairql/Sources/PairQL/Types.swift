@@ -1,10 +1,5 @@
 import Foundation
 
-#if os(Linux)
-  extension JSONEncoder: @unchecked Sendable {}
-  extension JSONDecoder.DateDecodingStrategy: @unchecked Sendable {}
-#endif
-
 @_exported import CasePaths
 @_exported import URLRouting
 

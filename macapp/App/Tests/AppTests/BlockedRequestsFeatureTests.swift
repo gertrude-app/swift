@@ -261,11 +261,11 @@ final class BlockedRequestsFeatureTests: XCTestCase {
           "text": "foo"
         }
         """,
-        .filterTextUpdated(text: "foo")
+        .filterTextUpdated(text: "foo"),
       ),
       (
         #"{"case":"requestFailedTryAgainClicked"}"#,
-        .requestFailedTryAgainClicked
+        .requestFailedTryAgainClicked,
       ),
       (
         """
@@ -274,11 +274,11 @@ final class BlockedRequestsFeatureTests: XCTestCase {
           "comment": "please dad!"
         }
         """,
-        .unlockRequestSubmitted(comment: "please dad!")
+        .unlockRequestSubmitted(comment: "please dad!"),
       ),
       (
         #"{"case":"unlockRequestSubmitted"}"#,
-        .unlockRequestSubmitted(comment: nil)
+        .unlockRequestSubmitted(comment: nil),
       ),
       (
         """
@@ -287,7 +287,7 @@ final class BlockedRequestsFeatureTests: XCTestCase {
           "id": "00000000-0000-0000-0000-000000000000"
         }
         """,
-        .toggleRequestSelected(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
+        .toggleRequestSelected(id: UUID(uuidString: "00000000-0000-0000-0000-000000000000")!),
       ),
       (#"{"case":"tcpOnlyToggled"}"#, .tcpOnlyToggled),
       (#"{"case":"clearRequestsClicked"}"#, .clearRequestsClicked),

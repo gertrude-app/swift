@@ -110,7 +110,7 @@ final class NewFlowDecisionTests: XCTestCase {
       hostname: String?,
       url: String?,
       bundleId: String,
-      decision: FilterDecision.FromFlow?
+      decision: FilterDecision.FromFlow?,
     )] =
       [
         (
@@ -118,28 +118,28 @@ final class NewFlowDecisionTests: XCTestCase {
           hostname: nil,
           url: nil,
           bundleId: "com.netrivet.gertrude.app",
-          decision: .allow(.fromGertrudeApp)
+          decision: .allow(.fromGertrudeApp),
         ),
         (
           ip: nil,
           hostname: nil,
           url: nil,
           bundleId: "WFN83LM943.com.netrivet.gertrude.app",
-          decision: .allow(.fromGertrudeApp)
+          decision: .allow(.fromGertrudeApp),
         ),
         (
           ip: "1.2.3.4",
           hostname: "foo.com",
           url: "https://foo.com/bar",
           bundleId: "WFN83LM943.com.netrivet.gertrude.app",
-          decision: .allow(.fromGertrudeApp)
+          decision: .allow(.fromGertrudeApp),
         ),
         (
           ip: nil,
           hostname: nil,
           url: nil,
           bundleId: "gertrude.app.imposter",
-          decision: nil
+          decision: nil,
         ),
       ]
     for (ip, hostname, url, bundleId, decision) in cases {
