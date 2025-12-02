@@ -38,9 +38,9 @@ struct DiskSpaceJob: AsyncScheduledJob {
     }
 
     switch percent {
-    case ..<45:
+    case ..<5:
       await self.slack.error("Unexpected disk usage amount: \(percent)%")
-    case 45 ..< 89:
+    case 5 ..< 85:
       self.logger.notice("Disk space looks OK: \(percent)%")
     default:
       await self.slack.error("Disk space is dangerously low: \(percent)%")
