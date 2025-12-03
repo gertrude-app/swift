@@ -28,7 +28,7 @@ struct MacOSVersion: Sendable {
     case (13, _): .ventura
     case (14, _): .sonoma
     case (15, _): .sequoia
-    case (26, _): .sequoia
+    case (26, _): .tahoe
     default: .tahoe
     }
   }
