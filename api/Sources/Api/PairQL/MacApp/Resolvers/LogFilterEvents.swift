@@ -19,6 +19,14 @@ extension LogFilterEvents: Resolver {
       )
     })
 
+    let slack = get(dependency: \.slack)
+    for event in events {
+      await slack.internal(
+        .info,
+        "Macapp *filter* event: \(githubSearch(event.eventId)) \(event.detail ?? "")",
+      )
+    }
+
     if input.bundleIds.isEmpty {
       return .success
     }
@@ -38,14 +46,6 @@ extension LogFilterEvents: Resolver {
       _ = try await context.db.customQuery(
         UpsertUnidentifiedApps.self,
         withBindings: bindings,
-      )
-    }
-
-    let slack = get(dependency: \.slack)
-    for event in events {
-      await slack.internal(
-        .info,
-        "Macapp *filter* event: \(githubSearch(event.eventId)) \(event.detail ?? "")",
       )
     }
 

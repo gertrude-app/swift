@@ -36,6 +36,13 @@ public class FilterProxy {
     if self.verboseLogging {
       os_log("[D•] FILTER received new flow: %{public}s", "\(flow.description)")
       os_log("[D•] FILTER early user decision: %{public}@", "\(earlyUserDecision)")
+      let checkFlow = FilterFlow(flow, userId: nil)
+      if checkFlow.bundleId?.contains("com.apple.webfilterproxyd") == true {
+        self.store.log(event: .init(
+          id: "933aa385",
+          detail: "possible screen time filter flow: `\(checkFlow.bundleId ?? "")`",
+        ))
+      }
     }
 
     let filterFlow: FilterFlow
