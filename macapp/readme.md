@@ -2,25 +2,77 @@
 
 ## Release notes
 
-- `1.1.0` (1/17/23) pairql/monorepo refactor, no real new features, but ripped out api
-  layer, and modules changed
-- `1.1.1` (2/8/23) new app icon and menu bar icon only
-- `2.0.0` (7/20/23) TCA rewrite
-- `2.0.1` (7/24/23)
-  - health check screen instructs to reboot computer on filter comm repair fail
-  - filter shouldn't cache app descriptors with empty bundle id
-- `2.0.2` (7/26/23)
-  - attempt to fix post auto-update xpc comm connection
-  - fix duplicate keystroke logging
-  - fix update being triggered on admin window open
-- `2.0.3` (8/3/23)
-  - first _stable_ 2.x release
-  - @see: https://github.com/gertrude-app/swift/pull/33
-  - menu bar returns to initial state after connect fail
-  - admin window health check keeps throbbing filter status during communication repair
-  - fix webview focus bug
-  - remove suspend filter from admin window, add button to suspend filter window
-  - rework suspend filter flow, starting with choose duration
+- `2.7.4` (beta 12/3/25 for new downloads only, to prevent upgrade)
+  - tahoe gifs/images for onboarding
+  - log screen time filter bundle id in verbose mode
+  - allow menu bar background to extend into triangle in macos 14+
+  - drop support for catalina 10.15
+- `2.7.3` (beta 4/10/25 for new downloads only, to prevent upgrade)
+  - fix button to repair notifications permissions from health check
+- `2.7.2` (stable 2/14/25)
+  - fix resumption of monitoring after FDA upgrade onboarding
+- `2.7.1` (never "released", only used for new purchase/download)
+  - change text of onboarding screen w/ new trial period length of 21 days
+- `2.7.0` (stable as of 1/30/25)
+- `2.6.6` (canary as of 1/22/25)
+  - fix onboarding upgrade focus layout shift
+  - new "encourage filter suspensions" onboarding screen
+- `2.6.5` (canary as of 1/16/25)
+  - fix failure to exit upgrade mode after os restart
+- `2.6.4` (only used in internal testing)
+  - several tweaks/fixes from testing 2.6.3 upgrade permission onboarding
+- `2.6.3` (canary as of 1/14/25)
+  - adds onboarding for full-disk-access for screen capture nags
+- `2.6.2` (canary as of 1/3/25)
+  - bypasses sequioa screen capture nag
+- `2.6.1` (canary as of 12/27/24)
+  - filter polices app, blocks if awol
+- `2.6.0` (canary as of 12/17/24)
+  - app blocking
+- `2.5.1` (beta as of 12/6/24)
+  - don't take screenshots when login window is frontmost application
+- `2.5.0` (beta as of 11/14/24, released stable 12/2/24)
+  - downtime feature
+  - scheduled keychains
+  - new menu bar UI
+  - onboarding screen for sequioa bypass privacy warning
+  - log filter bundle ids and unusual events
+  - emit admin event for suspicious time change
+- `2.4.0` (stable 9/17/24, beta as of 8/29/24)
+  - websocket improvements, faster repair, fallback polling
+  - send current app version when requesting appcast
+- `2.3.2` (stable, 7/4/24)
+  - buffer security events when no internet
+- `2.3.1` (beta as of 6/19/24, released for new users)
+  - refinement, filter suspension security details suspension duration
+  - refinement, remove .appUpdateInitiated event, noisy and not useful
+- `2.3.0` (canary as of 6/13/24)
+  - feature: security events
+- `2.2.0` (released only in canary for testing)
+  - app watches and relaunches self on unexpected termination
+  - relaunches app if filter gets ahead
+  - use updateable api data for browser identification
+- `2.1.3` (1/16/24 as `beta` for new customers only)
+  - multi-stage gifs for onboarding instructions
+  - new "how to use gifs" & "don't fall for trick" onboarding screens
+- `2.1.2` (12/18/23 as `beta` for new customers only)
+  - log filter state at beginning of block streaming for debugging/troubleshooting
+  - prevent proliferation of sparkle windows
+  - stop onboarding early if app launched from wrong dir
+  - add onboarding user exemption screen
+  - improve user exemption to not include other protected users
+  - prevent integer overflow causing json decode in request suspension window
+- `2.1.1` (11/1/23)
+  - fix parsing of multi-part domains from outbound flow #caf5ded
+  - onboading improvements: skip user type if good, allow relaunch on early bail, align
+    window right, prevent sys ext install timeout wonkiness
+  - fix request suspension double-submit
+- `2.1.0` (10/21/23 as `beta` for new customers)
+  - onboarding
+  - fixed adminstrate button on request suspension screen filter not connected state
+- `2.0.5` (9/6/23)
+  - fixed domains resolved from outbound bytes not showing up in blocked requests window
+  - fixed double browser quit from computer sleep during filter suspension
 - `2.0.4` (8/24/23)
   - health check new default admin screen w/ redesigned "actions" screen
   - disable "view network requests" and "suspend filter" menu bar btns when filter off
@@ -30,72 +82,25 @@
   - fix flash of light theme when loading app windows in dark mode
   - fixed long blocked urls in catalina
   - fixed app window scrollbars in dark mode
-- `2.0.5` (9/6/23)
-  - fixed domains resolved from outbound bytes not showing up in blocked requests window
-  - fixed double browser quit from computer sleep during filter suspension
-- `2.1.0` (10/21/23 as `beta` for new customers)
-  - onboarding
-  - fixed adminstrate button on request suspension screen filter not connected state
-- `2.1.1` (11/1/23)
-  - fix parsing of multi-part domains from outbound flow #caf5ded
-  - onboading improvements: skip user type if good, allow relaunch on early bail, align
-    window right, prevent sys ext install timeout wonkiness
-  - fix request suspension double-submit
-- `2.1.2` (12/18/23 as `beta` for new customers only)
-  - log filter state at beginning of block streaming for debugging/troubleshooting
-  - prevent proliferation of sparkle windows
-  - stop onboarding early if app launched from wrong dir
-  - add onboarding user exemption screen
-  - improve user exemption to not include other protected users
-  - prevent integer overflow causing json decode in request suspension window
-- `2.1.3` (1/16/24 as `beta` for new customers only)
-  - multi-stage gifs for onboarding instructions
-  - new "how to use gifs" & "don't fall for trick" onboarding screens
-- `2.2.0` (released only in canary for testing)
-  - app watches and relaunches self on unexpected termination
-  - relaunches app if filter gets ahead
-  - use updateable api data for browser identification
-- `2.3.0` (canary as of 6/13/24)
-  - feature: security events
-- `2.3.1` (beta as of 6/19/24, released for new users)
-  - refinement, filter suspension security details suspension duration
-  - refinement, remove .appUpdateInitiated event, noisy and not useful
-- `2.3.2` (stable, 7/4/24)
-  - buffer security events when no internet
-- `2.4.0` (stable 9/17/24, beta as of 8/29/24)
-  - websocket improvements, faster repair, fallback polling
-  - send current app version when requesting appcast
-- `2.5.0` (beta as of 11/14/24, released stable 12/2/24)
-  - downtime feature
-  - scheduled keychains
-  - new menu bar UI
-  - onboarding screen for sequioa bypass privacy warning
-  - log filter bundle ids and unusual events
-  - emit admin event for suspicious time change
-- `2.5.1` (beta as of 12/6/24)
-  - don't take screenshots when login window is frontmost application
-- `2.6.0` (canary as of 12/17/24)
-  - app blocking
-- `2.6.1` (canary as of 12/27/24)
-  - filter polices app, blocks if awol
-- `2.6.2` (canary as of 1/3/25)
-  - bypasses sequioa screen capture nag
-- `2.6.3` (canary as of 1/14/25)
-  - adds onboarding for full-disk-access for screen capture nags
-- `2.6.4` (only used in internal testing)
-  - several tweaks/fixes from testing 2.6.3 upgrade permission onboarding
-- `2.6.5` (canary as of 1/16/25)
-  - fix failure to exit upgrade mode after os restart
-- `2.6.6` (canary as of 1/22/25)
-  - fix onboarding upgrade focus layout shift
-  - new "encourage filter suspensions" onboarding screen
-- `2.7.0` (stable as of 1/30/25)
-- `2.7.1` (never "released", only used for new purchase/download)
-  - change text of onboarding screen w/ new trial period length of 21 days
-- `2.7.2` (stable 2/14/25)
-  - fix resumption of monitoring after FDA upgrade onboarding
-- `2.7.3` (beta 4/10/25 for new downloads only, to prevent upgrade)
-  - fix button to repair notifications permissions from health check
+- `2.0.3` (8/3/23)
+  - first _stable_ 2.x release
+  - @see: https://github.com/gertrude-app/swift/pull/33
+  - menu bar returns to initial state after connect fail
+  - admin window health check keeps throbbing filter status during communication repair
+  - fix webview focus bug
+  - remove suspend filter from admin window, add button to suspend filter window
+  - rework suspend filter flow, starting with choose duration
+- `2.0.2` (7/26/23)
+  - attempt to fix post auto-update xpc comm connection
+  - fix duplicate keystroke logging
+  - fix update being triggered on admin window open
+- `2.0.1` (7/24/23)
+  - health check screen instructs to reboot computer on filter comm repair fail
+  - filter shouldn't cache app descriptors with empty bundle id
+- `2.0.0` (7/20/23) TCA rewrite
+- `1.1.1` (2/8/23) new app icon and menu bar icon only
+- `1.1.0` (1/17/23) pairql/monorepo refactor, no real new features, but ripped out api
+  layer, and modules changed
 
 ## Sparkle Releases
 
