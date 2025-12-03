@@ -357,6 +357,7 @@ extension Release {
     case length
     case revision
     case requirementPace
+    case minVersion
     case notes
     case createdAt
     case updatedAt

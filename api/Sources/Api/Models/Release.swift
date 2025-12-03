@@ -8,6 +8,7 @@ struct Release: Codable, Sendable {
   var signature: String
   var length: Int
   var revision: GitCommitSha
+  var minVersion: String
   var requirementPace: Int?
   var notes: String?
   var createdAt = Date()
@@ -20,6 +21,7 @@ struct Release: Codable, Sendable {
     signature: String,
     length: Int,
     revision: GitCommitSha,
+    minVersion: String,
     requirementPace: Int? = nil,
     notes: String? = nil,
   ) {
@@ -29,6 +31,7 @@ struct Release: Codable, Sendable {
     self.signature = signature
     self.length = length
     self.revision = revision
+    self.minVersion = minVersion
     self.requirementPace = requirementPace
     self.notes = notes
   }

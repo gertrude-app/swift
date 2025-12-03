@@ -51,7 +51,7 @@ extension Release {
       <pubDate>\(formatter.string(from: createdAt))</pubDate>
       <sparkle:version>\(forceUpdate ? "99.99.99" : semver)</sparkle:version>
       <sparkle:shortVersionString>\(forceUpdate ? "99.99.99" : semver)</sparkle:shortVersionString>
-      <sparkle:minimumSystemVersion>10.15</sparkle:minimumSystemVersion>
+      <sparkle:minimumSystemVersion>\(minVersion)</sparkle:minimumSystemVersion>
       <enclosure
         url="\(get(dependency: \.env).s3.bucketUrl)/releases/Gertrude.\(semver).zip"
         length="\(length)"

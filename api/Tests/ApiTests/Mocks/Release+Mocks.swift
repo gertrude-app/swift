@@ -11,6 +11,7 @@ extension Release: RandomMocked {
       signature: "VJwR3bN7V2AaN6FSy+M7LWWhb/wxHzAymCgtr+wJQ+3IZnYNoSFONXHeIkgkDlNcEYIgHQUZCrBqd8PL+YwzBA==",
       length: 555,
       revision: "73563e94567a902aa6709fe512e8f3f41d00a893",
+      minVersion: "11.0",
       requirementPace: 10,
     )
   }
@@ -22,6 +23,7 @@ extension Release: RandomMocked {
       signature: "",
       length: 0,
       revision: "",
+      minVersion: "",
       requirementPace: nil,
     )
   }
@@ -39,6 +41,7 @@ extension Release: RandomMocked {
       signature: "signature".random,
       length: Int.random(in: 0 ... Int.max),
       revision: .init("revision".random),
+      minVersion: "\(Int.random(in: 11 ... 15)).\(Int.random(in: 0 ... 9))",
       requirementPace: Bool.random() ? Int.random(in: 0 ... 100) : nil,
     )
   }
