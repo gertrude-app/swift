@@ -143,6 +143,8 @@ func osVersionName(_ osVersion: Semver?) -> String? {
     "Sonoma"
   case 15:
     "Sequoia"
+  case 26:
+    "Tahoe"
   case nil:
     nil
   default:

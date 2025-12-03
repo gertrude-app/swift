@@ -218,16 +218,6 @@ final class FullDiskAccessOnboardingTests: XCTestCase {
   }
 
   @MainActor
-  func testSkipsFDAStepIfOsCatalina() async {
-    let store = onboardingFeatureStore { $0.step = .allowNotifications_failed }
-    store.deps.device.osVersion = { .init(major: 10, minor: 15, patch: 7) }
-    store.deps.app.hasFullDiskAccess = { fatalError() }
-    store.deps.monitoring.screenRecordingPermissionGranted = { false }
-    await store.send(.webview(.secondaryBtnClicked))
-    await store.receive(.setStep(.allowScreenshots_required))
-  }
-
-  @MainActor
   func testResumingToCheckFDA_Success() async {
     let (store, _) = AppReducer.testStore()
     let saveState = spy(on: Persistent.State.self, returning: ())
