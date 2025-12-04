@@ -11,6 +11,7 @@ struct CreateRelease: Pair {
     let signature: String
     let length: Int
     let revision: String
+    let minVersion: String
     let requirementPace: Int?
     let notes: String?
   }
@@ -39,6 +40,7 @@ extension CreateRelease: Resolver {
       existing.signature = input.signature
       existing.length = input.length
       existing.revision = .init(rawValue: input.revision)
+      existing.minVersion = input.minVersion
       existing.requirementPace = input.requirementPace
       existing.notes = input.notes
       try await context.db.update(existing)
@@ -51,6 +53,7 @@ extension CreateRelease: Resolver {
       signature: input.signature,
       length: input.length,
       revision: .init(input.revision),
+      minVersion: input.minVersion,
       requirementPace: input.requirementPace,
       notes: input.notes,
     ))

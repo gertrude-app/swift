@@ -32,9 +32,15 @@ import WebKit
     self.popover.animates = false
     self.popover.behavior = .applicationDefined
 
+    if #available(macOS 14, *) {
+      self.popover.hasFullSizeContent = true
+      self.popover.contentSize = NSSize(width: 402, height: 302)
+    } else {
+      self.popover.contentSize = NSSize(width: 400, height: 300)
+    }
+
     self.vc = WebViewController<MenuBarFeature.State.View, MenuBarFeature.Action>()
     self.popover.contentViewController = self.vc
-    self.popover.contentSize = NSSize(width: 400, height: 300)
 
     self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
     self.statusItem.button?.image = NSImage(named: "MenuBarIcon.v2")

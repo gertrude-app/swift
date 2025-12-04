@@ -153,6 +153,7 @@ extension Release {
       signature: "signature-123",
       length: 123_456_789,
       revision: "somesha-123",
+      minVersion: "11.0",
       requirementPace: requirementPace,
     )
     self.createdAt = createdAt

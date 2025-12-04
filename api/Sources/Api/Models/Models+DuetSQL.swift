@@ -569,6 +569,7 @@ extension Release: Model {
     case .signature: .string(self.signature)
     case .length: .int(self.length)
     case .revision: .string(self.revision.rawValue)
+    case .minVersion: .string(self.minVersion)
     case .requirementPace: .int(self.requirementPace)
     case .notes: .string(self.notes)
     case .createdAt: .date(self.createdAt)
@@ -584,6 +585,7 @@ extension Release: Model {
       .signature: .string(self.signature),
       .length: .int(self.length),
       .revision: .string(self.revision.rawValue),
+      .minVersion: .string(self.minVersion),
       .requirementPace: .int(self.requirementPace),
       .notes: .string(self.notes),
       .createdAt: .currentTimestamp,

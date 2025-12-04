@@ -165,10 +165,6 @@ extension AppUpdatesFeature.RootReducer: FilterControlling {
         return .none
       }
       return .exec { send in
-        guard self.device.osVersion().major > 10 else {
-          // catalina doesn't autorestart, and very unlikely they'll ever get to 15.x
-          return
-        }
         if await self.app.hasFullDiskAccess() == false {
           await send(.onboarding(.delegate(.openForUpgrade(
             step: .allowFullDiskAccess_grantAndRestart,

@@ -15,6 +15,7 @@ class WebViewController<State, Action>:
   var supportsDarkMode = true
 
   @Dependency(\.app) var app
+  @Dependency(\.device) var device
 
   func updateState(_ state: State) {
     if let json = try? JSON.encode(state, [.isoDates]) {
@@ -62,7 +63,20 @@ class WebViewController<State, Action>:
     )
 
     let fileDirectoryURL = filePathURL.deletingLastPathComponent()
-    self.webView.loadFileURL(filePathURL, allowingReadAccessTo: fileDirectoryURL)
+
+    // allowance for NSPopover.hasFullSizeContent triangle
+    if screen == "MenuBar",
+       self.device.osVersion().major >= 14,
+       var html = try? String(contentsOf: filePathURL, encoding: .utf8) {
+      html = html.replacingOccurrences(
+        of: "<div id=\"app\">",
+        with: "<div id=\"app\" class=\"appview-os-gte-14\">",
+      )
+      self.webView.loadHTMLString(html, baseURL: fileDirectoryURL)
+    } else {
+      self.webView.loadFileURL(filePathURL, allowingReadAccessTo: fileDirectoryURL)
+    }
+
     view = self.webView
   }
 
