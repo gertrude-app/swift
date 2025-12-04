@@ -153,35 +153,40 @@ extension Ephemeral {
       await self.slack.error("failed to encode ephemeral storage")
       return
     }
-    _ = try? await self.storageQuery.delete(in: self.db)
-    _ = try? await self.db.create(InterestingEvent(
-      id: .init(UUID()),
-      eventId: "store-ephemeral",
-      kind: "system",
-      context: "api",
-      detail: json,
-    ))
+    do {
+      _ = try await self.storageQuery.delete(in: self.db)
+      _ = try await self.db.create(InterestingEvent(
+        id: .init(UUID()),
+        eventId: "store-ephemeral",
+        kind: "system",
+        context: "api",
+        detail: json,
+      ))
+    } catch {
+      await self.slack.error("error persisting ephemeral storage: \(String(reflecting: error))")
+    }
   }
 
   func restoreStorage() async {
-    guard let model = try? await self.storageQuery.first(in: self.db) else {
-      if self.env.mode == .prod {
-        await self.slack.error("no ephemeral storage found to restore")
+    do {
+      let model = try await self.storageQuery.first(in: self.db)
+      guard let storage = try? JSONDecoder().decode(
+        Storage.self,
+        from: model.detail?.data(using: .utf8) ?? Data(),
+      ) else {
+        await self.slack.error("failed to decode ephemeral storage")
+        return
       }
-      return
-    }
 
-    guard let storage = try? JSONDecoder().decode(
-      Storage.self,
-      from: model.detail?.data(using: .utf8) ?? Data(),
-    ) else {
-      await self.slack.error("failed to decode ephemeral storage")
-      return
+      self.storage = storage
+      self.logger.info("restored ephemeral storage")
+    } catch {
+      let err = String(reflecting: error)
+      self.logger.info("error restoring ephemeral storage: \(err)")
+      if self.env.mode == .prod {
+        await self.slack.error("error restoring ephemeral storage: \(err)")
+      }
     }
-
-    self.storage = storage
-    self.logger.info("restored ephemeral storage")
-    _ = try? await self.db.delete(model)
   }
 
   private var storageQuery: DuetQuery<InterestingEvent> {
