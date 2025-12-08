@@ -73,11 +73,12 @@ class WebViewController<State, Action>:
         with: "<div id=\"app\" class=\"appview-os-gte-14\">",
       )
       self.webView.loadHTMLString(html, baseURL: fileDirectoryURL)
+      self.webView.frame = NSRect(origin: .zero, size: NSSize(width: 400, height: 300))
     } else {
       self.webView.loadFileURL(filePathURL, allowingReadAccessTo: fileDirectoryURL)
     }
 
-    view = self.webView
+    self.view = self.webView
   }
 
   func userContentController(

@@ -32,7 +32,10 @@ import WebKit
     self.popover.animates = false
     self.popover.behavior = .applicationDefined
 
-    if #available(macOS 14, *) {
+    if #available(macOS 26, *) {
+      self.popover.hasFullSizeContent = true
+      self.popover.contentSize = NSSize(width: 428, height: 328)
+    } else if #available(macOS 14, *) {
       self.popover.hasFullSizeContent = true
       self.popover.contentSize = NSSize(width: 402, height: 302)
     } else {
