@@ -23,7 +23,11 @@ extension TwilioSmsClient: DependencyKey {
   static var liveValue: TwilioSmsClient {
     @Dependency(\.env.twilio) var env
     return .init { text in
-      let (sid, auth, from) = (env.accountSid, env.authToken, env.fromPhone)
+      let (sid, auth) = (env.accountSid, env.authToken)
+      let toNumber = text.to.rawValue
+      let from = toNumber.hasPrefix("+44") || toNumber.hasPrefix("44")
+        ? env.fromPhoneUK
+        : env.fromPhoneUS
       let url = "https://\(sid):\(auth)@api.twilio.com/2010-04-01/Accounts/\(sid)/Messages.json"
 
       var request = URLRequest(url: URL(string: url)!)
