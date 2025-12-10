@@ -56,9 +56,15 @@ private func sendVerification(
       .send(template: .verifyNotificationEmail(to: email, model: .init(code: code)))
 
   case .text(phoneNumber: let phoneNumber):
-    try await with(dependency: \.twilio).send(Text(
-      to: .init(rawValue: phoneNumber),
-      message: "Your verification code is \(code)",
-    ))
+    do {
+      try await with(dependency: \.twilio).send(Text(
+        to: .init(rawValue: phoneNumber),
+        message: "Your verification code is \(code)",
+      ))
+    } catch {
+      await with(dependency: \.slack)
+        .error("Failed to send SMS verification to \(phoneNumber): \(error)")
+      throw error
+    }
   }
 }

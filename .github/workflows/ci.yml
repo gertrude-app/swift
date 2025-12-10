@@ -286,7 +286,8 @@ env:
   CLOUDFLARE_SECRET: not-real
   TWILIO_ACCOUNT_SID: not-real
   TWILIO_AUTH_TOKEN: not-real
-  TWILIO_FROM_PHONE: not-real
+  TWILIO_FROM_PHONE_US: not-real
+  TWILIO_FROM_PHONE_UK: not-real
   DASHBOARD_URL: /dashboard
   ANALYTICS_SITE_URL: /analytics
   POSTMARK_API_KEY: not-real
