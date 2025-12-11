@@ -2,11 +2,14 @@
 
 ## Release notes
 
+- `2.7.5` (beta 12/8/25, new downloads only)
+  - fix tahoe menu bar bug from 2.7.4
 - `2.7.4` (beta 12/3/25 for new downloads only, to prevent upgrade)
   - tahoe gifs/images for onboarding
   - log screen time filter bundle id in verbose mode
   - allow menu bar background to extend into triangle in macos 14+
   - drop support for catalina 10.15
+  - NB: had bug for only Tahoe, menu bar unusable, only 10x10px
 - `2.7.3` (beta 4/10/25 for new downloads only, to prevent upgrade)
   - fix button to repair notifications permissions from health check
 - `2.7.2` (stable 2/14/25)
