@@ -12,6 +12,7 @@ struct Signup: Pair {
     var password: String
     var gclid: String?
     var abTestVariant: String?
+    var turnstileToken: String?
   }
 
   struct Output: PairOutput {
@@ -26,10 +27,15 @@ extension Signup: Resolver {
     @Dependency(\.date.now) var now
     @Dependency(\.postmark) var postmark
     @Dependency(\.slack) var slack
+    @Dependency(\.cloudflare) var cloudflare
 
     let email = input.email.lowercased()
     if !email.isValidEmail {
       throw Abort(.badRequest)
+    }
+
+    if context.env.mode == .prod, !isProdSmokeTestAddress(email) {
+      try await verifyTurnstileToken(input.turnstileToken, cloudflare)
     }
 
     let existing = try? await Parent.query()
@@ -97,4 +103,22 @@ func sendVerificationEmail(to admin: Parent, in context: Context) async throws {
       to: admin.email.rawValue,
       model: .init(dashboardUrl: context.dashboardUrl, token: token),
     ))
+}
+
+func verifyTurnstileToken(_ token: String?, _ cloudflare: CloudflareClient) async throws {
+  guard let token else {
+    throw Abort(.badRequest, reason: "missing turnstile token")
+  }
+  switch await cloudflare.verifyTurnstileToken(token) {
+  case .success:
+    break
+  case .failure:
+    throw Abort(.badRequest, reason: "invalid turnstile token")
+  case .error(let error):
+    await with(dependency: \.slack).error("""
+      *Error verifying turnstile token (signup)*
+      Token: `\(token)`
+      Error: \(String(reflecting: error))
+    """)
+  }
 }
