@@ -38,7 +38,7 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
 
     expect(output).toEqual(.init(admin: nil))
     expect(parent.subscriptionStatus).toEqual(.pendingEmailVerification)
-    expect(parent.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(7)))
+    expect(parent.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(3)))
     expect(sent.emails.count).toEqual(1)
     expect(sent.emails[0].to).toEqual(email)
     expect(sent.emails[0].template).toBe("initial-signup")
@@ -82,6 +82,20 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
       )))
 
       expect(sent.emails.count).toEqual(0)
+    }
+  }
+
+  func testSignupFailsIfTurnstileTokenRejected() async throws {
+    var env = Env.fromProcess(mode: .testing)
+    env.mode = .prod
+
+    await withDependencies {
+      $0.env = env
+      $0.cloudflare = .init(verifyTurnstileToken: { _ in .failure(errorCodes: [], messages: nil) })
+    } operation: {
+      let input = Signup.Input(email: "test@example.com", password: "pass", turnstileToken: "bad")
+      let result = await Signup.result(with: input, in: self.context)
+      expect(result).toBeError(containing: "invalid turnstile token")
     }
   }
 }

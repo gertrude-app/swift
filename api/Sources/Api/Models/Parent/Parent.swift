@@ -29,7 +29,7 @@ struct Parent: Codable, Sendable {
     email: EmailAddress,
     password: String,
     subscriptionStatus: SubscriptionStatus = .pendingEmailVerification,
-    subscriptionStatusExpiration: Date = Date().advanced(by: .days(7)),
+    subscriptionStatusExpiration: Date = Date().advanced(by: .days(3)),
     subscriptionId: SubscriptionId? = nil,
     monthlyPrice: Cents<Int> = .init(1000),
     trialPeriodDays: Int = 21,
