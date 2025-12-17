@@ -38,7 +38,7 @@ final class SignupTests: ApiTestCase, @unchecked Sendable {
 
     expect(output).toEqual(.init(admin: nil))
     expect(parent.subscriptionStatus).toEqual(.pendingEmailVerification)
-    expect(parent.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(7)))
+    expect(parent.subscriptionStatusExpiration).toEqual(.reference.advanced(by: .days(3)))
     expect(sent.emails.count).toEqual(1)
     expect(sent.emails[0].to).toEqual(email)
     expect(sent.emails[0].template).toBe("initial-signup")

@@ -70,7 +70,7 @@ extension Signup: Resolver {
       email: .init(rawValue: email),
       password: context.env.mode == .test ? input.password : Bcrypt.hash(input.password),
       subscriptionStatus: .pendingEmailVerification,
-      subscriptionStatusExpiration: now + .days(7),
+      subscriptionStatusExpiration: now + .days(3),
       gclid: input.gclid,
       abTestVariant: input.abTestVariant,
     ))
