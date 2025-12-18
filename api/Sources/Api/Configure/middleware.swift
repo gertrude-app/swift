@@ -16,7 +16,7 @@ private func corsMiddleware(_ app: Application) -> CORSMiddleware {
       .environment == .production ?
       .any([
         "https://parents.gertrude.app",
-        "https://dash.gertrude.app",
+        "https://admin.gertrude.app",
         "https://gertrude.app",
         "https://www.gertrude.app",
       ]) : .all,
