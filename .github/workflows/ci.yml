@@ -9,7 +9,7 @@ on:
 jobs:
   linux-build-libs-1:
     if: github.event_name == 'pull_request'
-    runs-on: namespace-profile-default
+    runs-on: ubuntu-latest
     container: ghcr.io/gertrude-app/api-ci-build:6.2.1
     steps:
       - name: checkout
@@ -47,7 +47,7 @@ jobs:
 
   linux-lib-test-libs-1:
     if: github.event_name == 'pull_request'
-    runs-on: namespace-profile-default
+    runs-on: ubuntu-latest
     container: ghcr.io/gertrude-app/api-ci-build:6.2.1
     steps:
       - name: checkout
@@ -76,7 +76,7 @@ jobs:
         run: cd x-slack && swift test
 
   linux-api-build:
-    runs-on: namespace-profile-default
+    runs-on: ubuntu-latest
     container: ghcr.io/gertrude-app/api-ci-build:6.2.1
     steps:
       - name: checkout
@@ -149,7 +149,7 @@ jobs:
 
   linux-api-test:
     if: github.event_name == 'pull_request'
-    runs-on: namespace-profile-default
+    runs-on: ubuntu-latest
     container: ghcr.io/gertrude-app/api-ci-build:6.2.1
     env:
       DATABASE_HOST: postgres
