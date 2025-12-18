@@ -28,10 +28,16 @@ actor Ephemeral {
       var expiration: Date
     }
 
+    struct SuperAdminEmail: Codable {
+      var email: String
+      var expiration: Date
+    }
+
     var parentIds: [UUID: ParentId] = [:]
     var retrievedParentIds: [UUID: Parent.Id] = [:]
     var pendingAppConnections: [Int: ChildId] = [:]
     var pendingMethods: [Parent.NotificationMethod.Id: PendingMethod] = [:]
+    var superAdminEmails: [UUID: SuperAdminEmail] = [:]
   }
 
   private var storage = Storage()
@@ -141,6 +147,25 @@ actor Ephemeral {
       return nil
     }
     return stored.childId
+  }
+
+  func createSuperAdminToken(_ email: String, expiration: Date? = nil) -> UUID {
+    defer { Task { await self.persistStorage() } }
+    let token = self.uuid()
+    self.storage.superAdminEmails[token] = .init(
+      email: email,
+      expiration: expiration ?? self.now + .minutes(60),
+    )
+    return token
+  }
+
+  func unexpiredSuperAdminEmailFromToken(_ token: UUID) -> String? {
+    defer { Task { await self.persistStorage() } }
+    guard let stored = self.storage.superAdminEmails.removeValue(forKey: token),
+          stored.expiration > self.now else {
+      return nil
+    }
+    return stored.email
   }
 }
 

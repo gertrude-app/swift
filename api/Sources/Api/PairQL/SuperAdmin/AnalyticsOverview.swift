@@ -87,7 +87,10 @@ struct AnalyticsData: Sendable {
 
   func queryFreshData() async throws -> AnalyticsData {
     self.logger.notice("Querying analytics data")
-    let parentModels = try await Parent.query().all(in: self.db)
+    let parentModels = try await Parent.query()
+      .where(.not(.like(.email, "%.smoke-test-%")))
+      .where(.not(.like(.email, "e2e-user-%")))
+      .all(in: self.db)
 
     let nonEmptyKeyChains = try await self.db.customQuery(NonEmptyKeychains.self)
     let keychainMap: [Parent.Id: [Int]] = nonEmptyKeyChains.reduce(into: [:]) { map, row in

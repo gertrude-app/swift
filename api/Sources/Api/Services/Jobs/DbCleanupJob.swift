@@ -68,6 +68,12 @@ struct CleanupJob: AsyncScheduledJob {
 
     logs.append("Deleted \(deletedDashTokens) parent dash tokens")
 
+    let deletedSuperAdminTokens = try await SuperAdminToken.query()
+      .where(.deletedAt < now)
+      .delete(in: self.db, force: true)
+
+    logs.append("Deleted \(deletedSuperAdminTokens) super admin tokens")
+
     let deletedAnnouncements = try await DashAnnouncement.query()
       .where(.deletedAt < now)
       .delete(in: self.db, force: true)
