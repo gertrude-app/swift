@@ -5,21 +5,6 @@ import Gertie
 import PairQL
 import TaggedMoney
 
-struct AnalyticsOverview: Pair {
-  static let auth: ClientAuth = .superAdmin
-
-  struct Output: PairOutput {
-    var overview: Overview
-    var recentSignups: [RecentSignup]
-  }
-}
-
-struct RecentSignup: Equatable, Sendable, Codable {
-  var date: Date
-  var status: ParentAnalyticsStatus
-  var email: EmailAddress
-}
-
 enum ParentAnalyticsStatus: String, Codable {
   case noAction = "no_action"
   case onboarded
@@ -54,7 +39,7 @@ struct ParentData: Sendable {
   }
 }
 
-struct Overview: PairOutput {
+struct Overview {
   var annualRevenue: Dollars<Int>
   var payingParents: Int
   var activeParents: Int
@@ -177,24 +162,6 @@ extension ParentData {
     } else {
       .noAction
     }
-  }
-
-  var recentSignup: RecentSignup {
-    .init(
-      date: self.createdAt,
-      status: self.status,
-      email: self.email,
-    )
-  }
-}
-
-extension AnalyticsOverview: NoInputResolver {
-  static func resolve(in context: Context) async throws -> Output {
-    let data = try await AnalyticsQuery.shared.data()
-    return .init(
-      overview: data.overview,
-      recentSignups: data.parents.values.map(\.recentSignup),
-    )
   }
 }
 
