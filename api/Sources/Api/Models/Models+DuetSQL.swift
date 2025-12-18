@@ -1078,3 +1078,27 @@ extension PodcastEvent: Model {
     ]
   }
 }
+
+extension SuperAdminToken: Model {
+  public static let schemaName = "system"
+  public static let tableName = "super_admin_tokens"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .value: .uuid(self.value)
+    case .createdAt: .date(self.createdAt)
+    case .deletedAt: .date(self.deletedAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .value: .uuid(self.value),
+      .createdAt: .currentTimestamp,
+      .deletedAt: .date(self.deletedAt),
+    ]
+  }
+}

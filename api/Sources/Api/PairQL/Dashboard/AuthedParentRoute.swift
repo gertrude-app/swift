@@ -2,7 +2,7 @@ import DuetSQL
 import PairQL
 import Vapor
 
-enum AuthedAdminRoute: PairRoute {
+enum AuthedParentRoute: PairRoute {
   case confirmPendingNotificationMethod(ConfirmPendingNotificationMethod.Input)
   case createPendingAppConnection(CreatePendingAppConnection.Input)
   case createPendingNotificationMethod(CreatePendingNotificationMethod.Input)
@@ -48,8 +48,8 @@ enum AuthedAdminRoute: PairRoute {
   case updateIOSDevice(UpdateIOSDevice.Input)
 }
 
-extension AuthedAdminRoute {
-  nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, AuthedAdminRoute> =
+extension AuthedParentRoute {
+  nonisolated(unsafe) static let router: AnyParserPrinter<URLRequestData, AuthedParentRoute> =
     OneOf {
       Route(.case(Self.confirmPendingNotificationMethod)) {
         Operation(ConfirmPendingNotificationMethod.self)
@@ -215,7 +215,7 @@ extension AuthedAdminRoute {
     .eraseToAnyParserPrinter()
 }
 
-extension AuthedAdminRoute: RouteResponder {
+extension AuthedParentRoute: RouteResponder {
   static func respond(to route: Self, in context: ParentContext) async throws -> Response {
     switch route {
     case .getUser(let uuid):

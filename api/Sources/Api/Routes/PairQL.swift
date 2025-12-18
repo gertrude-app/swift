@@ -21,6 +21,7 @@ enum PairQLRoute: Equatable, RouteResponder {
   case superAdmin(SuperAdminRoute)
   case iOS(IOSRoute)
   case podcast(PodcastRoute)
+  case admin(AdminRoute)
 
   nonisolated(unsafe) static let router = OneOf {
     Route(.case(PairQLRoute.macApp)) {
@@ -48,6 +49,11 @@ enum PairQLRoute: Equatable, RouteResponder {
       Path { "super-admin" }
       SuperAdminRoute.router
     }
+    Route(.case(PairQLRoute.admin)) {
+      Method("POST")
+      Path { "admin" }
+      AdminRoute.router
+    }
   }
 
   static func respond(to route: PairQLRoute, in context: Context) async throws -> Response {
@@ -62,6 +68,8 @@ enum PairQLRoute: Equatable, RouteResponder {
       try await IOSRoute.respond(to: iosAppRoute, in: context)
     case .podcast(let podcastRoute):
       try await PodcastRoute.respond(to: podcastRoute, in: context)
+    case .admin(let adminRoute):
+      try await AdminRoute.respond(to: adminRoute, in: context)
     }
   }
 
@@ -140,6 +148,9 @@ private func logOperation(_ route: PairQLRoute, _ request: Request, _ duration: 
   case .podcast:
     request.logger
       .notice("PairQL request: \("Podcast".yellow) \(operation) \(elapsed)")
+  case .admin:
+    request.logger
+      .notice("PairQL request: \("Admin".red) \(operation) \(elapsed)")
   }
 }
 

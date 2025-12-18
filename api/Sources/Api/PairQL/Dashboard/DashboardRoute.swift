@@ -4,7 +4,7 @@ import PairQL
 import Vapor
 
 enum DashboardRoute: PairRoute {
-  case adminAuthed(UUID, AuthedAdminRoute)
+  case adminAuthed(UUID, AuthedParentRoute)
   case unauthed(UnauthedRoute)
 }
 
@@ -12,7 +12,7 @@ extension DashboardRoute {
   nonisolated(unsafe) static let router = OneOf {
     Route(.case(Self.adminAuthed)) {
       Headers { Field("X-AdminToken") { UUID.parser() } }
-      AuthedAdminRoute.router
+      AuthedParentRoute.router
     }
     Route(.case(Self.unauthed)) {
       UnauthedRoute.router
@@ -42,7 +42,7 @@ extension DashboardRoute: RouteResponder {
         ipAddress: context.ipAddress,
       )
 
-      return try await AuthedAdminRoute.respond(to: parentRoute, in: parentContext)
+      return try await AuthedParentRoute.respond(to: parentRoute, in: parentContext)
     case .unauthed(let route):
       return try await UnauthedRoute.respond(to: route, in: context)
     }

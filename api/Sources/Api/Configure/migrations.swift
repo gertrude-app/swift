@@ -53,6 +53,7 @@ extension Configure {
     app.migrations.add(PodcastEvents())
     app.migrations.add(AddSpotifyBlockGroup())
     app.migrations.add(ReleaseMinVersion())
+    app.migrations.add(SuperAdminTokens())
   }
 }
 

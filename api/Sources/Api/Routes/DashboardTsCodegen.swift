@@ -156,8 +156,8 @@ enum DashboardTsCodegenRoute {
     let functionName = String(firstLetter).lowercased() + fetchName
 
     let fetcher = """
-    \(functionName)(input: T.\(name).Input): Promise<T.Result<T.\(name).Output>> {
-      return query<T.\(name).Input, T.\(name).Output>(input, `\(P.auth)`, `\(P.name)`);
+    \(functionName) = (input: P.\(name).Input): Promise<Result<P.\(name).Output>> => {
+      return this.query<P.\(name).Output>(input, `\(P.name)`, `\(P.auth)`);
     }
     """
     return .init(pair: pair, fetcher: fetcher)
