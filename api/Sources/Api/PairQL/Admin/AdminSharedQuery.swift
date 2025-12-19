@@ -75,6 +75,7 @@ struct AnalyticsData: Sendable {
     let parentModels = try await Parent.query()
       .where(.not(.like(.email, "%.smoke-test-%")))
       .where(.not(.like(.email, "e2e-user-%")))
+      .where(.subscriptionStatus != .enum(Parent.SubscriptionStatus.pendingEmailVerification))
       .all(in: self.db)
 
     let nonEmptyKeyChains = try await self.db.customQuery(NonEmptyKeychains.self)
