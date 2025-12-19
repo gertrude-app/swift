@@ -54,6 +54,7 @@ extension Configure {
     app.migrations.add(AddSpotifyBlockGroup())
     app.migrations.add(ReleaseMinVersion())
     app.migrations.add(SuperAdminTokens())
+    app.migrations.add(IOSEvents())
   }
 }
 
