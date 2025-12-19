@@ -37,12 +37,15 @@ extension ParentsList: Resolver {
     let page = max(1, input.page)
     let offset = (page - 1) * pageSize
 
-    let totalCount = try await Parent.query().count(in: context.db)
-    let totalPages = max(1, Int(ceil(Double(totalCount) / Double(pageSize))))
-
-    let parents = try await Parent.query()
+    let baseQuery = Parent.query()
       .where(.not(.like(.email, "%.smoke-test-%")))
       .where(.not(.like(.email, "e2e-user-%")))
+      .where(.subscriptionStatus != .enum(Parent.SubscriptionStatus.pendingEmailVerification))
+
+    let totalCount = try await baseQuery.count(in: context.db)
+    let totalPages = max(1, Int(ceil(Double(totalCount) / Double(pageSize))))
+
+    let parents = try await baseQuery
       .orderBy(.createdAt, .desc)
       .limit(pageSize)
       .offset(offset)
