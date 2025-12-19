@@ -33,9 +33,13 @@ extension RequestAdminMagicLink: Resolver {
 
     let postmark = get(dependency: \.postmark)
     let token = await with(dependency: \.ephemeral).createSuperAdminToken(email)
-    let adminUrl = context.env.get("ADMIN_URL") ?? "http://localhost:4243"
+    let adminUrl = context.env.get("ADMIN_SITE_URL") ?? "http://localhost:4243"
     let url = "\(adminUrl)/verify/\(token.uuidString.lowercased())"
     get(dependency: \.logger).info("Admin magic link requested for `\(email)`")
+
+    if context.env.mode == .dev {
+      get(dependency: \.logger).info("  -> URL: \(url)")
+    }
 
     try await postmark.send(
       to: email,
