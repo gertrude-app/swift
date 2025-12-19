@@ -4,6 +4,8 @@ public enum UnauthedRoute: PairRoute {
   case logPodcastEvent(LogPodcastEvent.Input)
   case podcastProducts
   case createDatabaseUpload(CreateDatabaseUpload.Input)
+  case verifyPromoCode(VerifyPromoCode.Input)
+  case verifyDbDownload(VerifyDbDownload.Input)
 }
 
 public extension UnauthedRoute {
@@ -18,6 +20,14 @@ public extension UnauthedRoute {
     Route(.case(Self.createDatabaseUpload)) {
       Operation(CreateDatabaseUpload.self)
       Body(.json(CreateDatabaseUpload.Input.self))
+    }
+    Route(.case(Self.verifyPromoCode)) {
+      Operation(VerifyPromoCode.self)
+      Body(.json(VerifyPromoCode.Input.self))
+    }
+    Route(.case(Self.verifyDbDownload)) {
+      Operation(VerifyDbDownload.self)
+      Body(.json(VerifyDbDownload.Input.self))
     }
   }
   .eraseToAnyParserPrinter()
