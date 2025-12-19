@@ -33,8 +33,13 @@ actor Ephemeral {
       var expiration: Date
     }
 
+    struct RetrievedParentId: Codable {
+      var parentId: Parent.Id
+      var retrievedAt: Date
+    }
+
     var parentIds: [UUID: ParentId] = [:]
-    var retrievedParentIds: [UUID: Parent.Id] = [:]
+    var retrievedParentIds: [UUID: RetrievedParentId] = [:]
     var pendingAppConnections: [Int: ChildId] = [:]
     var pendingMethods: [Parent.NotificationMethod.Id: PendingMethod] = [:]
     var superAdminEmails: [UUID: SuperAdminEmail] = [:]
@@ -80,15 +85,18 @@ actor Ephemeral {
     defer { Task { await self.persistStorage() } }
     if let stored = self.storage.parentIds.removeValue(forKey: token) {
       if stored.expiration > self.now {
-        self.storage.retrievedParentIds[token] = stored.parentId
+        self.storage.retrievedParentIds[token] = .init(
+          parentId: stored.parentId,
+          retrievedAt: self.now,
+        )
         return .notExpired(stored.parentId)
       } else {
         // put back, so if they try again, they know it's expired, not missing
         self.storage.parentIds[token] = stored
         return .expired(stored.parentId)
       }
-    } else if let parentId = self.storage.retrievedParentIds[token] {
-      return .previouslyRetrieved(parentId)
+    } else if let retrieved = self.storage.retrievedParentIds[token] {
+      return .previouslyRetrieved(retrieved.parentId)
     } else {
       return .notFound
     }
@@ -173,6 +181,7 @@ actor Ephemeral {
 
 extension Ephemeral {
   func persistStorage() async {
+    self.cleanupExpired()
     guard let data = try? JSONEncoder().encode(self.storage),
           let json = String(data: data, encoding: .utf8) else {
       await self.slack.error("failed to encode ephemeral storage")
@@ -211,6 +220,24 @@ extension Ephemeral {
       if self.env.mode == .prod {
         await self.slack.error("error restoring ephemeral storage: \(err)")
       }
+    }
+  }
+
+  private func cleanupExpired() {
+    self.storage.parentIds = self.storage.parentIds.filter {
+      $0.value.expiration > self.now - .days(7)
+    }
+    self.storage.retrievedParentIds = self.storage.retrievedParentIds.filter {
+      $0.value.retrievedAt > self.now - .days(7)
+    }
+    self.storage.pendingAppConnections = self.storage.pendingAppConnections.filter {
+      $0.value.expiration > self.now
+    }
+    self.storage.pendingMethods = self.storage.pendingMethods.filter {
+      $0.value.expiration > self.now
+    }
+    self.storage.superAdminEmails = self.storage.superAdminEmails.filter {
+      $0.value.expiration > self.now
     }
   }
 
