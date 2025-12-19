@@ -1079,6 +1079,38 @@ extension PodcastEvent: Model {
   }
 }
 
+extension IOSEvent: Model {
+  public static let schemaName = "iosapp"
+  public static let tableName = "events"
+  public typealias ColumnName = CodingKeys
+
+  public func postgresData(for column: ColumnName) -> Postgres.Data {
+    switch column {
+    case .id: .id(self)
+    case .eventId: .string(self.eventId)
+    case .kind: .string(self.kind.rawValue)
+    case .detail: .string(self.detail)
+    case .vendorId: .uuid(self.vendorId)
+    case .deviceType: .string(self.deviceType)
+    case .iosVersion: .string(self.iosVersion)
+    case .createdAt: .date(self.createdAt)
+    }
+  }
+
+  public var insertValues: [ColumnName: Postgres.Data] {
+    [
+      .id: .id(self),
+      .eventId: .string(self.eventId),
+      .kind: .string(self.kind.rawValue),
+      .detail: .string(self.detail),
+      .vendorId: .uuid(self.vendorId),
+      .deviceType: .string(self.deviceType),
+      .iosVersion: .string(self.iosVersion),
+      .createdAt: .currentTimestamp,
+    ]
+  }
+}
+
 extension SuperAdminToken: Model {
   public static let schemaName = "system"
   public static let tableName = "super_admin_tokens"

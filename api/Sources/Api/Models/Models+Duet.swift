@@ -622,3 +622,20 @@ extension PodcastEvent {
     case createdAt
   }
 }
+
+extension IOSEvent: Duet.Identifiable {
+  typealias Id = Tagged<IOSEvent, UUID>
+}
+
+extension IOSEvent {
+  enum CodingKeys: String, CodingKey, CaseIterable, ModelColumns {
+    case id
+    case eventId
+    case kind
+    case detail
+    case vendorId
+    case deviceType
+    case iosVersion
+    case createdAt
+  }
+}

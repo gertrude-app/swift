@@ -45,15 +45,14 @@ final class iOSResolverTests: ApiTestCase, @unchecked Sendable {
       in: .mock,
     )
 
-    let retrieved = try await InterestingEvent.query()
+    let retrieved = try await IOSEvent.query()
       .where(.eventId == eventId)
       .first(in: self.db)
 
-    expect(retrieved.kind).toEqual("event")
-    expect(retrieved.context).toEqual("ios")
-    expect(retrieved.detail!).toContain("iPhone")
-    expect(retrieved.detail!).toContain("18.0.1")
-    expect(retrieved.detail!).toContain(vendorId.lowercased)
-    expect(retrieved.detail!).toContain("first launch")
+    expect(retrieved.kind).toEqual(.info)
+    expect(retrieved.deviceType).toEqual("iPhone")
+    expect(retrieved.iosVersion).toEqual("18.0.1")
+    expect(retrieved.vendorId).toEqual(vendorId)
+    expect(retrieved.detail).toEqual("first launch")
   }
 }

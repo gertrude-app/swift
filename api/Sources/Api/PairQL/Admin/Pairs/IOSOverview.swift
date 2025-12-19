@@ -14,15 +14,15 @@ struct IOSOverview: Pair {
 
 extension IOSOverview: NoInputResolver {
   static func resolve(in context: Context) async throws -> Output {
-    let firstLaunchCount = try await InterestingEvent.query()
+    let firstLaunchCount = try await IOSEvent.query()
       .where(.eventId == "8d35f043")
       .count(in: context.db)
 
-    let authCount = try await InterestingEvent.query()
+    let authCount = try await IOSEvent.query()
       .where(.eventId == "4a0c585f")
       .count(in: context.db)
 
-    let installCount = try await InterestingEvent.query()
+    let installCount = try await IOSEvent.query()
       .where(.eventId == "adced334")
       .count(in: context.db)
 
