@@ -15,6 +15,12 @@ extension PodcastRoute: RouteResponder {
       case .createDatabaseUpload(let input):
         let output = try await CreateDatabaseUpload.resolve(with: input, in: context)
         return try await self.respond(with: output)
+      case .verifyPromoCode(let input):
+        let output = try await VerifyPromoCode.resolve(with: input, in: context)
+        return try await self.respond(with: output)
+      case .verifyDbDownload(let input):
+        let output = try await VerifyDbDownload.resolve(with: input, in: context)
+        return try await self.respond(with: output)
       }
     }
   }
